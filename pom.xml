@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>de.eintosti</groupId>
+    <artifactId>buildsystem-parent</artifactId>
+    <packaging>pom</packaging>
+    <version>parent</version>
+
+    <properties>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <spigotVersion>1.16.3-R0.1-SNAPSHOT</spigotVersion>
+    </properties>
+
+    <modules>
+        <module>abstraction</module>
+        <module>plugin</module>
+        <module>v1_8_R1</module>
+        <module>v1_8_R2</module>
+        <module>v1_8_R3</module>
+        <module>v1_9_R1</module>
+        <module>v1_9_R2</module>
+        <module>v1_10_R1</module>
+        <module>v1_11_R1</module>
+        <module>v1_12_R1</module>
+        <module>v1_13_R1</module>
+        <module>v1_13_R2</module>
+        <module>v1_14_R1</module>
+        <module>v1_15_R1</module>
+        <module>v1_16_R1</module>
+        <module>v1_16_R2</module>
+    </modules>
+
+    <repositories>
+        <repository>
+            <id>nms-repo</id>
+            <url>https://repo.codemc.org/repository/nms/</url>
+        </repository>
+    </repositories>
+
+</project>

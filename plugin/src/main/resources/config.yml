@@ -1,0 +1,29 @@
+messages:
+  spawn-teleport-message: false
+  join-quit-messages: true
+  date-format: "dd/MM/yyyy"
+settings:
+  update-checker: true
+  scoreboard: true
+  archive-vanish: true
+  builder:
+    block-worldedit-non-builder: true
+    creator-is-builder: true
+world:
+  default:
+    time:
+      sunrise: 0
+      noon: 6000
+      night: 18000
+    worldborder:
+      size: 6000000
+    gamerules:
+      doDaylightCycle: false
+      doMobSpawning: false
+      doFireTick: false
+  unload:
+    enabled: false
+    time-until-unload: "01:00:00"
+  void-block: true
+  import-all:
+    delay: 30
