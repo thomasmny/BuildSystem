@@ -290,9 +290,8 @@ public class World implements ConfigurationSerializable {
     }
 
     public void setCustomSpawn(Location customSpawn) {
-        this.customSpawn = customSpawn.getX() + ";" + customSpawn.getY() + ";" + customSpawn
-                .getZ() + ";" + customSpawn.getYaw() + ";" + customSpawn
-                .getPitch();
+        this.customSpawn = customSpawn.getX() + ";" + customSpawn.getY() + ";" + customSpawn.getZ() + ";" +
+                customSpawn.getYaw() + ";" + customSpawn.getPitch();
     }
 
     public boolean isBlockBreaking() {
@@ -385,8 +384,7 @@ public class World implements ConfigurationSerializable {
 
     public void startUnloadTask() {
         if (!plugin.isUnloadWorlds()) return;
-        this.unloadTask = Bukkit.getScheduler()
-                .runTaskLater(plugin, this::unload, 20L * seconds);
+        this.unloadTask = Bukkit.getScheduler().runTaskLater(plugin, this::unload, 20L * seconds);
     }
 
     public void resetUnloadTask() {
@@ -398,8 +396,10 @@ public class World implements ConfigurationSerializable {
 
     private void unload() {
         if (!isLoaded()) return;
+
         org.bukkit.World bukkitWorld = Bukkit.getWorld(name);
         if (bukkitWorld == null) return;
+
         if (isSpawnWorld(bukkitWorld)) return;
         if (!bukkitWorld.getPlayers().isEmpty()) {
             resetUnloadTask();
@@ -413,6 +413,7 @@ public class World implements ConfigurationSerializable {
 
         Bukkit.unloadWorld(bukkitWorld, true);
         Bukkit.getWorlds().remove(bukkitWorld);
+
         this.loaded = false;
         this.unloadTask = null;
     }
@@ -425,6 +426,7 @@ public class World implements ConfigurationSerializable {
 
     public void load(Player player) {
         if (isLoaded()) return;
+
         player.closeInventory();
         String subtitle = plugin.getString("loading_world").replace("%world%", name);
         Titles.sendTitle(player, "", subtitle);

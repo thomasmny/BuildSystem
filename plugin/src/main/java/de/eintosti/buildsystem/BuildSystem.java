@@ -36,13 +36,13 @@ public class BuildSystem extends JavaPlugin {
     public final static int PLUGIN_ID = 60441;
     public static BuildSystem plugin = null;
 
-    public HashMap<UUID, World> selectedWorld;
-    public HashMap<UUID, GameMode> buildPlayerGamemode;
-    public HashMap<UUID, Float> playerWalkSpeed;
-    public HashMap<UUID, Float> playerFlySpeed;
+    public Map<UUID, World> selectedWorld;
+    public Map<UUID, GameMode> buildPlayerGamemode;
+    public Map<UUID, Float> playerWalkSpeed;
+    public Map<UUID, Float> playerFlySpeed;
 
-    public HashSet<Player> openNavigator;
-    public HashSet<UUID> buildPlayers;
+    public Set<Player> openNavigator;
+    public Set<UUID> buildPlayers;
 
     private String prefix;
     private String version;
@@ -65,7 +65,7 @@ public class BuildSystem extends JavaPlugin {
     private int worldBorderSize;
     private int importDelay;
 
-    private HashMap<String, String> defaultGameRules;
+    private Map<String, String> defaultGameRules;
 
     private String scoreboardTitle;
     private List<String> scoreboardBody;
@@ -235,6 +235,7 @@ public class BuildSystem extends JavaPlugin {
             case "v1_15_R1":
             case "v1_16_R1":
             case "v1_16_R2":
+            case "v1_16_R3":
                 this.customBlocks = new CustomBlocks_1_14_R1(this);
                 return true;
             default:
@@ -268,6 +269,7 @@ public class BuildSystem extends JavaPlugin {
             case "v1_15_R1":
             case "v1_16_R1":
             case "v1_16_R2":
+            case "v1_16_R3":
                 this.gameRules = new GameRules_1_13_R1(
                         getString("worldeditor_gamerules_title"),
                         getStringList("worldeditor_gamerules_boolean_enabled"),
@@ -283,48 +285,54 @@ public class BuildSystem extends JavaPlugin {
     }
 
     public boolean setupSidebar() {
+        String title = getScoreboardTitle();
+        List<String> body = getScoreboardBody();
+
         switch (version) {
             case "v1_8_R1":
-                this.sidebar = new Sidebar_1_8_R1(getScoreboardTitle(), getScoreboardBody());
+                this.sidebar = new Sidebar_1_8_R1(title, body);
                 return true;
             case "v1_8_R2":
-                this.sidebar = new Sidebar_1_8_R2(getScoreboardTitle(), getScoreboardBody());
+                this.sidebar = new Sidebar_1_8_R2(title, body);
                 return true;
             case "v1_8_R3":
-                this.sidebar = new Sidebar_1_8_R3(getScoreboardTitle(), getScoreboardBody());
+                this.sidebar = new Sidebar_1_8_R3(title, body);
                 return true;
             case "v1_9_R1":
-                this.sidebar = new Sidebar_1_9_R1(getScoreboardTitle(), getScoreboardBody());
+                this.sidebar = new Sidebar_1_9_R1(title, body);
                 return true;
             case "v1_9_R2":
-                this.sidebar = new Sidebar_1_9_R2(getScoreboardTitle(), getScoreboardBody());
+                this.sidebar = new Sidebar_1_9_R2(title, body);
                 return true;
             case "v1_10_R1":
-                this.sidebar = new Sidebar_1_10_R1(getScoreboardTitle(), getScoreboardBody());
+                this.sidebar = new Sidebar_1_10_R1(title, body);
                 return true;
             case "v1_11_R1":
-                this.sidebar = new Sidebar_1_11_R1(getScoreboardTitle(), getScoreboardBody());
+                this.sidebar = new Sidebar_1_11_R1(title, body);
                 return true;
             case "v1_12_R1":
-                this.sidebar = new Sidebar_1_12_R1(getScoreboardTitle(), getScoreboardBody());
+                this.sidebar = new Sidebar_1_12_R1(title, body);
                 return true;
             case "v1_13_R1":
-                this.sidebar = new Sidebar_1_13_R1(getScoreboardTitle(), getScoreboardBody());
+                this.sidebar = new Sidebar_1_13_R1(title, body);
                 return true;
             case "v1_13_R2":
-                this.sidebar = new Sidebar_1_13_R2(getScoreboardTitle(), getScoreboardBody());
+                this.sidebar = new Sidebar_1_13_R2(title, body);
                 return true;
             case "v1_14_R1":
-                this.sidebar = new Sidebar_1_14_R1(getScoreboardTitle(), getScoreboardBody());
+                this.sidebar = new Sidebar_1_14_R1(title, body);
                 return true;
             case "v1_15_R1":
-                this.sidebar = new Sidebar_1_15_R1(getScoreboardTitle(), getScoreboardBody());
+                this.sidebar = new Sidebar_1_15_R1(title, body);
                 return true;
             case "v1_16_R1":
-                this.sidebar = new Sidebar_1_16_R1(getScoreboardTitle(), getScoreboardBody());
+                this.sidebar = new Sidebar_1_16_R1(title, body);
                 return true;
             case "v1_16_R2":
-                this.sidebar = new Sidebar_1_16_R2(getScoreboardTitle(), getScoreboardBody());
+                this.sidebar = new Sidebar_1_16_R2(title, body);
+                return true;
+            case "v1_16_R3":
+                this.sidebar = new Sidebar_1_16_R3(title, body);
                 return true;
             default:
                 getLogger().log(Level.SEVERE, "\"Sidebar\" not found for version: " + version);
@@ -644,7 +652,7 @@ public class BuildSystem extends JavaPlugin {
         return worldBorderSize;
     }
 
-    public HashMap<String, String> getDefaultGameRules() {
+    public Map<String, String> getDefaultGameRules() {
         return defaultGameRules;
     }
 

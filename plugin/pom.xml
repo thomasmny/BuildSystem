@@ -27,8 +27,8 @@
         </repository>
         <!-- AnvilGUI -->
         <repository>
-            <id>sytm-nexus</id>
-            <url>https://repo.sytm.de/repository/maven-hosted/</url>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
         </repository>
     </repositories>
 
@@ -49,9 +49,9 @@
         </dependency>
         <!-- AnvilGUI -->
         <dependency>
-            <groupId>net.wesjd</groupId>
+            <groupId>com.github.WesJD.AnvilGUI</groupId>
             <artifactId>anvilgui</artifactId>
-            <version>1.3.0-SNAPSHOT</version>
+            <version>master-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <!-- Sidebar -->
@@ -143,6 +143,12 @@
             <groupId>de.eintosti</groupId>
             <artifactId>buildsystem-v1_16_R2</artifactId>
             <version>1.16-R2</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.eintosti</groupId>
+            <artifactId>buildsystem-v1_16_R3</artifactId>
+            <version>1.16-R3</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
