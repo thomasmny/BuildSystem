@@ -2,12 +2,13 @@ package de.eintosti.buildsystem.util.external.xseries;
 
 import com.google.common.base.Enums;
 import com.google.common.base.Strings;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.lang.WordUtils;
-import org.bukkit.*;
+import org.bukkit.Instrument;
+import org.bukkit.Location;
+import org.bukkit.Note;
+import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -18,7 +19,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 /**
  * <b>XSound</b> - Universal Minecraft Sound Support<br>
@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
  * play command: https://minecraft.gamepedia.com/Commands/play
  *
  * @author Crypto Morin
- * @version 3.0.0
+ * @version 5.1.0.1
  * @see Sound
  */
 public enum XSound {
@@ -1043,51 +1043,28 @@ public enum XSound {
     /**
      * Cached list of {@link XSound#values()} to avoid allocating memory for
      * calling the method every time.
-     * This set is mutable for performance, but do not change the elements.
      *
      * @since 2.0.0
      */
-    public static final EnumSet<XSound> VALUES = EnumSet.allOf(XSound.class);
+    public static final XSound[] VALUES = values();
 
-    /**
-     * Guava (Google Core Libraries for Java)'s cache for performance and timed caches.
-     * Caches the parsed {@link Sound} objects instead of string. Because it has to go through catching exceptions again
-     * since {@link Sound} class doesn't have a method like {@link Material#getMaterial(String)}.
-     * So caching these would be more efficient.
-     *
-     * @since 2.0.0
-     */
-    private static final Cache<XSound, Optional<Sound>> CACHE = CacheBuilder.newBuilder()
-            .expireAfterAccess(10, TimeUnit.MINUTES)
-            .build();
+    @Nullable
+    private final Sound sound;
 
-    /**
-     * We don't want to use {@link Enums#getIfPresent(Class, String)} to avoid a few checks.
-     *
-     * @since 3.1.0
-     */
-    private static final Map<String, XSound> NAMES = new HashMap<>();
-    /**
-     * Since {@link Sound} doesn't provde a method to get a sound from a method like {@link Material#getMaterial(String)}
-     *
-     * @since 3.1.0
-     */
-    private static final Map<String, Sound> BUKKIT_NAMES = new HashMap<>();
-
-    static {
-        for (Sound sound : Sound.values()) BUKKIT_NAMES.put(sound.name(), sound);
-        for (XSound sound : VALUES) {
-            NAMES.put(sound.name(), sound);
-            for (String legacy : sound.getLegacy()) {
-                NAMES.putIfAbsent(legacy, sound);
+    XSound(@Nonnull String... legacies) {
+        Sound bukkitSound = Data.BUKKIT_NAMES.get(this.name());
+        if (bukkitSound == null) {
+            for (String legacy : legacies) {
+                bukkitSound = Data.BUKKIT_NAMES.get(legacy);
+                if (bukkitSound != null) break;
             }
         }
-    }
+        this.sound = bukkitSound;
 
-    private final String[] legacy;
-
-    XSound(String... legacy) {
-        this.legacy = legacy;
+        Data.NAMES.put(this.name(), this);
+        for (String legacy : legacies) {
+            Data.NAMES.putIfAbsent(legacy, this);
+        }
     }
 
     /**
@@ -1096,8 +1073,8 @@ public enum XSound {
      * While this method is hard to maintain, it's extremely efficient. It's approximately more than x5 times faster than
      * the normal RegEx + String Methods approach for both formatted and unformatted material names.
      *
-     * @param name the sound name to modify.
-     * @return a Sound enum name.
+     * @param name the sound name to format.
+     * @return an enum name.
      * @since 1.0.0
      */
     @Nonnull
@@ -1107,14 +1084,15 @@ public enum XSound {
         int count = 0;
         boolean appendUnderline = false;
 
-        for (int i = 0; i < len; ++i) {
+        for (int i = 0; i < len; i++) {
             char ch = name.charAt(i);
 
             if (!appendUnderline && count != 0 && (ch == '-' || ch == ' ' || ch == '_') && chs[count] != '_')
                 appendUnderline = true;
             else {
                 boolean number = false;
-                if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')) {
+                // A few sounds have numbers in them.
+                if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (number = (ch >= '0' && ch <= '9'))) {
                     if (appendUnderline) {
                         chs[count++] = '_';
                         appendUnderline = false;
@@ -1139,7 +1117,7 @@ public enum XSound {
     @Nonnull
     public static Optional<XSound> matchXSound(@Nonnull String sound) {
         Validate.notEmpty(sound, "Cannot match XSound of a null or empty sound name");
-        return getIfPresent(format(sound));
+        return Optional.ofNullable(Data.NAMES.get(format(sound)));
     }
 
     /**
@@ -1153,16 +1131,17 @@ public enum XSound {
     @Nonnull
     public static XSound matchXSound(@Nonnull Sound sound) {
         Objects.requireNonNull(sound, "Cannot match XSound of a null sound");
-        return matchXSound(sound.name())
-                .orElseThrow(() -> new IllegalArgumentException("Unsupported Sound: " + sound.name()));
+        return Objects.requireNonNull(Data.NAMES.get(sound.name()), () -> "Unsupported sound: " + sound.name());
     }
 
     /**
+     * @param player the player to play the sound to.
+     * @param sound  the sound to play to the player.
      * @see #play(Location, String)
      * @since 1.0.0
      */
-    @Nonnull
-    public static CompletableFuture<Record> play(@Nullable Player player, @Nullable String sound) {
+    @Nullable
+    public static CompletableFuture<Record> play(@Nonnull Player player, @Nullable String sound) {
         Objects.requireNonNull(player, "Cannot play sound to null player");
         return parse(player, player.getLocation(), sound, true);
     }
@@ -1171,7 +1150,7 @@ public enum XSound {
      * @see #play(Location, String)
      * @since 3.0.0
      */
-    @Nonnull
+    @Nullable
     public static CompletableFuture<Record> play(@Nonnull Location location, @Nullable String sound) {
         return parse(null, location, sound, true);
     }
@@ -1207,6 +1186,7 @@ public enum XSound {
      *     none
      *     null
      * </pre>
+     * <p>
      *
      * @param player   the only player to play the sound to if requested to do so.
      * @param location the location to play the sound to.
@@ -1214,7 +1194,7 @@ public enum XSound {
      * @param play     if the sound should be played right away.
      * @since 3.0.0
      */
-    @Nonnull
+    @Nullable
     public static CompletableFuture<Record> parse(@Nullable Player player, @Nonnull Location location, @Nullable String sound, boolean play) {
         Objects.requireNonNull(location, "Cannot play sound to null location");
         if (Strings.isNullOrEmpty(sound) || sound.equalsIgnoreCase("none")) return null;
@@ -1264,6 +1244,7 @@ public enum XSound {
      * affected by this.
      *
      * @param player the player to stop all the sounds from.
+     * @return the async task handling the operation.
      * @see #stopSound(Player)
      * @since 2.0.0
      */
@@ -1271,14 +1252,15 @@ public enum XSound {
     public static CompletableFuture<Void> stopMusic(@Nonnull Player player) {
         Objects.requireNonNull(player, "Cannot stop playing musics from null player");
 
-        // We don't need to cache because it's rarely used.
-        EnumSet<XSound> musics = EnumSet.of(MUSIC_CREATIVE, MUSIC_CREDITS,
-                MUSIC_DISC_11, MUSIC_DISC_13, MUSIC_DISC_BLOCKS, MUSIC_DISC_CAT, MUSIC_DISC_CHIRP,
-                MUSIC_DISC_FAR, MUSIC_DISC_MALL, MUSIC_DISC_MELLOHI, MUSIC_DISC_STAL,
-                MUSIC_DISC_STRAD, MUSIC_DISC_WAIT, MUSIC_DISC_WARD,
-                MUSIC_DRAGON, MUSIC_END, MUSIC_GAME, MUSIC_MENU, MUSIC_NETHER_BASALT_DELTAS, MUSIC_UNDER_WATER);
-
         return CompletableFuture.runAsync(() -> {
+            // We don't need to cache because it's rarely used.
+            XSound[] musics = {MUSIC_CREATIVE, MUSIC_CREDITS,
+                    MUSIC_DISC_11, MUSIC_DISC_13, MUSIC_DISC_BLOCKS, MUSIC_DISC_CAT, MUSIC_DISC_CHIRP,
+                    MUSIC_DISC_FAR, MUSIC_DISC_MALL, MUSIC_DISC_MELLOHI, MUSIC_DISC_STAL,
+                    MUSIC_DISC_STRAD, MUSIC_DISC_WAIT, MUSIC_DISC_WARD,
+                    MUSIC_DRAGON, MUSIC_END, MUSIC_GAME, MUSIC_MENU, MUSIC_NETHER_BASALT_DELTAS, MUSIC_UNDER_WATER,
+                    MUSIC_NETHER_CRIMSON_FOREST, MUSIC_NETHER_WARPED_FOREST};
+
             for (XSound music : musics) {
                 Sound sound = music.parseSound();
                 if (sound != null) player.stopSound(sound);
@@ -1287,15 +1269,37 @@ public enum XSound {
     }
 
     /**
-     * Gets the {@link XSound} with this name without throwing an exception.
+     * Plays an instrument's notes in an ascending form.
+     * This method is not really relevant to this utility class, but a nice feature.
      *
-     * @param name the name of the sound.
-     * @return an optional that can be empty.
-     * @since 5.1.0
+     * @param plugin      the plugin handling schedulers.
+     * @param player      the player to play the note from.
+     * @param playTo      the entity to play the note to.
+     * @param instrument  the instrument.
+     * @param ascendLevel the ascend level of notes. Can only be positive and not higher than 7
+     * @param delay       the delay between each play.
+     * @return the async task handling the operation.
+     * @since 2.0.0
      */
     @Nonnull
-    private static Optional<XSound> getIfPresent(@Nonnull String name) {
-        return Optional.ofNullable(NAMES.get(name));
+    public static BukkitTask playAscendingNote(@Nonnull JavaPlugin plugin, @Nonnull Player player, @Nonnull Entity playTo, @Nonnull Instrument instrument,
+                                               int ascendLevel, int delay) {
+        Objects.requireNonNull(player, "Cannot play note from null player");
+        Objects.requireNonNull(playTo, "Cannot play note to null entity");
+
+        Validate.isTrue(ascendLevel > 0, "Note ascend level cannot be lower than 1");
+        Validate.isTrue(ascendLevel <= 7, "Note ascend level cannot be greater than 7");
+        Validate.isTrue(delay > 0, "Delay ticks must be at least 1");
+
+        return new BukkitRunnable() {
+            int repeating = ascendLevel;
+
+            @Override
+            public void run() {
+                player.playNote(playTo.getLocation(), instrument, Note.natural(1, Note.Tone.values()[ascendLevel - repeating]));
+                if (repeating-- == 0) cancel();
+            }
+        }.runTaskTimerAsynchronously(plugin, 0, delay);
     }
 
     /**
@@ -1309,43 +1313,14 @@ public enum XSound {
     }
 
     /**
-     * Gets all the previous sound names used for this sound.
-     *
-     * @return a list of legacy sound names.
-     * @since 1.0.0
-     */
-    @Nonnull
-    public String[] getLegacy() {
-        return legacy;
-    }
-
-    /**
      * Parses the XSound as a {@link Sound} based on the server version.
      *
      * @return the vanilla sound.
      * @since 1.0.0
      */
     @Nullable
-    @SuppressWarnings("OptionalAssignedToNull")
     public Sound parseSound() {
-        Optional<Sound> cachedSound = CACHE.getIfPresent(this);
-        if (cachedSound != null) return cachedSound.orElse(null);
-        Sound sound;
-
-        // Since Sound class doesn't have a getSound() method we'll use Guava so
-        // it can cache it for us.
-        sound = BUKKIT_NAMES.get(this.name());
-
-        if (sound == null) {
-            for (String legacy : this.legacy) {
-                sound = BUKKIT_NAMES.get(legacy);
-                if (sound != null) break;
-            }
-        }
-
-        // Put nulls too, because there's no point of parsing them again if it's going to give us null again.
-        CACHE.put(this, Optional.ofNullable(sound));
-        return sound;
+        return this.sound;
     }
 
     /**
@@ -1373,6 +1348,7 @@ public enum XSound {
      * @param pitch  the pitch of the sound.
      * @param repeat the amount of times to repeat playing.
      * @param delay  the delay between each repeat.
+     * @return the async task handling this operation.
      * @see #play(Location, float, float)
      * @since 2.0.0
      */
@@ -1393,38 +1369,6 @@ public enum XSound {
                 if (repeating-- == 0) cancel();
             }
         }.runTaskTimer(plugin, 0, delay);
-    }
-
-    /**
-     * Plays an instrument's notes in an ascending form.
-     * This method is not really relevant to this utility class, but a nice feature.
-     *
-     * @param plugin      the plugin handling schedulers.
-     * @param player      the player to play the note from.
-     * @param playTo      the entity to play the note to.
-     * @param instrument  the instrument.
-     * @param ascendLevel the ascend level of notes. Can only be positive and not higher than 7
-     * @param delay       the delay between each play.
-     * @since 2.0.0
-     */
-    @Nonnull
-    public BukkitTask playAscendingNote(@Nonnull JavaPlugin plugin, @Nonnull Player player, @Nonnull Entity playTo, @Nonnull Instrument instrument, int ascendLevel, int delay) {
-        Objects.requireNonNull(player, "Cannot play note from null player");
-        Objects.requireNonNull(playTo, "Cannot play note to null entity");
-
-        Validate.isTrue(ascendLevel > 0, "Note ascend level cannot be lower than 1");
-        Validate.isTrue(ascendLevel <= 7, "Note ascend level cannot be greater than 7");
-        Validate.isTrue(delay > 0, "Delay ticks must be at least 1");
-
-        return new BukkitRunnable() {
-            int repeating = ascendLevel;
-
-            @Override
-            public void run() {
-                player.playNote(playTo.getLocation(), instrument, Note.natural(1, Note.Tone.values()[ascendLevel - repeating]));
-                if (repeating-- == 0) cancel();
-            }
-        }.runTaskTimerAsynchronously(plugin, 0, delay);
     }
 
     /**
@@ -1463,8 +1407,7 @@ public enum XSound {
         Objects.requireNonNull(entity, "Cannot play sound to a null entity");
         if (entity instanceof Player) {
             Sound sound = this.parseSound();
-            if (sound == null) return;
-            ((Player) entity).playSound(entity.getLocation(), sound, volume, pitch);
+            if (sound != null) ((Player) entity).playSound(entity.getLocation(), sound, volume, pitch);
         } else {
             play(entity.getLocation(), volume, pitch);
         }
@@ -1481,16 +1424,6 @@ public enum XSound {
     }
 
     /**
-     * Plays a sound for a player at its location.
-     *
-     * @param player the player to play to sound to
-     * @since 3.0.0
-     */
-    public void play(@Nonnull Player player) {
-        play(player.getLocation());
-    }
-
-    /**
      * Plays a sound in a location with the given volume and pitch.
      *
      * @param location the location to play this sound.
@@ -1501,8 +1434,31 @@ public enum XSound {
     public void play(@Nonnull Location location, float volume, float pitch) {
         Objects.requireNonNull(location, "Cannot play sound to null location");
         Sound sound = this.parseSound();
-        if (sound == null) return;
-        location.getWorld().playSound(location, sound, volume, pitch);
+        if (sound != null) location.getWorld().playSound(location, sound, volume, pitch);
+    }
+
+    /**
+     * Used for datas that need to be accessed during enum initialization.
+     *
+     * @since 5.0.0
+     */
+    private static final class Data {
+        /**
+         * Just for enum initialization.
+         *
+         * @since 5.0.0
+         */
+        private static final WeakHashMap<String, Sound> BUKKIT_NAMES = new WeakHashMap<>();
+        /**
+         * We don't want to use {@link Enums#getIfPresent(Class, String)} to avoid a few checks.
+         *
+         * @since 3.1.0
+         */
+        private static final Map<String, XSound> NAMES = new HashMap<>();
+
+        static {
+            for (Sound sound : Sound.values()) BUKKIT_NAMES.put(sound.name(), sound);
+        }
     }
 
     /**
@@ -1518,7 +1474,7 @@ public enum XSound {
         public final float pitch;
         public final boolean playAtLocation;
 
-        public Record(Sound sound, Player player, Location location, float volume, float pitch, boolean playAtLocation) {
+        public Record(@Nonnull Sound sound, @Nullable Player player, @Nonnull Location location, float volume, float pitch, boolean playAtLocation) {
             this.sound = sound;
             this.player = player;
             this.location = location;
@@ -1539,10 +1495,10 @@ public enum XSound {
         /**
          * Plays the sound with the updated location.
          *
-         * @param updatedLocation the upated location.
+         * @param updatedLocation the updated location.
          * @since 3.0.0
          */
-        public void play(Location updatedLocation) {
+        public void play(@Nonnull Location updatedLocation) {
             if (playAtLocation) location.getWorld().playSound(updatedLocation, sound, volume, pitch);
             else if (player.isOnline()) player.playSound(updatedLocation, sound, volume, pitch);
         }

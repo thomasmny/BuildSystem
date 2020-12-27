@@ -763,8 +763,7 @@ public class WorldsCommand implements CommandExecutor {
         new AnvilGUI.Builder()
                 .onComplete((player, text) -> {
                     player.closeInventory();
-                    String newName = text.trim().replace(" ", "_");
-                    worldManager.renameWorld(player, world, newName);
+                    worldManager.renameWorld(player, world, text.trim());
                     XSound.ENTITY_PLAYER_LEVELUP.play(player);
                     plugin.selectedWorld.remove(player.getUniqueId());
                     return AnvilGUI.Response.close();

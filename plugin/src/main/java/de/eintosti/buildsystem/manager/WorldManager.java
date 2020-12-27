@@ -376,15 +376,25 @@ public class WorldManager {
                     player.sendMessage(plugin.getString("worlds_importall_finished"));
                 }
             }
-        }.runTaskTimer(plugin, 0, 20 * delay);
+        }.runTaskTimer(plugin, 0, 20L * delay);
     }
 
     public void renameWorld(Player player, World world, String name) {
         String oldName = world.getName();
-        if (oldName.toLowerCase().equals(name.toLowerCase())) {
+        if (oldName.equalsIgnoreCase(name)) {
             player.sendMessage(plugin.getString("worlds_rename_same_name"));
             return;
         }
+
+        for (String charString : name.split("")) {
+            if (charString.matches("[^A-Za-z0-9/_-]")) {
+                player.sendMessage(plugin.getString("worlds_world_creation_invalid_characters"));
+                break;
+            }
+        }
+        player.closeInventory();
+        name = name.replaceAll("[^A-Za-z0-9/_-]", "").replace(" ", "_").trim();
+
         File oldWorldFile = new File(world.getName());
         File newWorldFile = new File(name);
         org.bukkit.World oldWorld = Bukkit.getWorld(world.getName());
