@@ -52,7 +52,7 @@ public class ItemSkulls {
      * @return The itemStack (SKULL_ITEM) with the given look (skin-image)
      */
     public static ItemStack getSkull(String skinURL, int amount) {
-        ItemStack skull = XMaterial.PLAYER_HEAD.parseItem(true);
+        ItemStack skull = XMaterial.PLAYER_HEAD.parseItem();
         SkullMeta meta = (SkullMeta) skull.getItemMeta();
         skull.setAmount(amount);
         try {

@@ -62,7 +62,7 @@ public class EditInventory {
     }
 
     private void addSettingsItem(Inventory inventory, int position, XMaterial material, boolean b, String displayName, List<String> lore) {
-        ItemStack itemStack = material.parseItem(true);
+        ItemStack itemStack = material.parseItem();
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta != null) {
             itemMeta.setDisplayName(displayName);

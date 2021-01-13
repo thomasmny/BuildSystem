@@ -5,7 +5,6 @@ import org.bukkit.Material;
 import org.bukkit.TreeSpecies;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
-import org.bukkit.block.data.Lightable;
 import org.bukkit.material.Colorable;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.Wood;
@@ -27,23 +26,6 @@ import org.bukkit.material.Wood;
 @SuppressWarnings("deprecation")
 public class XBlock {
     private static final boolean ISFLAT = XMaterial.isNewVersion();
-
-    /**
-     * Can be furnaces or redstone lamps.
-     */
-    public static void setLit(Block block, boolean lit) {
-        if (ISFLAT) {
-            if (!(block.getBlockData() instanceof Lightable)) return;
-            Lightable lightable = (Lightable) block.getBlockData();
-            lightable.setLit(lit);
-            return;
-        }
-
-        String name = block.getType().name();
-        if (name.endsWith("FURNACE")) block.setType(Material.getMaterial("BURNING_FURNACE"));
-        else if (name.startsWith("REDSTONE_LAMP")) block.setType(Material.getMaterial("REDSTONE_LAMP_ON"));
-        else block.setType(Material.getMaterial("REDSTONE_TORCH_ON"));
-    }
 
     /**
      * Sets the type of any block that can be colored.
@@ -73,27 +55,23 @@ public class XBlock {
 
     public static XMaterial getType(Block block) {
         if (ISFLAT) return XMaterial.matchXMaterial(block.getType());
+
         String type = block.getType().name();
         BlockState state = block.getState();
         MaterialData data = state.getData();
+        byte dataValue;
 
         if (data instanceof Wood) {
             TreeSpecies species = ((Wood) data).getSpecies();
-            return XMaterial.matchXMaterial(species.name() + block.getType().name())
-                    .orElseThrow(() -> new IllegalArgumentException("Unsupported material from tree species " + species.name() + ": " + block.getType().name()));
+            dataValue = species.getData();
+        } else if (data instanceof Colorable) {
+            DyeColor color = ((Colorable) data).getColor();
+            dataValue = color.getDyeData();
+        } else {
+            dataValue = data.getData();
         }
-        if (data instanceof Colorable) {
-            Colorable color = (Colorable) data;
-            return XMaterial.matchXMaterial(color.getColor().name() + '_' + type)
-                    .orElseThrow(() -> new IllegalArgumentException("Unsupported colored material"));
-        }
-        return XMaterial.matchXMaterial(block.getType());
-    }
 
-    private static boolean isMaterial(Block block, String... materials) {
-        String type = block.getType().name();
-        for (String material : materials)
-            if (type.equals(material)) return true;
-        return false;
+        return XMaterial.matchDefinedXMaterial(type, dataValue).orElseThrow(() ->
+                new IllegalArgumentException("Unsupported material for block " + dataValue + ": " + block.getType().name()));
     }
 }

@@ -52,7 +52,7 @@ public class StatusInventory {
     }
 
     private void addItem(Player player, Inventory inventory, int position, XMaterial material, String displayName, WorldStatus worldStatus) {
-        ItemStack itemStack = material.parseItem(true);
+        ItemStack itemStack = material.parseItem();
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta != null) {
             itemMeta.setDisplayName(displayName);

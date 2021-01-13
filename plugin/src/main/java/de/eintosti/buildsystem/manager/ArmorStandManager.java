@@ -54,7 +54,7 @@ public class ArmorStandManager {
         if (customSkull) {
             skull = ItemSkulls.getSkull(skullUrl);
         } else {
-            skull = XMaterial.PLAYER_HEAD.parseItem(true);
+            skull = XMaterial.PLAYER_HEAD.parseItem();
             SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
             skullMeta.setOwner(player.getName());
             skull.setItemMeta(skullMeta);

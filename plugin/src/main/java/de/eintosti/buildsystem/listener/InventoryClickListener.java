@@ -20,6 +20,7 @@ import de.eintosti.buildsystem.util.external.xseries.Titles;
 import de.eintosti.buildsystem.util.external.xseries.XMaterial;
 import de.eintosti.buildsystem.util.external.xseries.XSound;
 import de.eintosti.buildsystem.version.GameRules;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -45,21 +46,6 @@ import java.util.UUID;
  * @author einTosti
  */
 public class InventoryClickListener implements Listener {
-    private static final ImmutableSet<EntityType> IGNORED_ENTITIES = Sets.immutableEnumSet(
-            EntityType.ARMOR_STAND,
-            EntityType.ENDER_CRYSTAL,
-            EntityType.ITEM_FRAME,
-            EntityType.FALLING_BLOCK,
-            EntityType.MINECART,
-            EntityType.MINECART_CHEST,
-            EntityType.MINECART_COMMAND,
-            EntityType.MINECART_FURNACE,
-            EntityType.MINECART_HOPPER,
-            EntityType.MINECART_MOB_SPAWNER,
-            EntityType.MINECART_TNT,
-            EntityType.PLAYER
-    );
-
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
     private final NoClipManager noClipManager;
@@ -489,6 +475,21 @@ public class InventoryClickListener implements Listener {
     private boolean isValid(Entity entity) {
         return !IGNORED_ENTITIES.contains(entity.getType());
     }
+
+    private static final ImmutableSet<EntityType> IGNORED_ENTITIES = Sets.immutableEnumSet(
+            EntityType.ARMOR_STAND,
+            EntityType.ENDER_CRYSTAL,
+            EntityType.ITEM_FRAME,
+            EntityType.FALLING_BLOCK,
+            EntityType.MINECART,
+            EntityType.MINECART_CHEST,
+            EntityType.MINECART_COMMAND,
+            EntityType.MINECART_FURNACE,
+            EntityType.MINECART_HOPPER,
+            EntityType.MINECART_MOB_SPAWNER,
+            EntityType.MINECART_TNT,
+            EntityType.PLAYER
+    );
 
     @EventHandler
     public void onBuildersInventoryClick(InventoryClickEvent event) {
@@ -982,8 +983,7 @@ public class InventoryClickListener implements Listener {
         }
 
         if (slot >= 9 && slot <= 44) {
-            String worldName = ChatColor.stripColor(itemMeta.getDisplayName());
-            World world = worldManager.getWorld(worldName);
+            World world = worldManager.getWorld(getWorldName(itemMeta.getDisplayName()));
             manageWorldItemClick(event, player, itemMeta, world);
         }
 
@@ -1019,7 +1019,12 @@ public class InventoryClickListener implements Listener {
 
     private void performNonEditClick(Player player, ItemMeta itemMeta) {
         plugin.getPlayerMoveListener().closeNavigator(player);
-        teleport(player, ChatColor.stripColor(itemMeta.getDisplayName()));
+        teleport(player, getWorldName(itemMeta.getDisplayName()));
+    }
+
+    private String getWorldName(String input) {
+        String template = plugin.getString("world_item_title").replace("%world%", "");
+        return StringUtils.difference(template, input);
     }
 
     private void teleport(Player player, String worldName) {

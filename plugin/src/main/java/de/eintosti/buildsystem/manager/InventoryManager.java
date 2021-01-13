@@ -59,7 +59,7 @@ public class InventoryManager {
     }
 
     public ItemStack getItemStack(XMaterial material, String displayName, List<String> lore) {
-        ItemStack itemStack = material.parseItem(true);
+        ItemStack itemStack = material.parseItem();
         if (itemStack == null) itemStack = XMaterial.BEDROCK.parseItem();
         ItemMeta itemMeta = itemStack.getItemMeta();
 
@@ -90,7 +90,7 @@ public class InventoryManager {
 
     @SuppressWarnings("deprecation")
     public ItemStack getSkull(String displayName, String skullOwner, List<String> lore) {
-        ItemStack skull = XMaterial.PLAYER_HEAD.parseItem(true);
+        ItemStack skull = XMaterial.PLAYER_HEAD.parseItem();
         SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
 
         skullMeta.setOwner(skullOwner);
@@ -139,7 +139,7 @@ public class InventoryManager {
     }
 
     public void addWorldItem(Player player, Inventory inventory, int position, World world) {
-        ItemStack itemStack = world.getMaterial().parseItem(true);
+        ItemStack itemStack = world.getMaterial().parseItem();
         if (itemStack == null) itemStack = XMaterial.BEDROCK.parseItem();
 
         if (world.getMaterial() == XMaterial.PLAYER_HEAD) {
@@ -160,7 +160,7 @@ public class InventoryManager {
 
     @SuppressWarnings("deprecation")
     public void addWorldSkull(Player player, Inventory inventory, int position, World world) {
-        ItemStack itemStack = XMaterial.PLAYER_HEAD.parseItem(true);
+        ItemStack itemStack = XMaterial.PLAYER_HEAD.parseItem();
         SkullMeta skullMeta = (SkullMeta) itemStack.getItemMeta();
 
         skullMeta.setDisplayName(plugin.getString("world_item_title").replace("%world%", world.getName()));
