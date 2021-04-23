@@ -2,7 +2,6 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
@@ -23,7 +22,7 @@ public class TopCommand implements CommandExecutor {
     public TopCommand(BuildSystem plugin) {
         this.plugin = plugin;
         this.worldManager = plugin.getWorldManager();
-        Bukkit.getPluginCommand("top").setExecutor(this);
+        plugin.getCommand("top").setExecutor(this);
     }
 
     @Override

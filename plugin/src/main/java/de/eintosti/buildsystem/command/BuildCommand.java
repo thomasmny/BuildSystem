@@ -9,6 +9,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.UUID;
 import java.util.logging.Level;
 
 /**
@@ -19,7 +20,7 @@ public class BuildCommand implements CommandExecutor {
 
     public BuildCommand(BuildSystem plugin) {
         this.plugin = plugin;
-        Bukkit.getPluginCommand("build").setExecutor(this);
+        plugin.getCommand("build").setExecutor(this);
     }
 
     @Override
@@ -34,6 +35,7 @@ public class BuildCommand implements CommandExecutor {
             plugin.sendPermissionMessage(player);
             return true;
         }
+
         switch (args.length) {
             case 0:
                 toggleBuildMode(player, null, false);
@@ -50,15 +52,18 @@ public class BuildCommand implements CommandExecutor {
                 player.sendMessage(plugin.getString("build_usage"));
                 break;
         }
+
         return true;
     }
 
     private void toggleBuildMode(Player target, Player sender, boolean extended) {
-        if (plugin.buildPlayers.contains(target.getUniqueId())) {
-            plugin.buildPlayers.remove(target.getUniqueId());
-            if (plugin.buildPlayerGamemode.containsKey(target.getUniqueId())) {
-                target.setGameMode(plugin.buildPlayerGamemode.get(target.getUniqueId()));
-                plugin.buildPlayerGamemode.remove(target.getUniqueId());
+        UUID targetUuid = target.getUniqueId();
+
+        if (plugin.buildPlayers.contains(targetUuid)) {
+            plugin.buildPlayers.remove(targetUuid);
+            if (plugin.buildPlayerGamemode.containsKey(targetUuid)) {
+                target.setGameMode(plugin.buildPlayerGamemode.get(targetUuid));
+                plugin.buildPlayerGamemode.remove(targetUuid);
             }
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
@@ -70,8 +75,8 @@ public class BuildCommand implements CommandExecutor {
                 target.sendMessage(plugin.getString("build_deactivated_other_target").replace("%sender%", sender.getName()));
             }
         } else {
-            plugin.buildPlayers.add(target.getUniqueId());
-            plugin.buildPlayerGamemode.put(target.getUniqueId(), target.getGameMode());
+            plugin.buildPlayers.add(targetUuid);
+            plugin.buildPlayerGamemode.put(targetUuid, target.getGameMode());
             target.setGameMode(GameMode.CREATIVE);
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);

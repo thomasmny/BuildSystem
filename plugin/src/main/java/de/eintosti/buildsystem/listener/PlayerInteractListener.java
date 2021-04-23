@@ -185,21 +185,26 @@ public class PlayerInteractListener implements Listener {
     }
 
     @EventHandler
-    public void onGrassPlayerInteract(PlayerInteractEvent event) {
+    public void onPlacePlantsPlayerInteract(PlayerInteractEvent event) {
         if (!isValid(event)) return;
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-        Player player = event.getPlayer();
 
-        Settings settings = settingsManager.getSettings(player);
-        if (!settings.isPlacePlants()) return;
+        Block clickedBlock = event.getClickedBlock();
+        if (clickedBlock == null) return;
 
         ItemStack itemStack = event.getItem();
         if (itemStack == null) return;
         Material material = itemStack.getType();
 
-        if (!PLANTS.contains(XMaterial.matchXMaterial(material))) return;
-        event.setCancelled(true);
-        plugin.getCustomBlocks().setPlant(event);
+        Player player = event.getPlayer();
+        Settings settings = settingsManager.getSettings(player);
+
+        if (settings.isPlacePlants()) {
+            if (clickedBlock.getType() == Material.FLOWER_POT) return;
+            if (!PLANTS.contains(XMaterial.matchXMaterial(material))) return;
+            event.setCancelled(true);
+            plugin.getCustomBlocks().setPlant(event);
+        }
     }
 
     private boolean isValid(PlayerInteractEvent event) {

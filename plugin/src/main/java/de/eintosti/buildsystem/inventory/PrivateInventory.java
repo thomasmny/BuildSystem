@@ -82,7 +82,7 @@ public class PrivateInventory {
         List<World> worlds = inventoryManager.sortWorlds(player, worldManager, plugin);
         for (World world : worlds) {
             if (isValid(player, world)) {
-                inventoryManager.addWorldSkull(player, inventory, columnWorld++, world);
+                inventoryManager.addWorldItem(player, inventory, columnWorld++, world);
             }
             if (columnWorld > maxColumnWorld) {
                 columnWorld = 9;

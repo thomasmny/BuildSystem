@@ -1,7 +1,6 @@
 package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.manager.ArmorStandManager;
 import de.eintosti.buildsystem.manager.SettingsManager;
 import de.eintosti.buildsystem.object.settings.Settings;
 import org.bukkit.Bukkit;
@@ -16,12 +15,10 @@ import org.bukkit.event.player.PlayerQuitEvent;
  */
 public class PlayerQuitListener implements Listener {
     private final BuildSystem plugin;
-    private final ArmorStandManager armorStandManager;
     private final SettingsManager settingsManager;
 
     public PlayerQuitListener(BuildSystem plugin) {
         this.plugin = plugin;
-        this.armorStandManager = plugin.getArmorStandManager();
         this.settingsManager = plugin.getSettingsManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }

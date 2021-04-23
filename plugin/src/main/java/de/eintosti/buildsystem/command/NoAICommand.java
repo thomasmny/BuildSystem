@@ -23,7 +23,7 @@ public class NoAICommand implements CommandExecutor {
     public NoAICommand(BuildSystem plugin) {
         this.plugin = plugin;
         this.worldManager = plugin.getWorldManager();
-        Bukkit.getPluginCommand("noai").setExecutor(this);
+        plugin.getCommand("noai").setExecutor(this);
     }
 
     @Override
@@ -38,6 +38,7 @@ public class NoAICommand implements CommandExecutor {
             plugin.sendPermissionMessage(player);
             return true;
         }
+
         switch (args.length) {
             case 0:
                 toggleAI(player, player.getWorld());
@@ -63,6 +64,7 @@ public class NoAICommand implements CommandExecutor {
             player.sendMessage(plugin.getString("noai_world_not_imported"));
             return;
         }
+
         if (!world.isMobAI()) {
             world.setMobAI(true);
             player.sendMessage(plugin.getString("noai_deactivated").replace("%world%", world.getName()));
@@ -70,6 +72,7 @@ public class NoAICommand implements CommandExecutor {
             world.setMobAI(false);
             player.sendMessage(plugin.getString("noai_activated").replace("%world%", world.getName()));
         }
+
         for (Entity entity : bukkitWorld.getEntities()) {
             if (entity instanceof LivingEntity) {
                 LivingEntity livingEntity = (LivingEntity) entity;

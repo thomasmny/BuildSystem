@@ -21,7 +21,7 @@ public class PhysicsCommand implements CommandExecutor {
     public PhysicsCommand(BuildSystem plugin) {
         this.plugin = plugin;
         this.worldManager = plugin.getWorldManager();
-        Bukkit.getPluginCommand("physics").setExecutor(this);
+        plugin.getCommand("physics").setExecutor(this);
     }
 
     @Override
@@ -36,6 +36,7 @@ public class PhysicsCommand implements CommandExecutor {
             plugin.sendPermissionMessage(player);
             return true;
         }
+
         switch (args.length) {
             case 0:
                 togglePhysics(player, player.getWorld());
@@ -66,6 +67,7 @@ public class PhysicsCommand implements CommandExecutor {
             player.sendMessage(plugin.getString("physics_world_not_imported"));
             return;
         }
+
         if (!world.isPhysics()) {
             world.setPhysics(true);
             player.sendMessage(plugin.getString("physics_activated").replace("%world%", world.getName()));

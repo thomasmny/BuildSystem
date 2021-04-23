@@ -2,7 +2,6 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.util.external.xseries.XSound;
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -18,7 +17,7 @@ public class SpeedCommand implements CommandExecutor {
 
     public SpeedCommand(BuildSystem plugin) {
         this.plugin = plugin;
-        Bukkit.getPluginCommand("speed").setExecutor(this);
+        plugin.getCommand("speed").setExecutor(this);
     }
 
     @Override

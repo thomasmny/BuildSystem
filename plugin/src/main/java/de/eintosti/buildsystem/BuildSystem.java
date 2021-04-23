@@ -34,7 +34,6 @@ import java.util.logging.Level;
  */
 public class BuildSystem extends JavaPlugin {
     public final static int PLUGIN_ID = 60441;
-    public static BuildSystem plugin = null;
 
     public Map<UUID, World> selectedWorld;
     public Map<UUID, GameMode> buildPlayerGamemode;
@@ -58,6 +57,12 @@ public class BuildSystem extends JavaPlugin {
     private boolean updateChecker;
     private boolean blockWorldEditNonBuilder;
     private boolean creatorIsBuilder;
+    private boolean worldPhysics;
+    private boolean worldExplosions;
+    private boolean worldMobAi;
+    private boolean worldBlockBreaking;
+    private boolean worldBlockPlacement;
+    private boolean worldBlockInteractions;
 
     private int sunriseTime;
     private int noonTime;
@@ -102,11 +107,10 @@ public class BuildSystem extends JavaPlugin {
     private GameRules gameRules;
     private Sidebar sidebar;
     private ManageEntityAI manageEntityAI;
+    private SkullCache skullCache;
 
     @Override
     public void onEnable() {
-        plugin = this;
-
         createLanguageFile();
         createTemplateFolder();
         this.getConfig().options().copyDefaults(true);
@@ -128,6 +132,7 @@ public class BuildSystem extends JavaPlugin {
         if (!setupCustomBlocks()) return;
         if (!setupGameRules()) return;
         if (!setupSidebar()) return;
+        if (!setupSkullCache()) return;
         setupManageEntityAI();
 
         initClasses();
@@ -142,14 +147,12 @@ public class BuildSystem extends JavaPlugin {
         spawnManager.load();
 
         Bukkit.getOnlinePlayers().forEach(pl -> {
+            getSkullCache().cacheSkull(pl);
+
             settingsManager.createSettings(pl);
             Settings settings = settingsManager.getSettings(pl);
-            if (settings.isScoreboard()) {
-                settingsManager.startScoreboard(pl);
-            }
-            if (settings.isNoClip()) {
-                noClipManager.startNoClip(pl);
-            }
+            if (settings.isScoreboard()) settingsManager.startScoreboard(pl);
+            if (settings.isNoClip()) noClipManager.startNoClip(pl);
         });
 
         if (isUpdateChecker()) {
@@ -176,7 +179,6 @@ public class BuildSystem extends JavaPlugin {
         spawnManager.save();
         inventoryManager.save();
 
-        plugin = null;
         Bukkit.getConsoleSender().sendMessage(ChatColor.RESET + "BuildSystem » Plugin " + ChatColor.RED + "disabled" + ChatColor.RESET + "!");
     }
 
@@ -359,6 +361,61 @@ public class BuildSystem extends JavaPlugin {
         }
     }
 
+    public boolean setupSkullCache() {
+        switch (version) {
+            case "v1_8_R1":
+                this.skullCache = new SkullCache_1_8_R1();
+                return true;
+            case "v1_8_R2":
+                this.skullCache = new SkullCache_1_8_R2();
+                return true;
+            case "v1_8_R3":
+                this.skullCache = new SkullCache_1_8_R3();
+                return true;
+            case "v1_9_R1":
+                this.skullCache = new SkullCache_1_9_R1();
+                return true;
+            case "v1_9_R2":
+                this.skullCache = new SkullCache_1_9_R2();
+                return true;
+            case "v1_10_R1":
+                this.skullCache = new SkullCache_1_10_R1();
+                return true;
+            case "v1_11_R1":
+                this.skullCache = new SkullCache_1_11_R1();
+                return true;
+            case "v1_12_R1":
+                this.skullCache = new SkullCache_1_12_R1();
+                return true;
+            case "v1_13_R1":
+                this.skullCache = new SkullCache_1_13_R1();
+                return true;
+            case "v1_13_R2":
+                this.skullCache = new SkullCache_1_13_R2();
+                return true;
+            case "v1_14_R1":
+                this.skullCache = new SkullCache_1_14_R1();
+                return true;
+            case "v1_15_R1":
+                this.skullCache = new SkullCache_1_15_R1();
+                return true;
+            case "v1_16_R1":
+                this.skullCache = new SkullCache_1_16_R1();
+                return true;
+            case "v1_16_R2":
+                this.skullCache = new SkullCache_1_16_R2();
+                return true;
+            case "v1_16_R3":
+                this.skullCache = new SkullCache_1_16_R3();
+                return true;
+            default:
+                getLogger().log(Level.SEVERE, "\"SkullCache\" not found for version: " + version);
+                getLogger().log(Level.SEVERE, "Please report this bug to einTosti with your server version");
+                this.setEnabled(false);
+                return false;
+        }
+    }
+
     private void registerCommands() {
         new BackCommand(this);
         new BlocksCommand(this);
@@ -524,7 +581,6 @@ public class BuildSystem extends JavaPlugin {
         }
     }
 
-
     private void setConfigValues() {
         // Messages
         this.spawnTeleportMessage = getConfig().getBoolean("messages.spawn-teleport-message", false);
@@ -546,13 +602,6 @@ public class BuildSystem extends JavaPlugin {
 
         this.worldBorderSize = getConfig().getInt("world.default.worldborder.size", 6000000);
 
-        this.unloadWorlds = getConfig().getBoolean("world.unload.enabled", false);
-        this.timeUntilUnload = getConfig().getString("world.unload.time-until-unload", "01:00:00");
-
-        this.voidBlock = getConfig().getBoolean("world.void-block", true);
-
-        this.importDelay = getConfig().getInt("world.import-all.delay", 30);
-
         HashMap<String, String> defaultGameRules = new HashMap<>();
         ConfigurationSection configurationSection = getConfig().getConfigurationSection("world.default.gamerules");
         if (configurationSection != null) {
@@ -563,6 +612,20 @@ public class BuildSystem extends JavaPlugin {
             }
         }
         this.defaultGameRules = defaultGameRules;
+
+        this.worldPhysics = getConfig().getBoolean("world.default.settings.physics", true);
+        this.worldExplosions = getConfig().getBoolean("world.default.settings.explosions", true);
+        this.worldMobAi = getConfig().getBoolean("world.default.settings.mob-ai", true);
+        this.worldBlockBreaking = getConfig().getBoolean("world.default.settings.block-breaking", true);
+        this.worldBlockPlacement = getConfig().getBoolean("world.default.settings.block-placement", true);
+        this.worldBlockInteractions = getConfig().getBoolean("world.default.settings.block-interactions", true);
+
+        this.unloadWorlds = getConfig().getBoolean("world.unload.enabled", false);
+        this.timeUntilUnload = getConfig().getString("world.unload.time-until-unload", "01:00:00");
+
+        this.voidBlock = getConfig().getBoolean("world.void-block", true);
+
+        this.importDelay = getConfig().getInt("world.import-all.delay", 30);
     }
 
     public void replaceItem(Player player, String findItemName, XMaterial findItemType, ItemStack replaceItem) {
@@ -636,6 +699,30 @@ public class BuildSystem extends JavaPlugin {
         return creatorIsBuilder;
     }
 
+    public boolean isWorldPhysics() {
+        return worldPhysics;
+    }
+
+    public boolean isWorldExplosions() {
+        return worldExplosions;
+    }
+
+    public boolean isWorldMobAi() {
+        return worldMobAi;
+    }
+
+    public boolean isWorldBlockBreaking() {
+        return worldBlockBreaking;
+    }
+
+    public boolean isWorldBlockPlacement() {
+        return worldBlockPlacement;
+    }
+
+    public boolean isWorldBlockInteractions() {
+        return worldBlockInteractions;
+    }
+
     public int getSunriseTime() {
         return sunriseTime;
     }
@@ -665,7 +752,7 @@ public class BuildSystem extends JavaPlugin {
         int hours = Integer.parseInt(timeArray[0]);
         int minutes = Integer.parseInt(timeArray[1]);
         int seconds = Integer.parseInt(timeArray[2]);
-        return hours * 3600 + minutes * 60 + seconds;
+        return hours * 3600L + minutes * 60L + seconds;
     }
 
     public String getStatus(World world) {
@@ -712,7 +799,7 @@ public class BuildSystem extends JavaPlugin {
     }
 
     public String formatDate(long date) {
-        return date > 0 ? new SimpleDateFormat(plugin.getDateFormat()).format(date) : "-";
+        return date > 0 ? new SimpleDateFormat(getDateFormat()).format(date) : "-";
     }
 
     public String getBuilders(World world) {
@@ -720,10 +807,10 @@ public class BuildSystem extends JavaPlugin {
             return "§f-";
         }
 
-        String template = plugin.getString("world_item_builders_builder_template");
+        String template = getString("world_item_builders_builder_template");
         ArrayList<Builder> builders = new ArrayList<>();
 
-        if (plugin.isCreatorIsBuilder()) {
+        if (isCreatorIsBuilder()) {
             if (world.getCreator() != null && !world.getCreator().equals("-")) {
                 builders.add(new Builder(world.getCreatorId(), world.getCreator()));
             }
@@ -875,5 +962,9 @@ public class BuildSystem extends JavaPlugin {
 
     public Sidebar getSidebar() {
         return sidebar;
+    }
+
+    public SkullCache getSkullCache() {
+        return skullCache;
     }
 }

@@ -3,6 +3,7 @@ package de.eintosti.buildsystem.util;
 import de.eintosti.buildsystem.BuildSystem;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -27,10 +29,11 @@ public class Messages {
     }
 
     public void createMessageFile() {
-        File file = new File(BuildSystem.plugin.getDataFolder() + File.separator + "messages.yml");
+        JavaPlugin plugin = JavaPlugin.getPlugin(BuildSystem.class);
+        File file = new File(plugin.getDataFolder() + File.separator + "messages.yml");
         try {
             if (file.createNewFile()) {
-                BuildSystem.plugin.getLogger().log(Level.INFO, "Created messages.yml");
+                plugin.getLogger().log(Level.INFO, "Created messages.yml");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -453,7 +456,7 @@ public class Messages {
         setList(sb, config, "worldeditor_explosions_lore", Arrays.asList("&7&oToggle whether or not", "&7&oexplosions are activated."));
         addLine(sb, "");
         setMessage(sb, config, "worldeditor_butcher_item", "&bButcher");
-        setList(sb, config, "worldeditor_butcher_lore", Arrays.asList("&7&oKill all the mobs in the world."));
+        setList(sb, config, "worldeditor_butcher_lore", Collections.singletonList("&7&oKill all the mobs in the world."));
         setMessage(sb, config, "worldeditor_butcher_removed", "%prefix% &b%amount% &7mobs were removed.");
         addLine(sb, "");
         setMessage(sb, config, "worldeditor_builders_item", "&bBuilders");

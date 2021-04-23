@@ -18,8 +18,8 @@ public class TimeCommand implements CommandExecutor {
 
     public TimeCommand(BuildSystem plugin) {
         this.plugin = plugin;
-        Bukkit.getPluginCommand("day").setExecutor(this);
-        Bukkit.getPluginCommand("night").setExecutor(this);
+        plugin.getCommand("day").setExecutor(this);
+        plugin.getCommand("night").setExecutor(this);
     }
 
     @Override
@@ -31,11 +31,12 @@ public class TimeCommand implements CommandExecutor {
         Player player = (Player) sender;
 
         switch (label.toLowerCase()) {
-            case "day":
+            case "day": {
                 if (!player.hasPermission("buildsystem.day")) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
+
                 switch (args.length) {
                     case 0: {
                         World world = player.getWorld();
@@ -58,11 +59,14 @@ public class TimeCommand implements CommandExecutor {
                         break;
                 }
                 break;
-            case "night":
+            }
+
+            case "night": {
                 if (!player.hasPermission("buildsystem.night")) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
+
                 switch (args.length) {
                     case 0: {
                         World world = player.getWorld();
@@ -85,6 +89,7 @@ public class TimeCommand implements CommandExecutor {
                         break;
                 }
                 break;
+            }
         }
         return true;
     }

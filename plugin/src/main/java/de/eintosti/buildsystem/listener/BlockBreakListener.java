@@ -24,6 +24,8 @@ public class BlockBreakListener implements Listener {
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
+        if (event.isCancelled()) return;
+
         Player player = event.getPlayer();
         String worldName = player.getWorld().getName();
         World world = worldManager.getWorld(worldName);

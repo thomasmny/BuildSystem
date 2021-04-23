@@ -64,24 +64,23 @@ public class PlayerMoveListener implements Listener {
     }
 
     public void closeNavigator(Player player) {
-        if (plugin.openNavigator.contains(player)) {
-            lastLookedAt.remove(player.getUniqueId());
-            armorStandManager.removeArmorStands(player);
+        if (!plugin.openNavigator.contains(player)) return;
+        lastLookedAt.remove(player.getUniqueId());
+        armorStandManager.removeArmorStands(player);
 
-            XSound.ENTITY_ITEM_BREAK.play(player);
-            ActionBar.sendActionBar(player, "");
-            replaceBarrier(player);
+        XSound.ENTITY_ITEM_BREAK.play(player);
+        ActionBar.sendActionBar(player, "");
+        replaceBarrier(player);
 
-            UUID playerUuid = player.getUniqueId();
-            player.setWalkSpeed(plugin.playerWalkSpeed.getOrDefault(playerUuid, 0.2f));
-            player.setFlySpeed(plugin.playerFlySpeed.getOrDefault(playerUuid, 0.2f));
-            player.removePotionEffect(PotionEffectType.JUMP);
-            player.removePotionEffect(PotionEffectType.BLINDNESS);
+        UUID playerUuid = player.getUniqueId();
+        player.setWalkSpeed(plugin.playerWalkSpeed.getOrDefault(playerUuid, 0.2f));
+        player.setFlySpeed(plugin.playerFlySpeed.getOrDefault(playerUuid, 0.2f));
+        player.removePotionEffect(PotionEffectType.JUMP);
+        player.removePotionEffect(PotionEffectType.BLINDNESS);
 
-            plugin.playerWalkSpeed.remove(playerUuid);
-            plugin.playerFlySpeed.remove(playerUuid);
-            plugin.openNavigator.remove(player);
-        }
+        plugin.playerWalkSpeed.remove(playerUuid);
+        plugin.playerFlySpeed.remove(playerUuid);
+        plugin.openNavigator.remove(player);
     }
 
     private void replaceBarrier(Player player) {

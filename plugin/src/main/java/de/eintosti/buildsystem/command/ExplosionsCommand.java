@@ -21,7 +21,7 @@ public class ExplosionsCommand implements CommandExecutor {
     public ExplosionsCommand(BuildSystem plugin) {
         this.plugin = plugin;
         this.worldManager = plugin.getWorldManager();
-        Bukkit.getPluginCommand("explosions").setExecutor(this);
+        plugin.getCommand("explosions").setExecutor(this);
     }
 
     @Override
@@ -36,6 +36,7 @@ public class ExplosionsCommand implements CommandExecutor {
             plugin.sendPermissionMessage(player);
             return true;
         }
+
         switch (args.length) {
             case 0:
                 toggleExplosions(player, player.getWorld());
@@ -61,6 +62,7 @@ public class ExplosionsCommand implements CommandExecutor {
             player.sendMessage(plugin.getString("explosions_world_not_imported"));
             return;
         }
+
         if (!world.isExplosions()) {
             world.setExplosions(true);
             player.sendMessage(plugin.getString("explosions_activated").replace("%world%", world.getName()));

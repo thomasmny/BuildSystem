@@ -99,11 +99,13 @@ public class WorldManager {
                 break;
             }
         }
+
         File worldFile = new File(Bukkit.getWorldContainer(), name);
         if (worldExists || worldFile.exists()) {
             player.sendMessage(plugin.getString("worlds_world_exists"));
             return;
         }
+
         World world = new World(plugin, name, player.getName(), player.getUniqueId(), worldType, System.currentTimeMillis(), privateWorld);
         worlds.add(world);
 

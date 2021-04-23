@@ -2,7 +2,6 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.listener.PlayerTeleportListener;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -19,7 +18,7 @@ public class BackCommand implements CommandExecutor {
 
     public BackCommand(BuildSystem plugin) {
         this.plugin = plugin;
-        Bukkit.getPluginCommand("back").setExecutor(this);
+        plugin.getCommand("back").setExecutor(this);
     }
 
     @Override
@@ -51,6 +50,7 @@ public class BackCommand implements CommandExecutor {
             player.sendMessage(plugin.getString("back_failed"));
             return;
         }
+
         player.teleport(previousLocation);
         player.sendMessage(plugin.getString("back_teleported"));
         playerTeleportListener.resetPreviousLocation(player);

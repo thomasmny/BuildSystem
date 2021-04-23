@@ -1,7 +1,6 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystem;
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -17,7 +16,7 @@ public class ConfigCommand implements CommandExecutor {
 
     public ConfigCommand(BuildSystem plugin) {
         this.plugin = plugin;
-        Bukkit.getPluginCommand("config").setExecutor(this);
+        plugin.getCommand("config").setExecutor(this);
     }
 
     @Override
@@ -32,6 +31,7 @@ public class ConfigCommand implements CommandExecutor {
             plugin.sendPermissionMessage(player);
             return true;
         }
+
         if (args.length != 1) {
             player.sendMessage(plugin.getString("config_usage"));
             return true;

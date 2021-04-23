@@ -42,7 +42,7 @@ public class WorldsCommand implements CommandExecutor {
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
         this.worldManager = plugin.getWorldManager();
-        Bukkit.getPluginCommand("worlds").setExecutor(this);
+        plugin.getCommand("worlds").setExecutor(this);
     }
 
     @Override
@@ -62,6 +62,7 @@ public class WorldsCommand implements CommandExecutor {
             plugin.getNavigatorInventory().openInventory(player);
             return true;
         }
+
         switch (args[0].toLowerCase()) {
             case "addbuilder": {
                 if (!player.hasPermission("buildsystem.addbuilder")) {
@@ -87,6 +88,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
                 break;
             }
+
             case "builders": {
                 if (!player.hasPermission("buildsystem.builders")) {
                     plugin.sendPermissionMessage(player);
@@ -105,6 +107,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
                 break;
             }
+
             case "delete": {
                 if (!player.hasPermission("buildsystem.delete")) {
                     plugin.sendPermissionMessage(player);
@@ -123,6 +126,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
                 break;
             }
+
             case "edit": {
                 if (!player.hasPermission("buildsystem.edit")) {
                     plugin.sendPermissionMessage(player);
@@ -148,10 +152,12 @@ public class WorldsCommand implements CommandExecutor {
                 }
                 break;
             }
+
             case "help": {
                 sendHelpMessage(player);
                 break;
             }
+
             case "import": {
                 if (!player.hasPermission("buildsystem.import")) {
                     plugin.sendPermissionMessage(player);
@@ -210,6 +216,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
                 break;
             }
+
             case "importall": {
                 if (!player.hasPermission("buildsystem.import.all")) {
                     plugin.sendPermissionMessage(player);
@@ -238,6 +245,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
                 break;
             }
+
             case "info": {
                 if (!player.hasPermission("buildsystem.info")) {
                     plugin.sendPermissionMessage(player);
@@ -256,11 +264,13 @@ public class WorldsCommand implements CommandExecutor {
                 sendInfoMessage(player, world);
                 break;
             }
+
             case "item": {
                 player.getInventory().addItem(inventoryManager.getItemStack(XMaterial.CLOCK, plugin.getString("navigator_item")));
                 player.sendMessage(plugin.getString("worlds_item_receive"));
                 break;
             }
+
             case "removebuilder": {
                 if (!player.hasPermission("buildsystem.removebuilder")) {
                     plugin.sendPermissionMessage(player);
@@ -285,6 +295,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
                 break;
             }
+
             case "rename": {
                 if (!player.hasPermission("buildsystem.rename")) {
                     plugin.sendPermissionMessage(player);
@@ -303,6 +314,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
                 break;
             }
+
             case "setitem": {
                 if (!player.hasPermission("buildsystem.setitem")) {
                     plugin.sendPermissionMessage(player);
@@ -327,6 +339,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
                 break;
             }
+
             case "setcreator": {
                 if (!player.hasPermission("buildsystem.setcreator")) {
                     plugin.sendPermissionMessage(player);
@@ -345,6 +358,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
                 break;
             }
+
             case "setproject": {
                 if (!player.hasPermission("buildsystem.setproject")) {
                     plugin.sendPermissionMessage(player);
@@ -363,6 +377,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
                 break;
             }
+
             case "setstatus": {
                 if (!player.hasPermission("buildsystem.setstatus")) {
                     plugin.sendPermissionMessage(player);
@@ -381,6 +396,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
                 break;
             }
+
             case "setpermission": {
                 if (!player.hasPermission("buildsystem.setpermission")) {
                     plugin.sendPermissionMessage(player);
@@ -399,6 +415,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
                 break;
             }
+
             case "setspawn": {
                 if (!player.hasPermission("buildsystem.setspawn")) {
                     plugin.sendPermissionMessage(player);
@@ -413,6 +430,7 @@ public class WorldsCommand implements CommandExecutor {
                 player.sendMessage(plugin.getString("worlds_setspawn_world_spawn_set").replace("%world%", world.getName()));
                 break;
             }
+
             case "tp": {
                 if (!player.hasPermission("buildsystem.worldtp")) {
                     plugin.sendPermissionMessage(player);
@@ -605,8 +623,7 @@ public class WorldsCommand implements CommandExecutor {
                     if (closeInventory) {
                         return AnvilGUI.Response.close();
                     } else {
-                        player.openInventory(plugin.getBuilderInventory().getInventory(world, player));
-                        return AnvilGUI.Response.text("");
+                        return AnvilGUI.Response.openInventory(plugin.getBuilderInventory().getInventory(world, player));
                     }
                 })
                 .item(inventoryManager.getItemStack(XMaterial.WRITABLE_BOOK, "ItemName"))
@@ -662,8 +679,7 @@ public class WorldsCommand implements CommandExecutor {
                     if (closeInventory) {
                         return AnvilGUI.Response.close();
                     } else {
-                        plugin.getEditInventory().openInventory(player, world);
-                        return AnvilGUI.Response.text("");
+                        return AnvilGUI.Response.openInventory(plugin.getEditInventory().getInventory(player, world));
                     }
                 })
                 .item(inventoryManager.getItemStack(XMaterial.WRITABLE_BOOK, "ItemName"))
@@ -690,8 +706,7 @@ public class WorldsCommand implements CommandExecutor {
                     if (closeInventory) {
                         return AnvilGUI.Response.close();
                     } else {
-                        plugin.getEditInventory().openInventory(player, world);
-                        return AnvilGUI.Response.text("");
+                        return AnvilGUI.Response.openInventory(plugin.getEditInventory().getInventory(player, world));
                     }
                 })
                 .item(inventoryManager.getItemStack(XMaterial.WRITABLE_BOOK, "ItemName"))
@@ -741,8 +756,7 @@ public class WorldsCommand implements CommandExecutor {
                     if (closeInventory) {
                         return AnvilGUI.Response.close();
                     } else {
-                        player.openInventory(plugin.getBuilderInventory().getInventory(world, player));
-                        return AnvilGUI.Response.text("");
+                        return AnvilGUI.Response.openInventory(plugin.getBuilderInventory().getInventory(world, player));
                     }
                 })
                 .item(inventoryManager.getItemStack(XMaterial.WRITABLE_BOOK, "ItemName"))

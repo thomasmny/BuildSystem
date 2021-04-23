@@ -34,30 +34,31 @@ public class BlockPhysicsListener implements Listener {
         org.bukkit.World bukkitWorld = block.getWorld();
         World world = worldManager.getWorld(bukkitWorld.getName());
 
-        if (world != null) {
-            if (!world.isPhysics()) {
-                XMaterial xMaterial = XMaterial.matchXMaterial(block.getType());
-                BlockFace[] surroundingBlocks = new BlockFace[]{BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
+        if (world == null) return;
+        if (world.isPhysics()) return;
 
-                if (xMaterial == XMaterial.REDSTONE_BLOCK) {
-                    for (BlockFace blockFace : surroundingBlocks) {
-                        if (isCustomRedstoneLamp(block.getRelative(blockFace))) {
-                            event.setCancelled(false);
-                            return;
-                        }
+        XMaterial xMaterial = XMaterial.matchXMaterial(block.getType());
+        BlockFace[] surroundingBlocks = new BlockFace[]{BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
+
+        switch (xMaterial) {
+            case REDSTONE_BLOCK:
+                for (BlockFace blockFace : surroundingBlocks) {
+                    if (isCustomRedstoneLamp(block.getRelative(blockFace))) {
+                        event.setCancelled(false);
+                        return;
                     }
                 }
-                if (xMaterial == XMaterial.REDSTONE_LAMP) {
-                    for (BlockFace blockFace : surroundingBlocks) {
-                        if (block.getRelative(blockFace).getType() == XMaterial.REDSTONE_BLOCK.parseMaterial()) {
-                            event.setCancelled(false);
-                            return;
-                        }
+                break;
+            case REDSTONE_LAMP:
+                for (BlockFace blockFace : surroundingBlocks) {
+                    if (block.getRelative(blockFace).getType() == XMaterial.REDSTONE_BLOCK.parseMaterial()) {
+                        event.setCancelled(false);
+                        return;
                     }
                 }
-                event.setCancelled(true);
-            }
+                break;
         }
+        event.setCancelled(true);
     }
 
     private boolean isCustomRedstoneLamp(Block block) {

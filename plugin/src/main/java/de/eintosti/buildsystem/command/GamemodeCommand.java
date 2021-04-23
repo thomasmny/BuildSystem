@@ -18,7 +18,7 @@ public class GamemodeCommand implements CommandExecutor {
 
     public GamemodeCommand(BuildSystem plugin) {
         this.plugin = plugin;
-        Bukkit.getPluginCommand("gamemode").setExecutor(this);
+        plugin.getCommand("gamemode").setExecutor(this);
     }
 
     @Override
@@ -33,6 +33,7 @@ public class GamemodeCommand implements CommandExecutor {
             plugin.sendPermissionMessage(player);
             return true;
         }
+
         if (args.length != 0) {
             switch (args[0].toLowerCase()) {
                 case "survival":

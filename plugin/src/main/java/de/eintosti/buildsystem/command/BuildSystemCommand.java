@@ -5,7 +5,6 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -21,7 +20,7 @@ public class BuildSystemCommand implements CommandExecutor {
 
     public BuildSystemCommand(BuildSystem plugin) {
         this.plugin = plugin;
-        Bukkit.getPluginCommand("buildsystem").setExecutor(this);
+        plugin.getCommand("buildsystem").setExecutor(this);
     }
 
     @Override
@@ -31,6 +30,7 @@ public class BuildSystemCommand implements CommandExecutor {
             return true;
         }
         Player player = (Player) sender;
+
         sendCommandMessage(player);
         return true;
     }

@@ -9,7 +9,6 @@ import de.eintosti.buildsystem.object.world.WorldType;
 import de.eintosti.buildsystem.util.config.SetupConfig;
 import de.eintosti.buildsystem.util.external.ItemSkulls;
 import de.eintosti.buildsystem.util.external.xseries.XMaterial;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -25,11 +24,6 @@ import java.util.*;
  * @author einTosti
  */
 public class InventoryManager {
-    private final int version = Integer.parseInt(Bukkit.getServer()
-            .getClass()
-            .getPackage()
-            .getName()
-            .split("\\.")[3].replaceAll("[^0-9]", ""));
     private final BuildSystem plugin;
     private final SetupConfig setupConfig;
 
@@ -88,12 +82,10 @@ public class InventoryManager {
         addItemStack(inventory, position, getColouredGlassPane(plugin, player), " ");
     }
 
-    @SuppressWarnings("deprecation")
     public ItemStack getSkull(String displayName, String skullOwner, List<String> lore) {
-        ItemStack skull = XMaterial.PLAYER_HEAD.parseItem();
+        ItemStack skull = plugin.getSkullCache().getCachedSkull(skullOwner);
         SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
 
-        skullMeta.setOwner(skullOwner);
         skullMeta.setDisplayName(displayName);
         skullMeta.setLore(lore);
         skull.setItemMeta(skullMeta);
@@ -139,37 +131,14 @@ public class InventoryManager {
     }
 
     public void addWorldItem(Player player, Inventory inventory, int position, World world) {
-        ItemStack itemStack = world.getMaterial().parseItem();
-        if (itemStack == null) itemStack = XMaterial.BEDROCK.parseItem();
+        String worldName = world.getName();
+        String displayName = plugin.getString("world_item_title").replace("%world%", worldName);
 
         if (world.getMaterial() == XMaterial.PLAYER_HEAD) {
-            addWorldSkull(player, inventory, position, world);
-            return;
+            addSkull(inventory, position, displayName, worldName, getLore(player, world));
         } else {
-            ItemMeta itemMeta = itemStack.getItemMeta();
-
-            itemMeta.setDisplayName(plugin.getString("world_item_title").replace("%world%", world.getName()));
-            itemMeta.setLore(getLore(player, world));
-            itemMeta.addItemFlags(ItemFlag.values());
-
-            itemStack.setItemMeta(itemMeta);
+            addItemStack(inventory, position, world.getMaterial(), displayName, getLore(player, world));
         }
-
-        inventory.setItem(position, itemStack);
-    }
-
-    @SuppressWarnings("deprecation")
-    public void addWorldSkull(Player player, Inventory inventory, int position, World world) {
-        ItemStack itemStack = XMaterial.PLAYER_HEAD.parseItem();
-        SkullMeta skullMeta = (SkullMeta) itemStack.getItemMeta();
-
-        skullMeta.setDisplayName(plugin.getString("world_item_title").replace("%world%", world.getName()));
-        skullMeta.setLore(getLore(player, world));
-        skullMeta.setOwner(world.getName());
-        skullMeta.addItemFlags(ItemFlag.values());
-        itemStack.setItemMeta(skullMeta);
-
-        inventory.setItem(position, itemStack);
     }
 
     public List<World> sortWorlds(Player player, WorldManager worldManager, BuildSystem plugin) {

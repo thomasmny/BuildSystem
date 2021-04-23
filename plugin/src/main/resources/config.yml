@@ -21,6 +21,13 @@ world:
       doDaylightCycle: false
       doMobSpawning: false
       doFireTick: false
+    settings:
+      physics: true
+      explosions: true
+      mob-ai: true
+      block-breaking: true
+      block-placement: true
+      block-interactions: true
   unload:
     enabled: false
     time-until-unload: "01:00:00"

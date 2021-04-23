@@ -27,7 +27,7 @@ public class EditInventory {
         this.inventoryManager = plugin.getInventoryManager();
     }
 
-    private Inventory getInventory(Player player, World world) {
+    public Inventory getInventory(Player player, World world) {
         Inventory inventory = Bukkit.createInventory(null, 54, plugin.getString("worldeditor_title"));
         fillGuiWithGlass(player, inventory);
 

@@ -1,7 +1,6 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystem;
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -17,7 +16,7 @@ public class SetupCommand implements CommandExecutor {
 
     public SetupCommand(BuildSystem plugin) {
         this.plugin = plugin;
-        Bukkit.getPluginCommand("setup").setExecutor(this);
+        plugin.getCommand("setup").setExecutor(this);
     }
 
     @Override

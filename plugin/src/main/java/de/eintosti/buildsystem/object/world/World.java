@@ -22,31 +22,35 @@ import java.util.logging.Level;
  */
 public class World implements ConfigurationSerializable {
     private final BuildSystem plugin;
-    private final WorldType worldType;
-    private final long date;
-    private final ArrayList<Builder> builders;
+
     private String name;
     private String creator;
     private UUID creatorId;
-    private boolean privateWorld;
+    private final WorldType worldType;
     private XMaterial material;
+    private boolean privateWorld;
     private WorldStatus worldStatus;
     private String project;
     private String permission;
+    private String customSpawn;
+    private final ArrayList<Builder> builders;
+    private final long date;
+
     private boolean physics;
     private boolean explosions;
     private boolean mobAI;
-    private String customSpawn;
     private boolean blockBreaking;
     private boolean blockPlacement;
     private boolean blockInteractions;
     private boolean buildersEnabled;
+
     private long seconds;
     private boolean loaded;
     private BukkitTask unloadTask;
 
     public World(BuildSystem plugin, String name, String creator, UUID creatorId, WorldType worldType, long date, boolean privateWorld) {
         this.plugin = plugin;
+
         this.name = name;
         this.creator = creator;
         this.creatorId = creatorId;
@@ -55,16 +59,17 @@ public class World implements ConfigurationSerializable {
         this.worldStatus = WorldStatus.NOT_STARTED;
         this.project = "-";
         this.permission = "-";
-        this.date = date;
-        this.physics = true;
-        this.explosions = true;
-        this.mobAI = true;
         this.customSpawn = null;
-        this.blockBreaking = true;
-        this.blockPlacement = true;
-        this.blockInteractions = true;
-        this.buildersEnabled = isPrivate();
         this.builders = new ArrayList<>();
+        this.date = date;
+
+        this.physics = plugin.isWorldPhysics();
+        this.explosions = plugin.isWorldExplosions();
+        this.mobAI = plugin.isWorldMobAi();
+        this.blockBreaking = plugin.isWorldBlockBreaking();
+        this.blockPlacement = plugin.isWorldBlockPlacement();
+        this.blockInteractions = plugin.isWorldBlockInteractions();
+        this.buildersEnabled = isPrivate();
 
         InventoryManager inventoryManager = plugin.getInventoryManager();
         switch (worldType) {

@@ -53,6 +53,7 @@ public class PlayerJoinListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         settingsManager.createSettings(player);
+        plugin.getSkullCache().cacheSkull(player);
 
         String worldName = player.getWorld().getName();
         World world = worldManager.getWorld(worldName);
@@ -104,8 +105,8 @@ public class PlayerJoinListener implements Listener {
         }
 
         ItemStack itemStack = inventoryManager.getItemStack(XMaterial.CLOCK, plugin.getString("navigator_item"));
-        if (playerInventory.getItem(8) == null ||
-                playerInventory.getItem(8).getType() == XMaterial.AIR.parseMaterial()) {
+        ItemStack slot8 = playerInventory.getItem(8);
+        if (slot8 == null || slot8.getType() == XMaterial.AIR.parseMaterial()) {
             playerInventory.setItem(8, itemStack);
         } else {
             playerInventory.addItem(itemStack);

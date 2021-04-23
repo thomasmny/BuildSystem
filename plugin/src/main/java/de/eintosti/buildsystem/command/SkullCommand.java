@@ -2,7 +2,6 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.InventoryManager;
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -20,7 +19,7 @@ public class SkullCommand implements CommandExecutor {
     public SkullCommand(BuildSystem plugin) {
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
-        Bukkit.getPluginCommand("skull").setExecutor(this);
+        plugin.getCommand("skull").setExecutor(this);
     }
 
     @Override
@@ -35,6 +34,7 @@ public class SkullCommand implements CommandExecutor {
             plugin.sendPermissionMessage(player);
             return true;
         }
+
         switch (args.length) {
             case 0:
                 player.getInventory().addItem(inventoryManager.getSkull("§b" + player.getName(), player.getName()));

@@ -4,7 +4,6 @@ import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.SpawnManager;
 import de.eintosti.buildsystem.manager.WorldManager;
 import de.eintosti.buildsystem.object.world.World;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -25,7 +24,7 @@ public class SpawnCommand implements CommandExecutor {
         this.plugin = plugin;
         this.spawnManager = plugin.getSpawnManager();
         this.worldManager = plugin.getWorldManager();
-        Bukkit.getPluginCommand("spawn").setExecutor(this);
+        plugin.getCommand("spawn").setExecutor(this);
     }
 
     @Override
@@ -51,6 +50,7 @@ public class SpawnCommand implements CommandExecutor {
                     player.sendMessage(plugin.getString("spawn_usage"));
                     return true;
                 }
+
                 switch (args[0].toLowerCase()) {
                     case "set":
                         Location playerLocation = player.getLocation();
@@ -61,6 +61,7 @@ public class SpawnCommand implements CommandExecutor {
                             player.sendMessage(plugin.getString("spawn_world_not_imported"));
                             return true;
                         }
+
                         spawnManager.set(playerLocation, world.getName());
                         player.sendMessage(plugin.getString("spawn_set")
                                 .replace("%x%", round(playerLocation.getX()))
