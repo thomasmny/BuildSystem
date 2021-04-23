@@ -2,7 +2,6 @@ package de.eintosti.buildsystem.version;
 
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_8_R2.inventory.CraftItemStack;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
@@ -30,13 +29,20 @@ public class SkullCache_1_8_R2 implements SkullCache {
     }
 
     @Override
-    public void cacheSkull(Player player) {
-        skullCache.put(player.getName(), CraftItemStack.asNMSCopy(getPlayerSkull(player.getName())));
+    public void cacheSkull(String name) {
+        skullCache.put(name, CraftItemStack.asNMSCopy(getPlayerSkull(name)));
     }
 
     @Override
     public ItemStack getCachedSkull(String name) {
         net.minecraft.server.v1_8_R2.ItemStack cachedSkull = this.skullCache.get(name);
-        return cachedSkull != null ? CraftItemStack.asBukkitCopy(cachedSkull) : getPlayerSkull(name);
+
+        if (cachedSkull != null) {
+            return CraftItemStack.asBukkitCopy(cachedSkull);
+        } else {
+            ItemStack skull = getPlayerSkull(name);
+            skullCache.put(name, CraftItemStack.asNMSCopy(skull));
+            return skull;
+        }
     }
 }

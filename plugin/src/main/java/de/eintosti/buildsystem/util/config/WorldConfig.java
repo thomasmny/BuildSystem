@@ -3,6 +3,7 @@ package de.eintosti.buildsystem.util.config;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
 import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.util.external.xseries.XMaterial;
 
 import java.util.logging.Level;
 
@@ -30,10 +31,18 @@ public class WorldConfig extends ConfigurationFile {
         }
 
         plugin.getLogger().log(Level.INFO, "*** All worlds will be loaded now ***");
+
         worldManager.getWorlds().forEach(world -> {
-            worldManager.generateBukkitWorld(world.getName(), world.getType());
-            plugin.getLogger().log(Level.INFO, "✔ World loaded: " + world.getName());
+            String worldName = world.getName();
+            worldManager.generateBukkitWorld(worldName, world.getType());
+
+            if (world.getMaterial() == XMaterial.PLAYER_HEAD) {
+                plugin.getSkullCache().cacheSkull(worldName);
+            }
+
+            plugin.getLogger().log(Level.INFO, "✔ World loaded: " + worldName);
         });
+
         plugin.getLogger().log(Level.INFO, "*** All worlds have been loaded ***");
     }
 }

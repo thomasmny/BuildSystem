@@ -53,7 +53,7 @@ public class PlayerJoinListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         settingsManager.createSettings(player);
-        plugin.getSkullCache().cacheSkull(player);
+        plugin.getSkullCache().cacheSkull(player.getName());
 
         String worldName = player.getWorld().getName();
         World world = worldManager.getWorld(worldName);

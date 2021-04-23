@@ -1,6 +1,5 @@
 package de.eintosti.buildsystem.version;
 
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -8,7 +7,7 @@ import org.bukkit.inventory.ItemStack;
  */
 public interface SkullCache {
 
-    void cacheSkull(Player player);
+    void cacheSkull(String name);
 
     ItemStack getCachedSkull(String name);
 }

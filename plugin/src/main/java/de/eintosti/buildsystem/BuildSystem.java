@@ -147,7 +147,7 @@ public class BuildSystem extends JavaPlugin {
         spawnManager.load();
 
         Bukkit.getOnlinePlayers().forEach(pl -> {
-            getSkullCache().cacheSkull(pl);
+            getSkullCache().cacheSkull(pl.getName());
 
             settingsManager.createSettings(pl);
             Settings settings = settingsManager.getSettings(pl);
