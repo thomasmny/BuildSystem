@@ -11,19 +11,26 @@ import org.bukkit.event.weather.WeatherChangeEvent;
  * @author einTosti
  */
 public class WeatherChangeListener implements Listener {
+    private final BuildSystem plugin;
+
     public WeatherChangeListener(BuildSystem plugin) {
+        this.plugin = plugin;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onWeatherChange(WeatherChangeEvent event) {
-        boolean rain = event.toWeatherState();
-        if (rain) event.setCancelled(true);
+        if (!plugin.isLockWeather()) return;
+        if (event.toWeatherState()) {
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onThunderChange(ThunderChangeEvent event) {
-        boolean storm = event.toThunderState();
-        if (storm) event.setCancelled(true);
+        if (!plugin.isLockWeather()) return;
+        if (event.toThunderState()) {
+            event.setCancelled(true);
+        }
     }
 }

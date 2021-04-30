@@ -28,6 +28,7 @@ world:
       block-breaking: true
       block-placement: true
       block-interactions: true
+  lock-weather: true
   unload:
     enabled: false
     time-until-unload: "01:00:00"

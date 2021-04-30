@@ -18,6 +18,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -52,6 +53,7 @@ public class BuildSystem extends JavaPlugin {
     private boolean scoreboard;
     private boolean spawnTeleportMessage;
     private boolean joinQuitMessages;
+    private boolean lockWeather;
     private boolean unloadWorlds;
     private boolean voidBlock;
     private boolean updateChecker;
@@ -478,6 +480,7 @@ public class BuildSystem extends JavaPlugin {
         metrics.addCustomChart(new Metrics.SimplePie("scoreboard", () -> String.valueOf(scoreboard)));
         metrics.addCustomChart(new Metrics.SimplePie("archive_vanish", () -> String.valueOf(archiveVanish)));
         metrics.addCustomChart(new Metrics.SimplePie("join_quit_messages", () -> String.valueOf(joinQuitMessages)));
+        metrics.addCustomChart(new Metrics.SimplePie("lock_weather", () -> String.valueOf(lockWeather)));
         metrics.addCustomChart(new Metrics.SimplePie("unload_worlds", () -> String.valueOf(unloadWorlds)));
         metrics.addCustomChart(new Metrics.SimplePie("void_block", () -> String.valueOf(voidBlock)));
         metrics.addCustomChart(new Metrics.SimplePie("update_checker", () -> String.valueOf(updateChecker)));
@@ -582,28 +585,31 @@ public class BuildSystem extends JavaPlugin {
     }
 
     private void setConfigValues() {
+        final FileConfiguration config = getConfig();
+
         // Messages
-        this.spawnTeleportMessage = getConfig().getBoolean("messages.spawn-teleport-message", false);
-        this.joinQuitMessages = getConfig().getBoolean("messages.join-quit-messages", true);
-        this.dateFormat = getConfig().getString("messages.date-format", "dd/MM/yyyy");
+        this.spawnTeleportMessage = config.getBoolean("messages.spawn-teleport-message", false);
+        this.joinQuitMessages = config.getBoolean("messages.join-quit-messages", true);
+        this.dateFormat = config.getString("messages.date-format", "dd/MM/yyyy");
 
         // Settings
-        this.updateChecker = getConfig().getBoolean("settings.update-checker", true);
-        this.scoreboard = getConfig().getBoolean("settings.scoreboard", true);
-        this.archiveVanish = getConfig().getBoolean("settings.archive-vanish", true);
+        this.updateChecker = config.getBoolean("settings.update-checker", true);
+        this.scoreboard = config.getBoolean("settings.scoreboard", true);
+        this.archiveVanish = config.getBoolean("settings.archive-vanish", true);
 
-        this.blockWorldEditNonBuilder = getConfig().getBoolean("settings.builder.block-worldedit-non-builder", true);
-        this.creatorIsBuilder = getConfig().getBoolean("settings.builder.creator-is-builder", true);
+        this.blockWorldEditNonBuilder = config.getBoolean("settings.builder.block-worldedit-non-builder", true);
+        this.creatorIsBuilder = config.getBoolean("settings.builder.creator-is-builder", true);
 
         // World
-        this.sunriseTime = getConfig().getInt("world.default.time.sunrise", 0);
-        this.noonTime = getConfig().getInt("world.default.time.noon", 6000);
-        this.nightTime = getConfig().getInt("world.default.time.night", 18000);
+        this.lockWeather = config.getBoolean("world.lock-weather", true);
+        this.sunriseTime = config.getInt("world.default.time.sunrise", 0);
+        this.noonTime = config.getInt("world.default.time.noon", 6000);
+        this.nightTime = config.getInt("world.default.time.night", 18000);
 
-        this.worldBorderSize = getConfig().getInt("world.default.worldborder.size", 6000000);
+        this.worldBorderSize = config.getInt("world.default.worldborder.size", 6000000);
 
         HashMap<String, String> defaultGameRules = new HashMap<>();
-        ConfigurationSection configurationSection = getConfig().getConfigurationSection("world.default.gamerules");
+        ConfigurationSection configurationSection = config.getConfigurationSection("world.default.gamerules");
         if (configurationSection != null) {
             for (Map.Entry<String, Object> entry : configurationSection.getValues(true).entrySet()) {
                 String name = entry.getKey();
@@ -613,19 +619,19 @@ public class BuildSystem extends JavaPlugin {
         }
         this.defaultGameRules = defaultGameRules;
 
-        this.worldPhysics = getConfig().getBoolean("world.default.settings.physics", true);
-        this.worldExplosions = getConfig().getBoolean("world.default.settings.explosions", true);
-        this.worldMobAi = getConfig().getBoolean("world.default.settings.mob-ai", true);
-        this.worldBlockBreaking = getConfig().getBoolean("world.default.settings.block-breaking", true);
-        this.worldBlockPlacement = getConfig().getBoolean("world.default.settings.block-placement", true);
-        this.worldBlockInteractions = getConfig().getBoolean("world.default.settings.block-interactions", true);
+        this.worldPhysics = config.getBoolean("world.default.settings.physics", true);
+        this.worldExplosions = config.getBoolean("world.default.settings.explosions", true);
+        this.worldMobAi = config.getBoolean("world.default.settings.mob-ai", true);
+        this.worldBlockBreaking = config.getBoolean("world.default.settings.block-breaking", true);
+        this.worldBlockPlacement = config.getBoolean("world.default.settings.block-placement", true);
+        this.worldBlockInteractions = config.getBoolean("world.default.settings.block-interactions", true);
 
-        this.unloadWorlds = getConfig().getBoolean("world.unload.enabled", false);
-        this.timeUntilUnload = getConfig().getString("world.unload.time-until-unload", "01:00:00");
+        this.unloadWorlds = config.getBoolean("world.unload.enabled", false);
+        this.timeUntilUnload = config.getString("world.unload.time-until-unload", "01:00:00");
 
-        this.voidBlock = getConfig().getBoolean("world.void-block", true);
+        this.voidBlock = config.getBoolean("world.void-block", true);
 
-        this.importDelay = getConfig().getInt("world.import-all.delay", 30);
+        this.importDelay = config.getInt("world.import-all.delay", 30);
     }
 
     public void replaceItem(Player player, String findItemName, XMaterial findItemType, ItemStack replaceItem) {
@@ -677,6 +683,10 @@ public class BuildSystem extends JavaPlugin {
 
     public boolean isJoinQuitMessages() {
         return joinQuitMessages;
+    }
+
+    public boolean isLockWeather() {
+        return lockWeather;
     }
 
     public boolean isUnloadWorlds() {
