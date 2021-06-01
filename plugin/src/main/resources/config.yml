@@ -9,6 +9,7 @@ settings:
   builder:
     block-worldedit-non-builder: true
     creator-is-builder: true
+  navigatorItem: "CLOCK"
 world:
   default:
     time:
