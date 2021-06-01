@@ -144,7 +144,7 @@ public class PlayerChangedWorldListener implements Listener {
 
             removeArmorContent(player);
             playerInventory.clear();
-            playerInventory.setItem(8, inventoryManager.getItemStack(XMaterial.CLOCK, plugin.getString("navigator_item")));
+            playerInventory.setItem(8, inventoryManager.getItemStack(plugin.getNavigatorItem(), plugin.getString("navigator_item")));
             setSpectatorMode(player);
 
             if (plugin.isArchiveVanish()) {
@@ -152,7 +152,7 @@ public class PlayerChangedWorldListener implements Listener {
                 Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
             }
         } else {
-            playerInventory.setItem(8, inventoryManager.getItemStack(XMaterial.CLOCK, plugin.getString("navigator_item")));
+            playerInventory.setItem(8, inventoryManager.getItemStack(plugin.getNavigatorItem(), plugin.getString("navigator_item")));
             if (player.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
                 player.removePotionEffect(PotionEffectType.INVISIBILITY);
             }
