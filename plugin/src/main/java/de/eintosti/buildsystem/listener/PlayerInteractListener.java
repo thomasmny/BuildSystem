@@ -75,21 +75,18 @@ public class PlayerInteractListener implements Listener {
         if (player.getOpenInventory().getTopInventory().getType() != InventoryType.CRAFTING) return;
 
         XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-        switch (xMaterial) {
-            case CLOCK:
-                if (!displayName.equals(plugin.getString("navigator_item"))) return;
-                if (!player.hasPermission("buildsystem.gui")) {
-                    plugin.sendPermissionMessage(player);
-                    return;
-                }
-                event.setCancelled(true);
-                openNavigator(player);
-                break;
-            case BARRIER:
-                if (!displayName.equals(plugin.getString("barrier_item"))) return;
-                event.setCancelled(true);
-                plugin.getPlayerMoveListener().closeNavigator(player);
-                break;
+        if (xMaterial.equals(plugin.getNavigatorItem())) {
+            if (!displayName.equals(plugin.getString("navigator_item"))) return;
+            if (!player.hasPermission("buildsystem.gui")) {
+                plugin.sendPermissionMessage(player);
+                return;
+            }
+            event.setCancelled(true);
+            openNavigator(player);
+        } else if (xMaterial.equals(BARRIER)) {
+            if (!displayName.equals(plugin.getString("barrier_item"))) return;
+            event.setCancelled(true);
+            plugin.getPlayerMoveListener().closeNavigator(player);
         }
     }
 
@@ -242,7 +239,7 @@ public class PlayerInteractListener implements Listener {
                     String findItemName = plugin.getString("navigator_item");
                     ItemStack replaceItem = inventoryManager.getItemStack(XMaterial.BARRIER, plugin.getString("barrier_item"));
 
-                    plugin.replaceItem(player, findItemName, XMaterial.CLOCK, replaceItem);
+                    plugin.replaceItem(player, findItemName, plugin.getNavigatorItem(), replaceItem);
                 } else {
                     player.sendMessage(plugin.getString("worlds_navigator_open"));
                 }

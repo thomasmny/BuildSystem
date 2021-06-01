@@ -43,7 +43,7 @@ public class SettingsInventory {
         addSettingsItem(inventory, 20, XMaterial.IRON_TRAPDOOR, settings.isTrapDoor(), plugin.getString("settings_open_trapdoors_item"), plugin.getStringList("settings_open_trapdoors_lore"));
         addSettingsItem(inventory, 21, XMaterial.PAPER, settings.isScoreboard(), plugin.isScoreboard() ? plugin.getString("settings_scoreboard_item") : plugin.getString("settings_scoreboard_disabled_item"),
                 plugin.isScoreboard() ? plugin.getStringList("settings_scoreboard_lore") : plugin.getStringList("settings_scoreboard_disabled_lore"));
-        addSettingsItem(inventory, 22, XMaterial.CLOCK, settings.getNavigatorType().equals(NavigatorType.NEW), plugin.getString("settings_new_navigator_item"), plugin.getStringList("settings_new_navigator_lore"));
+        addSettingsItem(inventory, 22, plugin.getNavigatorItem(), settings.getNavigatorType().equals(NavigatorType.NEW), plugin.getString("settings_new_navigator_item"), plugin.getStringList("settings_new_navigator_lore"));
         addSettingsItem(inventory, 23, XMaterial.MAGMA_CREAM, settings.isSpawnTeleport(), plugin.getString("settings_spawnteleport_item"), plugin.getStringList("settings_spawnteleport_lore"));
         addSettingsItem(inventory, 24, XMaterial.ENDER_EYE, settings.isHidePlayers(), plugin.getString("settings_hideplayers_item"), plugin.getStringList("settings_hideplayers_lore"));
         addSettingsItem(inventory, 29, XMaterial.DIAMOND_AXE, settings.isDisableInteract(), plugin.getString("settings_disableinteract_item"), plugin.getStringList("settings_disableinteract_lore"));
