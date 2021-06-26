@@ -1,17 +1,23 @@
 package de.eintosti.buildsystem.version;
 
-import net.minecraft.server.v1_10_R1.*;
+import net.minecraft.network.chat.IChatBaseComponent;
+import net.minecraft.network.protocol.game.PacketPlayOutScoreboardDisplayObjective;
+import net.minecraft.network.protocol.game.PacketPlayOutScoreboardObjective;
+import net.minecraft.network.protocol.game.PacketPlayOutScoreboardScore;
+import net.minecraft.server.ScoreboardServer;
+import net.minecraft.server.network.PlayerConnection;
+import net.minecraft.world.scores.Scoreboard;
+import net.minecraft.world.scores.ScoreboardObjective;
+import net.minecraft.world.scores.ScoreboardScore;
+import net.minecraft.world.scores.criteria.IScoreboardCriteria;
 import org.bukkit.ChatColor;
-import org.bukkit.craftbukkit.v1_10_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_17_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 import java.util.HashSet;
 import java.util.List;
 
-/**
- * @author einTosti
- */
-public class Sidebar_1_10_R1 extends Placeholders implements Sidebar {
+public class Sidebar_1_17_R1 extends Placeholders implements Sidebar {
     private final static String SCOREBOARD_NAME = "BuildSystemSB";
 
     private final String title;
@@ -20,7 +26,7 @@ public class Sidebar_1_10_R1 extends Placeholders implements Sidebar {
     private final Scoreboard scoreboard;
     private ScoreboardObjective objective;
 
-    public Sidebar_1_10_R1(String title, List<String> body) {
+    public Sidebar_1_17_R1(String title, List<String> body) {
         this.title = title;
         this.body = body;
         this.scoreboard = new Scoreboard();
@@ -31,7 +37,8 @@ public class Sidebar_1_10_R1 extends Placeholders implements Sidebar {
         if (scoreboard.getObjective(SCOREBOARD_NAME) != null) {
             objective = scoreboard.getObjective(SCOREBOARD_NAME);
         } else {
-            objective = scoreboard.registerObjective(SCOREBOARD_NAME, IScoreboardCriteria.b);
+            objective = scoreboard.registerObjective(SCOREBOARD_NAME, IScoreboardCriteria.a,
+                    IChatBaseComponent.ChatSerializer.a("{\"text\": \"" + title + "\"}"), IScoreboardCriteria.EnumScoreboardHealthDisplay.a);
         }
 
         update(player, false, information);
@@ -50,20 +57,20 @@ public class Sidebar_1_10_R1 extends Placeholders implements Sidebar {
             }
         }
 
-        forceUpdate(player, information);
+        forceUpdate(player);
     }
 
     private void forceUpdate(Player player, String... information) {
         if (objective == null) {
             set(player, information);
         }
-        objective.setDisplayName(title);
+        objective.setDisplayName(IChatBaseComponent.ChatSerializer.a("{\"text\": \"" + title + "\"}"));
 
         PacketPlayOutScoreboardObjective removePacket = new PacketPlayOutScoreboardObjective(objective, 1);
         PacketPlayOutScoreboardObjective createPacket = new PacketPlayOutScoreboardObjective(objective, 0);
         PacketPlayOutScoreboardDisplayObjective displayPacket = new PacketPlayOutScoreboardDisplayObjective(1, objective);
 
-        PlayerConnection playerConnection = ((CraftPlayer) player).getHandle().playerConnection;
+        PlayerConnection playerConnection = ((CraftPlayer) player).getHandle().b;
         playerConnection.sendPacket(removePacket);
         playerConnection.sendPacket(createPacket);
         playerConnection.sendPacket(displayPacket);
@@ -74,7 +81,8 @@ public class Sidebar_1_10_R1 extends Placeholders implements Sidebar {
             ScoreboardScore scoreboardScore = scoreboard.getPlayerScoreForObjective(text, objective);
             scoreboardScore.setScore(scoreboardLines - i - 1);
 
-            PacketPlayOutScoreboardScore packetPlayOutScoreboardScore = new PacketPlayOutScoreboardScore(scoreboardScore);
+            PacketPlayOutScoreboardScore packetPlayOutScoreboardScore = new PacketPlayOutScoreboardScore(ScoreboardServer.Action.a,
+                    objective.getName(), text, scoreboardScore.getScore());
             playerConnection.sendPacket(packetPlayOutScoreboardScore);
         }
     }
@@ -86,7 +94,7 @@ public class Sidebar_1_10_R1 extends Placeholders implements Sidebar {
         }
 
         PacketPlayOutScoreboardObjective removePacket = new PacketPlayOutScoreboardObjective(objective, 1);
-        ((CraftPlayer) player).getHandle().playerConnection.sendPacket(removePacket);
+        ((CraftPlayer) player).getHandle().b.sendPacket(removePacket);
         scoreboard.unregisterObjective(objective);
     }
 }
