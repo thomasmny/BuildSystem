@@ -100,11 +100,11 @@ public class PlayerJoinListener implements Listener {
     private void addJoinItem(Player player) {
         if (!player.hasPermission("buildsystem.gui")) return;
         PlayerInventory playerInventory = player.getInventory();
-        if (playerInventory.contains(inventoryManager.getItemStack(XMaterial.CLOCK, plugin.getString("navigator_item")))) {
+        if (playerInventory.contains(inventoryManager.getItemStack(plugin.getNavigatorItem(), plugin.getString("navigator_item")))) {
             return;
         }
 
-        ItemStack itemStack = inventoryManager.getItemStack(XMaterial.CLOCK, plugin.getString("navigator_item"));
+        ItemStack itemStack = inventoryManager.getItemStack(plugin.getNavigatorItem(), plugin.getString("navigator_item"));
         ItemStack slot8 = playerInventory.getItem(8);
         if (slot8 == null || slot8.getType() == XMaterial.AIR.parseMaterial()) {
             playerInventory.setItem(8, itemStack);

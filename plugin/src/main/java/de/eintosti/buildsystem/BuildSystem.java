@@ -65,6 +65,7 @@ public class BuildSystem extends JavaPlugin {
     private boolean worldBlockBreaking;
     private boolean worldBlockPlacement;
     private boolean worldBlockInteractions;
+    private XMaterial navigatorItem;
 
     private int sunriseTime;
     private int noonTime;
@@ -609,6 +610,8 @@ public class BuildSystem extends JavaPlugin {
         this.blockWorldEditNonBuilder = config.getBoolean("settings.builder.block-worldedit-non-builder", true);
         this.creatorIsBuilder = config.getBoolean("settings.builder.creator-is-builder", true);
 
+        this.navigatorItem = XMaterial.valueOf(config.getString("settings.navigatorItem", "CLOCK"));
+
         // World
         this.lockWeather = config.getBoolean("world.lock-weather", true);
         this.sunriseTime = config.getInt("world.default.time.sunrise", 0);
@@ -985,5 +988,9 @@ public class BuildSystem extends JavaPlugin {
 
     public SkullCache getSkullCache() {
         return skullCache;
+    }
+
+    public XMaterial getNavigatorItem() {
+        return navigatorItem;
     }
 }

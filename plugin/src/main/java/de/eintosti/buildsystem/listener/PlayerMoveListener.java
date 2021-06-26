@@ -87,7 +87,7 @@ public class PlayerMoveListener implements Listener {
         if (!player.hasPermission("buildsystem.gui")) return;
 
         String findItemName = plugin.getString("barrier_item");
-        ItemStack replaceItem = inventoryManager.getItemStack(XMaterial.CLOCK, plugin.getString("navigator_item"));
+        ItemStack replaceItem = inventoryManager.getItemStack(plugin.getNavigatorItem(), plugin.getString("navigator_item"));
 
         plugin.replaceItem(player, findItemName, XMaterial.BARRIER, replaceItem);
     }

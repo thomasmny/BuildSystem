@@ -266,7 +266,7 @@ public class WorldsCommand implements CommandExecutor {
             }
 
             case "item": {
-                player.getInventory().addItem(inventoryManager.getItemStack(XMaterial.CLOCK, plugin.getString("navigator_item")));
+                player.getInventory().addItem(inventoryManager.getItemStack(plugin.getNavigatorItem(), plugin.getString("navigator_item")));
                 player.sendMessage(plugin.getString("worlds_item_receive"));
                 break;
             }
