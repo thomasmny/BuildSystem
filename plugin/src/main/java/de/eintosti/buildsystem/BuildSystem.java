@@ -214,6 +214,7 @@ public class BuildSystem extends JavaPlugin {
     private void getVersion() {
         try {
             this.version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+            getLogger().log(Level.INFO, "Found server version: " + version);
         } catch (ArrayIndexOutOfBoundsException e) {
             getLogger().log(Level.SEVERE, "Unknown server version");
         }
@@ -240,6 +241,7 @@ public class BuildSystem extends JavaPlugin {
             case "v1_16_R1":
             case "v1_16_R2":
             case "v1_16_R3":
+            case "v1_17_R1":
                 this.customBlocks = new CustomBlocks_1_14_R1(this);
                 return true;
             default:
@@ -274,6 +276,7 @@ public class BuildSystem extends JavaPlugin {
             case "v1_16_R1":
             case "v1_16_R2":
             case "v1_16_R3":
+            case "v1_17_R1":
                 this.gameRules = new GameRules_1_13_R1(
                         getString("worldeditor_gamerules_title"),
                         getStringList("worldeditor_gamerules_boolean_enabled"),
@@ -337,6 +340,9 @@ public class BuildSystem extends JavaPlugin {
                 return true;
             case "v1_16_R3":
                 this.sidebar = new Sidebar_1_16_R3(title, body);
+                return true;
+            case "v1_17_R1":
+                this.sidebar = new Sidebar_1_17_R1(title, body);
                 return true;
             default:
                 getLogger().log(Level.SEVERE, "\"Sidebar\" not found for version: " + version);
@@ -409,6 +415,9 @@ public class BuildSystem extends JavaPlugin {
                 return true;
             case "v1_16_R3":
                 this.skullCache = new SkullCache_1_16_R3();
+                return true;
+            case "v1_17_R1":
+                this.skullCache = new SkullCache_1_17_R1();
                 return true;
             default:
                 getLogger().log(Level.SEVERE, "\"SkullCache\" not found for version: " + version);

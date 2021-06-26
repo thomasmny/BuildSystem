@@ -5,8 +5,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.List;
 
@@ -14,6 +12,8 @@ import java.util.List;
  * @author einTosti
  */
 public class Sidebar_1_12_R1 extends Placeholders implements Sidebar {
+    private final static String SCOREBOARD_NAME = "BuildSystemSB";
+
     private final String title;
     private final List<String> body;
 
@@ -28,49 +28,52 @@ public class Sidebar_1_12_R1 extends Placeholders implements Sidebar {
 
     @Override
     public void set(Player player, String... information) {
-        if (scoreboard.getObjective("BuildSystemSB") != null) {
-            objective = scoreboard.getObjective("BuildSystemSB");
+        if (scoreboard.getObjective(SCOREBOARD_NAME) != null) {
+            objective = scoreboard.getObjective(SCOREBOARD_NAME);
         } else {
-            objective = scoreboard.registerObjective("BuildSystemSB", IScoreboardCriteria.b);
+            objective = scoreboard.registerObjective(SCOREBOARD_NAME, IScoreboardCriteria.b);
         }
+
         update(player, false, information);
     }
 
     @Override
     public void update(Player player, boolean forceUpdate, String... information) {
         if (!forceUpdate) {
-            try {
-                HashSet<String> scores = new HashSet<>();
-                for (ScoreboardScore score : scoreboard.getScores()) {
-                    scores.add(score.getPlayerName());
-                }
-                if (scores.containsAll(replacedList(body, player, information))) return;
-                forceUpdate(player, information);
-            } catch (ConcurrentModificationException ignored) {
+            HashSet<String> scores = new HashSet<>();
+            for (ScoreboardScore score : scoreboard.getScoresForObjective(objective)) {
+                scores.add(score.getPlayerName());
             }
-            return;
+
+            if (scores.containsAll(replacedList(body, player, information))) {
+                return;
+            }
         }
+
         forceUpdate(player, information);
     }
 
     private void forceUpdate(Player player, String... information) {
-        if (objective == null) set(player, information);
+        if (objective == null) {
+            set(player, information);
+        }
         objective.setDisplayName(title);
 
         PacketPlayOutScoreboardObjective removePacket = new PacketPlayOutScoreboardObjective(objective, 1);
         PacketPlayOutScoreboardObjective createPacket = new PacketPlayOutScoreboardObjective(objective, 0);
-        PacketPlayOutScoreboardDisplayObjective display = new PacketPlayOutScoreboardDisplayObjective(1, objective);
+        PacketPlayOutScoreboardDisplayObjective displayPacket = new PacketPlayOutScoreboardDisplayObjective(1, objective);
 
         PlayerConnection playerConnection = ((CraftPlayer) player).getHandle().playerConnection;
         playerConnection.sendPacket(removePacket);
         playerConnection.sendPacket(createPacket);
-        playerConnection.sendPacket(display);
+        playerConnection.sendPacket(displayPacket);
 
         int scoreboardLines = body.size();
         for (int i = 0; i < scoreboardLines; i++) {
             String text = ChatColor.translateAlternateColorCodes('&', injectPlaceholders(body.get(i), player, information));
             ScoreboardScore scoreboardScore = scoreboard.getPlayerScoreForObjective(text, objective);
             scoreboardScore.setScore(scoreboardLines - i - 1);
+
             PacketPlayOutScoreboardScore packetPlayOutScoreboardScore = new PacketPlayOutScoreboardScore(scoreboardScore);
             playerConnection.sendPacket(packetPlayOutScoreboardScore);
         }
@@ -78,15 +81,12 @@ public class Sidebar_1_12_R1 extends Placeholders implements Sidebar {
 
     @Override
     public void remove(Player player) {
-        if (objective == null) return;
+        if (objective == null) {
+            return;
+        }
+
         PacketPlayOutScoreboardObjective removePacket = new PacketPlayOutScoreboardObjective(objective, 1);
         ((CraftPlayer) player).getHandle().playerConnection.sendPacket(removePacket);
         scoreboard.unregisterObjective(objective);
-    }
-
-    private List<String> replacedList(List<String> oldList, Player player, String... information) {
-        List<String> list = new ArrayList<>();
-        oldList.forEach(body -> list.add(ChatColor.translateAlternateColorCodes('&', injectPlaceholders(body, player, information))));
-        return list;
     }
 }

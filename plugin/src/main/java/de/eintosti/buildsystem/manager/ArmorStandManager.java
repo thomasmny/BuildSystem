@@ -19,11 +19,14 @@ public class ArmorStandManager {
     private final float RADIUS;
     private final float SPREAD;
 
+    private final InventoryManager inventoryManager;
     private final HashMap<UUID, ArmorStand[]> armorStands;
 
     public ArmorStandManager(BuildSystem plugin) {
         this.RADIUS = 2.2f;
         this.SPREAD = 90.0f;
+
+        this.inventoryManager = plugin.getInventoryManager();
         this.armorStands = new HashMap<>();
     }
 
