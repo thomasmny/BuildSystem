@@ -43,8 +43,7 @@ public class PlayerJoinListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void sendPlayerJoinMessage(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        String joinMessage = plugin.isJoinQuitMessages() ? plugin.getString("player_join")
-                .replace("%player%", player.getName()) : null;
+        String joinMessage = plugin.isJoinQuitMessages() ? plugin.getString("player_join").replace("%player%", player.getName()) : null;
         event.setJoinMessage(joinMessage);
     }
 
@@ -98,7 +97,10 @@ public class PlayerJoinListener implements Listener {
     }
 
     private void addJoinItem(Player player) {
-        if (!player.hasPermission("buildsystem.gui")) return;
+        if (!player.hasPermission("buildsystem.gui")) {
+            return;
+        }
+
         PlayerInventory playerInventory = player.getInventory();
         if (playerInventory.contains(inventoryManager.getItemStack(plugin.getNavigatorItem(), plugin.getString("navigator_item")))) {
             return;
@@ -118,6 +120,7 @@ public class PlayerJoinListener implements Listener {
         if (settingsManager.getSettings(player).isHidePlayers()) { // Hide all players to player
             Bukkit.getOnlinePlayers().forEach(player::hidePlayer);
         }
+
         for (Player pl : Bukkit.getOnlinePlayers()) { // Hide player to all players who have hidePlayers enabled
             if (!settingsManager.getSettings(pl).isHidePlayers()) continue;
             pl.hidePlayer(player);
@@ -131,8 +134,10 @@ public class PlayerJoinListener implements Listener {
                     if (result.requiresUpdate()) {
                         StringBuilder stringBuilder = new StringBuilder();
                         plugin.getStringList("update_available").forEach(line ->
-                                stringBuilder.append(line.replace("%new_version%", result.getNewestVersion())
-                                        .replace("%current_version%", plugin.getDescription().getVersion())).append("\n"));
+                                stringBuilder.append(line
+                                        .replace("%new_version%", result.getNewestVersion())
+                                        .replace("%current_version%", plugin.getDescription().getVersion()))
+                                        .append("\n"));
                         player.sendMessage(stringBuilder.toString());
                     }
                 });

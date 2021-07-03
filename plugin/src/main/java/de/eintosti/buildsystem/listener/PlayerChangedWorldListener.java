@@ -8,7 +8,6 @@ import de.eintosti.buildsystem.manager.WorldManager;
 import de.eintosti.buildsystem.object.world.World;
 import de.eintosti.buildsystem.object.world.WorldStatus;
 import de.eintosti.buildsystem.object.world.WorldType;
-import de.eintosti.buildsystem.util.external.xseries.XMaterial;
 import de.eintosti.buildsystem.util.external.xseries.XSound;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -63,6 +62,7 @@ public class PlayerChangedWorldListener implements Listener {
         if (oldWorld != null && plugin.isUnloadWorlds()) {
             oldWorld.resetUnloadTask();
         }
+
         World newWorld = worldManager.getWorld(worldName);
         if (newWorld != null) {
             if (!newWorld.isPhysics()) {

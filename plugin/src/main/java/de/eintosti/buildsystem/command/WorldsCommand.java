@@ -6,6 +6,7 @@ import de.eintosti.buildsystem.manager.WorldManager;
 import de.eintosti.buildsystem.object.world.Builder;
 import de.eintosti.buildsystem.object.world.Generator;
 import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.util.external.PlayerChatInput;
 import de.eintosti.buildsystem.util.external.UUIDFetcher;
 import de.eintosti.buildsystem.util.external.xseries.Titles;
 import de.eintosti.buildsystem.util.external.xseries.XMaterial;
@@ -14,7 +15,6 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.wesjd.anvilgui.AnvilGUI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -59,7 +59,9 @@ public class WorldsCommand implements CommandExecutor {
                 plugin.sendPermissionMessage(player);
                 return true;
             }
+
             plugin.getNavigatorInventory().openInventory(player);
+            XSound.BLOCK_CHEST_OPEN.play(player);
             return true;
         }
 
@@ -82,7 +84,7 @@ public class WorldsCommand implements CommandExecutor {
                     }
 
                     plugin.selectedWorld.put(player.getUniqueId(), world);
-                    openAddBuilderAnvil(player, true);
+                    getAddBuilderInput(player, true);
                 } else {
                     player.sendMessage(plugin.getString("worlds_addbuilder_usage"));
                 }
@@ -289,7 +291,7 @@ public class WorldsCommand implements CommandExecutor {
                     }
 
                     plugin.selectedWorld.put(player.getUniqueId(), world);
-                    openRemoveBuilderAnvil(player, true);
+                    getRemoveBuilderInput(player, true);
                 } else {
                     player.sendMessage(plugin.getString("worlds_removebuilder_usage"));
                 }
@@ -308,7 +310,7 @@ public class WorldsCommand implements CommandExecutor {
                         return true;
                     }
                     plugin.selectedWorld.put(player.getUniqueId(), world);
-                    openRenameAnvil(player);
+                    getRenameInput(player);
                 } else {
                     player.sendMessage(plugin.getString("worlds_rename_usage"));
                 }
@@ -352,7 +354,7 @@ public class WorldsCommand implements CommandExecutor {
                         return true;
                     }
                     plugin.selectedWorld.put(player.getUniqueId(), world);
-                    openCreatorAnvil(player);
+                    getCreatorInput(player);
                 } else {
                     player.sendMessage(plugin.getString("worlds_setcreator_usage"));
                 }
@@ -371,7 +373,7 @@ public class WorldsCommand implements CommandExecutor {
                         return true;
                     }
                     plugin.selectedWorld.put(player.getUniqueId(), world);
-                    openProjectAnvil(player, true);
+                    getProjectInput(player, true);
                 } else {
                     player.sendMessage(plugin.getString("worlds_setproject_usage"));
                 }
@@ -409,7 +411,7 @@ public class WorldsCommand implements CommandExecutor {
                         return true;
                     }
                     plugin.selectedWorld.put(player.getUniqueId(), world);
-                    openPermissionAnvil(player, true);
+                    getPermissionInput(player, true);
                 } else {
                     player.sendMessage(plugin.getString("worlds_setpermission_usage"));
                 }
@@ -535,7 +537,8 @@ public class WorldsCommand implements CommandExecutor {
     private void sendInfoMessage(Player player, World world) {
         List<String> infoMessage = new ArrayList<>();
         for (String line : plugin.getStringList("world_info")) {
-            String replace = line.replace("%world%", world.getName())
+            String replace = line
+                    .replace("%world%", world.getName())
                     .replace("%creator%", world.getCreator())
                     .replace("%type%", world.getTypeName())
                     .replace("%private%", String.valueOf(world.isPrivate()))
@@ -563,14 +566,20 @@ public class WorldsCommand implements CommandExecutor {
     }
 
     private String getCustomSpawn(World world) {
-        if (world.getCustomSpawn() == null) return "-";
+        if (world.getCustomSpawn() == null) {
+            return "-";
+        }
+
         String[] spawnString = world.getCustomSpawn().split(";");
-        Location location = new Location(Bukkit.getWorld(world.getName()),
+        Location location = new Location(
+                Bukkit.getWorld(world.getName()),
                 Double.parseDouble(spawnString[0]),
                 Double.parseDouble(spawnString[1]),
                 Double.parseDouble(spawnString[2]),
                 Float.parseFloat(spawnString[3]),
-                Float.parseFloat(spawnString[4]));
+                Float.parseFloat(spawnString[4])
+        );
+
         return "XYZ: " + round(location.getX()) + " / " + round(location.getY()) + " / " + round(location.getZ());
     }
 
@@ -579,212 +588,188 @@ public class WorldsCommand implements CommandExecutor {
         return (double) Math.round(value * scale) / scale;
     }
 
-    public void openAddBuilderAnvil(Player p, boolean closeInventory) {
-        World world = plugin.selectedWorld.get(p.getUniqueId());
+    public void getAddBuilderInput(Player player, boolean closeInventory) {
+        World world = plugin.selectedWorld.get(player.getUniqueId());
         if (world == null) {
-            p.closeInventory();
-            p.sendMessage(plugin.getString("worlds_addbuilder_error"));
+            player.closeInventory();
+            player.sendMessage(plugin.getString("worlds_addbuilder_error"));
             return;
         }
 
-        new AnvilGUI.Builder()
-                .onComplete((player, text) -> {
-                    String builderName = text.trim();
-                    Player builderPlayer = Bukkit.getPlayer(builderName);
-                    Builder builder;
-                    UUID builderId;
+        new PlayerChatInput(plugin, player, "enter_player_name", input -> {
+            String builderName = input.trim();
+            Player builderPlayer = Bukkit.getPlayer(builderName);
+            Builder builder;
+            UUID builderId;
 
-                    if (builderPlayer == null) {
-                        builderId = UUIDFetcher.getUUID(builderName);
-                        if (builderId == null) {
-                            player.sendMessage(plugin.getString("worlds_addbuilder_player_not_found"));
-                            return AnvilGUI.Response.close();
-                        }
-                        builder = new Builder(builderId, builderName);
-                    } else {
-                        builder = new Builder(builderPlayer);
-                        builderId = builderPlayer.getUniqueId();
-                    }
-
-                    if (world.getCreatorId() != null && world.getCreatorId().equals(builderId)) {
-                        player.sendMessage(plugin.getString("worlds_addbuilder_already_creator"));
-                        return AnvilGUI.Response.close();
-                    }
-
-                    if (world.isBuilder(builderId)) {
-                        player.sendMessage(plugin.getString("worlds_addbuilder_already_added"));
-                        return AnvilGUI.Response.close();
-                    }
-
-                    world.addBuilder(builder);
-                    XSound.ENTITY_PLAYER_LEVELUP.play(player);
-                    player.sendMessage(plugin.getString("worlds_addbuilder_added").replace("%builder%", builderName));
-
-                    if (closeInventory) {
-                        return AnvilGUI.Response.close();
-                    } else {
-                        return AnvilGUI.Response.openInventory(plugin.getBuilderInventory().getInventory(world, player));
-                    }
-                })
-                .item(inventoryManager.getItemStack(XMaterial.WRITABLE_BOOK, "ItemName"))
-                .text(plugin.getString("player_name"))
-                .plugin(plugin)
-                .open(p);
-    }
-
-    private void openCreatorAnvil(Player p) {
-        World world = plugin.selectedWorld.get(p.getUniqueId());
-        if (world == null) {
-            p.closeInventory();
-            p.sendMessage(plugin.getString("worlds_setcreator_error"));
-            return;
-        }
-
-        new AnvilGUI.Builder()
-                .onComplete((player, text) -> {
-                    String creator = text.trim();
-                    world.setCreator(creator);
-                    if (!creator.equalsIgnoreCase("-")) {
-                        world.setCreatorId(UUIDFetcher.getUUID(creator));
-                    } else {
-                        world.setCreatorId(null);
-                    }
-                    plugin.forceUpdateSidebar(world);
-                    XSound.ENTITY_PLAYER_LEVELUP.play(player);
-                    player.sendMessage(plugin.getString("worlds_setcreator_set").replace("%world%", world.getName()));
-                    return AnvilGUI.Response.close();
-                })
-                .item(inventoryManager.getItemStack(XMaterial.WRITABLE_BOOK, "ItemName"))
-                .text(world.getCreator())
-                .plugin(plugin)
-                .open(p);
-    }
-
-    public void openProjectAnvil(Player p, boolean closeInventory) {
-        World world = plugin.selectedWorld.get(p.getUniqueId());
-        if (world == null) {
-            p.closeInventory();
-            p.sendMessage(plugin.getString("worlds_setproject_error"));
-            return;
-        }
-
-        new AnvilGUI.Builder()
-                .onComplete((player, text) -> {
-                    world.setProject(text.trim());
-                    plugin.forceUpdateSidebar(world);
-
-                    XSound.ENTITY_PLAYER_LEVELUP.play(player);
-                    player.sendMessage(plugin.getString("worlds_setproject_set").replace("%world%", world.getName()));
-
-                    if (closeInventory) {
-                        return AnvilGUI.Response.close();
-                    } else {
-                        return AnvilGUI.Response.openInventory(plugin.getEditInventory().getInventory(player, world));
-                    }
-                })
-                .item(inventoryManager.getItemStack(XMaterial.WRITABLE_BOOK, "ItemName"))
-                .text(world.getProject())
-                .plugin(plugin)
-                .open(p);
-    }
-
-    public void openPermissionAnvil(Player p, boolean closeInventory) {
-        World world = plugin.selectedWorld.get(p.getUniqueId());
-        if (world == null) {
-            p.closeInventory();
-            p.sendMessage(plugin.getString("worlds_setpermission_error"));
-            return;
-        }
-
-        new AnvilGUI.Builder()
-                .onComplete((player, text) -> {
-                    world.setPermission(text.trim());
-                    plugin.forceUpdateSidebar(world);
-                    XSound.ENTITY_PLAYER_LEVELUP.play(player);
-                    player.sendMessage(plugin.getString("worlds_setpermission_set").replace("%world%", world.getName()));
-
-                    if (closeInventory) {
-                        return AnvilGUI.Response.close();
-                    } else {
-                        return AnvilGUI.Response.openInventory(plugin.getEditInventory().getInventory(player, world));
-                    }
-                })
-                .item(inventoryManager.getItemStack(XMaterial.WRITABLE_BOOK, "ItemName"))
-                .text(world.getPermission())
-                .plugin(plugin)
-                .open(p);
-    }
-
-    public void openRemoveBuilderAnvil(Player p, boolean closeInventory) {
-        World world = plugin.selectedWorld.get(p.getUniqueId());
-        if (world == null) {
-            p.closeInventory();
-            p.sendMessage(plugin.getString("worlds_removebuilder_error"));
-            return;
-        }
-
-        new AnvilGUI.Builder()
-                .onComplete((player, text) -> {
-                    String builderName = text.trim();
-                    Player builderPlayer = Bukkit.getPlayer(builderName);
-                    UUID builderId;
-
-                    if (builderPlayer == null) {
-                        builderId = UUIDFetcher.getUUID(builderName);
-                        if (builderId == null) {
-                            player.sendMessage(plugin.getString("worlds_removebuilder_player_not_found"));
-                            return AnvilGUI.Response.close();
-                        }
-                    } else {
-                        builderId = builderPlayer.getUniqueId();
-                    }
-
-                    if (world.getCreatorId() != null && world.getCreatorId().equals(builderId)) {
-                        player.sendMessage(plugin.getString("worlds_removebuilder_not_yourself"));
-                        return AnvilGUI.Response.close();
-                    }
-
-                    if (!world.isBuilder(builderId)) {
-                        player.sendMessage(plugin.getString("worlds_removebuilder_not_builder"));
-                        return AnvilGUI.Response.close();
-                    }
-
-                    world.removeBuilder(builderId);
-                    XSound.ENTITY_PLAYER_LEVELUP.play(player);
-                    player.sendMessage(plugin.getString("worlds_removebuilder_removed").replace("%builder%", builderName));
-
-                    if (closeInventory) {
-                        return AnvilGUI.Response.close();
-                    } else {
-                        return AnvilGUI.Response.openInventory(plugin.getBuilderInventory().getInventory(world, player));
-                    }
-                })
-                .item(inventoryManager.getItemStack(XMaterial.WRITABLE_BOOK, "ItemName"))
-                .text(plugin.getString("player_name"))
-                .plugin(plugin)
-                .open(p);
-    }
-
-    private void openRenameAnvil(Player p) {
-        World world = plugin.selectedWorld.get(p.getUniqueId());
-        if (world == null) {
-            p.closeInventory();
-            p.sendMessage(plugin.getString("sender_not_player"));
-            return;
-        }
-
-        String oldName = world.getName();
-        new AnvilGUI.Builder()
-                .onComplete((player, text) -> {
+            if (builderPlayer == null) {
+                builderId = UUIDFetcher.getUUID(builderName);
+                if (builderId == null) {
+                    player.sendMessage(plugin.getString("worlds_addbuilder_player_not_found"));
                     player.closeInventory();
-                    worldManager.renameWorld(player, world, text.trim());
-                    XSound.ENTITY_PLAYER_LEVELUP.play(player);
-                    plugin.selectedWorld.remove(player.getUniqueId());
-                    return AnvilGUI.Response.close();
-                })
-                .item(inventoryManager.getItemStack(XMaterial.WRITABLE_BOOK, "ItemName"))
-                .text(oldName)
-                .plugin(plugin)
-                .open(p);
+                    return;
+                }
+                builder = new Builder(builderId, builderName);
+            } else {
+                builder = new Builder(builderPlayer);
+                builderId = builderPlayer.getUniqueId();
+            }
+
+            if (world.getCreatorId() != null && world.getCreatorId().equals(builderId)) {
+                player.sendMessage(plugin.getString("worlds_addbuilder_already_creator"));
+                player.closeInventory();
+                return;
+            }
+
+            if (world.isBuilder(builderId)) {
+                player.sendMessage(plugin.getString("worlds_addbuilder_already_added"));
+                player.closeInventory();
+                return;
+            }
+
+            world.addBuilder(builder);
+            XSound.ENTITY_PLAYER_LEVELUP.play(player);
+            player.sendMessage(plugin.getString("worlds_addbuilder_added").replace("%builder%", builderName));
+
+            if (closeInventory) {
+                player.closeInventory();
+            } else {
+                player.openInventory(plugin.getBuilderInventory().getInventory(world, player));
+            }
+        });
+    }
+
+    private void getCreatorInput(Player player) {
+        World world = plugin.selectedWorld.get(player.getUniqueId());
+        if (world == null) {
+            player.closeInventory();
+            player.sendMessage(plugin.getString("worlds_setcreator_error"));
+            return;
+        }
+
+        new PlayerChatInput(plugin, player, "enter_world_creator", input -> {
+            String creator = input.trim();
+            world.setCreator(creator);
+            if (!creator.equalsIgnoreCase("-")) {
+                world.setCreatorId(UUIDFetcher.getUUID(creator));
+            } else {
+                world.setCreatorId(null);
+            }
+
+            plugin.forceUpdateSidebar(world);
+            XSound.ENTITY_PLAYER_LEVELUP.play(player);
+            player.sendMessage(plugin.getString("worlds_setcreator_set").replace("%world%", world.getName()));
+            player.closeInventory();
+        });
+    }
+
+    public void getProjectInput(Player player, boolean closeInventory) {
+        World world = plugin.selectedWorld.get(player.getUniqueId());
+        if (world == null) {
+            player.closeInventory();
+            player.sendMessage(plugin.getString("worlds_setproject_error"));
+            return;
+        }
+
+        new PlayerChatInput(plugin, player, "enter_world_project", input -> {
+            world.setProject(input.trim());
+            plugin.forceUpdateSidebar(world);
+
+            XSound.ENTITY_PLAYER_LEVELUP.play(player);
+            player.sendMessage(plugin.getString("worlds_setproject_set").replace("%world%", world.getName()));
+
+            if (closeInventory) {
+                player.closeInventory();
+            } else {
+                player.openInventory(plugin.getEditInventory().getInventory(player, world));
+            }
+        });
+    }
+
+    public void getPermissionInput(Player player, boolean closeInventory) {
+        World world = plugin.selectedWorld.get(player.getUniqueId());
+        if (world == null) {
+            player.closeInventory();
+            player.sendMessage(plugin.getString("worlds_setpermission_error"));
+            return;
+        }
+
+        new PlayerChatInput(plugin, player, "enter_world_permission", input -> {
+            world.setPermission(input.trim());
+            plugin.forceUpdateSidebar(world);
+            XSound.ENTITY_PLAYER_LEVELUP.play(player);
+            player.sendMessage(plugin.getString("worlds_setpermission_set").replace("%world%", world.getName()));
+
+            if (closeInventory) {
+                player.closeInventory();
+            } else {
+                player.openInventory(plugin.getEditInventory().getInventory(player, world));
+            }
+        });
+    }
+
+    public void getRemoveBuilderInput(Player player, boolean closeInventory) {
+        World world = plugin.selectedWorld.get(player.getUniqueId());
+        if (world == null) {
+            player.closeInventory();
+            player.sendMessage(plugin.getString("worlds_removebuilder_error"));
+            return;
+        }
+
+        new PlayerChatInput(plugin, player, "enter_player_name", input -> {
+            String builderName = input.trim();
+            Player builderPlayer = Bukkit.getPlayer(builderName);
+            UUID builderId;
+
+            if (builderPlayer == null) {
+                builderId = UUIDFetcher.getUUID(builderName);
+                if (builderId == null) {
+                    player.sendMessage(plugin.getString("worlds_removebuilder_player_not_found"));
+                    player.closeInventory();
+                    return;
+                }
+            } else {
+                builderId = builderPlayer.getUniqueId();
+            }
+
+            if (world.getCreatorId() != null && world.getCreatorId().equals(builderId)) {
+                player.sendMessage(plugin.getString("worlds_removebuilder_not_yourself"));
+                player.closeInventory();
+                return;
+            }
+
+            if (!world.isBuilder(builderId)) {
+                player.sendMessage(plugin.getString("worlds_removebuilder_not_builder"));
+                player.closeInventory();
+                return;
+            }
+
+            world.removeBuilder(builderId);
+            XSound.ENTITY_PLAYER_LEVELUP.play(player);
+            player.sendMessage(plugin.getString("worlds_removebuilder_removed").replace("%builder%", builderName));
+
+            if (closeInventory) {
+                player.closeInventory();
+            } else {
+                player.openInventory(plugin.getBuilderInventory().getInventory(world, player));
+            }
+        });
+    }
+
+    private void getRenameInput(Player player) {
+        World world = plugin.selectedWorld.get(player.getUniqueId());
+        if (world == null) {
+            player.closeInventory();
+            player.sendMessage(plugin.getString("worlds_rename_unknown_world"));
+            return;
+        }
+
+        new PlayerChatInput(plugin, player, "enter_world_name", input -> {
+            player.closeInventory();
+            worldManager.renameWorld(player, world, input.trim());
+            plugin.selectedWorld.remove(player.getUniqueId());
+            XSound.ENTITY_PLAYER_LEVELUP.play(player);
+            player.closeInventory();
+        });
     }
 }

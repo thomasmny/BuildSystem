@@ -25,11 +25,6 @@
             <id>placeholderapi</id>
             <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
         </repository>
-        <!-- AnvilGUI -->
-        <repository>
-            <id>codemc-snapshots</id>
-            <url>https://repo.codemc.io/repository/maven-snapshots/</url>
-        </repository>
     </repositories>
 
     <dependencies>
@@ -47,12 +42,11 @@
             <version>2.10.9</version>
             <scope>provided</scope>
         </dependency>
-        <!-- AnvilGUI -->
+        <!-- FastBoard -->
         <dependency>
-            <groupId>net.wesjd</groupId>
-            <artifactId>anvilgui</artifactId>
-            <version>1.5.0-SNAPSHOT</version>
-            <scope>compile</scope>
+            <groupId>fr.mrmicky</groupId>
+            <artifactId>fastboard</artifactId>
+            <version>1.2.0</version>
         </dependency>
         <!-- Sidebar -->
         <dependency>
@@ -198,14 +192,6 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
-                        <configuration>
-                            <relocations>
-                                <relocation>
-                                    <pattern>com.github.WesJD</pattern>
-                                    <shadedPattern>de.eintosti.buildsystem.util.external</shadedPattern>
-                                </relocation>
-                            </relocations>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
