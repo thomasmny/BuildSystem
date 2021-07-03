@@ -39,12 +39,15 @@ public class PlayerQuitListener implements Listener {
         if (settings.isNoClip()) {
             plugin.getNoClipManager().stopNoClip(player.getUniqueId());
         }
+
         if (settings.isScoreboard()) {
-            plugin.getSidebar().remove(player);
+            settingsManager.stopScoreboard(player);
         }
+
         if (settings.isClearInventory()) {
             player.getInventory().clear();
         }
+
         manageHidePlayer(player);
     }
 
@@ -53,6 +56,7 @@ public class PlayerQuitListener implements Listener {
         if (settingsManager.getSettings(player).isHidePlayers()) { // Show all hidden players to player
             Bukkit.getOnlinePlayers().forEach(player::showPlayer);
         }
+
         for (Player pl : Bukkit.getOnlinePlayers()) { // Show player to all players who had him/her hidden
             if (!settingsManager.getSettings(pl).isHidePlayers()) continue;
             pl.showPlayer(player);
