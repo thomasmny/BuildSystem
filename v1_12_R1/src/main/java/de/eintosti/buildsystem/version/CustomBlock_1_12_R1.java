@@ -29,6 +29,7 @@ public class CustomBlock_1_12_R1 implements CustomBlocks {
 
     public CustomBlock_1_12_R1(JavaPlugin plugin) {
         this.plugin = plugin;
+
         String version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
         this.mcVersion = Integer.parseInt(version.replaceAll("[^0-9]", ""));
     }
@@ -39,12 +40,14 @@ public class CustomBlock_1_12_R1 implements CustomBlocks {
         Block block = event.getBlockPlaced();
         ItemStack itemStack = event.getItemInHand();
         ItemMeta itemMeta = itemStack.getItemMeta();
+
         if (itemMeta == null) return;
         if (!itemMeta.hasDisplayName()) return;
         String displayName = itemMeta.getDisplayName();
 
         Bukkit.getScheduler().runTask(plugin, () -> {
             boolean set;
+
             if (displayName.equals(blockName[0])) {
                 block.setType(Material.LOG);
                 block.setData((byte) 12, true);
@@ -159,17 +162,19 @@ public class CustomBlock_1_12_R1 implements CustomBlocks {
         Material material = block.getType();
 
         if (mcVersion >= 190) {
-            if (material.equals(Material.STEP)
-                    || material.equals(Material.WOOD_STEP)
-                    || material.equals(Material.STONE_SLAB2)
-                    || material.equals(Material.PURPUR_SLAB)) {
-                return;
+            switch (material) {
+                case STEP:
+                case WOOD_STEP:
+                case STONE_SLAB2:
+                case PURPUR_SLAB:
+                    return;
             }
         } else {
-            if (material.equals(Material.STEP)
-                    || material.equals(Material.WOOD_STEP)
-                    || material.equals(Material.STONE_SLAB2)) {
-                return;
+            switch (material) {
+                case STEP:
+                case WOOD_STEP:
+                case STONE_SLAB2:
+                    return;
             }
         }
 
@@ -185,6 +190,7 @@ public class CustomBlock_1_12_R1 implements CustomBlocks {
                 changedMaterial = Material.STONE_SLAB2;
                 break;
         }
+
         if (mcVersion >= 190) {
             if (material.equals(Material.PURPUR_DOUBLE_SLAB)) {
                 changedMaterial = Material.PURPUR_SLAB;

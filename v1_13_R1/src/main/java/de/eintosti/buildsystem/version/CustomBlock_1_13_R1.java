@@ -31,6 +31,7 @@ public class CustomBlock_1_13_R1 implements CustomBlocks {
         Block block = event.getBlockPlaced();
         ItemStack itemStack = event.getItemInHand();
         ItemMeta itemMeta = itemStack.getItemMeta();
+
         if (itemMeta == null) return;
         if (!itemMeta.hasDisplayName()) return;
         String displayName = itemMeta.getDisplayName();
@@ -38,6 +39,7 @@ public class CustomBlock_1_13_R1 implements CustomBlocks {
         Bukkit.getScheduler().runTask(plugin, () -> {
             Player player = event.getPlayer();
             boolean set;
+
             if (displayName.equals(blockName[0])) {
                 block.setType(Material.OAK_WOOD);
                 set = true;
@@ -134,7 +136,11 @@ public class CustomBlock_1_13_R1 implements CustomBlocks {
         Block block = event.getClickedBlock();
         Block adjacent = block.getRelative(event.getBlockFace());
         ItemStack itemStack = event.getItem();
-        if (itemStack == null) return;
+
+        if (itemStack == null) {
+            return;
+        }
+
         adjacent.setType(itemStack.getType());
     }
 
@@ -151,11 +157,13 @@ public class CustomBlock_1_13_R1 implements CustomBlocks {
 
         event.setCancelled(true);
         Player player = event.getPlayer();
+
         if (isTop(player, block)) {
             slab.setType(Slab.Type.BOTTOM);
         } else {
             slab.setType(Slab.Type.TOP);
         }
+
         block.setBlockData(slab);
     }
 

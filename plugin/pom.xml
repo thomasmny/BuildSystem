@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>buildsystem</artifactId>
-    <version>2.14.7</version>
+    <version>2.15</version>
 
     <name>BuildSystem</name>
     <description>× Easy to use system for builders, with lots of great features</description>
@@ -25,11 +25,6 @@
             <id>placeholderapi</id>
             <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
         </repository>
-        <!-- AnvilGUI -->
-        <repository>
-            <id>codemc-snapshots</id>
-            <url>https://repo.codemc.io/repository/maven-snapshots/</url>
-        </repository>
     </repositories>
 
     <dependencies>
@@ -47,12 +42,11 @@
             <version>2.10.10</version>
             <scope>provided</scope>
         </dependency>
-        <!-- AnvilGUI -->
+        <!-- FastBoard -->
         <dependency>
-            <groupId>net.wesjd</groupId>
-            <artifactId>anvilgui</artifactId>
-            <version>1.5.0-SNAPSHOT</version>
-            <scope>compile</scope>
+            <groupId>fr.mrmicky</groupId>
+            <artifactId>fastboard</artifactId>
+            <version>1.2.0</version>
         </dependency>
         <!-- Sidebar -->
         <dependency>
@@ -153,12 +147,19 @@
         </dependency>
         <dependency>
             <groupId>de.eintosti</groupId>
+            <artifactId>buildsystem-v1_17_R1</artifactId>
+            <version>1.17-R1</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.eintosti</groupId>
             <artifactId>buildsystem</artifactId>
             <version>2.15-Beta</version>
         </dependency>
     </dependencies>
 
     <build>
+        <finalName>BuildSystem</finalName>
         <directory>../target</directory>
         <resources>
             <resource>
@@ -191,14 +192,6 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
-                        <configuration>
-                            <relocations>
-                                <relocation>
-                                    <pattern>com.github.WesJD</pattern>
-                                    <shadedPattern>de.eintosti.buildsystem.util.external</shadedPattern>
-                                </relocation>
-                            </relocations>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>

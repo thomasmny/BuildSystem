@@ -423,11 +423,11 @@ public class InventoryClickListener implements Listener {
                 return;
             case 41:
                 XSound.ENTITY_CHICKEN_EGG.play(player);
-                plugin.getWorldsCommand().openProjectAnvil(player, false);
+                plugin.getWorldsCommand().getProjectInput(player, false);
                 return;
             case 42:
                 XSound.ENTITY_CHICKEN_EGG.play(player);
-                plugin.getWorldsCommand().openPermissionAnvil(player, false);
+                plugin.getWorldsCommand().getPermissionInput(player, false);
                 return;
 
             default:
@@ -526,7 +526,7 @@ public class InventoryClickListener implements Listener {
                 break;
             case 22:
                 XSound.ENTITY_CHICKEN_EGG.play(player);
-                plugin.getWorldsCommand().openAddBuilderAnvil(player, false);
+                plugin.getWorldsCommand().getAddBuilderInput(player, false);
                 return;
             case 26:
                 builderInventory.incrementInv(player);
@@ -778,6 +778,7 @@ public class InventoryClickListener implements Listener {
                 } else {
                     settings.setScoreboard(true);
                     settingsManager.startScoreboard(player);
+                    plugin.forceUpdateSidebar(player);
                 }
                 break;
             case 22:

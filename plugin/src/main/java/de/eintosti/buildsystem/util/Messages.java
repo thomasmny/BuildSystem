@@ -55,9 +55,15 @@ public class Messages {
         setMessage(sb, config, "prefix", "&8▎ &bBuildSystem &8»");
         setMessage(sb, config, "player_join", "&7[&a+&7] &a%player%");
         setMessage(sb, config, "player_quit", "&7[&c-&7] &c%player%");
-        setMessage(sb, config, "player_name", "Player Name");
         setMessage(sb, config, "loading_world", "&7Loading &b%world%&7...");
         setMessage(sb, config, "world_not_loaded", "&cWorld is not loaded!");
+        setMessage(sb, config, "enter_world_name", "&7Enter &bWorld Name");
+        setMessage(sb, config, "enter_world_creator", "&7Enter &bWorld Creator");
+        setMessage(sb, config, "enter_world_permission", "&7Enter &bPermission");
+        setMessage(sb, config, "enter_world_permission", "&7Enter &bProject");
+        setMessage(sb, config, "enter_player_name", "&7Enter &bPlayer Name");
+        setMessage(sb, config, "cancel_subtitle", "&7Type &ccancel &7to cancel");
+        setMessage(sb, config, "input_cancelled", "%prefix% &cInput cancelled!");
         setList(sb, config, "update_available", Arrays.asList("%prefix% &7Great! A new update is available &8[&bv%new_version%&8]", " &8➥ &7Your current version: &bv%current_version%"));
         setMessage(sb, config, "command_archive_world", "%prefix% &cYou can't use that command here!");
         setMessage(sb, config, "command_not_builder", "%prefix% &cOnly builders can use that command!");

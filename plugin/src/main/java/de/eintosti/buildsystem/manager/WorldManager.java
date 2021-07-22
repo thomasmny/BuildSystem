@@ -5,10 +5,11 @@ import de.eintosti.buildsystem.object.world.World;
 import de.eintosti.buildsystem.object.world.WorldType;
 import de.eintosti.buildsystem.object.world.*;
 import de.eintosti.buildsystem.util.config.WorldConfig;
+import de.eintosti.buildsystem.util.external.PlayerChatInput;
 import de.eintosti.buildsystem.util.external.UUIDFetcher;
 import de.eintosti.buildsystem.util.external.xseries.Titles;
 import de.eintosti.buildsystem.util.external.xseries.XMaterial;
-import net.wesjd.anvilgui.AnvilGUI;
+import de.eintosti.buildsystem.util.external.xseries.XSound;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -33,7 +34,6 @@ import java.util.logging.Level;
 public class WorldManager {
     private final BuildSystem plugin;
     private final WorldConfig worldConfig;
-    private final InventoryManager inventoryManager;
     private static final List<World> worlds = new ArrayList<>();
 
     public HashSet<Player> createPrivateWorldPlayers;
@@ -41,7 +41,6 @@ public class WorldManager {
     public WorldManager(BuildSystem plugin) {
         this.plugin = plugin;
         this.worldConfig = new WorldConfig(plugin);
-        this.inventoryManager = plugin.getInventoryManager();
         this.createPrivateWorldPlayers = new HashSet<>();
     }
 
@@ -56,39 +55,33 @@ public class WorldManager {
         return worlds;
     }
 
-    public void openWorldAnvil(Player p, WorldType worldType, String template, boolean privateWorld) {
+    public void openWorldAnvil(Player player, WorldType worldType, String template, boolean privateWorld) {
         if (privateWorld) {
-            p.closeInventory();
+            player.closeInventory();
             if (worldType == WorldType.TEMPLATE) {
-                createTemplateWorld(p, p.getName(), ChatColor.stripColor(template));
+                createTemplateWorld(player, player.getName(), ChatColor.stripColor(template));
             } else {
-                createWorld(p, p.getName(), worldType, true);
+                createWorld(player, player.getName(), worldType, true);
             }
             return;
         }
 
-        new AnvilGUI.Builder()
-                .onComplete((player, text) -> {
-                    for (String charString : text.split("")) {
-                        if (charString.matches("[^A-Za-z0-9/_-]")) {
-                            player.sendMessage(plugin.getString("worlds_world_creation_invalid_characters"));
-                            break;
-                        }
-                    }
-                    player.closeInventory();
+        new PlayerChatInput(plugin, player, "enter_world_name", input -> {
+            for (String charString : input.split("")) {
+                if (charString.matches("[^A-Za-z0-9/_-]")) {
+                    player.sendMessage(plugin.getString("worlds_world_creation_invalid_characters"));
+                    break;
+                }
+            }
+            player.closeInventory();
 
-                    String worldName = text.replaceAll("[^A-Za-z0-9/_-]", "").replace(" ", "_").trim();
-                    if (worldType == WorldType.TEMPLATE) {
-                        createTemplateWorld(player, worldName, ChatColor.stripColor(template));
-                    } else {
-                        createWorld(player, worldName, worldType, privateWorld);
-                    }
-                    return AnvilGUI.Response.close();
-                })
-                .item(inventoryManager.getItemStack(XMaterial.WRITABLE_BOOK, "ItemName"))
-                .text(plugin.getString("worlds_world_name"))
-                .plugin(plugin)
-                .open(p);
+            String worldName = input.replaceAll("[^A-Za-z0-9/_-]", "").replace(" ", "_").trim();
+            if (worldType == WorldType.TEMPLATE) {
+                createTemplateWorld(player, worldName, ChatColor.stripColor(template));
+            } else {
+                createWorld(player, worldName, worldType, false);
+            }
+        });
     }
 
     public void createWorld(Player player, String name, WorldType worldType, boolean privateWorld) {
@@ -103,6 +96,7 @@ public class WorldManager {
         File worldFile = new File(Bukkit.getWorldContainer(), name);
         if (worldExists || worldFile.exists()) {
             player.sendMessage(plugin.getString("worlds_world_exists"));
+            XSound.ENTITY_ITEM_BREAK.play(player);
             return;
         }
 

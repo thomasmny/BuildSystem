@@ -7,17 +7,14 @@ import de.eintosti.buildsystem.object.settings.Settings;
 import de.eintosti.buildsystem.object.settings.WorldSort;
 import de.eintosti.buildsystem.object.world.World;
 import de.eintosti.buildsystem.util.config.SettingsConfig;
-import de.eintosti.buildsystem.version.Sidebar;
+import fr.mrmicky.fastboard.FastBoard;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author einTosti
@@ -28,12 +25,15 @@ public class SettingsManager {
     private final WorldManager worldManager;
 
     private final Map<UUID, Settings> settings;
+    private final Map<UUID, FastBoard> boards;
 
     public SettingsManager(BuildSystem plugin) {
         this.plugin = plugin;
         this.settingsConfig = new SettingsConfig(plugin);
         this.worldManager = plugin.getWorldManager();
+
         this.settings = new HashMap<>();
+        this.boards = new HashMap<>();
     }
 
     private void createSettings(UUID uuid) {
@@ -61,39 +61,71 @@ public class SettingsManager {
         if (!plugin.isScoreboard()) return;
 
         Settings settings = getSettings(player);
-        Sidebar sidebar = plugin.getSidebar();
+        FastBoard board = new FastBoard(player);
+        this.boards.put(player.getUniqueId(), board);
+
         if (!settings.isScoreboard()) {
-            stopScoreboard(player, settings, sidebar);
+            stopScoreboard(player, settings);
             return;
         }
-        World world = worldManager.getWorld(player.getWorld().getName());
-        sidebar.set(player, plugin.getStatus(world), plugin.getPermission(world), plugin.getProject(world),
-                plugin.getCreator(world), plugin.getCreationDate(world));
-        BukkitTask scoreboardTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> sidebar.update(player, false,
-                plugin.getStatus(world),
-                plugin.getPermission(world),
-                plugin.getProject(world),
-                plugin.getCreator(world),
-                plugin.getCreationDate(world)), 0L, 10L);
+
+        board.updateTitle(plugin.getScoreboardTitle());
+        BukkitTask scoreboardTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> updateScoreboard(player, board), 0L, 20L);
         settings.setScoreboardTask(scoreboardTask);
     }
 
     public void startScoreboard() {
-        if (!plugin.isScoreboard()) return;
+        if (!plugin.isScoreboard()) {
+            return;
+        }
+
         Bukkit.getOnlinePlayers().forEach(this::startScoreboard);
     }
 
-    private void stopScoreboard(Player player, Settings settings, Sidebar sidebar) {
+    public void updateScoreboard(Player player) {
+        FastBoard board = this.boards.get(player.getUniqueId());
+        if (board != null) {
+            updateScoreboard(player, board);
+        }
+    }
+
+    private void updateScoreboard(Player player, FastBoard board) {
+        ArrayList<String> body = new ArrayList<>();
+
+        for (String line : plugin.getScoreboardBody()) {
+            body.add(injectPlaceholders(line, player));
+        }
+
+        board.updateLines(body);
+    }
+
+    private String injectPlaceholders(String originalString, Player player) {
+        World world = worldManager.getWorld(player.getWorld().getName());
+
+        return originalString
+                .replace("%world%", player.getWorld().getName())
+                .replace("%status%", plugin.getStatus(world))
+                .replace("%permission%", plugin.getPermission(world))
+                .replace("%project%", plugin.getProject(world))
+                .replace("%creator%", plugin.getCreator(world))
+                .replace("%creation%", plugin.getCreationDate(world));
+    }
+
+    private void stopScoreboard(Player player, Settings settings) {
         BukkitTask scoreboardTask = settings.getScoreboardTask();
         if (scoreboardTask != null) {
             scoreboardTask.cancel();
             settings.setScoreboardTask(null);
         }
-        sidebar.remove(player);
+
+        FastBoard board = this.boards.remove(player.getUniqueId());
+        if (board != null) {
+            board.delete();
+        }
     }
 
     public void stopScoreboard(Player player) {
-        stopScoreboard(player, getSettings(player), plugin.getSidebar());
+        stopScoreboard(player, getSettings(player));
     }
 
     public void stopScoreboard() {
