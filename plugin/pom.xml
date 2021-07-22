@@ -8,7 +8,7 @@
     <version>2.15</version>
 
     <name>BuildSystem</name>
-    <description>× Easy to use system for builders, with lots of great features</description>
+    <description>Easy to use system for builders, with lots of great features</description>
     <url>https://buildsystem.eintosti.de</url>
 
     <packaging>jar</packaging>
@@ -48,7 +48,7 @@
             <artifactId>fastboard</artifactId>
             <version>1.2.0</version>
         </dependency>
-        <!-- Sidebar -->
+        <!-- Abstraction -->
         <dependency>
             <groupId>de.eintosti</groupId>
             <artifactId>buildsystem-abstraction</artifactId>
