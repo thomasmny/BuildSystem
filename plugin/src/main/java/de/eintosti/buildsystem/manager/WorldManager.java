@@ -148,7 +148,7 @@ public class WorldManager {
             } else {
                 System.out.println("Using custom World generator");
             }
-            World world = new World(plugin, name, player.getName(), player.getUniqueId(), WorldType.CUSTOM, System.currentTimeMillis(), privateWorld);
+            World world = new World(plugin, name, player.getName(), player.getUniqueId(), WorldType.CUSTOM, System.currentTimeMillis(), privateWorld, input);
             worlds.add(world);
             //TODO: Make an own world creation message for custom worlds?
             player.sendMessage(plugin.getString("worlds_world_creation_started")
@@ -385,6 +385,11 @@ public class WorldManager {
         return creation;
     }
 
+    /**
+     * @param generator Plugin name
+     * @param generatorID Unique ID, if any, that was specified to indicate which generator was requested
+     * @param worldName Name of the world that the chunk gen should be applied to.
+     */
     public ChunkGenerator getChunkGenerator(String generator, String generatorID, String worldName) {
         if (generator == null) return null;
 
@@ -614,6 +619,8 @@ public class WorldManager {
         boolean blockInteractions = !configuration.isBoolean("worlds." + worldName + ".block-interactions") || configuration.getBoolean("worlds." + worldName + ".block-interactions");
         boolean buildersEnabled = configuration.isBoolean("worlds." + worldName + ".builders-enabled") && configuration.getBoolean("worlds." + worldName + ".builders-enabled");
         ArrayList<Builder> builders = loadBuilders(configuration, worldName);
+        String chunkGeneratorString = configuration.getString("worlds." + worldName + ".chunk-generator");
+        ChunkGenerator chunkGenerator = loadChunkGenerator(configuration, worldName);
 
         if (worldType == WorldType.PRIVATE) {
             privateWorld = true;
@@ -621,7 +628,7 @@ public class WorldManager {
         }
 
         World world = new World(plugin, worldName, creator, creatorId, worldType, privateWorld, material, worldStatus, project,
-                permission, date, physics, explosions, mobAI, customSpawn, blockBreaking, blockPlacement, blockInteractions, buildersEnabled, builders);
+                permission, date, physics, explosions, mobAI, customSpawn, blockBreaking, blockPlacement, blockInteractions, buildersEnabled, builders, chunkGenerator, chunkGeneratorString);
         WorldManager.worlds.add(world);
         return world;
     }
@@ -653,6 +660,25 @@ public class WorldManager {
             }
         }
         return builders;
+    }
+    /**
+     * @author - Ein_Jojo
+     */
+    private ChunkGenerator loadChunkGenerator(FileConfiguration configuration, String worldName) {
+        ChunkGenerator chunkGenerator = null;
+        if(configuration.isString("worlds." + worldName + ".chunk-generator")) {
+            String generator = configuration.getString("worlds." + worldName + ".chunk-generator");
+
+            if(generator != null && !generator.isEmpty()){
+                List<String> genArray = new ArrayList<>(Arrays.asList(generator.split(":")));
+                if (genArray.size() < 2) {
+                    genArray.add("");
+                }
+                chunkGenerator = getChunkGenerator(genArray.get(0), genArray.get(1), worldName);
+            }
+        }
+        return chunkGenerator;
+
     }
 
     private void copy(File source, File target) {

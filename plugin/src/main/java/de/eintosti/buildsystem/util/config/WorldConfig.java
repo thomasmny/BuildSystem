@@ -4,6 +4,7 @@ import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
 import de.eintosti.buildsystem.object.world.World;
 import de.eintosti.buildsystem.util.external.xseries.XMaterial;
+import org.bukkit.generator.ChunkGenerator;
 
 import java.util.logging.Level;
 
@@ -34,8 +35,8 @@ public class WorldConfig extends ConfigurationFile {
 
         worldManager.getWorlds().forEach(world -> {
             String worldName = world.getName();
-            //FIXME: World Generator
-            worldManager.generateBukkitWorld(worldName, world.getType());
+            ChunkGenerator chunkGenerator = world.getChunkGenerator();
+            worldManager.generateBukkitWorld(worldName, world.getType(), chunkGenerator);
 
             if (world.getMaterial() == XMaterial.PLAYER_HEAD) {
                 plugin.getSkullCache().cacheSkull(worldName);

@@ -11,7 +11,9 @@ import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.WorldCreator;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.craftbukkit.v1_17_R1.generator.CustomChunkGenerator;
 import org.bukkit.entity.Player;
+import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
@@ -36,6 +38,9 @@ public class World implements ConfigurationSerializable {
     private final ArrayList<Builder> builders;
     private final long date;
 
+    private String chunkGeneratorString;
+    private ChunkGenerator chunkGenerator;
+
     private boolean physics;
     private boolean explosions;
     private boolean mobAI;
@@ -48,7 +53,7 @@ public class World implements ConfigurationSerializable {
     private boolean loaded;
     private BukkitTask unloadTask;
 
-    public World(BuildSystem plugin, String name, String creator, UUID creatorId, WorldType worldType, long date, boolean privateWorld) {
+    public World(BuildSystem plugin, String name, String creator, UUID creatorId, WorldType worldType, long date, boolean privateWorld, String... chunkGeneratorString) {
         this.plugin = plugin;
 
         this.name = name;
@@ -70,6 +75,7 @@ public class World implements ConfigurationSerializable {
         this.blockPlacement = plugin.isWorldBlockPlacement();
         this.blockInteractions = plugin.isWorldBlockInteractions();
         this.buildersEnabled = isPrivate();
+        this.chunkGeneratorString = (chunkGeneratorString != null && chunkGeneratorString.length > 0) ? chunkGeneratorString[0] : null;
 
         InventoryManager inventoryManager = plugin.getInventoryManager();
         switch (worldType) {
@@ -111,7 +117,7 @@ public class World implements ConfigurationSerializable {
     public World(BuildSystem plugin, String name, String creator, UUID creatorId, WorldType worldType, boolean privateWorld,
                  XMaterial material, WorldStatus worldStatus, String project, String permission, long date, boolean physics,
                  boolean explosions, boolean mobAI, String customSpawn, boolean blockBreaking, boolean blockPlacement,
-                 boolean blockInteractions, boolean buildersEnabled, ArrayList<Builder> builders) {
+                 boolean blockInteractions, boolean buildersEnabled, ArrayList<Builder> builders, ChunkGenerator chunkGenerator, String chunkGeneratorString) {
         this.plugin = plugin;
         this.name = name;
         this.creator = creator;
@@ -132,6 +138,8 @@ public class World implements ConfigurationSerializable {
         this.blockInteractions = blockInteractions;
         this.buildersEnabled = buildersEnabled;
         this.builders = builders;
+        this.chunkGenerator = chunkGenerator;
+        this.chunkGeneratorString = chunkGeneratorString;
 
         if (plugin.isUnloadWorlds()) {
             this.seconds = plugin.getTimeUntilUnload();
@@ -477,10 +485,21 @@ public class World implements ConfigurationSerializable {
         if (customSpawn != null) {
             world.put("spawn", customSpawn);
         }
+        if (chunkGeneratorString != null) {
+            world.put("chunk-generator", getChunkGeneratorString());
+        }
         return world;
     }
 
     public enum Time {
         SUNRISE, NOON, NIGHT, UNKNOWN
+    }
+
+    public String getChunkGeneratorString() {
+        return chunkGeneratorString;
+    }
+
+    public ChunkGenerator getChunkGenerator() {
+        return chunkGenerator;
     }
 }
