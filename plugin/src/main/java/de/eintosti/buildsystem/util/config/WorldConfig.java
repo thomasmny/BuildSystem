@@ -34,6 +34,7 @@ public class WorldConfig extends ConfigurationFile {
 
         worldManager.getWorlds().forEach(world -> {
             String worldName = world.getName();
+            //FIXME: World Generator
             worldManager.generateBukkitWorld(worldName, world.getType());
 
             if (world.getMaterial() == XMaterial.PLAYER_HEAD) {

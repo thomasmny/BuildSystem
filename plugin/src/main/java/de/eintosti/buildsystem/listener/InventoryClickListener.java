@@ -275,6 +275,10 @@ public class InventoryClickListener implements Listener {
             if (privateWorld) worldManager.createPrivateWorldPlayers.add(player);
             XSound.ENTITY_CHICKEN_EGG.play(player);
             return;
+        } else if (event.getSlot() == 13) {
+            worldManager.openWorldAnvil(player, WorldType.CUSTOM, null, worldManager.createPrivateWorldPlayers.contains(player));
+            XSound.ENTITY_CHICKEN_EGG.play(player);
+            return;
         } else if (event.getSlot() == 14) {
             createInventory.openInventory(player, CreateInventory.Page.TEMPLATES);
             if (privateWorld) {

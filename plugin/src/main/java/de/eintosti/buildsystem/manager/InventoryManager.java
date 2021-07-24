@@ -32,6 +32,7 @@ public class InventoryManager {
     private XMaterial netherCreateItem;
     private XMaterial endCreateItem;
     private XMaterial voidCreateItem;
+    private XMaterial customCreateItem;
 
     private XMaterial normalDefaultItem;
     private XMaterial flatDefaultItem;
@@ -371,6 +372,10 @@ public class InventoryManager {
                 material = this.voidCreateItem;
                 if (material == null) material = XMaterial.GLASS;
                 break;
+            case CUSTOM:
+                material = this.customCreateItem;
+                if (material == null) material = XMaterial.FILLED_MAP;
+                break;
         }
         return material;
     }
@@ -392,6 +397,8 @@ public class InventoryManager {
             case VOID:
                 this.voidCreateItem = material;
                 break;
+            case CUSTOM:
+                this.customCreateItem = material;
         }
     }
 

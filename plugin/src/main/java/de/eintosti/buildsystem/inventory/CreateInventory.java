@@ -39,6 +39,7 @@ public class CreateInventory {
 
         fillGuiWithGlass(player, inventory, page);
         addPageItem(inventory, page, Page.PREDEFINED, 12, inventoryManager.getUrlSkull(plugin.getString("create_predefined_worlds"), "http://textures.minecraft.net/texture/2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78"));
+        inventoryManager.addItemStack(inventory, 13, inventoryManager.getCreateItem(WorldType.CUSTOM), plugin.getString("create_generators"));
         addPageItem(inventory, page, Page.TEMPLATES, 14, inventoryManager.getUrlSkull(plugin.getString("create_templates"), "http://textures.minecraft.net/texture/d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c"));
 
         if (page == Page.PREDEFINED) {
@@ -147,7 +148,7 @@ public class CreateInventory {
     }
 
     public enum Page {
-        PREDEFINED, TEMPLATES
+        PREDEFINED, TEMPLATES, GENERATORS
     }
 
     private static class TemplateFilter implements FileFilter {

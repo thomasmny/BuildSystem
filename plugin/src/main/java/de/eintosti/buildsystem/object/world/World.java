@@ -88,6 +88,8 @@ public class World implements ConfigurationSerializable {
             case VOID:
                 this.material = inventoryManager.getDefaultItem(WorldType.VOID);
                 break;
+            case CUSTOM:
+                //TODO: Make an own item for custom generated worlds?
             case TEMPLATE:
                 this.material = XMaterial.FILLED_MAP;
                 break;
@@ -196,6 +198,8 @@ public class World implements ConfigurationSerializable {
                 return plugin.getString("type_end");
             case VOID:
                 return plugin.getString("type_void");
+            case CUSTOM:
+                return plugin.getString("type_custom");
             case TEMPLATE:
                 return plugin.getString("type_template");
             case PRIVATE:

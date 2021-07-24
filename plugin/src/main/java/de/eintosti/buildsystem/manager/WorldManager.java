@@ -78,6 +78,8 @@ public class WorldManager {
             String worldName = input.replaceAll("[^A-Za-z0-9/_-]", "").replace(" ", "_").trim();
             if (worldType == WorldType.TEMPLATE) {
                 createTemplateWorld(player, worldName, ChatColor.stripColor(template));
+            } else if (worldType == WorldType.CUSTOM){
+                createCustomWorld(player, worldName, false);
             } else {
                 createWorld(player, worldName, worldType, false);
             }
@@ -109,6 +111,57 @@ public class WorldManager {
         generateWorld(world);
         player.sendMessage(plugin.getString("worlds_creation_finished"));
     }
+
+    /**
+     * @author Ein_Jojo (the idiot)
+     * @param player Player object
+     * @param name Name of the world
+     * @param privateWorld private world?
+     */
+    public void createCustomWorld(Player player, String name, boolean privateWorld) {
+        boolean worldExists = false;
+        for (World world : worlds) {
+            if (world.getName().equalsIgnoreCase(name)) {
+                worldExists = true;
+                break;
+            }
+        }
+        File worldFile = new File(Bukkit.getWorldContainer(), name);
+        if (worldExists || worldFile.exists()) {
+            player.sendMessage(plugin.getString("worlds_world_exists"));
+            XSound.ENTITY_ITEM_BREAK.play(player);
+            return;
+        }
+        //Get Generator
+        new PlayerChatInput(plugin, player, "enter_generator_name", input -> {
+            List<String> genArray = new ArrayList<>(Arrays.asList(input.split(":")));
+            if (genArray.size() < 2) {
+                genArray.add("");
+            }
+
+            ChunkGenerator chunkGenerator = getChunkGenerator(genArray.get(0), genArray.get(1), name);
+
+            if (chunkGenerator == null) {
+                player.sendMessage(plugin.getString("worlds_import_unknown_generator"));
+                XSound.ENTITY_ITEM_BREAK.play(player);
+                return;
+            } else {
+                System.out.println("Using custom World generator");
+            }
+            World world = new World(plugin, name, player.getName(), player.getUniqueId(), WorldType.CUSTOM, System.currentTimeMillis(), privateWorld);
+            worlds.add(world);
+            //TODO: Make an own world creation message for custom worlds?
+            player.sendMessage(plugin.getString("worlds_world_creation_started")
+                    .replace("%world%", world.getName())
+                    .replace("%type%", world.getTypeName()));
+            //generateWorld(world, chunkGenerator);
+            generateBukkitWorld(name, world.getType(), chunkGenerator);
+            player.sendMessage(plugin.getString("worlds_creation_finished"));
+        });
+
+
+    }
+
 
     @SuppressWarnings("deprecation")
     public org.bukkit.World generateBukkitWorld(String name, WorldType worldType, ChunkGenerator... chunkGenerators) {

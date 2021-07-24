@@ -12,5 +12,6 @@ public enum WorldType {
     TEMPLATE,
     PRIVATE,
     IMPORTED,
+    CUSTOM,
     UNKNOWN
 }

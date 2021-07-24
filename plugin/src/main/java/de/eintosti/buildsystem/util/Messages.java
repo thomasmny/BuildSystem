@@ -58,6 +58,7 @@ public class Messages {
         setMessage(sb, config, "loading_world", "&7Loading &b%world%&7...");
         setMessage(sb, config, "world_not_loaded", "&cWorld is not loaded!");
         setMessage(sb, config, "enter_world_name", "&7Enter &bWorld Name");
+        setMessage(sb, config, "enter_generator_name", "&7Enter &bGenerator Name");
         setMessage(sb, config, "enter_world_creator", "&7Enter &bWorld Creator");
         setMessage(sb, config, "enter_world_permission", "&7Enter &bPermission");
         setMessage(sb, config, "enter_world_permission", "&7Enter &bProject");
@@ -405,6 +406,7 @@ public class Messages {
         setMessage(sb, config, "create_title", "&3» &8Create World");
         setMessage(sb, config, "create_predefined_worlds", "&6Predefined Worlds");
         setMessage(sb, config, "create_templates", "&6Templates");
+        setMessage(sb, config, "create_generators", "&6Generators");
         setMessage(sb, config, "create_no_templates", "&c&nNo templates available");
         setMessage(sb, config, "create_normal_world", "&bNormal World");
         setMessage(sb, config, "create_flat_world", "&aFlat World");
@@ -419,6 +421,7 @@ public class Messages {
         setMessage(sb, config, "type_nether", "Nether");
         setMessage(sb, config, "type_end", "End");
         setMessage(sb, config, "type_void", "Void");
+        setMessage(sb, config, "type_custom", "Custom");
         setMessage(sb, config, "type_template", "Template");
         setMessage(sb, config, "type_private", "Private");
         addLine(sb, "");
