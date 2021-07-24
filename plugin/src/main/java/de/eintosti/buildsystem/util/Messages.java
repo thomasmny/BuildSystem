@@ -414,6 +414,7 @@ public class Messages {
         setMessage(sb, config, "create_end_world", "&eEnd World");
         setMessage(sb, config, "create_void_world", "&fEmpty World");
         setMessage(sb, config, "create_template", "&e%template%");
+        setMessage(sb, config, "create_generators_create_world", "&eCreate world with generator");
         addLine(sb, "");
         addLine(sb, "# World Type");
         setMessage(sb, config, "type_normal", "Normal");
