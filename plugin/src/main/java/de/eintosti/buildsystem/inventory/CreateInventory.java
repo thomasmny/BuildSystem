@@ -148,7 +148,7 @@ public class CreateInventory {
     }
 
     public enum Page {
-        PREDEFINED, TEMPLATES, GENERATORS
+        PREDEFINED, TEMPLATES
     }
 
     private static class TemplateFilter implements FileFilter {
