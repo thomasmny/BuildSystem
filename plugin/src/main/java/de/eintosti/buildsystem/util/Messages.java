@@ -60,7 +60,7 @@ public class Messages {
         setMessage(sb, config, "enter_world_name", "&7Enter &bWorld Name");
         setMessage(sb, config, "enter_world_creator", "&7Enter &bWorld Creator");
         setMessage(sb, config, "enter_world_permission", "&7Enter &bPermission");
-        setMessage(sb, config, "enter_world_permission", "&7Enter &bProject");
+        setMessage(sb, config, "enter_world_project", "&7Enter &bProject");
         setMessage(sb, config, "enter_player_name", "&7Enter &bPlayer Name");
         setMessage(sb, config, "cancel_subtitle", "&7Type &ccancel &7to cancel");
         setMessage(sb, config, "input_cancelled", "%prefix% &cInput cancelled!");
