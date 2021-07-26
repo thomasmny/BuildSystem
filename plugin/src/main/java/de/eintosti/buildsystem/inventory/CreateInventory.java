@@ -39,6 +39,7 @@ public class CreateInventory {
 
         fillGuiWithGlass(player, inventory, page);
         addPageItem(inventory, page, Page.PREDEFINED, 12, inventoryManager.getUrlSkull(plugin.getString("create_predefined_worlds"), "http://textures.minecraft.net/texture/2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78"));
+        addPageItem(inventory, page, Page.GENERATOR, 13, inventoryManager.getUrlSkull(plugin.getString("create_generators"), "http://textures.minecraft.net/texture/b2f79016cad84d1ae21609c4813782598e387961be13c15682752f126dce7a"));
         addPageItem(inventory, page, Page.TEMPLATES, 14, inventoryManager.getUrlSkull(plugin.getString("create_templates"), "http://textures.minecraft.net/texture/d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c"));
 
         if (page == Page.PREDEFINED) {
@@ -48,13 +49,16 @@ public class CreateInventory {
             inventoryManager.addItemStack(inventory, 32, inventoryManager.getCreateItem(WorldType.END), plugin.getString("create_end_world"));
             inventoryManager.addItemStack(inventory, 33, inventoryManager.getCreateItem(WorldType.VOID), plugin.getString("create_void_world"));
         }
+        if( page == Page.GENERATOR) {
+            inventoryManager.addUrlSkull(inventory, 31, plugin.getString("create_generators_create_world"), "http://textures.minecraft.net/texture/3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
+        }
         // Template stuff is done during inventory open
 
         return inventory;
     }
 
     public void openInventory(Player player, Page page) {
-        if (page == Page.PREDEFINED) {
+        if (page == Page.PREDEFINED || page == Page.GENERATOR) {
             player.openInventory(getInventory(player, page));
         } else if (page == Page.TEMPLATES) {
             addTemplates(player, page);
@@ -108,6 +112,12 @@ public class CreateInventory {
             inventoryManager.addGlassPane(plugin, player, inventory, i);
         }
 
+        if (page == Page.GENERATOR){
+            inventoryManager.addGlassPane(plugin,player,inventory, 29);
+            inventoryManager.addGlassPane(plugin,player,inventory, 30);
+            inventoryManager.addGlassPane(plugin,player,inventory, 32);
+            inventoryManager.addGlassPane(plugin,player,inventory, 33);
+        }
         if (page == Page.TEMPLATES) {
             UUID playerUUID = player.getUniqueId();
             if (numTemplates > 1 && invIndex.get(playerUUID) > 0) {
@@ -147,7 +157,7 @@ public class CreateInventory {
     }
 
     public enum Page {
-        PREDEFINED, TEMPLATES
+        PREDEFINED, TEMPLATES, GENERATOR
     }
 
     private static class TemplateFilter implements FileFilter {

@@ -275,6 +275,12 @@ public class InventoryClickListener implements Listener {
             if (privateWorld) worldManager.createPrivateWorldPlayers.add(player);
             XSound.ENTITY_CHICKEN_EGG.play(player);
             return;
+        } else if (event.getSlot() == 13) {
+            createInventory.openInventory(player, CreateInventory.Page.GENERATOR);
+            if (privateWorld) worldManager.createPrivateWorldPlayers.add(player);
+            //worldManager.openWorldAnvil(player, WorldType.CUSTOM, null, worldManager.createPrivateWorldPlayers.contains(player));
+            XSound.ENTITY_CHICKEN_EGG.play(player);
+            return;
         } else if (event.getSlot() == 14) {
             createInventory.openInventory(player, CreateInventory.Page.TEMPLATES);
             if (privateWorld) {
@@ -287,7 +293,7 @@ public class InventoryClickListener implements Listener {
         Inventory inventory = event.getClickedInventory();
         if (inventory == null) return;
 
-        CreateInventory.Page page = inventory.getItem(12).containsEnchantment(Enchantment.KNOCKBACK) ? CreateInventory.Page.PREDEFINED : CreateInventory.Page.TEMPLATES;
+        CreateInventory.Page page = getCurrentPage(inventory);
         if (page == CreateInventory.Page.PREDEFINED) {
             switch (event.getSlot()) {
                 case 29:
@@ -307,7 +313,7 @@ public class InventoryClickListener implements Listener {
                     break;
             }
             XSound.ENTITY_CHICKEN_EGG.play(player);
-        } else {
+        } else if (page == CreateInventory.Page.TEMPLATES) {
             if (itemStack.getType() == XMaterial.FILLED_MAP.parseMaterial()) {
                 worldManager.openWorldAnvil(player, WorldType.TEMPLATE, itemStack.getItemMeta().getDisplayName(),
                         worldManager.createPrivateWorldPlayers.contains(player));
@@ -323,6 +329,11 @@ public class InventoryClickListener implements Listener {
                 }
                 XSound.ENTITY_CHICKEN_EGG.play(player);
                 createInventory.openInventory(player, CreateInventory.Page.TEMPLATES);
+            }
+        } else {
+            if (event.getSlot() == 31) {
+                worldManager.openWorldAnvil(player, WorldType.CUSTOM, null, worldManager.createPrivateWorldPlayers.contains(player));
+                XSound.ENTITY_CHICKEN_EGG.play(player);
             }
         }
     }
@@ -474,6 +485,16 @@ public class InventoryClickListener implements Listener {
 
     private boolean isValid(Entity entity) {
         return !IGNORED_ENTITIES.contains(entity.getType());
+    }
+
+    private CreateInventory.Page getCurrentPage(Inventory inventory) {
+        if (inventory.getItem(12).containsEnchantment(Enchantment.KNOCKBACK)) {
+            return CreateInventory.Page.PREDEFINED;
+        } else if (inventory.getItem(13).containsEnchantment(Enchantment.KNOCKBACK)) {
+            return CreateInventory.Page.GENERATOR;
+        } else {
+            return CreateInventory.Page.TEMPLATES;
+        }
     }
 
     private static final ImmutableSet<EntityType> IGNORED_ENTITIES = Sets.immutableEnumSet(

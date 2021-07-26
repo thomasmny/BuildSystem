@@ -249,6 +249,7 @@ public class WorldsCommand implements CommandExecutor {
             }
 
             case "info": {
+                //TODO: Print information about the custom generator?
                 if (!player.hasPermission("buildsystem.info")) {
                     plugin.sendPermissionMessage(player);
                     return true;
