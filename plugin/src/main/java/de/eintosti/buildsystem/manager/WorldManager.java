@@ -46,7 +46,9 @@ public class WorldManager {
 
     public World getWorld(String worldName) {
         for (World world : worlds) {
-            if (world.getName().equalsIgnoreCase(worldName)) return world;
+            if (world.getName().equalsIgnoreCase(worldName)) {
+                return world;
+            }
         }
         return null;
     }
@@ -58,11 +60,7 @@ public class WorldManager {
     public void openWorldAnvil(Player player, WorldType worldType, String template, boolean privateWorld) {
         if (privateWorld) {
             player.closeInventory();
-            if (worldType == WorldType.TEMPLATE) {
-                createTemplateWorld(player, player.getName(), ChatColor.stripColor(template));
-            } else {
-                createWorld(player, player.getName(), worldType, true);
-            }
+            manageWorldType(player, player.getName(), template, worldType, true);
             return;
         }
 
@@ -73,28 +71,29 @@ public class WorldManager {
                     break;
                 }
             }
-            player.closeInventory();
 
+            player.closeInventory();
             String worldName = input.replaceAll("[^A-Za-z0-9/_-]", "").replace(" ", "_").trim();
-            if (worldType == WorldType.TEMPLATE) {
-                createTemplateWorld(player, worldName, ChatColor.stripColor(template));
-            } else if (worldType == WorldType.CUSTOM){
-                createCustomWorld(player, worldName, false);
-            } else {
-                createWorld(player, worldName, worldType, false);
-            }
+            manageWorldType(player, worldName, template, worldType, false);
         });
     }
 
-    public void createWorld(Player player, String name, WorldType worldType, boolean privateWorld) {
-        boolean worldExists = false;
-        for (World world : worlds) {
-            if (world.getName().equalsIgnoreCase(name)) {
-                worldExists = true;
+    private void manageWorldType(Player player, String worldName, String template, WorldType worldType, boolean privateWorld) {
+        switch (worldType) {
+            default:
+                createWorld(player, worldName, worldType, privateWorld);
                 break;
-            }
+            case CUSTOM:
+                createCustomWorld(player, worldName, privateWorld);
+                break;
+            case TEMPLATE:
+                createTemplateWorld(player, worldName, ChatColor.stripColor(template), privateWorld);
+                break;
         }
+    }
 
+    public void createWorld(Player player, String name, WorldType worldType, boolean privateWorld) {
+        boolean worldExists = getWorld(name) != null;
         File worldFile = new File(Bukkit.getWorldContainer(), name);
         if (worldExists || worldFile.exists()) {
             player.sendMessage(plugin.getString("worlds_world_exists"));
@@ -113,25 +112,20 @@ public class WorldManager {
     }
 
     /**
-     * @author Ein_Jojo (the idiot)
-     * @param player Player object
-     * @param name Name of the world
+     * @param player       Player object
+     * @param name         Name of the world
      * @param privateWorld private world?
+     * @author Ein_Jojo
      */
     public void createCustomWorld(Player player, String name, boolean privateWorld) {
-        boolean worldExists = false;
-        for (World world : worlds) {
-            if (world.getName().equalsIgnoreCase(name)) {
-                worldExists = true;
-                break;
-            }
-        }
+        boolean worldExists = getWorld(name) != null;
         File worldFile = new File(Bukkit.getWorldContainer(), name);
         if (worldExists || worldFile.exists()) {
             player.sendMessage(plugin.getString("worlds_world_exists"));
             XSound.ENTITY_ITEM_BREAK.play(player);
             return;
         }
+
         //Get Generator
         new PlayerChatInput(plugin, player, "enter_generator_name", input -> {
             List<String> genArray = new ArrayList<>(Arrays.asList(input.split(":")));
@@ -146,8 +140,9 @@ public class WorldManager {
                 XSound.ENTITY_ITEM_BREAK.play(player);
                 return;
             } else {
-                System.out.println("Using custom World generator");
+                plugin.getLogger().log(Level.INFO, "Using custom world generator: " + input);
             }
+
             World world = new World(plugin, name, player.getName(), player.getUniqueId(), WorldType.CUSTOM, System.currentTimeMillis(), privateWorld, input);
             worlds.add(world);
             //TODO: Make an own world creation message for custom worlds?
@@ -158,12 +153,35 @@ public class WorldManager {
             generateBukkitWorld(name, world.getType(), chunkGenerator);
             player.sendMessage(plugin.getString("worlds_creation_finished"));
         });
-
-
     }
 
+    private void createTemplateWorld(Player player, String name, String template, boolean privateWorld) {
+        boolean worldExists = getWorld(name) != null;
+        File worldFile = new File(Bukkit.getWorldContainer(), name);
+        if (worldExists || worldFile.exists()) {
+            player.sendMessage(plugin.getString("worlds_world_exists"));
+            return;
+        }
 
-    @SuppressWarnings("deprecation")
+        File templateFile = new File(plugin.getDataFolder() + File.separator + "templates" + File.separator + template);
+        if (!templateFile.exists()) {
+            player.sendMessage(plugin.getString("worlds_template_does_not_exist"));
+            return;
+        }
+
+        World world = new World(plugin, name, player.getName(), player.getUniqueId(), WorldType.TEMPLATE, System.currentTimeMillis(), privateWorld);
+        worlds.add(world);
+
+        player.sendMessage(plugin.getString("worlds_template_creation_started")
+                .replace("%world%", world.getName())
+                .replace("%template%", template));
+        copy(templateFile, worldFile);
+        Bukkit.createWorld(WorldCreator.name(name)
+                .type(org.bukkit.WorldType.FLAT)
+                .generateStructures(false));
+        player.sendMessage(plugin.getString("worlds_creation_finished"));
+    }
+
     public org.bukkit.World generateBukkitWorld(String name, WorldType worldType, ChunkGenerator... chunkGenerators) {
         WorldCreator worldCreator = new WorldCreator(name);
         org.bukkit.WorldType bukkitWorldType;
@@ -237,38 +255,6 @@ public class WorldManager {
                 bukkitWorld.setSpawnLocation(0, 4, 0);
                 break;
         }
-    }
-
-    private void createTemplateWorld(Player player, String name, String template) {
-        boolean worldExists = false;
-        for (World world : worlds) {
-            if (world.getName().equalsIgnoreCase(name)) {
-                worldExists = true;
-                break;
-            }
-        }
-        File worldFile = new File(Bukkit.getWorldContainer(), name);
-        if (worldExists || worldFile.exists()) {
-            player.sendMessage(plugin.getString("worlds_world_exists"));
-            return;
-        }
-
-        File templateFile = new File(plugin.getDataFolder() + File.separator + "templates" + File.separator + template);
-        if (!templateFile.exists()) {
-            player.sendMessage(plugin.getString("worlds_template_does_not_exist"));
-            return;
-        }
-        World world = new World(plugin, name, player.getName(), player.getUniqueId(), WorldType.TEMPLATE, System.currentTimeMillis(), false);
-        worlds.add(world);
-
-        player.sendMessage(plugin.getString("worlds_template_creation_started")
-                .replace("%world%", world.getName())
-                .replace("%template%", template));
-        copy(templateFile, worldFile);
-        Bukkit.createWorld(WorldCreator.name(name)
-                .type(org.bukkit.WorldType.FLAT)
-                .generateStructures(false));
-        player.sendMessage(plugin.getString("worlds_creation_finished"));
     }
 
     public void deleteWorld(Player player, World world) {
@@ -386,9 +372,9 @@ public class WorldManager {
     }
 
     /**
-     * @param generator Plugin name
+     * @param generator   Plugin name
      * @param generatorID Unique ID, if any, that was specified to indicate which generator was requested
-     * @param worldName Name of the world that the chunk gen should be applied to.
+     * @param worldName   Name of the world that the chunk gen should be applied to.
      */
     public ChunkGenerator getChunkGenerator(String generator, String generatorID, String worldName) {
         if (generator == null) return null;
@@ -661,15 +647,16 @@ public class WorldManager {
         }
         return builders;
     }
+
     /**
      * @author - Ein_Jojo
      */
     private ChunkGenerator loadChunkGenerator(FileConfiguration configuration, String worldName) {
         ChunkGenerator chunkGenerator = null;
-        if(configuration.isString("worlds." + worldName + ".chunk-generator")) {
+        if (configuration.isString("worlds." + worldName + ".chunk-generator")) {
             String generator = configuration.getString("worlds." + worldName + ".chunk-generator");
 
-            if(generator != null && !generator.isEmpty()){
+            if (generator != null && !generator.isEmpty()) {
                 List<String> genArray = new ArrayList<>(Arrays.asList(generator.split(":")));
                 if (genArray.size() < 2) {
                     genArray.add("");
