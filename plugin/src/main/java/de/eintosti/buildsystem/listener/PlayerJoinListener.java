@@ -97,6 +97,10 @@ public class PlayerJoinListener implements Listener {
     }
 
     private void addJoinItem(Player player) {
+        if (!plugin.isGiveNavigatorOnJoin()) {
+            return;
+        }
+
         if (!player.hasPermission("buildsystem.gui")) {
             return;
         }

@@ -59,6 +59,7 @@ public class BuildSystem extends JavaPlugin {
     private boolean updateChecker;
     private boolean blockWorldEditNonBuilder;
     private boolean creatorIsBuilder;
+    private boolean giveNavigatorOnJoin;
     private boolean worldPhysics;
     private boolean worldExplosions;
     private boolean worldMobAi;
@@ -546,7 +547,8 @@ public class BuildSystem extends JavaPlugin {
         this.blockWorldEditNonBuilder = config.getBoolean("settings.builder.block-worldedit-non-builder", true);
         this.creatorIsBuilder = config.getBoolean("settings.builder.creator-is-builder", true);
 
-        this.navigatorItem = XMaterial.valueOf(config.getString("settings.navigatorItem", "CLOCK"));
+        this.navigatorItem = XMaterial.valueOf(config.getString("settings.navigator.item", "CLOCK"));
+        this.giveNavigatorOnJoin = config.getBoolean("settings.navigator.give-item-on-join", true);
 
         // World
         this.lockWeather = config.getBoolean("world.lock-weather", true);
@@ -655,6 +657,14 @@ public class BuildSystem extends JavaPlugin {
 
     public boolean isCreatorIsBuilder() {
         return creatorIsBuilder;
+    }
+
+    public XMaterial getNavigatorItem() {
+        return navigatorItem;
+    }
+
+    public boolean isGiveNavigatorOnJoin() {
+        return giveNavigatorOnJoin;
     }
 
     public boolean isWorldPhysics() {
@@ -921,9 +931,5 @@ public class BuildSystem extends JavaPlugin {
 
     public SkullCache getSkullCache() {
         return skullCache;
-    }
-
-    public XMaterial getNavigatorItem() {
-        return navigatorItem;
     }
 }

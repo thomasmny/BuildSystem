@@ -334,9 +334,7 @@ public class WorldManager {
                     genArray.add("");
                 }
 
-                // chunkGenerator = getChunkGenerator(generatorName[0], "", worldName);
                 chunkGenerator = getChunkGenerator(genArray.get(0), genArray.get(1), worldName);
-
                 if (chunkGenerator == null) {
                     player.sendMessage(plugin.getString("worlds_import_unknown_generator"));
                     return;
