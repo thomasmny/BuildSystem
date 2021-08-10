@@ -437,6 +437,8 @@ public class WorldManager {
         File newWorldFile = new File(name);
         org.bukkit.World oldWorld = Bukkit.getWorld(world.getName());
 
+        oldWorld.save();
+        
         copy(oldWorldFile, newWorldFile);
         worldConfig.getFile().set("worlds." + name, worldConfig.getFile().getConfigurationSection("worlds." + world.getName()));
         worldConfig.getFile().set("worlds." + world.getName(), null);
