@@ -289,7 +289,7 @@ public class WorldManager {
             Bukkit.getWorlds().remove(bukkitWorld);
         }
 
-        File deleteFolder = new File(world.getName());
+        File deleteFolder = new File(Bukkit.getWorldContainer(), world.getName());
         if (!deleteFolder.exists()) {
             player.sendMessage(plugin.getString("worlds_delete_unknown_directory"));
             return;
@@ -325,7 +325,7 @@ public class WorldManager {
             }
         }
 
-        File file = new File(plugin.getServer().getWorldContainer(), worldName);
+        File file = new File(Bukkit.getWorldContainer(), worldName);
         if (file.exists() && file.isDirectory()) {
             ChunkGenerator chunkGenerator = null;
             if (generator == Generator.CUSTOM) {
@@ -405,7 +405,8 @@ public class WorldManager {
                     }
                 }
 
-                WorldManager.worlds.add(new World(plugin, worldName, "-", null, WorldType.IMPORTED, getDirectoryCreation(new File(worldName)), false));
+                long creation = getDirectoryCreation(new File(Bukkit.getWorldContainer(), worldName));
+                WorldManager.worlds.add(new World(plugin, worldName, "-", null, WorldType.IMPORTED, creation, false));
                 generateBukkitWorld(worldName, WorldType.VOID);
                 player.sendMessage(plugin.getString("worlds_importall_world_imported").replace("%world%", worldName));
 
@@ -433,12 +434,12 @@ public class WorldManager {
         player.closeInventory();
         name = name.replaceAll("[^A-Za-z0-9/_-]", "").replace(" ", "_").trim();
 
-        File oldWorldFile = new File(world.getName());
-        File newWorldFile = new File(name);
+        File oldWorldFile = new File(Bukkit.getWorldContainer(), world.getName());
+        File newWorldFile = new File(Bukkit.getWorldContainer(), name);
         org.bukkit.World oldWorld = Bukkit.getWorld(world.getName());
 
         oldWorld.save();
-        
+
         copy(oldWorldFile, newWorldFile);
         worldConfig.getFile().set("worlds." + name, worldConfig.getFile().getConfigurationSection("worlds." + world.getName()));
         worldConfig.getFile().set("worlds." + world.getName(), null);
@@ -665,7 +666,6 @@ public class WorldManager {
             }
         }
         return chunkGenerator;
-
     }
 
     private void copy(File source, File target) {
