@@ -491,6 +491,7 @@ public class BuildSystem extends JavaPlugin {
         try {
             return ChatColor.translateAlternateColorCodes('&', Messages.getInstance().messageData.get(key).replace("%prefix%", getPrefix()));
         } catch (NullPointerException e) {
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[BuildSystem] Could not get Message String. Key: " + key);
             Messages.getInstance().createMessageFile();
             return getString(key);
         }
@@ -506,6 +507,7 @@ public class BuildSystem extends JavaPlugin {
             }
             return list;
         } catch (NullPointerException e) {
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[BuildSystem] Could not get Message List. Key: " + key);
             Messages.getInstance().createMessageFile();
             return getStringList(key);
         }
