@@ -231,7 +231,7 @@ public class WorldManager {
         org.bukkit.World bukkitWorld = Bukkit.createWorld(worldCreator);
 
         if (bukkitWorld != null) {
-            bukkitWorld.setDifficulty(Difficulty.PEACEFUL);
+            bukkitWorld.setDifficulty(Difficulty.valueOf(plugin.getWorldDifficulty()));
             bukkitWorld.setTime(plugin.getNoonTime());
             bukkitWorld.getWorldBorder().setSize(plugin.getWorldBorderSize());
             plugin.getDefaultGameRules().forEach(bukkitWorld::setGameRuleValue);
@@ -388,6 +388,7 @@ public class WorldManager {
     public void importWorlds(Player player, String[] worldList) {
         int worlds = worldList.length;
         int delay = plugin.getImportDelay();
+
         player.sendMessage(plugin.getString("worlds_importall_started").replace("%amount%", String.valueOf(worlds)));
         player.sendMessage(plugin.getString("worlds_importall_delay").replace("%delay%", String.valueOf(delay)));
 

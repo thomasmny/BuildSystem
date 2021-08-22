@@ -4,6 +4,7 @@ import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
 import de.eintosti.buildsystem.object.world.Generator;
 import de.eintosti.buildsystem.object.world.World;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -72,7 +73,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                             });
                             break;
                         case "import":
-                            File worldContainer = plugin.getServer().getWorldContainer();
+                            File worldContainer = Bukkit.getWorldContainer();
                             String[] directories = worldContainer.list((dir, name) -> {
                                 for (String charString : name.split("")) {
                                     if (charString.matches("[^A-Za-z0-9/_-]")) {

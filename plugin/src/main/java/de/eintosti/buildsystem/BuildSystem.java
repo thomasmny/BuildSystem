@@ -47,6 +47,7 @@ public class BuildSystem extends JavaPlugin {
     private String prefix;
     private String version;
     private String dateFormat;
+    private String worldDifficulty;
     private String timeUntilUnload;
 
     private boolean archiveVanish;
@@ -491,7 +492,7 @@ public class BuildSystem extends JavaPlugin {
         try {
             return ChatColor.translateAlternateColorCodes('&', Messages.getInstance().messageData.get(key).replace("%prefix%", getPrefix()));
         } catch (NullPointerException e) {
-            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[BuildSystem] Could not get Message String. Key: " + key);
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[BuildSystem] Could not find message with key: " + key);
             Messages.getInstance().createMessageFile();
             return getString(key);
         }
@@ -507,7 +508,7 @@ public class BuildSystem extends JavaPlugin {
             }
             return list;
         } catch (NullPointerException e) {
-            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[BuildSystem] Could not get Message List. Key: " + key);
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[BuildSystem] Could not get list with key: " + key);
             Messages.getInstance().createMessageFile();
             return getStringList(key);
         }
@@ -554,6 +555,7 @@ public class BuildSystem extends JavaPlugin {
 
         // World
         this.lockWeather = config.getBoolean("world.lock-weather", true);
+        this.worldDifficulty = config.getString("world.default.difficulty", "PEACEFUL");
         this.sunriseTime = config.getInt("world.default.time.sunrise", 0);
         this.noonTime = config.getInt("world.default.time.noon", 6000);
         this.nightTime = config.getInt("world.default.time.night", 18000);
@@ -627,6 +629,10 @@ public class BuildSystem extends JavaPlugin {
 
     public String getDateFormat() {
         return dateFormat;
+    }
+
+    public String getWorldDifficulty() {
+        return worldDifficulty;
     }
 
     public boolean isSpawnTeleportMessage() {

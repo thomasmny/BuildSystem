@@ -71,12 +71,14 @@ public class WorldsCommand implements CommandExecutor {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
+
                 if (args.length == 2) {
                     World world = worldManager.getWorld(args[1]);
                     if (world == null) {
                         player.sendMessage(plugin.getString("worlds_addbuilder_unknown_world"));
                         return true;
                     }
+
                     if ((world.getCreatorId() == null || !world.getCreatorId().equals(player.getUniqueId()))
                             && !player.hasPermission("buildsystem.admin")) {
                         player.sendMessage(plugin.getString("worlds_addbuilder_not_creator"));
@@ -96,6 +98,7 @@ public class WorldsCommand implements CommandExecutor {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
+
                 if (args.length == 2) {
                     World world = worldManager.getWorld(args[1]);
                     if (world == null) {
@@ -115,12 +118,14 @@ public class WorldsCommand implements CommandExecutor {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
+
                 if (args.length == 2) {
                     World world = worldManager.getWorld(args[1]);
                     if (world == null) {
                         player.sendMessage(plugin.getString("worlds_delete_unknown_world"));
                         return true;
                     }
+
                     plugin.selectedWorld.put(player.getUniqueId(), world);
                     plugin.getDeleteInventory().openInventory(player, world);
                 } else {
@@ -134,6 +139,7 @@ public class WorldsCommand implements CommandExecutor {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
+
                 if (args.length == 2) {
                     World world = worldManager.getWorld(args[1]);
                     if (world == null) {
@@ -165,6 +171,7 @@ public class WorldsCommand implements CommandExecutor {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
+
                 if (args.length >= 2) {
                     World world = worldManager.getWorld(args[1]);
                     if (world != null) {
@@ -172,7 +179,7 @@ public class WorldsCommand implements CommandExecutor {
                         return true;
                     }
 
-                    File worldFolder = new File(plugin.getServer().getWorldContainer(), args[1]);
+                    File worldFolder = new File(Bukkit.getWorldContainer(), args[1]);
                     File levelFile = new File(worldFolder.getAbsolutePath() + File.separator + "level.dat");
                     if (!worldFolder.isDirectory() || !levelFile.exists()) {
                         player.sendMessage(plugin.getString("worlds_import_unknown_world"));
@@ -224,8 +231,9 @@ public class WorldsCommand implements CommandExecutor {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
+
                 if (args.length == 1) {
-                    File worldContainer = plugin.getServer().getWorldContainer();
+                    File worldContainer = Bukkit.getWorldContainer();
                     String[] directories = worldContainer.list((dir, name) -> {
                         File worldFolder = new File(dir, name);
                         if (!worldFolder.isDirectory()) return false;
@@ -254,6 +262,7 @@ public class WorldsCommand implements CommandExecutor {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
+
                 World world = worldManager.getWorld(player.getWorld().getName());
                 if (args.length == 2) {
                     if (world == null) {
@@ -264,6 +273,7 @@ public class WorldsCommand implements CommandExecutor {
                 } else if (args.length > 2) {
                     player.sendMessage(plugin.getString("worlds_info_usage"));
                 }
+
                 sendInfoMessage(player, world);
                 break;
             }
@@ -279,14 +289,15 @@ public class WorldsCommand implements CommandExecutor {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
+
                 if (args.length == 2) {
                     World world = worldManager.getWorld(args[1]);
                     if (world == null) {
                         player.sendMessage(plugin.getString("worlds_removebuilder_unknown_world"));
                         return true;
                     }
-                    if ((world.getCreatorId() == null || !world.getCreatorId().equals(player.getUniqueId()))
-                            && !player.hasPermission("buildsystem.admin")) {
+
+                    if ((world.getCreatorId() == null || !world.getCreatorId().equals(player.getUniqueId())) && !player.hasPermission("buildsystem.admin")) {
                         player.sendMessage(plugin.getString("worlds_removebuilder_not_creator"));
                         return true;
                     }
@@ -304,12 +315,14 @@ public class WorldsCommand implements CommandExecutor {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
+
                 if (args.length == 2) {
                     World world = worldManager.getWorld(args[1]);
                     if (world == null) {
                         player.sendMessage(plugin.getString("worlds_rename_unknown_world"));
                         return true;
                     }
+
                     plugin.selectedWorld.put(player.getUniqueId(), world);
                     getRenameInput(player);
                 } else {
@@ -323,6 +336,7 @@ public class WorldsCommand implements CommandExecutor {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
+
                 if (args.length == 2) {
                     World world = worldManager.getWorld(args[1]);
                     if (world == null) {
@@ -335,6 +349,7 @@ public class WorldsCommand implements CommandExecutor {
                         player.sendMessage(plugin.getString("worlds_setitem_hand_empty"));
                         return true;
                     }
+
                     world.setMaterial(XMaterial.matchXMaterial(itemStack));
                     player.sendMessage(plugin.getString("worlds_setitem_set").replace("%world%", world.getName()));
                 } else {
@@ -348,12 +363,14 @@ public class WorldsCommand implements CommandExecutor {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
+
                 if (args.length == 2) {
                     World world = worldManager.getWorld(args[1]);
                     if (world == null) {
                         player.sendMessage(plugin.getString("worlds_setcreator_unknown_world"));
                         return true;
                     }
+
                     plugin.selectedWorld.put(player.getUniqueId(), world);
                     getCreatorInput(player);
                 } else {
@@ -367,12 +384,14 @@ public class WorldsCommand implements CommandExecutor {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
+
                 if (args.length == 2) {
                     World world = worldManager.getWorld(args[1]);
                     if (world == null) {
                         player.sendMessage(plugin.getString("worlds_setproject_unknown_world"));
                         return true;
                     }
+
                     plugin.selectedWorld.put(player.getUniqueId(), world);
                     getProjectInput(player, true);
                 } else {
@@ -386,12 +405,14 @@ public class WorldsCommand implements CommandExecutor {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
+
                 if (args.length == 2) {
                     World world = worldManager.getWorld(args[1]);
                     if (world == null) {
                         player.sendMessage(plugin.getString("worlds_setstatus_unknown_world"));
                         return true;
                     }
+
                     plugin.selectedWorld.put(player.getUniqueId(), world);
                     plugin.getStatusInventory().openInventory(player);
                 } else {
@@ -405,12 +426,14 @@ public class WorldsCommand implements CommandExecutor {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
+
                 if (args.length == 2) {
                     World world = worldManager.getWorld(args[1]);
                     if (world == null) {
                         player.sendMessage(plugin.getString("worlds_setpermission_unknown_world"));
                         return true;
                     }
+
                     plugin.selectedWorld.put(player.getUniqueId(), world);
                     getPermissionInput(player, true);
                 } else {
@@ -424,11 +447,13 @@ public class WorldsCommand implements CommandExecutor {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
+
                 World world = worldManager.getWorld(player.getWorld().getName());
                 if (world == null) {
                     player.sendMessage(plugin.getString("worlds_setspawn_world_not_imported"));
                     return true;
                 }
+
                 world.setCustomSpawn(player.getLocation());
                 player.sendMessage(plugin.getString("worlds_setspawn_world_spawn_set").replace("%world%", world.getName()));
                 break;
@@ -439,11 +464,13 @@ public class WorldsCommand implements CommandExecutor {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
+
                 World world = worldManager.getWorld(player.getWorld().getName());
                 if (world == null) {
                     player.sendMessage(plugin.getString("worlds_removespawn_world_not_imported"));
                     return true;
                 }
+
                 world.removeCustomSpawn();
                 player.sendMessage(plugin.getString("worlds_removespawn_world_spawn_removed").replace("%world%", world.getName()));
                 break;
@@ -454,6 +481,7 @@ public class WorldsCommand implements CommandExecutor {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
+
                 if (args.length == 2) {
                     World world = worldManager.getWorld(args[1]);
                     if (world == null) {
