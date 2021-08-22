@@ -2,7 +2,7 @@ package de.eintosti.buildsystem.util.config;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.util.external.xseries.XMaterial;
 import org.bukkit.generator.ChunkGenerator;
 
@@ -19,8 +19,8 @@ public class WorldConfig extends ConfigurationFile {
         this.plugin = plugin;
     }
 
-    public void saveWorld(World world) {
-        getFile().set("worlds." + world.getName(), world.serialize());
+    public void saveWorld(BuildWorld buildWorld) {
+        getFile().set("worlds." + buildWorld.getName(), buildWorld.serialize());
         saveFile();
     }
 
@@ -33,7 +33,7 @@ public class WorldConfig extends ConfigurationFile {
 
         plugin.getLogger().log(Level.INFO, "*** All worlds will be loaded now ***");
 
-        worldManager.getWorlds().forEach(world -> {
+        worldManager.getBuildWorlds().forEach(world -> {
             String worldName = world.getName();
             ChunkGenerator chunkGenerator = world.getChunkGenerator();
             worldManager.generateBukkitWorld(worldName, world.getType(), chunkGenerator);

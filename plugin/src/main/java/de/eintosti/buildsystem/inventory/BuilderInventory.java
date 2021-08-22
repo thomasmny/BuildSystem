@@ -3,7 +3,7 @@ package de.eintosti.buildsystem.inventory;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.InventoryManager;
 import de.eintosti.buildsystem.object.world.Builder;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.util.external.xseries.XMaterial;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -32,27 +32,27 @@ public class BuilderInventory {
         this.invIndex = new HashMap<>();
     }
 
-    private Inventory createInventory(World world, Player player) {
+    private Inventory createInventory(BuildWorld buildWorld, Player player) {
         Inventory inventory = Bukkit.createInventory(null, 27, plugin.getString("worldeditor_builders_title"));
         fillGuiWithGlass(inventory, player);
 
-        addCreatorInfoItem(inventory, world);
-        addBuilderAddItem(inventory, world, player);
+        addCreatorInfoItem(inventory, buildWorld);
+        addBuilderAddItem(inventory, buildWorld, player);
 
         return inventory;
     }
 
-    private void addCreatorInfoItem(Inventory inventory, World world) {
-        if (world.getCreator() == null || world.getCreator().equalsIgnoreCase("-")) {
+    private void addCreatorInfoItem(Inventory inventory, BuildWorld buildWorld) {
+        if (buildWorld.getCreator() == null || buildWorld.getCreator().equalsIgnoreCase("-")) {
             inventoryManager.addItemStack(inventory, 4, XMaterial.BARRIER, plugin.getString("worldeditor_builders_no_creator_item"));
         } else {
             inventoryManager.addSkull(inventory, 4, plugin.getString("worldeditor_builders_creator_item"),
-                    world.getCreator(), plugin.getString("worldeditor_builders_creator_lore").replace("%creator%", world.getCreator()));
+                    buildWorld.getCreator(), plugin.getString("worldeditor_builders_creator_lore").replace("%creator%", buildWorld.getCreator()));
         }
     }
 
-    private void addBuilderAddItem(Inventory inventory, World world, Player player) {
-        if ((world.getCreatorId() != null && world.getCreatorId().equals(player.getUniqueId()))
+    private void addBuilderAddItem(Inventory inventory, BuildWorld buildWorld, Player player) {
+        if ((buildWorld.getCreatorId() != null && buildWorld.getCreatorId().equals(player.getUniqueId()))
                 || player.hasPermission("buildsystem.admin")) {
             inventoryManager.addUrlSkull(inventory, 22, plugin.getString("worldeditor_builders_add_builder_item"), "http://textures.minecraft.net/texture/3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
         } else {
@@ -60,14 +60,14 @@ public class BuilderInventory {
         }
     }
 
-    private void addItems(World world, Player player) {
-        ArrayList<Builder> builders = world.getBuilders();
+    private void addItems(BuildWorld buildWorld, Player player) {
+        ArrayList<Builder> builders = buildWorld.getBuilders();
         this.numBuilders = builders.size();
         int numInventories = (numBuilders % 9 == 0 ? numBuilders : numBuilders + 1) != 0 ? (numBuilders % 9 == 0 ? numBuilders : numBuilders + 1) : 1;
 
         int index = 0;
 
-        Inventory inventory = createInventory(world, player);
+        Inventory inventory = createInventory(buildWorld, player);
 
         inventories = new Inventory[numInventories];
         inventories[index] = inventory;
@@ -79,14 +79,14 @@ public class BuilderInventory {
                     builderName, plugin.getStringList("worldeditor_builders_builder_lore"));
             if (columnSkull > maxColumnSkull) {
                 columnSkull = 9;
-                inventory = createInventory(world, player);
+                inventory = createInventory(buildWorld, player);
                 inventories[++index] = inventory;
             }
         }
     }
 
-    public Inventory getInventory(World world, Player player) {
-        addItems(world, player);
+    public Inventory getInventory(BuildWorld buildWorld, Player player) {
+        addItems(buildWorld, player);
         if (getInvIndex(player) == null) {
             setInvIndex(player, 0);
         }

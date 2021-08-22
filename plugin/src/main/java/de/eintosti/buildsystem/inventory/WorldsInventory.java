@@ -3,7 +3,7 @@ package de.eintosti.buildsystem.inventory;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.InventoryManager;
 import de.eintosti.buildsystem.manager.WorldManager;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -43,8 +43,8 @@ public class WorldsInventory {
 
     private int numOfWorlds(Player player) {
         int numOfWorlds = 0;
-        for (World world : worldManager.getWorlds()) {
-            if (isValid(player, world)) {
+        for (BuildWorld buildWorld : worldManager.getBuildWorlds()) {
+            if (isValid(player, buildWorld)) {
                 numOfWorlds++;
             }
         }
@@ -86,10 +86,10 @@ public class WorldsInventory {
             return;
         }
 
-        List<World> worlds = inventoryManager.sortWorlds(player, worldManager, plugin);
-        for (World world : worlds) {
-            if (isValid(player, world)) {
-                inventoryManager.addWorldItem(player, inventory, columnWorld++, world);
+        List<BuildWorld> buildWorlds = inventoryManager.sortWorlds(player, worldManager, plugin);
+        for (BuildWorld buildWorld : buildWorlds) {
+            if (isValid(player, buildWorld)) {
+                inventoryManager.addWorldItem(player, inventory, columnWorld++, buildWorld);
             }
             if (columnWorld > maxColumnWorld) {
                 columnWorld = 9;
@@ -99,15 +99,15 @@ public class WorldsInventory {
         }
     }
 
-    private boolean isValid(Player player, World world) {
-        if (!world.isPrivate()) {
-            if (player.hasPermission(world.getPermission()) || world.getPermission().equalsIgnoreCase("-")) {
-                switch (world.getStatus()) {
+    private boolean isValid(Player player, BuildWorld buildWorld) {
+        if (!buildWorld.isPrivate()) {
+            if (player.hasPermission(buildWorld.getPermission()) || buildWorld.getPermission().equalsIgnoreCase("-")) {
+                switch (buildWorld.getStatus()) {
                     case NOT_STARTED:
                     case IN_PROGRESS:
                     case ALMOST_FINISHED:
                     case FINISHED:
-                        if (Bukkit.getWorld(world.getName()) != null || (Bukkit.getWorld(world.getName()) == null && !world.isLoaded())) {
+                        if (Bukkit.getWorld(buildWorld.getName()) != null || (Bukkit.getWorld(buildWorld.getName()) == null && !buildWorld.isLoaded())) {
                             return true;
                         }
                         break;

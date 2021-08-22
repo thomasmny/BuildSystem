@@ -5,7 +5,7 @@ import de.eintosti.buildsystem.object.navigator.NavigatorType;
 import de.eintosti.buildsystem.object.settings.Colour;
 import de.eintosti.buildsystem.object.settings.Settings;
 import de.eintosti.buildsystem.object.settings.WorldSort;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.util.config.SettingsConfig;
 import fr.mrmicky.fastboard.FastBoard;
 import org.bukkit.Bukkit;
@@ -100,15 +100,15 @@ public class SettingsManager {
     }
 
     private String injectPlaceholders(String originalString, Player player) {
-        World world = worldManager.getWorld(player.getWorld().getName());
+        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
 
         return originalString
                 .replace("%world%", player.getWorld().getName())
-                .replace("%status%", plugin.getStatus(world))
-                .replace("%permission%", plugin.getPermission(world))
-                .replace("%project%", plugin.getProject(world))
-                .replace("%creator%", plugin.getCreator(world))
-                .replace("%creation%", plugin.getCreationDate(world));
+                .replace("%status%", plugin.getStatus(buildWorld))
+                .replace("%permission%", plugin.getPermission(buildWorld))
+                .replace("%project%", plugin.getProject(buildWorld))
+                .replace("%creator%", plugin.getCreator(buildWorld))
+                .replace("%creation%", plugin.getCreationDate(buildWorld));
     }
 
     private void stopScoreboard(Player player, Settings settings) {

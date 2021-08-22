@@ -6,7 +6,7 @@ import de.eintosti.buildsystem.manager.SettingsManager;
 import de.eintosti.buildsystem.manager.SpawnManager;
 import de.eintosti.buildsystem.manager.WorldManager;
 import de.eintosti.buildsystem.object.settings.Settings;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.object.world.WorldStatus;
 import de.eintosti.buildsystem.util.external.UpdateChecker;
 import de.eintosti.buildsystem.util.external.xseries.XMaterial;
@@ -55,16 +55,16 @@ public class PlayerJoinListener implements Listener {
         plugin.getSkullCache().cacheSkull(player.getName());
 
         String worldName = player.getWorld().getName();
-        World world = worldManager.getWorld(worldName);
-        if (world != null) {
-            if (!world.isPhysics()) {
+        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        if (buildWorld != null) {
+            if (!buildWorld.isPhysics()) {
                 if (player.hasPermission("buildsystem.physics.message")) {
-                    player.sendMessage(plugin.getString("physics_deactivated_in_world").replace("%world%", world.getName()));
+                    player.sendMessage(plugin.getString("physics_deactivated_in_world").replace("%world%", buildWorld.getName()));
                 }
             }
 
             if (plugin.isArchiveVanish()) {
-                if (world.getStatus() == WorldStatus.ARCHIVE) {
+                if (buildWorld.getStatus() == WorldStatus.ARCHIVE) {
                     player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, false, false), false);
                     Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
                 }

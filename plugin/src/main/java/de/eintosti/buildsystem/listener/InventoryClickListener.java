@@ -12,7 +12,7 @@ import de.eintosti.buildsystem.object.navigator.NavigatorType;
 import de.eintosti.buildsystem.object.settings.Colour;
 import de.eintosti.buildsystem.object.settings.Settings;
 import de.eintosti.buildsystem.object.settings.WorldSort;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.object.world.WorldStatus;
 import de.eintosti.buildsystem.object.world.WorldType;
 import de.eintosti.buildsystem.util.external.UUIDFetcher;
@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -297,25 +298,25 @@ public class InventoryClickListener implements Listener {
         if (page == CreateInventory.Page.PREDEFINED) {
             switch (event.getSlot()) {
                 case 29:
-                    worldManager.openWorldAnvil(player, WorldType.NORMAL, null, worldManager.createPrivateWorldPlayers.contains(player));
+                    worldManager.startWorldNameInput(player, WorldType.NORMAL, null, worldManager.createPrivateWorldPlayers.contains(player));
                     break;
                 case 30:
-                    worldManager.openWorldAnvil(player, WorldType.FLAT, null, worldManager.createPrivateWorldPlayers.contains(player));
+                    worldManager.startWorldNameInput(player, WorldType.FLAT, null, worldManager.createPrivateWorldPlayers.contains(player));
                     break;
                 case 31:
-                    worldManager.openWorldAnvil(player, WorldType.NETHER, null, worldManager.createPrivateWorldPlayers.contains(player));
+                    worldManager.startWorldNameInput(player, WorldType.NETHER, null, worldManager.createPrivateWorldPlayers.contains(player));
                     break;
                 case 32:
-                    worldManager.openWorldAnvil(player, WorldType.END, null, worldManager.createPrivateWorldPlayers.contains(player));
+                    worldManager.startWorldNameInput(player, WorldType.END, null, worldManager.createPrivateWorldPlayers.contains(player));
                     break;
                 case 33:
-                    worldManager.openWorldAnvil(player, WorldType.VOID, null, worldManager.createPrivateWorldPlayers.contains(player));
+                    worldManager.startWorldNameInput(player, WorldType.VOID, null, worldManager.createPrivateWorldPlayers.contains(player));
                     break;
             }
             XSound.ENTITY_CHICKEN_EGG.play(player);
         } else if (page == CreateInventory.Page.TEMPLATES) {
             if (itemStack.getType() == XMaterial.FILLED_MAP.parseMaterial()) {
-                worldManager.openWorldAnvil(player, WorldType.TEMPLATE, itemStack.getItemMeta().getDisplayName(),
+                worldManager.startWorldNameInput(player, WorldType.TEMPLATE, itemStack.getItemMeta().getDisplayName(),
                         worldManager.createPrivateWorldPlayers.contains(player));
                 XSound.ENTITY_CHICKEN_EGG.play(player);
             } else if (itemStack.getType() == XMaterial.PLAYER_HEAD.parseMaterial()) {
@@ -332,7 +333,7 @@ public class InventoryClickListener implements Listener {
             }
         } else {
             if (event.getSlot() == 31) {
-                worldManager.openWorldAnvil(player, WorldType.CUSTOM, null, worldManager.createPrivateWorldPlayers.contains(player));
+                worldManager.startWorldNameInput(player, WorldType.CUSTOM, null, worldManager.createPrivateWorldPlayers.contains(player));
                 XSound.ENTITY_CHICKEN_EGG.play(player);
             }
         }
@@ -344,8 +345,8 @@ public class InventoryClickListener implements Listener {
         event.setCancelled(true);
 
         Player player = (Player) event.getWhoClicked();
-        World world = plugin.selectedWorld.get(player.getUniqueId());
-        if (world == null) {
+        BuildWorld buildWorld = plugin.selectedWorld.get(player.getUniqueId());
+        if (buildWorld == null) {
             player.sendMessage(plugin.getString("worlds_delete_error"));
             player.closeInventory();
             return;
@@ -354,11 +355,11 @@ public class InventoryClickListener implements Listener {
         switch (event.getSlot()) {
             case 29:
                 XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-                player.sendMessage(plugin.getString("worlds_delete_canceled").replace("%world%", world.getName()));
+                player.sendMessage(plugin.getString("worlds_delete_canceled").replace("%world%", buildWorld.getName()));
                 break;
             case 33:
                 XSound.ENTITY_PLAYER_LEVELUP.play(player);
-                worldManager.deleteWorld(player, world);
+                worldManager.deleteWorld(player, buildWorld);
                 break;
             default:
                 return;
@@ -374,8 +375,8 @@ public class InventoryClickListener implements Listener {
         event.setCancelled(true);
         Player player = (Player) event.getWhoClicked();
 
-        World world = plugin.selectedWorld.get(player.getUniqueId());
-        if (world == null) {
+        BuildWorld buildWorld = plugin.selectedWorld.get(player.getUniqueId());
+        if (buildWorld == null) {
             player.closeInventory();
             player.sendMessage(plugin.getString("worlds_edit_error"));
             return;
@@ -386,47 +387,47 @@ public class InventoryClickListener implements Listener {
 
         switch (event.getSlot()) {
             case 20:
-                world.setBlockBreaking(!world.isBlockBreaking());
+                buildWorld.setBlockBreaking(!buildWorld.isBlockBreaking());
                 break;
             case 21:
-                world.setBlockPlacement(!world.isBlockPlacement());
+                buildWorld.setBlockPlacement(!buildWorld.isBlockPlacement());
                 break;
             case 22:
-                world.setPhysics(!world.isPhysics());
+                buildWorld.setPhysics(!buildWorld.isPhysics());
                 break;
             case 23:
-                changeTime(player, world);
+                changeTime(player, buildWorld);
                 break;
             case 24:
-                world.setExplosions(!world.isExplosions());
+                buildWorld.setExplosions(!buildWorld.isExplosions());
                 break;
 
             case 29:
-                removeEntities(player, world);
+                removeEntities(player, buildWorld);
                 return;
             case 30:
                 if (itemStack.getType() != XMaterial.BARRIER.parseMaterial()) {
                     if (event.isRightClick()) {
                         XSound.BLOCK_CHEST_OPEN.play(player);
-                        player.openInventory(plugin.getBuilderInventory().getInventory(world, player));
+                        player.openInventory(plugin.getBuilderInventory().getInventory(buildWorld, player));
                         return;
                     }
-                    world.setBuilders(!world.isBuilders());
+                    buildWorld.setBuilders(!buildWorld.isBuilders());
                 }
                 break;
             case 31:
-                world.setMobAI(!world.isMobAI());
+                buildWorld.setMobAI(!buildWorld.isMobAI());
                 break;
             case 32:
-                world.setPrivate(!world.isPrivate());
+                buildWorld.setPrivate(!buildWorld.isPrivate());
                 break;
             case 33:
-                world.setBlockInteractions(!world.isBlockInteractions());
+                buildWorld.setBlockInteractions(!buildWorld.isBlockInteractions());
                 break;
 
             case 38:
                 XSound.BLOCK_CHEST_OPEN.play(player);
-                plugin.getGameRuleInventory().openInventory(player, world);
+                plugin.getGameRuleInventory().openInventory(player, buildWorld);
                 return;
             case 39:
                 XSound.ENTITY_CHICKEN_EGG.play(player);
@@ -445,14 +446,14 @@ public class InventoryClickListener implements Listener {
                 return;
         }
         XSound.ENTITY_CHICKEN_EGG.play(player);
-        editInventory.openInventory(player, world);
+        editInventory.openInventory(player, buildWorld);
     }
 
-    private void changeTime(Player player, World world) {
-        org.bukkit.World bukkitWorld = Bukkit.getWorld(world.getName());
+    private void changeTime(Player player, BuildWorld buildWorld) {
+        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
         if (bukkitWorld == null) return;
 
-        World.Time time = editInventory.getWorldTime(bukkitWorld);
+        BuildWorld.Time time = editInventory.getWorldTime(bukkitWorld);
         switch (time) {
             case SUNRISE:
                 bukkitWorld.setTime(plugin.getNoonTime());
@@ -465,11 +466,11 @@ public class InventoryClickListener implements Listener {
                 break;
         }
 
-        editInventory.openInventory(player, world);
+        editInventory.openInventory(player, buildWorld);
     }
 
-    private void removeEntities(Player player, World world) {
-        org.bukkit.World bukkitWorld = Bukkit.getWorld(world.getName());
+    private void removeEntities(Player player, BuildWorld buildWorld) {
+        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
         if (bukkitWorld == null) return;
 
         int entitiesRemoved = 0;
@@ -520,8 +521,8 @@ public class InventoryClickListener implements Listener {
         event.setCancelled(true);
         Player player = (Player) event.getWhoClicked();
 
-        World world = plugin.selectedWorld.get(player.getUniqueId());
-        if (world == null) {
+        BuildWorld buildWorld = plugin.selectedWorld.get(player.getUniqueId());
+        if (buildWorld == null) {
             player.closeInventory();
             player.sendMessage(plugin.getString("worlds_addbuilder_error"));
             return;
@@ -536,7 +537,7 @@ public class InventoryClickListener implements Listener {
         Material material = itemStack.getType();
         if (material != XMaterial.PLAYER_HEAD.parseMaterial()) {
             XSound.BLOCK_CHEST_OPEN.play(player);
-            editInventory.openInventory(player, world);
+            editInventory.openInventory(player, buildWorld);
             return;
         }
 
@@ -559,12 +560,12 @@ public class InventoryClickListener implements Listener {
 
                 String builderName = ChatColor.stripColor(itemMeta.getDisplayName());
                 UUID builderId = UUIDFetcher.getUUID(builderName);
-                world.removeBuilder(builderId);
+                buildWorld.removeBuilder(builderId);
                 XSound.ENTITY_ENDERMAN_TELEPORT.play(player);
                 player.sendMessage(plugin.getString("worlds_removebuilder_removed").replace("%builder%", builderName));
         }
         XSound.ENTITY_CHICKEN_EGG.play(player);
-        player.openInventory(builderInventory.getInventory(world, player));
+        player.openInventory(builderInventory.getInventory(buildWorld, player));
     }
 
     @EventHandler
@@ -575,8 +576,8 @@ public class InventoryClickListener implements Listener {
         event.setCancelled(true);
         Player player = (Player) event.getWhoClicked();
 
-        World world = plugin.selectedWorld.get(player.getUniqueId());
-        if (world == null) {
+        BuildWorld buildWorld = plugin.selectedWorld.get(player.getUniqueId());
+        if (buildWorld == null) {
             player.closeInventory();
             player.sendMessage(plugin.getString("worlds_edit_error"));
             return;
@@ -595,15 +596,15 @@ public class InventoryClickListener implements Listener {
             }
         } else if (material == XMaterial.FILLED_MAP.parseMaterial()
                 || material == XMaterial.MAP.parseMaterial()) {
-            org.bukkit.World bukkitWorld = Bukkit.getWorld(world.getName());
+            World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
             gameRules.toggleGameRule(event, bukkitWorld);
         } else {
             XSound.BLOCK_CHEST_OPEN.play(player);
-            editInventory.openInventory(player, world);
+            editInventory.openInventory(player, buildWorld);
             return;
         }
         XSound.ENTITY_CHICKEN_EGG.play(player);
-        gameRuleInventory.openInventory(player, world);
+        gameRuleInventory.openInventory(player, buildWorld);
     }
 
     @EventHandler
@@ -622,40 +623,40 @@ public class InventoryClickListener implements Listener {
         Material itemType = itemStack.getType();
         if (itemType == Material.AIR || !itemStack.hasItemMeta()) return;
 
-        World world = plugin.selectedWorld.get(player.getUniqueId());
-        if (world == null) {
+        BuildWorld buildWorld = plugin.selectedWorld.get(player.getUniqueId());
+        if (buildWorld == null) {
             player.closeInventory();
             player.sendMessage(plugin.getString("worlds_setstatus_error"));
             return;
         }
         switch (event.getSlot()) {
             case 10:
-                world.setStatus(WorldStatus.NOT_STARTED);
+                buildWorld.setStatus(WorldStatus.NOT_STARTED);
                 break;
             case 11:
-                world.setStatus(WorldStatus.IN_PROGRESS);
+                buildWorld.setStatus(WorldStatus.IN_PROGRESS);
                 break;
             case 12:
-                world.setStatus(WorldStatus.ALMOST_FINISHED);
+                buildWorld.setStatus(WorldStatus.ALMOST_FINISHED);
                 break;
             case 13:
-                world.setStatus(WorldStatus.FINISHED);
+                buildWorld.setStatus(WorldStatus.FINISHED);
                 break;
             case 14:
-                world.setStatus(WorldStatus.ARCHIVE);
+                buildWorld.setStatus(WorldStatus.ARCHIVE);
                 break;
             case 16:
-                world.setStatus(WorldStatus.HIDDEN);
+                buildWorld.setStatus(WorldStatus.HIDDEN);
                 break;
             default:
                 XSound.BLOCK_CHEST_OPEN.play(player);
-                editInventory.openInventory(player, world);
+                editInventory.openInventory(player, buildWorld);
                 return;
         }
-        plugin.forceUpdateSidebar(world);
+        plugin.forceUpdateSidebar(buildWorld);
         player.closeInventory();
         XSound.ENTITY_CHICKEN_EGG.play(player);
-        player.sendMessage(plugin.getString("worlds_setstatus_set").replace("%world%", world.getName()).replace("%status%", world.getStatusName()));
+        player.sendMessage(plugin.getString("worlds_setstatus_set").replace("%world%", buildWorld.getName()).replace("%status%", buildWorld.getStatusName()));
         plugin.selectedWorld.remove(player.getUniqueId());
     }
 
@@ -1005,8 +1006,8 @@ public class InventoryClickListener implements Listener {
         }
 
         if (slot >= 9 && slot <= 44) {
-            World world = worldManager.getWorld(getWorldName(itemMeta.getDisplayName()));
-            manageWorldItemClick(event, player, itemMeta, world);
+            BuildWorld buildWorld = worldManager.getBuildWorld(getWorldName(itemMeta.getDisplayName()));
+            manageWorldItemClick(event, player, itemMeta, buildWorld);
         }
 
         if (slot >= 45 && slot <= 53) {
@@ -1017,7 +1018,7 @@ public class InventoryClickListener implements Listener {
         }
     }
 
-    private void manageWorldItemClick(InventoryClickEvent event, Player player, ItemMeta itemMeta, World world) {
+    private void manageWorldItemClick(InventoryClickEvent event, Player player, ItemMeta itemMeta, BuildWorld buildWorld) {
         if (event.isLeftClick()) {
             performNonEditClick(player, itemMeta);
         } else if (event.isRightClick()) {
@@ -1026,10 +1027,10 @@ public class InventoryClickListener implements Listener {
                 return;
             }
 
-            if (world.isLoaded()) {
-                plugin.selectedWorld.put(player.getUniqueId(), world);
+            if (buildWorld.isLoaded()) {
+                plugin.selectedWorld.put(player.getUniqueId(), buildWorld);
                 XSound.BLOCK_CHEST_OPEN.play(player);
-                editInventory.openInventory(player, world);
+                editInventory.openInventory(player, buildWorld);
             } else {
                 player.closeInventory();
                 XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
@@ -1050,9 +1051,9 @@ public class InventoryClickListener implements Listener {
     }
 
     private void teleport(Player player, String worldName) {
-        World world = worldManager.getWorld(worldName);
-        if (world == null) return;
+        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        if (buildWorld == null) return;
         XSound.ENTITY_ENDERMAN_TELEPORT.play(player);
-        worldManager.teleport(player, world);
+        worldManager.teleport(player, buildWorld);
     }
 }

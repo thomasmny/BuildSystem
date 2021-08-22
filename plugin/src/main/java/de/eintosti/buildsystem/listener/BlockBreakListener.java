@@ -2,7 +2,7 @@ package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.object.world.WorldStatus;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -28,42 +28,42 @@ public class BlockBreakListener implements Listener {
 
         Player player = event.getPlayer();
         String worldName = player.getWorld().getName();
-        World world = worldManager.getWorld(worldName);
-        if (world == null) return;
+        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        if (buildWorld == null) return;
 
-        disableArchivedWorlds(world, player, event);
-        checkWorldSettings(world, player, event);
-        checkBuilders(world, player, event);
-        setStatus(world, player);
+        disableArchivedWorlds(buildWorld, player, event);
+        checkWorldSettings(buildWorld, player, event);
+        checkBuilders(buildWorld, player, event);
+        setStatus(buildWorld, player);
     }
 
-    private void disableArchivedWorlds(World world, Player player, BlockBreakEvent event) {
+    private void disableArchivedWorlds(BuildWorld buildWorld, Player player, BlockBreakEvent event) {
         if (player.hasPermission("buildsystem.admin") || player.hasPermission("buildsystem.bypass.archive")) return;
-        if (world.getStatus() == WorldStatus.ARCHIVE && !plugin.buildPlayers.contains(player.getUniqueId())) {
+        if (buildWorld.getStatus() == WorldStatus.ARCHIVE && !plugin.buildPlayers.contains(player.getUniqueId())) {
             event.setCancelled(true);
         }
     }
 
-    private void checkWorldSettings(World world, Player player, BlockBreakEvent event) {
+    private void checkWorldSettings(BuildWorld buildWorld, Player player, BlockBreakEvent event) {
         if (player.hasPermission("buildsystem.admin") || player.hasPermission("buildsystem.bypass.settings")) return;
-        if (!world.isBlockBreaking() && !plugin.buildPlayers.contains(player.getUniqueId())) {
+        if (!buildWorld.isBlockBreaking() && !plugin.buildPlayers.contains(player.getUniqueId())) {
             event.setCancelled(true);
         }
     }
 
-    private void checkBuilders(World world, Player player, BlockBreakEvent event) {
+    private void checkBuilders(BuildWorld buildWorld, Player player, BlockBreakEvent event) {
         if (player.hasPermission("buildsystem.admin") || player.hasPermission("buildsystem.bypass.builders")) return;
-        if (plugin.isCreatorIsBuilder() && world.getCreatorId() != null && world.getCreatorId().equals(player.getUniqueId())) {
+        if (plugin.isCreatorIsBuilder() && buildWorld.getCreatorId() != null && buildWorld.getCreatorId().equals(player.getUniqueId())) {
             return;
         }
-        if (world.isBuilders() && !world.isBuilder(player)) {
+        if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
             event.setCancelled(true);
         }
     }
 
-    private void setStatus(World world, Player player) {
-        if (world.getStatus() == WorldStatus.NOT_STARTED) {
-            world.setStatus(WorldStatus.IN_PROGRESS);
+    private void setStatus(BuildWorld buildWorld, Player player) {
+        if (buildWorld.getStatus() == WorldStatus.NOT_STARTED) {
+            buildWorld.setStatus(WorldStatus.IN_PROGRESS);
             plugin.forceUpdateSidebar(player);
         }
     }

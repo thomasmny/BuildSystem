@@ -8,7 +8,7 @@ import de.eintosti.buildsystem.manager.InventoryManager;
 import de.eintosti.buildsystem.manager.SettingsManager;
 import de.eintosti.buildsystem.manager.WorldManager;
 import de.eintosti.buildsystem.object.settings.Settings;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.object.world.WorldStatus;
 import de.eintosti.buildsystem.util.external.xseries.XBlock;
 import de.eintosti.buildsystem.util.external.xseries.XMaterial;
@@ -93,14 +93,14 @@ public class PlayerInteractListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onDisablePlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        World world = worldManager.getWorld(player.getWorld().getName());
-        if (world == null) return;
+        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+        if (buildWorld == null) return;
 
-        disableArchivedWorlds(world, player, event);
-        checkWorldSettings(world, player, event);
-        checkBuilders(world, player, event);
+        disableArchivedWorlds(buildWorld, player, event);
+        checkWorldSettings(buildWorld, player, event);
+        checkBuilders(buildWorld, player, event);
 
-        if (!world.isPhysics()) {
+        if (!buildWorld.isPhysics()) {
             if (event.getClickedBlock() == null) return;
             if (event.getAction() == Action.PHYSICAL && event.getClickedBlock().getType() == XMaterial.FARMLAND.parseMaterial()) {
                 event.setCancelled(true);
@@ -108,28 +108,28 @@ public class PlayerInteractListener implements Listener {
         }
     }
 
-    private void disableArchivedWorlds(World world, Player player, PlayerInteractEvent event) {
+    private void disableArchivedWorlds(BuildWorld buildWorld, Player player, PlayerInteractEvent event) {
         if (player.hasPermission("buildsystem.admin") || player.hasPermission("buildsystem.bypass.archive")) return;
-        if (world.getStatus() == WorldStatus.ARCHIVE && !plugin.buildPlayers.contains(player.getUniqueId())) {
+        if (buildWorld.getStatus() == WorldStatus.ARCHIVE && !plugin.buildPlayers.contains(player.getUniqueId())) {
             event.setUseItemInHand(Event.Result.DENY);
             event.setUseInteractedBlock(Event.Result.DENY);
         }
     }
 
-    private void checkWorldSettings(World world, Player player, PlayerInteractEvent event) {
+    private void checkWorldSettings(BuildWorld buildWorld, Player player, PlayerInteractEvent event) {
         if (player.hasPermission("buildsystem.admin") || player.hasPermission("buildsystem.bypass.settings")) return;
-        if (!world.isBlockInteractions() && !plugin.buildPlayers.contains(player.getUniqueId())) {
+        if (!buildWorld.isBlockInteractions() && !plugin.buildPlayers.contains(player.getUniqueId())) {
             event.setUseInteractedBlock(Event.Result.DENY);
             event.setUseInteractedBlock(Event.Result.DENY);
         }
     }
 
-    private void checkBuilders(World world, Player player, PlayerInteractEvent event) {
+    private void checkBuilders(BuildWorld buildWorld, Player player, PlayerInteractEvent event) {
         if (player.hasPermission("buildsystem.admin") || player.hasPermission("buildsystem.bypass.builders")) return;
-        if (plugin.isCreatorIsBuilder() && world.getCreatorId() != null && world.getCreatorId().equals(player.getUniqueId())) {
+        if (plugin.isCreatorIsBuilder() && buildWorld.getCreatorId() != null && buildWorld.getCreatorId().equals(player.getUniqueId())) {
             return;
         }
-        if (world.isBuilders() && !world.isBuilder(player)) {
+        if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
             event.setUseItemInHand(Event.Result.DENY);
             event.setUseInteractedBlock(Event.Result.DENY);
         }
@@ -206,19 +206,19 @@ public class PlayerInteractListener implements Listener {
 
     private boolean isValid(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        World world = worldManager.getWorld(player.getWorld().getName());
+        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
 
-        if (world != null) {
-            if (world.getStatus() == WorldStatus.ARCHIVE) {
+        if (buildWorld != null) {
+            if (buildWorld.getStatus() == WorldStatus.ARCHIVE) {
                 if (!plugin.buildPlayers.contains(player.getUniqueId())) {
                     return false;
                 }
             }
-            if (!world.isBlockPlacement() && !plugin.buildPlayers.contains(player.getUniqueId())) {
+            if (!buildWorld.isBlockPlacement() && !plugin.buildPlayers.contains(player.getUniqueId())) {
                 return false;
             }
-            if (world.isBuilders() && !world.isBuilder(player)) {
-                return world.getCreatorId() == null || world.getCreatorId().equals(player.getUniqueId());
+            if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
+                return buildWorld.getCreatorId() == null || buildWorld.getCreatorId().equals(player.getUniqueId());
             }
         }
         return true;

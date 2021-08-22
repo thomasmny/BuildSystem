@@ -3,8 +3,9 @@ package de.eintosti.buildsystem.command;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.SpawnManager;
 import de.eintosti.buildsystem.manager.WorldManager;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -54,15 +55,15 @@ public class SpawnCommand implements CommandExecutor {
                 switch (args[0].toLowerCase()) {
                     case "set":
                         Location playerLocation = player.getLocation();
-                        org.bukkit.World bukkitWorld = playerLocation.getWorld();
-                        World world = worldManager.getWorld(bukkitWorld.getName());
+                        World bukkitWorld = playerLocation.getWorld();
+                        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
 
-                        if (world == null) {
+                        if (buildWorld == null) {
                             player.sendMessage(plugin.getString("spawn_world_not_imported"));
                             return true;
                         }
 
-                        spawnManager.set(playerLocation, world.getName());
+                        spawnManager.set(playerLocation, buildWorld.getName());
                         player.sendMessage(plugin.getString("spawn_set")
                                 .replace("%x%", round(playerLocation.getX()))
                                 .replace("%y%", round(playerLocation.getY()))

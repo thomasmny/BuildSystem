@@ -24,7 +24,7 @@ public class PhysicsTabComplete extends ArgumentSorter implements TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> arrayList = new ArrayList<>();
         if (args.length == 1) {
-            worldManager.getWorlds().forEach(world -> {
+            worldManager.getBuildWorlds().forEach(world -> {
                 if (sender.hasPermission("buildsystem.physics")) {
                     String worldName = world.getName();
                     addArgument(args[0], worldName, arrayList);

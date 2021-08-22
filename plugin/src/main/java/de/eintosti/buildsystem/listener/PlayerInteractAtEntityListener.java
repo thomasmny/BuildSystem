@@ -2,9 +2,10 @@ package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.object.world.WorldStatus;
 import de.eintosti.buildsystem.util.external.xseries.XSound;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -19,8 +20,8 @@ import org.bukkit.util.Vector;
  * @author einTosti
  */
 public class PlayerInteractAtEntityListener implements Listener {
-    private final static double MAX_HEIGH = 2.074631929397583;
-    private final static double MIN_HEIGH = 1.4409877061843872;
+    private final static double MAX_HEIGHT = 2.074631929397583;
+    private final static double MIN_HEIGHT = 1.4409877061843872;
     private final BuildSystem plugin;
     private final WorldManager worldManager;
 
@@ -45,7 +46,7 @@ public class PlayerInteractAtEntityListener implements Listener {
         event.setCancelled(true);
 
         Vector clickedPosition = event.getClickedPosition();
-        if (clickedPosition.getY() > MIN_HEIGH && clickedPosition.getY() < MAX_HEIGH) {
+        if (clickedPosition.getY() > MIN_HEIGHT && clickedPosition.getY() < MAX_HEIGHT) {
             if (customName.startsWith(player.getName())) {
                 String invType = customName.replace(player.getName() + " × ", "");
 
@@ -78,11 +79,11 @@ public class PlayerInteractAtEntityListener implements Listener {
     }
 
     private void disableArchivedWorlds(Player player, PlayerInteractAtEntityEvent event) {
-        org.bukkit.World bukkitWorld = player.getWorld();
-        World world = worldManager.getWorld(bukkitWorld.getName());
+        World bukkitWorld = player.getWorld();
+        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
 
-        if (world == null) return;
-        if (world.getStatus() == WorldStatus.ARCHIVE) {
+        if (buildWorld == null) return;
+        if (buildWorld.getStatus() == WorldStatus.ARCHIVE) {
             if (!plugin.buildPlayers.contains(player.getUniqueId())) {
                 event.setCancelled(true);
             }

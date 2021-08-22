@@ -2,9 +2,10 @@ package de.eintosti.buildsystem.inventory;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.InventoryManager;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.version.GameRules;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
@@ -24,8 +25,8 @@ public class GameRuleInventory {
         this.gameRules = plugin.getGameRules();
     }
 
-    public void openInventory(Player player, World world) {
-        org.bukkit.World bukkitWorld = Bukkit.getWorld(world.getName());
+    public void openInventory(Player player, BuildWorld buildWorld) {
+        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
 
         Inventory inventory = gameRules.getInventory(player, bukkitWorld);
         fillGuiWithGlass(player, inventory);

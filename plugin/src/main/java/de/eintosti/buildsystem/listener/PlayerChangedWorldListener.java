@@ -5,13 +5,14 @@ import de.eintosti.buildsystem.manager.ArmorStandManager;
 import de.eintosti.buildsystem.manager.InventoryManager;
 import de.eintosti.buildsystem.manager.SettingsManager;
 import de.eintosti.buildsystem.manager.WorldManager;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.object.world.WorldStatus;
 import de.eintosti.buildsystem.object.world.WorldType;
 import de.eintosti.buildsystem.util.external.xseries.XSound;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -58,12 +59,12 @@ public class PlayerChangedWorldListener implements Listener {
         Player player = event.getPlayer();
         String worldName = player.getWorld().getName();
 
-        World oldWorld = worldManager.getWorld(event.getFrom().getName());
+        BuildWorld oldWorld = worldManager.getBuildWorld(event.getFrom().getName());
         if (oldWorld != null && plugin.isUnloadWorlds()) {
             oldWorld.resetUnloadTask();
         }
 
-        World newWorld = worldManager.getWorld(worldName);
+        BuildWorld newWorld = worldManager.getBuildWorld(worldName);
         if (newWorld != null) {
             if (!newWorld.isPhysics()) {
                 if (player.hasPermission("buildsystem.physics.message")) {
@@ -100,12 +101,12 @@ public class PlayerChangedWorldListener implements Listener {
         player.sendMessage(plugin.getString("build_deactivated_self"));
     }
 
-    private void setGoldBlock(World world) {
-        if (world == null) return;
-        if (world.getType() != WorldType.VOID) return;
-        if (world.getStatus() != WorldStatus.NOT_STARTED) return;
+    private void setGoldBlock(BuildWorld buildWorld) {
+        if (buildWorld == null) return;
+        if (buildWorld.getType() != WorldType.VOID) return;
+        if (buildWorld.getStatus() != WorldStatus.NOT_STARTED) return;
 
-        org.bukkit.World bukkitWorld = Bukkit.getWorld(world.getName());
+        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
         if (bukkitWorld == null) return;
 
         if (plugin.isVoidBlock()) {
@@ -116,8 +117,8 @@ public class PlayerChangedWorldListener implements Listener {
     @SuppressWarnings("deprecation")
     private void checkWorldStatus(Player player) {
         String worldName = player.getWorld().getName();
-        World world = worldManager.getWorld(worldName);
-        if (world == null) return;
+        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        if (buildWorld == null) return;
 
         UUID playerUUID = player.getUniqueId();
         PlayerInventory playerInventory = player.getInventory();
@@ -137,7 +138,7 @@ public class PlayerChangedWorldListener implements Listener {
             this.playerArmor.remove(playerUUID);
         }
 
-        if (world.getStatus() == WorldStatus.ARCHIVE) {
+        if (buildWorld.getStatus() == WorldStatus.ARCHIVE) {
             this.playerGamemode.put(playerUUID, player.getGameMode());
             this.playerInventory.put(playerUUID, playerInventory.getContents());
             this.playerArmor.put(playerUUID, playerInventory.getArmorContents());

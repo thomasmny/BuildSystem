@@ -1,11 +1,12 @@
 package de.eintosti.buildsystem.manager;
 
 import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.util.config.SpawnConfig;
 import de.eintosti.buildsystem.util.external.xseries.Titles;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
@@ -27,9 +28,9 @@ public class SpawnManager {
     public boolean teleport(Player player) {
         if (!spawnExists()) return false;
 
-        World world = worldManager.getWorld(spawnName);
-        if (world != null) {
-            if (!world.isLoaded()) world.load(player);
+        BuildWorld buildWorld = worldManager.getBuildWorld(spawnName);
+        if (buildWorld != null) {
+            if (!buildWorld.isLoaded()) buildWorld.load(player);
         }
 
         player.setFallDistance(0);
@@ -47,7 +48,7 @@ public class SpawnManager {
         return spawn;
     }
 
-    public org.bukkit.World getSpawnWorld() {
+    public World getSpawnWorld() {
         return spawn.getWorld();
     }
 
@@ -79,11 +80,11 @@ public class SpawnManager {
         float yaw = Float.parseFloat(parts[4]);
         float pitch = Float.parseFloat(parts[5]);
 
-        World world = worldManager.getWorld(worldName);
-        if (world == null) {
-            world = worldManager.loadWorld(worldName);
+        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        if (buildWorld == null) {
+            buildWorld = worldManager.loadWorld(worldName);
         }
-        world.load();
+        buildWorld.load();
 
         this.spawnName = worldName;
         this.spawn = new Location(Bukkit.getWorld(worldName), x, y, z, yaw, pitch);

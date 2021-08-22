@@ -6,7 +6,7 @@ import de.eintosti.buildsystem.listener.*;
 import de.eintosti.buildsystem.manager.*;
 import de.eintosti.buildsystem.object.settings.Settings;
 import de.eintosti.buildsystem.object.world.Builder;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.tabcomplete.*;
 import de.eintosti.buildsystem.util.Messages;
 import de.eintosti.buildsystem.util.bstats.Metrics;
@@ -17,6 +17,7 @@ import de.eintosti.buildsystem.version.*;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -36,7 +37,7 @@ import java.util.logging.Level;
 public class BuildSystem extends JavaPlugin {
     public final static int PLUGIN_ID = 60441;
 
-    public Map<UUID, World> selectedWorld;
+    public Map<UUID, BuildWorld> selectedWorld;
     public Map<UUID, GameMode> buildPlayerGamemode;
     public Map<UUID, Float> playerWalkSpeed;
     public Map<UUID, Float> playerFlySpeed;
@@ -731,55 +732,55 @@ public class BuildSystem extends JavaPlugin {
         return hours * 3600L + minutes * 60L + seconds;
     }
 
-    public String getStatus(World world) {
-        if (world == null) {
+    public String getStatus(BuildWorld buildWorld) {
+        if (buildWorld == null) {
             return "§f-";
         }
-        return world.getStatusName();
+        return buildWorld.getStatusName();
     }
 
-    public String getPermission(World world) {
-        if (world == null) {
+    public String getPermission(BuildWorld buildWorld) {
+        if (buildWorld == null) {
             return "§f-";
         }
-        return world.getPermission();
+        return buildWorld.getPermission();
     }
 
-    public String getProject(World world) {
-        if (world == null) {
+    public String getProject(BuildWorld buildWorld) {
+        if (buildWorld == null) {
             return "§f-";
         }
-        return world.getProject();
+        return buildWorld.getProject();
     }
 
-    public String getCreator(World world) {
-        if (world == null) {
+    public String getCreator(BuildWorld buildWorld) {
+        if (buildWorld == null) {
             return "§f-";
         }
-        return world.getCreator();
+        return buildWorld.getCreator();
     }
 
-    public String getWorldTime(World world) {
-        org.bukkit.World bukkitWorld = Bukkit.getWorld(world.getName());
+    public String getWorldTime(BuildWorld buildWorld) {
+        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
         if (bukkitWorld == null) {
             return "?";
         }
         return String.valueOf(bukkitWorld.getTime());
     }
 
-    public String getCreationDate(World world) {
-        if (world == null) {
+    public String getCreationDate(BuildWorld buildWorld) {
+        if (buildWorld == null) {
             return "§f-";
         }
-        return formatDate(world.getCreationDate());
+        return formatDate(buildWorld.getCreationDate());
     }
 
     public String formatDate(long date) {
         return date > 0 ? new SimpleDateFormat(getDateFormat()).format(date) : "-";
     }
 
-    public String getBuilders(World world) {
-        if (world == null) {
+    public String getBuilders(BuildWorld buildWorld) {
+        if (buildWorld == null) {
             return "§f-";
         }
 
@@ -787,11 +788,11 @@ public class BuildSystem extends JavaPlugin {
         ArrayList<Builder> builders = new ArrayList<>();
 
         if (isCreatorIsBuilder()) {
-            if (world.getCreator() != null && !world.getCreator().equals("-")) {
-                builders.add(new Builder(world.getCreatorId(), world.getCreator()));
+            if (buildWorld.getCreator() != null && !buildWorld.getCreator().equals("-")) {
+                builders.add(new Builder(buildWorld.getCreatorId(), buildWorld.getCreator()));
             }
         }
-        builders.addAll(world.getBuilders());
+        builders.addAll(buildWorld.getBuilders());
 
         String string = "";
         if (builders.isEmpty()) {
@@ -805,9 +806,9 @@ public class BuildSystem extends JavaPlugin {
         return string.substring(0, string.length() - 1);
     }
 
-    public void forceUpdateSidebar(World world) {
+    public void forceUpdateSidebar(BuildWorld buildWorld) {
         if (!isScoreboard()) return;
-        org.bukkit.World bukkitWorld = Bukkit.getWorld(world.getName());
+        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
         if (bukkitWorld == null) return;
         bukkitWorld.getPlayers().forEach(this::forceUpdateSidebar);
     }
@@ -817,7 +818,7 @@ public class BuildSystem extends JavaPlugin {
         if (!settingsManager.getSettings(player).isScoreboard()) return;
 
         String worldName = player.getWorld().getName();
-        World world = worldManager.getWorld(worldName);
+        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         settingsManager.updateScoreboard(player);
     }
 

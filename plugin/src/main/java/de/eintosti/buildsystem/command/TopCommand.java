@@ -3,6 +3,7 @@ package de.eintosti.buildsystem.command;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -47,7 +48,7 @@ public class TopCommand implements CommandExecutor {
     }
 
     private void sendToTop(Player player) {
-        org.bukkit.World bukkitWorld = player.getWorld();
+        World bukkitWorld = player.getWorld();
         Location playerLocation = player.getLocation();
         Location blockLocation = null;
 

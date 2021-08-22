@@ -2,8 +2,9 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -51,24 +52,24 @@ public class ExplosionsCommand implements CommandExecutor {
         return true;
     }
 
-    private void toggleExplosions(Player player, org.bukkit.World bukkitWorld) {
+    private void toggleExplosions(Player player, World bukkitWorld) {
         if (bukkitWorld == null) {
             player.sendMessage(plugin.getString("explosions_unknown_world"));
             return;
         }
-        World world = worldManager.getWorld(bukkitWorld.getName());
+        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
 
-        if (world == null) {
+        if (buildWorld == null) {
             player.sendMessage(plugin.getString("explosions_world_not_imported"));
             return;
         }
 
-        if (!world.isExplosions()) {
-            world.setExplosions(true);
-            player.sendMessage(plugin.getString("explosions_activated").replace("%world%", world.getName()));
+        if (!buildWorld.isExplosions()) {
+            buildWorld.setExplosions(true);
+            player.sendMessage(plugin.getString("explosions_activated").replace("%world%", buildWorld.getName()));
         } else {
-            world.setExplosions(false);
-            player.sendMessage(plugin.getString("explosions_deactivated").replace("%world%", world.getName()));
+            buildWorld.setExplosions(false);
+            player.sendMessage(plugin.getString("explosions_deactivated").replace("%world%", buildWorld.getName()));
         }
     }
 }

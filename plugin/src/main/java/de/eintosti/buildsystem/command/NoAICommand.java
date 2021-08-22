@@ -2,8 +2,9 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -53,33 +54,33 @@ public class NoAICommand implements CommandExecutor {
         return true;
     }
 
-    private void toggleAI(Player player, org.bukkit.World bukkitWorld) {
+    private void toggleAI(Player player, World bukkitWorld) {
         if (bukkitWorld == null) {
             player.sendMessage(plugin.getString("noai_unknown_world"));
             return;
         }
-        World world = worldManager.getWorld(bukkitWorld.getName());
 
-        if (world == null) {
+        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
+        if (buildWorld == null) {
             player.sendMessage(plugin.getString("noai_world_not_imported"));
             return;
         }
 
-        if (!world.isMobAI()) {
-            world.setMobAI(true);
-            player.sendMessage(plugin.getString("noai_deactivated").replace("%world%", world.getName()));
+        if (!buildWorld.isMobAI()) {
+            buildWorld.setMobAI(true);
+            player.sendMessage(plugin.getString("noai_deactivated").replace("%world%", buildWorld.getName()));
         } else {
-            world.setMobAI(false);
-            player.sendMessage(plugin.getString("noai_activated").replace("%world%", world.getName()));
+            buildWorld.setMobAI(false);
+            player.sendMessage(plugin.getString("noai_activated").replace("%world%", buildWorld.getName()));
         }
 
         for (Entity entity : bukkitWorld.getEntities()) {
             if (entity instanceof LivingEntity) {
                 LivingEntity livingEntity = (LivingEntity) entity;
                 if (plugin.getManageEntityAI() != null) {
-                    plugin.getManageEntityAI().setAI(livingEntity, world.isMobAI());
+                    plugin.getManageEntityAI().setAI(livingEntity, buildWorld.isMobAI());
                 } else {
-                    livingEntity.setAI(world.isMobAI());
+                    livingEntity.setAI(buildWorld.isMobAI());
                 }
             }
         }

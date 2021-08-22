@@ -3,7 +3,7 @@ package de.eintosti.buildsystem.manager;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.object.settings.Settings;
 import de.eintosti.buildsystem.object.world.Builder;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.object.world.WorldStatus;
 import de.eintosti.buildsystem.object.world.WorldType;
 import de.eintosti.buildsystem.util.config.SetupConfig;
@@ -131,60 +131,60 @@ public class InventoryManager {
         addUrlSkull(inventory, position, displayName, url, Arrays.asList(lore));
     }
 
-    public void addWorldItem(Player player, Inventory inventory, int position, World world) {
-        String worldName = world.getName();
+    public void addWorldItem(Player player, Inventory inventory, int position, BuildWorld buildWorld) {
+        String worldName = buildWorld.getName();
         String displayName = plugin.getString("world_item_title").replace("%world%", worldName);
 
-        if (world.getMaterial() == XMaterial.PLAYER_HEAD) {
-            addSkull(inventory, position, displayName, worldName, getLore(player, world));
+        if (buildWorld.getMaterial() == XMaterial.PLAYER_HEAD) {
+            addSkull(inventory, position, displayName, worldName, getLore(player, buildWorld));
         } else {
-            addItemStack(inventory, position, world.getMaterial(), displayName, getLore(player, world));
+            addItemStack(inventory, position, buildWorld.getMaterial(), displayName, getLore(player, buildWorld));
         }
     }
 
-    public List<World> sortWorlds(Player player, WorldManager worldManager, BuildSystem plugin) {
-        List<World> worlds = new ArrayList<>(worldManager.getWorlds());
+    public List<BuildWorld> sortWorlds(Player player, WorldManager worldManager, BuildSystem plugin) {
+        List<BuildWorld> buildWorlds = new ArrayList<>(worldManager.getBuildWorlds());
         Settings settings = plugin.getSettingsManager().getSettings(player);
         switch (settings.getWorldSort()) {
             default: // NAME_A_TO_Z
-                worlds.sort(Comparator.comparing(worldOne -> worldOne.getName().toLowerCase()));
+                buildWorlds.sort(Comparator.comparing(worldOne -> worldOne.getName().toLowerCase()));
                 break;
             case NAME_Z_TO_A:
-                worlds.sort(Comparator.comparing(worldOne -> worldOne.getName().toLowerCase()));
-                Collections.reverse(worlds);
+                buildWorlds.sort(Comparator.comparing(worldOne -> worldOne.getName().toLowerCase()));
+                Collections.reverse(buildWorlds);
                 break;
             case PROJECT_A_TO_Z:
-                worlds.sort(Comparator.comparing(worldOne -> worldOne.getProject().toLowerCase()));
+                buildWorlds.sort(Comparator.comparing(worldOne -> worldOne.getProject().toLowerCase()));
                 break;
             case PROJECT_Z_TO_A:
-                worlds.sort(Comparator.comparing(worldOne -> worldOne.getProject().toLowerCase()));
-                Collections.reverse(worlds);
+                buildWorlds.sort(Comparator.comparing(worldOne -> worldOne.getProject().toLowerCase()));
+                Collections.reverse(buildWorlds);
                 break;
             case NEWEST_FIRST:
-                worlds.sort(new CreationComparator().reversed());
+                buildWorlds.sort(new CreationComparator().reversed());
                 break;
             case OLDEST_FIRST:
-                worlds.sort(new CreationComparator());
+                buildWorlds.sort(new CreationComparator());
                 break;
         }
-        return worlds;
+        return buildWorlds;
     }
 
-    private List<String> getLore(Player player, World world) {
+    private List<String> getLore(Player player, BuildWorld buildWorld) {
         List<String> messageList = player.hasPermission("buildsystem.edit") ? plugin.getStringList("world_item_lore_edit") :
                 plugin.getStringList("world_item_lore_normal");
         List<String> lore = new ArrayList<>();
         for (String line : messageList) {
-            String replace = line.replace("%project%", world.getProject())
-                    .replace("%permission%", world.getPermission())
-                    .replace("%status%", world.getStatusName())
-                    .replace("%creator%", world.getCreator())
-                    .replace("%creation%", plugin.formatDate(world.getCreationDate()));
+            String replace = line.replace("%project%", buildWorld.getProject())
+                    .replace("%permission%", buildWorld.getPermission())
+                    .replace("%status%", buildWorld.getStatusName())
+                    .replace("%creator%", buildWorld.getCreator())
+                    .replace("%creation%", plugin.formatDate(buildWorld.getCreationDate()));
 
             if (!line.contains("%builders%")) {
                 lore.add(replace);
             } else {
-                ArrayList<String> builders = formatBuilders(world);
+                ArrayList<String> builders = formatBuilders(buildWorld);
                 for (int i = 0; i < builders.size(); i++) {
                     String builderString = builders.get(i).trim();
                     if (builderString.isEmpty()) continue;
@@ -202,16 +202,16 @@ public class InventoryManager {
         return lore;
     }
 
-    private ArrayList<String> formatBuilders(World world) {
+    private ArrayList<String> formatBuilders(BuildWorld buildWorld) {
         String template = plugin.getString("world_item_builders_builder_template");
         ArrayList<Builder> builders = new ArrayList<>();
 
         if (plugin.isCreatorIsBuilder()) {
-            if (world.getCreator() != null && !world.getCreator().equals("-")) {
-                builders.add(new Builder(world.getCreatorId(), world.getCreator()));
+            if (buildWorld.getCreator() != null && !buildWorld.getCreator().equals("-")) {
+                builders.add(new Builder(buildWorld.getCreatorId(), buildWorld.getCreator()));
             }
         }
-        builders.addAll(world.getBuilders());
+        builders.addAll(buildWorld.getBuilders());
 
         ArrayList<String> builderNames = new ArrayList<>();
         if (builders.isEmpty()) {
@@ -339,7 +339,7 @@ public class InventoryManager {
     }
 
     public String selectedWorld(Player player) {
-        World selectedWorld = plugin.selectedWorld.get(player.getUniqueId());
+        BuildWorld selectedWorld = plugin.selectedWorld.get(player.getUniqueId());
         if (selectedWorld == null) return null;
 
         String selectedWorldName = selectedWorld.getName();
@@ -576,10 +576,10 @@ public class InventoryManager {
         }
     }
 
-    private static class CreationComparator implements Comparator<World> {
+    private static class CreationComparator implements Comparator<BuildWorld> {
         @Override
-        public int compare(World world1, World world2) {
-            return Long.compare(world1.getCreationDate(), world2.getCreationDate());
+        public int compare(BuildWorld buildWorld1, BuildWorld buildWorld2) {
+            return Long.compare(buildWorld1.getCreationDate(), buildWorld2.getCreationDate());
         }
     }
 }

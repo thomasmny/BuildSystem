@@ -6,12 +6,8 @@ import de.eintosti.buildsystem.manager.SpawnManager;
 import de.eintosti.buildsystem.util.external.UUIDFetcher;
 import de.eintosti.buildsystem.util.external.xseries.Titles;
 import de.eintosti.buildsystem.util.external.xseries.XMaterial;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.WorldCreator;
+import org.bukkit.*;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.craftbukkit.v1_17_R1.generator.CustomChunkGenerator;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.scheduler.BukkitTask;
@@ -22,7 +18,7 @@ import java.util.logging.Level;
 /**
  * @author einTosti
  */
-public class World implements ConfigurationSerializable {
+public class BuildWorld implements ConfigurationSerializable {
     private final BuildSystem plugin;
 
     private String name;
@@ -38,7 +34,7 @@ public class World implements ConfigurationSerializable {
     private final ArrayList<Builder> builders;
     private final long date;
 
-    private String chunkGeneratorString;
+    private final String chunkGeneratorString;
     private ChunkGenerator chunkGenerator;
 
     private boolean physics;
@@ -53,7 +49,7 @@ public class World implements ConfigurationSerializable {
     private boolean loaded;
     private BukkitTask unloadTask;
 
-    public World(BuildSystem plugin, String name, String creator, UUID creatorId, WorldType worldType, long date, boolean privateWorld, String... chunkGeneratorString) {
+    public BuildWorld(BuildSystem plugin, String name, String creator, UUID creatorId, WorldType worldType, long date, boolean privateWorld, String... chunkGeneratorString) {
         this.plugin = plugin;
 
         this.name = name;
@@ -114,10 +110,10 @@ public class World implements ConfigurationSerializable {
         }
     }
 
-    public World(BuildSystem plugin, String name, String creator, UUID creatorId, WorldType worldType, boolean privateWorld,
-                 XMaterial material, WorldStatus worldStatus, String project, String permission, long date, boolean physics,
-                 boolean explosions, boolean mobAI, String customSpawn, boolean blockBreaking, boolean blockPlacement,
-                 boolean blockInteractions, boolean buildersEnabled, ArrayList<Builder> builders, ChunkGenerator chunkGenerator, String chunkGeneratorString) {
+    public BuildWorld(BuildSystem plugin, String name, String creator, UUID creatorId, WorldType worldType, boolean privateWorld,
+                      XMaterial material, WorldStatus worldStatus, String project, String permission, long date, boolean physics,
+                      boolean explosions, boolean mobAI, String customSpawn, boolean blockBreaking, boolean blockPlacement,
+                      boolean blockInteractions, boolean buildersEnabled, ArrayList<Builder> builders, ChunkGenerator chunkGenerator, String chunkGeneratorString) {
         this.plugin = plugin;
         this.name = name;
         this.creator = creator;
@@ -418,7 +414,7 @@ public class World implements ConfigurationSerializable {
     private void unload() {
         if (!isLoaded()) return;
 
-        org.bukkit.World bukkitWorld = Bukkit.getWorld(name);
+        World bukkitWorld = Bukkit.getWorld(name);
         if (bukkitWorld == null) return;
 
         if (isSpawnWorld(bukkitWorld)) return;
@@ -439,7 +435,7 @@ public class World implements ConfigurationSerializable {
         this.unloadTask = null;
     }
 
-    private boolean isSpawnWorld(org.bukkit.World bukkitWorld) {
+    private boolean isSpawnWorld(World bukkitWorld) {
         SpawnManager spawnManager = plugin.getSpawnManager();
         if (!spawnManager.spawnExists()) return false;
         return Objects.equals(spawnManager.getSpawn().getWorld(), bukkitWorld);

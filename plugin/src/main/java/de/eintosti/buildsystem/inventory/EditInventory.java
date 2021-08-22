@@ -2,9 +2,10 @@ package de.eintosti.buildsystem.inventory;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.InventoryManager;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.util.external.xseries.XMaterial;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -27,32 +28,32 @@ public class EditInventory {
         this.inventoryManager = plugin.getInventoryManager();
     }
 
-    public Inventory getInventory(Player player, World world) {
+    public Inventory getInventory(Player player, BuildWorld buildWorld) {
         Inventory inventory = Bukkit.createInventory(null, 54, plugin.getString("worldeditor_title"));
         fillGuiWithGlass(player, inventory);
 
-        inventoryManager.addItemStack(inventory, 4, world.getMaterial(), plugin.getString("worldeditor_world_item").replace("%world%", world.getName()));
+        inventoryManager.addItemStack(inventory, 4, buildWorld.getMaterial(), plugin.getString("worldeditor_world_item").replace("%world%", buildWorld.getName()));
 
-        addSettingsItem(inventory, 20, XMaterial.OAK_PLANKS, world.isBlockBreaking(), plugin.getString("worldeditor_blockbreaking_item"), plugin.getStringList("worldeditor_blockbreaking_lore"));
-        addSettingsItem(inventory, 21, XMaterial.POLISHED_ANDESITE, world.isBlockPlacement(), plugin.getString("worldeditor_blockplacement_item"), plugin.getStringList("worldeditor_blockplacement_lore"));
-        addSettingsItem(inventory, 22, XMaterial.SAND, world.isPhysics(), plugin.getString("worldeditor_physics_item"), plugin.getStringList("worldeditor_physics_lore"));
-        addTimeItem(inventory, world);
-        addSettingsItem(inventory, 24, XMaterial.TNT, world.isExplosions(), plugin.getString("worldeditor_explosions_item"), plugin.getStringList("worldeditor_explosions_lore"));
+        addSettingsItem(inventory, 20, XMaterial.OAK_PLANKS, buildWorld.isBlockBreaking(), plugin.getString("worldeditor_blockbreaking_item"), plugin.getStringList("worldeditor_blockbreaking_lore"));
+        addSettingsItem(inventory, 21, XMaterial.POLISHED_ANDESITE, buildWorld.isBlockPlacement(), plugin.getString("worldeditor_blockplacement_item"), plugin.getStringList("worldeditor_blockplacement_lore"));
+        addSettingsItem(inventory, 22, XMaterial.SAND, buildWorld.isPhysics(), plugin.getString("worldeditor_physics_item"), plugin.getStringList("worldeditor_physics_lore"));
+        addTimeItem(inventory, buildWorld);
+        addSettingsItem(inventory, 24, XMaterial.TNT, buildWorld.isExplosions(), plugin.getString("worldeditor_explosions_item"), plugin.getStringList("worldeditor_explosions_lore"));
         inventoryManager.addItemStack(inventory, 29, XMaterial.DIAMOND_SWORD, plugin.getString("worldeditor_butcher_item"), plugin.getStringList("worldeditor_butcher_lore"));
-        addBuildersItem(inventory, world, player);
-        addSettingsItem(inventory, 31, XMaterial.ARMOR_STAND, world.isMobAI(), plugin.getString("worldeditor_mobai_item"), plugin.getStringList("worldeditor_mobai_lore"));
-        addPrivateItem(inventory, world);
-        addSettingsItem(inventory, 33, XMaterial.TRIPWIRE_HOOK, world.isBlockInteractions(), plugin.getString("worldeditor_blockinteractions_item"), plugin.getStringList("worldeditor_blockinteractions_lore"));
+        addBuildersItem(inventory, buildWorld, player);
+        addSettingsItem(inventory, 31, XMaterial.ARMOR_STAND, buildWorld.isMobAI(), plugin.getString("worldeditor_mobai_item"), plugin.getStringList("worldeditor_mobai_lore"));
+        addPrivateItem(inventory, buildWorld);
+        addSettingsItem(inventory, 33, XMaterial.TRIPWIRE_HOOK, buildWorld.isBlockInteractions(), plugin.getString("worldeditor_blockinteractions_item"), plugin.getStringList("worldeditor_blockinteractions_lore"));
         inventoryManager.addItemStack(inventory, 38, XMaterial.FILLED_MAP, plugin.getString("worldeditor_gamerules_item"), plugin.getStringList("worldeditor_gamerules_lore"));
-        inventoryManager.addItemStack(inventory, 39, inventoryManager.getStatusItem(world.getStatus()), plugin.getString("worldeditor_status_item"), getStatusLore(world));
-        inventoryManager.addItemStack(inventory, 41, XMaterial.ANVIL, plugin.getString("worldeditor_project_item"), getProjectLore(world));
-        inventoryManager.addItemStack(inventory, 42, XMaterial.PAPER, plugin.getString("worldeditor_permission_item"), getPermissionLore(world));
+        inventoryManager.addItemStack(inventory, 39, inventoryManager.getStatusItem(buildWorld.getStatus()), plugin.getString("worldeditor_status_item"), getStatusLore(buildWorld));
+        inventoryManager.addItemStack(inventory, 41, XMaterial.ANVIL, plugin.getString("worldeditor_project_item"), getProjectLore(buildWorld));
+        inventoryManager.addItemStack(inventory, 42, XMaterial.PAPER, plugin.getString("worldeditor_permission_item"), getPermissionLore(buildWorld));
 
         return inventory;
     }
 
-    public void openInventory(Player player, World world) {
-        player.openInventory(getInventory(player, world));
+    public void openInventory(Player player, BuildWorld buildWorld) {
+        player.openInventory(getInventory(player, buildWorld));
     }
 
     private void fillGuiWithGlass(Player player, Inventory inventory) {
@@ -74,12 +75,12 @@ public class EditInventory {
         inventory.setItem(position, itemStack);
     }
 
-    private void addTimeItem(Inventory inventory, World world) {
-        org.bukkit.World bukkitWorld = Bukkit.getWorld(world.getName());
+    private void addTimeItem(Inventory inventory, BuildWorld buildWorld) {
+        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
 
         XMaterial xMaterial = XMaterial.WHITE_STAINED_GLASS;
         String value = plugin.getString("worldeditor_time_lore_unknown");
-        World.Time time = getWorldTime(bukkitWorld);
+        BuildWorld.Time time = getWorldTime(bukkitWorld);
 
         switch (time) {
             case SUNRISE:
@@ -103,59 +104,59 @@ public class EditInventory {
         inventoryManager.addItemStack(inventory, 23, xMaterial, plugin.getString("worldeditor_time_item"), lore);
     }
 
-    public World.Time getWorldTime(org.bukkit.World bukkitWorld) {
-        if (bukkitWorld == null) return World.Time.UNKNOWN;
+    public BuildWorld.Time getWorldTime(World bukkitWorld) {
+        if (bukkitWorld == null) return BuildWorld.Time.UNKNOWN;
 
         int worldTime = (int) bukkitWorld.getTime();
         int noonTime = plugin.getNoonTime();
         if (worldTime >= 0 && worldTime < noonTime) {
-            return World.Time.SUNRISE;
+            return BuildWorld.Time.SUNRISE;
         } else if (worldTime >= noonTime && worldTime < 13000) {
-            return World.Time.NOON;
+            return BuildWorld.Time.NOON;
         } else {
-            return World.Time.NIGHT;
+            return BuildWorld.Time.NIGHT;
         }
     }
 
-    private void addBuildersItem(Inventory inventory, World world, Player player) {
-        if ((world.getCreatorId() != null && world.getCreatorId().equals(player.getUniqueId()))
+    private void addBuildersItem(Inventory inventory, BuildWorld buildWorld, Player player) {
+        if ((buildWorld.getCreatorId() != null && buildWorld.getCreatorId().equals(player.getUniqueId()))
                 || player.hasPermission("buildsystem.admin")) {
-            addSettingsItem(inventory, 30, XMaterial.IRON_PICKAXE, world.isBuilders(), plugin.getString("worldeditor_builders_item"), plugin.getStringList("worldeditor_builders_lore"));
+            addSettingsItem(inventory, 30, XMaterial.IRON_PICKAXE, buildWorld.isBuilders(), plugin.getString("worldeditor_builders_item"), plugin.getStringList("worldeditor_builders_lore"));
         } else {
             inventoryManager.addItemStack(inventory, 30, XMaterial.BARRIER, plugin.getString("worldeditor_builders_not_creator_item"), plugin.getStringList("worldeditor_builders_not_creator_lore"));
         }
     }
 
-    private void addPrivateItem(Inventory inventory, World world) {
+    private void addPrivateItem(Inventory inventory, BuildWorld buildWorld) {
         XMaterial xMaterial = XMaterial.ENDER_EYE;
         List<String> lore = plugin.getStringList("worldeditor_visibility_lore_public");
-        if (world.isPrivate()) {
+        if (buildWorld.isPrivate()) {
             xMaterial = XMaterial.ENDER_PEARL;
             lore = plugin.getStringList("worldeditor_visibility_lore_private");
         }
         inventoryManager.addItemStack(inventory, 32, xMaterial, plugin.getString("worldeditor_visibility_item"), lore);
     }
 
-    private List<String> getStatusLore(World world) {
+    private List<String> getStatusLore(BuildWorld buildWorld) {
         List<String> lore = new ArrayList<>();
         for (String s : plugin.getStringList("worldeditor_status_lore")) {
-            lore.add(s.replace("%status%", world.getStatusName()));
+            lore.add(s.replace("%status%", buildWorld.getStatusName()));
         }
         return lore;
     }
 
-    private List<String> getProjectLore(World world) {
+    private List<String> getProjectLore(BuildWorld buildWorld) {
         List<String> lore = new ArrayList<>();
         for (String s : plugin.getStringList("worldeditor_project_lore")) {
-            lore.add(s.replace("%project%", world.getProject()));
+            lore.add(s.replace("%project%", buildWorld.getProject()));
         }
         return lore;
     }
 
-    private List<String> getPermissionLore(World world) {
+    private List<String> getPermissionLore(BuildWorld buildWorld) {
         List<String> lore = new ArrayList<>();
         for (String s : plugin.getStringList("worldeditor_permission_lore")) {
-            lore.add(s.replace("%permission%", world.getPermission()));
+            lore.add(s.replace("%permission%", buildWorld.getPermission()));
         }
         return lore;
     }

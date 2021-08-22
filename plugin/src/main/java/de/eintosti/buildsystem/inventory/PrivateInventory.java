@@ -3,7 +3,7 @@ package de.eintosti.buildsystem.inventory;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.InventoryManager;
 import de.eintosti.buildsystem.manager.WorldManager;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.object.world.WorldStatus;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -56,8 +56,8 @@ public class PrivateInventory {
 
     private int numOfWorlds(Player player) {
         int numOfWorlds = 0;
-        for (World world : worldManager.getWorlds()) {
-            if (isValid(player, world)) {
+        for (BuildWorld buildWorld : worldManager.getBuildWorlds()) {
+            if (isValid(player, buildWorld)) {
                 numOfWorlds++;
             }
         }
@@ -79,10 +79,10 @@ public class PrivateInventory {
             return;
         }
 
-        List<World> worlds = inventoryManager.sortWorlds(player, worldManager, plugin);
-        for (World world : worlds) {
-            if (isValid(player, world)) {
-                inventoryManager.addWorldItem(player, inventory, columnWorld++, world);
+        List<BuildWorld> buildWorlds = inventoryManager.sortWorlds(player, worldManager, plugin);
+        for (BuildWorld buildWorld : buildWorlds) {
+            if (isValid(player, buildWorld)) {
+                inventoryManager.addWorldItem(player, inventory, columnWorld++, buildWorld);
             }
             if (columnWorld > maxColumnWorld) {
                 columnWorld = 9;
@@ -92,18 +92,18 @@ public class PrivateInventory {
         }
     }
 
-    private boolean isValid(Player player, World world) {
-        if (world.isPrivate() && world.getStatus() != WorldStatus.HIDDEN) {
-            if (player.hasPermission(world.getPermission()) || world.getPermission().equalsIgnoreCase("-")) {
-                return Bukkit.getWorld(world.getName()) != null || (Bukkit.getWorld(world.getName()) == null && !world.isLoaded());
+    private boolean isValid(Player player, BuildWorld buildWorld) {
+        if (buildWorld.isPrivate() && buildWorld.getStatus() != WorldStatus.HIDDEN) {
+            if (player.hasPermission(buildWorld.getPermission()) || buildWorld.getPermission().equalsIgnoreCase("-")) {
+                return Bukkit.getWorld(buildWorld.getName()) != null || (Bukkit.getWorld(buildWorld.getName()) == null && !buildWorld.isLoaded());
             }
         }
         return false;
     }
 
     private void addWorldCreateItem(Inventory inventory, Player player) {
-        World world = worldManager.getWorld(player.getName());
-        if (world != null || !player.hasPermission("buildsystem.createprivate")) {
+        BuildWorld buildWorld = worldManager.getBuildWorld(player.getName());
+        if (buildWorld != null || !player.hasPermission("buildsystem.createprivate")) {
             inventoryManager.addGlassPane(plugin, player, inventory, 49);
             return;
         }

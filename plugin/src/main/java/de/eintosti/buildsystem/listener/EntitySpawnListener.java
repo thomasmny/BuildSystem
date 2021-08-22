@@ -2,7 +2,8 @@ package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
@@ -24,11 +25,11 @@ public class EntitySpawnListener implements Listener {
 
     @EventHandler
     public void onEntitySpawn(EntitySpawnEvent event) {
-        org.bukkit.World bukkitWorld = event.getLocation().getWorld();
+        World bukkitWorld = event.getLocation().getWorld();
 
-        World world = worldManager.getWorld(bukkitWorld.getName());
-        if (world == null) return;
-        if (world.isMobAI()) return;
+        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
+        if (buildWorld == null) return;
+        if (buildWorld.isMobAI()) return;
 
         Entity entity = event.getEntity();
         if (entity instanceof LivingEntity) {

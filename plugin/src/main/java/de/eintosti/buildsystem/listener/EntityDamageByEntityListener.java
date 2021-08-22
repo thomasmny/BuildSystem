@@ -2,7 +2,7 @@ package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.object.world.WorldStatus;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -32,34 +32,34 @@ public class EntityDamageByEntityListener implements Listener {
         Entity entity = event.getEntity();
         if (!(entity instanceof ArmorStand)) return;
 
-        World world = worldManager.getWorld(player.getWorld().getName());
-        if (world == null) return;
+        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+        if (buildWorld == null) return;
 
-        disableArchivedWorlds(world, player, event);
-        checkWorldSettings(world, player, event);
-        checkBuilders(world, player, event);
+        disableArchivedWorlds(buildWorld, player, event);
+        checkWorldSettings(buildWorld, player, event);
+        checkBuilders(buildWorld, player, event);
     }
 
-    private void disableArchivedWorlds(World world, Player player, EntityDamageByEntityEvent event) {
+    private void disableArchivedWorlds(BuildWorld buildWorld, Player player, EntityDamageByEntityEvent event) {
         if (player.hasPermission("buildsystem.admin") || player.hasPermission("buildsystem.bypass.archive")) return;
-        if (world.getStatus() == WorldStatus.ARCHIVE && !plugin.buildPlayers.contains(player.getUniqueId())) {
+        if (buildWorld.getStatus() == WorldStatus.ARCHIVE && !plugin.buildPlayers.contains(player.getUniqueId())) {
             event.setCancelled(true);
         }
     }
 
-    private void checkWorldSettings(World world, Player player, EntityDamageByEntityEvent event) {
+    private void checkWorldSettings(BuildWorld buildWorld, Player player, EntityDamageByEntityEvent event) {
         if (player.hasPermission("buildsystem.admin") || player.hasPermission("buildsystem.bypass.settings")) return;
-        if (!world.isBlockInteractions() && !plugin.buildPlayers.contains(player.getUniqueId())) {
+        if (!buildWorld.isBlockInteractions() && !plugin.buildPlayers.contains(player.getUniqueId())) {
             event.setCancelled(true);
         }
     }
 
-    private void checkBuilders(World world, Player player, EntityDamageByEntityEvent event) {
+    private void checkBuilders(BuildWorld buildWorld, Player player, EntityDamageByEntityEvent event) {
         if (player.hasPermission("buildsystem.admin") || player.hasPermission("buildsystem.bypass.builders")) return;
-        if (plugin.isCreatorIsBuilder() && world.getCreatorId() != null && world.getCreatorId().equals(player.getUniqueId())) {
+        if (plugin.isCreatorIsBuilder() && buildWorld.getCreatorId() != null && buildWorld.getCreatorId().equals(player.getUniqueId())) {
             return;
         }
-        if (world.isBuilders() && !world.isBuilder(player)) {
+        if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
             event.setCancelled(true);
         }
     }

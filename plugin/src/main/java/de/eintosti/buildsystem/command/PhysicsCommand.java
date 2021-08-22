@@ -2,8 +2,9 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -42,8 +43,8 @@ public class PhysicsCommand implements CommandExecutor {
                 togglePhysics(player, player.getWorld());
                 break;
             case 1:
-                if (args[0].equalsIgnoreCase("all") && worldManager.getWorld("all") == null) {
-                    worldManager.getWorlds().forEach(world -> world.setPhysics(true));
+                if (args[0].equalsIgnoreCase("all") && worldManager.getBuildWorld("all") == null) {
+                    worldManager.getBuildWorlds().forEach(world -> world.setPhysics(true));
                     player.sendMessage(plugin.getString("physics_activated_all"));
                 } else {
                     togglePhysics(player, Bukkit.getWorld(args[0]));
@@ -56,24 +57,24 @@ public class PhysicsCommand implements CommandExecutor {
         return true;
     }
 
-    private void togglePhysics(Player player, org.bukkit.World bukkitWorld) {
+    private void togglePhysics(Player player, World bukkitWorld) {
         if (bukkitWorld == null) {
             player.sendMessage(plugin.getString("physics_unknown_world"));
             return;
         }
-        World world = worldManager.getWorld(bukkitWorld.getName());
 
-        if (world == null) {
+        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
+        if (buildWorld == null) {
             player.sendMessage(plugin.getString("physics_world_not_imported"));
             return;
         }
 
-        if (!world.isPhysics()) {
-            world.setPhysics(true);
-            player.sendMessage(plugin.getString("physics_activated").replace("%world%", world.getName()));
+        if (!buildWorld.isPhysics()) {
+            buildWorld.setPhysics(true);
+            player.sendMessage(plugin.getString("physics_activated").replace("%world%", buildWorld.getName()));
         } else {
-            world.setPhysics(false);
-            player.sendMessage(plugin.getString("physics_deactivated").replace("%world%", world.getName()));
+            buildWorld.setPhysics(false);
+            player.sendMessage(plugin.getString("physics_deactivated").replace("%world%", buildWorld.getName()));
         }
     }
 }

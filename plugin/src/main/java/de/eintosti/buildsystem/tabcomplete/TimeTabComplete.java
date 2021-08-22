@@ -27,7 +27,7 @@ public class TimeTabComplete extends ArgumentSorter implements TabCompleter {
 
         switch (label.toLowerCase()) {
             case "day":
-                worldManager.getWorlds().forEach(world -> {
+                worldManager.getBuildWorlds().forEach(world -> {
                     if (sender.hasPermission("buildsystem.day")) {
                         String worldName = world.getName();
                         addArgument(args[0], worldName, arrayList);
@@ -35,7 +35,7 @@ public class TimeTabComplete extends ArgumentSorter implements TabCompleter {
                 });
                 return arrayList;
             case "night":
-                worldManager.getWorlds().forEach(world -> {
+                worldManager.getBuildWorlds().forEach(world -> {
                     if (sender.hasPermission("buildsystem.night")) {
                         String worldName = world.getName();
                         addArgument(args[0], worldName, arrayList);

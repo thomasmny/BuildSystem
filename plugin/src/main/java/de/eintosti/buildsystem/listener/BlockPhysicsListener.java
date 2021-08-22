@@ -2,8 +2,9 @@ package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.util.external.xseries.XMaterial;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
@@ -31,11 +32,11 @@ public class BlockPhysicsListener implements Listener {
     @EventHandler
     public void onBlockPhysics(BlockPhysicsEvent event) {
         Block block = event.getBlock();
-        org.bukkit.World bukkitWorld = block.getWorld();
-        World world = worldManager.getWorld(bukkitWorld.getName());
+        World bukkitWorld = block.getWorld();
+        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
 
-        if (world == null) return;
-        if (world.isPhysics()) return;
+        if (buildWorld == null) return;
+        if (buildWorld.isPhysics()) return;
 
         XMaterial xMaterial = XMaterial.matchXMaterial(block.getType());
         BlockFace[] surroundingBlocks = new BlockFace[]{BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
@@ -73,59 +74,59 @@ public class BlockPhysicsListener implements Listener {
 
     @EventHandler
     public void onLeavesDecay(LeavesDecayEvent event) {
-        org.bukkit.World bukkitWorld = event.getBlock().getWorld();
-        World world = worldManager.getWorld(bukkitWorld.getName());
-        if (world == null) return;
-        if (!world.isPhysics()) event.setCancelled(true);
+        World bukkitWorld = event.getBlock().getWorld();
+        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
+        if (buildWorld == null) return;
+        if (!buildWorld.isPhysics()) event.setCancelled(true);
     }
 
     @EventHandler
     public void onBlockFade(BlockFadeEvent event) {
-        org.bukkit.World bukkitWorld = event.getBlock().getWorld();
-        World world = worldManager.getWorld(bukkitWorld.getName());
-        if (world == null) return;
-        if (!world.isPhysics()) event.setCancelled(true);
+        World bukkitWorld = event.getBlock().getWorld();
+        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
+        if (buildWorld == null) return;
+        if (!buildWorld.isPhysics()) event.setCancelled(true);
     }
 
     @EventHandler
     public void onBlockForm(BlockFormEvent event) {
-        org.bukkit.World bukkitWorld = event.getBlock().getWorld();
-        World world = worldManager.getWorld(bukkitWorld.getName());
-        if (world == null) return;
-        if (!world.isPhysics()) event.setCancelled(true);
+        World bukkitWorld = event.getBlock().getWorld();
+        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
+        if (buildWorld == null) return;
+        if (!buildWorld.isPhysics()) event.setCancelled(true);
     }
 
     @EventHandler
     public void onBlockFromTo(BlockFromToEvent event) {
-        org.bukkit.World bukkitWorld = event.getBlock().getWorld();
-        World world = worldManager.getWorld(bukkitWorld.getName());
-        if (world == null) return;
-        if (!world.isPhysics()) event.setCancelled(true);
+        World bukkitWorld = event.getBlock().getWorld();
+        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
+        if (buildWorld == null) return;
+        if (!buildWorld.isPhysics()) event.setCancelled(true);
     }
 
     @EventHandler
     public void onBlockGrow(BlockGrowEvent event) {
-        org.bukkit.World bukkitWorld = event.getBlock().getWorld();
-        World world = worldManager.getWorld(bukkitWorld.getName());
-        if (world == null) return;
-        if (!world.isPhysics()) event.setCancelled(true);
+        World bukkitWorld = event.getBlock().getWorld();
+        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
+        if (buildWorld == null) return;
+        if (!buildWorld.isPhysics()) event.setCancelled(true);
     }
 
     @EventHandler
     public void onBlockSpread(BlockSpreadEvent event) {
-        org.bukkit.World bukkitWorld = event.getBlock().getWorld();
-        World world = worldManager.getWorld(bukkitWorld.getName());
-        if (world == null) return;
-        if (!world.isPhysics()) event.setCancelled(true);
+        World bukkitWorld = event.getBlock().getWorld();
+        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
+        if (buildWorld == null) return;
+        if (!buildWorld.isPhysics()) event.setCancelled(true);
     }
 
     @EventHandler
     public void onEntityChangeBlock(EntityChangeBlockEvent event) {
-        org.bukkit.World bukkitWorld = event.getBlock().getWorld();
-        World world = worldManager.getWorld(bukkitWorld.getName());
+        World bukkitWorld = event.getBlock().getWorld();
+        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
 
-        if (world == null) return;
-        if (world.isPhysics()) return;
+        if (buildWorld == null) return;
+        if (buildWorld.isPhysics()) return;
         if (event.getEntityType().equals(EntityType.FALLING_BLOCK)) {
             event.setCancelled(true);
             event.getBlock().getState().update(true, false);
@@ -152,17 +153,17 @@ public class BlockPhysicsListener implements Listener {
 
     @EventHandler
     public void onBlockExplode(BlockExplodeEvent event) {
-        org.bukkit.World bukkitWorld = event.getBlock().getWorld();
-        World world = worldManager.getWorld(bukkitWorld.getName());
-        if (world == null) return;
-        if (!world.isExplosions()) event.setCancelled(true);
+        World bukkitWorld = event.getBlock().getWorld();
+        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
+        if (buildWorld == null) return;
+        if (!buildWorld.isExplosions()) event.setCancelled(true);
     }
 
     @EventHandler
     public void onEntityExplode(EntityExplodeEvent event) {
-        org.bukkit.World bukkitWorld = event.getLocation().getWorld();
-        World world = worldManager.getWorld(bukkitWorld.getName());
-        if (world == null) return;
-        if (!world.isExplosions()) event.setCancelled(true);
+        World bukkitWorld = event.getLocation().getWorld();
+        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
+        if (buildWorld == null) return;
+        if (!buildWorld.isExplosions()) event.setCancelled(true);
     }
 }

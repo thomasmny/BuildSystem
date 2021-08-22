@@ -2,9 +2,10 @@ package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -39,15 +40,15 @@ public class PlayerTeleportListener implements Listener {
 
         Location to = event.getTo();
         if (to == null) return;
-        org.bukkit.World toWorld = to.getWorld();
+        World toWorld = to.getWorld();
         if (toWorld == null) return;
 
         String worldName = to.getWorld().getName();
-        World world = worldManager.getWorld(worldName);
+        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
 
-        if (world == null) return;
+        if (buildWorld == null) return;
         if (!Bukkit.getWorlds().get(0).equals(Bukkit.getWorld(worldName))) {
-            if (!player.hasPermission(world.getPermission()) && !world.getPermission().equalsIgnoreCase("-")) {
+            if (!player.hasPermission(buildWorld.getPermission()) && !buildWorld.getPermission().equalsIgnoreCase("-")) {
                 player.sendMessage(plugin.getString("worlds_tp_entry_forbidden"));
                 event.setCancelled(true);
             }

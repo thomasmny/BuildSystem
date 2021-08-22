@@ -3,7 +3,7 @@ package de.eintosti.buildsystem.tabcomplete;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
 import de.eintosti.buildsystem.object.world.Generator;
-import de.eintosti.buildsystem.object.world.World;
+import de.eintosti.buildsystem.object.world.BuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -53,7 +53,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                         case "setproject":
                         case "setstatus":
                         case "tp":
-                            worldManager.getWorlds().forEach(world -> {
+                            worldManager.getBuildWorlds().forEach(world -> {
                                 if (sender.hasPermission(world.getPermission()) || world.getPermission().equalsIgnoreCase("-")) {
                                     String worldName = world.getName();
                                     addArgument(args[1], worldName, arrayList);
@@ -65,7 +65,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                             if (!(sender instanceof Player)) return arrayList;
                             Player player = (Player) sender;
 
-                            worldManager.getWorlds().forEach(world -> {
+                            worldManager.getBuildWorlds().forEach(world -> {
                                 if (player.hasPermission("buildsystem.admin") || (world.getCreatorId() != null && world.getCreatorId().equals(player.getUniqueId()))) {
                                     String worldName = world.getName();
                                     addArgument(args[1], worldName, arrayList);
@@ -87,8 +87,8 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                                 File levelFile = new File(dir + File.separator + name + File.separator + "level.dat");
                                 if (!levelFile.exists()) return false;
 
-                                World world = worldManager.getWorld(name);
-                                return world == null;
+                                BuildWorld buildWorld = worldManager.getBuildWorld(name);
+                                return buildWorld == null;
                             });
 
                             if (directories == null || directories.length == 0) return arrayList;
