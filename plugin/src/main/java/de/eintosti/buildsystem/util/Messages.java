@@ -244,6 +244,7 @@ public class Messages {
         setMessage(sb, config, "worlds_help_setpermission", "&7Set a world's permission.");
         setMessage(sb, config, "worlds_help_setstatus", "&7Set a world's status.");
         setMessage(sb, config, "worlds_help_setspawn", "&7Set a world's spawnpoint.");
+        setMessage(sb, config, "worlds_help_removespawn", "&7Removes a world's spawnpoint.");
         setMessage(sb, config, "worlds_help_delete", "&7Delete a world.");
         setMessage(sb, config, "worlds_help_import", "&7Import a world.");
         setMessage(sb, config, "worlds_help_importall", "&7Import all worlds at once.");
@@ -335,6 +336,9 @@ public class Messages {
         addLine(sb, "");
         setMessage(sb, config, "worlds_setspawn_world_not_imported", "%prefix% &cWorld must be imported » /worlds import <world>");
         setMessage(sb, config, "worlds_setspawn_world_spawn_set", "%prefix% &b%world%&7's spawnpoint was set.");
+        addLine(sb, "");
+        setMessage(sb, config, "worlds_removespawn_world_not_imported", "%prefix% &cWorld must be imported » /worlds import <world>");
+        setMessage(sb, config, "worlds_removespawn_world_spawn_removed", "%prefix% &b%world%&7's spawnpoint was removed.");
         addLine(sb, "");
         setMessage(sb, config, "worlds_tp_usage", "%prefix% &7Usage: &b/worlds tp <world>");
         setMessage(sb, config, "worlds_tp_unknown_world", "%prefix% &cUnknown world.");

@@ -137,6 +137,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
         SET_PROJECT("setProject"),
         SET_STATUS("setStatus"),
         SET_SPAWN("setSpawn"),
+        REMOVE_SPAWN("removeSpawn"),
         TP("tp");
 
         private final String command;

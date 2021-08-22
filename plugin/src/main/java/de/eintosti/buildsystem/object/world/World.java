@@ -311,6 +311,10 @@ public class World implements ConfigurationSerializable {
                 customSpawn.getYaw() + ";" + customSpawn.getPitch();
     }
 
+    public void removeCustomSpawn() {
+        this.customSpawn = null;
+    }
+
     public boolean isBlockBreaking() {
         return blockBreaking;
     }

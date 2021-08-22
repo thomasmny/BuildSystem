@@ -434,6 +434,21 @@ public class WorldsCommand implements CommandExecutor {
                 break;
             }
 
+            case "removespawn": {
+                if (!player.hasPermission("buildsystem.removespawn")) {
+                    plugin.sendPermissionMessage(player);
+                    return true;
+                }
+                World world = worldManager.getWorld(player.getWorld().getName());
+                if (world == null) {
+                    player.sendMessage(plugin.getString("worlds_removespawn_world_not_imported"));
+                    return true;
+                }
+                world.removeCustomSpawn();
+                player.sendMessage(plugin.getString("worlds_removespawn_world_spawn_removed").replace("%world%", world.getName()));
+                break;
+            }
+
             case "tp": {
                 if (!player.hasPermission("buildsystem.worldtp")) {
                     plugin.sendPermissionMessage(player);
@@ -489,11 +504,13 @@ public class WorldsCommand implements CommandExecutor {
         TextComponent line15 = createComponent(player, "/worlds setPermission <world>", " §8» " + plugin.getString("worlds_help_setpermission"), "/worlds setPermission ", "buildsystem.setpermission");
         TextComponent line16 = createComponent(player, "/worlds setStatus <world>", " §8» " + plugin.getString("worlds_help_setstatus"), "/worlds setStatus ", "buildsystem.setstatus");
         TextComponent line17 = createComponent(player, "/worlds setSpawn", " §8» " + plugin.getString("worlds_help_setspawn"), "/worlds setSpawn", "buildsystem.setspawn");
-        TextComponent line18 = createComponent(player, "/worlds delete <world>", " §8» " + plugin.getString("worlds_help_delete"), "/worlds delete ", "buildsystem.delete");
-        TextComponent line19 = createComponent(player, "/worlds import <world>", " §8» " + plugin.getString("worlds_help_import"), "/worlds import ", "buildsystem.import");
-        TextComponent line20 = createComponent(player, "/worlds importall", " §8» " + plugin.getString("worlds_help_importall"), "/worlds importall", "buildsystem.import.all");
-        TextComponent line21 = new TextComponent("§7§m----------------------------------------------------");
+        TextComponent line18 = createComponent(player, "/worlds removeSpawn", " §8» " + plugin.getString("worlds_help_removespawn"), "/worlds removeSpawn", "buildsystem.removespawn");
+        TextComponent line19 = createComponent(player, "/worlds delete <world>", " §8» " + plugin.getString("worlds_help_delete"), "/worlds delete ", "buildsystem.delete");
+        TextComponent line20 = createComponent(player, "/worlds import <world>", " §8» " + plugin.getString("worlds_help_import"), "/worlds import ", "buildsystem.import");
+        TextComponent line21 = createComponent(player, "/worlds importall", " §8» " + plugin.getString("worlds_help_importall"), "/worlds importall", "buildsystem.import.all");
+        TextComponent line22 = new TextComponent("§7§m----------------------------------------------------");
 
+        line21.addExtra(line22);
         line20.addExtra(line21);
         line19.addExtra(line20);
         line18.addExtra(line19);
