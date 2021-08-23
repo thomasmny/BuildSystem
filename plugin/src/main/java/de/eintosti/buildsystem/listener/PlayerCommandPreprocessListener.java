@@ -5,6 +5,7 @@ import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
 import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.object.world.WorldStatus;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -30,7 +31,7 @@ public class PlayerCommandPreprocessListener implements Listener {
         if (event.isCancelled()) return;
         if (!plugin.isBlockWorldEditNonBuilder()) return;
 
-        String command = "/" + event.getMessage().split(" ")[0];
+        String command = event.getMessage().split(" ")[0];
         boolean found = DISABLED_COMMANDS.contains(command);
         if (!found) return;
 
@@ -43,140 +44,151 @@ public class PlayerCommandPreprocessListener implements Listener {
     }
 
     private final static HashSet<String> DISABLED_COMMANDS = Sets.newHashSet(
-            "worldedit",
+            "/worldedit",
+            "/we",
 
             // History Control
-            "/undo",
-            "/redo",
-            "clearhistory",
+            "//undo",
+            "//redo",
+            "/clearhistory",
 
             // Region Selection
-            "/wand",
-            "toggleeditwand",
-            "/sel",
-            "/desel",
-            "/pos1",
-            "/pos2",
-            "/hpos1",
-            "/hpos2",
-            "/chunk",
-            "/expand",
-            "/contract",
-            "/outset",
-            "/inset",
-            "/count",
-            "/distr",
+            "//wand",
+            "/toggleeditwand",
+            "//sel",
+            "//desel",
+            "//pos1",
+            "//pos2",
+            "//0",
+            "//1",
+            "//2",
+            "//hpos1",
+            "//hpos2",
+            "//chunk",
+            "//expand",
+            "//contract",
+            "//outset",
+            "//inset",
+            "//count",
+            "//distr",
 
             // Region Operation
-            "/set",
-            "/replace",
-            "/repl",
-            "/overlay",
-            "/walls",
-            "/outline",
-            "/center",
-            "/smooth",
-            "/deform",
-            "/regen",
-            "/hollow",
-            "/move",
-            "/stack",
-            "/naturalize",
-            "/line",
-            "/curve",
-            "/forest",
-            "/flora",
+            "//set",
+            "//replace",
+            "//repl",
+            "//overlay",
+            "//walls",
+            "//outline",
+            "//center",
+            "//smooth",
+            "//deform",
+            "//regen",
+            "//hollow",
+            "//move",
+            "//stack",
+            "//naturalize",
+            "//line",
+            "//curve",
+            "//forest",
+            "//flora",
+            "//air",
 
             // Clipboards and Schematics
-            "/copy",
-            "/cut",
-            "/paste",
-            "/rotate",
-            "/flip",
-            "/schematic",
-            "/schem",
-            "clearclipboard",
+            "//copy",
+            "//cut",
+            "//paste",
+            "//rotate",
+            "//flip",
+            "//schematic",
+            "//schem",
+            "/clearclipboard",
 
             // Generation
-            "/generate",
-            "/generatebiome",
-            "/hcyl",
-            "/cyl",
-            "/sphere",
-            "/hsphere",
-            "/pyramid",
-            "forestgen",
-            "pumpkins",
+            "//generate",
+            "//generatebiome",
+            "//hcyl",
+            "//cyl",
+            "//sphere",
+            "//hsphere",
+            "//pyramid",
+            "/forestgen",
+            "/pumpkins",
 
             // Utilities
-            "toggleplace",
-            "/fill",
-            "/fillr",
-            "/drain",
-            "/fixwater",
-            "/fixlava",
-            "removeabove",
-            "removebelow",
-            "replacenear",
-            "removenear",
-            "snow",
-            "thaw",
-            "ex",
-            "butcher",
-            "remove",
-            "green",
-            "/calc",
+            "/toggleplace",
+            "//fill",
+            "//fillr",
+            "//drain",
+            "//fixwater",
+            "//fixlava",
+            "/removeabove",
+            "/removebelow",
+            "/replacenear",
+            "/removenear",
+            "/snow",
+            "/thaw",
+            "/ex",
+            "/butcher",
+            "/remove",
+            "/green",
+            "//calc",
 
             // Chunk Tools
-            "chunkinfo",
-            "listchunks",
-            "delchunks",
+            "/chunkinfo",
+            "/listchunks",
+            "/delchunks",
 
             // Superpickaxe Tools
-            "/",
-            "sp single",
-            "sp area",
-            "sp recur",
+            "//",
+            "/sp single",
+            "/sp area",
+            "/sp recur",
 
             // General Tools
-            "tool",
-            "none",
-            "farwand",
-            "lrbuild",
-            "tree",
-            "deltree",
-            "repl",
-            "cycler",
-            "flood",
+            "/tool",
+            "/none",
+            "/farwand",
+            "/lrbuild",
+            "/tree",
+            "/deltree",
+            "/repl",
+            "/cycler",
+            "/flood",
 
             // Brushes
-            "brush",
-            "size",
-            "mat",
-            "range",
-            "mask",
-            "/gmask",
+            "//brush",
+            "//br",
+            "/brush",
+            "/br",
+            "/size",
+            "/mat",
+            "/range",
+            "/mask",
+            "//gmask",
 
             // Quick-Travel
-            "unstuck",
-            "ascend",
-            "descend",
-            "thru",
-            "jumpto",
-            "up",
+            "/unstuck",
+            "/ascend",
+            "/asc",
+            "/descend",
+            "/desc",
+            "/thru",
+            "/jumpto",
+            "/up",
 
             // Snapshots
-            "/restore",
-            "snapshot",
+            "//restore",
+            "/snapshot",
 
             // Java Scriptings
-            "/cs",
-            ".s",
+            "//cs",
+            "/.s",
 
             // Biomes
-            "biomelist",
-            "biomeinfo",
-            "/setbiome"
+            "/biomelist",
+            "/biomels",
+            "/biomeinfo",
+            "//setbiome"
     );
 
     private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
@@ -189,6 +201,7 @@ public class PlayerCommandPreprocessListener implements Listener {
             player.sendMessage(plugin.getString("command_archive_world"));
             return true;
         }
+
         return false;
     }
 

@@ -18,6 +18,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.World;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -515,8 +516,8 @@ public class BuildSystem extends JavaPlugin {
         }
     }
 
-    public void sendPermissionMessage(Player player) {
-        player.sendMessage(getString("no_permissions"));
+    public void sendPermissionMessage(CommandSender sender) {
+        sender.sendMessage(getString("no_permissions"));
     }
 
     public void reloadConfigData(boolean init) {

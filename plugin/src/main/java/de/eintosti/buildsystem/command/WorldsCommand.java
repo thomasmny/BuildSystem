@@ -163,7 +163,18 @@ public class WorldsCommand implements CommandExecutor {
             }
 
             case "help": {
-                sendHelpMessage(player);
+                if (args.length == 1) {
+                    sendHelpMessage(player, 1);
+                } else if (args.length == 2) {
+                    try {
+                        int page = Integer.parseInt(args[1]);
+                        sendHelpMessage(player, page);
+                    } catch (NumberFormatException e) {
+                        player.sendMessage(plugin.getString("worlds_help_invalid_page"));
+                    }
+                } else {
+                    player.sendMessage(plugin.getString("worlds_help_usage"));
+                }
                 break;
             }
 
@@ -332,6 +343,27 @@ public class WorldsCommand implements CommandExecutor {
                 break;
             }
 
+            case "setcreator": {
+                if (!player.hasPermission("buildsystem.setcreator")) {
+                    plugin.sendPermissionMessage(player);
+                    return true;
+                }
+
+                if (args.length == 2) {
+                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
+                    if (buildWorld == null) {
+                        player.sendMessage(plugin.getString("worlds_setcreator_unknown_world"));
+                        return true;
+                    }
+
+                    plugin.selectedWorld.put(player.getUniqueId(), buildWorld);
+                    getCreatorInput(player);
+                } else {
+                    player.sendMessage(plugin.getString("worlds_setcreator_usage"));
+                }
+                break;
+            }
+
             case "setitem": {
                 if (!player.hasPermission("buildsystem.setitem")) {
                     plugin.sendPermissionMessage(player);
@@ -359,8 +391,8 @@ public class WorldsCommand implements CommandExecutor {
                 break;
             }
 
-            case "setcreator": {
-                if (!player.hasPermission("buildsystem.setcreator")) {
+            case "setpermission": {
+                if (!player.hasPermission("buildsystem.setpermission")) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
@@ -368,14 +400,14 @@ public class WorldsCommand implements CommandExecutor {
                 if (args.length == 2) {
                     BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
                     if (buildWorld == null) {
-                        player.sendMessage(plugin.getString("worlds_setcreator_unknown_world"));
+                        player.sendMessage(plugin.getString("worlds_setpermission_unknown_world"));
                         return true;
                     }
 
                     plugin.selectedWorld.put(player.getUniqueId(), buildWorld);
-                    getCreatorInput(player);
+                    getPermissionInput(player, true);
                 } else {
-                    player.sendMessage(plugin.getString("worlds_setcreator_usage"));
+                    player.sendMessage(plugin.getString("worlds_setpermission_usage"));
                 }
                 break;
             }
@@ -418,27 +450,6 @@ public class WorldsCommand implements CommandExecutor {
                     plugin.getStatusInventory().openInventory(player);
                 } else {
                     player.sendMessage(plugin.getString("worlds_setstatus_usage"));
-                }
-                break;
-            }
-
-            case "setpermission": {
-                if (!player.hasPermission("buildsystem.setpermission")) {
-                    plugin.sendPermissionMessage(player);
-                    return true;
-                }
-
-                if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
-                    if (buildWorld == null) {
-                        player.sendMessage(plugin.getString("worlds_setpermission_unknown_world"));
-                        return true;
-                    }
-
-                    plugin.selectedWorld.put(player.getUniqueId(), buildWorld);
-                    getPermissionInput(player, true);
-                } else {
-                    player.sendMessage(plugin.getString("worlds_setpermission_usage"));
                 }
                 break;
             }
@@ -507,6 +518,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
                 break;
             }
+
             default: {
                 player.sendMessage(plugin.getString("worlds_unknown_command"));
                 break;
@@ -515,53 +527,55 @@ public class WorldsCommand implements CommandExecutor {
         return true;
     }
 
-    private void sendHelpMessage(Player player) {
+    private void sendHelpMessage(Player player, int page) {
+        if (page > 3) {
+            page = 3;
+        }
+
         TextComponent line1 = new TextComponent("§7§m----------------------------------------------------\n");
-        TextComponent line2 = new TextComponent(plugin.getString("worlds_help_title") + "\n");
+        TextComponent line2 = new TextComponent(plugin.getString("worlds_help_title_with_page")
+                .replace("%page%", String.valueOf(page))
+                .replace("%max%", "3")
+                .concat("\n"));
         TextComponent line3 = new TextComponent("§7 \n");
-        TextComponent line4 = createComponent(player, "/worlds info", " §8» " + plugin.getString("worlds_help_info"), "/worlds info", "buildsystem.info");
-        TextComponent line5 = createComponent(player, "/worlds item", " §8» " + plugin.getString("worlds_help_item"), "/worlds item", "-");
-        TextComponent line6 = createComponent(player, "/worlds tp <world>", " §8» " + plugin.getString("worlds_help_tp"), "/worlds tp ", "buildsystem.worldtp");
-        TextComponent line7 = createComponent(player, "/worlds edit <world>", " §8» " + plugin.getString("worlds_help_edit"), "/worlds edit ", "buildsystem.edit");
-        TextComponent line8 = createComponent(player, "/worlds addBuilder <world>", " §8» " + plugin.getString("worlds_help_addbuilder"), "/worlds addBuilder ", "buildsystem.addbuilder");
-        TextComponent line9 = createComponent(player, "/worlds removeBuilder <world>", " §8» " + plugin.getString("worlds_help_removebuilder"), "/worlds removeBuilder ", "buildsystem.removebuilder");
-        TextComponent line10 = createComponent(player, "/worlds builders <world>", " §8» " + plugin.getString("worlds_help_builders"), "/worlds builders ", "buildsystem.builders");
-        TextComponent line11 = createComponent(player, "/worlds rename <world>", " §8» " + plugin.getString("worlds_help_rename"), "/worlds rename ", "buildsystem.rename");
-        TextComponent line12 = createComponent(player, "/worlds setItem <world>", " §8» " + plugin.getString("worlds_help_setitem"), "/worlds setItem ", "buildsystem.setitem");
-        TextComponent line13 = createComponent(player, "/worlds setCreator <world>", " §8» " + plugin.getString("worlds_help_setcreator"), "/worlds setCreator ", "buildsystem.setcreator");
-        TextComponent line14 = createComponent(player, "/worlds setProject <world>", " §8» " + plugin.getString("worlds_help_setproject"), "/worlds setProject ", "buildsystem.setproject");
-        TextComponent line15 = createComponent(player, "/worlds setPermission <world>", " §8» " + plugin.getString("worlds_help_setpermission"), "/worlds setPermission ", "buildsystem.setpermission");
-        TextComponent line16 = createComponent(player, "/worlds setStatus <world>", " §8» " + plugin.getString("worlds_help_setstatus"), "/worlds setStatus ", "buildsystem.setstatus");
-        TextComponent line17 = createComponent(player, "/worlds setSpawn", " §8» " + plugin.getString("worlds_help_setspawn"), "/worlds setSpawn", "buildsystem.setspawn");
-        TextComponent line18 = createComponent(player, "/worlds removeSpawn", " §8» " + plugin.getString("worlds_help_removespawn"), "/worlds removeSpawn", "buildsystem.removespawn");
-        TextComponent line19 = createComponent(player, "/worlds delete <world>", " §8» " + plugin.getString("worlds_help_delete"), "/worlds delete ", "buildsystem.delete");
-        TextComponent line20 = createComponent(player, "/worlds import <world>", " §8» " + plugin.getString("worlds_help_import"), "/worlds import ", "buildsystem.import");
-        TextComponent line21 = createComponent(player, "/worlds importall", " §8» " + plugin.getString("worlds_help_importall"), "/worlds importall", "buildsystem.import.all");
-        TextComponent line22 = new TextComponent("§7§m----------------------------------------------------");
 
-        line21.addExtra(line22);
-        line20.addExtra(line21);
-        line19.addExtra(line20);
-        line18.addExtra(line19);
-        line17.addExtra(line18);
-        line16.addExtra(line17);
-        line15.addExtra(line16);
-        line14.addExtra(line15);
-        line13.addExtra(line14);
-        line12.addExtra(line13);
-        line11.addExtra(line12);
-        line10.addExtra(line11);
-        line9.addExtra(line10);
-        line8.addExtra(line9);
-        line7.addExtra(line8);
-        line6.addExtra(line7);
-        line5.addExtra(line6);
-        line4.addExtra(line5);
-        line3.addExtra(line4);
-        line2.addExtra(line3);
-        line1.addExtra(line2);
+        TextComponent line4;
+        TextComponent line5;
+        TextComponent line6;
+        TextComponent line7;
+        TextComponent line8;
+        TextComponent line9;
 
-        player.spigot().sendMessage(line1);
+        switch (page) {
+            case 1:
+                line4 = createComponent(player, "/worlds info", " §8» " + plugin.getString("worlds_help_info"), "/worlds info", "buildsystem.info");
+                line5 = createComponent(player, "/worlds item", " §8» " + plugin.getString("worlds_help_item"), "/worlds item", "-");
+                line6 = createComponent(player, "/worlds tp <world>", " §8» " + plugin.getString("worlds_help_tp"), "/worlds tp ", "buildsystem.worldtp");
+                line7 = createComponent(player, "/worlds edit <world>", " §8» " + plugin.getString("worlds_help_edit"), "/worlds edit ", "buildsystem.edit");
+                line8 = createComponent(player, "/worlds addBuilder <world>", " §8» " + plugin.getString("worlds_help_addbuilder"), "/worlds addBuilder ", "buildsystem.addbuilder");
+                line9 = createComponent(player, "/worlds removeBuilder <world>", " §8» " + plugin.getString("worlds_help_removebuilder"), "/worlds removeBuilder ", "buildsystem.removebuilder");
+                break;
+            case 2:
+                line4 = createComponent(player, "/worlds builders <world>", " §8» " + plugin.getString("worlds_help_builders"), "/worlds builders ", "buildsystem.builders");
+                line5 = createComponent(player, "/worlds rename <world>", " §8» " + plugin.getString("worlds_help_rename"), "/worlds rename ", "buildsystem.rename");
+                line6 = createComponent(player, "/worlds setItem <world>", " §8» " + plugin.getString("worlds_help_setitem"), "/worlds setItem ", "buildsystem.setitem");
+                line7 = createComponent(player, "/worlds setCreator <world>", " §8» " + plugin.getString("worlds_help_setcreator"), "/worlds setCreator ", "buildsystem.setcreator");
+                line8 = createComponent(player, "/worlds setProject <world>", " §8» " + plugin.getString("worlds_help_setproject"), "/worlds setProject ", "buildsystem.setproject");
+                line9 = createComponent(player, "/worlds setPermission <world>", " §8» " + plugin.getString("worlds_help_setpermission"), "/worlds setPermission ", "buildsystem.setpermission");
+                break;
+            default:
+                line4 = createComponent(player, "/worlds setStatus <world>", " §8» " + plugin.getString("worlds_help_setstatus"), "/worlds setStatus ", "buildsystem.setstatus");
+                line5 = createComponent(player, "/worlds setSpawn", " §8» " + plugin.getString("worlds_help_setspawn"), "/worlds setSpawn", "buildsystem.setspawn");
+                line6 = createComponent(player, "/worlds removeSpawn", " §8» " + plugin.getString("worlds_help_removespawn"), "/worlds removeSpawn", "buildsystem.removespawn");
+                line7 = createComponent(player, "/worlds delete <world>", " §8» " + plugin.getString("worlds_help_delete"), "/worlds delete ", "buildsystem.delete");
+                line8 = createComponent(player, "/worlds import <world>", " §8» " + plugin.getString("worlds_help_import"), "/worlds import ", "buildsystem.import");
+                line9 = createComponent(player, "/worlds importAll", " §8» " + plugin.getString("worlds_help_importall"), "/worlds importAll", "buildsystem.import.all");
+                break;
+        }
+
+        TextComponent line10 = new TextComponent("§7§m----------------------------------------------------");
+
+        player.spigot().sendMessage(line1, line2, line3, line4, line5, line6, line7, line8, line9, line10);
     }
 
     private TextComponent createComponent(Player player, String command, String text, String suggest, String permission) {
@@ -569,16 +583,13 @@ public class WorldsCommand implements CommandExecutor {
             return new TextComponent("");
         }
 
-        TextComponent lineComponent = new TextComponent("§8 - ");
         TextComponent commandComponent = new TextComponent("§b" + command);
         TextComponent textComponent = new TextComponent(text + "\n");
 
         commandComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, suggest));
         commandComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(plugin.getString("worlds_help_permission").replace("%permission%", permission)).create()));
-
         commandComponent.addExtra(textComponent);
-        lineComponent.addExtra(commandComponent);
-        return lineComponent;
+        return commandComponent;
     }
 
     private void sendInfoMessage(Player player, BuildWorld buildWorld) {

@@ -21,19 +21,13 @@ public class ConfigCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            plugin.getLogger().log(Level.WARNING, plugin.getString("sender_not_player"));
-            return true;
-        }
-        Player player = (Player) sender;
-
-        if (!player.hasPermission("buildsystem.config")) {
-            plugin.sendPermissionMessage(player);
+        if (!sender.hasPermission("buildsystem.config")) {
+            plugin.sendPermissionMessage(sender);
             return true;
         }
 
         if (args.length != 1) {
-            player.sendMessage(plugin.getString("config_usage"));
+            sender.sendMessage(plugin.getString("config_usage"));
             return true;
         }
 
@@ -42,12 +36,13 @@ public class ConfigCommand implements CommandExecutor {
             case "reload":
                 plugin.reloadConfig();
                 plugin.reloadConfigData(true);
-                player.sendMessage(plugin.getString("config_reloaded"));
+                sender.sendMessage(plugin.getString("config_reloaded"));
                 break;
             default:
-                player.sendMessage(plugin.getString("config_usage"));
+                sender.sendMessage(plugin.getString("config_usage"));
                 break;
         }
+
         return true;
     }
 }

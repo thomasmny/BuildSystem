@@ -20,9 +20,11 @@ public class ConfigTabComplete implements TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> arrayList = new ArrayList<>();
+
         if (sender.hasPermission("buildsystem.config")) {
             arrayList.add("reload");
         }
+
         return arrayList;
     }
 }

@@ -6,6 +6,7 @@ import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,12 @@ public class GamemodeTabComplete extends ArgumentSorter implements TabCompleter 
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> arrayList = new ArrayList<>();
 
-        if (!sender.hasPermission("buildsystem.gamemode")) return arrayList;
+        if (!(sender instanceof Player)) return arrayList;
+        Player player = (Player) sender;
+
+        if (!player.hasPermission("buildsystem.gamemode")) {
+            return arrayList;
+        }
 
         switch (label.toLowerCase()) {
             case "gamemode":
@@ -33,9 +39,10 @@ public class GamemodeTabComplete extends ArgumentSorter implements TabCompleter 
                         String gameModeName = gameMode.name();
                         addArgument(args[0], gameModeName, arrayList);
                     }
-                    return arrayList;
                 } else if (args.length == 2) {
-                    if (!sender.hasPermission("buildsystem.gamemode.others")) return arrayList;
+                    if (!player.hasPermission("buildsystem.gamemode.others")) {
+                        return arrayList;
+                    }
 
                     switch (args[0].toLowerCase()) {
                         case "survival":
@@ -51,11 +58,12 @@ public class GamemodeTabComplete extends ArgumentSorter implements TabCompleter 
                         case "sp":
                         case "3":
                             Bukkit.getOnlinePlayers().forEach(pl -> addArgument(args[1], pl.getName(), arrayList));
-                            return arrayList;
+                            break;
                     }
                 }
                 break;
         }
+
         return arrayList;
     }
 }

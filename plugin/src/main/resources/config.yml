@@ -8,7 +8,7 @@ settings:
   archive-vanish: true
   builder:
     block-worldedit-non-builder: true
-    creator-is-builder: true
+    creator-is-builder: false
   navigator:
     item: "CLOCK"
     give-item-on-join: true

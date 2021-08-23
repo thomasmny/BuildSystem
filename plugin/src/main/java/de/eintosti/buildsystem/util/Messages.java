@@ -228,7 +228,9 @@ public class Messages {
         setMessage(sb, config, "worlds_edit_unknown_world", "%prefix% &cUnknown world.");
         setMessage(sb, config, "worlds_edit_error", "%prefix% &cError: Please try again.");
         addLine(sb, "");
-        setMessage(sb, config, "worlds_help_title", "%prefix% &7&nWorlds Help:");
+        setMessage(sb, config, "worlds_help_usage", "%prefix% &7Usage: &b/worlds help [page]");
+        setMessage(sb, config, "worlds_help_invalid_page", "%prefix% &cInvalid page.");
+        setMessage(sb, config, "worlds_help_title_with_page", "%prefix% &7&nWorlds Help:&8 (&7%page%/%max%&8)");
         setMessage(sb, config, "worlds_help_permission", "&7&nPermission&8: &b%permission%");
         setMessage(sb, config, "worlds_help_info", "&7Shows information about a world.");
         setMessage(sb, config, "worlds_help_item", "&7Receive the 'World Navigator'.");
@@ -378,8 +380,28 @@ public class Messages {
         setMessage(sb, config, "world_navigator_no_worlds", "&c&nNo worlds available");
         setMessage(sb, config, "world_navigator_create_world", "&bCreate World");
         setMessage(sb, config, "world_item_title", "&3&l%world%");
-        setList(sb, config, "world_item_lore_normal", Arrays.asList("&7Project&8: &b%project%", "&7Permission&8: &b%permission%", "&7Status&8: %status%"));
-        setList(sb, config, "world_item_lore_edit", Arrays.asList("&7Project&8: &b%project%", "&7Permission&8: &b%permission%", "&7Status&8: %status%", "", "&8- &7&oLeft click&8: &7Teleport", "&8- &7&oRight click&8: &7Edit"));
+        setList(sb, config, "world_item_lore_normal", Arrays.asList(
+                "&7Status&8: %status%",
+                "",
+                "&7Creator&8: &b%creator%",
+                "&7Project&8: &b%project%",
+                "&7Permission&8: &b%permission%",
+                "",
+                "&7Builders&8:",
+                "%builders%"
+        ));
+        setList(sb, config, "world_item_lore_edit", Arrays.asList(
+                "&7Status&8: %status%",
+                "",
+                "&7Creator&8: &b%creator%",
+                "&7Project&8: &b%project%",
+                "&7Permission&8: &b%permission%",
+                "",
+                "&7Builders&8:",
+                "%builders%",
+                "",
+                "&8- &7&oLeft click&8: &7Teleport",
+                "&8- &7&oRight click&8: &7Edit"));
         setMessage(sb, config, "world_item_builders_builder_template", "&b%builder%&7, ");
         addLine(sb, "");
         addLine(sb, "# World Archive");
@@ -483,16 +505,16 @@ public class Messages {
         setMessage(sb, config, "worldeditor_builders_creator_lore", "&8» &b%creator%");
         setMessage(sb, config, "worldeditor_builders_no_creator_item", "&cWorld has no creator!");
         setMessage(sb, config, "worldeditor_builders_builder_item", "&b%builder%");
-        setList(sb, config, "worldeditor_builders_builder_lore", Arrays.asList("&8- &7&oShift click&8: &7Remove"));
+        setList(sb, config, "worldeditor_builders_builder_lore", Collections.singletonList("&8- &7&oShift click&8: &7Remove"));
         setMessage(sb, config, "worldeditor_builders_add_builder_item", "&bAdd builder");
         addLine(sb, "");
         setMessage(sb, config, "worldeditor_gamerules_item", "&bGamerules");
-        setList(sb, config, "worldeditor_gamerules_lore", Arrays.asList("&7&oManage the world's gamerules"));
+        setList(sb, config, "worldeditor_gamerules_lore", Collections.singletonList("&7&oManage the world's gamerules"));
         addLine(sb, "");
         setMessage(sb, config, "worldeditor_gamerules_title", "&3» &8Gamerules");
-        setList(sb, config, "worldeditor_gamerules_boolean_enabled", Arrays.asList("&7&nCurrently&7: &atrue"));
-        setList(sb, config, "worldeditor_gamerules_boolean_disabled", Arrays.asList("&7&nCurrently&7: &cfalse"));
-        setList(sb, config, "worldeditor_gamerules_unknown", Arrays.asList("&7&nCurrently&7: &e%value%"));
+        setList(sb, config, "worldeditor_gamerules_boolean_enabled", Collections.singletonList("&7&nCurrently&7: &atrue"));
+        setList(sb, config, "worldeditor_gamerules_boolean_disabled", Collections.singletonList("&7&nCurrently&7: &cfalse"));
+        setList(sb, config, "worldeditor_gamerules_unknown", Collections.singletonList("&7&nCurrently&7: &e%value%"));
         setList(sb, config, "worldeditor_gamerules_integer", Arrays.asList("&7&nCurrently&7: &e%value%", "",
                 "&8- &7&oLeft Click&8: &7decrease by 1", "&8- &7&oShift &7+ &7&oLeft Click&8: &7decrease by 10",
                 "&8- &7&oRight Click&8: &7increase by 1", "&8- &7&oShift &7+ &7&oRight Click&8: &7increase by 10"));
