@@ -3,6 +3,7 @@ package de.eintosti.buildsystem.command;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
 import de.eintosti.buildsystem.object.world.BuildWorld;
+import de.eintosti.buildsystem.util.ManageEntityAI;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -66,22 +67,18 @@ public class NoAICommand implements CommandExecutor {
             return;
         }
 
-        if (!buildWorld.isMobAI()) {
-            buildWorld.setMobAI(true);
-            player.sendMessage(plugin.getString("noai_deactivated").replace("%world%", buildWorld.getName()));
-        } else {
+        if (buildWorld.isMobAI()) {
             buildWorld.setMobAI(false);
             player.sendMessage(plugin.getString("noai_activated").replace("%world%", buildWorld.getName()));
+        } else {
+            buildWorld.setMobAI(true);
+            player.sendMessage(plugin.getString("noai_deactivated").replace("%world%", buildWorld.getName()));
         }
 
+        boolean mobAI = buildWorld.isMobAI();;
         for (Entity entity : bukkitWorld.getEntities()) {
             if (entity instanceof LivingEntity) {
-                LivingEntity livingEntity = (LivingEntity) entity;
-                if (plugin.getManageEntityAI() != null) {
-                    plugin.getManageEntityAI().setAI(livingEntity, buildWorld.isMobAI());
-                } else {
-                    livingEntity.setAI(buildWorld.isMobAI());
-                }
+                ManageEntityAI.setAIEnabled(entity, mobAI);
             }
         }
     }

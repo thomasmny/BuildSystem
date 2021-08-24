@@ -33,6 +33,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static de.eintosti.buildsystem.util.external.xseries.XMaterial.*;
@@ -207,20 +208,23 @@ public class PlayerInteractListener implements Listener {
     private boolean isValid(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
-
-        if (buildWorld != null) {
-            if (buildWorld.getStatus() == WorldStatus.ARCHIVE) {
-                if (!plugin.buildPlayers.contains(player.getUniqueId())) {
-                    return false;
-                }
-            }
-            if (!buildWorld.isBlockPlacement() && !plugin.buildPlayers.contains(player.getUniqueId())) {
-                return false;
-            }
-            if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
-                return buildWorld.getCreatorId() == null || buildWorld.getCreatorId().equals(player.getUniqueId());
-            }
+        if (buildWorld == null) {
+            return true;
         }
+
+        boolean isInBuildMode = plugin.buildPlayers.contains(player.getUniqueId());
+        if (buildWorld.getStatus() == WorldStatus.ARCHIVE && !isInBuildMode) {
+            return false;
+        }
+
+        if (!buildWorld.isBlockPlacement() && !isInBuildMode) {
+            return false;
+        }
+
+        if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
+            return buildWorld.getCreatorId() == null || buildWorld.getCreatorId().equals(player.getUniqueId());
+        }
+
         return true;
     }
 
@@ -401,7 +405,7 @@ public class PlayerInteractListener implements Listener {
         return DyeColor.getByWoolData((byte) itemStack.getDurability());
     }
 
-    private static final ImmutableSet<XMaterial> DISABLED_BLOCKS = Sets.immutableEnumSet(
+    private static final Set<XMaterial> DISABLED_BLOCKS = Sets.newHashSet(
             ACACIA_BUTTON,
             ACACIA_DOOR,
             ACACIA_FENCE,
@@ -524,7 +528,7 @@ public class PlayerInteractListener implements Listener {
             YELLOW_SHULKER_BOX
     );
 
-    private static final ImmutableSet<XMaterial> SIGNS = Sets.immutableEnumSet(
+    private static final Set<XMaterial> SIGNS = Sets.newHashSet(
             ACACIA_SIGN,
             BIRCH_SIGN,
             CRIMSON_SIGN,
@@ -535,7 +539,7 @@ public class PlayerInteractListener implements Listener {
             WARPED_SIGN
     );
 
-    private static final ImmutableSet<XMaterial> PLANTS = Sets.immutableEnumSet(
+    private static final Set<XMaterial> PLANTS = Sets.newHashSet(
             ACACIA_SAPLING,
             ALLIUM,
             AZURE_BLUET,

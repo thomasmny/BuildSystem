@@ -5,6 +5,7 @@ import de.eintosti.buildsystem.manager.InventoryManager;
 import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.util.external.xseries.XMaterial;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -32,7 +33,7 @@ public class EditInventory {
         Inventory inventory = Bukkit.createInventory(null, 54, plugin.getString("worldeditor_title"));
         fillGuiWithGlass(player, inventory);
 
-        inventoryManager.addItemStack(inventory, 4, buildWorld.getMaterial(), plugin.getString("worldeditor_world_item").replace("%world%", buildWorld.getName()));
+        addBuildWorldInfoItem(inventory, buildWorld);
 
         addSettingsItem(inventory, 20, XMaterial.OAK_PLANKS, buildWorld.isBlockBreaking(), plugin.getString("worldeditor_blockbreaking_item"), plugin.getStringList("worldeditor_blockbreaking_lore"));
         addSettingsItem(inventory, 21, XMaterial.POLISHED_ANDESITE, buildWorld.isBlockPlacement(), plugin.getString("worldeditor_blockplacement_item"), plugin.getStringList("worldeditor_blockplacement_lore"));
@@ -62,16 +63,31 @@ public class EditInventory {
         }
     }
 
-    private void addSettingsItem(Inventory inventory, int position, XMaterial material, boolean b, String displayName, List<String> lore) {
+    private void addBuildWorldInfoItem(Inventory inventory, BuildWorld buildWorld) {
+        String displayName = plugin.getString("worldeditor_world_item").replace("%world%", buildWorld.getName());
+
+        if (buildWorld.getMaterial() == XMaterial.PLAYER_HEAD) {
+            inventoryManager.addSkull(inventory, 4, displayName, buildWorld.getName());
+        } else {
+            inventoryManager.addItemStack(inventory, 4, buildWorld.getMaterial(), displayName);
+        }
+    }
+
+    private void addSettingsItem(Inventory inventory, int position, XMaterial material, boolean isEnabled, String displayName, List<String> lore) {
         ItemStack itemStack = material.parseItem();
         ItemMeta itemMeta = itemStack.getItemMeta();
+
         if (itemMeta != null) {
             itemMeta.setDisplayName(displayName);
             itemMeta.setLore(lore);
             itemMeta.addItemFlags(ItemFlag.values());
         }
+
         itemStack.setItemMeta(itemMeta);
-        if (b) itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+        if (isEnabled) {
+            itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+        }
+
         inventory.setItem(position, itemStack);
     }
 
@@ -105,7 +121,9 @@ public class EditInventory {
     }
 
     public BuildWorld.Time getWorldTime(World bukkitWorld) {
-        if (bukkitWorld == null) return BuildWorld.Time.UNKNOWN;
+        if (bukkitWorld == null) {
+            return BuildWorld.Time.UNKNOWN;
+        }
 
         int worldTime = (int) bukkitWorld.getTime();
         int noonTime = plugin.getNoonTime();
@@ -130,10 +148,12 @@ public class EditInventory {
     private void addPrivateItem(Inventory inventory, BuildWorld buildWorld) {
         XMaterial xMaterial = XMaterial.ENDER_EYE;
         List<String> lore = plugin.getStringList("worldeditor_visibility_lore_public");
+
         if (buildWorld.isPrivate()) {
             xMaterial = XMaterial.ENDER_PEARL;
             lore = plugin.getStringList("worldeditor_visibility_lore_private");
         }
+
         inventoryManager.addItemStack(inventory, 32, xMaterial, plugin.getString("worldeditor_visibility_item"), lore);
     }
 

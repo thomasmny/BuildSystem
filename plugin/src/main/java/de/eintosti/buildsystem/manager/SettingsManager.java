@@ -146,19 +146,36 @@ public class SettingsManager {
             NavigatorType navigatorType = NavigatorType.valueOf(configuration.getString("settings." + uuid + ".type"));
             Colour glassColor = configuration.getString("settings." + uuid + ".glass") != null ? Colour.valueOf(configuration.getString("settings." + uuid + ".glass")) : Colour.BLACK;
             WorldSort worldSort = WorldSort.matchWorldSort(configuration.getString("settings." + uuid + ".world-sort"));
-            boolean slabBreaking = configuration.isBoolean("settings." + uuid + ".slab-breaking") && configuration.getBoolean("settings." + uuid + ".slab-breaking");
-            boolean noClip = configuration.isBoolean("settings." + uuid + ".no-clip") && configuration.getBoolean("settings." + uuid + ".no-clip");
-            boolean trapDoor = configuration.getBoolean("settings." + uuid + ".trapdoor");
-            boolean nightVision = configuration.getBoolean("settings." + uuid + ".nightvision");
-            boolean scoreboard = !configuration.isBoolean("settings." + uuid + ".scoreboard") || configuration.getBoolean("settings." + uuid + ".scoreboard");
-            boolean disableInteract = configuration.isBoolean("settings." + uuid + ".disable-interact") && configuration.getBoolean("settings." + uuid + ".disable-interact");
-            boolean spawnTeleport = !configuration.isBoolean("settings." + uuid + ".spawn-teleport") || configuration.getBoolean("settings." + uuid + ".spawn-teleport");
             boolean clearInventory = configuration.isBoolean("settings." + uuid + ".clear-inventory") && configuration.getBoolean("settings." + uuid + ".clear-inventory");
-            boolean instantPlaceSigns = configuration.isBoolean("settings." + uuid + ".instant-place-signs") && configuration.getBoolean("settings." + uuid + ".instant-place-signs");
+            boolean disableInteract = configuration.isBoolean("settings." + uuid + ".disable-interact") && configuration.getBoolean("settings." + uuid + ".disable-interact");
             boolean hidePlayers = configuration.isBoolean("settings." + uuid + ".hide-players") && configuration.getBoolean("settings." + uuid + ".hide-players");
+            boolean instantPlaceSigns = configuration.isBoolean("settings." + uuid + ".instant-place-signs") && configuration.getBoolean("settings." + uuid + ".instant-place-signs");
+            boolean keepNavigator = configuration.isBoolean("settings." + uuid + ".keep-navigator") && configuration.getBoolean("settings." + uuid + ".keep-navigator");
+            boolean nightVision = configuration.getBoolean("settings." + uuid + ".nightvision");
+            boolean noClip = configuration.isBoolean("settings." + uuid + ".no-clip") && configuration.getBoolean("settings." + uuid + ".no-clip");
             boolean placePlants = configuration.isBoolean("settings." + uuid + ".place-plants") && configuration.getBoolean("settings." + uuid + ".place-plants");
+            boolean scoreboard = !configuration.isBoolean("settings." + uuid + ".scoreboard") || configuration.getBoolean("settings." + uuid + ".scoreboard");
+            boolean slabBreaking = configuration.isBoolean("settings." + uuid + ".slab-breaking") && configuration.getBoolean("settings." + uuid + ".slab-breaking");
+            boolean spawnTeleport = !configuration.isBoolean("settings." + uuid + ".spawn-teleport") || configuration.getBoolean("settings." + uuid + ".spawn-teleport");
+            boolean trapDoor = configuration.getBoolean("settings." + uuid + ".trapdoor");
 
-            this.settings.put(UUID.fromString(uuid), new Settings(navigatorType, glassColor, worldSort, slabBreaking, noClip, trapDoor, nightVision, scoreboard, disableInteract, spawnTeleport, clearInventory, instantPlaceSigns, hidePlayers, placePlants));
+            this.settings.put(UUID.fromString(uuid), new Settings(
+                    navigatorType,
+                    glassColor,
+                    worldSort,
+                    clearInventory,
+                    disableInteract,
+                    hidePlayers,
+                    instantPlaceSigns,
+                    keepNavigator,
+                    nightVision,
+                    noClip,
+                    placePlants,
+                    scoreboard,
+                    slabBreaking,
+                    spawnTeleport,
+                    trapDoor
+            ));
         });
     }
 }

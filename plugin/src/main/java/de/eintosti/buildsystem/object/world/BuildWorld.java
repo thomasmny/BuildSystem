@@ -110,10 +110,30 @@ public class BuildWorld implements ConfigurationSerializable {
         }
     }
 
-    public BuildWorld(BuildSystem plugin, String name, String creator, UUID creatorId, WorldType worldType, boolean privateWorld,
-                      XMaterial material, WorldStatus worldStatus, String project, String permission, long date, boolean physics,
-                      boolean explosions, boolean mobAI, String customSpawn, boolean blockBreaking, boolean blockPlacement,
-                      boolean blockInteractions, boolean buildersEnabled, ArrayList<Builder> builders, ChunkGenerator chunkGenerator, String chunkGeneratorString) {
+    public BuildWorld(
+            BuildSystem plugin,
+            String name,
+            String creator,
+            UUID creatorId,
+            WorldType worldType,
+            boolean privateWorld,
+            XMaterial material,
+            WorldStatus worldStatus,
+            String project,
+            String permission,
+            long date,
+            boolean physics,
+            boolean explosions,
+            boolean mobAI,
+            String customSpawn,
+            boolean blockBreaking,
+            boolean blockPlacement,
+            boolean blockInteractions,
+            boolean buildersEnabled,
+            ArrayList<Builder> builders,
+            ChunkGenerator chunkGenerator,
+            String chunkGeneratorString
+    ) {
         this.plugin = plugin;
         this.name = name;
         this.creator = creator;
@@ -354,21 +374,14 @@ public class BuildWorld implements ConfigurationSerializable {
     }
 
     public Builder getBuilder(UUID uuid) {
-        for (Builder builder : this.builders) {
-            if (builder.getUuid().equals(uuid)) {
-                return builder;
-            }
-        }
-        return null;
+        return this.builders.parallelStream()
+                .filter(builder -> builder.getUuid().equals(uuid))
+                .findFirst()
+                .orElse(null);
     }
 
     public boolean isBuilder(UUID uuid) {
-        for (Builder b : this.builders) {
-            if (b.getUuid().equals(uuid)) {
-                return true;
-            }
-        }
-        return false;
+        return this.builders.parallelStream().anyMatch(builder -> builder.getUuid().equals(uuid));
     }
 
     public boolean isBuilder(Player player) {
@@ -400,7 +413,9 @@ public class BuildWorld implements ConfigurationSerializable {
     }
 
     public void startUnloadTask() {
-        if (!plugin.isUnloadWorlds()) return;
+        if (!plugin.isUnloadWorlds()) {
+            return;
+        }
         this.unloadTask = Bukkit.getScheduler().runTaskLater(plugin, this::unload, 20L * seconds);
     }
 
@@ -437,7 +452,10 @@ public class BuildWorld implements ConfigurationSerializable {
 
     private boolean isSpawnWorld(World bukkitWorld) {
         SpawnManager spawnManager = plugin.getSpawnManager();
-        if (!spawnManager.spawnExists()) return false;
+        if (!spawnManager.spawnExists()) {
+            return false;
+        }
+
         return Objects.equals(spawnManager.getSpawn().getWorld(), bukkitWorld);
     }
 
@@ -451,20 +469,24 @@ public class BuildWorld implements ConfigurationSerializable {
         plugin.getLogger().log(Level.INFO, "*** Loading world \"" + name + "\" ***");
         Bukkit.createWorld(new WorldCreator(name));
         this.loaded = true;
+
         resetUnloadTask();
     }
 
     public void load() {
         if (isLoaded()) return;
+
         plugin.getLogger().log(Level.INFO, "*** Loading world \"" + name + "\" ***");
         Bukkit.createWorld(new WorldCreator(name));
         this.loaded = true;
+
         resetUnloadTask();
     }
 
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> world = new HashMap<>();
+
         world.put("creator", getCreator());
         world.put("creator-id", saveCreatorId());
         world.put("type", getType().name());
@@ -488,6 +510,7 @@ public class BuildWorld implements ConfigurationSerializable {
         if (chunkGeneratorString != null) {
             world.put("chunk-generator", getChunkGeneratorString());
         }
+
         return world;
     }
 

@@ -2,7 +2,11 @@ package de.eintosti.buildsystem.listener;
 
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.event.PlayerInventoryClearEvent;
+import de.eintosti.buildsystem.manager.InventoryManager;
+import de.eintosti.buildsystem.manager.SettingsManager;
 import de.eintosti.buildsystem.manager.WorldManager;
+import de.eintosti.buildsystem.object.settings.Settings;
 import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.object.world.WorldStatus;
 import org.bukkit.Bukkit;
@@ -10,7 +14,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 /**
@@ -18,29 +24,54 @@ import java.util.HashSet;
  */
 public class PlayerCommandPreprocessListener implements Listener {
     private final BuildSystem plugin;
+    private final InventoryManager inventoryManager;
+    private final SettingsManager settingsManager;
     private final WorldManager worldManager;
 
     public PlayerCommandPreprocessListener(BuildSystem plugin) {
         this.plugin = plugin;
+        this.inventoryManager = plugin.getInventoryManager();
+        this.settingsManager = plugin.getSettingsManager();
         this.worldManager = plugin.getWorldManager();
+
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler
     public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
         if (event.isCancelled()) return;
-        if (!plugin.isBlockWorldEditNonBuilder()) return;
 
         String command = event.getMessage().split(" ")[0];
-        boolean found = DISABLED_COMMANDS.contains(command);
-        if (!found) return;
-
         Player player = event.getPlayer();
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
-        if (buildWorld == null) return;
 
-        if (disableArchivedWorlds(buildWorld, player, event)) return;
-        checkBuilders(buildWorld, player, event);
+        if (command.equalsIgnoreCase("/clear")) {
+            ItemStack navigatorItem = inventoryManager.getItemStack(plugin.getNavigatorItem(), plugin.getString("navigator_item"));
+            if (!player.getInventory().contains(navigatorItem)) return;
+
+            if (settingsManager.getSettings(player).isKeepNavigator()) {
+                ArrayList<Integer> navigatorSlots = inventoryManager.getNavigatorSlots(player);
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    PlayerInventoryClearEvent playerInventoryClearEvent = new PlayerInventoryClearEvent(player, navigatorSlots);
+                    Bukkit.getServer().getPluginManager().callEvent(playerInventoryClearEvent);
+                }, 2L);
+            }
+            return;
+        }
+
+        if (plugin.isBlockWorldEditNonBuilder()) {
+            if (!DISABLED_COMMANDS.contains(command)) return;
+
+            BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+            if (buildWorld == null) {
+                return;
+            }
+
+            if (disableArchivedWorlds(buildWorld, player, event)) {
+                return;
+            }
+
+            checkBuilders(buildWorld, player, event);
+        }
     }
 
     private final static HashSet<String> DISABLED_COMMANDS = Sets.newHashSet(
