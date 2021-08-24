@@ -32,7 +32,6 @@ jobs:
         with:
           versions: 1.17.1
           forceRun: false
-          disableJavaCheck: true
           buildToolProvider: SpigotMC
 
       - name: Build with Maven

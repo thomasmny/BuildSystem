@@ -40,7 +40,7 @@ public class PlayerCommandPreprocessListener implements Listener {
         Player player = event.getPlayer();
 
         if (command.equalsIgnoreCase("/clear")) {
-            if (player.getInventory().isEmpty()) return;
+            if (player.getInventory().getSize() == 0) return;
             if (settingsManager.getSettings(player).isKeepNavigator()) {
                 Bukkit.getScheduler().runTaskLater(plugin, () -> {
                     PlayerInventoryClearEvent playerInventoryClearEvent = new PlayerInventoryClearEvent(player);

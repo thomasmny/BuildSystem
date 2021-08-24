@@ -34,11 +34,16 @@ public class PlayerInventoryClearListener implements Listener {
         Player player = event.getPlayer();
         Settings settings = settingsManager.getSettings(player);
 
-        if (!player.getInventory().isEmpty()) return;
+        if (player.getInventory().getSize() > 0) return;
         if (!settings.isKeepNavigator()) return;
-        if (!player.hasPermission("buildsystem.gui"))return;
+        if (!player.hasPermission("buildsystem.gui")) return;
 
+        PlayerInventory playerInventory = player.getInventory();
         ItemStack navigatorItem = inventoryManager.getItemStack(plugin.getNavigatorItem(), plugin.getString("navigator_item"));
-        player.getInventory().setItem(8, navigatorItem);
+        if (!playerInventory.contains(navigatorItem)) {
+            return;
+        }
+
+        playerInventory.setItem(8, navigatorItem);
     }
 }
