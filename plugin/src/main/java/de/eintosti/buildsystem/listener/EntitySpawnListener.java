@@ -15,11 +15,9 @@ import org.bukkit.event.entity.EntitySpawnEvent;
  * @author einTosti
  */
 public class EntitySpawnListener implements Listener {
-    private final BuildSystem plugin;
     private final WorldManager worldManager;
 
     public EntitySpawnListener(BuildSystem plugin) {
-        this.plugin = plugin;
         this.worldManager = plugin.getWorldManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }

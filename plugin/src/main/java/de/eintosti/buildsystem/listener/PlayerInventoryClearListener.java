@@ -4,9 +4,7 @@ import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.event.PlayerInventoryClearEvent;
 import de.eintosti.buildsystem.manager.InventoryManager;
 import de.eintosti.buildsystem.manager.SettingsManager;
-import de.eintosti.buildsystem.manager.WorldManager;
 import de.eintosti.buildsystem.object.settings.Settings;
-import de.eintosti.buildsystem.util.external.xseries.XMaterial;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -34,7 +32,6 @@ public class PlayerInventoryClearListener implements Listener {
         Player player = event.getPlayer();
         Settings settings = settingsManager.getSettings(player);
 
-        if (player.getInventory().getSize() > 0) return;
         if (!settings.isKeepNavigator()) return;
         if (!player.hasPermission("buildsystem.gui")) return;
 

@@ -3,6 +3,7 @@ package de.eintosti.buildsystem.listener;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.event.PlayerInventoryClearEvent;
+import de.eintosti.buildsystem.manager.InventoryManager;
 import de.eintosti.buildsystem.manager.SettingsManager;
 import de.eintosti.buildsystem.manager.WorldManager;
 import de.eintosti.buildsystem.object.settings.Settings;
@@ -13,6 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.HashSet;
 
@@ -21,11 +23,13 @@ import java.util.HashSet;
  */
 public class PlayerCommandPreprocessListener implements Listener {
     private final BuildSystem plugin;
+    private final InventoryManager inventoryManager;
     private final SettingsManager settingsManager;
     private final WorldManager worldManager;
 
     public PlayerCommandPreprocessListener(BuildSystem plugin) {
         this.plugin = plugin;
+        this.inventoryManager = plugin.getInventoryManager();
         this.settingsManager = plugin.getSettingsManager();
         this.worldManager = plugin.getWorldManager();
 
@@ -40,7 +44,9 @@ public class PlayerCommandPreprocessListener implements Listener {
         Player player = event.getPlayer();
 
         if (command.equalsIgnoreCase("/clear")) {
-            if (player.getInventory().getSize() == 0) return;
+            ItemStack navigatorItem = inventoryManager.getItemStack(plugin.getNavigatorItem(), plugin.getString("navigator_item"));
+            if (!player.getInventory().contains(navigatorItem)) return;
+
             if (settingsManager.getSettings(player).isKeepNavigator()) {
                 Bukkit.getScheduler().runTaskLater(plugin, () -> {
                     PlayerInventoryClearEvent playerInventoryClearEvent = new PlayerInventoryClearEvent(player);

@@ -10,9 +10,6 @@ import java.lang.reflect.Method;
  * @author einTosti
  */
 public class ManageEntityAI {
-    private static String version;
-    private static boolean isNewVersion;
-
     private static Class<?> nmsEntityClass;
     private static Class<?> nbtTagClass;
 
@@ -22,27 +19,26 @@ public class ManageEntityAI {
     private static Method setInt;
     private static Method f;
 
+    public static void setAIEnabled(Entity entity, boolean enabled) {
+        switch (entity.getType()) {
+            case ARMOR_STAND:
+            case ITEM_FRAME:
+            case PAINTING:
+            case PLAYER:
+                return;
+        }
 
-    public ManageEntityAI() {
-        version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+        String version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 
         switch (version) {
             case "v1_8_R1":
             case "v1_8_R2":
             case "v1_8_R3":
-                isNewVersion = false;
                 break;
             default:
-                isNewVersion = true;
-                break;
-        }
-    }
-
-    public static void setAIEnabled(Entity entity, boolean enabled) {
-        if (isNewVersion) {
-            LivingEntity livingEntity = (LivingEntity) entity;
-            livingEntity.setAI(enabled);
-            return;
+                LivingEntity livingEntity = (LivingEntity) entity;
+                livingEntity.setAI(enabled);
+                return;
         }
 
         try {
