@@ -19,10 +19,15 @@ public class SignChangeListener implements Listener {
     @EventHandler
     public void onSignChange(SignChangeEvent event) {
         Player player = event.getPlayer();
-        if (!player.hasPermission("buildsystem.color.sign")) return;
+        if (!player.hasPermission("buildsystem.color.sign")) {
+            return;
+        }
 
         for (int i = 0; i < event.getLines().length; i++) {
-            event.setLine(i, ChatColor.translateAlternateColorCodes('&', event.getLine(i)));
+            String line = event.getLine(i);
+            if (line != null) {
+                event.setLine(i, ChatColor.translateAlternateColorCodes('&', line));
+            }
         }
     }
 }

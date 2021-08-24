@@ -51,6 +51,7 @@ public class NoClipManager {
                 gameMode = previousGameMode.getOrDefault(uuid, GameMode.CREATIVE);
                 previousGameMode.remove(uuid);
             }
+
             if (player.getGameMode() == gameMode) continue;
 
             GameMode finalGameMode = gameMode;
@@ -104,17 +105,22 @@ public class NoClipManager {
     }
 
     public void stopNoClip(UUID uuid) {
-        if (!isNoClip(uuid)) return;
+        if (!isNoClip(uuid)) {
+            return;
+        }
+
         this.noClipPlayers.remove(uuid);
 
         Player player = Bukkit.getPlayer(uuid);
-        if (player != null) {
-            player.setGameMode(previousGameMode.getOrDefault(uuid, GameMode.CREATIVE));
-            previousGameMode.remove(uuid);
+        if (player == null) {
+            return;
+        }
 
-            if (player.getAllowFlight()) {
-                player.setFlying(true);
-            }
+        player.setGameMode(previousGameMode.getOrDefault(uuid, GameMode.CREATIVE));
+        previousGameMode.remove(uuid);
+
+        if (player.getAllowFlight()) {
+            player.setFlying(true);
         }
     }
 }

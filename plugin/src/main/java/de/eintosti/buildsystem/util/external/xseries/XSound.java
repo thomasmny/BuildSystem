@@ -1303,7 +1303,7 @@ public enum XSound {
     }
 
     /**
-     * In most cases your should be using {@link #name()} instead.
+     * In most cases you should be using {@link #name()} instead.
      *
      * @return a friendly readable string name.
      */
@@ -1438,7 +1438,7 @@ public enum XSound {
     }
 
     /**
-     * Used for datas that need to be accessed during enum initialization.
+     * Used for data that need to be accessed during enum initialization.
      *
      * @since 5.0.0
      */
@@ -1484,7 +1484,7 @@ public enum XSound {
         }
 
         /**
-         * Plays the sound with the given options and updating the players location.
+         * Plays the sound with the given options and updating the player's location.
          *
          * @since 3.0.0
          */

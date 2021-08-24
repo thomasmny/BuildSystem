@@ -20,7 +20,10 @@ public class WeatherChangeListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onWeatherChange(WeatherChangeEvent event) {
-        if (!plugin.isLockWeather()) return;
+        if (!plugin.isLockWeather()) {
+            return;
+        }
+
         if (event.toWeatherState()) {
             event.setCancelled(true);
         }
@@ -28,7 +31,10 @@ public class WeatherChangeListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onThunderChange(ThunderChangeEvent event) {
-        if (!plugin.isLockWeather()) return;
+        if (!plugin.isLockWeather()) {
+            return;
+        }
+
         if (event.toThunderState()) {
             event.setCancelled(true);
         }

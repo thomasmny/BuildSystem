@@ -12,10 +12,16 @@ public enum WorldSort {
     OLDEST_FIRST;
 
     public static WorldSort matchWorldSort(String type) {
-        if (type == null) return NAME_A_TO_Z;
-        for (WorldSort value : values()) {
-            if (value.toString().equalsIgnoreCase(type)) return value;
+        if (type == null) {
+            return NAME_A_TO_Z;
         }
+
+        for (WorldSort value : values()) {
+            if (value.toString().equalsIgnoreCase(type)) {
+                return value;
+            }
+        }
+
         return NAME_A_TO_Z;
     }
 }

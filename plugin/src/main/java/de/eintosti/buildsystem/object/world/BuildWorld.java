@@ -11,6 +11,7 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -484,7 +485,7 @@ public class BuildWorld implements ConfigurationSerializable {
     }
 
     @Override
-    public Map<String, Object> serialize() {
+    public @NotNull Map<String, Object> serialize() {
         Map<String, Object> world = new HashMap<>();
 
         world.put("creator", getCreator());
@@ -504,12 +505,8 @@ public class BuildWorld implements ConfigurationSerializable {
         world.put("block-interactions", isBlockInteractions());
         world.put("builders-enabled", isBuilders());
         world.put("builders", saveBuilders());
-        if (customSpawn != null) {
-            world.put("spawn", customSpawn);
-        }
-        if (chunkGeneratorString != null) {
-            world.put("chunk-generator", getChunkGeneratorString());
-        }
+        if (customSpawn != null) world.put("spawn", customSpawn);
+        if (chunkGeneratorString != null) world.put("chunk-generator", getChunkGeneratorString());
 
         return world;
     }

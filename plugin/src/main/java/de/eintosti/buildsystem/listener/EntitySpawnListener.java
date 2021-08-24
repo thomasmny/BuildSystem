@@ -25,6 +25,9 @@ public class EntitySpawnListener implements Listener {
     @EventHandler
     public void onEntitySpawn(EntitySpawnEvent event) {
         World bukkitWorld = event.getLocation().getWorld();
+        if (bukkitWorld == null) {
+            return;
+        }
 
         BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
         if (buildWorld == null) return;

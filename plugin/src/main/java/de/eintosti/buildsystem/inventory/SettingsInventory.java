@@ -65,16 +65,21 @@ public class SettingsInventory {
         }
     }
 
-    private void addSettingsItem(Inventory inventory, int position, XMaterial material, boolean b, String displayName, List<String> lore) {
+    private void addSettingsItem(Inventory inventory, int position, XMaterial material, boolean enabled, String displayName, List<String> lore) {
         ItemStack itemStack = material.parseItem();
         ItemMeta itemMeta = itemStack.getItemMeta();
+
         if (itemMeta != null) {
             itemMeta.setDisplayName(displayName);
             itemMeta.setLore(lore);
             itemMeta.addItemFlags(ItemFlag.values());
         }
+
         itemStack.setItemMeta(itemMeta);
-        if (b) itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+        if (enabled) {
+            itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+        }
+
         inventory.setItem(position, itemStack);
     }
 
@@ -136,6 +141,7 @@ public class SettingsInventory {
         if (itemMeta != null) {
             itemMeta.setLore(lore);
         }
+
         itemStack.setItemMeta(itemMeta);
         inventory.setItem(33, itemStack);
     }

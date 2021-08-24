@@ -41,6 +41,7 @@ public class ItemSkulls {
         ItemStack skull = XMaterial.PLAYER_HEAD.parseItem();
         SkullMeta meta = (SkullMeta) skull.getItemMeta();
         skull.setAmount(amount);
+
         try {
             Field profileField = skullMetaClass.getDeclaredField("profile");
             profileField.setAccessible(true);
@@ -51,6 +52,7 @@ public class ItemSkulls {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         skull.setItemMeta(meta);
         return skull;
     }

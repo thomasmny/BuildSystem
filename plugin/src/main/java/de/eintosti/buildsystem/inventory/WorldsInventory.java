@@ -17,6 +17,8 @@ import java.util.UUID;
  * @author einTosti
  */
 public class WorldsInventory {
+    private final static int MAX_NUM_WORLDS = 36;
+
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
     private final WorldManager worldManager;
@@ -34,7 +36,7 @@ public class WorldsInventory {
     private Inventory createInventory(Player player) {
         Inventory inventory = Bukkit.createInventory(null, 54, plugin.getString("world_navigator_title"));
 
-        int numOfWorlds = (numOfWorlds(player) / 36) + (numOfWorlds(player) % 36 == 0 ? 0 : 1);
+        int numOfWorlds = (numOfWorlds(player) / MAX_NUM_WORLDS) + (numOfWorlds(player) % MAX_NUM_WORLDS == 0 ? 0 : 1);
         inventoryManager.fillMultiInvWithGlass(plugin, inventory, player, invIndex, numOfWorlds);
         addWorldCreateItem(inventory, player);
 
@@ -74,7 +76,7 @@ public class WorldsInventory {
     private void addWorlds(Player player) {
         int columnWorld = 9, maxColumnWorld = 44;
         int numWorlds = numOfWorlds(player);
-        int numInventories = (numWorlds % 36 == 0 ? numWorlds : numWorlds + 1) != 0 ? (numWorlds % 36 == 0 ? numWorlds : numWorlds + 1) : 1;
+        int numInventories = (numWorlds % MAX_NUM_WORLDS == 0 ? numWorlds : numWorlds + 1) != 0 ? (numWorlds % MAX_NUM_WORLDS == 0 ? numWorlds : numWorlds + 1) : 1;
 
         inventories = new Inventory[numInventories];
         Inventory inventory = createInventory(player);
@@ -100,18 +102,20 @@ public class WorldsInventory {
     }
 
     private boolean isValid(Player player, BuildWorld buildWorld) {
-        if (!buildWorld.isPrivate()) {
-            if (player.hasPermission(buildWorld.getPermission()) || buildWorld.getPermission().equalsIgnoreCase("-")) {
-                switch (buildWorld.getStatus()) {
-                    case NOT_STARTED:
-                    case IN_PROGRESS:
-                    case ALMOST_FINISHED:
-                    case FINISHED:
-                        if (Bukkit.getWorld(buildWorld.getName()) != null || (Bukkit.getWorld(buildWorld.getName()) == null && !buildWorld.isLoaded())) {
-                            return true;
-                        }
-                        break;
-                }
+        if (buildWorld.isPrivate()) {
+            return false;
+        }
+
+        if (player.hasPermission(buildWorld.getPermission()) || buildWorld.getPermission().equalsIgnoreCase("-")) {
+            switch (buildWorld.getStatus()) {
+                case NOT_STARTED:
+                case IN_PROGRESS:
+                case ALMOST_FINISHED:
+                case FINISHED:
+                    if (Bukkit.getWorld(buildWorld.getName()) != null || (Bukkit.getWorld(buildWorld.getName()) == null && !buildWorld.isLoaded())) {
+                        return true;
+                    }
+                    break;
             }
         }
         return false;

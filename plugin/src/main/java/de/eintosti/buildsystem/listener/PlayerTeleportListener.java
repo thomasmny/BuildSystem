@@ -46,7 +46,10 @@ public class PlayerTeleportListener implements Listener {
         String worldName = to.getWorld().getName();
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
 
-        if (buildWorld == null) return;
+        if (buildWorld == null) {
+            return;
+        }
+
         if (!Bukkit.getWorlds().get(0).equals(Bukkit.getWorld(worldName))) {
             if (!player.hasPermission(buildWorld.getPermission()) && !buildWorld.getPermission().equalsIgnoreCase("-")) {
                 player.sendMessage(plugin.getString("worlds_tp_entry_forbidden"));

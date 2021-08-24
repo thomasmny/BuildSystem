@@ -3,6 +3,7 @@ package de.eintosti.buildsystem.object.settings;
 import de.eintosti.buildsystem.object.navigator.NavigatorType;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -210,7 +211,7 @@ public class Settings implements ConfigurationSerializable {
     }
 
     @Override
-    public Map<String, Object> serialize() {
+    public @NotNull Map<String, Object> serialize() {
         Map<String, Object> settings = new HashMap<>();
 
         settings.put("type", getNavigatorType().toString());

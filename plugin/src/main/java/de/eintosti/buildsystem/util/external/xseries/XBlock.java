@@ -14,10 +14,12 @@ import org.bukkit.material.Wood;
  * BlockState (Old): https://hub.spigotmc.org/javadocs/spigot/org/bukkit/block/BlockState.html
  * BlockData (New): https://hub.spigotmc.org/javadocs/spigot/org/bukkit/block/data/BlockData.html
  * MaterialData (Old): https://hub.spigotmc.org/javadocs/spigot/org/bukkit/material/MaterialData.html
+ * <p>
  * All the parameters are non-null except the ones marked as nullable.
+ * This class doesn't and shouldn't support materials that are {@link Material#isLegacy()}.
  *
  * @author Crypto Morin
- * @version 1.1.3
+ * @version 2.2.0
  * @see Block
  * @see BlockState
  * @see MaterialData
@@ -51,27 +53,5 @@ public class XBlock {
         state.setRawData(color.getWoolData());
         state.update(true);
         return false;
-    }
-
-    public static XMaterial getType(Block block) {
-        if (ISFLAT) return XMaterial.matchXMaterial(block.getType());
-
-        String type = block.getType().name();
-        BlockState state = block.getState();
-        MaterialData data = state.getData();
-        byte dataValue;
-
-        if (data instanceof Wood) {
-            TreeSpecies species = ((Wood) data).getSpecies();
-            dataValue = species.getData();
-        } else if (data instanceof Colorable) {
-            DyeColor color = ((Colorable) data).getColor();
-            dataValue = color.getDyeData();
-        } else {
-            dataValue = data.getData();
-        }
-
-        return XMaterial.matchDefinedXMaterial(type, dataValue).orElseThrow(() ->
-                new IllegalArgumentException("Unsupported material for block " + dataValue + ": " + block.getType().name()));
     }
 }

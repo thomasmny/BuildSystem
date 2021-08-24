@@ -30,7 +30,9 @@ public class SpawnManager {
 
         BuildWorld buildWorld = worldManager.getBuildWorld(spawnName);
         if (buildWorld != null) {
-            if (!buildWorld.isLoaded()) buildWorld.load(player);
+            if (!buildWorld.isLoaded()) {
+                buildWorld.load(player);
+            }
         }
 
         player.setFallDistance(0);
@@ -68,10 +70,15 @@ public class SpawnManager {
     public void load() {
         FileConfiguration configuration = spawnConfig.getFile();
         String string = configuration.getString("spawn");
-        if (string == null || string.trim().equals("")) return;
+
+        if (string == null || string.trim().equals("")) {
+            return;
+        }
 
         String[] parts = string.split(":");
-        if (parts.length != 6) return;
+        if (parts.length != 6) {
+            return;
+        }
 
         String worldName = parts[0];
         double x = Double.parseDouble(parts[1]);

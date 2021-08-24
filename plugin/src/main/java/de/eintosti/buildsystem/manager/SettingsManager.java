@@ -100,10 +100,11 @@ public class SettingsManager {
     }
 
     private String injectPlaceholders(String originalString, Player player) {
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+        String worldName = player.getWorld().getName();
+        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
 
         return originalString
-                .replace("%world%", player.getWorld().getName())
+                .replace("%world%", worldName)
                 .replace("%status%", plugin.getStatus(buildWorld))
                 .replace("%permission%", plugin.getPermission(buildWorld))
                 .replace("%project%", plugin.getProject(buildWorld))

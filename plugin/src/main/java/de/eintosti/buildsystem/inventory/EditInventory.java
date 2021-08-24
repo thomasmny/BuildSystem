@@ -175,8 +175,8 @@ public class EditInventory {
 
     private List<String> getPermissionLore(BuildWorld buildWorld) {
         List<String> lore = new ArrayList<>();
-        for (String s : plugin.getStringList("worldeditor_permission_lore")) {
-            lore.add(s.replace("%permission%", buildWorld.getPermission()));
+        for (String line : plugin.getStringList("worldeditor_permission_lore")) {
+            lore.add(line.replace("%permission%", buildWorld.getPermission()));
         }
         return lore;
     }

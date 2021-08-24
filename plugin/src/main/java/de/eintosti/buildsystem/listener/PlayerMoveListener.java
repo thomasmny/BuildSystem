@@ -44,7 +44,8 @@ public class PlayerMoveListener implements Listener {
         this.settingsManager = plugin.getSettingsManager();
 
         this.lastLookedAt = new HashMap<>();
-        runEveryTick();
+        initEntityChecker();
+
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -89,17 +90,18 @@ public class PlayerMoveListener implements Listener {
         String findItemName = plugin.getString("barrier_item");
         ItemStack replaceItem = inventoryManager.getItemStack(plugin.getNavigatorItem(), plugin.getString("navigator_item"));
 
-        plugin.replaceItem(player, findItemName, XMaterial.BARRIER, replaceItem);
+        inventoryManager.replaceItem(player, findItemName, XMaterial.BARRIER, replaceItem);
     }
 
-    private void runEveryTick() {
+    private void initEntityChecker() {
         Bukkit.getScheduler().runTaskTimer(plugin, this::checkForEntity, 0L, 1L);
     }
 
     private void checkForEntity() {
         List<UUID> toRemove = new ArrayList<>();
+
         for (Player player : plugin.openNavigator) {
-            if (getEntityName(player) == null) return;
+            if (getEntityName(player) == null) continue;
 
             double lookedPosition = player.getEyeLocation().getDirection().getY();
             if (lookedPosition >= MIN_HEIGHT && lookedPosition <= MAX_HEIGHT) {
@@ -118,6 +120,7 @@ public class PlayerMoveListener implements Listener {
                 toRemove.add(player.getUniqueId());
             }
         }
+
         toRemove.forEach(lastLookedAt::remove);
     }
 
@@ -167,6 +170,7 @@ public class PlayerMoveListener implements Listener {
                 message = "new_navigator_private_worlds";
                 break;
         }
+
         ActionBar.sendActionBar(player, plugin.getString(message));
         XSound.ENTITY_CHICKEN_EGG.play(player);
     }

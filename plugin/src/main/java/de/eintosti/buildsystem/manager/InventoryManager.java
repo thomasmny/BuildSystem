@@ -88,6 +88,34 @@ public class InventoryManager {
         return navigatorSlots;
     }
 
+    public void replaceItem(Player player, String findItemName, XMaterial findItemType, ItemStack replaceItem) {
+        PlayerInventory playerInventory = player.getInventory();
+        int slot = -1;
+
+        for (int i = 0; i < playerInventory.getSize(); i++) {
+            ItemStack currentItem = playerInventory.getItem(i);
+            if (currentItem != null && currentItem.getType() == findItemType.parseMaterial()) {
+                ItemMeta itemMeta = currentItem.getItemMeta();
+                if (itemMeta != null) {
+                    if (itemMeta.getDisplayName().equals(findItemName)) {
+                        slot = i;
+                    }
+                }
+            }
+        }
+
+        if (slot != -1) {
+            playerInventory.setItem(slot, replaceItem);
+        } else {
+            ItemStack slot8 = playerInventory.getItem(8);
+            if (slot8 == null || slot8.getType() == XMaterial.AIR.parseMaterial()) {
+                playerInventory.setItem(8, replaceItem);
+            } else {
+                playerInventory.addItem(replaceItem);
+            }
+        }
+    }
+
     public ItemStack getItemStack(XMaterial material, String displayName, List<String> lore) {
         ItemStack itemStack = material.parseItem();
         if (itemStack == null) itemStack = XMaterial.BEDROCK.parseItem();

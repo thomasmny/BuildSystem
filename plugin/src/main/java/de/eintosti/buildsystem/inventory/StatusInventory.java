@@ -54,6 +54,7 @@ public class StatusInventory {
     private void addItem(Player player, Inventory inventory, int position, XMaterial material, String displayName, WorldStatus worldStatus) {
         ItemStack itemStack = material.parseItem();
         ItemMeta itemMeta = itemStack.getItemMeta();
+
         if (itemMeta != null) {
             itemMeta.setDisplayName(displayName);
             itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
@@ -63,6 +64,7 @@ public class StatusInventory {
         if (plugin.selectedWorld.get(player.getUniqueId()).getStatus() == worldStatus) {
             itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
         }
+
         inventory.setItem(position, itemStack);
     }
 }

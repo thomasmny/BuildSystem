@@ -2,18 +2,19 @@ package de.eintosti.buildsystem.util.external;
 
 import de.eintosti.buildsystem.util.external.xseries.ReflectionUtils;
 import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 
 /**
@@ -35,35 +36,36 @@ import java.util.concurrent.Callable;
  * PacketPlayOutTitle: https://wiki.vg/Protocol#Title
  *
  * @author Crypto Morin
- * @version 2.0.0
+ * @version 3.1.0
  * @see ReflectionUtils
  */
-public class ActionBar {
-    private static final boolean sixteen = Material.getMaterial("LODESTONE") != null;
-    private static final boolean spigot;
+public final class ActionBar {
+    /**
+     * If the server is running Spigot which has an official ActionBar API.
+     * This should technically be available from 1.9
+     */
+    private static final boolean SPIGOT;
     /**
      * ChatComponentText JSON message builder.
      */
-    private static final MethodHandle chatComponentText;
+    private static final MethodHandle CHAT_COMPONENT_TEXT;
     /**
      * PacketPlayOutChat
      */
-    private static final MethodHandle packetPlayOutChat;
+    private static final MethodHandle PACKET_PLAY_OUT_CHAT;
     /**
      * GAME_INFO enum constant.
      */
-    private static final Object chatMessageType;
+    private static final Object CHAT_MESSAGE_TYPE;
 
     static {
         boolean exists = false;
-        if (Material.getMaterial("KNOWLEDGE_BOOK") != null) {
-            try {
-                Class.forName("org.spigotmc.SpigotConfig");
-                exists = true;
-            } catch (ClassNotFoundException ignored) {
-            }
+        try {
+            Player.Spigot.class.getDeclaredMethod("sendMessage", ChatMessageType.class, BaseComponent.class);
+            exists = true;
+        } catch (NoClassDefFoundError | NoSuchMethodException ignored) {
         }
-        spigot = exists;
+        SPIGOT = exists;
     }
 
     static {
@@ -71,20 +73,20 @@ public class ActionBar {
         MethodHandle chatComp = null;
         Object chatMsgType = null;
 
-        if (!spigot) {
+        if (!SPIGOT) {
+            // Supporting 1.17 is not necessary, the package guards are just for readability.
             MethodHandles.Lookup lookup = MethodHandles.lookup();
-            Class<?> packetPlayOutChatClass = ReflectionUtils.getNMSClass("PacketPlayOutChat");
-            Class<?> iChatBaseComponentClass = ReflectionUtils.getNMSClass("IChatBaseComponent");
+            Class<?> packetPlayOutChatClass = ReflectionUtils.getNMSClass("network.protocol.game", "PacketPlayOutChat");
+            Class<?> iChatBaseComponentClass = ReflectionUtils.getNMSClass("network.chat", "IChatBaseComponent");
 
             try {
                 // Game Info Message Type
-                Class<?> chatMessageTypeClass = Class.forName(ReflectionUtils.NMS + "ChatMessageType");
+                Class<?> chatMessageTypeClass = Class.forName(
+                        ReflectionUtils.NMS + (ReflectionUtils.supports(17) ? "network.chat" : "") + "ChatMessageType"
+                );
 
                 // Packet Constructor
-                MethodType type;
-                if (sixteen)
-                    type = MethodType.methodType(void.class, iChatBaseComponentClass, chatMessageTypeClass, UUID.class);
-                else type = MethodType.methodType(void.class, iChatBaseComponentClass, chatMessageTypeClass);
+                MethodType type = MethodType.methodType(void.class, iChatBaseComponentClass, chatMessageTypeClass);
 
                 for (Object obj : chatMessageTypeClass.getEnumConstants()) {
                     String name = obj.toString();
@@ -95,7 +97,7 @@ public class ActionBar {
                 }
 
                 // JSON Message Builder
-                Class<?> chatComponentTextClass = ReflectionUtils.getNMSClass("ChatComponentText");
+                Class<?> chatComponentTextClass = ReflectionUtils.getNMSClass("network.chat", "ChatComponentText");
                 chatComp = lookup.findConstructor(chatComponentTextClass, MethodType.methodType(void.class, String.class));
 
                 packet = lookup.findConstructor(packetPlayOutChatClass, type);
@@ -116,32 +118,32 @@ public class ActionBar {
             }
         }
 
-        chatMessageType = chatMsgType;
-        chatComponentText = chatComp;
-        packetPlayOutChat = packet;
+        CHAT_MESSAGE_TYPE = chatMsgType;
+        CHAT_COMPONENT_TEXT = chatComp;
+        PACKET_PLAY_OUT_CHAT = packet;
     }
+
+    private ActionBar() { }
 
     /**
      * Sends an action bar to a player.
      *
      * @param player  the player to send the action bar to.
      * @param message the message to send.
+     *
      * @see #sendActionBar(JavaPlugin, Player, String, long)
      * @since 1.0.0
      */
-    public static void sendActionBar(Player player, String message) {
+    public static void sendActionBar(@Nonnull Player player, @Nullable String message) {
         Objects.requireNonNull(player, "Cannot send action bar to null player");
-        if (spigot) {
+        if (SPIGOT) {
             player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
             return;
         }
 
         try {
-            Object component = chatComponentText.invoke(message);
-            Object packet;
-            if (sixteen) packet = packetPlayOutChat.invoke(component, chatMessageType, player.getUniqueId());
-            else packet = packetPlayOutChat.invoke(component, chatMessageType);
-
+            Object component = CHAT_COMPONENT_TEXT.invoke(message);
+            Object packet = PACKET_PLAY_OUT_CHAT.invoke(component, CHAT_MESSAGE_TYPE);
             ReflectionUtils.sendPacket(player, packet);
         } catch (Throwable throwable) {
             throwable.printStackTrace();
@@ -152,11 +154,34 @@ public class ActionBar {
      * Sends an action bar all the online players.
      *
      * @param message the message to send.
+     *
      * @see #sendActionBar(Player, String)
      * @since 1.0.0
      */
-    public static void sendPlayersActionBar(String message) {
+    public static void sendPlayersActionBar(@Nullable String message) {
         for (Player player : Bukkit.getOnlinePlayers()) sendActionBar(player, message);
+    }
+
+    /**
+     * Clear the action bar by sending an empty message.
+     *
+     * @param player the player to send the action bar to.
+     *
+     * @see #sendActionBar(Player, String)
+     * @since 2.1.1
+     */
+    public static void clearActionBar(@Nonnull Player player) {
+        sendActionBar(player, " ");
+    }
+
+    /**
+     * Clear the action bar by sending an empty message to all the online players.
+     *
+     * @see #clearActionBar(Player)
+     * @since 2.1.1
+     */
+    public static void clearPlayersActionBar() {
+        for (Player player : Bukkit.getOnlinePlayers()) clearActionBar(player);
     }
 
     /**
@@ -166,13 +191,15 @@ public class ActionBar {
      * If the caller returns true, the action bar will continue.
      * If the caller returns false, action bar will not be sent anymore.
      *
+     * @param plugin   the plugin handling the message scheduler.
      * @param player   the player to send the action bar to.
      * @param message  the message to send. The message will not be updated.
      * @param callable the condition for the action bar to continue.
+     *
      * @see #sendActionBar(JavaPlugin, Player, String, long)
      * @since 1.0.0
      */
-    public static void sendActionBarWhile(JavaPlugin plugin, Player player, String message, Callable<Boolean> callable) {
+    public static void sendActionBarWhile(@Nonnull JavaPlugin plugin, @Nonnull Player player, @Nullable String message, @Nonnull Callable<Boolean> callable) {
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -196,13 +223,15 @@ public class ActionBar {
      * If the caller returns true, the action bar will continue.
      * If the caller returns false, action bar will not be sent anymore.
      *
+     * @param plugin   the plugin handling the message scheduler.
      * @param player   the player to send the action bar to.
      * @param message  the message to send. The message will be updated.
      * @param callable the condition for the action bar to continue.
+     *
      * @see #sendActionBarWhile(JavaPlugin, Player, String, Callable)
      * @since 1.0.0
      */
-    public static void sendActionBarWhile(JavaPlugin plugin, Player player, Callable<String> message, Callable<Boolean> callable) {
+    public static void sendActionBarWhile(@Nonnull JavaPlugin plugin, @Nonnull Player player, @Nullable Callable<String> message, @Nonnull Callable<Boolean> callable) {
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -223,13 +252,15 @@ public class ActionBar {
     /**
      * Sends an action bar to a player for a specific amount of ticks.
      *
+     * @param plugin   the plugin handling the message scheduler.
      * @param player   the player to send the action bar to.
      * @param message  the message to send.
      * @param duration the duration to keep the action bar in ticks.
+     *
      * @see #sendActionBarWhile(JavaPlugin, Player, String, Callable)
      * @since 1.0.0
      */
-    public static void sendActionBar(JavaPlugin plugin, Player player, String message, long duration) {
+    public static void sendActionBar(@Nonnull JavaPlugin plugin, @Nonnull Player player, @Nullable String message, long duration) {
         if (duration < 1) return;
 
         new BukkitRunnable() {

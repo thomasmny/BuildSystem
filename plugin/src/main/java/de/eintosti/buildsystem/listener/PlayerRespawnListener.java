@@ -26,10 +26,10 @@ public class PlayerRespawnListener implements Listener {
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();
         Settings settings = settingsManager.getSettings(player);
-        if (settings.isSpawnTeleport()) {
-            if (spawnManager.spawnExists()) {
-                event.setRespawnLocation(spawnManager.getSpawn());
-            }
+
+        if (!settings.isSpawnTeleport()) return;
+        if (spawnManager.spawnExists()) {
+            event.setRespawnLocation(spawnManager.getSpawn());
         }
     }
 }

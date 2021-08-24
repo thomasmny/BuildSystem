@@ -24,7 +24,9 @@ public class Messages {
     public HashMap<String, String> messageData = new HashMap<>();
 
     public static synchronized Messages getInstance() {
-        if (instance == null) instance = new Messages();
+        if (instance == null) {
+            instance = new Messages();
+        }
         return instance;
     }
 

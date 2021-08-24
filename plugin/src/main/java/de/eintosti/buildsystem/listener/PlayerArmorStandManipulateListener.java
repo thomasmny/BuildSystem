@@ -53,6 +53,7 @@ public class PlayerArmorStandManipulateListener implements Listener {
         if (plugin.isCreatorIsBuilder() && buildWorld.getCreatorId() != null && buildWorld.getCreatorId().equals(player.getUniqueId())) {
             return;
         }
+
         if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
             event.setCancelled(true);
         }

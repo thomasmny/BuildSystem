@@ -118,7 +118,9 @@ public class PlayerChangedWorldListener implements Listener {
     private void checkWorldStatus(Player player) {
         String worldName = player.getWorld().getName();
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
-        if (buildWorld == null) return;
+        if (buildWorld == null) {
+            return;
+        }
 
         UUID playerUUID = player.getUniqueId();
         PlayerInventory playerInventory = player.getInventory();
@@ -127,11 +129,13 @@ public class PlayerChangedWorldListener implements Listener {
             player.setGameMode(this.playerGamemode.get(playerUUID));
             this.playerGamemode.remove(playerUUID);
         }
+
         if (this.playerInventory.containsKey(playerUUID)) {
             playerInventory.clear();
             playerInventory.setContents(this.playerInventory.get(playerUUID));
             this.playerInventory.remove(playerUUID);
         }
+
         if (this.playerArmor.containsKey(playerUUID)) {
             removeArmorContent(player);
             playerInventory.setArmorContents(this.playerArmor.get(playerUUID));

@@ -83,10 +83,10 @@ public class PlayerInteractAtEntityListener implements Listener {
         BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
 
         if (buildWorld == null) return;
-        if (buildWorld.getStatus() == WorldStatus.ARCHIVE) {
-            if (!plugin.buildPlayers.contains(player.getUniqueId())) {
-                event.setCancelled(true);
-            }
+        if (buildWorld.getStatus() != WorldStatus.ARCHIVE) return;
+
+        if (!plugin.buildPlayers.contains(player.getUniqueId())) {
+            event.setCancelled(true);
         }
     }
 }

@@ -516,34 +516,6 @@ public class BuildSystem extends JavaPlugin {
         this.importDelay = config.getInt("world.import-all.delay", 30);
     }
 
-    public void replaceItem(Player player, String findItemName, XMaterial findItemType, ItemStack replaceItem) {
-        PlayerInventory playerInventory = player.getInventory();
-        int slot = -1;
-
-        for (int i = 0; i < playerInventory.getSize(); i++) {
-            ItemStack currentItem = playerInventory.getItem(i);
-            if (currentItem != null && currentItem.getType() == findItemType.parseMaterial()) {
-                ItemMeta itemMeta = currentItem.getItemMeta();
-                if (itemMeta != null) {
-                    if (itemMeta.getDisplayName().equals(findItemName)) {
-                        slot = i;
-                    }
-                }
-            }
-        }
-
-        if (slot != -1) {
-            playerInventory.setItem(slot, replaceItem);
-        } else {
-            ItemStack slot8 = playerInventory.getItem(8);
-            if (slot8 == null || slot8.getType() == XMaterial.AIR.parseMaterial()) {
-                playerInventory.setItem(8, replaceItem);
-            } else {
-                playerInventory.addItem(replaceItem);
-            }
-        }
-    }
-
     public String getPrefix() {
         return prefix;
     }
@@ -660,100 +632,6 @@ public class BuildSystem extends JavaPlugin {
         return hours * 3600L + minutes * 60L + seconds;
     }
 
-    public String getStatus(BuildWorld buildWorld) {
-        if (buildWorld == null) {
-            return "§f-";
-        }
-        return buildWorld.getStatusName();
-    }
-
-    public String getPermission(BuildWorld buildWorld) {
-        if (buildWorld == null) {
-            return "§f-";
-        }
-        return buildWorld.getPermission();
-    }
-
-    public String getProject(BuildWorld buildWorld) {
-        if (buildWorld == null) {
-            return "§f-";
-        }
-        return buildWorld.getProject();
-    }
-
-    public String getCreator(BuildWorld buildWorld) {
-        if (buildWorld == null) {
-            return "§f-";
-        }
-        return buildWorld.getCreator();
-    }
-
-    public String getWorldTime(BuildWorld buildWorld) {
-        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
-        if (bukkitWorld == null) {
-            return "?";
-        }
-        return String.valueOf(bukkitWorld.getTime());
-    }
-
-    public String getCreationDate(BuildWorld buildWorld) {
-        if (buildWorld == null) {
-            return "§f-";
-        }
-        return formatDate(buildWorld.getCreationDate());
-    }
-
-    public String formatDate(long date) {
-        return date > 0 ? new SimpleDateFormat(getDateFormat()).format(date) : "-";
-    }
-
-    public String getBuilders(BuildWorld buildWorld) {
-        if (buildWorld == null) {
-            return "§f-";
-        }
-
-        String template = getString("world_item_builders_builder_template");
-        ArrayList<Builder> builders = new ArrayList<>();
-
-        if (isCreatorIsBuilder()) {
-            if (buildWorld.getCreator() != null && !buildWorld.getCreator().equals("-")) {
-                builders.add(new Builder(buildWorld.getCreatorId(), buildWorld.getCreator()));
-            }
-        }
-        builders.addAll(buildWorld.getBuilders());
-
-        String string = "";
-        if (builders.isEmpty()) {
-            string = template.replace("%builder%", "-").trim();
-        } else {
-            for (Builder builder : builders) {
-                string = string.concat(template.replace("%builder%", builder.getName()));
-            }
-            string = string.trim();
-        }
-        return string.substring(0, string.length() - 1);
-    }
-
-    public void forceUpdateSidebar(BuildWorld buildWorld) {
-        if (!isScoreboard()) {
-            return;
-        }
-
-        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
-        if (bukkitWorld == null) {
-            return;
-        }
-
-        bukkitWorld.getPlayers().forEach(this::forceUpdateSidebar);
-    }
-
-    public void forceUpdateSidebar(Player player) {
-        if (!isScoreboard() || !settingsManager.getSettings(player).isScoreboard()) {
-            return;
-        }
-        settingsManager.updateScoreboard(player);
-    }
-
     public String getScoreboardTitle() {
         return scoreboardTitle;
     }
@@ -868,5 +746,100 @@ public class BuildSystem extends JavaPlugin {
 
     public SkullCache getSkullCache() {
         return skullCache;
+    }
+
+    public String getStatus(BuildWorld buildWorld) {
+        if (buildWorld == null) {
+            return "§f-";
+        }
+        return buildWorld.getStatusName();
+    }
+
+    public String getPermission(BuildWorld buildWorld) {
+        if (buildWorld == null) {
+            return "§f-";
+        }
+        return buildWorld.getPermission();
+    }
+
+    public String getProject(BuildWorld buildWorld) {
+        if (buildWorld == null) {
+            return "§f-";
+        }
+        return buildWorld.getProject();
+    }
+
+    public String getCreator(BuildWorld buildWorld) {
+        if (buildWorld == null) {
+            return "§f-";
+        }
+        return buildWorld.getCreator();
+    }
+
+    public String getWorldTime(BuildWorld buildWorld) {
+        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
+        if (bukkitWorld == null) {
+            return "?";
+        }
+        return String.valueOf(bukkitWorld.getTime());
+    }
+
+    public String getCreationDate(BuildWorld buildWorld) {
+        if (buildWorld == null) {
+            return "§f-";
+        }
+        return formatDate(buildWorld.getCreationDate());
+    }
+
+    public String formatDate(long date) {
+        return date > 0 ? new SimpleDateFormat(getDateFormat()).format(date) : "-";
+    }
+
+    public String getBuilders(BuildWorld buildWorld) {
+        if (buildWorld == null) {
+            return "§f-";
+        }
+
+        String template = getString("world_item_builders_builder_template");
+        ArrayList<String> builderNames = new ArrayList<>();
+
+        if (isCreatorIsBuilder()) {
+            if (buildWorld.getCreator() != null && !buildWorld.getCreator().equals("-")) {
+                builderNames.add(buildWorld.getCreator());
+            }
+        }
+
+        builderNames.addAll(buildWorld.getBuilderNames());
+
+        String string = "";
+        if (builderNames.isEmpty()) {
+            string = template.replace("%builder%", "-").trim();
+        } else {
+            for (String builderName : builderNames) {
+                string = string.concat(template.replace("%builder%", builderName));
+            }
+            string = string.trim();
+        }
+        return string.substring(0, string.length() - 1);
+    }
+
+    public void forceUpdateSidebar(BuildWorld buildWorld) {
+        if (!isScoreboard()) {
+            return;
+        }
+
+        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
+        if (bukkitWorld == null) {
+            return;
+        }
+
+        bukkitWorld.getPlayers().forEach(this::forceUpdateSidebar);
+    }
+
+    public void forceUpdateSidebar(Player player) {
+        if (!isScoreboard() || !settingsManager.getSettings(player).isScoreboard()) {
+            return;
+        }
+        settingsManager.updateScoreboard(player);
     }
 }

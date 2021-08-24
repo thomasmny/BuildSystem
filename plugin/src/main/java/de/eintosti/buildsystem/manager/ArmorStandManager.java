@@ -19,14 +19,12 @@ public class ArmorStandManager {
     private final float RADIUS;
     private final float SPREAD;
 
-    private final InventoryManager inventoryManager;
     private final HashMap<UUID, ArmorStand[]> armorStands;
 
     public ArmorStandManager(BuildSystem plugin) {
         this.RADIUS = 2.2f;
         this.SPREAD = 90.0f;
 
-        this.inventoryManager = plugin.getInventoryManager();
         this.armorStands = new HashMap<>();
     }
 
@@ -96,14 +94,16 @@ public class ArmorStandManager {
 
         String playerName = player.getName();
         for (ArmorStand armorStand : armorStands) {
-            if (armorStand.getCustomName() == null) continue;
-            if (armorStand.getCustomName().equals(playerName + " × §aWorld Navigator")) {
+            String customName = armorStand.getCustomName();
+            if (customName == null) continue;
+
+            if (customName.equals(playerName + " × §aWorld Navigator")) {
                 armorStand.remove();
             }
-            if (armorStand.getCustomName().equals(playerName + " × §6World Archive")) {
+            if (customName.equals(playerName + " × §6World Archive")) {
                 armorStand.remove();
             }
-            if (armorStand.getCustomName().equals(playerName + " × §bPrivate Worlds")) {
+            if (customName.equals(playerName + " × §bPrivate Worlds")) {
                 armorStand.remove();
             }
         }

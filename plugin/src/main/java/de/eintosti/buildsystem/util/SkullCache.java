@@ -77,6 +77,6 @@ public class SkullCache {
             e.printStackTrace();
         }
 
-        return new ItemStack(Material.GRASS_BLOCK);
+        return XMaterial.PLAYER_HEAD.parseItem();
     }
 }

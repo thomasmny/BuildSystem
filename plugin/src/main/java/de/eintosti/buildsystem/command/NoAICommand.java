@@ -12,6 +12,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.logging.Level;
 
@@ -29,7 +30,7 @@ public class NoAICommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
             plugin.getLogger().log(Level.WARNING, plugin.getString("sender_not_player"));
             return true;
@@ -75,7 +76,7 @@ public class NoAICommand implements CommandExecutor {
             player.sendMessage(plugin.getString("noai_deactivated").replace("%world%", buildWorld.getName()));
         }
 
-        boolean mobAI = buildWorld.isMobAI();;
+        boolean mobAI = buildWorld.isMobAI();
         for (Entity entity : bukkitWorld.getEntities()) {
             if (entity instanceof LivingEntity) {
                 ManageEntityAI.setAIEnabled(entity, mobAI);

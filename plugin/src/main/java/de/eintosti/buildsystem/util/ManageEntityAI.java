@@ -64,7 +64,7 @@ public class ManageEntityAI {
 
             Object tag = getNBTTag.invoke(nmsEntity);
             if (tag == null) {
-                tag = nbtTagClass.newInstance();
+                tag = nbtTagClass.getDeclaredConstructor().newInstance();
             }
 
             if (c == null) {

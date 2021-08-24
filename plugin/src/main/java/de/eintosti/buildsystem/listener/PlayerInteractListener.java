@@ -1,6 +1,5 @@
 package de.eintosti.buildsystem.listener;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.ArmorStandManager;
@@ -64,7 +63,9 @@ public class PlayerInteractListener implements Listener {
         Player player = event.getPlayer();
         Action action = event.getAction();
 
-        if (action == Action.PHYSICAL) return;
+        if (action == Action.PHYSICAL) {
+            return;
+        }
 
         ItemStack itemStack = event.getItem();
         if (itemStack == null || itemStack.getType() == Material.AIR) return;
@@ -73,19 +74,28 @@ public class PlayerInteractListener implements Listener {
         if (!itemMeta.hasDisplayName()) return;
         String displayName = itemMeta.getDisplayName();
 
-        if (player.getOpenInventory().getTopInventory().getType() != InventoryType.CRAFTING) return;
+        if (player.getOpenInventory().getTopInventory().getType() != InventoryType.CRAFTING) {
+            return;
+        }
 
         XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-        if (xMaterial.equals(plugin.getNavigatorItem())) {
-            if (!displayName.equals(plugin.getString("navigator_item"))) return;
+        if (xMaterial == plugin.getNavigatorItem()) {
+            if (!displayName.equals(plugin.getString("navigator_item"))) {
+                return;
+            }
+
             if (!player.hasPermission("buildsystem.gui")) {
                 plugin.sendPermissionMessage(player);
                 return;
             }
+
             event.setCancelled(true);
             openNavigator(player);
-        } else if (xMaterial.equals(BARRIER)) {
-            if (!displayName.equals(plugin.getString("barrier_item"))) return;
+        } else if (xMaterial == BARRIER) {
+            if (!displayName.equals(plugin.getString("barrier_item"))) {
+                return;
+            }
+
             event.setCancelled(true);
             plugin.getPlayerMoveListener().closeNavigator(player);
         }
@@ -95,17 +105,19 @@ public class PlayerInteractListener implements Listener {
     public void onDisablePlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
-        if (buildWorld == null) return;
+        if (buildWorld == null) {
+            return;
+        }
 
         disableArchivedWorlds(buildWorld, player, event);
         checkWorldSettings(buildWorld, player, event);
         checkBuilders(buildWorld, player, event);
 
-        if (!buildWorld.isPhysics()) {
-            if (event.getClickedBlock() == null) return;
-            if (event.getAction() == Action.PHYSICAL && event.getClickedBlock().getType() == XMaterial.FARMLAND.parseMaterial()) {
-                event.setCancelled(true);
-            }
+        if (buildWorld.isPhysics()) return;
+        if (event.getClickedBlock() == null) return;
+
+        if (event.getAction() == Action.PHYSICAL && event.getClickedBlock().getType() == XMaterial.FARMLAND.parseMaterial()) {
+            event.setCancelled(true);
         }
     }
 
@@ -130,6 +142,7 @@ public class PlayerInteractListener implements Listener {
         if (plugin.isCreatorIsBuilder() && buildWorld.getCreatorId() != null && buildWorld.getCreatorId().equals(player.getUniqueId())) {
             return;
         }
+
         if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
             event.setUseItemInHand(Event.Result.DENY);
             event.setUseInteractedBlock(Event.Result.DENY);
@@ -145,23 +158,31 @@ public class PlayerInteractListener implements Listener {
 
         if (isWithTwoHands()) {
             EquipmentSlot equipmentSlot = event.getHand();
-            if (equipmentSlot != EquipmentSlot.valueOf("HAND")) return;
+            if (equipmentSlot != EquipmentSlot.valueOf("HAND")) {
+                return;
+            }
         }
+
         XMaterial material = XMaterial.matchXMaterial(block.getType());
         Settings settings = settingsManager.getSettings(player);
 
-        if (!settings.isTrapDoor()) return;
+        if (!settings.isTrapDoor()) {
+            return;
+        }
+
         if (action == Action.RIGHT_CLICK_BLOCK && (material == IRON_DOOR || material == IRON_TRAPDOOR)) {
-            if (!player.isSneaking()) {
-                event.setCancelled(true);
-                switch (material) {
-                    case IRON_TRAPDOOR:
-                        plugin.getCustomBlocks().toggleIronTrapdoor(event);
-                        break;
-                    case IRON_DOOR:
-                        plugin.getCustomBlocks().toggleIronDoor(event);
-                        break;
-                }
+            if (player.isSneaking()) {
+                return;
+            }
+
+            event.setCancelled(true);
+            switch (material) {
+                case IRON_TRAPDOOR:
+                    plugin.getCustomBlocks().toggleIronTrapdoor(event);
+                    break;
+                case IRON_DOOR:
+                    plugin.getCustomBlocks().toggleIronDoor(event);
+                    break;
             }
         }
     }
@@ -197,12 +218,12 @@ public class PlayerInteractListener implements Listener {
         Player player = event.getPlayer();
         Settings settings = settingsManager.getSettings(player);
 
-        if (settings.isPlacePlants()) {
-            if (clickedBlock.getType() == Material.FLOWER_POT) return;
-            if (!PLANTS.contains(XMaterial.matchXMaterial(material))) return;
-            event.setCancelled(true);
-            plugin.getCustomBlocks().setPlant(event);
-        }
+        if (!settings.isPlacePlants()) return;
+        if (clickedBlock.getType() == Material.FLOWER_POT) return;
+        if (!PLANTS.contains(XMaterial.matchXMaterial(material))) return;
+
+        event.setCancelled(true);
+        plugin.getCustomBlocks().setPlant(event);
     }
 
     private boolean isValid(PlayerInteractEvent event) {
@@ -243,7 +264,7 @@ public class PlayerInteractListener implements Listener {
                     String findItemName = plugin.getString("navigator_item");
                     ItemStack replaceItem = inventoryManager.getItemStack(XMaterial.BARRIER, plugin.getString("barrier_item"));
 
-                    plugin.replaceItem(player, findItemName, plugin.getNavigatorItem(), replaceItem);
+                    inventoryManager.replaceItem(player, findItemName, plugin.getNavigatorItem(), replaceItem);
                 } else {
                     player.sendMessage(plugin.getString("worlds_navigator_open"));
                 }
@@ -287,27 +308,26 @@ public class PlayerInteractListener implements Listener {
         Block adjacent = clickedBlock.getRelative(blockFace);
         if (adjacent.getType() != XMaterial.AIR.parseMaterial()) return;
 
-        if (blockFace != BlockFace.DOWN) {
-            event.setUseItemInHand(Event.Result.DENY);
+        if (blockFace == BlockFace.DOWN) return;
+        event.setUseItemInHand(Event.Result.DENY);
 
-            switch (blockFace) {
-                case UP:
-                    if (this.version < 1130) {
-                        material = Material.getMaterial("SIGN_POST") != null ? Material.valueOf("SIGN_POST") : material;
-                    }
-                    adjacent.setType(material);
-                    plugin.getCustomBlocks().rotate(adjacent, player, getDirection(player).getOppositeFace());
-                    break;
-                case NORTH:
-                case EAST:
-                case SOUTH:
-                case WEST:
-                    String[] splitName = xMaterial.name().split("_");
-                    Optional<XMaterial> parsedMaterial = matchXMaterial(splitName[0] + "_WALL_" + splitName[1]);
-                    parsedMaterial.ifPresent(value -> adjacent.setType(value.parseMaterial()));
-                    plugin.getCustomBlocks().rotate(adjacent, player, blockFace);
-                    break;
-            }
+        switch (blockFace) {
+            case UP:
+                if (this.version < 1130) {
+                    material = Material.getMaterial("SIGN_POST") != null ? Material.valueOf("SIGN_POST") : material;
+                }
+                adjacent.setType(material);
+                plugin.getCustomBlocks().rotate(adjacent, player, getDirection(player).getOppositeFace());
+                break;
+            case NORTH:
+            case EAST:
+            case SOUTH:
+            case WEST:
+                String[] splitName = xMaterial.name().split("_");
+                Optional<XMaterial> parsedMaterial = matchXMaterial(splitName[0] + "_WALL_" + splitName[1]);
+                parsedMaterial.ifPresent(value -> adjacent.setType(value.parseMaterial()));
+                plugin.getCustomBlocks().rotate(adjacent, player, blockFace);
+                break;
         }
     }
 
