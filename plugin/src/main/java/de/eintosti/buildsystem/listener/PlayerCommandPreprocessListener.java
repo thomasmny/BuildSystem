@@ -16,6 +16,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 /**
@@ -48,10 +49,11 @@ public class PlayerCommandPreprocessListener implements Listener {
             if (!player.getInventory().contains(navigatorItem)) return;
 
             if (settingsManager.getSettings(player).isKeepNavigator()) {
+                ArrayList<Integer> navigatorSlots = inventoryManager.getNavigatorSlots(player);
                 Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                    PlayerInventoryClearEvent playerInventoryClearEvent = new PlayerInventoryClearEvent(player);
+                    PlayerInventoryClearEvent playerInventoryClearEvent = new PlayerInventoryClearEvent(player, navigatorSlots);
                     Bukkit.getServer().getPluginManager().callEvent(playerInventoryClearEvent);
-                }, 1L);
+                }, 2L);
             }
             return;
         }

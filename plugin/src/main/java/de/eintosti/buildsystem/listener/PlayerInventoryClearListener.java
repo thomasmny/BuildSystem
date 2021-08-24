@@ -10,6 +10,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 
 /**
  * @author einTosti
@@ -31,16 +32,12 @@ public class PlayerInventoryClearListener implements Listener {
     public void onPlayerInventoryClear(PlayerInventoryClearEvent event) {
         Player player = event.getPlayer();
         Settings settings = settingsManager.getSettings(player);
-
         if (!settings.isKeepNavigator()) return;
         if (!player.hasPermission("buildsystem.gui")) return;
 
         PlayerInventory playerInventory = player.getInventory();
         ItemStack navigatorItem = inventoryManager.getItemStack(plugin.getNavigatorItem(), plugin.getString("navigator_item"));
-        if (!playerInventory.contains(navigatorItem)) {
-            return;
-        }
 
-        playerInventory.setItem(8, navigatorItem);
+        event.getNavigatorSlots().forEach(slot -> playerInventory.setItem(slot, navigatorItem));
     }
 }

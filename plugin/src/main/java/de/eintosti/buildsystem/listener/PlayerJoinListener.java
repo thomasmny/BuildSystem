@@ -15,9 +15,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.ItemMergeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -106,9 +108,7 @@ public class PlayerJoinListener implements Listener {
         }
 
         PlayerInventory playerInventory = player.getInventory();
-        if (playerInventory.contains(inventoryManager.getItemStack(plugin.getNavigatorItem(), plugin.getString("navigator_item")))) {
-            return;
-        }
+        if (inventoryManager.inventoryContainsNavigator(playerInventory)) return;
 
         ItemStack itemStack = inventoryManager.getItemStack(plugin.getNavigatorItem(), plugin.getString("navigator_item"));
         ItemStack slot8 = playerInventory.getItem(8);

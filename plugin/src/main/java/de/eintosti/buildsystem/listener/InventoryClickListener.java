@@ -40,6 +40,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 /**
@@ -1064,11 +1065,12 @@ public class InventoryClickListener implements Listener {
         if (event.getAction() != InventoryAction.PLACE_ALL) return;
 
         Player player = (Player) event.getWhoClicked();
+        ArrayList<Integer> navigatorSlots = inventoryManager.getNavigatorSlots(player);
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            PlayerInventoryClearEvent playerInventoryClearEvent = new PlayerInventoryClearEvent(player);
+            PlayerInventoryClearEvent playerInventoryClearEvent = new PlayerInventoryClearEvent(player, navigatorSlots);
             Bukkit.getServer().getPluginManager().callEvent(playerInventoryClearEvent);
-        }, 1L);
+        }, 2L);
     }
 
     private void manageInventoryClick(InventoryClickEvent event, Player player, ItemStack itemStack) {

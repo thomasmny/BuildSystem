@@ -15,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
@@ -51,6 +52,40 @@ public class InventoryManager {
     public InventoryManager(BuildSystem plugin) {
         this.plugin = plugin;
         this.setupConfig = new SetupConfig(plugin);
+    }
+
+    public boolean isNavigator(ItemStack itemStack) {
+        if (itemStack == null || itemStack.getType() != plugin.getNavigatorItem().parseMaterial()) {
+            return false;
+        }
+
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta == null) return false;
+
+        return itemMeta.getDisplayName().equals(plugin.getString("navigator_item"));
+    }
+
+    public boolean inventoryContainsNavigator(PlayerInventory playerInventory) {
+        for (ItemStack itemStack : playerInventory.getContents()) {
+            if (isNavigator(itemStack)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public ArrayList<Integer> getNavigatorSlots(Player player) {
+        PlayerInventory playerInventory = player.getInventory();
+        ArrayList<Integer> navigatorSlots = new ArrayList<>();
+
+        for (int i = 0; i < playerInventory.getSize(); i++) {
+            ItemStack currentItem = playerInventory.getItem(i);
+            if (isNavigator(currentItem)) {
+                navigatorSlots.add(i);
+            }
+        }
+
+        return navigatorSlots;
     }
 
     public ItemStack getItemStack(XMaterial material, String displayName, List<String> lore) {

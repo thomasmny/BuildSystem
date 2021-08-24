@@ -519,6 +519,7 @@ public class BuildSystem extends JavaPlugin {
     public void replaceItem(Player player, String findItemName, XMaterial findItemType, ItemStack replaceItem) {
         PlayerInventory playerInventory = player.getInventory();
         int slot = -1;
+
         for (int i = 0; i < playerInventory.getSize(); i++) {
             ItemStack currentItem = playerInventory.getItem(i);
             if (currentItem != null && currentItem.getType() == findItemType.parseMaterial()) {
