@@ -107,7 +107,7 @@ public class WorldManager {
         player.sendMessage(plugin.getString("worlds_world_creation_started")
                 .replace("%world%", buildWorld.getName())
                 .replace("%type%", buildWorld.getTypeName()));
-        generateWorld(buildWorld);
+        finishPreparationsAndGenerate(buildWorld);
         player.sendMessage(plugin.getString("worlds_creation_finished"));
     }
 
@@ -182,6 +182,23 @@ public class WorldManager {
         player.sendMessage(plugin.getString("worlds_creation_finished"));
     }
 
+    private void finishPreparationsAndGenerate(BuildWorld buildWorld) {
+        WorldType worldType = buildWorld.getType();
+        World bukkitWorld = generateBukkitWorld(buildWorld.getName(), worldType);
+
+        switch (worldType) {
+            case VOID:
+                if (plugin.isVoidBlock()) {
+                    bukkitWorld.getBlockAt(0, 64, 0).setType(Material.GOLD_BLOCK);
+                }
+                bukkitWorld.setSpawnLocation(0, 65, 0);
+                break;
+            case FLAT:
+                bukkitWorld.setSpawnLocation(0, 4, 0);
+                break;
+        }
+    }
+
     public World generateBukkitWorld(String name, WorldType worldType, ChunkGenerator... chunkGenerators) {
         WorldCreator worldCreator = new WorldCreator(name);
         org.bukkit.WorldType bukkitWorldType;
@@ -240,23 +257,6 @@ public class WorldManager {
         return bukkitWorld;
     }
 
-    private void generateWorld(BuildWorld buildWorld) {
-        WorldType worldType = buildWorld.getType();
-        World bukkitWorld = generateBukkitWorld(buildWorld.getName(), worldType);
-
-        switch (worldType) {
-            case VOID:
-                if (plugin.isVoidBlock()) {
-                    bukkitWorld.getBlockAt(0, 64, 0).setType(Material.GOLD_BLOCK);
-                }
-                bukkitWorld.setSpawnLocation(0, 65, 0);
-                break;
-            case FLAT:
-                bukkitWorld.setSpawnLocation(0, 4, 0);
-                break;
-        }
-    }
-
     public void deleteWorld(Player player, BuildWorld buildWorld) {
         if (!buildWorlds.contains(buildWorld)) {
             player.sendMessage(plugin.getString("worlds_delete_unknown_world"));
@@ -264,8 +264,10 @@ public class WorldManager {
         }
 
         buildWorlds.remove(buildWorld);
-        this.worldConfig.getFile().set("worlds." + buildWorld.getName(), null);
-        this.worldConfig.saveFile();
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            this.worldConfig.getFile().set("worlds." + buildWorld.getName(), null);
+            this.worldConfig.saveFile();
+        });
 
         World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
         if (bukkitWorld != null) {
@@ -297,25 +299,18 @@ public class WorldManager {
         }
 
         player.sendMessage(plugin.getString("worlds_delete_started").replace("%world%", buildWorld.getName()));
-        deleteFile(deleteFolder);
+        deleteDirectory(deleteFolder);
         player.sendMessage(plugin.getString("worlds_delete_finished"));
     }
 
-    private void deleteFile(File folder) {
-        if (folder.isDirectory()) {
-            File[] list = folder.listFiles();
-            if (list != null) {
-                for (File tempFile : list) {
-                    if (tempFile.isDirectory()) {
-                        deleteFile(tempFile);
-                    }
-                    tempFile.delete();
-                }
-            }
-            if (!folder.delete()) {
-                plugin.getLogger().log(Level.SEVERE, "Can't delete folder: " + folder);
+    private boolean deleteDirectory(File folder) {
+        File[] allContents = folder.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                deleteDirectory(file);
             }
         }
+        return folder.delete();
     }
 
     public void importWorld(String worldName, Player player, Generator generator, String... generatorName) {
@@ -327,47 +322,35 @@ public class WorldManager {
         }
 
         File file = new File(Bukkit.getWorldContainer(), worldName);
-        if (file.exists() && file.isDirectory()) {
-            ChunkGenerator chunkGenerator = null;
-            if (generator == Generator.CUSTOM) {
-                List<String> genArray = new ArrayList<>(Arrays.asList(generatorName[0].split(":")));
-                if (genArray.size() < 2) {
-                    genArray.add("");
-                }
-
-                chunkGenerator = getChunkGenerator(genArray.get(0), genArray.get(1), worldName);
-                if (chunkGenerator == null) {
-                    player.sendMessage(plugin.getString("worlds_import_unknown_generator"));
-                    return;
-                }
-            }
-
-            player.sendMessage(plugin.getString("worlds_import_started").replace("%world%", worldName));
-
-            buildWorlds.add(new BuildWorld(plugin, worldName, "-", null, WorldType.IMPORTED, getDirectoryCreation(file), false));
-
-            if (chunkGenerator == null) {
-                generateBukkitWorld(worldName, generator.getWorldType());
-            } else {
-                generateBukkitWorld(worldName, generator.getWorldType(), chunkGenerator);
-            }
-
-            player.sendMessage(plugin.getString("worlds_import_finished"));
-        } else {
+        if (!file.exists() || !file.isDirectory()) {
             player.sendMessage(plugin.getString("worlds_import_unknown_world"));
+            return;
         }
-    }
 
-    private long getDirectoryCreation(File file) {
-        long creation = System.currentTimeMillis();
-        try {
-            BasicFileAttributes attrs = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
-            FileTime time = attrs.creationTime();
-            creation = time.toMillis();
-        } catch (IOException e) {
-            e.printStackTrace();
+        ChunkGenerator chunkGenerator = null;
+        if (generator == Generator.CUSTOM) {
+            List<String> genArray = new ArrayList<>(Arrays.asList(generatorName[0].split(":")));
+            if (genArray.size() < 2) {
+                genArray.add("");
+            }
+
+            chunkGenerator = getChunkGenerator(genArray.get(0), genArray.get(1), worldName);
+            if (chunkGenerator == null) {
+                player.sendMessage(plugin.getString("worlds_import_unknown_generator"));
+                return;
+            }
         }
-        return creation;
+
+        player.sendMessage(plugin.getString("worlds_import_started").replace("%world%", worldName));
+        buildWorlds.add(new BuildWorld(plugin, worldName, "-", null, WorldType.IMPORTED, getDirectoryCreation(file), false));
+
+        if (chunkGenerator == null) {
+            generateBukkitWorld(worldName, generator.getWorldType());
+        } else {
+            generateBukkitWorld(worldName, generator.getWorldType(), chunkGenerator);
+        }
+
+        player.sendMessage(plugin.getString("worlds_import_finished"));
     }
 
     /**
@@ -384,6 +367,18 @@ public class WorldManager {
         } else {
             return plugin.getDefaultWorldGenerator(worldName, generatorID);
         }
+    }
+
+    private long getDirectoryCreation(File file) {
+        long creation = System.currentTimeMillis();
+        try {
+            BasicFileAttributes attrs = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
+            FileTime time = attrs.creationTime();
+            creation = time.toMillis();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return creation;
     }
 
     public void importWorlds(Player player, String[] worldList) {
@@ -440,11 +435,19 @@ public class WorldManager {
         File newWorldFile = new File(Bukkit.getWorldContainer(), name);
         World oldWorld = Bukkit.getWorld(buildWorld.getName());
 
-        oldWorld.save();
+        if (oldWorld == null) {
+            player.sendMessage(plugin.getString("worlds_rename_unknown_world"));
+            return;
+        }
 
+        oldWorld.save();
         copy(oldWorldFile, newWorldFile);
-        worldConfig.getFile().set("worlds." + name, worldConfig.getFile().getConfigurationSection("worlds." + buildWorld.getName()));
-        worldConfig.getFile().set("worlds." + buildWorld.getName(), null);
+
+        String finalName = name;
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            worldConfig.getFile().set("worlds." + finalName, worldConfig.getFile().getConfigurationSection("worlds." + buildWorld.getName()));
+            worldConfig.getFile().set("worlds." + buildWorld.getName(), null);
+        });
 
         List<Player> players = new ArrayList<>();
         SpawnManager spawnManager = plugin.getSpawnManager();
@@ -466,7 +469,7 @@ public class WorldManager {
 
         Bukkit.getServer().unloadWorld(oldWorld, false);
         File deleteFolder = oldWorld.getWorldFolder();
-        deleteFile(deleteFolder);
+        deleteDirectory(deleteFolder);
 
         buildWorld.setName(name);
         World newWorld = generateBukkitWorld(buildWorld.getName(), buildWorld.getType());
@@ -480,10 +483,10 @@ public class WorldManager {
         });
         players.clear();
 
-        if (Objects.equals(spawnManager.getSpawnWorld(), oldWorld)) {
+        if (spawnManager.spawnExists() && Objects.equals(spawnManager.getSpawnWorld(), oldWorld)) {
             Location oldSpawn = spawnManager.getSpawn();
-            spawnManager.set(new Location(spawnLocation.getWorld(), oldSpawn.getX(), oldSpawn.getY(), oldSpawn.getZ(),
-                    oldSpawn.getYaw(), oldSpawn.getPitch()), spawnLocation.getWorld().getName());
+            Location newSpawn = new Location(spawnLocation.getWorld(), oldSpawn.getX(), oldSpawn.getY(), oldSpawn.getZ(), oldSpawn.getYaw(), oldSpawn.getPitch());
+            spawnManager.set(newSpawn, newSpawn.getWorld().getName());
         }
 
         player.sendMessage(plugin.getString("worlds_rename_set")
@@ -531,6 +534,7 @@ public class WorldManager {
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             player.teleport(finalLocation);
             Titles.clearTitle(player);
+            XSound.ENTITY_ENDERMAN_TELEPORT.play(player);
         }, hadToLoad ? 20L : 0L);
     }
 

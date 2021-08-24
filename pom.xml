@@ -19,29 +19,9 @@
     <modules>
         <module>abstraction</module>
         <module>plugin</module>
-        <module>v1_8_R1</module>
-        <module>v1_8_R2</module>
-        <module>v1_8_R3</module>
-        <module>v1_9_R1</module>
-        <module>v1_9_R2</module>
-        <module>v1_10_R1</module>
-        <module>v1_11_R1</module>
         <module>v1_12_R1</module>
         <module>v1_13_R1</module>
-        <module>v1_13_R2</module>
         <module>v1_14_R1</module>
-        <module>v1_15_R1</module>
-        <module>v1_16_R1</module>
-        <module>v1_16_R2</module>
-        <module>v1_16_R3</module>
-        <module>v1_17_R1</module>
     </modules>
-
-    <repositories>
-        <repository>
-            <id>nms-repo</id>
-            <url>https://repo.codemc.org/repository/nms/</url>
-        </repository>
-    </repositories>
 
 </project>

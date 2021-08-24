@@ -9,6 +9,7 @@ import de.eintosti.buildsystem.object.world.Builder;
 import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.tabcomplete.*;
 import de.eintosti.buildsystem.util.Messages;
+import de.eintosti.buildsystem.util.SkullCache;
 import de.eintosti.buildsystem.util.bstats.Metrics;
 import de.eintosti.buildsystem.util.external.UpdateChecker;
 import de.eintosti.buildsystem.util.external.xseries.XMaterial;
@@ -112,7 +113,6 @@ public class BuildSystem extends JavaPlugin {
 
     private CustomBlocks customBlocks;
     private GameRules gameRules;
-    private ManageEntityAI manageEntityAI;
     private SkullCache skullCache;
 
     @Override
@@ -137,8 +137,6 @@ public class BuildSystem extends JavaPlugin {
         getVersion();
         if (!setupCustomBlocks()) return;
         if (!setupGameRules()) return;
-        if (!setupSkullCache()) return;
-        setupManageEntityAI();
 
         initClasses();
         registerCommands();
@@ -212,6 +210,8 @@ public class BuildSystem extends JavaPlugin {
         this.speedInventory = new SpeedInventory(this);
         this.statusInventory = new StatusInventory(this);
         this.worldsInventory = new WorldsInventory(this);
+
+        this.skullCache = new SkullCache();
     }
 
     private void getVersion() {
@@ -294,81 +294,6 @@ public class BuildSystem extends JavaPlugin {
         }
     }
 
-    public void setupManageEntityAI() {
-        switch (version) {
-            case "v1_8_R1":
-                this.manageEntityAI = new ManageEntityAI_1_8_R1();
-                break;
-            case "v1_8_R2":
-                this.manageEntityAI = new ManageEntityAI_1_8_R2();
-                break;
-            case "v1_8_R3":
-                this.manageEntityAI = new ManageEntityAI_1_8_R3();
-                break;
-            default:
-                this.manageEntityAI = null;
-                break;
-        }
-    }
-
-    public boolean setupSkullCache() {
-        switch (version) {
-            case "v1_8_R1":
-                this.skullCache = new SkullCache_1_8_R1();
-                return true;
-            case "v1_8_R2":
-                this.skullCache = new SkullCache_1_8_R2();
-                return true;
-            case "v1_8_R3":
-                this.skullCache = new SkullCache_1_8_R3();
-                return true;
-            case "v1_9_R1":
-                this.skullCache = new SkullCache_1_9_R1();
-                return true;
-            case "v1_9_R2":
-                this.skullCache = new SkullCache_1_9_R2();
-                return true;
-            case "v1_10_R1":
-                this.skullCache = new SkullCache_1_10_R1();
-                return true;
-            case "v1_11_R1":
-                this.skullCache = new SkullCache_1_11_R1();
-                return true;
-            case "v1_12_R1":
-                this.skullCache = new SkullCache_1_12_R1();
-                return true;
-            case "v1_13_R1":
-                this.skullCache = new SkullCache_1_13_R1();
-                return true;
-            case "v1_13_R2":
-                this.skullCache = new SkullCache_1_13_R2();
-                return true;
-            case "v1_14_R1":
-                this.skullCache = new SkullCache_1_14_R1();
-                return true;
-            case "v1_15_R1":
-                this.skullCache = new SkullCache_1_15_R1();
-                return true;
-            case "v1_16_R1":
-                this.skullCache = new SkullCache_1_16_R1();
-                return true;
-            case "v1_16_R2":
-                this.skullCache = new SkullCache_1_16_R2();
-                return true;
-            case "v1_16_R3":
-                this.skullCache = new SkullCache_1_16_R3();
-                return true;
-            case "v1_17_R1":
-                this.skullCache = new SkullCache_1_17_R1();
-                return true;
-            default:
-                getLogger().log(Level.SEVERE, "\"SkullCache\" not found for version: " + version);
-                getLogger().log(Level.SEVERE, "Please report this bug to einTosti with your server version");
-                this.setEnabled(false);
-                return false;
-        }
-    }
-
     private void registerCommands() {
         new BackCommand(this);
         new BlocksCommand(this);
@@ -413,8 +338,9 @@ public class BuildSystem extends JavaPlugin {
         new PlayerArmorStandManipulateListener(this);
         new PlayerChangedWorldListener(this);
         new PlayerCommandPreprocessListener(this);
-        new PlayerInteractListener(this);
         new PlayerInteractAtEntityListener(this);
+        new PlayerInteractListener(this);
+        new PlayerInventoryClearListener(this);
         new PlayerJoinListener(this);
         this.playerMoveListener = new PlayerMoveListener(this);
         new PlayerQuitListener(this);
@@ -808,18 +734,22 @@ public class BuildSystem extends JavaPlugin {
     }
 
     public void forceUpdateSidebar(BuildWorld buildWorld) {
-        if (!isScoreboard()) return;
+        if (!isScoreboard()) {
+            return;
+        }
+
         World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
-        if (bukkitWorld == null) return;
+        if (bukkitWorld == null) {
+            return;
+        }
+
         bukkitWorld.getPlayers().forEach(this::forceUpdateSidebar);
     }
 
     public void forceUpdateSidebar(Player player) {
-        if (!isScoreboard()) return;
-        if (!settingsManager.getSettings(player).isScoreboard()) return;
-
-        String worldName = player.getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        if (!isScoreboard() || !settingsManager.getSettings(player).isScoreboard()) {
+            return;
+        }
         settingsManager.updateScoreboard(player);
     }
 
@@ -933,10 +863,6 @@ public class BuildSystem extends JavaPlugin {
 
     public GameRules getGameRules() {
         return gameRules;
-    }
-
-    public ManageEntityAI getManageEntityAI() {
-        return manageEntityAI;
     }
 
     public SkullCache getSkullCache() {

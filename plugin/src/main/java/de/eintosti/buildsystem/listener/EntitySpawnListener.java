@@ -3,6 +3,7 @@ package de.eintosti.buildsystem.listener;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
 import de.eintosti.buildsystem.object.world.BuildWorld;
+import de.eintosti.buildsystem.util.ManageEntityAI;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -33,12 +34,7 @@ public class EntitySpawnListener implements Listener {
 
         Entity entity = event.getEntity();
         if (entity instanceof LivingEntity) {
-            LivingEntity livingEntity = (LivingEntity) entity;
-            if (plugin.getManageEntityAI() != null) {
-                plugin.getManageEntityAI().setAI(livingEntity, false);
-            } else {
-                livingEntity.setAI(false);
-            }
+            ManageEntityAI.setAIEnabled(entity, false);
         }
     }
 }

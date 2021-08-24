@@ -35,21 +35,22 @@ public class SettingsInventory {
         fillGuiWithGlass(player, inventory);
 
         Settings settings = settingsManager.getSettings(player);
-        addSettingsItem(inventory, 11, XMaterial.SMOOTH_STONE_SLAB, settings.isSlabBreaking(), plugin.getString("settings_slab_breaking_item"), plugin.getStringList("settings_slab_breaking_lore"));
-        addClearInventoryItem(inventory, player);
         addDesignItem(inventory, player);
-        addSettingsItem(inventory, 14, XMaterial.BRICKS, settings.isNoClip(), plugin.getString("settings_no_clip_item"), plugin.getStringList("settings_no_clip_lore"));
+        addClearInventoryItem(inventory, player);
+        addSettingsItem(inventory, 13, XMaterial.DIAMOND_AXE, settings.isDisableInteract(), plugin.getString("settings_disableinteract_item"), plugin.getStringList("settings_disableinteract_lore"));
+        addSettingsItem(inventory, 14, XMaterial.ENDER_EYE, settings.isHidePlayers(), plugin.getString("settings_hideplayers_item"), plugin.getStringList("settings_hideplayers_lore"));
         addSettingsItem(inventory, 15, XMaterial.OAK_SIGN, settings.isInstantPlaceSigns(), plugin.getString("settings_instantplacesigns_item"), plugin.getStringList("settings_instantplacesigns_lore"));
-        addSettingsItem(inventory, 20, XMaterial.IRON_TRAPDOOR, settings.isTrapDoor(), plugin.getString("settings_open_trapdoors_item"), plugin.getStringList("settings_open_trapdoors_lore"));
-        addSettingsItem(inventory, 21, XMaterial.PAPER, settings.isScoreboard(), plugin.isScoreboard() ? plugin.getString("settings_scoreboard_item") : plugin.getString("settings_scoreboard_disabled_item"),
+        addSettingsItem(inventory, 20, XMaterial.SLIME_BLOCK, settings.isKeepNavigator(), plugin.getString("settings_keep_navigator_item"), plugin.getStringList("settings_keep_navigator_lore"));
+        addSettingsItem(inventory, 21, plugin.getNavigatorItem(), settings.getNavigatorType().equals(NavigatorType.NEW), plugin.getString("settings_new_navigator_item"), plugin.getStringList("settings_new_navigator_lore"));
+        addSettingsItem(inventory, 22, XMaterial.GOLDEN_CARROT, settings.isNightVision(), plugin.getString("settings_nightvision_item"), plugin.getStringList("settings_nightvision_lore"));
+        addSettingsItem(inventory, 23, XMaterial.BRICKS, settings.isNoClip(), plugin.getString("settings_no_clip_item"), plugin.getStringList("settings_no_clip_lore"));
+        addSettingsItem(inventory, 24, XMaterial.IRON_TRAPDOOR, settings.isTrapDoor(), plugin.getString("settings_open_trapdoors_item"), plugin.getStringList("settings_open_trapdoors_lore"));
+        addSettingsItem(inventory, 29, XMaterial.FERN, settings.isPlacePlants(), plugin.getString("settings_placeplants_item"), plugin.getStringList("settings_placeplants_lore"));
+        addSettingsItem(inventory, 30, XMaterial.PAPER, settings.isScoreboard(), plugin.isScoreboard() ? plugin.getString("settings_scoreboard_item") : plugin.getString("settings_scoreboard_disabled_item"),
                 plugin.isScoreboard() ? plugin.getStringList("settings_scoreboard_lore") : plugin.getStringList("settings_scoreboard_disabled_lore"));
-        addSettingsItem(inventory, 22, plugin.getNavigatorItem(), settings.getNavigatorType().equals(NavigatorType.NEW), plugin.getString("settings_new_navigator_item"), plugin.getStringList("settings_new_navigator_lore"));
-        addSettingsItem(inventory, 23, XMaterial.MAGMA_CREAM, settings.isSpawnTeleport(), plugin.getString("settings_spawnteleport_item"), plugin.getStringList("settings_spawnteleport_lore"));
-        addSettingsItem(inventory, 24, XMaterial.ENDER_EYE, settings.isHidePlayers(), plugin.getString("settings_hideplayers_item"), plugin.getStringList("settings_hideplayers_lore"));
-        addSettingsItem(inventory, 29, XMaterial.DIAMOND_AXE, settings.isDisableInteract(), plugin.getString("settings_disableinteract_item"), plugin.getStringList("settings_disableinteract_lore"));
+        addSettingsItem(inventory, 31, XMaterial.SMOOTH_STONE_SLAB, settings.isSlabBreaking(), plugin.getString("settings_slab_breaking_item"), plugin.getStringList("settings_slab_breaking_lore"));
+        addSettingsItem(inventory, 32, XMaterial.MAGMA_CREAM, settings.isSpawnTeleport(), plugin.getString("settings_spawnteleport_item"), plugin.getStringList("settings_spawnteleport_lore"));
         addWorldSortItem(inventory, player);
-        addSettingsItem(inventory, 31, XMaterial.GOLDEN_CARROT, settings.isNightVision(), plugin.getString("settings_nightvision_item"), plugin.getStringList("settings_nightvision_lore"));
-        addSettingsItem(inventory, 32, XMaterial.FERN, settings.isPlacePlants(), plugin.getString("settings_placeplants_item"), plugin.getStringList("settings_placeplants_lore"));
 
         return inventory;
     }
@@ -94,7 +95,7 @@ public class SettingsInventory {
         itemStack.setItemMeta(itemMeta);
         itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
 
-        inventory.setItem(13, itemStack);
+        inventory.setItem(11, itemStack);
     }
 
     private void addWorldSortItem(Inventory inventory, Player player) {
@@ -136,6 +137,6 @@ public class SettingsInventory {
             itemMeta.setLore(lore);
         }
         itemStack.setItemMeta(itemMeta);
-        inventory.setItem(30, itemStack);
+        inventory.setItem(33, itemStack);
     }
 }
