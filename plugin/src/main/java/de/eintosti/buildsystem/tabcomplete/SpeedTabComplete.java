@@ -4,6 +4,7 @@ import de.eintosti.buildsystem.BuildSystem;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,16 +19,10 @@ public class SpeedTabComplete implements TabCompleter {
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         ArrayList<String> arrayList = new ArrayList<>();
-
-        switch (label.toLowerCase()) {
-            case "speed":
-            case "s":
-                for (int i = 1; i <= 5; i++) {
-                    arrayList.add(String.valueOf(i));
-                }
-                break;
+        for (int i = 1; i <= 5; i++) {
+            arrayList.add(String.valueOf(i));
         }
         return arrayList;
     }

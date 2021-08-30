@@ -431,9 +431,14 @@ public class BuildWorld implements ConfigurationSerializable {
         if (!isLoaded()) return;
 
         World bukkitWorld = Bukkit.getWorld(name);
-        if (bukkitWorld == null) return;
+        if (bukkitWorld == null) {
+            return;
+        }
 
-        if (isSpawnWorld(bukkitWorld)) return;
+        if (plugin.blackListedWorldsToUnload.contains(name) || isSpawnWorld(bukkitWorld)) {
+            return;
+        }
+
         if (!bukkitWorld.getPlayers().isEmpty()) {
             resetUnloadTask();
             return;

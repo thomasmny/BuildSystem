@@ -45,6 +45,7 @@ public class BuildSystem extends JavaPlugin {
     public Map<UUID, Float> playerFlySpeed;
 
     public Set<Player> openNavigator;
+    public Set<String> blackListedWorldsToUnload;
     public Set<UUID> buildPlayers;
 
     private String prefix;
@@ -510,6 +511,7 @@ public class BuildSystem extends JavaPlugin {
 
         this.unloadWorlds = config.getBoolean("world.unload.enabled", false);
         this.timeUntilUnload = config.getString("world.unload.time-until-unload", "01:00:00");
+        this.blackListedWorldsToUnload = new HashSet<>(config.getStringList("world.unload.blacklisted-worlds"));
 
         this.voidBlock = config.getBoolean("world.void-block", true);
 

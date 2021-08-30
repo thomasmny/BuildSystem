@@ -7,6 +7,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,7 @@ public class GamemodeTabComplete extends ArgumentSorter implements TabCompleter 
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         ArrayList<String> arrayList = new ArrayList<>();
 
         if (!(sender instanceof Player)) return arrayList;
@@ -31,37 +32,32 @@ public class GamemodeTabComplete extends ArgumentSorter implements TabCompleter 
             return arrayList;
         }
 
-        switch (label.toLowerCase()) {
-            case "gamemode":
-            case "gm":
-                if (args.length == 1) {
-                    for (GameMode gameMode : GameMode.values()) {
-                        String gameModeName = gameMode.name();
-                        addArgument(args[0], gameModeName, arrayList);
-                    }
-                } else if (args.length == 2) {
-                    if (!player.hasPermission("buildsystem.gamemode.others")) {
-                        return arrayList;
-                    }
+        if (args.length == 1) {
+            for (GameMode gameMode : GameMode.values()) {
+                String gameModeName = gameMode.name();
+                addArgument(args[0], gameModeName, arrayList);
+            }
+        } else if (args.length == 2) {
+            if (!player.hasPermission("buildsystem.gamemode.others")) {
+                return arrayList;
+            }
 
-                    switch (args[0].toLowerCase()) {
-                        case "survival":
-                        case "s":
-                        case "0":
-                        case "creative":
-                        case "c":
-                        case "1":
-                        case "adventure":
-                        case "a":
-                        case "2":
-                        case "spectator":
-                        case "sp":
-                        case "3":
-                            Bukkit.getOnlinePlayers().forEach(pl -> addArgument(args[1], pl.getName(), arrayList));
-                            break;
-                    }
-                }
-                break;
+            switch (args[0].toLowerCase()) {
+                case "survival":
+                case "s":
+                case "0":
+                case "creative":
+                case "c":
+                case "1":
+                case "adventure":
+                case "a":
+                case "2":
+                case "spectator":
+                case "sp":
+                case "3":
+                    Bukkit.getOnlinePlayers().forEach(pl -> addArgument(args[1], pl.getName(), arrayList));
+                    break;
+            }
         }
 
         return arrayList;

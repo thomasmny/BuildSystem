@@ -36,6 +36,10 @@ world:
   unload:
     enabled: false
     time-until-unload: "01:00:00"
+    blacklisted-worlds:
+      - world
+      - world_nether
+      - worth_the_end
   void-block: true
   import-all:
     delay: 30
