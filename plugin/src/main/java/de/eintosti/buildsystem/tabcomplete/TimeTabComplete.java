@@ -38,7 +38,8 @@ public class TimeTabComplete extends ArgumentSorter implements TabCompleter {
                         addArgument(args[0], worldName, arrayList);
                     }
                 });
-                return arrayList;
+                break;
+
             case "night":
                 worldManager.getBuildWorlds().forEach(world -> {
                     if (player.hasPermission("buildsystem.night")) {
@@ -46,8 +47,9 @@ public class TimeTabComplete extends ArgumentSorter implements TabCompleter {
                         addArgument(args[0], worldName, arrayList);
                     }
                 });
-                return arrayList;
+                break;
         }
+
         return arrayList;
     }
 }

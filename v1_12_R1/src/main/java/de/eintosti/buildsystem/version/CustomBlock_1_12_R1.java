@@ -41,8 +41,7 @@ public class CustomBlock_1_12_R1 implements CustomBlocks {
         ItemStack itemStack = event.getItemInHand();
         ItemMeta itemMeta = itemStack.getItemMeta();
 
-        if (itemMeta == null) return;
-        if (!itemMeta.hasDisplayName()) return;
+        if (itemMeta == null || !itemMeta.hasDisplayName()) return;
         String displayName = itemMeta.getDisplayName();
 
         Bukkit.getScheduler().runTask(plugin, () -> {
@@ -136,7 +135,10 @@ public class CustomBlock_1_12_R1 implements CustomBlocks {
             } else {
                 set = false;
             }
-            if (set) event.setCancelled(true);
+
+            if (set) {
+                event.setCancelled(true);
+            }
         });
     }
 
@@ -146,7 +148,9 @@ public class CustomBlock_1_12_R1 implements CustomBlocks {
         Block block = event.getClickedBlock();
         Block adjacent = block.getRelative(event.getBlockFace());
         ItemStack itemStack = event.getItem();
-        if (itemStack == null) return;
+        if (itemStack == null) {
+            return;
+        }
 
         adjacent.setType(itemStack.getType(), false);
         adjacent.setData((byte) itemStack.getDurability());
@@ -158,9 +162,11 @@ public class CustomBlock_1_12_R1 implements CustomBlocks {
         if (event.isCancelled()) return;
 
         Block block = event.getClickedBlock();
-        if (block == null) return;
-        Material material = block.getType();
+        if (block == null) {
+            return;
+        }
 
+        Material material = block.getType();
         if (mcVersion >= 190) {
             switch (material) {
                 case STEP:
@@ -191,13 +197,13 @@ public class CustomBlock_1_12_R1 implements CustomBlocks {
                 break;
         }
 
-        if (mcVersion >= 190) {
-            if (material.equals(Material.PURPUR_DOUBLE_SLAB)) {
-                changedMaterial = Material.PURPUR_SLAB;
-            }
+        if (mcVersion >= 190 && material == Material.PURPUR_DOUBLE_SLAB) {
+            changedMaterial = Material.PURPUR_SLAB;
         }
 
-        if (changedMaterial == null) return;
+        if (changedMaterial == null) {
+            return;
+        }
 
         if (block.getData() <= 7) {
             Player player = event.getPlayer();
@@ -252,8 +258,11 @@ public class CustomBlock_1_12_R1 implements CustomBlocks {
 
     private BlockFace getDirection(Player player) {
         float yaw = player.getLocation().getYaw();
-        if (yaw < 0) yaw += 360;
+        if (yaw < 0) {
+            yaw += 360;
+        }
         yaw %= 360;
+
         int i = (int) ((yaw + 8) / 22.5);
         switch (i) {
             case 15:
@@ -277,6 +286,7 @@ public class CustomBlock_1_12_R1 implements CustomBlocks {
             case 14:
                 return BlockFace.WEST;
         }
+
         return BlockFace.NORTH;
     }
 

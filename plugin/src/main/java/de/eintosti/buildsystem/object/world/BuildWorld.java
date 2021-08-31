@@ -100,7 +100,10 @@ public class BuildWorld implements ConfigurationSerializable {
                 this.material = inventoryManager.getDefaultItem(WorldType.IMPORTED);
                 break;
         }
-        if (privateWorld) this.material = XMaterial.PLAYER_HEAD;
+
+        if (privateWorld) {
+            this.material = XMaterial.PLAYER_HEAD;
+        }
 
         if (plugin.isUnloadWorlds()) {
             this.seconds = plugin.getTimeUntilUnload();
@@ -167,6 +170,9 @@ public class BuildWorld implements ConfigurationSerializable {
         }
     }
 
+    /**
+     * @return the {@link BuildWorld}'s name
+     */
     public String getName() {
         return name;
     }
@@ -175,6 +181,9 @@ public class BuildWorld implements ConfigurationSerializable {
         this.name = name;
     }
 
+    /**
+     * @return the name of the {@link Player} who created the {@link BuildWorld}
+     */
     public String getCreator() {
         return creator;
     }
@@ -183,6 +192,9 @@ public class BuildWorld implements ConfigurationSerializable {
         this.creator = creator;
     }
 
+    /**
+     * @return the {@link UUID} of the {@link Player} who created the {@link BuildWorld}
+     */
     public UUID getCreatorId() {
         return creatorId;
     }
@@ -207,6 +219,9 @@ public class BuildWorld implements ConfigurationSerializable {
         return idString;
     }
 
+    /**
+     * @return the {@link WorldType} of the {@link BuildWorld}
+     */
     public WorldType getType() {
         return worldType;
     }
@@ -233,6 +248,9 @@ public class BuildWorld implements ConfigurationSerializable {
         return "-";
     }
 
+    /**
+     * @return the {@link BuildWorld}'s visibility (private or public)
+     */
     public boolean isPrivate() {
         return privateWorld;
     }
@@ -241,6 +259,9 @@ public class BuildWorld implements ConfigurationSerializable {
         this.privateWorld = privateWorld;
     }
 
+    /**
+     * @return the {@link XMaterial} which represents a {@link BuildWorld} in the World Navigator
+     */
     public XMaterial getMaterial() {
         return material;
     }
@@ -249,6 +270,9 @@ public class BuildWorld implements ConfigurationSerializable {
         this.material = material;
     }
 
+    /**
+     * @return the {@link WorldStatus} of the {@link BuildWorld}
+     */
     public WorldStatus getStatus() {
         return worldStatus;
     }
@@ -275,6 +299,9 @@ public class BuildWorld implements ConfigurationSerializable {
         return "-";
     }
 
+    /**
+     * @return the project of the {@link BuildWorld}
+     */
     public String getProject() {
         return project;
     }
@@ -283,6 +310,9 @@ public class BuildWorld implements ConfigurationSerializable {
         this.project = project;
     }
 
+    /**
+     * @return the permission a {@link Player} must have in order to view and join the {@link BuildWorld}
+     */
     public String getPermission() {
         return permission;
     }
@@ -291,10 +321,30 @@ public class BuildWorld implements ConfigurationSerializable {
         this.permission = permission;
     }
 
+    /**
+     * @return the amount of milliseconds that have passed since January 1, 1970 UTC and the creation of the {@link BuildWorld}
+     */
     public long getCreationDate() {
         return date;
     }
 
+    /**
+     * @return the name of the {@link ChunkGenerator} which is used to generate the {@link World}
+     */
+    public String getChunkGeneratorString() {
+        return chunkGeneratorString;
+    }
+
+    /**
+     * @return the chunk generator used to generate the {@link World}
+     */
+    public ChunkGenerator getChunkGenerator() {
+        return chunkGenerator;
+    }
+
+    /**
+     * @return whether physics are enabled
+     */
     public boolean isPhysics() {
         return physics;
     }
@@ -303,6 +353,9 @@ public class BuildWorld implements ConfigurationSerializable {
         this.physics = physics;
     }
 
+    /**
+     * @return whether explosions are enabled
+     */
     public boolean isExplosions() {
         return explosions;
     }
@@ -311,6 +364,9 @@ public class BuildWorld implements ConfigurationSerializable {
         this.explosions = explosions;
     }
 
+    /**
+     * @return whether mobs have an AI
+     */
     public boolean isMobAI() {
         return mobAI;
     }
@@ -319,6 +375,9 @@ public class BuildWorld implements ConfigurationSerializable {
         this.mobAI = mobAI;
     }
 
+    /**
+     * @return the location as a {@link String} where a {@link Player} spawns in the {@link BuildWorld}
+     */
     public String getCustomSpawn() {
         return customSpawn;
     }
@@ -332,6 +391,9 @@ public class BuildWorld implements ConfigurationSerializable {
         this.customSpawn = null;
     }
 
+    /**
+     * @return whether blocks can be broken in the {@link BuildWorld}
+     */
     public boolean isBlockBreaking() {
         return blockBreaking;
     }
@@ -340,6 +402,9 @@ public class BuildWorld implements ConfigurationSerializable {
         this.blockBreaking = blockBreaking;
     }
 
+    /**
+     * @return whether blocks can be placed in the {@link BuildWorld}
+     */
     public boolean isBlockPlacement() {
         return blockPlacement;
     }
@@ -348,6 +413,9 @@ public class BuildWorld implements ConfigurationSerializable {
         this.blockPlacement = blockPlacement;
     }
 
+    /**
+     * @return whether blocks can be interacted with in the {@link BuildWorld}
+     */
     public boolean isBlockInteractions() {
         return blockInteractions;
     }
@@ -356,10 +424,16 @@ public class BuildWorld implements ConfigurationSerializable {
         this.blockInteractions = blockInteractions;
     }
 
+    /**
+     * @return whether only {@link Builder}s can break and place blocks in a {@link BuildWorld}
+     */
     public boolean isBuilders() {
         return buildersEnabled;
     }
 
+    /**
+     * @return list of all {@link Builder}s
+     */
     public ArrayList<Builder> getBuilders() {
         return builders;
     }
@@ -368,12 +442,19 @@ public class BuildWorld implements ConfigurationSerializable {
         this.buildersEnabled = buildersEnabled;
     }
 
+    /**
+     * @return list of all {@link Builder}'s names
+     */
     public ArrayList<String> getBuilderNames() {
         ArrayList<String> builderName = new ArrayList<>();
         getBuilders().forEach(builder -> builderName.add(builder.getName()));
         return builderName;
     }
 
+    /**
+     * @param uuid the unique id of the {@link Player}
+     * @return the builder object
+     */
     public Builder getBuilder(UUID uuid) {
         return this.builders.parallelStream()
                 .filter(builder -> builder.getUuid().equals(uuid))
@@ -381,22 +462,39 @@ public class BuildWorld implements ConfigurationSerializable {
                 .orElse(null);
     }
 
+    /**
+     * @param uuid the unique id of the {@link Player} to be checked
+     * @return whether the {@link Player} is a builder
+     */
     public boolean isBuilder(UUID uuid) {
         return this.builders.parallelStream().anyMatch(builder -> builder.getUuid().equals(uuid));
     }
 
+    /**
+     * @param player the player to be checked
+     * @return whether the {@link Player} is a builder
+     */
     public boolean isBuilder(Player player) {
         return isBuilder(player.getUniqueId());
     }
 
+    /**
+     * @param builder adds a {@link Builder} to the current list of builders
+     */
     public void addBuilder(Builder builder) {
         this.builders.add(builder);
     }
 
+    /**
+     * @param builder removed a {@link Builder} from the current list of builders
+     */
     private void removeBuilder(Builder builder) {
         this.builders.remove(builder);
     }
 
+    /**
+     * @param uuid adds a {@link Builder} to the current list of builders
+     */
     public void removeBuilder(UUID uuid) {
         removeBuilder(getBuilder(uuid));
     }
@@ -409,6 +507,9 @@ public class BuildWorld implements ConfigurationSerializable {
         return builderList.length() > 0 ? builderList.substring(1) : builderList.toString();
     }
 
+    /**
+     * @return whether the {@link World} has been loaded, allowing a {@link Player} to join the {@link BuildWorld}
+     */
     public boolean isLoaded() {
         return loaded;
     }
@@ -518,13 +619,5 @@ public class BuildWorld implements ConfigurationSerializable {
 
     public enum Time {
         SUNRISE, NOON, NIGHT, UNKNOWN
-    }
-
-    public String getChunkGeneratorString() {
-        return chunkGeneratorString;
-    }
-
-    public ChunkGenerator getChunkGenerator() {
-        return chunkGenerator;
     }
 }

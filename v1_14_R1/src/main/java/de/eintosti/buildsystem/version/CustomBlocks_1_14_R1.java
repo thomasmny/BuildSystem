@@ -32,8 +32,7 @@ public class CustomBlocks_1_14_R1 implements CustomBlocks {
         ItemStack itemStack = event.getItemInHand();
         ItemMeta itemMeta = itemStack.getItemMeta();
 
-        if (itemMeta == null) return;
-        if (!itemMeta.hasDisplayName()) return;
+        if (itemMeta == null || !itemMeta.hasDisplayName()) return;
         String displayName = itemMeta.getDisplayName();
 
         Bukkit.getScheduler().runTask(plugin, () -> {
@@ -127,20 +126,26 @@ public class CustomBlocks_1_14_R1 implements CustomBlocks {
             } else {
                 set = false;
             }
-            if (set) event.setCancelled(true);
+
+            if (set) {
+                event.setCancelled(true);
+            }
         });
     }
 
     @Override
     public void setPlant(PlayerInteractEvent event) {
         Block block = event.getClickedBlock();
-        Block adjacent = block.getRelative(event.getBlockFace());
+        if (block == null) {
+            return;
+        }
 
         ItemStack itemStack = event.getItem();
         if (itemStack == null) {
             return;
         }
 
+        Block adjacent = block.getRelative(event.getBlockFace());
         adjacent.setType(itemStack.getType());
     }
 
@@ -151,8 +156,8 @@ public class CustomBlocks_1_14_R1 implements CustomBlocks {
 
         Block block = event.getClickedBlock();
         if (block == null) return;
-        if (!(block.getBlockData() instanceof Slab)) return;
 
+        if (!(block.getBlockData() instanceof Slab)) return;
         Slab slab = (Slab) block.getBlockData();
         if (slab.getType() != Slab.Type.DOUBLE) return;
 
@@ -176,14 +181,14 @@ public class CustomBlocks_1_14_R1 implements CustomBlocks {
 
     @Override
     public void toggleIronTrapdoor(PlayerInteractEvent event) {
-        open(event.getClickedBlock());
         event.setCancelled(true);
+        open(event.getClickedBlock());
     }
 
     @Override
     public void toggleIronDoor(PlayerInteractEvent event) {
-        open(event.getClickedBlock());
         event.setCancelled(true);
+        open(event.getClickedBlock());
     }
 
     @Override
@@ -203,7 +208,10 @@ public class CustomBlocks_1_14_R1 implements CustomBlocks {
     }
 
     private void open(Block block) {
-        if (block == null) return;
+        if (block == null) {
+            return;
+        }
+
         Openable openable = (Openable) block.getBlockData();
         openable.setOpen(!openable.isOpen());
         block.setBlockData(openable);
@@ -224,8 +232,11 @@ public class CustomBlocks_1_14_R1 implements CustomBlocks {
 
     private BlockFace getDirection(Player player) {
         float yaw = player.getLocation().getYaw();
-        if (yaw < 0) yaw += 360;
+        if (yaw < 0) {
+            yaw += 360;
+        }
         yaw %= 360;
+
         int i = (int) ((yaw + 8) / 22.5);
         switch (i) {
             case 15:
@@ -249,6 +260,7 @@ public class CustomBlocks_1_14_R1 implements CustomBlocks {
             case 14:
                 return BlockFace.WEST;
         }
+
         return BlockFace.NORTH;
     }
 
