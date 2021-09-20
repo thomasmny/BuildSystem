@@ -61,6 +61,7 @@ commands:
     description: Teleports you to the highest location.
     usage: /<command>
   worlds:
+    aliases: [ w ]
     description: Open the world menu.
     usage: /<command>
 

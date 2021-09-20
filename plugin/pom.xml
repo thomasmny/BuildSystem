@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>buildsystem</artifactId>
-    <version>2.16.3</version>
+    <version>2.16.4</version>
 
     <name>BuildSystem</name>
     <description>Easy to use system for builders, with lots of great features</description>

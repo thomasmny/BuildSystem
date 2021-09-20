@@ -528,7 +528,7 @@ public class BuildWorld implements ConfigurationSerializable {
         startUnloadTask();
     }
 
-    private void unload() {
+    public void forceUnload() {
         if (!isLoaded()) return;
 
         World bukkitWorld = Bukkit.getWorld(name);
@@ -537,11 +537,6 @@ public class BuildWorld implements ConfigurationSerializable {
         }
 
         if (plugin.blackListedWorldsToUnload.contains(name) || isSpawnWorld(bukkitWorld)) {
-            return;
-        }
-
-        if (!bukkitWorld.getPlayers().isEmpty()) {
-            resetUnloadTask();
             return;
         }
 
@@ -555,6 +550,20 @@ public class BuildWorld implements ConfigurationSerializable {
 
         this.loaded = false;
         this.unloadTask = null;
+    }
+
+    private void unload() {
+        World bukkitWorld = Bukkit.getWorld(name);
+        if (bukkitWorld == null) {
+            return;
+        }
+
+        if (!bukkitWorld.getPlayers().isEmpty()) {
+            resetUnloadTask();
+            return;
+        }
+
+        forceUnload();
     }
 
     private boolean isSpawnWorld(World bukkitWorld) {

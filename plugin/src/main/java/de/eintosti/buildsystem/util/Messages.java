@@ -234,6 +234,7 @@ public class Messages {
         setMessage(sb, config, "worlds_help_invalid_page", "%prefix% &cInvalid page.");
         setMessage(sb, config, "worlds_help_title_with_page", "%prefix% &7&nWorlds Help:&8 (&7%page%/%max%&8)");
         setMessage(sb, config, "worlds_help_permission", "&7&nPermission&8: &b%permission%");
+        setMessage(sb, config, "worlds_help_help", "&7Shows the list of all subcommands.");
         setMessage(sb, config, "worlds_help_info", "&7Shows information about a world.");
         setMessage(sb, config, "worlds_help_item", "&7Receive the 'World Navigator'.");
         setMessage(sb, config, "worlds_help_tp", "&7Teleport to another world.");
@@ -252,6 +253,7 @@ public class Messages {
         setMessage(sb, config, "worlds_help_delete", "&7Delete a world.");
         setMessage(sb, config, "worlds_help_import", "&7Import a world.");
         setMessage(sb, config, "worlds_help_importall", "&7Import all worlds at once.");
+        setMessage(sb, config, "worlds_help_unimport", "&7Unimport a world.");
         addLine(sb, "");
         setMessage(sb, config, "worlds_import_usage", "%prefix% &7Usage: &b/worlds import <world> [-g <generator>]");
         setMessage(sb, config, "worlds_import_unknown_world", "%prefix% &cUnknown world.");
@@ -348,6 +350,11 @@ public class Messages {
         setMessage(sb, config, "worlds_tp_unknown_world", "%prefix% &cUnknown world.");
         setMessage(sb, config, "worlds_tp_world_not_imported", "%prefix% &cWorld must be imported » /worlds import <world>");
         setMessage(sb, config, "worlds_tp_entry_forbidden", "%prefix% &cYou are not allowed to enter this world!");
+        addLine(sb, "");
+        setMessage(sb, config, "worlds_unimport_usage", "%prefix% &7Usage: &b/worlds import <world> [-g <generator>]");
+        setMessage(sb, config, "worlds_unimport_unknown_world", "%prefix% &cUnknown world.");
+        setMessage(sb, config, "worlds_unimport_players_world", "%prefix% &7&oThe world you were in was unimported.");
+        setMessage(sb, config, "worlds_unimport_finished", "%prefix% &b%world% &7has been &aunimported&7.");
         addLine(sb, "");
         addLine(sb, "");
         addLine(sb, "# ---------");

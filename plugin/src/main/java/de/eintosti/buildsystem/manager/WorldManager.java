@@ -1,7 +1,6 @@
 package de.eintosti.buildsystem.manager;
 
 import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.object.world.WorldType;
 import de.eintosti.buildsystem.object.world.*;
 import de.eintosti.buildsystem.util.config.WorldConfig;
@@ -257,62 +256,6 @@ public class WorldManager {
         return bukkitWorld;
     }
 
-    public void deleteWorld(Player player, BuildWorld buildWorld) {
-        if (!buildWorlds.contains(buildWorld)) {
-            player.sendMessage(plugin.getString("worlds_delete_unknown_world"));
-            return;
-        }
-
-        buildWorlds.remove(buildWorld);
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            this.worldConfig.getFile().set("worlds." + buildWorld.getName(), null);
-            this.worldConfig.saveFile();
-        });
-
-        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
-        if (bukkitWorld != null) {
-            SpawnManager spawnManager = plugin.getSpawnManager();
-            for (Player pl : Bukkit.getOnlinePlayers()) {
-                if (!pl.getWorld().equals(bukkitWorld)) continue;
-
-                Location spawnLocation = Bukkit.getWorlds().get(0).getSpawnLocation().add(0.5, 0, 0.5);
-                if (spawnManager.spawnExists()) {
-                    if (!spawnManager.getSpawnWorld().equals(pl.getWorld())) {
-                        spawnManager.teleport(pl);
-                    } else {
-                        pl.teleport(spawnLocation);
-                        spawnManager.remove();
-                    }
-                } else {
-                    pl.teleport(spawnLocation);
-                }
-                pl.sendMessage(plugin.getString("worlds_delete_players_world"));
-            }
-            Bukkit.getServer().unloadWorld(bukkitWorld, false);
-            Bukkit.getWorlds().remove(bukkitWorld);
-        }
-
-        File deleteFolder = new File(Bukkit.getWorldContainer(), buildWorld.getName());
-        if (!deleteFolder.exists()) {
-            player.sendMessage(plugin.getString("worlds_delete_unknown_directory"));
-            return;
-        }
-
-        player.sendMessage(plugin.getString("worlds_delete_started").replace("%world%", buildWorld.getName()));
-        deleteDirectory(deleteFolder);
-        player.sendMessage(plugin.getString("worlds_delete_finished"));
-    }
-
-    private boolean deleteDirectory(File folder) {
-        File[] allContents = folder.listFiles();
-        if (allContents != null) {
-            for (File file : allContents) {
-                deleteDirectory(file);
-            }
-        }
-        return folder.delete();
-    }
-
     public void importWorld(String worldName, Player player, Generator generator, String... generatorName) {
         for (String charString : worldName.split("")) {
             if (charString.matches("[^A-Za-z0-9/_-]")) {
@@ -413,6 +356,82 @@ public class WorldManager {
                 }
             }
         }.runTaskTimer(plugin, 0, 20L * delay);
+    }
+
+    public void unimportWorld(BuildWorld buildWorld) {
+        this.buildWorlds.remove(buildWorld);
+
+        removePlayersFromWorld(buildWorld.getName(), plugin.getString("worlds_unimport_players_world"));
+        buildWorld.forceUnload();
+
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            this.worldConfig.getFile().set("worlds." + buildWorld.getName(), null);
+            this.worldConfig.saveFile();
+        });
+    }
+
+    public void deleteWorld(Player player, BuildWorld buildWorld) {
+        if (!buildWorlds.contains(buildWorld)) {
+            player.sendMessage(plugin.getString("worlds_delete_unknown_world"));
+            return;
+        }
+
+        unimportWorld(buildWorld);
+
+        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
+        if (bukkitWorld != null) {
+            removePlayersFromWorld(buildWorld.getName(), plugin.getString("worlds_delete_players_world"));
+            Bukkit.getServer().unloadWorld(bukkitWorld, false);
+            Bukkit.getWorlds().remove(bukkitWorld);
+        }
+
+        File deleteFolder = new File(Bukkit.getWorldContainer(), buildWorld.getName());
+        if (!deleteFolder.exists()) {
+            player.sendMessage(plugin.getString("worlds_delete_unknown_directory"));
+            return;
+        }
+
+        player.sendMessage(plugin.getString("worlds_delete_started").replace("%world%", buildWorld.getName()));
+        deleteDirectory(deleteFolder);
+        player.sendMessage(plugin.getString("worlds_delete_finished"));
+    }
+
+    private void removePlayersFromWorld(String worldName, String removeMessage) {
+        World bukkitWorld = Bukkit.getWorld(worldName);
+        if (bukkitWorld == null) return;
+
+        SpawnManager spawnManager = plugin.getSpawnManager();
+
+        Bukkit.getOnlinePlayers().forEach(player -> {
+            World playerWorld = player.getWorld();
+            if (!playerWorld.equals(bukkitWorld)) {
+                return;
+            }
+
+            Location spawnLocation = Bukkit.getWorlds().get(0).getSpawnLocation().add(0.5, 0, 0.5);
+            if (spawnManager.spawnExists()) {
+                if (!spawnManager.getSpawnWorld().equals(playerWorld)) {
+                    spawnManager.teleport(player);
+                } else {
+                    player.teleport(spawnLocation);
+                    spawnManager.remove();
+                }
+            } else {
+                player.teleport(spawnLocation);
+            }
+
+            player.sendMessage(removeMessage);
+        });
+    }
+
+    private boolean deleteDirectory(File folder) {
+        File[] allContents = folder.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                deleteDirectory(file);
+            }
+        }
+        return folder.delete();
     }
 
     public void renameWorld(Player player, BuildWorld buildWorld, String name) {
@@ -543,10 +562,12 @@ public class WorldManager {
         if (feet.getType() != Material.AIR && feet.getLocation().add(0, 1, 0).getBlock().getType() != Material.AIR) {
             return false;
         }
+
         Block head = feet.getRelative(BlockFace.UP);
         if (head.getType() != Material.AIR) {
             return false;
         }
+
         Block ground = feet.getRelative(BlockFace.DOWN);
         return ground.getType().isSolid();
     }
@@ -572,12 +593,6 @@ public class WorldManager {
     public BuildWorld loadWorld(String worldName) {
         FileConfiguration configuration = worldConfig.getFile();
         if (configuration == null) return null;
-
-        ConfigurationSection configurationSection = configuration.getConfigurationSection("worlds");
-        if (configurationSection == null) return null;
-
-        Set<String> worlds = configurationSection.getKeys(false);
-        if (worlds.isEmpty()) return null;
 
         String creator = configuration.isString("worlds." + worldName + ".creator") ? configuration.getString("worlds." + worldName + ".creator") : "-";
         UUID creatorId = loadCreatorId(configuration, worldName, creator);
@@ -659,7 +674,7 @@ public class WorldManager {
     }
 
     /**
-     * @author - Ein_Jojo
+     * @author Ein_Jojo
      */
     private ChunkGenerator loadChunkGenerator(FileConfiguration configuration, String worldName) {
         ChunkGenerator chunkGenerator = null;

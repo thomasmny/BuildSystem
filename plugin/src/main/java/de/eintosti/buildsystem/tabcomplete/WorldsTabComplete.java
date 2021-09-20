@@ -59,6 +59,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                     case "setproject":
                     case "setstatus":
                     case "tp":
+                    case "unimport":
                         worldManager.getBuildWorlds().forEach(world -> {
                             if (player.hasPermission(world.getPermission()) || world.getPermission().equalsIgnoreCase("-")) {
                                 String worldName = world.getName();
@@ -151,7 +152,8 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
         SET_STATUS("setStatus", "buildsystem.setstatus"),
         SET_SPAWN("setSpawn", "buildsystem.setspawn"),
         REMOVE_SPAWN("removeSpawn", "buildsystem.removespawn"),
-        TP("tp", "buildsystem.worldtp");
+        TP("tp", "buildsystem.worldtp"),
+        UNIMPORT("unimport", "buildsystem.unimport");
 
         private final String command;
         private final String permission;
