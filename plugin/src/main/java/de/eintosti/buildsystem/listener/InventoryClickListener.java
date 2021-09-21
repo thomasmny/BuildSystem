@@ -355,7 +355,6 @@ public class InventoryClickListener implements Listener {
                     }
                     createInventory.openInventory(player, CreateInventory.Page.TEMPLATES);
                 }
-
                 XSound.ENTITY_CHICKEN_EGG.play(player);
                 break;
             }
@@ -828,11 +827,11 @@ public class InventoryClickListener implements Listener {
             case 13:
                 settings.setDisableInteract(!settings.isDisableInteract());
                 break;
-            case 15:
+            case 14:
                 settings.setHidePlayers(!settings.isHidePlayers());
                 toggleHidePlayers(player, settings);
                 break;
-            case 16:
+            case 15:
                 settings.setInstantPlaceSigns(!settings.isInstantPlaceSigns());
                 break;
 
