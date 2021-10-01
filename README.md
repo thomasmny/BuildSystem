@@ -16,12 +16,6 @@ You can find a full guide with tutorials, commands and permissions [here](https:
 
 ## Contributing
 
-### Requirements
-As **BuildSystem** uses NMS classes, you'll have to run [BuildTools](https://hub.spigotmc.org/jenkins/job/BuildTools/) locally first.
-```java
-java -jar BuildTools.jar
-```
-
 ### Compilation
 Build with `mvn clean install`.
 
