@@ -6,7 +6,7 @@ import de.eintosti.buildsystem.manager.InventoryManager;
 import de.eintosti.buildsystem.manager.SettingsManager;
 import de.eintosti.buildsystem.object.navigator.NavigatorType;
 import de.eintosti.buildsystem.object.settings.Settings;
-import de.eintosti.buildsystem.util.external.ActionBar;
+import de.eintosti.buildsystem.util.external.xseries.ActionBar;
 import de.eintosti.buildsystem.util.external.xseries.XMaterial;
 import de.eintosti.buildsystem.util.external.xseries.XSound;
 import org.bukkit.Bukkit;

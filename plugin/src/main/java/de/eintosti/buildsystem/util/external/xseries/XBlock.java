@@ -2,12 +2,9 @@ package de.eintosti.buildsystem.util.external.xseries;
 
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
-import org.bukkit.TreeSpecies;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
-import org.bukkit.material.Colorable;
 import org.bukkit.material.MaterialData;
-import org.bukkit.material.Wood;
 
 /**
  * <b>XBlock</b> - MaterialData/BlockData Support<br>
@@ -34,24 +31,22 @@ public class XBlock {
      *
      * @param block the block to color.
      * @param color the color to use.
-     * @return true if the block can be colored, otherwise false.
      */
-    public static boolean setColor(Block block, DyeColor color) {
+    public static void setColor(Block block, DyeColor color) {
         if (ISFLAT) {
             String type = block.getType().name();
             int index = type.indexOf('_');
-            if (index == -1) return false;
+            if (index == -1) return;
 
             String realType = type.substring(index);
             Material material = Material.getMaterial(color.name() + '_' + realType);
-            if (material == null) return false;
+            if (material == null) return;
             block.setType(material);
-            return true;
+            return;
         }
 
         BlockState state = block.getState();
         state.setRawData(color.getWoolData());
         state.update(true);
-        return false;
     }
 }

@@ -1,4 +1,4 @@
-package de.eintosti.buildsystem.util.external;
+package de.eintosti.buildsystem.util.external.xseries;
 
 import de.eintosti.buildsystem.util.external.xseries.ReflectionUtils;
 import net.md_5.bungee.api.ChatMessageType;

@@ -151,7 +151,9 @@ public final class UpdateChecker {
      */
     @NotNull
     public static UpdateChecker init(@NotNull JavaPlugin plugin, int pluginID, @NotNull VersionScheme versionScheme) {
+        Preconditions.checkArgument(plugin != null, "Plugin cannot be null");
         Preconditions.checkArgument(pluginID > 0, "Plugin ID must be greater than 0");
+        Preconditions.checkArgument(versionScheme != null, "null version schemes are unsupported");
 
         return (instance == null) ? instance = new UpdateChecker(plugin, pluginID, versionScheme) : instance;
     }
@@ -212,15 +214,14 @@ public final class UpdateChecker {
          *
          * @return the greater of the two versions. null if unsupported version schemes
          */
-        @Nullable String compareVersions(@NotNull String first, @NotNull String second);
-
+        @Nullable
+        String compareVersions(@NotNull String first, @NotNull String second);
     }
 
     /**
      * A constant reason for the result of {@link UpdateResult}.
      */
     public enum UpdateReason {
-
         /**
          * A new update is available for download on SpigotMC.
          */
@@ -270,7 +271,6 @@ public final class UpdateChecker {
      * {@link UpdateChecker#requestUpdateCheck()}.
      */
     public final class UpdateResult {
-
         private final UpdateReason reason;
         private final String newestVersion;
 
@@ -301,9 +301,9 @@ public final class UpdateChecker {
         }
 
         /**
-         * Check whether this result requires the user to update.
+         * Check whether or not this result requires the user to update.
          *
-         * @return true if it requires update, false otherwise
+         * @return true if requires update, false otherwise
          */
         public boolean requiresUpdate() {
             return reason == UpdateReason.NEW_UPDATE;
