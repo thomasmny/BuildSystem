@@ -1,8 +1,8 @@
 package de.eintosti.buildsystem.util.external;
 
+import com.cryptomorin.xseries.XMaterial;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
-import de.eintosti.buildsystem.util.external.xseries.XMaterial;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;

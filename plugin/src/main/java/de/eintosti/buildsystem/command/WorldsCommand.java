@@ -1,5 +1,8 @@
 package de.eintosti.buildsystem.command;
 
+import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.XSound;
+import com.cryptomorin.xseries.messages.Titles;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.InventoryManager;
 import de.eintosti.buildsystem.manager.WorldManager;
@@ -8,9 +11,6 @@ import de.eintosti.buildsystem.object.world.Builder;
 import de.eintosti.buildsystem.object.world.Generator;
 import de.eintosti.buildsystem.util.external.PlayerChatInput;
 import de.eintosti.buildsystem.util.external.UUIDFetcher;
-import de.eintosti.buildsystem.util.external.xseries.Titles;
-import de.eintosti.buildsystem.util.external.xseries.XMaterial;
-import de.eintosti.buildsystem.util.external.xseries.XSound;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;

@@ -1,8 +1,7 @@
 package de.eintosti.buildsystem.util;
 
-import de.eintosti.buildsystem.util.external.xseries.XMaterial;
+import com.cryptomorin.xseries.XMaterial;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 

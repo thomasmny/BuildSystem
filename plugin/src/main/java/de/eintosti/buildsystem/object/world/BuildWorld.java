@@ -1,11 +1,11 @@
 package de.eintosti.buildsystem.object.world;
 
+import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.messages.Titles;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.InventoryManager;
 import de.eintosti.buildsystem.manager.SpawnManager;
 import de.eintosti.buildsystem.util.external.UUIDFetcher;
-import de.eintosti.buildsystem.util.external.xseries.Titles;
-import de.eintosti.buildsystem.util.external.xseries.XMaterial;
 import org.bukkit.*;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;

@@ -1,9 +1,9 @@
 package de.eintosti.buildsystem.listener;
 
+import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
 import de.eintosti.buildsystem.object.world.BuildWorld;
-import de.eintosti.buildsystem.util.external.xseries.XMaterial;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;

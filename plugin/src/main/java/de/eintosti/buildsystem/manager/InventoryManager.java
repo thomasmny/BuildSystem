@@ -1,5 +1,6 @@
 package de.eintosti.buildsystem.manager;
 
+import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.object.settings.Settings;
 import de.eintosti.buildsystem.object.world.Builder;
@@ -8,7 +9,6 @@ import de.eintosti.buildsystem.object.world.WorldStatus;
 import de.eintosti.buildsystem.object.world.WorldType;
 import de.eintosti.buildsystem.util.config.SetupConfig;
 import de.eintosti.buildsystem.util.external.ItemSkulls;
-import de.eintosti.buildsystem.util.external.xseries.XMaterial;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;

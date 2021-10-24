@@ -1,11 +1,11 @@
 package de.eintosti.buildsystem.inventory;
 
+import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.InventoryManager;
 import de.eintosti.buildsystem.manager.SettingsManager;
 import de.eintosti.buildsystem.object.navigator.NavigatorType;
 import de.eintosti.buildsystem.object.settings.Settings;
-import de.eintosti.buildsystem.util.external.xseries.XMaterial;
 import org.bukkit.Bukkit;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;

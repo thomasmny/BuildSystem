@@ -1,11 +1,10 @@
 package de.eintosti.buildsystem.listener;
 
+import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
 import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.object.world.WorldStatus;
-import de.eintosti.buildsystem.util.external.xseries.XMaterial;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -38,9 +37,10 @@ public class BlockPlaceListener implements Listener {
             return;
         }
 
-        disableArchivedWorlds(buildWorld, player, event);
-        checkWorldSettings(buildWorld, player, event);
-        checkBuilders(buildWorld, player, event);
+        if (disableArchivedWorlds(buildWorld, player, event)) return;
+        if (checkWorldSettings(buildWorld, player, event)) return;
+        if (checkBuilders(buildWorld, player, event)) return;
+
         setStatus(buildWorld, player);
 
         ItemStack itemStack = player.getItemInHand();
@@ -85,28 +85,34 @@ public class BlockPlaceListener implements Listener {
         }
     }
 
-    private void disableArchivedWorlds(BuildWorld buildWorld, Player player, BlockPlaceEvent event) {
-        if (player.hasPermission("buildsystem.admin") || player.hasPermission("buildsystem.bypass.archive")) return;
-        if (buildWorld.getStatus() == WorldStatus.ARCHIVE && !plugin.buildPlayers.contains(player.getUniqueId())) {
+    private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, BlockPlaceEvent event) {
+        if (!plugin.canBypass(player) && buildWorld.getStatus() == WorldStatus.ARCHIVE) {
             event.setCancelled(true);
+            return true;
         }
+        return false;
     }
 
-    private void checkWorldSettings(BuildWorld buildWorld, Player player, BlockPlaceEvent event) {
-        if (player.hasPermission("buildsystem.admin") || player.hasPermission("buildsystem.bypass.settings")) return;
-        if (!buildWorld.isBlockPlacement() && !plugin.buildPlayers.contains(player.getUniqueId())) {
+    private boolean checkWorldSettings(BuildWorld buildWorld, Player player, BlockPlaceEvent event) {
+        if (!plugin.canBypass(player) && buildWorld.isBlockPlacement()) {
             event.setCancelled(true);
+            return true;
         }
+        return false;
     }
 
-    private void checkBuilders(BuildWorld buildWorld, Player player, BlockPlaceEvent event) {
-        if (player.hasPermission("buildsystem.admin") || player.hasPermission("buildsystem.bypass.builders")) return;
+    private boolean checkBuilders(BuildWorld buildWorld, Player player, BlockPlaceEvent event) {
+        if (plugin.canBypass(player)) return false;
         if (plugin.isCreatorIsBuilder() && buildWorld.getCreatorId() != null && buildWorld.getCreatorId().equals(player.getUniqueId())) {
-            return;
+            return false;
         }
+
         if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
             event.setCancelled(true);
+            return true;
         }
+
+        return false;
     }
 
     private void setStatus(BuildWorld buildWorld, Player player) {

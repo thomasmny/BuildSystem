@@ -1,9 +1,9 @@
 package de.eintosti.buildsystem.util.config;
 
+import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.object.world.WorldStatus;
 import de.eintosti.buildsystem.object.world.WorldType;
-import de.eintosti.buildsystem.util.external.xseries.XMaterial;
 
 /**
  * @author einTosti

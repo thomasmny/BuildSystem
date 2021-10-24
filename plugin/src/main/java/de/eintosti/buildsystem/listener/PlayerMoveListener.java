@@ -1,14 +1,14 @@
 package de.eintosti.buildsystem.listener;
 
+import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.XSound;
+import com.cryptomorin.xseries.messages.ActionBar;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.ArmorStandManager;
 import de.eintosti.buildsystem.manager.InventoryManager;
 import de.eintosti.buildsystem.manager.SettingsManager;
 import de.eintosti.buildsystem.object.navigator.NavigatorType;
 import de.eintosti.buildsystem.object.settings.Settings;
-import de.eintosti.buildsystem.util.external.xseries.ActionBar;
-import de.eintosti.buildsystem.util.external.xseries.XMaterial;
-import de.eintosti.buildsystem.util.external.xseries.XSound;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -70,7 +70,7 @@ public class PlayerMoveListener implements Listener {
         armorStandManager.removeArmorStands(player);
 
         XSound.ENTITY_ITEM_BREAK.play(player);
-        ActionBar.sendActionBar(player, "");
+        ActionBar.clearActionBar(player);
         replaceBarrier(player);
 
         UUID playerUuid = player.getUniqueId();

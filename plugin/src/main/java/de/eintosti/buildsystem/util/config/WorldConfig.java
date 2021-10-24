@@ -1,9 +1,9 @@
 package de.eintosti.buildsystem.util.config;
 
+import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
 import de.eintosti.buildsystem.object.world.BuildWorld;
-import de.eintosti.buildsystem.util.external.xseries.XMaterial;
 import org.bukkit.generator.ChunkGenerator;
 
 import java.util.logging.Level;

@@ -6,7 +6,6 @@ import de.eintosti.buildsystem.event.PlayerInventoryClearEvent;
 import de.eintosti.buildsystem.manager.InventoryManager;
 import de.eintosti.buildsystem.manager.SettingsManager;
 import de.eintosti.buildsystem.manager.WorldManager;
-import de.eintosti.buildsystem.object.settings.Settings;
 import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.object.world.WorldStatus;
 import org.bukkit.Bukkit;
@@ -62,13 +61,8 @@ public class PlayerCommandPreprocessListener implements Listener {
             if (!DISABLED_COMMANDS.contains(command)) return;
 
             BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
-            if (buildWorld == null) {
-                return;
-            }
-
-            if (disableArchivedWorlds(buildWorld, player, event)) {
-                return;
-            }
+            if (buildWorld == null) return;
+            if (disableArchivedWorlds(buildWorld, player, event)) return;
 
             checkBuilders(buildWorld, player, event);
         }
@@ -219,25 +213,49 @@ public class PlayerCommandPreprocessListener implements Listener {
             "/biomelist",
             "/biomels",
             "/biomeinfo",
-            "//setbiome"
+            "//setbiome",
+
+            // Voxel Sniper
+            "/vs",
+            "/voxel",
+            "/voxel_chunk",
+            "/voxel_height",
+            "/voxel_ink",
+            "/voxel_ink_replace",
+            "/voxel_list",
+            "/voxel_replace",
+            "/voxel_sniper",
+            "/b",
+            "/brush",
+            "/brush_toolkit",
+            "/d",
+            "/default",
+            "/goto",
+            "/p",
+            "/paint",
+            "/perf",
+            "/performer",
+            "/v",
+            "/vc",
+            "/vchunk",
+            "/vh",
+            "/vi",
+            "/vir",
+            "/vl",
+            "/vr--"
     );
 
     private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
-        if (player.hasPermission("buildsystem.admin") || player.hasPermission("buildsystem.bypass.archive")) {
-            return false;
-        }
-
-        if (buildWorld.getStatus() == WorldStatus.ARCHIVE && !plugin.buildPlayers.contains(player.getUniqueId())) {
+        if (!plugin.canBypass(player) && buildWorld.getStatus() == WorldStatus.ARCHIVE) {
             event.setCancelled(true);
             player.sendMessage(plugin.getString("command_archive_world"));
             return true;
         }
-
         return false;
     }
 
     private void checkBuilders(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
-        if (player.hasPermission("buildsystem.admin") || player.hasPermission("buildsystem.bypass.builders")) return;
+        if (plugin.canBypass(player)) return;
         if (plugin.isCreatorIsBuilder() && buildWorld.getCreatorId() != null && buildWorld.getCreatorId().equals(player.getUniqueId())) {
             return;
         }

@@ -1,10 +1,10 @@
 package de.eintosti.buildsystem.listener;
 
+import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
 import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.object.world.WorldStatus;
-import de.eintosti.buildsystem.util.external.xseries.XSound;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;

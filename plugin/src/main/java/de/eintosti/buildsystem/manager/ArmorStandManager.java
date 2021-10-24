@@ -1,8 +1,7 @@
 package de.eintosti.buildsystem.manager;
 
-import de.eintosti.buildsystem.BuildSystem;
+import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.util.external.ItemSkulls;
-import de.eintosti.buildsystem.util.external.xseries.XMaterial;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
@@ -21,7 +20,7 @@ public class ArmorStandManager {
 
     private final HashMap<UUID, ArmorStand[]> armorStands;
 
-    public ArmorStandManager(BuildSystem plugin) {
+    public ArmorStandManager() {
         this.RADIUS = 2.2f;
         this.SPREAD = 90.0f;
 

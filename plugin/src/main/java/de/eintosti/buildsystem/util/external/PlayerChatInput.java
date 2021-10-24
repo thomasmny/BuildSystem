@@ -1,8 +1,8 @@
 package de.eintosti.buildsystem.util.external;
 
+import com.cryptomorin.xseries.XSound;
+import com.cryptomorin.xseries.messages.Titles;
 import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.util.external.xseries.Titles;
-import de.eintosti.buildsystem.util.external.xseries.XSound;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

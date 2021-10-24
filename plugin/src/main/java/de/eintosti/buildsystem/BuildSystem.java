@@ -1,18 +1,17 @@
 package de.eintosti.buildsystem;
 
+import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.command.*;
 import de.eintosti.buildsystem.inventory.*;
 import de.eintosti.buildsystem.listener.*;
 import de.eintosti.buildsystem.manager.*;
 import de.eintosti.buildsystem.object.settings.Settings;
-import de.eintosti.buildsystem.object.world.Builder;
 import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.tabcomplete.*;
 import de.eintosti.buildsystem.util.Messages;
 import de.eintosti.buildsystem.util.SkullCache;
 import de.eintosti.buildsystem.util.bstats.Metrics;
 import de.eintosti.buildsystem.util.external.UpdateChecker;
-import de.eintosti.buildsystem.util.external.xseries.XMaterial;
 import de.eintosti.buildsystem.util.placeholder.BuildSystemExpansion;
 import de.eintosti.buildsystem.version.*;
 import org.bukkit.Bukkit;
@@ -23,9 +22,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -187,7 +183,7 @@ public class BuildSystem extends JavaPlugin {
     }
 
     private void initClasses() {
-        this.armorStandManager = new ArmorStandManager(this);
+        this.armorStandManager = new ArmorStandManager();
         this.inventoryManager = new InventoryManager(this);
         this.inventoryManager.loadTypes();
         this.inventoryManager.loadStatus();
@@ -441,6 +437,12 @@ public class BuildSystem extends JavaPlugin {
             Messages.getInstance().createMessageFile();
             return getStringList(key);
         }
+    }
+
+    public boolean canBypass(Player player) {
+        return player.hasPermission("buildsystem.admin")
+                || player.hasPermission("buildsystem.bypass.archive")
+                || this.buildPlayers.contains(player.getUniqueId());
     }
 
     public void sendPermissionMessage(CommandSender sender) {

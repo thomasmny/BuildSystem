@@ -1,14 +1,14 @@
 package de.eintosti.buildsystem.manager;
 
+import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.XSound;
+import com.cryptomorin.xseries.messages.Titles;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.object.world.WorldType;
 import de.eintosti.buildsystem.object.world.*;
 import de.eintosti.buildsystem.util.config.WorldConfig;
 import de.eintosti.buildsystem.util.external.PlayerChatInput;
 import de.eintosti.buildsystem.util.external.UUIDFetcher;
-import de.eintosti.buildsystem.util.external.xseries.Titles;
-import de.eintosti.buildsystem.util.external.xseries.XMaterial;
-import de.eintosti.buildsystem.util.external.xseries.XSound;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -206,7 +206,7 @@ public class WorldManager {
             case VOID:
                 worldCreator.generateStructures(false);
                 bukkitWorldType = org.bukkit.WorldType.FLAT;
-                if (XMaterial.isNewVersion()) {
+                if (XMaterial.supports(13)) {
                     worldCreator.generator(new ChunkGenerator() {
                         @Override
                         public ChunkData generateChunkData(World world, Random random, int x, int z, BiomeGrid biome) {
@@ -635,8 +635,31 @@ public class WorldManager {
             worldType = WorldType.FLAT;
         }
 
-        BuildWorld buildWorld = new BuildWorld(plugin, worldName, creator, creatorId, worldType, privateWorld, material, worldStatus, project,
-                permission, date, physics, explosions, mobAI, customSpawn, blockBreaking, blockPlacement, blockInteractions, buildersEnabled, builders, chunkGenerator, chunkGeneratorString);
+        BuildWorld buildWorld = new BuildWorld(
+                plugin,
+                worldName,
+                creator,
+                creatorId,
+                worldType,
+                privateWorld,
+                material,
+                worldStatus,
+                project,
+                permission,
+                date,
+                physics,
+                explosions,
+                mobAI,
+                customSpawn,
+                blockBreaking,
+                blockPlacement,
+                blockInteractions,
+                buildersEnabled,
+                builders,
+                chunkGenerator,
+                chunkGeneratorString
+        );
+
         buildWorlds.add(buildWorld);
         return buildWorld;
     }

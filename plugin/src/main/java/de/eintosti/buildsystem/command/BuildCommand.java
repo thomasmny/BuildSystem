@@ -1,7 +1,7 @@
 package de.eintosti.buildsystem.command;
 
+import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.util.external.xseries.XSound;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;

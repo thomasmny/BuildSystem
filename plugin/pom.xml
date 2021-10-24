@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>buildsystem</artifactId>
-    <version>2.16.4</version>
+    <version>2.16.5</version>
 
     <name>BuildSystem</name>
     <description>Easy to use system for builders, with lots of great features</description>
@@ -59,6 +59,12 @@
             <version>2.10.10</version>
             <scope>provided</scope>
         </dependency>
+        <!-- XSeries -->
+        <dependency>
+            <groupId>com.github.cryptomorin</groupId>
+            <artifactId>XSeries</artifactId>
+            <version>8.4.0</version>
+        </dependency>
         <!-- FastBoard -->
         <dependency>
             <groupId>fr.mrmicky</groupId>
@@ -93,7 +99,6 @@
     </dependencies>
 
     <build>
-        <finalName>BuildSystem</finalName>
         <directory>../target</directory>
         <resources>
             <resource>
@@ -120,6 +125,37 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.2.4</version>
+                <configuration>
+                    <relocations>
+                        <relocation>
+                            <pattern>com.cryptomorin.xseries</pattern>
+                            <shadedPattern>de.eintosti.buildsystem.util.external.xseries</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>fr.mrmicky.fastboard</pattern>
+                            <shadedPattern>de.eintosti.buildsystem.util.external.fastboard</shadedPattern>
+                        </relocation>
+                    </relocations>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>com/cryptomorin/xseries/particles/ParticleDisplay*</exclude>
+                                <exclude>com/cryptomorin/xseries/particles/XParticle*</exclude>
+                                <exclude>com/cryptomorin/xseries/NMSExtras*</exclude>
+                                <exclude>com/cryptomorin/xseries/NoteBlockMusic*</exclude>
+                                <exclude>com/cryptomorin/xseries/SkullCacheListener*</exclude>
+                                <exclude>com/cryptomorin/xseries/SkullUtils*</exclude>
+                                <exclude>com/cryptomorin/xseries/XBiome*</exclude>
+                                <exclude>com/cryptomorin/xseries/XEnchantment*</exclude>
+                                <exclude>com/cryptomorin/xseries/XEntity*</exclude>
+                                <exclude>com/cryptomorin/xseries/XItemStack*</exclude>
+                                <exclude>com/cryptomorin/xseries/XMaterialUtil*</exclude>
+                                <exclude>com/cryptomorin/xseries/XPotion*</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                </configuration>
                 <executions>
                     <execution>
                         <phase>package</phase>

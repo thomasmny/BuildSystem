@@ -1,9 +1,9 @@
 package de.eintosti.buildsystem.manager;
 
+import com.cryptomorin.xseries.messages.Titles;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.util.config.SpawnConfig;
-import de.eintosti.buildsystem.util.external.xseries.Titles;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;

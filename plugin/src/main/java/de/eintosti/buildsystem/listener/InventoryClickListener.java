@@ -1,5 +1,8 @@
 package de.eintosti.buildsystem.listener;
 
+import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.XSound;
+import com.cryptomorin.xseries.messages.Titles;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystem;
@@ -17,9 +20,6 @@ import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.object.world.WorldStatus;
 import de.eintosti.buildsystem.object.world.WorldType;
 import de.eintosti.buildsystem.util.external.UUIDFetcher;
-import de.eintosti.buildsystem.util.external.xseries.Titles;
-import de.eintosti.buildsystem.util.external.xseries.XMaterial;
-import de.eintosti.buildsystem.util.external.xseries.XSound;
 import de.eintosti.buildsystem.version.GameRules;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
