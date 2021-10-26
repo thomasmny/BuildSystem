@@ -16,13 +16,15 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Arrays;
+
 /**
  * @author einTosti
  */
-public class CustomBlock_1_13_R1 implements CustomBlocks {
+public class CustomBlocks_1_13_R1 implements CustomBlocks {
     private final JavaPlugin plugin;
 
-    public CustomBlock_1_13_R1(JavaPlugin plugin) {
+    public CustomBlocks_1_13_R1(JavaPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -34,102 +36,99 @@ public class CustomBlock_1_13_R1 implements CustomBlocks {
 
         if (itemMeta == null || !itemMeta.hasDisplayName()) return;
         String displayName = itemMeta.getDisplayName();
+        Player player = event.getPlayer();
 
         Bukkit.getScheduler().runTask(plugin, () -> {
-            Player player = event.getPlayer();
-            boolean set;
-
-            if (displayName.equals(blockName[0])) {
-                block.setType(Material.OAK_WOOD);
-                set = true;
-            } else if (displayName.equals(blockName[1])) {
-                block.setType(Material.SPRUCE_WOOD);
-                set = true;
-            } else if (displayName.equals(blockName[2])) {
-                block.setType(Material.BIRCH_WOOD);
-                set = true;
-            } else if (displayName.equals(blockName[3])) {
-                block.setType(Material.JUNGLE_WOOD);
-                set = true;
-            } else if (displayName.equals(blockName[4])) {
-                block.setType(Material.ACACIA_WOOD);
-                set = true;
-            } else if (displayName.equals(blockName[5])) {
-                block.setType(Material.DARK_OAK_WOOD);
-                set = true;
-            } else if (displayName.equals(blockName[6])) {
-                block.setType(Material.RED_MUSHROOM_BLOCK);
-                set = true;
-            } else if (displayName.equals(blockName[7])) {
-                block.setType(Material.BROWN_MUSHROOM_BLOCK);
-                set = true;
-            } else if (displayName.equals(blockName[8])) {
-                block.setType(Material.MUSHROOM_STEM);
-                set = true;
-            } else if (displayName.equals(blockName[9])) {
-                block.setType(Material.MUSHROOM_STEM);
-                MultipleFacing multipleFacing = (MultipleFacing) block.getBlockData();
-                multipleFacing.setFace(BlockFace.UP, false);
-                multipleFacing.setFace(BlockFace.DOWN, false);
-                block.setBlockData(multipleFacing);
-                set = true;
-            } else if (displayName.equals(blockName[10])) {
-                block.setType(Material.MUSHROOM_STEM);
-                MultipleFacing multipleFacing = (MultipleFacing) block.getBlockData();
-                multipleFacing.setFace(BlockFace.UP, false);
-                multipleFacing.setFace(BlockFace.DOWN, false);
-                multipleFacing.setFace(BlockFace.NORTH, false);
-                multipleFacing.setFace(BlockFace.EAST, false);
-                multipleFacing.setFace(BlockFace.SOUTH, false);
-                multipleFacing.setFace(BlockFace.WEST, false);
-                block.setBlockData(multipleFacing);
-                set = true;
-            } else if (displayName.equals(blockName[11])) {
-                block.setType(Material.SMOOTH_STONE);
-                set = true;
-            } else if (displayName.equals(blockName[12])) {
-                block.setType(Material.STONE_SLAB);
-                setDoubleSlab(block);
-                set = true;
-            } else if (displayName.equals(blockName[13])) {
-                block.setType(Material.SMOOTH_SANDSTONE);
-                set = true;
-            } else if (displayName.equals(blockName[14])) {
-                block.setType(Material.SMOOTH_RED_SANDSTONE);
-                set = true;
-            } else if (displayName.equals(blockName[15])) {
-                block.setType(Material.REDSTONE_LAMP);
-                powerLamp(block);
-                set = true;
-            } else if (displayName.equals(blockName[16])) {
-                block.setType(Material.FURNACE);
-                powerFurnace(player, block);
-                set = true;
-            } else if (displayName.equals(blockName[17])) {
-                block.setType(Material.COMMAND_BLOCK);
-                set = true;
-            } else if (displayName.equals(blockName[18])) {
-                block.setType(Material.BARRIER);
-                set = true;
-            } else if (displayName.equals(blockName[19])) {
-                block.setType(Material.SPAWNER);
-                set = true;
-            } else if (displayName.equals(blockName[20])) {
-                block.setType(Material.NETHER_PORTAL);
-                set = true;
-            } else if (displayName.equals(blockName[21])) {
-                block.setType(Material.END_PORTAL);
-                set = true;
-            } else if (displayName.equals(blockName[22])) {
-                block.setType(Material.DRAGON_EGG);
-                set = true;
-            } else {
-                set = false;
+            switch (Arrays.asList(blockName).indexOf(displayName)) {
+                case 0:
+                    block.setType(Material.OAK_WOOD);
+                    break;
+                case 1:
+                    block.setType(Material.SPRUCE_WOOD);
+                    break;
+                case 2:
+                    block.setType(Material.BIRCH_WOOD);
+                    break;
+                case 3:
+                    block.setType(Material.JUNGLE_WOOD);
+                    break;
+                case 4:
+                    block.setType(Material.ACACIA_WOOD);
+                    break;
+                case 5:
+                    block.setType(Material.DARK_OAK_WOOD);
+                    break;
+                case 6:
+                    block.setType(Material.RED_MUSHROOM_BLOCK);
+                    break;
+                case 7:
+                    block.setType(Material.BROWN_MUSHROOM_BLOCK);
+                    break;
+                case 8:
+                    block.setType(Material.MUSHROOM_STEM);
+                    break;
+                case 9:
+                    block.setType(Material.MUSHROOM_STEM);
+                    MultipleFacing block9Data = (MultipleFacing) block.getBlockData();
+                    block9Data.setFace(BlockFace.UP, false);
+                    block9Data.setFace(BlockFace.DOWN, false);
+                    block.setBlockData(block9Data);
+                    break;
+                case 10:
+                    block.setType(Material.MUSHROOM_STEM);
+                    MultipleFacing block10Data = (MultipleFacing) block.getBlockData();
+                    block10Data.setFace(BlockFace.UP, false);
+                    block10Data.setFace(BlockFace.DOWN, false);
+                    block10Data.setFace(BlockFace.NORTH, false);
+                    block10Data.setFace(BlockFace.EAST, false);
+                    block10Data.setFace(BlockFace.SOUTH, false);
+                    block10Data.setFace(BlockFace.WEST, false);
+                    block.setBlockData(block10Data);
+                    break;
+                case 11:
+                    block.setType(Material.SMOOTH_STONE);
+                    break;
+                case 12:
+                    block.setType(Material.STONE_SLAB);
+                    setDoubleSlab(block);
+                    break;
+                case 13:
+                    block.setType(Material.SMOOTH_SANDSTONE);
+                    break;
+                case 14:
+                    block.setType(Material.SMOOTH_RED_SANDSTONE);
+                    break;
+                case 15:
+                    block.setType(Material.REDSTONE_LAMP);
+                    powerLamp(block);
+                    break;
+                case 16:
+                    block.setType(Material.FURNACE);
+                    powerFurnace(player, block);
+                    break;
+                case 17:
+                    block.setType(Material.COMMAND_BLOCK);
+                    break;
+                case 18:
+                    block.setType(Material.BARRIER);
+                    break;
+                case 19:
+                    block.setType(Material.SPAWNER);
+                    break;
+                case 20:
+                    block.setType(Material.NETHER_PORTAL);
+                    break;
+                case 21:
+                    block.setType(Material.END_PORTAL);
+                    break;
+                case 22:
+                    block.setType(Material.DRAGON_EGG);
+                    break;
+                default:
+                    return;
             }
 
-            if (set) {
-                event.setCancelled(true);
-            }
+            event.setCancelled(true);
         });
     }
 

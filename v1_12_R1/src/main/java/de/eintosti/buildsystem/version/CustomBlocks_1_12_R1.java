@@ -1,5 +1,6 @@
 package de.eintosti.buildsystem.version;
 
+import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -19,15 +20,18 @@ import org.bukkit.material.TrapDoor;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Arrays;
+import java.util.Set;
+
 /**
  * @author einTosti
  */
-public class CustomBlock_1_12_R1 implements CustomBlocks {
+public class CustomBlocks_1_12_R1 implements CustomBlocks {
     private final JavaPlugin plugin;
 
     private final int mcVersion;
 
-    public CustomBlock_1_12_R1(JavaPlugin plugin) {
+    public CustomBlocks_1_12_R1(JavaPlugin plugin) {
         this.plugin = plugin;
 
         String version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
@@ -45,100 +49,97 @@ public class CustomBlock_1_12_R1 implements CustomBlocks {
         String displayName = itemMeta.getDisplayName();
 
         Bukkit.getScheduler().runTask(plugin, () -> {
-            boolean set;
-
-            if (displayName.equals(blockName[0])) {
-                block.setType(Material.LOG);
-                block.setData((byte) 12, true);
-                set = true;
-            } else if (displayName.equals(blockName[1])) {
-                block.setType(Material.LOG);
-                block.setData((byte) 13, true);
-                set = true;
-            } else if (displayName.equals(blockName[2])) {
-                block.setType(Material.LOG);
-                block.setData((byte) 14, true);
-                set = true;
-            } else if (displayName.equals(blockName[3])) {
-                block.setType(Material.LOG);
-                block.setData((byte) 15, true);
-                set = true;
-            } else if (displayName.equals(blockName[4])) {
-                block.setType(Material.LOG_2);
-                block.setData((byte) 12, true);
-                set = true;
-            } else if (displayName.equals(blockName[5])) {
-                block.setType(Material.LOG_2);
-                block.setData((byte) 13, true);
-                set = true;
-            } else if (displayName.equals(blockName[6])) {
-                block.setType(Material.HUGE_MUSHROOM_2);
-                set = true;
-            } else if (displayName.equals(blockName[7])) {
-                block.setType(Material.HUGE_MUSHROOM_1);
-                set = true;
-            } else if (displayName.equals(blockName[8])) {
-                block.setType(Material.HUGE_MUSHROOM_1);
-                block.setData((byte) 15, true);
-                set = true;
-            } else if (displayName.equals(blockName[9])) {
-                block.setType(Material.HUGE_MUSHROOM_1);
-                block.setData((byte) 10, true);
-                set = true;
-            } else if (displayName.equals(blockName[10])) {
-                block.setType(Material.HUGE_MUSHROOM_1);
-                block.setData((byte) 0, true);
-                set = true;
-            } else if (displayName.equals(blockName[11])) {
-                block.setType(Material.DOUBLE_STEP);
-                block.setData((byte) 8, true);
-                set = true;
-            } else if (displayName.equals(blockName[12])) {
-                block.setType(Material.DOUBLE_STEP);
-                block.setData((byte) 0, true);
-                set = true;
-            } else if (displayName.equals(blockName[13])) {
-                block.setType(Material.DOUBLE_STEP);
-                block.setData((byte) 9, true);
-                set = true;
-            } else if (displayName.equals(blockName[14])) {
-                block.setTypeId(181, true);
-                block.setData((byte) 8, true);
-                set = true;
-            } else if (displayName.equals(blockName[15])) {
-                block.setType(Material.REDSTONE_LAMP_ON);
-                powerLamp(block);
-                set = true;
-            } else if (displayName.equals(blockName[16])) {
-                block.setType(Material.BURNING_FURNACE);
-                powerFurnace(block);
-                rotate(block, event.getPlayer(), null);
-                set = true;
-            } else if (displayName.equals(blockName[17])) {
-                block.setType(Material.COMMAND);
-                set = true;
-            } else if (displayName.equals(blockName[18])) {
-                block.setType(Material.BARRIER);
-                set = true;
-            } else if (displayName.equals(blockName[19])) {
-                block.setType(Material.MOB_SPAWNER);
-                set = true;
-            } else if (displayName.equals(blockName[20])) {
-                block.setType(Material.PORTAL);
-                set = true;
-            } else if (displayName.equals(blockName[21])) {
-                block.setType(Material.ENDER_PORTAL);
-                set = true;
-            } else if (displayName.equals(blockName[22])) {
-                block.setType(Material.DRAGON_EGG);
-                set = true;
-            } else {
-                set = false;
+            switch (Arrays.asList(blockName).indexOf(displayName)) {
+                case 0:
+                    block.setType(Material.LOG);
+                    block.setData((byte) 12, true);
+                    break;
+                case 1:
+                    block.setType(Material.LOG);
+                    block.setData((byte) 13, true);
+                    break;
+                case 2:
+                    block.setType(Material.LOG);
+                    block.setData((byte) 14, true);
+                    break;
+                case 3:
+                    block.setType(Material.LOG);
+                    block.setData((byte) 15, true);
+                    break;
+                case 4:
+                    block.setType(Material.LOG_2);
+                    block.setData((byte) 12, true);
+                    break;
+                case 5:
+                    block.setType(Material.LOG_2);
+                    block.setData((byte) 13, true);
+                    break;
+                case 6:
+                    block.setType(Material.HUGE_MUSHROOM_2);
+                    break;
+                case 7:
+                    block.setType(Material.HUGE_MUSHROOM_1);
+                    break;
+                case 8:
+                    block.setType(Material.HUGE_MUSHROOM_1);
+                    block.setData((byte) 15, true);
+                    break;
+                case 9:
+                    block.setType(Material.HUGE_MUSHROOM_1);
+                    block.setData((byte) 10, true);
+                    break;
+                case 10:
+                    block.setType(Material.HUGE_MUSHROOM_1);
+                    block.setData((byte) 0, true);
+                    break;
+                case 11:
+                    block.setType(Material.DOUBLE_STEP);
+                    block.setData((byte) 8, true);
+                    break;
+                case 12:
+                    block.setType(Material.DOUBLE_STEP);
+                    block.setData((byte) 0, true);
+                    break;
+                case 13:
+                    block.setType(Material.DOUBLE_STEP);
+                    block.setData((byte) 9, true);
+                    break;
+                case 14:
+                    block.setTypeId(181, true);
+                    block.setData((byte) 8, true);
+                    break;
+                case 15:
+                    block.setType(Material.REDSTONE_LAMP_ON);
+                    powerLamp(block);
+                    break;
+                case 16:
+                    block.setType(Material.BURNING_FURNACE);
+                    powerFurnace(block);
+                    rotate(block, event.getPlayer(), null);
+                    break;
+                case 17:
+                    block.setType(Material.COMMAND);
+                    break;
+                case 18:
+                    block.setType(Material.BARRIER);
+                    break;
+                case 19:
+                    block.setType(Material.MOB_SPAWNER);
+                    break;
+                case 20:
+                    block.setType(Material.PORTAL);
+                    break;
+                case 21:
+                    block.setType(Material.ENDER_PORTAL);
+                    break;
+                case 22:
+                    block.setType(Material.DRAGON_EGG);
+                    break;
+                default:
+                    return;
             }
 
-            if (set) {
-                event.setCancelled(true);
-            }
+            event.setCancelled(true);
         });
     }
 
@@ -166,25 +167,22 @@ public class CustomBlock_1_12_R1 implements CustomBlocks {
             return;
         }
 
-        Material material = block.getType();
+        Set<Material> slabs = Sets.newHashSet(Material.STEP, Material.WOOD_STEP, Material.STONE_SLAB2);
         if (mcVersion >= 190) {
-            switch (material) {
-                case STEP:
-                case WOOD_STEP:
-                case STONE_SLAB2:
-                case PURPUR_SLAB:
-                    return;
-            }
-        } else {
-            switch (material) {
-                case STEP:
-                case WOOD_STEP:
-                case STONE_SLAB2:
-                    return;
-            }
+            slabs.add(Material.PURPUR_SLAB);
+        }
+
+        Material material = block.getType();
+        if (slabs.contains(material)) {
+            return;
         }
 
         Material changedMaterial = null;
+
+        if (mcVersion >= 190 && material == Material.PURPUR_DOUBLE_SLAB) {
+            changedMaterial = Material.PURPUR_SLAB;
+        }
+
         switch (material) {
             case DOUBLE_STEP:
                 changedMaterial = Material.STEP;
@@ -195,14 +193,9 @@ public class CustomBlock_1_12_R1 implements CustomBlocks {
             case DOUBLE_STONE_SLAB2:
                 changedMaterial = Material.STONE_SLAB2;
                 break;
-        }
-
-        if (mcVersion >= 190 && material == Material.PURPUR_DOUBLE_SLAB) {
-            changedMaterial = Material.PURPUR_SLAB;
-        }
-
-        if (changedMaterial == null) {
-            return;
+            default:
+                if (changedMaterial != null) return;
+                break;
         }
 
         if (block.getData() <= 7) {

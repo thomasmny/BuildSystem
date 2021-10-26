@@ -230,11 +230,11 @@ public class BuildSystem extends JavaPlugin {
             case "v1_10_R1":
             case "v1_11_R1":
             case "v1_12_R1":
-                this.customBlocks = new CustomBlock_1_12_R1(this);
+                this.customBlocks = new CustomBlocks_1_12_R1(this);
                 return true;
             case "v1_13_R1":
             case "v1_13_R2":
-                this.customBlocks = new CustomBlock_1_13_R1(this);
+                this.customBlocks = new CustomBlocks_1_13_R1(this);
                 return true;
             case "v1_14_R1":
             case "v1_15_R1":
