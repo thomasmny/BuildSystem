@@ -71,28 +71,23 @@ public class NoClipManager {
     private boolean checkNoClip(Player player) {
         Location playerLocation = player.getLocation();
 
-        if (player.isSneaking() && isValidBlock(playerLocation.add(0, -0.1, 0).getBlock())) {
-            return true;
-        } else if (isValidBlock(playerLocation.add(0.4, 0, 0).getBlock())) {
-            return true;
-        } else if (isValidBlock(playerLocation.add(-0.4, 0, 0).getBlock())) {
-            return true;
-        } else if (isValidBlock(playerLocation.add(0.4, 1, 0).getBlock())) {
-            return true;
-        } else if (isValidBlock(playerLocation.add(-0.4, 1, 0).getBlock())) {
-            return true;
-        } else if (isValidBlock(playerLocation.add(0, 0, 0.4).getBlock())) {
-            return true;
-        } else if (isValidBlock(playerLocation.add(0, 0, -0.4).getBlock())) {
-            return true;
-        } else if (isValidBlock(playerLocation.add(0, 1, 0.4).getBlock())) {
-            return true;
-        } else if (isValidBlock(playerLocation.add(0, 1, -0.4).getBlock())) {
-            return true;
-        } else return isValidBlock(playerLocation.add(0, 1.9, 0).getBlock());
+        Set<Location> locations = Sets.newHashSet(
+                playerLocation.clone().add(0.4, 0, 0),
+                playerLocation.clone().add(-0.4, 0, 0),
+                playerLocation.clone().add(0.4, 1, 0),
+                playerLocation.clone().add(-0.4, 1, 0),
+                playerLocation.clone().add(0, 0, 0.4),
+                playerLocation.clone().add(0, 0, -0.4),
+                playerLocation.clone().add(0, 1, 0.4),
+                playerLocation.clone().add(0, 1, -0.4),
+                playerLocation.clone().add(0, 1.9, 0)
+        );
+
+        return locations.stream().anyMatch(location -> isSolidBlock(location.getBlock()))
+                || (player.isSneaking() && isSolidBlock(playerLocation.clone().add(0, -0.1, 0).getBlock()));
     }
 
-    private boolean isValidBlock(Block block) {
+    private boolean isSolidBlock(Block block) {
         return block.getType() != Material.AIR;
     }
 
