@@ -8,14 +8,7 @@
     <artifactId>buildsystem-parent</artifactId>
     <packaging>pom</packaging>
     <version>parent</version>
-    <dependencies>
-        <dependency>
-            <groupId>de.eintosti</groupId>
-            <artifactId>buildsystem</artifactId>
-            <version>2.16.5</version>
-        </dependency>
-    </dependencies>
-
+         
     <properties>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
