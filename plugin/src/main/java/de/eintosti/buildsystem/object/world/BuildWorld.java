@@ -40,7 +40,7 @@ public class BuildWorld implements ConfigurationSerializable {
     private String project;
     private String permission;
     private String customSpawn;
-    private final List<Builder> builders;
+    private final ArrayList<Builder> builders;
     private final long date;
 
     private final String chunkGeneratorString;

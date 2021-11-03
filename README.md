@@ -23,4 +23,4 @@ Build with `mvn clean install`.
 I'll accept changes that make sense. You should be able to justify their existence, along with any maintenance costs that come with them.
 
 ## License
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [BSD 4-Clause License](LICENSE).
