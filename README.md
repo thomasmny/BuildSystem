@@ -11,7 +11,7 @@ And not to forget: let each player decide which settings whey think are best for
 
 
 ## Full guide
-You can find a full guide with tutorials, commands and permissions [here](https://buildsystem.eintosti.de/).
+You can find a full guide with tutorials, commands and permissions [here](https://eintosti.gitbook.io/buildsystem/).
 
 
 ## Contributing
