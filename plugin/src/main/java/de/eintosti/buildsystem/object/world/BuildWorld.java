@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2021, Thomas Meaney
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 package de.eintosti.buildsystem.object.world;
 
 import com.cryptomorin.xseries.XMaterial;
@@ -32,7 +40,7 @@ public class BuildWorld implements ConfigurationSerializable {
     private String project;
     private String permission;
     private String customSpawn;
-    private final ArrayList<Builder> builders;
+    private final List<Builder> builders;
     private final long date;
 
     private final String chunkGeneratorString;

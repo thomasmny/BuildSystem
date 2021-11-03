@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2021, Thomas Meaney
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 package de.eintosti.buildsystem.version;
 
 import org.bukkit.block.Block;
@@ -6,6 +14,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+/**
+ * @author einTosti
+ */
 public interface CustomBlocks {
     void setBlock(BlockPlaceEvent event, String... blockName);
 

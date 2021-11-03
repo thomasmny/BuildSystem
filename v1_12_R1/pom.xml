@@ -16,7 +16,7 @@
     </parent>
 
     <repositories>
-        <!--Spigot-->
+        <!-- Spigot -->
         <repository>
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
@@ -24,14 +24,14 @@
     </repositories>
 
     <dependencies>
-        <!--Spigot-->
+        <!-- Spigot -->
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
             <version>1.12.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
-        <!--Abstraction-->
+        <!-- Abstraction -->
         <dependency>
             <groupId>de.eintosti</groupId>
             <artifactId>buildsystem-abstraction</artifactId>
