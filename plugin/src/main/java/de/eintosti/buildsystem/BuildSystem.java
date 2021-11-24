@@ -31,6 +31,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -352,6 +353,15 @@ public class BuildSystem extends JavaPlugin {
         new SignChangeListener(this);
         new WeatherChangeListener(this);
         new WorldManipulateListener(this);
+
+        if (isWorldEdit() && isBlockWorldEditNonBuilder()) {
+            new EditSessionListener(this);
+        }
+    }
+
+    private boolean isWorldEdit() {
+        PluginManager pluginManager = Bukkit.getPluginManager();
+        return pluginManager.getPlugin("FastAsyncWorldEdit") != null || pluginManager.getPlugin("WorldEdit") != null;
     }
 
     private void registerStats() {

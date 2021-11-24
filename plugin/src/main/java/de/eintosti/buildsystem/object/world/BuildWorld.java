@@ -257,7 +257,7 @@ public class BuildWorld implements ConfigurationSerializable {
     }
 
     /**
-     * @return the {@link BuildWorld}'s visibility (private or public)
+     * @return whether the {@link BuildWorld}'s is set to private
      */
     public boolean isPrivate() {
         return privateWorld;

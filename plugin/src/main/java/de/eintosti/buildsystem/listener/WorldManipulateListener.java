@@ -119,9 +119,9 @@ public class WorldManipulateListener implements Listener {
      * - The world only allows {@link Builder}s to build and the player is not such a builder
      * <p>
      * However, a player can override these reasons if:
-     * - The player has the permission <i>buildsystem.admin</i>
-     * - The player has the permission <i>buildsystem.bypass.archive</i>
-     * - The player has used <i>/build</i> to enter build-mode
+     * - The player has the permission `buildsystem.admin`
+     * - The player has the permission `buildsystem.bypass.archive`
+     * - The player has used `/build` to enter build-mode
      *
      * @param player the player who manipulated the world
      * @param event  the event which was called by the world manipulation
