@@ -33,30 +33,21 @@ public class BlockPlaceListener implements Listener {
     }
 
     @EventHandler
-    @SuppressWarnings("deprecation")
-    public void onBlockPlace(BlockPlaceEvent event) {
+    public void onCustomBlockPlace(BlockPlaceEvent event) {
         if (event.isCancelled()) return;
 
         Player player = event.getPlayer();
         String worldName = player.getWorld().getName();
+
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
-
-        if (buildWorld == null) {
-            return;
-        }
-
-        if (disableArchivedWorlds(buildWorld, player, event)) return;
-        if (checkWorldSettings(buildWorld, player, event)) return;
-        if (checkBuilders(buildWorld, player, event)) return;
-
-        setStatus(buildWorld, player);
+        boolean isBuildWorld = buildWorld != null;
 
         ItemStack itemStack = player.getItemInHand();
         XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
 
         if (xMaterial == XMaterial.PLAYER_HEAD) {
             boolean hadToDisablePhysics = false;
-            if (!buildWorld.isPhysics()) {
+            if (isBuildWorld && !buildWorld.isPhysics()) {
                 hadToDisablePhysics = true;
                 buildWorld.setPhysics(true);
             }
@@ -87,46 +78,9 @@ public class BlockPlaceListener implements Listener {
                     plugin.getString("blocks_dragon_egg")
             );
 
-            if (hadToDisablePhysics) {
+            if (isBuildWorld && hadToDisablePhysics) {
                 buildWorld.setPhysics(false);
             }
-        }
-    }
-
-    private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, BlockPlaceEvent event) {
-        if (!plugin.canBypass(player) && buildWorld.getStatus() == WorldStatus.ARCHIVE) {
-            event.setCancelled(true);
-            return true;
-        }
-        return false;
-    }
-
-    private boolean checkWorldSettings(BuildWorld buildWorld, Player player, BlockPlaceEvent event) {
-        if (!plugin.canBypass(player) && buildWorld.isBlockPlacement()) {
-            event.setCancelled(true);
-            return true;
-        }
-        return false;
-    }
-
-    private boolean checkBuilders(BuildWorld buildWorld, Player player, BlockPlaceEvent event) {
-        if (plugin.canBypass(player)) return false;
-        if (plugin.isCreatorIsBuilder() && buildWorld.getCreatorId() != null && buildWorld.getCreatorId().equals(player.getUniqueId())) {
-            return false;
-        }
-
-        if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
-            event.setCancelled(true);
-            return true;
-        }
-
-        return false;
-    }
-
-    private void setStatus(BuildWorld buildWorld, Player player) {
-        if (buildWorld.getStatus() == WorldStatus.NOT_STARTED) {
-            buildWorld.setStatus(WorldStatus.IN_PROGRESS);
-            plugin.forceUpdateSidebar(player);
         }
     }
 }

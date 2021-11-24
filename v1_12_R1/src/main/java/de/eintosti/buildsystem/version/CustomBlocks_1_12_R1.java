@@ -155,11 +155,12 @@ public class CustomBlocks_1_12_R1 extends DirectionUtils implements CustomBlocks
     @SuppressWarnings("deprecation")
     public void setPlant(PlayerInteractEvent event) {
         Block block = event.getClickedBlock();
-        Block adjacent = block.getRelative(event.getBlockFace());
-        ItemStack itemStack = event.getItem();
-        if (itemStack == null) {
+        if (block == null) {
             return;
         }
+
+        Block adjacent = block.getRelative(event.getBlockFace());
+        ItemStack itemStack = event.getItem();
 
         adjacent.setType(itemStack.getType(), false);
         adjacent.setData((byte) itemStack.getDurability());
@@ -168,8 +169,6 @@ public class CustomBlocks_1_12_R1 extends DirectionUtils implements CustomBlocks
     @Override
     @SuppressWarnings("deprecation")
     public void modifySlab(PlayerInteractEvent event) {
-        if (event.isCancelled()) return;
-
         Block block = event.getClickedBlock();
         if (block == null) {
             return;

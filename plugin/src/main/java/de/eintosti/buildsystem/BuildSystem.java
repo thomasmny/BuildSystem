@@ -30,6 +30,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Cancellable;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -332,15 +333,12 @@ public class BuildSystem extends JavaPlugin {
 
     private void registerListeners() {
         new AsyncPlayerChatListener(this);
-        new BlockBreakListener(this);
         new BlockPhysicsListener(this);
         new BlockPlaceListener(this);
-        new EntityDamageByEntityListener(this);
         new EntitySpawnListener(this);
         new FoodLevelChangeListener(this);
         new InventoryClickListener(this);
         new InventoryCloseListener(this);
-        new PlayerArmorStandManipulateListener(this);
         new PlayerChangedWorldListener(this);
         new PlayerCommandPreprocessListener(this);
         new PlayerInteractAtEntityListener(this);
@@ -353,6 +351,7 @@ public class BuildSystem extends JavaPlugin {
         this.playerTeleportListener = new PlayerTeleportListener(this);
         new SignChangeListener(this);
         new WeatherChangeListener(this);
+        new WorldManipulateListener(this);
     }
 
     private void registerStats() {
@@ -448,9 +447,7 @@ public class BuildSystem extends JavaPlugin {
     }
 
     public boolean canBypass(Player player) {
-        return player.hasPermission("buildsystem.admin")
-                || player.hasPermission("buildsystem.bypass.archive")
-                || this.buildPlayers.contains(player.getUniqueId());
+        return player.hasPermission("buildsystem.admin") || player.hasPermission("buildsystem.bypass.archive") || this.buildPlayers.contains(player.getUniqueId());
     }
 
     public void sendPermissionMessage(CommandSender sender) {

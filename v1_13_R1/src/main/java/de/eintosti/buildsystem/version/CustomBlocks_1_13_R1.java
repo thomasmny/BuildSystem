@@ -143,20 +143,16 @@ public class CustomBlocks_1_13_R1 extends DirectionUtils implements CustomBlocks
     @Override
     public void setPlant(PlayerInteractEvent event) {
         Block block = event.getClickedBlock();
-        ItemStack itemStack = event.getItem();
-
-        if (itemStack == null) {
+        if (block == null) {
             return;
         }
 
         Block adjacent = block.getRelative(event.getBlockFace());
-        adjacent.setType(itemStack.getType());
+        adjacent.setType(event.getItem().getType());
     }
 
     @Override
     public void modifySlab(PlayerInteractEvent event) {
-        if (event.isCancelled()) return;
-
         Block block = event.getClickedBlock();
         if (block == null) return;
 

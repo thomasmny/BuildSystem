@@ -65,25 +65,23 @@ public class PlayerInteractListener implements Listener {
     }
 
     @EventHandler
-    public void onNavigatorPlayerInteract(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        Action action = event.getAction();
-
-        if (action == Action.PHYSICAL) {
+    public void manageNavigatorInteraction(PlayerInteractEvent event) {
+        ItemStack itemStack = event.getItem();
+        if (itemStack == null || itemStack.getType() == Material.AIR) {
             return;
         }
 
-        ItemStack itemStack = event.getItem();
-        if (itemStack == null || itemStack.getType() == Material.AIR) return;
         ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null) return;
-        if (!itemMeta.hasDisplayName()) return;
-        String displayName = itemMeta.getDisplayName();
+        if (itemMeta == null || !itemMeta.hasDisplayName()) {
+            return;
+        }
 
+        Player player = event.getPlayer();
         if (player.getOpenInventory().getTopInventory().getType() != InventoryType.CRAFTING) {
             return;
         }
 
+        String displayName = itemMeta.getDisplayName();
         XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
         if (xMaterial == plugin.getNavigatorItem()) {
             if (!displayName.equals(plugin.getString("navigator_item"))) {
@@ -105,161 +103,6 @@ public class PlayerInteractListener implements Listener {
             event.setCancelled(true);
             plugin.getPlayerMoveListener().closeNavigator(player);
         }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onNonBuilderPlayerInteract(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
-        if (buildWorld == null) {
-            return;
-        }
-
-        disableArchivedWorlds(buildWorld, player, event);
-        checkWorldSettings(buildWorld, player, event);
-        checkBuilders(buildWorld, player, event);
-
-        if (buildWorld.isPhysics()) return;
-        if (event.getClickedBlock() == null) return;
-
-        if (event.getAction() == Action.PHYSICAL && event.getClickedBlock().getType() == XMaterial.FARMLAND.parseMaterial()) {
-            event.setCancelled(true);
-        }
-    }
-
-    private boolean canBypass(Player player) {
-        return player.hasPermission("buildsystem.admin")
-                || player.hasPermission("buildsystem.bypass.archive")
-                || plugin.buildPlayers.contains(player.getUniqueId());
-    }
-
-    private void disableArchivedWorlds(BuildWorld buildWorld, Player player, PlayerInteractEvent event) {
-        if (!canBypass(player) && buildWorld.getStatus() == WorldStatus.ARCHIVE) {
-            event.setUseItemInHand(Event.Result.DENY);
-            event.setUseInteractedBlock(Event.Result.DENY);
-            event.setCancelled(true);
-        }
-    }
-
-    private void checkWorldSettings(BuildWorld buildWorld, Player player, PlayerInteractEvent event) {
-        if (!canBypass(player) && buildWorld.isBlockInteractions()) {
-            event.setUseInteractedBlock(Event.Result.DENY);
-            event.setUseInteractedBlock(Event.Result.DENY);
-            event.setCancelled(true);
-        }
-    }
-
-    private void checkBuilders(BuildWorld buildWorld, Player player, PlayerInteractEvent event) {
-        if (canBypass(player)) return;
-        if (plugin.isCreatorIsBuilder() && buildWorld.getCreatorId() != null && buildWorld.getCreatorId().equals(player.getUniqueId())) {
-            return;
-        }
-
-        if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
-            event.setUseItemInHand(Event.Result.DENY);
-            event.setUseInteractedBlock(Event.Result.DENY);
-            event.setCancelled(true);
-        }
-    }
-
-    @EventHandler
-    public void onIronPlayerInteract(PlayerInteractEvent event) {
-        Block block = event.getClickedBlock();
-        if (block == null) return;
-        Player player = event.getPlayer();
-        Action action = event.getAction();
-
-        if (isWithTwoHands()) {
-            EquipmentSlot equipmentSlot = event.getHand();
-            if (equipmentSlot != EquipmentSlot.valueOf("HAND")) {
-                return;
-            }
-        }
-
-        XMaterial material = XMaterial.matchXMaterial(block.getType());
-        Settings settings = settingsManager.getSettings(player);
-
-        if (!settings.isTrapDoor()) {
-            return;
-        }
-
-        if (action == Action.RIGHT_CLICK_BLOCK && (material == XMaterial.IRON_DOOR || material == XMaterial.IRON_TRAPDOOR)) {
-            if (player.isSneaking()) {
-                return;
-            }
-
-            event.setCancelled(true);
-            switch (material) {
-                case IRON_TRAPDOOR:
-                    plugin.getCustomBlocks().toggleIronTrapdoor(event);
-                    break;
-                case IRON_DOOR:
-                    plugin.getCustomBlocks().toggleIronDoor(event);
-                    break;
-            }
-        }
-    }
-
-    private boolean isWithTwoHands() {
-        return this.version >= 192;
-    }
-
-    @EventHandler
-    public void onSlabPlayerInteract(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        Action action = event.getAction();
-
-        Settings settings = settingsManager.getSettings(player);
-        if (!settings.isSlabBreaking()) return;
-        if (!action.equals(Action.LEFT_CLICK_BLOCK)) return;
-
-        plugin.getCustomBlocks().modifySlab(event);
-    }
-
-    @EventHandler
-    public void onPlacePlantsPlayerInteract(PlayerInteractEvent event) {
-        if (!isValid(event)) return;
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-
-        Block clickedBlock = event.getClickedBlock();
-        if (clickedBlock == null) return;
-
-        ItemStack itemStack = event.getItem();
-        if (itemStack == null) return;
-        Material material = itemStack.getType();
-
-        Player player = event.getPlayer();
-        Settings settings = settingsManager.getSettings(player);
-
-        if (!settings.isPlacePlants()) return;
-        if (clickedBlock.getType() == Material.FLOWER_POT) return;
-        if (!PLANTS.contains(XMaterial.matchXMaterial(material))) return;
-
-        event.setCancelled(true);
-        plugin.getCustomBlocks().setPlant(event);
-    }
-
-    private boolean isValid(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
-        if (buildWorld == null) {
-            return true;
-        }
-
-        boolean isInBuildMode = plugin.buildPlayers.contains(player.getUniqueId());
-        if (buildWorld.getStatus() == WorldStatus.ARCHIVE && !isInBuildMode) {
-            return false;
-        }
-
-        if (!buildWorld.isBlockPlacement() && !isInBuildMode) {
-            return false;
-        }
-
-        if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
-            return buildWorld.getCreatorId() == null || buildWorld.getCreatorId().equals(player.getUniqueId());
-        }
-
-        return true;
     }
 
     private void openNavigator(Player player) {
@@ -300,7 +143,107 @@ public class PlayerInteractListener implements Listener {
     }
 
     @EventHandler
-    public void onSignPlace(PlayerInteractEvent event) {
+    public void onIronPlayerInteract(PlayerInteractEvent event) {
+        if (event.isCancelled()) return;
+
+        Block block = event.getClickedBlock();
+        if (block == null) return;
+        if (isWithTwoHands() && event.getHand() != EquipmentSlot.valueOf("HAND")) {
+            return;
+        }
+
+        Player player = event.getPlayer();
+        Settings settings = settingsManager.getSettings(player);
+        if (!settings.isTrapDoor()) {
+            return;
+        }
+
+        Action action = event.getAction();
+        XMaterial material = XMaterial.matchXMaterial(block.getType());
+        if (action == Action.RIGHT_CLICK_BLOCK && (material == XMaterial.IRON_DOOR || material == XMaterial.IRON_TRAPDOOR)) {
+            if (player.isSneaking()) {
+                return;
+            }
+
+            event.setCancelled(true);
+            switch (material) {
+                case IRON_TRAPDOOR:
+                    plugin.getCustomBlocks().toggleIronTrapdoor(event);
+                    break;
+                case IRON_DOOR:
+                    plugin.getCustomBlocks().toggleIronDoor(event);
+                    break;
+            }
+        }
+    }
+
+    private boolean isWithTwoHands() {
+        return this.version >= 192;
+    }
+
+    @EventHandler
+    public void onSlabPlayerInteract(PlayerInteractEvent event) {
+        if (event.isCancelled()) return;
+
+        Player player = event.getPlayer();
+        Action action = event.getAction();
+
+        Settings settings = settingsManager.getSettings(player);
+        if (settings.isSlabBreaking() && action == Action.LEFT_CLICK_BLOCK) {
+            plugin.getCustomBlocks().modifySlab(event);
+        }
+    }
+
+    @EventHandler
+    public void onPlacePlantsPlayerInteract(PlayerInteractEvent event) {
+        if (event.isCancelled()) return;
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || !isValid(event)) return;
+
+        ItemStack itemStack = event.getItem();
+        if (itemStack == null) {
+            return;
+        }
+
+        Material material = itemStack.getType();
+        if (!PLANTS.contains(XMaterial.matchXMaterial(material))) {
+            return;
+        }
+
+        Player player = event.getPlayer();
+        Settings settings = settingsManager.getSettings(player);
+        if (!settings.isPlacePlants()) {
+            return;
+        }
+
+        event.setCancelled(true);
+        plugin.getCustomBlocks().setPlant(event);
+    }
+
+    private boolean isValid(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+        if (buildWorld == null) {
+            return true;
+        }
+
+        boolean isInBuildMode = plugin.buildPlayers.contains(player.getUniqueId());
+        if (buildWorld.getStatus() == WorldStatus.ARCHIVE && !isInBuildMode) {
+            return false;
+        }
+
+        if (!buildWorld.isBlockPlacement() && !isInBuildMode) {
+            return false;
+        }
+
+        if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
+            return buildWorld.getCreatorId() == null || buildWorld.getCreatorId().equals(player.getUniqueId());
+        }
+
+        return true;
+    }
+
+    @EventHandler
+    public void manageInstantPlaceSignsSetting(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
 
         Player player = event.getPlayer();
@@ -387,7 +330,7 @@ public class PlayerInteractListener implements Listener {
     }
 
     @EventHandler
-    public void onDisabledInteract(PlayerInteractEvent event) {
+    public void manageDisabledInteractSetting(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         if (player.isSneaking()) return;
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;

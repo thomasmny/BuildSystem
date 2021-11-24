@@ -147,20 +147,12 @@ public class CustomBlocks_1_14_R1 extends DirectionUtils implements CustomBlocks
             return;
         }
 
-        ItemStack itemStack = event.getItem();
-        if (itemStack == null) {
-            return;
-        }
-
         Block adjacent = block.getRelative(event.getBlockFace());
-        adjacent.setType(itemStack.getType());
+        adjacent.setType(event.getItem().getType());
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public void modifySlab(PlayerInteractEvent event) {
-        if (event.isCancelled()) return;
-
         Block block = event.getClickedBlock();
         if (block == null) return;
 
