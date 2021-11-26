@@ -11,6 +11,7 @@ package de.eintosti.buildsystem.manager;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.Titles;
+import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.object.world.WorldType;
 import de.eintosti.buildsystem.object.world.*;
@@ -725,20 +726,23 @@ public class WorldManager {
 
     private void copy(File source, File target) {
         try {
-            ArrayList<String> ignore = new ArrayList<>(Arrays.asList("uid.dat", "session.lock"));
-            if (ignore.contains(source.getName())) return;
+            Set<String> ignore = Sets.newHashSet("uid.dat", "session.lock");
+            if (ignore.contains(source.getName())) {
+                return;
+            }
 
             if (source.isDirectory()) {
-                if (!target.exists()) {
-                    if (!target.mkdirs()) {
-                        throw new IOException("Couldn't create world directory!");
-                    }
+                if (!target.exists() && !target.mkdirs()) {
+                    throw new IOException("Couldn't create world directory!");
                 }
-                String[] files = source.list();
-                for (String file : files) {
-                    if (ignore.contains(file)) continue;
-                    File srcFile = new File(source, file);
-                    File trgFile = new File(target, file);
+
+                for (String fileName : source.list()) {
+                    if (ignore.contains(fileName)) {
+                        continue;
+                    }
+
+                    File srcFile = new File(source, fileName);
+                    File trgFile = new File(target, fileName);
                     copy(srcFile, trgFile);
                 }
             } else {
