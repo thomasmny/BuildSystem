@@ -30,7 +30,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Cancellable;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -224,7 +223,7 @@ public class BuildSystem extends JavaPlugin {
     private void getVersion() {
         try {
             this.version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-            getLogger().log(Level.INFO, "Found server version: " + version);
+            getLogger().log(Level.INFO, "Detected server version: " + version);
         } catch (ArrayIndexOutOfBoundsException e) {
             getLogger().log(Level.SEVERE, "Unknown server version");
         }
