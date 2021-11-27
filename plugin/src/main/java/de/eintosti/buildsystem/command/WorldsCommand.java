@@ -16,7 +16,7 @@ import de.eintosti.buildsystem.manager.InventoryManager;
 import de.eintosti.buildsystem.manager.WorldManager;
 import de.eintosti.buildsystem.object.world.BuildWorld;
 import de.eintosti.buildsystem.object.world.Builder;
-import de.eintosti.buildsystem.object.world.generator.Generator;
+import de.eintosti.buildsystem.object.world.Generator;
 import de.eintosti.buildsystem.util.external.PlayerChatInput;
 import de.eintosti.buildsystem.util.external.UUIDFetcher;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -208,7 +208,7 @@ public class WorldsCommand implements CommandExecutor {
                     }
 
                     if (args.length == 2) {
-                        worldManager.importWorld(args[1], player, Generator.VOID);
+                        worldManager.importWorld(player, args[1], Generator.VOID);
                     } else if (args.length == 4) {
                         if (!args[2].equalsIgnoreCase("-g")) {
                             player.sendMessage(plugin.getString("worlds_import_usage"));
@@ -234,9 +234,9 @@ public class WorldsCommand implements CommandExecutor {
                         }
 
                         if (!customGenerator) {
-                            worldManager.importWorld(args[1], player, generator);
+                            worldManager.importWorld(player, args[1], generator);
                         } else {
-                            worldManager.importWorld(args[1], player, generator, args[3]);
+                            worldManager.importWorld(player, args[1], generator, args[3]);
                         }
                     } else {
                         player.sendMessage(plugin.getString("worlds_import_usage"));
