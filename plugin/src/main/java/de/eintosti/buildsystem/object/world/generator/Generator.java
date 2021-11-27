@@ -6,7 +6,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-package de.eintosti.buildsystem.object.world;
+package de.eintosti.buildsystem.object.world.generator;
+
+import de.eintosti.buildsystem.object.world.WorldType;
 
 /**
  * @author einTosti

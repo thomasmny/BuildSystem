@@ -10,8 +10,8 @@ package de.eintosti.buildsystem.tabcomplete;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
-import de.eintosti.buildsystem.object.world.Generator;
 import de.eintosti.buildsystem.object.world.BuildWorld;
+import de.eintosti.buildsystem.object.world.generator.Generator;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;

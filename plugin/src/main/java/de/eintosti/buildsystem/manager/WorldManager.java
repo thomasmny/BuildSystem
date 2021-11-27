@@ -13,8 +13,12 @@ import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.Titles;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.object.world.BuildWorld;
+import de.eintosti.buildsystem.object.world.Builder;
+import de.eintosti.buildsystem.object.world.WorldStatus;
 import de.eintosti.buildsystem.object.world.WorldType;
-import de.eintosti.buildsystem.object.world.*;
+import de.eintosti.buildsystem.object.world.generator.Generator;
+import de.eintosti.buildsystem.object.world.generator.VoidGenerator;
 import de.eintosti.buildsystem.util.config.WorldConfig;
 import de.eintosti.buildsystem.util.external.PlayerChatInput;
 import de.eintosti.buildsystem.util.external.UUIDFetcher;
@@ -216,12 +220,7 @@ public class WorldManager {
                 worldCreator.generateStructures(false);
                 bukkitWorldType = org.bukkit.WorldType.FLAT;
                 if (XMaterial.supports(13)) {
-                    worldCreator.generator(new ChunkGenerator() {
-                        @Override
-                        public ChunkData generateChunkData(World world, Random random, int x, int z, BiomeGrid biome) {
-                            return createChunkData(world);
-                        }
-                    });
+                    worldCreator.generator(new VoidGenerator());
                 } else {
                     worldCreator.generatorSettings("2;0;1");
                 }

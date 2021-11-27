@@ -10,6 +10,7 @@ package de.eintosti.buildsystem;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.command.*;
+import de.eintosti.buildsystem.expansion.BuildSystemExpansion;
 import de.eintosti.buildsystem.inventory.*;
 import de.eintosti.buildsystem.listener.*;
 import de.eintosti.buildsystem.manager.*;
@@ -20,7 +21,6 @@ import de.eintosti.buildsystem.util.Messages;
 import de.eintosti.buildsystem.util.SkullCache;
 import de.eintosti.buildsystem.util.bstats.Metrics;
 import de.eintosti.buildsystem.util.external.UpdateChecker;
-import de.eintosti.buildsystem.util.placeholder.BuildSystemExpansion;
 import de.eintosti.buildsystem.version.*;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -251,6 +251,7 @@ public class BuildSystem extends JavaPlugin {
             case "v1_16_R2":
             case "v1_16_R3":
             case "v1_17_R1":
+            case "v1_18_R1":
                 this.customBlocks = new CustomBlocks_1_14_R1(this);
                 return true;
             default:
@@ -286,6 +287,7 @@ public class BuildSystem extends JavaPlugin {
             case "v1_16_R2":
             case "v1_16_R3":
             case "v1_17_R1":
+            case "v1_18_R1":
                 this.gameRules = new GameRules_1_13_R1(
                         getString("worldeditor_gamerules_title"),
                         getStringList("worldeditor_gamerules_boolean_enabled"),

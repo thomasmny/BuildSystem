@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-package de.eintosti.buildsystem.util.placeholder;
+package de.eintosti.buildsystem.expansion;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.manager.WorldManager;
@@ -157,6 +157,7 @@ public class BuildSystemExpansion extends PlaceholderExpansion {
             case "world":
                 return buildWorld.getName();
         }
+
         return null;
     }
 }
