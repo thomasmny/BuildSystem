@@ -9,6 +9,7 @@
 package de.eintosti.buildsystem.util;
 
 import com.google.common.collect.Sets;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -21,7 +22,13 @@ import java.util.Set;
  */
 public class FileUtils {
 
-    public static void copy(File source, File target) {
+    /**
+     * Copies a file to a new location preserving the file date.
+     *
+     * @param source An existing file to copy, must not be null
+     * @param target The new file, must not be null
+     */
+    public static void copy(@NotNull File source, @NotNull File target) {
         try {
             Set<String> ignore = Sets.newHashSet("uid.dat", "session.lock");
             if (ignore.contains(source.getName())) {
@@ -58,16 +65,27 @@ public class FileUtils {
         }
     }
 
-    public static boolean deleteDirectory(File folder) {
-        File[] allContents = folder.listFiles();
+    /**
+     * Deletes a directory recursively.
+     *
+     * @param directory Directory to delete
+     */
+    public static void deleteDirectory(File directory) {
+        File[] allContents = directory.listFiles();
         if (allContents != null) {
             for (File file : allContents) {
                 deleteDirectory(file);
             }
         }
-        return folder.delete();
+        directory.delete();
     }
 
+    /**
+     * Gets the creation date of a file.
+     *
+     * @param file The file to be checked
+     * @return The amount of milliseconds that have passed since `January 1, 1970 UTC`, until the file was created
+     */
     public static long getDirectoryCreation(File file) {
         long creation = System.currentTimeMillis();
         try {

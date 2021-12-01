@@ -11,8 +11,8 @@ package de.eintosti.buildsystem.manager;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.object.settings.Settings;
-import de.eintosti.buildsystem.object.world.Builder;
 import de.eintosti.buildsystem.object.world.BuildWorld;
+import de.eintosti.buildsystem.object.world.Builder;
 import de.eintosti.buildsystem.object.world.WorldStatus;
 import de.eintosti.buildsystem.object.world.WorldType;
 import de.eintosti.buildsystem.util.config.SetupConfig;
@@ -36,26 +36,9 @@ public class InventoryManager {
     private final BuildSystem plugin;
     private final SetupConfig setupConfig;
 
-    private XMaterial normalCreateItem;
-    private XMaterial flatCreateItem;
-    private XMaterial netherCreateItem;
-    private XMaterial endCreateItem;
-    private XMaterial voidCreateItem;
-    private XMaterial customCreateItem;
-
-    private XMaterial normalDefaultItem;
-    private XMaterial flatDefaultItem;
-    private XMaterial netherDefaultItem;
-    private XMaterial endDefaultItem;
-    private XMaterial voidDefaultItem;
-    private XMaterial importedDefaultItem;
-
-    private XMaterial notStartedItem;
-    private XMaterial inProgressItem;
-    private XMaterial almostFinishedItem;
-    private XMaterial finishedItem;
-    private XMaterial archivedItem;
-    private XMaterial hiddenItem;
+    private XMaterial normalCreateItem, flatCreateItem, netherCreateItem, endCreateItem, voidCreateItem, customCreateItem;
+    private XMaterial normalDefaultItem, flatDefaultItem, netherDefaultItem, endDefaultItem, voidDefaultItem, importedDefaultItem;
+    private XMaterial notStartedItem, inProgressItem, almostFinishedItem, finishedItem, archivedItem, hiddenItem;
 
     public InventoryManager(BuildSystem plugin) {
         this.plugin = plugin;

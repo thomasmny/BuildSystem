@@ -101,7 +101,7 @@ public class WorldManager {
      * @param template     The name of the template world. Only if the world is being created with a template, otherwise ``null
      * @param privateWorld Is world going to be a private world?
      */
-    private void manageWorldType(Player player, String worldName, WorldType worldType, String template, boolean privateWorld) {
+    private void manageWorldType(Player player, String worldName, WorldType worldType, @Nullable String template, boolean privateWorld) {
         switch (worldType) {
             default:
                 createWorld(player, worldName, worldType, privateWorld);

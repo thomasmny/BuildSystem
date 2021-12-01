@@ -19,8 +19,8 @@ import de.eintosti.buildsystem.manager.SettingsManager;
 import de.eintosti.buildsystem.manager.WorldManager;
 import de.eintosti.buildsystem.object.settings.Settings;
 import de.eintosti.buildsystem.object.world.BuildWorld;
+import de.eintosti.buildsystem.object.world.Builder;
 import de.eintosti.buildsystem.object.world.WorldStatus;
-import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -28,7 +28,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryType;
@@ -47,7 +46,6 @@ import java.util.UUID;
  * @author einTosti
  */
 public class PlayerInteractListener implements Listener {
-    private final int version = Integer.parseInt(Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3].replaceAll("[^0-9]", ""));
     private final BuildSystem plugin;
     private final ArmorStandManager armorStandManager;
     private final InventoryManager inventoryManager;
@@ -144,11 +142,16 @@ public class PlayerInteractListener implements Listener {
 
     @EventHandler
     public void onIronPlayerInteract(PlayerInteractEvent event) {
-        if (event.isCancelled()) return;
+        if (event.isCancelled()) {
+            return;
+        }
 
         Block block = event.getClickedBlock();
-        if (block == null) return;
-        if (isWithTwoHands() && event.getHand() != EquipmentSlot.valueOf("HAND")) {
+        if (block == null) {
+            return;
+        }
+
+        if (isDuelHanded() && event.getHand() != EquipmentSlot.valueOf("HAND")) {
             return;
         }
 
@@ -177,13 +180,15 @@ public class PlayerInteractListener implements Listener {
         }
     }
 
-    private boolean isWithTwoHands() {
-        return this.version >= 192;
+    private boolean isDuelHanded() {
+        return XMaterial.supports(9);
     }
 
     @EventHandler
     public void onSlabPlayerInteract(PlayerInteractEvent event) {
-        if (event.isCancelled()) return;
+        if (event.isCancelled()) {
+            return;
+        }
 
         Player player = event.getPlayer();
         Action action = event.getAction();
@@ -196,8 +201,9 @@ public class PlayerInteractListener implements Listener {
 
     @EventHandler
     public void onPlacePlantsPlayerInteract(PlayerInteractEvent event) {
-        if (event.isCancelled()) return;
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || !isValid(event)) return;
+        if (event.isCancelled() || event.getAction() != Action.RIGHT_CLICK_BLOCK || !isValid(event)) {
+            return;
+        }
 
         ItemStack itemStack = event.getItem();
         if (itemStack == null) {
@@ -219,8 +225,28 @@ public class PlayerInteractListener implements Listener {
         plugin.getCustomBlocks().setPlant(event);
     }
 
+    /**
+     * Not every player can always interact with the {@link BuildWorld} they are in.
+     * <p>
+     * Reasons an interaction could be cancelled:
+     * - The world has its {@link WorldStatus} set to archived
+     * - The world has a setting enabled which disallows certain events
+     * - The world only allows {@link Builder}s to build and the player is not such a builder
+     * <p>
+     * However, a player can override these reasons if:
+     * - The player has the permission `buildsystem.admin`
+     * - The player has the permission `buildsystem.bypass.archive`
+     * - The player has used `/build` to enter build-mode
+     *
+     * @param event the event which was called by the world manipulation
+     * @return if the interaction with the world is valid
+     */
     private boolean isValid(PlayerInteractEvent event) {
         Player player = event.getPlayer();
+        if (plugin.canBypass(player)) {
+            return true;
+        }
+
         BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
         if (buildWorld == null) {
             return true;
@@ -244,32 +270,47 @@ public class PlayerInteractListener implements Listener {
 
     @EventHandler
     public void manageInstantPlaceSignsSetting(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
 
         Player player = event.getPlayer();
         Settings settings = settingsManager.getSettings(player);
-        if (!settings.isInstantPlaceSigns()) return;
+        if (!settings.isInstantPlaceSigns()) {
+            return;
+        }
 
         ItemStack itemStack = event.getItem();
-        if (itemStack == null) return;
+        if (itemStack == null) {
+            return;
+        }
+
         Material material = itemStack.getType();
         XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-
-        if (!SIGNS.contains(xMaterial)) return;
+        if (!SIGNS.contains(xMaterial)) {
+            return;
+        }
 
         Block clickedBlock = event.getClickedBlock();
         BlockFace blockFace = event.getBlockFace();
-        if (clickedBlock == null) return;
+        if (clickedBlock == null) {
+            return;
+        }
 
         Block adjacent = clickedBlock.getRelative(blockFace);
-        if (adjacent.getType() != XMaterial.AIR.parseMaterial()) return;
+        if (adjacent.getType() != XMaterial.AIR.parseMaterial()) {
+            return;
+        }
 
-        if (blockFace == BlockFace.DOWN) return;
-        event.setUseItemInHand(Event.Result.DENY);
+        if (blockFace == BlockFace.DOWN) {
+            return;
+        } else {
+            event.setUseItemInHand(Event.Result.DENY);
+        }
 
         switch (blockFace) {
             case UP:
-                if (this.version < 1130) {
+                if (!XMaterial.supports(13)) {
                     material = Material.getMaterial("SIGN_POST") != null ? Material.valueOf("SIGN_POST") : material;
                 }
                 adjacent.setType(material);
@@ -332,177 +373,82 @@ public class PlayerInteractListener implements Listener {
     @EventHandler
     public void manageDisabledInteractSetting(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        if (player.isSneaking()) return;
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        if (player.isSneaking() || event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
 
         Settings settings = settingsManager.getSettings(player);
-        if (!settings.isDisableInteract()) return;
+        if (!settings.isDisableInteract()) {
+            return;
+        }
+
         Block block = event.getClickedBlock();
-        if (block == null) return;
+        if (block == null) {
+            return;
+        }
 
         ItemStack itemStack = event.getItem();
-        if (itemStack == null) return;
+        if (itemStack == null) {
+            return;
+        }
 
         Material material = itemStack.getType();
-        if (material == XMaterial.WOODEN_AXE.parseMaterial()) return;
-
-        if (DISABLED_BLOCKS.contains(XMaterial.matchXMaterial(block.getType()))) {
-            event.setUseItemInHand(Event.Result.DENY);
-            event.setUseInteractedBlock(Event.Result.DENY);
-
-            XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-            String materialName = material.toString();
-
-            if (SIGNS.contains(xMaterial)) {
-                if (this.version < 1130) {
-                    material = Material.valueOf("WALL_SIGN");
-                } else {
-                    String[] splitMaterial = materialName.split("_");
-                    material = Material.valueOf(splitMaterial[0] + "_WALL_SIGN");
-                }
-            }
-
-            if (this.version < 1130) {
-                if (materialName.endsWith("_ITEM")) {
-                    material = Material.valueOf(materialName.replace("_ITEM", ""));
-                }
-            }
-
-            Block adjacent = block.getRelative(event.getBlockFace());
-            adjacent.setType(material);
-            XBlock.setColor(adjacent, getItemColor(itemStack));
-
-            plugin.getCustomBlocks().rotate(adjacent, player, null);
+        if (material == XMaterial.WOODEN_AXE.parseMaterial() || !isInteractable(block)) {
+            return;
         }
+
+        event.setCancelled(true);
+        event.setUseItemInHand(Event.Result.DENY);
+        event.setUseInteractedBlock(Event.Result.DENY);
+
+        XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
+        String materialName = material.toString();
+
+        if (SIGNS.contains(xMaterial)) {
+            if (!XMaterial.supports(13)) {
+                material = Material.valueOf("WALL_SIGN");
+            } else {
+                String[] splitMaterial = materialName.split("_");
+                material = Material.valueOf(splitMaterial[0] + "_WALL_SIGN");
+            }
+        }
+
+        if (!XMaterial.supports(13) && materialName.endsWith("_ITEM")) {
+            material = Material.valueOf(materialName.replace("_ITEM", ""));
+        }
+
+        Block adjacent = block.getRelative(event.getBlockFace());
+        adjacent.setType(material);
+        XBlock.setColor(adjacent, getItemColor(itemStack));
+
+        plugin.getCustomBlocks().rotate(adjacent, player, null);
+    }
+
+    private boolean isInteractable(Block block) {
+        if (block == null) {
+            return false;
+        }
+
+        Material type = block.getType();
+        boolean interactable = type.isInteractable();
+        if (!interactable) {
+            return false;
+        }
+
+        // This check is done using string to support legacy MC versions too.
+        String str = type.toString();
+        return !(str.endsWith("_STAIRS") || str.endsWith("_FENCE")
+                || str.equals("REDSTONE_ORE")
+                || str.equals("REDSTONE_WIRE")
+                || str.equals("PUMPKIN")
+                || str.equals("MOVING_PISTON")
+        );
     }
 
     @SuppressWarnings("deprecation")
     private DyeColor getItemColor(ItemStack itemStack) {
         return DyeColor.getByWoolData((byte) itemStack.getDurability());
     }
-
-    private static final Set<XMaterial> DISABLED_BLOCKS = Sets.newHashSet(
-            XMaterial.ACACIA_BUTTON,
-            XMaterial.ACACIA_DOOR,
-            XMaterial.ACACIA_FENCE,
-            XMaterial.ACACIA_FENCE_GATE,
-            XMaterial.ACACIA_SIGN,
-            XMaterial.ACACIA_TRAPDOOR,
-            XMaterial.ACACIA_WALL_SIGN,
-            XMaterial.ANVIL,
-            XMaterial.BARREL,
-            XMaterial.BELL,
-            XMaterial.BIRCH_BUTTON,
-            XMaterial.BIRCH_DOOR,
-            XMaterial.BIRCH_FENCE,
-            XMaterial.BIRCH_FENCE_GATE,
-            XMaterial.BIRCH_SIGN,
-            XMaterial.BIRCH_TRAPDOOR,
-            XMaterial.BIRCH_WALL_SIGN,
-            XMaterial.BLACK_BED,
-            XMaterial.BLACK_SHULKER_BOX,
-            XMaterial.BLAST_FURNACE,
-            XMaterial.BLUE_BED,
-            XMaterial.BLUE_SHULKER_BOX,
-            XMaterial.BROWN_BED,
-            XMaterial.BROWN_SHULKER_BOX,
-            XMaterial.CARTOGRAPHY_TABLE,
-            XMaterial.CHEST,
-            XMaterial.CHIPPED_ANVIL,
-            XMaterial.CRAFTING_TABLE,
-            XMaterial.CRIMSON_BUTTON,
-            XMaterial.CRIMSON_DOOR,
-            XMaterial.CRIMSON_FENCE,
-            XMaterial.CRIMSON_FENCE_GATE,
-            XMaterial.CRIMSON_SIGN,
-            XMaterial.CRIMSON_TRAPDOOR,
-            XMaterial.CRIMSON_WALL_SIGN,
-            XMaterial.CYAN_BED,
-            XMaterial.CYAN_SHULKER_BOX,
-            XMaterial.DAMAGED_ANVIL,
-            XMaterial.DARK_OAK_BUTTON,
-            XMaterial.DARK_OAK_DOOR,
-            XMaterial.DARK_OAK_FENCE,
-            XMaterial.DARK_OAK_FENCE_GATE,
-            XMaterial.DARK_OAK_SIGN,
-            XMaterial.DARK_OAK_TRAPDOOR,
-            XMaterial.DARK_OAK_WALL_SIGN,
-            XMaterial.DAYLIGHT_DETECTOR,
-            XMaterial.DISPENSER,
-            XMaterial.DROPPER,
-            XMaterial.ENCHANTING_TABLE,
-            XMaterial.ENDER_CHEST,
-            XMaterial.FURNACE,
-            XMaterial.GRAY_BED,
-            XMaterial.GRAY_SHULKER_BOX,
-            XMaterial.GREEN_BED,
-            XMaterial.GREEN_SHULKER_BOX,
-            XMaterial.GRINDSTONE,
-            XMaterial.HOPPER,
-            XMaterial.IRON_DOOR,
-            XMaterial.IRON_TRAPDOOR,
-            XMaterial.JUKEBOX,
-            XMaterial.JUNGLE_BUTTON,
-            XMaterial.JUNGLE_DOOR,
-            XMaterial.JUNGLE_FENCE,
-            XMaterial.JUNGLE_FENCE_GATE,
-            XMaterial.JUNGLE_SIGN,
-            XMaterial.JUNGLE_TRAPDOOR,
-            XMaterial.JUNGLE_WALL_SIGN,
-            XMaterial.LEVER,
-            XMaterial.LIGHT_BLUE_BED,
-            XMaterial.LIGHT_BLUE_SHULKER_BOX,
-            XMaterial.LIGHT_GRAY_BED,
-            XMaterial.LIGHT_GRAY_SHULKER_BOX,
-            XMaterial.LIME_BED,
-            XMaterial.LOOM,
-            XMaterial.MAGENTA_BED,
-            XMaterial.MAGENTA_SHULKER_BOX,
-            XMaterial.MOVING_PISTON,
-            XMaterial.NETHER_BRICK_FENCE,
-            XMaterial.NOTE_BLOCK,
-            XMaterial.OAK_BUTTON,
-            XMaterial.OAK_DOOR,
-            XMaterial.OAK_FENCE,
-            XMaterial.OAK_FENCE_GATE,
-            XMaterial.OAK_SIGN,
-            XMaterial.OAK_TRAPDOOR,
-            XMaterial.OAK_WALL_SIGN,
-            XMaterial.ORANGE_BED,
-            XMaterial.ORANGE_SHULKER_BOX,
-            XMaterial.PINK_BED,
-            XMaterial.PINK_SHULKER_BOX,
-            XMaterial.PISTON,
-            XMaterial.PURPLE_BED,
-            XMaterial.PURPLE_SHULKER_BOX,
-            XMaterial.RED_BED,
-            XMaterial.RED_SHULKER_BOX,
-            XMaterial.SHULKER_BOX,
-            XMaterial.SMITHING_TABLE,
-            XMaterial.SMOKER,
-            XMaterial.SPRUCE_BUTTON,
-            XMaterial.SPRUCE_DOOR,
-            XMaterial.SPRUCE_FENCE,
-            XMaterial.SPRUCE_FENCE_GATE,
-            XMaterial.SPRUCE_SIGN,
-            XMaterial.SPRUCE_TRAPDOOR,
-            XMaterial.SPRUCE_WALL_SIGN,
-            XMaterial.STICKY_PISTON,
-            XMaterial.STONE_BUTTON,
-            XMaterial.STONECUTTER,
-            XMaterial.TRAPPED_CHEST,
-            XMaterial.WARPED_BUTTON,
-            XMaterial.WARPED_DOOR,
-            XMaterial.WARPED_FENCE,
-            XMaterial.WARPED_FENCE_GATE,
-            XMaterial.WARPED_SIGN,
-            XMaterial.WARPED_TRAPDOOR,
-            XMaterial.WARPED_WALL_SIGN,
-            XMaterial.WHITE_BED,
-            XMaterial.WHITE_SHULKER_BOX,
-            XMaterial.YELLOW_BED,
-            XMaterial.YELLOW_SHULKER_BOX
-    );
 
     private static final Set<XMaterial> SIGNS = Sets.newHashSet(
             XMaterial.ACACIA_SIGN,

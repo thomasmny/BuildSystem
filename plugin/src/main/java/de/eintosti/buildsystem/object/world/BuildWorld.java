@@ -330,7 +330,7 @@ public class BuildWorld implements ConfigurationSerializable {
     }
 
     /**
-     * @return The amount of milliseconds that have passed since January 1, 1970 UTC and the creation of the world
+     * @return The amount of milliseconds that have passed since `January 1, 1970 UTC`, until the world was created
      */
     public long getCreationDate() {
         return date;
