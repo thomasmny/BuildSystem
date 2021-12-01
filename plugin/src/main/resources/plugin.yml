@@ -2,7 +2,7 @@ name: BuildSystem
 version: ${project.version}
 api-version: "1.13"
 author: einTosti
-main: de.eintosti.buildsystem.BuildSystem
+main: com.eintosti.buildsystem.BuildSystem
 description: Powerful, easy to use system for builders
 softdepend: [ PlaceholderAPI ]
 
