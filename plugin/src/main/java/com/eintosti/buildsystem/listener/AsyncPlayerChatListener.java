@@ -27,7 +27,7 @@ public class AsyncPlayerChatListener implements Listener {
     @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
-        if (!player.hasPermission("buildsystem.color.chat")){
+        if (!player.hasPermission("buildsystem.color.chat")) {
             return;
         }
 
