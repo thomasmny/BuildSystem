@@ -12,10 +12,8 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.object.world.Builder;
-import com.eintosti.buildsystem.object.world.Generator;
-import com.eintosti.buildsystem.object.world.WorldStatus;
+import com.eintosti.buildsystem.object.world.WorldType;
+import com.eintosti.buildsystem.object.world.*;
 import com.eintosti.buildsystem.util.FileUtils;
 import com.eintosti.buildsystem.util.config.WorldConfig;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
@@ -73,7 +71,7 @@ public class WorldManager {
      * @param template     The name of the template world, if any, otherwise `null`
      * @param privateWorld Is world going to be a private world?
      */
-    public void startWorldNameInput(Player player, com.eintosti.buildsystem.object.world.WorldType worldType, @Nullable String template, boolean privateWorld) {
+    public void startWorldNameInput(Player player, WorldType worldType, @Nullable String template, boolean privateWorld) {
         if (privateWorld) {
             player.closeInventory();
             manageWorldType(player, player.getName(), worldType, template, true);
@@ -95,7 +93,7 @@ public class WorldManager {
     }
 
     /**
-     * Depending on the {@link BuildWorld}'s {@link com.eintosti.buildsystem.object.world.WorldType}, the corresponding {@link World} will be generated in a different way.
+     * Depending on the {@link BuildWorld}'s {@link WorldType}, the corresponding {@link World} will be generated in a different way.
      *
      * @param player       The player who is creating the world
      * @param worldName    The name of the world
@@ -103,7 +101,7 @@ public class WorldManager {
      * @param template     The name of the template world. Only if the world is being created with a template, otherwise ``null
      * @param privateWorld Is world going to be a private world?
      */
-    private void manageWorldType(Player player, String worldName, com.eintosti.buildsystem.object.world.WorldType worldType, @Nullable String template, boolean privateWorld) {
+    private void manageWorldType(Player player, String worldName, WorldType worldType, @Nullable String template, boolean privateWorld) {
         switch (worldType) {
             default:
                 createWorld(player, worldName, worldType, privateWorld);
@@ -145,7 +143,7 @@ public class WorldManager {
      * @param worldType    The world type
      * @param privateWorld Is world going to be a private world?
      */
-    public void createWorld(Player player, String worldName, com.eintosti.buildsystem.object.world.WorldType worldType, boolean privateWorld) {
+    public void createWorld(Player player, String worldName, WorldType worldType, boolean privateWorld) {
         if (worldExists(player, worldName)) return;
 
         BuildWorld buildWorld = new BuildWorld(plugin, worldName, player.getName(), player.getUniqueId(), worldType, System.currentTimeMillis(), privateWorld);
@@ -185,7 +183,7 @@ public class WorldManager {
                 plugin.getLogger().log(Level.INFO, "Using custom world generator: " + input);
             }
 
-            BuildWorld buildWorld = new BuildWorld(plugin, worldName, player.getName(), player.getUniqueId(), com.eintosti.buildsystem.object.world.WorldType.CUSTOM, System.currentTimeMillis(), privateWorld, input);
+            BuildWorld buildWorld = new BuildWorld(plugin, worldName, player.getName(), player.getUniqueId(), WorldType.CUSTOM, System.currentTimeMillis(), privateWorld, input);
             buildWorlds.add(buildWorld);
 
             player.sendMessage(plugin.getString("worlds_world_creation_started")
@@ -218,7 +216,7 @@ public class WorldManager {
             return;
         }
 
-        BuildWorld buildWorld = new BuildWorld(plugin, worldName, player.getName(), player.getUniqueId(), com.eintosti.buildsystem.object.world.WorldType.TEMPLATE, System.currentTimeMillis(), privateWorld);
+        BuildWorld buildWorld = new BuildWorld(plugin, worldName, player.getName(), player.getUniqueId(), WorldType.TEMPLATE, System.currentTimeMillis(), privateWorld);
         buildWorlds.add(buildWorld);
 
         player.sendMessage(plugin.getString("worlds_template_creation_started")
@@ -232,12 +230,12 @@ public class WorldManager {
     }
 
     /**
-     * Certain {@link com.eintosti.buildsystem.object.world.WorldType}s require modifications to the world after its generation.
+     * Certain {@link WorldType}s require modifications to the world after its generation.
      *
      * @param buildWorld The build world object
      */
     private void finishPreparationsAndGenerate(BuildWorld buildWorld) {
-        com.eintosti.buildsystem.object.world.WorldType worldType = buildWorld.getType();
+        WorldType worldType = buildWorld.getType();
         World bukkitWorld = generateBukkitWorld(buildWorld.getName(), worldType);
 
         switch (worldType) {
@@ -261,7 +259,7 @@ public class WorldManager {
      * @param chunkGenerators Custom chunk generator to be used, if any
      * @return The world object
      */
-    public World generateBukkitWorld(String worldName, com.eintosti.buildsystem.object.world.WorldType worldType, ChunkGenerator... chunkGenerators) {
+    public World generateBukkitWorld(String worldName, WorldType worldType, ChunkGenerator... chunkGenerators) {
         WorldCreator worldCreator = new WorldCreator(worldName);
         org.bukkit.WorldType bukkitWorldType;
 
@@ -321,7 +319,7 @@ public class WorldManager {
     }
 
     /**
-     * Parse the {@link ChunkGenerator} for the generation of a {@link BuildWorld} with {@link com.eintosti.buildsystem.object.world.WorldType#CUSTOM}
+     * Parse the {@link ChunkGenerator} for the generation of a {@link BuildWorld} with {@link WorldType#CUSTOM}
      *
      * @param generator   The plugin's (generator) name
      * @param generatorId Unique ID, if any, that was specified to indicate which generator was requested
@@ -375,7 +373,7 @@ public class WorldManager {
         }
 
         player.sendMessage(plugin.getString("worlds_import_started").replace("%world%", worldName));
-        buildWorlds.add(new BuildWorld(plugin, worldName, "-", null, com.eintosti.buildsystem.object.world.WorldType.IMPORTED, FileUtils.getDirectoryCreation(file), false));
+        buildWorlds.add(new BuildWorld(plugin, worldName, "-", null, WorldType.IMPORTED, FileUtils.getDirectoryCreation(file), false));
 
         if (chunkGenerator == null) {
             generateBukkitWorld(worldName, generator.getWorldType());
@@ -414,8 +412,8 @@ public class WorldManager {
                 }
 
                 long creation = FileUtils.getDirectoryCreation(new File(Bukkit.getWorldContainer(), worldName));
-                buildWorlds.add(new BuildWorld(plugin, worldName, "-", null, com.eintosti.buildsystem.object.world.WorldType.IMPORTED, creation, false));
-                generateBukkitWorld(worldName, com.eintosti.buildsystem.object.world.WorldType.VOID);
+                buildWorlds.add(new BuildWorld(plugin, worldName, "-", null, WorldType.IMPORTED, creation, false));
+                generateBukkitWorld(worldName, WorldType.VOID);
                 player.sendMessage(plugin.getString("worlds_importall_world_imported").replace("%world%", worldName));
 
                 if (!(worldsImported.get() < worlds)) {
@@ -692,7 +690,7 @@ public class WorldManager {
 
         String creator = configuration.isString("worlds." + worldName + ".creator") ? configuration.getString("worlds." + worldName + ".creator") : "-";
         UUID creatorId = parseCreatorId(configuration, worldName, creator);
-        com.eintosti.buildsystem.object.world.WorldType worldType = configuration.isString("worlds." + worldName + ".type") ? com.eintosti.buildsystem.object.world.WorldType.valueOf(configuration.getString("worlds." + worldName + ".type")) : com.eintosti.buildsystem.object.world.WorldType.UNKNOWN;
+        WorldType worldType = configuration.isString("worlds." + worldName + ".type") ? WorldType.valueOf(configuration.getString("worlds." + worldName + ".type")) : WorldType.UNKNOWN;
         boolean privateWorld = configuration.isBoolean("worlds." + worldName + ".private") && configuration.getBoolean("worlds." + worldName + ".private");
         XMaterial material = parseMaterial(configuration, worldName);
         WorldStatus worldStatus = WorldStatus.valueOf(configuration.getString("worlds." + worldName + ".status"));
@@ -711,9 +709,9 @@ public class WorldManager {
         String chunkGeneratorString = configuration.getString("worlds." + worldName + ".chunk-generator");
         ChunkGenerator chunkGenerator = parseChunkGenerator(configuration, worldName);
 
-        if (worldType == com.eintosti.buildsystem.object.world.WorldType.PRIVATE) {
+        if (worldType == WorldType.PRIVATE) {
             privateWorld = true;
-            worldType = com.eintosti.buildsystem.object.world.WorldType.FLAT;
+            worldType = WorldType.FLAT;
         }
 
         BuildWorld buildWorld = new BuildWorld(

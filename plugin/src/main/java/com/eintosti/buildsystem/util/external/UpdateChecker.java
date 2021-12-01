@@ -40,7 +40,9 @@ import java.util.regex.Pattern;
  */
 public final class UpdateChecker {
 
-    /** The default version scheme for this update checker */
+    /**
+     * The default version scheme for this update checker
+     */
     public static final VersionScheme VERSION_SCHEME_DECIMAL = (first, second) -> {
         String[] firstSplit = splitVersionInfo(first), secondSplit = splitVersionInfo(second);
         if (firstSplit == null || secondSplit == null) {
@@ -110,11 +112,9 @@ public final class UpdateChecker {
 
                 if (latest == null) {
                     return new UpdateResult(UpdateReason.UNSUPPORTED_VERSION_SCHEME);
-                }
-                else if (latest.equals(pluginVersion)) {
+                } else if (latest.equals(pluginVersion)) {
                     return new UpdateResult(pluginVersion.equals(currentVersion) ? UpdateReason.UP_TO_DATE : UpdateReason.UNRELEASED_VERSION);
-                }
-                else if (latest.equals(currentVersion)) {
+                } else if (latest.equals(currentVersion)) {
                     return new UpdateResult(UpdateReason.NEW_UPDATE, latest);
                 }
             } catch (IOException e) {
@@ -147,12 +147,11 @@ public final class UpdateChecker {
      * If an instance of UpdateChecker has already been initialized, this method will act
      * similarly to {@link #get()} (which is recommended after initialization).
      *
-     * @param plugin the plugin for which to check updates. Cannot be null
-     * @param pluginID the ID of the plugin as identified in the SpigotMC resource link.
-     * For example, "https://www.spigotmc.org/resources/veinminer.<b>12038</b>/" would
-     * expect "12038" as a value. The value must be greater than 0
+     * @param plugin        the plugin for which to check updates. Cannot be null
+     * @param pluginID      the ID of the plugin as identified in the SpigotMC resource link.
+     *                      For example, "https://www.spigotmc.org/resources/veinminer.<b>12038</b>/" would
+     *                      expect "12038" as a value. The value must be greater than 0
      * @param versionScheme a custom version scheme parser. Cannot be null
-     *
      * @return the UpdateChecker instance
      */
     @NotNull
@@ -169,11 +168,10 @@ public final class UpdateChecker {
      * If an instance of UpdateChecker has already been initialized, this method will act
      * similarly to {@link #get()} (which is recommended after initialization).
      *
-     * @param plugin the plugin for which to check updates. Cannot be null
+     * @param plugin   the plugin for which to check updates. Cannot be null
      * @param pluginID the ID of the plugin as identified in the SpigotMC resource link.
-     * For example, "https://www.spigotmc.org/resources/veinminer.<b>12038</b>/" would
-     * expect "12038" as a value. The value must be greater than 0
-     *
+     *                 For example, "https://www.spigotmc.org/resources/veinminer.<b>12038</b>/" would
+     *                 expect "12038" as a value. The value must be greater than 0
      * @return the UpdateChecker instance
      */
     @NotNull
@@ -215,9 +213,8 @@ public final class UpdateChecker {
          * is assumed that at least one of the two versions are unsupported by this
          * version scheme parser.
          *
-         * @param first the first version to check
+         * @param first  the first version to check
          * @param second the second version to check
-         *
          * @return the greater of the two versions. null if unsupported version schemes
          */
         @Nullable

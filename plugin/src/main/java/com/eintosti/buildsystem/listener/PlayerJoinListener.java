@@ -145,8 +145,8 @@ public class PlayerJoinListener implements Listener {
                         StringBuilder stringBuilder = new StringBuilder();
                         plugin.getStringList("update_available").forEach(line ->
                                 stringBuilder.append(line
-                                        .replace("%new_version%", result.getNewestVersion())
-                                        .replace("%current_version%", plugin.getDescription().getVersion()))
+                                                .replace("%new_version%", result.getNewestVersion())
+                                                .replace("%current_version%", plugin.getDescription().getVersion()))
                                         .append("\n"));
                         player.sendMessage(stringBuilder.toString());
                     }
