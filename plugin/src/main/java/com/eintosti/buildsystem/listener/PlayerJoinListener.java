@@ -65,17 +65,13 @@ public class PlayerJoinListener implements Listener {
         String worldName = player.getWorld().getName();
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld != null) {
-            if (!buildWorld.isPhysics()) {
-                if (player.hasPermission("buildsystem.physics.message")) {
-                    player.sendMessage(plugin.getString("physics_deactivated_in_world").replace("%world%", buildWorld.getName()));
-                }
+            if (!buildWorld.isPhysics() && player.hasPermission("buildsystem.physics.message")) {
+                player.sendMessage(plugin.getString("physics_deactivated_in_world").replace("%world%", buildWorld.getName()));
             }
 
-            if (plugin.isArchiveVanish()) {
-                if (buildWorld.getStatus() == WorldStatus.ARCHIVE) {
-                    player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, false, false), false);
-                    Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
-                }
+            if (plugin.isArchiveVanish() && buildWorld.getStatus() == WorldStatus.ARCHIVE) {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, false, false), false);
+                Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
             }
         }
 
@@ -114,7 +110,9 @@ public class PlayerJoinListener implements Listener {
         }
 
         PlayerInventory playerInventory = player.getInventory();
-        if (inventoryManager.inventoryContainsNavigator(playerInventory)) return;
+        if (inventoryManager.inventoryContainsNavigator(playerInventory)) {
+            return;
+        }
 
         ItemStack itemStack = inventoryManager.getItemStack(plugin.getNavigatorItem(), plugin.getString("navigator_item"));
         ItemStack slot8 = playerInventory.getItem(8);
