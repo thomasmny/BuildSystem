@@ -10,7 +10,7 @@
     <packaging>jar</packaging>
 
     <parent>
-        <groupId>de.eintosti</groupId>
+        <groupId>com.eintosti</groupId>
         <artifactId>buildsystem-parent</artifactId>
         <version>parent</version>
     </parent>
