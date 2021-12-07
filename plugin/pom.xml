@@ -73,13 +73,13 @@
         <dependency>
             <groupId>com.github.cryptomorin</groupId>
             <artifactId>XSeries</artifactId>
-            <version>8.5.0</version>
+            <version>8.5.0.1</version>
         </dependency>
         <!-- FastBoard -->
         <dependency>
             <groupId>fr.mrmicky</groupId>
             <artifactId>fastboard</artifactId>
-            <version>1.2.0</version>
+            <version>1.2.1</version>
         </dependency>
         <!-- Adventure Text -->
         <dependency>
