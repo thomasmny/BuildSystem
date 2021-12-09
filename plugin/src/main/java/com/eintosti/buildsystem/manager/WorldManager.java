@@ -246,7 +246,8 @@ public class WorldManager {
                 bukkitWorld.setSpawnLocation(0, 65, 0);
                 break;
             case FLAT:
-                bukkitWorld.setSpawnLocation(0, 4, 0);
+                int y = XMaterial.supports(18) ? -60 : 4;
+                bukkitWorld.setSpawnLocation(0, y, 0);
                 break;
         }
     }
