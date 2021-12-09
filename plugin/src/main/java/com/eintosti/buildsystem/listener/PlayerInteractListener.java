@@ -30,6 +30,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -38,6 +39,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -52,12 +54,16 @@ public class PlayerInteractListener implements Listener {
     private final SettingsManager settingsManager;
     private final WorldManager worldManager;
 
+    private final Set<UUID> cachePlayers;
+
     public PlayerInteractListener(BuildSystem plugin) {
         this.plugin = plugin;
         this.armorStandManager = plugin.getArmorStandManager();
         this.inventoryManager = plugin.getInventoryManager();
         this.settingsManager = plugin.getSettingsManager();
         this.worldManager = plugin.getWorldManager();
+
+        this.cachePlayers = new HashSet<>();
 
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -393,10 +399,10 @@ public class PlayerInteractListener implements Listener {
         }
 
         Material material = itemStack.getType();
-        if (material == XMaterial.WOODEN_AXE.parseMaterial() || !isInteractable(block)) {
-            return;
-        }
+        if (material == XMaterial.WOODEN_AXE.parseMaterial()) return;
+        if (!DISABLED_BLOCKS.contains(XMaterial.matchXMaterial(block.getType()))) return;
 
+        cachePlayers.add(player.getUniqueId());
         event.setCancelled(true);
         event.setUseItemInHand(Event.Result.DENY);
         event.setUseInteractedBlock(Event.Result.DENY);
@@ -424,25 +430,16 @@ public class PlayerInteractListener implements Listener {
         plugin.getCustomBlocks().rotate(adjacent, player, null);
     }
 
-    private boolean isInteractable(Block block) {
-        if (block == null) {
-            return false;
+    // Could be a separate class but this makes it easier
+    @EventHandler
+    public void onInventoryOpen(InventoryOpenEvent event) {
+        Player player = (Player) event.getPlayer();
+        UUID playerUuid = player.getUniqueId();
+        if (!cachePlayers.contains(playerUuid)) {
+            return;
         }
-
-        Material type = block.getType();
-        boolean interactable = type.isInteractable();
-        if (!interactable) {
-            return false;
-        }
-
-        // This check is done using string to support legacy MC versions too.
-        String str = type.toString();
-        return !(str.endsWith("_STAIRS") || str.endsWith("_FENCE")
-                || str.equals("REDSTONE_ORE")
-                || str.equals("REDSTONE_WIRE")
-                || str.equals("PUMPKIN")
-                || str.equals("MOVING_PISTON")
-        );
+        event.setCancelled(true);
+        cachePlayers.remove(playerUuid);
     }
 
     @SuppressWarnings("deprecation")
@@ -502,5 +499,128 @@ public class PlayerInteractListener implements Listener {
             XMaterial.WEEPING_VINES,
             XMaterial.WHEAT_SEEDS,
             XMaterial.WHITE_TULIP
+    );
+
+    private static final Set<XMaterial> DISABLED_BLOCKS = Sets.newHashSet(
+            XMaterial.ACACIA_BUTTON,
+            XMaterial.ACACIA_DOOR,
+            XMaterial.ACACIA_FENCE,
+            XMaterial.ACACIA_FENCE_GATE,
+            XMaterial.ACACIA_SIGN,
+            XMaterial.ACACIA_TRAPDOOR,
+            XMaterial.ACACIA_WALL_SIGN,
+            XMaterial.ANVIL,
+            XMaterial.BARREL,
+            XMaterial.BELL,
+            XMaterial.BIRCH_BUTTON,
+            XMaterial.BIRCH_DOOR,
+            XMaterial.BIRCH_FENCE,
+            XMaterial.BIRCH_FENCE_GATE,
+            XMaterial.BIRCH_SIGN,
+            XMaterial.BIRCH_TRAPDOOR,
+            XMaterial.BIRCH_WALL_SIGN,
+            XMaterial.BLACK_BED,
+            XMaterial.BLACK_SHULKER_BOX,
+            XMaterial.BLAST_FURNACE,
+            XMaterial.BLUE_BED,
+            XMaterial.BLUE_SHULKER_BOX,
+            XMaterial.BROWN_BED,
+            XMaterial.BROWN_SHULKER_BOX,
+            XMaterial.CARTOGRAPHY_TABLE,
+            XMaterial.CHEST,
+            XMaterial.CHIPPED_ANVIL,
+            XMaterial.CRAFTING_TABLE,
+            XMaterial.CRIMSON_BUTTON,
+            XMaterial.CRIMSON_DOOR,
+            XMaterial.CRIMSON_FENCE,
+            XMaterial.CRIMSON_FENCE_GATE,
+            XMaterial.CRIMSON_SIGN,
+            XMaterial.CRIMSON_TRAPDOOR,
+            XMaterial.CRIMSON_WALL_SIGN,
+            XMaterial.CYAN_BED,
+            XMaterial.CYAN_SHULKER_BOX,
+            XMaterial.DAMAGED_ANVIL,
+            XMaterial.DARK_OAK_BUTTON,
+            XMaterial.DARK_OAK_DOOR,
+            XMaterial.DARK_OAK_FENCE,
+            XMaterial.DARK_OAK_FENCE_GATE,
+            XMaterial.DARK_OAK_SIGN,
+            XMaterial.DARK_OAK_TRAPDOOR,
+            XMaterial.DARK_OAK_WALL_SIGN,
+            XMaterial.DAYLIGHT_DETECTOR,
+            XMaterial.DISPENSER,
+            XMaterial.DROPPER,
+            XMaterial.ENCHANTING_TABLE,
+            XMaterial.ENDER_CHEST,
+            XMaterial.FURNACE,
+            XMaterial.GRAY_BED,
+            XMaterial.GRAY_SHULKER_BOX,
+            XMaterial.GREEN_BED,
+            XMaterial.GREEN_SHULKER_BOX,
+            XMaterial.GRINDSTONE,
+            XMaterial.HOPPER,
+            XMaterial.IRON_DOOR,
+            XMaterial.IRON_TRAPDOOR,
+            XMaterial.JUKEBOX,
+            XMaterial.JUNGLE_BUTTON,
+            XMaterial.JUNGLE_DOOR,
+            XMaterial.JUNGLE_FENCE,
+            XMaterial.JUNGLE_FENCE_GATE,
+            XMaterial.JUNGLE_SIGN,
+            XMaterial.JUNGLE_TRAPDOOR,
+            XMaterial.JUNGLE_WALL_SIGN,
+            XMaterial.LEVER,
+            XMaterial.LIGHT_BLUE_BED,
+            XMaterial.LIGHT_BLUE_SHULKER_BOX,
+            XMaterial.LIGHT_GRAY_BED,
+            XMaterial.LIGHT_GRAY_SHULKER_BOX,
+            XMaterial.LIME_BED,
+            XMaterial.LOOM,
+            XMaterial.MAGENTA_BED,
+            XMaterial.MAGENTA_SHULKER_BOX,
+            XMaterial.MOVING_PISTON,
+            XMaterial.NETHER_BRICK_FENCE,
+            XMaterial.NOTE_BLOCK,
+            XMaterial.OAK_BUTTON,
+            XMaterial.OAK_DOOR,
+            XMaterial.OAK_FENCE,
+            XMaterial.OAK_FENCE_GATE,
+            XMaterial.OAK_SIGN,
+            XMaterial.OAK_TRAPDOOR,
+            XMaterial.OAK_WALL_SIGN,
+            XMaterial.ORANGE_BED,
+            XMaterial.ORANGE_SHULKER_BOX,
+            XMaterial.PINK_BED,
+            XMaterial.PINK_SHULKER_BOX,
+            XMaterial.PISTON,
+            XMaterial.PURPLE_BED,
+            XMaterial.PURPLE_SHULKER_BOX,
+            XMaterial.RED_BED,
+            XMaterial.RED_SHULKER_BOX,
+            XMaterial.SHULKER_BOX,
+            XMaterial.SMITHING_TABLE,
+            XMaterial.SMOKER,
+            XMaterial.SPRUCE_BUTTON,
+            XMaterial.SPRUCE_DOOR,
+            XMaterial.SPRUCE_FENCE,
+            XMaterial.SPRUCE_FENCE_GATE,
+            XMaterial.SPRUCE_SIGN,
+            XMaterial.SPRUCE_TRAPDOOR,
+            XMaterial.SPRUCE_WALL_SIGN,
+            XMaterial.STICKY_PISTON,
+            XMaterial.STONE_BUTTON,
+            XMaterial.STONECUTTER,
+            XMaterial.TRAPPED_CHEST,
+            XMaterial.WARPED_BUTTON,
+            XMaterial.WARPED_DOOR,
+            XMaterial.WARPED_FENCE,
+            XMaterial.WARPED_FENCE_GATE,
+            XMaterial.WARPED_SIGN,
+            XMaterial.WARPED_TRAPDOOR,
+            XMaterial.WARPED_WALL_SIGN,
+            XMaterial.WHITE_BED,
+            XMaterial.WHITE_SHULKER_BOX,
+            XMaterial.YELLOW_BED,
+            XMaterial.YELLOW_SHULKER_BOX
     );
 }
