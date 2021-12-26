@@ -23,6 +23,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 
 /**
  * @author einTosti
@@ -95,6 +96,11 @@ public class WorldManipulateListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(PlayerInteractEvent event) {
+        ItemStack itemStack = event.getItem();
+        if (itemStack != null && itemStack.getType() == plugin.getWorldEditWand().parseMaterial()) {
+            return;
+        }
+
         Player player = event.getPlayer();
         BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
         if (buildWorld == null) {

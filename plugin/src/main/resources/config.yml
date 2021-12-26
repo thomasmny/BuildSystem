@@ -8,6 +8,7 @@ settings:
   archive-vanish: true
   builder:
     block-worldedit-non-builder: true
+    world-edit-wand: "WOODEN_AXE"
     creator-is-builder: false
   navigator:
     item: "CLOCK"

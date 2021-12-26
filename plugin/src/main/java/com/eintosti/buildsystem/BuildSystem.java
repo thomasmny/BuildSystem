@@ -83,6 +83,7 @@ public class BuildSystem extends JavaPlugin {
     private boolean worldBlockPlacement;
     private boolean worldBlockInteractions;
     private XMaterial navigatorItem;
+    private XMaterial worldEditWand;
 
     private int sunriseTime;
     private int noonTime;
@@ -501,6 +502,7 @@ public class BuildSystem extends JavaPlugin {
         this.archiveVanish = config.getBoolean("settings.archive-vanish", true);
 
         this.blockWorldEditNonBuilder = config.getBoolean("settings.builder.block-worldedit-non-builder", true);
+        this.worldEditWand = XMaterial.valueOf(config.getString("settings.builder.world-edit-wand", "WOODEN_AXE"));
         this.creatorIsBuilder = config.getBoolean("settings.builder.creator-is-builder", true);
 
         this.navigatorItem = XMaterial.valueOf(config.getString("settings.navigator.item", "CLOCK"));
@@ -596,6 +598,10 @@ public class BuildSystem extends JavaPlugin {
 
     public XMaterial getNavigatorItem() {
         return navigatorItem;
+    }
+
+    public XMaterial getWorldEditWand() {
+        return worldEditWand;
     }
 
     public boolean isGiveNavigatorOnJoin() {

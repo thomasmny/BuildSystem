@@ -399,7 +399,7 @@ public class PlayerInteractListener implements Listener {
         }
 
         Material material = itemStack.getType();
-        if (material == XMaterial.WOODEN_AXE.parseMaterial()) return;
+        if (material == plugin.getWorldEditWand().parseMaterial()) return;
         if (!DISABLED_BLOCKS.contains(XMaterial.matchXMaterial(block.getType()))) return;
 
         cachePlayers.add(player.getUniqueId());
