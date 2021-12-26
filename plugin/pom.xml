@@ -92,7 +92,7 @@
         <dependency>
             <groupId>com.fastasyncworldedit</groupId>
             <artifactId>FastAsyncWorldEdit-Core</artifactId>
-            <version>1.17-417</version>
+            <version>1.17-425</version>
             <scope>provided</scope>
         </dependency>
         <!-- Abstraction -->
