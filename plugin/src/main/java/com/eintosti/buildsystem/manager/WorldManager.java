@@ -39,6 +39,7 @@ import java.util.logging.Level;
  * @author einTosti
  */
 public class WorldManager {
+
     private final BuildSystem plugin;
     private final WorldConfig worldConfig;
     private final List<BuildWorld> buildWorlds = new ArrayList<>();
@@ -144,7 +145,9 @@ public class WorldManager {
      * @param privateWorld Is world going to be a private world?
      */
     public void createWorld(Player player, String worldName, WorldType worldType, boolean privateWorld) {
-        if (worldExists(player, worldName)) return;
+        if (worldExists(player, worldName)) {
+            return;
+        }
 
         BuildWorld buildWorld = new BuildWorld(plugin, worldName, player.getName(), player.getUniqueId(), worldType, System.currentTimeMillis(), privateWorld);
         buildWorlds.add(buildWorld);
@@ -165,7 +168,9 @@ public class WorldManager {
      * @author Ein_Jojo
      */
     public void createCustomWorld(Player player, String worldName, boolean privateWorld) {
-        if (worldExists(player, worldName)) return;
+        if (worldExists(player, worldName)) {
+            return;
+        }
 
         //Get Generator
         new PlayerChatInput(plugin, player, "enter_generator_name", input -> {
@@ -327,7 +332,9 @@ public class WorldManager {
      * @param worldName   Name of the world that the chunk generator should be applied to.
      */
     public ChunkGenerator getChunkGenerator(String generator, String generatorId, String worldName) {
-        if (generator == null) return null;
+        if (generator == null) {
+            return null;
+        }
 
         Plugin plugin = this.plugin.getServer().getPluginManager().getPlugin(generator);
         if (plugin == null) {
@@ -485,7 +492,9 @@ public class WorldManager {
      */
     private void removePlayersFromWorld(String worldName, String message) {
         World bukkitWorld = Bukkit.getWorld(worldName);
-        if (bukkitWorld == null) return;
+        if (bukkitWorld == null) {
+            return;
+        }
 
         SpawnManager spawnManager = plugin.getSpawnManager();
 
@@ -673,13 +682,19 @@ public class WorldManager {
 
     public void load() {
         FileConfiguration configuration = worldConfig.getFile();
-        if (configuration == null) return;
+        if (configuration == null) {
+            return;
+        }
 
         ConfigurationSection configurationSection = configuration.getConfigurationSection("worlds");
-        if (configurationSection == null) return;
+        if (configurationSection == null) {
+            return;
+        }
 
         Set<String> worlds = configurationSection.getKeys(false);
-        if (worlds.isEmpty()) return;
+        if (worlds.isEmpty()) {
+            return;
+        }
 
         worlds.forEach(this::loadWorld);
         worldConfig.loadWorlds(this);
@@ -687,7 +702,9 @@ public class WorldManager {
 
     public BuildWorld loadWorld(String worldName) {
         FileConfiguration configuration = worldConfig.getFile();
-        if (configuration == null) return null;
+        if (configuration == null) {
+            return null;
+        }
 
         String creator = configuration.isString("worlds." + worldName + ".creator") ? configuration.getString("worlds." + worldName + ".creator") : "-";
         UUID creatorId = parseCreatorId(configuration, worldName, creator);

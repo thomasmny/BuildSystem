@@ -23,6 +23,7 @@ import java.util.logging.Level;
  * @author einTosti
  */
 public class BackCommand implements CommandExecutor {
+
     private final BuildSystem plugin;
 
     public BackCommand(BuildSystem plugin) {
@@ -36,8 +37,8 @@ public class BackCommand implements CommandExecutor {
             plugin.getLogger().log(Level.WARNING, plugin.getString("sender_not_player"));
             return true;
         }
-        Player player = (Player) sender;
 
+        Player player = (Player) sender;
         if (!player.hasPermission("buildsystem.back")) {
             plugin.sendPermissionMessage(player);
             return true;
@@ -48,6 +49,7 @@ public class BackCommand implements CommandExecutor {
         } else {
             player.sendMessage(plugin.getString("back_usage"));
         }
+
         return true;
     }
 

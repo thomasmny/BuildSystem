@@ -19,6 +19,7 @@ import java.util.UUID;
  * @author einTosti
  */
 public interface GameRules {
+
     Inventory getInventory(Player player, World worldName);
 
     void addGameRules(World worldName);

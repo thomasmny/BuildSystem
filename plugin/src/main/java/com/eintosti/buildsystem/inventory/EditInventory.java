@@ -23,11 +23,13 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author einTosti
  */
 public class EditInventory {
+
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
 
@@ -134,6 +136,7 @@ public class EditInventory {
 
         int worldTime = (int) bukkitWorld.getTime();
         int noonTime = plugin.getNoonTime();
+
         if (worldTime >= 0 && worldTime < noonTime) {
             return BuildWorld.Time.SUNRISE;
         } else if (worldTime >= noonTime && worldTime < 13000) {
@@ -144,8 +147,8 @@ public class EditInventory {
     }
 
     private void addBuildersItem(Inventory inventory, BuildWorld buildWorld, Player player) {
-        if ((buildWorld.getCreatorId() != null && buildWorld.getCreatorId().equals(player.getUniqueId()))
-                || player.hasPermission("buildsystem.admin")) {
+        UUID creatorId = buildWorld.getCreatorId();
+        if ((creatorId != null && creatorId.equals(player.getUniqueId())) || player.hasPermission("buildsystem.admin")) {
             addSettingsItem(inventory, 30, XMaterial.IRON_PICKAXE, buildWorld.isBuilders(), plugin.getString("worldeditor_builders_item"), plugin.getStringList("worldeditor_builders_lore"));
         } else {
             inventoryManager.addItemStack(inventory, 30, XMaterial.BARRIER, plugin.getString("worldeditor_builders_not_creator_item"), plugin.getStringList("worldeditor_builders_not_creator_lore"));
@@ -166,16 +169,16 @@ public class EditInventory {
 
     private List<String> getStatusLore(BuildWorld buildWorld) {
         List<String> lore = new ArrayList<>();
-        for (String s : plugin.getStringList("worldeditor_status_lore")) {
-            lore.add(s.replace("%status%", buildWorld.getStatusName()));
+        for (String line : plugin.getStringList("worldeditor_status_lore")) {
+            lore.add(line.replace("%status%", buildWorld.getStatusName()));
         }
         return lore;
     }
 
     private List<String> getProjectLore(BuildWorld buildWorld) {
         List<String> lore = new ArrayList<>();
-        for (String s : plugin.getStringList("worldeditor_project_lore")) {
-            lore.add(s.replace("%project%", buildWorld.getProject()));
+        for (String line : plugin.getStringList("worldeditor_project_lore")) {
+            lore.add(line.replace("%project%", buildWorld.getProject()));
         }
         return lore;
     }

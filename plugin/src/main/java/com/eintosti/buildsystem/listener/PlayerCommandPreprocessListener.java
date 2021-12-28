@@ -30,6 +30,7 @@ import java.util.HashSet;
  * @author einTosti
  */
 public class PlayerCommandPreprocessListener implements Listener {
+
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
     private final SettingsManager settingsManager;
@@ -46,14 +47,18 @@ public class PlayerCommandPreprocessListener implements Listener {
 
     @EventHandler
     public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
-        if (event.isCancelled()) return;
+        if (event.isCancelled()) {
+            return;
+        }
 
         String command = event.getMessage().split(" ")[0];
         Player player = event.getPlayer();
 
         if (command.equalsIgnoreCase("/clear")) {
             ItemStack navigatorItem = inventoryManager.getItemStack(plugin.getNavigatorItem(), plugin.getString("navigator_item"));
-            if (!player.getInventory().contains(navigatorItem)) return;
+            if (!player.getInventory().contains(navigatorItem)) {
+                return;
+            }
 
             if (settingsManager.getSettings(player).isKeepNavigator()) {
                 ArrayList<Integer> navigatorSlots = inventoryManager.getNavigatorSlots(player);
@@ -66,11 +71,17 @@ public class PlayerCommandPreprocessListener implements Listener {
         }
 
         if (plugin.isBlockWorldEditNonBuilder()) {
-            if (!DISABLED_COMMANDS.contains(command)) return;
+            if (!DISABLED_COMMANDS.contains(command)) {
+                return;
+            }
 
             BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
-            if (buildWorld == null) return;
-            if (disableArchivedWorlds(buildWorld, player, event)) return;
+            if (buildWorld == null) {
+                return;
+            }
+            if (disableArchivedWorlds(buildWorld, player, event)) {
+                return;
+            }
 
             checkBuilders(buildWorld, player, event);
         }
@@ -263,7 +274,10 @@ public class PlayerCommandPreprocessListener implements Listener {
     }
 
     private void checkBuilders(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
-        if (plugin.canBypass(player)) return;
+        if (plugin.canBypass(player)) {
+            return;
+        }
+
         if (plugin.isCreatorIsBuilder() && buildWorld.getCreatorId() != null && buildWorld.getCreatorId().equals(player.getUniqueId())) {
             return;
         }

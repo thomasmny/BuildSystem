@@ -23,6 +23,7 @@ import java.util.*;
  * @author einTosti
  */
 public class GameRules_1_13_R1 implements GameRules {
+
     private final Map<UUID, Integer> invIndex;
     private final int[] slots = new int[]{11, 12, 13, 14, 15, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33};
 
@@ -78,7 +79,9 @@ public class GameRules_1_13_R1 implements GameRules {
 
     private boolean isBoolean(String gameRuleName) {
         GameRule<?> gameRule = GameRule.getByName(gameRuleName);
-        if (gameRule == null) return false;
+        if (gameRule == null) {
+            return false;
+        }
         return gameRule.getType().equals(Boolean.class);
     }
 
@@ -96,7 +99,9 @@ public class GameRules_1_13_R1 implements GameRules {
 
     private boolean isEnabled(World world, String gameRuleName) {
         GameRule<?> gameRule = GameRule.getByName(gameRuleName);
-        if (gameRule == null) return false;
+        if (gameRule == null) {
+            return false;
+        }
         if (gameRule.getType().equals(Boolean.class)) {
             return (Boolean) world.getGameRuleValue(gameRule);
         }
@@ -123,7 +128,9 @@ public class GameRules_1_13_R1 implements GameRules {
 
     private boolean isValidSlot(int slot) {
         for (int i : this.slots) {
-            if (i == slot) return true;
+            if (i == slot) {
+                return true;
+            }
         }
         return false;
     }
@@ -131,15 +138,23 @@ public class GameRules_1_13_R1 implements GameRules {
     @Override
     public void toggleGameRule(InventoryClickEvent event, World world) {
         int slot = event.getSlot();
-        if (!isValidSlot(slot)) return;
+        if (!isValidSlot(slot)) {
+            return;
+        }
 
         ItemStack itemStack = event.getCurrentItem();
-        if (itemStack == null) return;
+        if (itemStack == null) {
+            return;
+        }
 
         ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null) return;
+        if (itemMeta == null) {
+            return;
+        }
 
-        if (!itemMeta.hasDisplayName()) return;
+        if (!itemMeta.hasDisplayName()) {
+            return;
+        }
         String displayName = itemMeta.getDisplayName();
 
         String gameRuleName = ChatColor.stripColor(displayName);

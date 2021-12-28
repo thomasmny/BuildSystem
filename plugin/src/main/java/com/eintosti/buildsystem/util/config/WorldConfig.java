@@ -20,6 +20,7 @@ import java.util.logging.Level;
  * @author einTosti
  */
 public class WorldConfig extends ConfigurationFile {
+
     private final BuildSystem plugin;
 
     public WorldConfig(BuildSystem plugin) {

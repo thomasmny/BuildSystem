@@ -18,6 +18,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
  * @author einTosti
  */
 public interface CustomBlocks {
+
     void setBlock(BlockPlaceEvent event, String... blockName);
 
     void setPlant(PlayerInteractEvent event);

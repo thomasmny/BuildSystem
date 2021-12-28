@@ -22,6 +22,7 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
  * @author einTosti
  */
 public class FoodLevelChangeListener implements Listener {
+
     private final WorldManager worldManager;
 
     public FoodLevelChangeListener(BuildSystem plugin) {
@@ -31,14 +32,15 @@ public class FoodLevelChangeListener implements Listener {
 
     @EventHandler
     public void onFoodLevelChangeEvent(FoodLevelChangeEvent event) {
-        if (!(event.getEntity() instanceof Player)) return;
-        Player player = (Player) event.getEntity();
+        if (!(event.getEntity() instanceof Player)) {
+            return;
+        }
 
+        Player player = (Player) event.getEntity();
         World bukkitWorld = player.getWorld();
         BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
 
-        if (buildWorld == null) return;
-        if (buildWorld.getStatus() == WorldStatus.ARCHIVE) {
+        if (buildWorld != null && buildWorld.getStatus() == WorldStatus.ARCHIVE) {
             event.setCancelled(true);
         }
     }

@@ -25,6 +25,7 @@ import java.util.logging.Level;
  * @author einTosti
  */
 public class PhysicsCommand implements CommandExecutor {
+
     private final BuildSystem plugin;
     private final WorldManager worldManager;
 
@@ -40,8 +41,8 @@ public class PhysicsCommand implements CommandExecutor {
             plugin.getLogger().log(Level.WARNING, plugin.getString("sender_not_player"));
             return true;
         }
-        Player player = (Player) sender;
 
+        Player player = (Player) sender;
         if (!player.hasPermission("buildsystem.physics")) {
             plugin.sendPermissionMessage(player);
             return true;

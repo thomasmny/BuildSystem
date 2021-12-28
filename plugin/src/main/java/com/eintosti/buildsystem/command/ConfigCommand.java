@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
  * @author einTosti
  */
 public class ConfigCommand implements CommandExecutor {
+
     private final BuildSystem plugin;
 
     public ConfigCommand(BuildSystem plugin) {

@@ -28,6 +28,7 @@ import java.util.*;
  * @author einTosti
  */
 public class SettingsManager {
+
     private final BuildSystem plugin;
     private final SettingsConfig settingsConfig;
     private final WorldManager worldManager;
@@ -66,7 +67,9 @@ public class SettingsManager {
     }
 
     public void startScoreboard(Player player) {
-        if (!plugin.isScoreboard()) return;
+        if (!plugin.isScoreboard()) {
+            return;
+        }
 
         Settings settings = getSettings(player);
         FastBoard board = new FastBoard(player);
@@ -148,7 +151,9 @@ public class SettingsManager {
     public void load() {
         FileConfiguration configuration = settingsConfig.getFile();
         ConfigurationSection configurationSection = configuration.getConfigurationSection("settings");
-        if (configurationSection == null) return;
+        if (configurationSection == null) {
+            return;
+        }
 
         Set<String> uuids = configurationSection.getKeys(false);
         uuids.forEach(uuid -> {

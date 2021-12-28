@@ -274,6 +274,7 @@ public final class UpdateChecker {
      * {@link UpdateChecker#requestUpdateCheck()}.
      */
     public final class UpdateResult {
+
         private final UpdateReason reason;
         private final String newestVersion;
 

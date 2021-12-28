@@ -23,6 +23,7 @@ import java.util.logging.Level;
  * @author einTosti
  */
 public class GamemodeCommand implements CommandExecutor {
+
     private final BuildSystem plugin;
 
     public GamemodeCommand(BuildSystem plugin) {
@@ -36,8 +37,8 @@ public class GamemodeCommand implements CommandExecutor {
             plugin.getLogger().log(Level.WARNING, plugin.getString("sender_not_player"));
             return true;
         }
-        Player player = (Player) sender;
 
+        Player player = (Player) sender;
         if (!player.hasPermission("buildsystem.gamemode")) {
             plugin.sendPermissionMessage(player);
             return true;
@@ -70,6 +71,7 @@ public class GamemodeCommand implements CommandExecutor {
                     break;
             }
         }
+
         return true;
     }
 
@@ -93,26 +95,30 @@ public class GamemodeCommand implements CommandExecutor {
     private void setPlayerGamemode(Player player, GameMode gameMode, String gameModeName) {
         if (!player.hasPermission("buildsystem.gamemode")) {
             plugin.sendPermissionMessage(player);
-        } else {
-            player.setGameMode(gameMode);
-            player.sendMessage(plugin.getString("gamemode_set_self").replace("%gamemode%", gameModeName));
+            return;
         }
+
+        player.setGameMode(gameMode);
+        player.sendMessage(plugin.getString("gamemode_set_self").replace("%gamemode%", gameModeName));
     }
 
     private void setTargetGamemode(Player player, String[] args, GameMode gameMode, String gameModeName) {
         if (!player.hasPermission("buildsystem.gamemode.others")) {
             plugin.sendPermissionMessage(player);
-        } else {
-            Player target = Bukkit.getPlayerExact(args[1]);
-            if (target == null) {
-                player.sendMessage(plugin.getString("gamemode_player_not_found"));
-            } else {
-                target.setGameMode(gameMode);
-                target.sendMessage(plugin.getString("gamemode_set_self").replace("%gamemode%", gameModeName));
-                player.sendMessage(plugin.getString("gamemode_set_other")
-                        .replace("%target%", target.getName())
-                        .replace("%gamemode%", gameModeName));
-            }
+            return;
         }
+
+        Player target = Bukkit.getPlayerExact(args[1]);
+        if (target == null) {
+            player.sendMessage(plugin.getString("gamemode_player_not_found"));
+            return;
+        }
+
+        target.setGameMode(gameMode);
+        target.sendMessage(plugin.getString("gamemode_set_self")
+                .replace("%gamemode%", gameModeName));
+        player.sendMessage(plugin.getString("gamemode_set_other")
+                .replace("%target%", target.getName())
+                .replace("%gamemode%", gameModeName));
     }
 }

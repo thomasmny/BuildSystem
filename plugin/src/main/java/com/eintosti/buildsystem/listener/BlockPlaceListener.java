@@ -22,6 +22,7 @@ import org.bukkit.inventory.ItemStack;
  * @author einTosti
  */
 public class BlockPlaceListener implements Listener {
+
     private final BuildSystem plugin;
     private final WorldManager worldManager;
 
@@ -33,7 +34,9 @@ public class BlockPlaceListener implements Listener {
 
     @EventHandler
     public void onCustomBlockPlace(BlockPlaceEvent event) {
-        if (event.isCancelled()) return;
+        if (event.isCancelled()) {
+            return;
+        }
 
         Player player = event.getPlayer();
         String worldName = player.getWorld().getName();
@@ -43,7 +46,9 @@ public class BlockPlaceListener implements Listener {
 
         ItemStack itemStack = player.getItemInHand();
         XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-        if (xMaterial != XMaterial.PLAYER_HEAD) return;
+        if (xMaterial != XMaterial.PLAYER_HEAD) {
+            return;
+        }
 
         boolean hadToDisablePhysics = false;
         if (isBuildWorld && !buildWorld.isPhysics()) {

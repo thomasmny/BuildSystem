@@ -18,6 +18,7 @@ import java.lang.reflect.Method;
  * @author einTosti
  */
 public class ManageEntityAI {
+
     private static Class<?> nmsEntityClass;
     private static Class<?> nbtTagClass;
 

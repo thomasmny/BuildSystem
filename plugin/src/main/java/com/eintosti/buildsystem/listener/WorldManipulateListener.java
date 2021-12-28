@@ -29,6 +29,7 @@ import org.bukkit.inventory.ItemStack;
  * @author einTosti
  */
 public class WorldManipulateListener implements Listener {
+
     private final BuildSystem plugin;
     private final WorldManager worldManager;
 
@@ -40,7 +41,9 @@ public class WorldManipulateListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBreak(BlockBreakEvent event) {
-        if (event.isCancelled()) return;
+        if (event.isCancelled()) {
+            return;
+        }
 
         Player player = event.getPlayer();
         BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
@@ -55,7 +58,9 @@ public class WorldManipulateListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockPlace(BlockPlaceEvent event) {
-        if (event.isCancelled()) return;
+        if (event.isCancelled()) {
+            return;
+        }
 
         Player player = event.getPlayer();
         BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
@@ -70,7 +75,9 @@ public class WorldManipulateListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-        if (!(event.getDamager() instanceof Player)) return;
+        if (!(event.getDamager() instanceof Player)) {
+            return;
+        }
         Player player = (Player) event.getDamager();
 
         BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
@@ -140,9 +147,15 @@ public class WorldManipulateListener implements Listener {
             return false;
         }
 
-        if (disableArchivedWorlds(buildWorld, player, event)) return true;
-        if (checkWorldSettings(player, event, worldSetting)) return true;
-        if (checkBuilders(buildWorld, player, event)) return true;
+        if (disableArchivedWorlds(buildWorld, player, event)) {
+            return true;
+        }
+        if (checkWorldSettings(player, event, worldSetting)) {
+            return true;
+        }
+        if (checkBuilders(buildWorld, player, event)) {
+            return true;
+        }
 
         return false;
     }

@@ -23,6 +23,7 @@ import org.bukkit.inventory.PlayerInventory;
  * @author einTosti
  */
 public class PlayerInventoryClearListener implements Listener {
+
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
     private final SettingsManager settingsManager;
@@ -39,8 +40,12 @@ public class PlayerInventoryClearListener implements Listener {
     public void onPlayerInventoryClear(PlayerInventoryClearEvent event) {
         Player player = event.getPlayer();
         Settings settings = settingsManager.getSettings(player);
-        if (!settings.isKeepNavigator()) return;
-        if (!player.hasPermission("buildsystem.gui")) return;
+        if (!settings.isKeepNavigator()) {
+            return;
+        }
+        if (!player.hasPermission("buildsystem.gui")) {
+            return;
+        }
 
         PlayerInventory playerInventory = player.getInventory();
         ItemStack navigatorItem = inventoryManager.getItemStack(plugin.getNavigatorItem(), plugin.getString("navigator_item"));

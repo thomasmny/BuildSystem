@@ -20,6 +20,7 @@ import java.util.Map;
  * @author einTosti
  */
 public class Settings implements ConfigurationSerializable {
+
     private Colour glassColor;
     private NavigatorType navigatorType;
     private WorldSort worldSort;

@@ -17,12 +17,14 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 /**
  * @author einTosti
  */
 public class GameRuleInventory {
+
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
     private final GameRules gameRules;

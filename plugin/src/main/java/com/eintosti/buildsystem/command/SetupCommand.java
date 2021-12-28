@@ -21,6 +21,7 @@ import java.util.logging.Level;
  * @author einTosti
  */
 public class SetupCommand implements CommandExecutor {
+
     private final BuildSystem plugin;
 
     public SetupCommand(BuildSystem plugin) {
@@ -34,8 +35,8 @@ public class SetupCommand implements CommandExecutor {
             plugin.getLogger().log(Level.WARNING, plugin.getString("sender_not_player"));
             return true;
         }
-        Player player = (Player) sender;
 
+        Player player = (Player) sender;
         if (!player.hasPermission("buildsystem.setup")) {
             plugin.sendPermissionMessage(player);
             return true;

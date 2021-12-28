@@ -48,6 +48,7 @@ import java.util.UUID;
  * @author einTosti
  */
 public class PlayerInteractListener implements Listener {
+
     private final BuildSystem plugin;
     private final ArmorStandManager armorStandManager;
     private final InventoryManager inventoryManager;
@@ -157,7 +158,8 @@ public class PlayerInteractListener implements Listener {
             return;
         }
 
-        if (isDuelHanded() && event.getHand() != EquipmentSlot.valueOf("HAND")) {
+        boolean duelHanded = XMaterial.supports(9);
+        if (duelHanded && event.getHand() != EquipmentSlot.valueOf("HAND")) {
             return;
         }
 
@@ -184,10 +186,6 @@ public class PlayerInteractListener implements Listener {
                     break;
             }
         }
-    }
-
-    private boolean isDuelHanded() {
-        return XMaterial.supports(9);
     }
 
     @EventHandler
@@ -336,7 +334,9 @@ public class PlayerInteractListener implements Listener {
 
     private BlockFace getDirection(Player player) {
         float yaw = player.getLocation().getYaw();
-        if (yaw < 0) yaw += 360;
+        if (yaw < 0) {
+            yaw += 360;
+        }
         yaw %= 360;
         int i = (int) ((yaw + 8) / 22.5);
         switch (i) {
@@ -399,8 +399,12 @@ public class PlayerInteractListener implements Listener {
         }
 
         Material material = itemStack.getType();
-        if (material == plugin.getWorldEditWand().parseMaterial()) return;
-        if (!DISABLED_BLOCKS.contains(XMaterial.matchXMaterial(block.getType()))) return;
+        if (material == plugin.getWorldEditWand().parseMaterial()) {
+            return;
+        }
+        if (!DISABLED_BLOCKS.contains(XMaterial.matchXMaterial(block.getType()))) {
+            return;
+        }
 
         cachePlayers.add(player.getUniqueId());
         event.setCancelled(true);

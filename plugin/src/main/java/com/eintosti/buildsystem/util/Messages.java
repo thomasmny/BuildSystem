@@ -28,6 +28,7 @@ import java.util.logging.Level;
  * @author einTosti
  */
 public class Messages {
+
     private static Messages instance;
     public HashMap<String, String> messageData = new HashMap<>();
 
@@ -689,7 +690,9 @@ public class Messages {
 
     private void setList(StringBuilder stringBuilder, FileConfiguration config, String key, List<String> defaultValues) {
         List<String> values = config.getStringList(key);
-        if (values.isEmpty()) values = defaultValues;
+        if (values.isEmpty()) {
+            values = defaultValues;
+        }
 
         stringBuilder.append(key).append(":\n");
         for (String value : values) {

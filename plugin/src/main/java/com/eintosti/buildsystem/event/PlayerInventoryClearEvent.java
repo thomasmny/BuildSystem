@@ -18,7 +18,9 @@ import java.util.ArrayList;
  * @author einTosti
  */
 public class PlayerInventoryClearEvent extends Event {
-    private static final HandlerList handlers = new HandlerList();
+
+    private static final HandlerList HANDLERS = new HandlerList();
+
     private final Player player;
     private final ArrayList<Integer> navigatorSlots;
 
@@ -37,10 +39,10 @@ public class PlayerInventoryClearEvent extends Event {
 
     @Override
     public HandlerList getHandlers() {
-        return handlers;
+        return HANDLERS;
     }
 
     public static HandlerList getHandlerList() {
-        return handlers;
+        return HANDLERS;
     }
 }

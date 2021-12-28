@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class PlayerChatInput implements Listener {
+
     private final BuildSystem plugin;
 
     private final BukkitTask taskId;
@@ -101,6 +102,7 @@ public class PlayerChatInput implements Listener {
 
     @FunctionalInterface
     public interface InputRunnable {
+
         void run(String input);
     }
 }

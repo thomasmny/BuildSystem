@@ -31,6 +31,7 @@ import java.util.Arrays;
  * @author einTosti
  */
 public class CustomBlocks_1_14_R1 extends DirectionUtils implements CustomBlocks {
+
     private final JavaPlugin plugin;
 
     public CustomBlocks_1_14_R1(JavaPlugin plugin) {
@@ -43,7 +44,9 @@ public class CustomBlocks_1_14_R1 extends DirectionUtils implements CustomBlocks
         ItemStack itemStack = event.getItemInHand();
         ItemMeta itemMeta = itemStack.getItemMeta();
 
-        if (itemMeta == null || !itemMeta.hasDisplayName()) return;
+        if (itemMeta == null || !itemMeta.hasDisplayName()) {
+            return;
+        }
         String displayName = itemMeta.getDisplayName();
         Player player = event.getPlayer();
 
@@ -155,11 +158,17 @@ public class CustomBlocks_1_14_R1 extends DirectionUtils implements CustomBlocks
     @Override
     public void modifySlab(PlayerInteractEvent event) {
         Block block = event.getClickedBlock();
-        if (block == null) return;
+        if (block == null) {
+            return;
+        }
 
-        if (!(block.getBlockData() instanceof Slab)) return;
+        if (!(block.getBlockData() instanceof Slab)) {
+            return;
+        }
         Slab slab = (Slab) block.getBlockData();
-        if (slab.getType() != Slab.Type.DOUBLE) return;
+        if (slab.getType() != Slab.Type.DOUBLE) {
+            return;
+        }
 
         event.setCancelled(true);
         Player player = event.getPlayer();

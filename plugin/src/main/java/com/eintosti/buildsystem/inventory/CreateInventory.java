@@ -28,6 +28,7 @@ import java.util.UUID;
  * @author einTosti
  */
 public class CreateInventory {
+
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
 
@@ -177,6 +178,7 @@ public class CreateInventory {
     }
 
     private static class TemplateFilter implements FileFilter {
+
         @Override
         public boolean accept(File file) {
             return file.isDirectory() && !file.isHidden();

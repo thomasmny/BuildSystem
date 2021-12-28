@@ -21,6 +21,7 @@ import java.util.logging.Level;
  * @author einTosti
  */
 public abstract class ConfigurationFile {
+
     private final BuildSystem plugin;
     private final File file;
     private final FileConfiguration configuration;

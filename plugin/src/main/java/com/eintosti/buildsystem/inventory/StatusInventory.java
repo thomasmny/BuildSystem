@@ -24,6 +24,7 @@ import org.bukkit.inventory.meta.ItemMeta;
  * @author einTosti
  */
 public class StatusInventory {
+
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
 

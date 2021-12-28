@@ -28,6 +28,7 @@ import org.bukkit.util.Vector;
  * @author einTosti
  */
 public class PlayerInteractAtEntityListener implements Listener {
+
     private final static double MAX_HEIGHT = 2.074631929397583;
     private final static double MIN_HEIGHT = 1.4409877061843872;
     private final BuildSystem plugin;
@@ -45,12 +46,20 @@ public class PlayerInteractAtEntityListener implements Listener {
         Entity entity = event.getRightClicked();
 
         disableArchivedWorlds(player, event);
-        if (!plugin.openNavigator.contains(player)) return;
+        if (!plugin.openNavigator.contains(player)) {
+            return;
+        }
 
-        if (entity.getType() != EntityType.ARMOR_STAND) return;
-        if (entity.getCustomName() == null) return;
+        if (entity.getType() != EntityType.ARMOR_STAND) {
+            return;
+        }
+        if (entity.getCustomName() == null) {
+            return;
+        }
         String customName = entity.getCustomName();
-        if (!customName.contains(" × ")) return;
+        if (!customName.contains(" × ")) {
+            return;
+        }
         event.setCancelled(true);
 
         Vector clickedPosition = event.getClickedPosition();
@@ -76,10 +85,14 @@ public class PlayerInteractAtEntityListener implements Listener {
         } else {
             ItemStack itemStack = player.getItemInHand();
             ItemMeta itemMeta = itemStack.getItemMeta();
-            if (itemMeta == null) return;
+            if (itemMeta == null) {
+                return;
+            }
             String displayName = itemMeta.getDisplayName();
 
-            if (!displayName.equals(plugin.getString("barrier_item"))) return;
+            if (!displayName.equals(plugin.getString("barrier_item"))) {
+                return;
+            }
 
             event.setCancelled(true);
             plugin.getPlayerMoveListener().closeNavigator(player);
@@ -90,8 +103,12 @@ public class PlayerInteractAtEntityListener implements Listener {
         World bukkitWorld = player.getWorld();
         BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
 
-        if (buildWorld == null) return;
-        if (buildWorld.getStatus() != WorldStatus.ARCHIVE) return;
+        if (buildWorld == null) {
+            return;
+        }
+        if (buildWorld.getStatus() != WorldStatus.ARCHIVE) {
+            return;
+        }
 
         if (!plugin.buildPlayers.contains(player.getUniqueId())) {
             event.setCancelled(true);

@@ -18,6 +18,7 @@ import org.bukkit.inventory.Inventory;
  * @author einTosti
  */
 public class BlocksInventory {
+
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
 

@@ -21,6 +21,7 @@ import org.bukkit.event.player.PlayerRespawnEvent;
  * @author einTosti
  */
 public class PlayerRespawnListener implements Listener {
+
     private final SettingsManager settingsManager;
     private final SpawnManager spawnManager;
 

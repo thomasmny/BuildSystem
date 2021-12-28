@@ -25,6 +25,7 @@ import java.util.logging.Level;
  * @author einTosti
  */
 public class ExplosionsCommand implements CommandExecutor {
+
     private final BuildSystem plugin;
     private final WorldManager worldManager;
 
@@ -40,8 +41,8 @@ public class ExplosionsCommand implements CommandExecutor {
             plugin.getLogger().log(Level.WARNING, plugin.getString("sender_not_player"));
             return true;
         }
-        Player player = (Player) sender;
 
+        Player player = (Player) sender;
         if (!player.hasPermission("buildsystem.explosions")) {
             plugin.sendPermissionMessage(player);
             return true;
@@ -58,6 +59,7 @@ public class ExplosionsCommand implements CommandExecutor {
                 player.sendMessage(plugin.getString("explosions_usage"));
                 break;
         }
+
         return true;
     }
 
@@ -66,8 +68,8 @@ public class ExplosionsCommand implements CommandExecutor {
             player.sendMessage(plugin.getString("explosions_unknown_world"));
             return;
         }
-        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
 
+        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
         if (buildWorld == null) {
             player.sendMessage(plugin.getString("explosions_world_not_imported"));
             return;

@@ -28,6 +28,7 @@ import java.util.List;
  * @author einTosti
  */
 public class SettingsInventory {
+
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
     private final SettingsManager settingsManager;

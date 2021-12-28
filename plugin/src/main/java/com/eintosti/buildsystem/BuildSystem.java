@@ -48,6 +48,7 @@ import java.util.logging.Level;
  * @author einTosti
  */
 public class BuildSystem extends JavaPlugin {
+
     public final static int PLUGIN_ID = 60441;
 
     public Map<UUID, BuildWorld> selectedWorld;
@@ -148,8 +149,12 @@ public class BuildSystem extends JavaPlugin {
         this.buildPlayers = new HashSet<>();
 
         getVersion();
-        if (!setupCustomBlocks()) return;
-        if (!setupGameRules()) return;
+        if (!setupCustomBlocks()) {
+            return;
+        }
+        if (!setupGameRules()) {
+            return;
+        }
 
         initClasses();
         registerCommands();
@@ -167,8 +172,12 @@ public class BuildSystem extends JavaPlugin {
 
             settingsManager.createSettings(pl);
             Settings settings = settingsManager.getSettings(pl);
-            if (settings.isScoreboard()) settingsManager.startScoreboard(pl);
-            if (settings.isNoClip()) noClipManager.startNoClip(pl);
+            if (settings.isScoreboard()) {
+                settingsManager.startScoreboard(pl);
+            }
+            if (settings.isNoClip()) {
+                noClipManager.startNoClip(pl);
+            }
         });
 
         if (isUpdateChecker()) {

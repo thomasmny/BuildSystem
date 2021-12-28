@@ -28,6 +28,7 @@ import java.util.logging.Level;
  * @author einTosti
  */
 public class NoAICommand implements CommandExecutor {
+
     private final BuildSystem plugin;
     private final WorldManager worldManager;
 
@@ -43,8 +44,8 @@ public class NoAICommand implements CommandExecutor {
             plugin.getLogger().log(Level.WARNING, plugin.getString("sender_not_player"));
             return true;
         }
-        Player player = (Player) sender;
 
+        Player player = (Player) sender;
         if (!player.hasPermission("buildsystem.noai")) {
             plugin.sendPermissionMessage(player);
             return true;
@@ -61,6 +62,7 @@ public class NoAICommand implements CommandExecutor {
                 player.sendMessage(plugin.getString("noai_usage"));
                 break;
         }
+
         return true;
     }
 

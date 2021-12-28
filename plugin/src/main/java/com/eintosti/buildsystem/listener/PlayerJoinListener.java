@@ -33,6 +33,7 @@ import org.bukkit.potion.PotionEffectType;
  * @author einTosti
  */
 public class PlayerJoinListener implements Listener {
+
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
     private final SettingsManager settingsManager;
@@ -130,7 +131,9 @@ public class PlayerJoinListener implements Listener {
         }
 
         for (Player pl : Bukkit.getOnlinePlayers()) { // Hide player to all players who have hidePlayers enabled
-            if (!settingsManager.getSettings(pl).isHidePlayers()) continue;
+            if (!settingsManager.getSettings(pl).isHidePlayers()) {
+                continue;
+            }
             pl.hidePlayer(player);
         }
     }

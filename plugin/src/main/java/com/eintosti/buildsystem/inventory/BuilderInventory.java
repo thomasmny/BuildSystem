@@ -26,17 +26,21 @@ import java.util.UUID;
  * @author einTosti
  */
 public class BuilderInventory {
+
+    private static final int MAX_BUILDERS = 9;
+
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
 
     private final Map<UUID, Integer> invIndex;
-    private int numBuilders;
-
     private Inventory[] inventories;
+
+    private int numBuilders;
 
     public BuilderInventory(BuildSystem plugin) {
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
+
         this.invIndex = new HashMap<>();
     }
 
@@ -51,7 +55,8 @@ public class BuilderInventory {
     }
 
     private void addCreatorInfoItem(Inventory inventory, BuildWorld buildWorld) {
-        if (buildWorld.getCreator() == null || buildWorld.getCreator().equalsIgnoreCase("-")) {
+        String creatorName = buildWorld.getCreator();
+        if (creatorName == null || creatorName.equalsIgnoreCase("-")) {
             inventoryManager.addItemStack(inventory, 4, XMaterial.BARRIER, plugin.getString("worldeditor_builders_no_creator_item"));
         } else {
             inventoryManager.addSkull(inventory, 4, plugin.getString("worldeditor_builders_creator_item"),
@@ -60,9 +65,10 @@ public class BuilderInventory {
     }
 
     private void addBuilderAddItem(Inventory inventory, BuildWorld buildWorld, Player player) {
-        if ((buildWorld.getCreatorId() != null && buildWorld.getCreatorId().equals(player.getUniqueId()))
-                || player.hasPermission("buildsystem.admin")) {
-            inventoryManager.addUrlSkull(inventory, 22, plugin.getString("worldeditor_builders_add_builder_item"), "http://textures.minecraft.net/texture/3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
+        UUID creatorId = buildWorld.getCreatorId();
+        if ((creatorId != null && creatorId.equals(player.getUniqueId())) || player.hasPermission("buildsystem.admin")) {
+            inventoryManager.addUrlSkull(inventory, 22, plugin.getString("worldeditor_builders_add_builder_item"),
+                    "https://textures.minecraft.net/texture/3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
         } else {
             inventoryManager.addGlassPane(plugin, player, inventory, 22);
         }
@@ -71,7 +77,7 @@ public class BuilderInventory {
     private void addItems(BuildWorld buildWorld, Player player) {
         ArrayList<Builder> builders = buildWorld.getBuilders();
         this.numBuilders = builders.size();
-        int numInventories = (numBuilders % 9 == 0 ? numBuilders : numBuilders + 1) != 0 ? (numBuilders % 9 == 0 ? numBuilders : numBuilders + 1) : 1;
+        int numInventories = (numBuilders % MAX_BUILDERS == 0 ? numBuilders : numBuilders + 1) != 0 ? (numBuilders % MAX_BUILDERS == 0 ? numBuilders : numBuilders + 1) : 1;
 
         int index = 0;
 
@@ -85,6 +91,7 @@ public class BuilderInventory {
             String builderName = builder.getName();
             inventoryManager.addSkull(inventory, columnSkull++, plugin.getString("worldeditor_builders_builder_item").replace("%builder%", builderName),
                     builderName, plugin.getStringList("worldeditor_builders_builder_lore"));
+
             if (columnSkull > maxColumnSkull) {
                 columnSkull = 9;
                 inventory = createInventory(buildWorld, player);
@@ -109,7 +116,7 @@ public class BuilderInventory {
             inventoryManager.addGlassPane(plugin, player, inventory, i);
         }
 
-        int numOfPages = (numBuilders / 9) + (numBuilders % 9 == 0 ? 0 : 1);
+        int numOfPages = (numBuilders / MAX_BUILDERS) + (numBuilders % MAX_BUILDERS == 0 ? 0 : 1);
         int invIndex = getInvIndex(player);
 
         if (numOfPages > 1 && invIndex > 0) {

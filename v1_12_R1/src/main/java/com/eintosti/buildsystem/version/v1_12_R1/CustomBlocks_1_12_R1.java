@@ -36,6 +36,7 @@ import java.util.Set;
  * @author einTosti
  */
 public class CustomBlocks_1_12_R1 extends DirectionUtils implements CustomBlocks {
+
     private final JavaPlugin plugin;
 
     private final int mcVersion;
@@ -54,7 +55,9 @@ public class CustomBlocks_1_12_R1 extends DirectionUtils implements CustomBlocks
         ItemStack itemStack = event.getItemInHand();
         ItemMeta itemMeta = itemStack.getItemMeta();
 
-        if (itemMeta == null || !itemMeta.hasDisplayName()) return;
+        if (itemMeta == null || !itemMeta.hasDisplayName()) {
+            return;
+        }
         String displayName = itemMeta.getDisplayName();
 
         Bukkit.getScheduler().runTask(plugin, () -> {
@@ -201,7 +204,9 @@ public class CustomBlocks_1_12_R1 extends DirectionUtils implements CustomBlocks
                 changedMaterial = Material.STONE_SLAB2;
                 break;
             default:
-                if (changedMaterial != null) return;
+                if (changedMaterial != null) {
+                    return;
+                }
                 break;
         }
 

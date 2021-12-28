@@ -28,6 +28,7 @@ import java.util.logging.Level;
  * @author einTosti
  */
 public class BuildWorld implements ConfigurationSerializable {
+
     private final BuildSystem plugin;
 
     private String name;
@@ -543,7 +544,9 @@ public class BuildWorld implements ConfigurationSerializable {
     }
 
     public void forceUnload() {
-        if (!isLoaded()) return;
+        if (!isLoaded()) {
+            return;
+        }
 
         World bukkitWorld = Bukkit.getWorld(name);
         if (bukkitWorld == null) {
@@ -590,7 +593,9 @@ public class BuildWorld implements ConfigurationSerializable {
     }
 
     public void load(Player player) {
-        if (isLoaded()) return;
+        if (isLoaded()) {
+            return;
+        }
 
         player.closeInventory();
         String subtitle = plugin.getString("loading_world").replace("%world%", name);
@@ -604,7 +609,9 @@ public class BuildWorld implements ConfigurationSerializable {
     }
 
     public void load() {
-        if (isLoaded()) return;
+        if (isLoaded()) {
+            return;
+        }
 
         plugin.getLogger().log(Level.INFO, "*** Loading world \"" + name + "\" ***");
         Bukkit.createWorld(new WorldCreator(name));
@@ -634,8 +641,12 @@ public class BuildWorld implements ConfigurationSerializable {
         world.put("block-interactions", isBlockInteractions());
         world.put("builders-enabled", isBuilders());
         world.put("builders", saveBuilders());
-        if (customSpawn != null) world.put("spawn", customSpawn);
-        if (chunkGeneratorString != null) world.put("chunk-generator", getChunkGeneratorString());
+        if (customSpawn != null) {
+            world.put("spawn", customSpawn);
+        }
+        if (chunkGeneratorString != null) {
+            world.put("chunk-generator", getChunkGeneratorString());
+        }
 
         return world;
     }

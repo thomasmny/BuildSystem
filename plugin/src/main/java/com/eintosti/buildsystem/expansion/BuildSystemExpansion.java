@@ -19,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
  * @author einTosti
  */
 public class BuildSystemExpansion extends PlaceholderExpansion {
+
     private final BuildSystem plugin;
     private final WorldManager worldManager;
 

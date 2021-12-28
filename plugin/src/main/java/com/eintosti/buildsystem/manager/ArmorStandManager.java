@@ -23,6 +23,7 @@ import java.util.UUID;
  * @author einTosti
  */
 public class ArmorStandManager {
+
     private final float RADIUS;
     private final float SPREAD;
 
@@ -97,12 +98,16 @@ public class ArmorStandManager {
 
     public void removeArmorStands(Player player) {
         ArmorStand[] armorStands = this.armorStands.get(player.getUniqueId());
-        if (armorStands == null) return;
+        if (armorStands == null) {
+            return;
+        }
 
         String playerName = player.getName();
         for (ArmorStand armorStand : armorStands) {
             String customName = armorStand.getCustomName();
-            if (customName == null) continue;
+            if (customName == null) {
+                continue;
+            }
 
             if (customName.equals(playerName + " × §aWorld Navigator")) {
                 armorStand.remove();

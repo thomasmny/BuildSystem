@@ -23,6 +23,7 @@ import java.util.*;
  * @author einTosti
  */
 public class NoClipManager {
+
     private final BuildSystem plugin;
     private final HashMap<UUID, GameMode> previousGameMode;
     private final HashSet<UUID> noClipPlayers;
@@ -61,7 +62,9 @@ public class NoClipManager {
                 previousGameMode.remove(uuid);
             }
 
-            if (player.getGameMode() == gameMode) continue;
+            if (player.getGameMode() == gameMode) {
+                continue;
+            }
 
             GameMode finalGameMode = gameMode;
             Bukkit.getScheduler().runTask(plugin, () -> {

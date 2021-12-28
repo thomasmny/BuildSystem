@@ -35,6 +35,7 @@ import java.util.*;
  * @author einTosti
  */
 public class PlayerMoveListener implements Listener {
+
     private final static double MIN_HEIGHT = -0.16453003708696978;
     private final static double MAX_HEIGHT = 0.16481381407766063;
 
@@ -60,12 +61,18 @@ public class PlayerMoveListener implements Listener {
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
-        if (!plugin.openNavigator.contains(player)) return;
+        if (!plugin.openNavigator.contains(player)) {
+            return;
+        }
         Settings settings = settingsManager.getSettings(player);
-        if (!settings.getNavigatorType().equals(NavigatorType.NEW)) return;
+        if (!settings.getNavigatorType().equals(NavigatorType.NEW)) {
+            return;
+        }
 
         Location to = event.getTo();
-        if (to == null) return;
+        if (to == null) {
+            return;
+        }
         Location from = event.getFrom();
         if (from.getBlockX() != to.getBlockX() || from.getBlockZ() != to.getBlockZ()) {
             Bukkit.getServer().getScheduler().runTaskLater(plugin, () -> closeNavigator(player), 5L);
@@ -73,7 +80,9 @@ public class PlayerMoveListener implements Listener {
     }
 
     public void closeNavigator(Player player) {
-        if (!plugin.openNavigator.contains(player)) return;
+        if (!plugin.openNavigator.contains(player)) {
+            return;
+        }
         lastLookedAt.remove(player.getUniqueId());
         armorStandManager.removeArmorStands(player);
 
@@ -93,7 +102,9 @@ public class PlayerMoveListener implements Listener {
     }
 
     private void replaceBarrier(Player player) {
-        if (!player.hasPermission("buildsystem.gui")) return;
+        if (!player.hasPermission("buildsystem.gui")) {
+            return;
+        }
 
         String findItemName = plugin.getString("barrier_item");
         ItemStack replaceItem = inventoryManager.getItemStack(plugin.getNavigatorItem(), plugin.getString("navigator_item"));
@@ -109,7 +120,9 @@ public class PlayerMoveListener implements Listener {
         List<UUID> toRemove = new ArrayList<>();
 
         for (Player player : plugin.openNavigator) {
-            if (getEntityName(player) == null) continue;
+            if (getEntityName(player) == null) {
+                continue;
+            }
 
             double lookedPosition = player.getEyeLocation().getDirection().getY();
             if (lookedPosition >= MIN_HEIGHT && lookedPosition <= MAX_HEIGHT) {
@@ -133,7 +146,9 @@ public class PlayerMoveListener implements Listener {
     }
 
     private <T extends Entity> T getTarget(final Entity entity, final Iterable<T> entities) {
-        if (entity == null) return null;
+        if (entity == null) {
+            return null;
+        }
         T target = null;
 
         final double threshold = 0.5;
@@ -153,11 +168,17 @@ public class PlayerMoveListener implements Listener {
     }
 
     private String getEntityName(Player player) {
-        if (getTargetEntity(player) == null) return "";
-        if (getTargetEntity(player).getType() != EntityType.ARMOR_STAND) return "";
+        if (getTargetEntity(player) == null) {
+            return "";
+        }
+        if (getTargetEntity(player).getType() != EntityType.ARMOR_STAND) {
+            return "";
+        }
 
         Entity entity = getTargetEntity(player);
-        if (entity.getCustomName() == null) return "";
+        if (entity.getCustomName() == null) {
+            return "";
+        }
 
         return entity.getCustomName();
     }

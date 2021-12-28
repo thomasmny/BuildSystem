@@ -14,6 +14,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.logging.Level;
@@ -22,6 +23,7 @@ import java.util.logging.Level;
  * @author einTosti
  */
 public class SkullCommand implements CommandExecutor {
+
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
 
@@ -37,8 +39,8 @@ public class SkullCommand implements CommandExecutor {
             plugin.getLogger().log(Level.WARNING, plugin.getString("sender_not_player"));
             return true;
         }
-        Player player = (Player) sender;
 
+        Player player = (Player) sender;
         if (!player.hasPermission("buildsystem.skull")) {
             plugin.sendPermissionMessage(player);
             return true;
@@ -50,12 +52,14 @@ public class SkullCommand implements CommandExecutor {
                 player.sendMessage(plugin.getString("skull_player_received").replace("%player%", player.getName()));
                 break;
             case 1:
-                if (args[0].length() > 16) {
-                    player.getInventory().addItem(inventoryManager.getUrlSkull(plugin.getString("custom_skull_item"), "http://textures.minecraft.net/texture/" + args[0]));
+                String skullName = args[0];
+                if (skullName.length() > 16) {
+                    ItemStack customSkull = inventoryManager.getUrlSkull(plugin.getString("custom_skull_item"), "https://textures.minecraft.net/texture/" + skullName);
+                    player.getInventory().addItem(customSkull);
                     player.sendMessage(plugin.getString("skull_custom_received"));
                 } else {
-                    player.getInventory().addItem(inventoryManager.getSkull("§b" + args[0], args[0]));
-                    player.sendMessage(plugin.getString("skull_player_received").replace("%player%", args[0]));
+                    player.getInventory().addItem(inventoryManager.getSkull("§b" + skullName, skullName));
+                    player.sendMessage(plugin.getString("skull_player_received").replace("%player%", skullName));
                 }
                 break;
             default:

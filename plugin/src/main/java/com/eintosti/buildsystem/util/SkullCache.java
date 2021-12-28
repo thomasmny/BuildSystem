@@ -22,6 +22,7 @@ import java.util.logging.Level;
  * @author einTosti
  */
 public class SkullCache {
+
     private Class<?> craftItemStackClass;
 
     private final Map<String, Object> skullCache;

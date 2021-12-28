@@ -23,6 +23,7 @@ import org.bukkit.event.entity.EntitySpawnEvent;
  * @author einTosti
  */
 public class EntitySpawnListener implements Listener {
+
     private final WorldManager worldManager;
 
     public EntitySpawnListener(BuildSystem plugin) {
@@ -38,8 +39,9 @@ public class EntitySpawnListener implements Listener {
         }
 
         BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
-        if (buildWorld == null) return;
-        if (buildWorld.isMobAI()) return;
+        if (buildWorld == null || buildWorld.isMobAI()) {
+            return;
+        }
 
         Entity entity = event.getEntity();
         if (entity instanceof LivingEntity) {

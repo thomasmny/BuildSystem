@@ -16,6 +16,7 @@ import java.util.UUID;
  * @author einTosti
  */
 public class Builder {
+
     private UUID uuid;
     private String name;
 

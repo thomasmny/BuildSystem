@@ -19,6 +19,7 @@ import org.bukkit.event.weather.WeatherChangeEvent;
  * @author einTosti
  */
 public class WeatherChangeListener implements Listener {
+
     private final BuildSystem plugin;
 
     public WeatherChangeListener(BuildSystem plugin) {

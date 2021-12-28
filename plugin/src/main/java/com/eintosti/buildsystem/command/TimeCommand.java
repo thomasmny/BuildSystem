@@ -23,6 +23,7 @@ import java.util.logging.Level;
  * @author einTosti
  */
 public class TimeCommand implements CommandExecutor {
+
     private final BuildSystem plugin;
 
     public TimeCommand(BuildSystem plugin) {
@@ -37,6 +38,7 @@ public class TimeCommand implements CommandExecutor {
             plugin.getLogger().log(Level.WARNING, plugin.getString("sender_not_player"));
             return true;
         }
+
         Player player = (Player) sender;
 
         switch (label.toLowerCase()) {

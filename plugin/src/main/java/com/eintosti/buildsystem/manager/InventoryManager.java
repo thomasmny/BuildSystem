@@ -33,6 +33,7 @@ import java.util.*;
  * @author einTosti
  */
 public class InventoryManager {
+
     private final BuildSystem plugin;
     private final SetupConfig setupConfig;
 
@@ -51,7 +52,9 @@ public class InventoryManager {
         }
 
         ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null) return false;
+        if (itemMeta == null) {
+            return false;
+        }
 
         return itemMeta.getDisplayName().equals(plugin.getString("navigator_item"));
     }
@@ -109,7 +112,9 @@ public class InventoryManager {
 
     public ItemStack getItemStack(XMaterial material, String displayName, List<String> lore) {
         ItemStack itemStack = material.parseItem();
-        if (itemStack == null) itemStack = XMaterial.BEDROCK.parseItem();
+        if (itemStack == null) {
+            itemStack = XMaterial.BEDROCK.parseItem();
+        }
         ItemMeta itemMeta = itemStack.getItemMeta();
 
         itemMeta.setDisplayName(displayName);
@@ -241,7 +246,9 @@ public class InventoryManager {
                 ArrayList<String> builders = formatBuilders(buildWorld);
                 for (int i = 0; i < builders.size(); i++) {
                     String builderString = builders.get(i).trim();
-                    if (builderString.isEmpty()) continue;
+                    if (builderString.isEmpty()) {
+                        continue;
+                    }
 
                     if (i == 0) {
                         builderString = line.replace("%builders%", builderString);
@@ -394,7 +401,9 @@ public class InventoryManager {
 
     public String selectedWorld(Player player) {
         BuildWorld selectedWorld = plugin.selectedWorld.get(player.getUniqueId());
-        if (selectedWorld == null) return null;
+        if (selectedWorld == null) {
+            return null;
+        }
 
         String selectedWorldName = selectedWorld.getName();
         if (selectedWorldName.length() > 17) {
@@ -408,27 +417,39 @@ public class InventoryManager {
         switch (worldType) {
             case NORMAL:
                 material = this.normalCreateItem;
-                if (material == null) material = XMaterial.OAK_LOG;
+                if (material == null) {
+                    material = XMaterial.OAK_LOG;
+                }
                 break;
             case FLAT:
                 material = this.flatCreateItem;
-                if (material == null) material = XMaterial.GRASS_BLOCK;
+                if (material == null) {
+                    material = XMaterial.GRASS_BLOCK;
+                }
                 break;
             case NETHER:
                 material = this.netherCreateItem;
-                if (material == null) material = XMaterial.NETHERRACK;
+                if (material == null) {
+                    material = XMaterial.NETHERRACK;
+                }
                 break;
             case END:
                 material = this.endCreateItem;
-                if (material == null) material = XMaterial.END_STONE;
+                if (material == null) {
+                    material = XMaterial.END_STONE;
+                }
                 break;
             case VOID:
                 material = this.voidCreateItem;
-                if (material == null) material = XMaterial.GLASS;
+                if (material == null) {
+                    material = XMaterial.GLASS;
+                }
                 break;
             case CUSTOM:
                 material = this.customCreateItem;
-                if (material == null) material = XMaterial.FILLED_MAP;
+                if (material == null) {
+                    material = XMaterial.FILLED_MAP;
+                }
                 break;
         }
         return material;
@@ -461,27 +482,39 @@ public class InventoryManager {
         switch (worldType) {
             case NORMAL:
                 material = this.normalDefaultItem;
-                if (material == null) material = XMaterial.OAK_LOG;
+                if (material == null) {
+                    material = XMaterial.OAK_LOG;
+                }
                 break;
             case FLAT:
                 material = this.flatDefaultItem;
-                if (material == null) material = XMaterial.GRASS_BLOCK;
+                if (material == null) {
+                    material = XMaterial.GRASS_BLOCK;
+                }
                 break;
             case NETHER:
                 material = this.netherDefaultItem;
-                if (material == null) material = XMaterial.NETHERRACK;
+                if (material == null) {
+                    material = XMaterial.NETHERRACK;
+                }
                 break;
             case END:
                 material = this.endDefaultItem;
-                if (material == null) material = XMaterial.END_STONE;
+                if (material == null) {
+                    material = XMaterial.END_STONE;
+                }
                 break;
             case VOID:
                 material = this.voidDefaultItem;
-                if (material == null) material = XMaterial.GLASS;
+                if (material == null) {
+                    material = XMaterial.GLASS;
+                }
                 break;
             case IMPORTED:
                 material = this.importedDefaultItem;
-                if (material == null) material = XMaterial.FURNACE;
+                if (material == null) {
+                    material = XMaterial.FURNACE;
+                }
                 break;
         }
         return material;
@@ -515,27 +548,39 @@ public class InventoryManager {
         switch (worldStatus) {
             case NOT_STARTED:
                 material = this.notStartedItem;
-                if (material == null) material = XMaterial.RED_DYE;
+                if (material == null) {
+                    material = XMaterial.RED_DYE;
+                }
                 break;
             case IN_PROGRESS:
                 material = this.inProgressItem;
-                if (material == null) material = XMaterial.ORANGE_DYE;
+                if (material == null) {
+                    material = XMaterial.ORANGE_DYE;
+                }
                 break;
             case ALMOST_FINISHED:
                 material = this.almostFinishedItem;
-                if (material == null) material = XMaterial.LIME_DYE;
+                if (material == null) {
+                    material = XMaterial.LIME_DYE;
+                }
                 break;
             case FINISHED:
                 material = this.finishedItem;
-                if (material == null) material = XMaterial.GREEN_DYE;
+                if (material == null) {
+                    material = XMaterial.GREEN_DYE;
+                }
                 break;
             case ARCHIVE:
                 material = this.archivedItem;
-                if (material == null) material = XMaterial.CYAN_DYE;
+                if (material == null) {
+                    material = XMaterial.CYAN_DYE;
+                }
                 break;
             case HIDDEN:
                 material = this.hiddenItem;
-                if (material == null) material = XMaterial.BONE_MEAL;
+                if (material == null) {
+                    material = XMaterial.BONE_MEAL;
+                }
                 break;
         }
         return material;
@@ -588,13 +633,19 @@ public class InventoryManager {
 
     public void loadTypes() {
         FileConfiguration configuration = setupConfig.getFile();
-        if (configuration == null) return;
+        if (configuration == null) {
+            return;
+        }
 
         ConfigurationSection configurationSection = configuration.getConfigurationSection("setup.type");
-        if (configurationSection == null) return;
+        if (configurationSection == null) {
+            return;
+        }
 
         Set<String> worldTypes = configurationSection.getKeys(false);
-        if (worldTypes.isEmpty()) return;
+        if (worldTypes.isEmpty()) {
+            return;
+        }
 
         for (String worldType : worldTypes) {
             String createMaterialString = configuration.getString("setup.type." + worldType + ".create");
@@ -613,13 +664,19 @@ public class InventoryManager {
 
     public void loadStatus() {
         FileConfiguration configuration = setupConfig.getFile();
-        if (configuration == null) return;
+        if (configuration == null) {
+            return;
+        }
 
         ConfigurationSection configurationSection = configuration.getConfigurationSection("setup.status");
-        if (configurationSection == null) return;
+        if (configurationSection == null) {
+            return;
+        }
 
         Set<String> worldStatus = configurationSection.getKeys(false);
-        if (worldStatus.isEmpty()) return;
+        if (worldStatus.isEmpty()) {
+            return;
+        }
 
         for (String status : worldStatus) {
             String statusString = configuration.getString("setup.status." + status);
@@ -631,6 +688,7 @@ public class InventoryManager {
     }
 
     private static class CreationComparator implements Comparator<BuildWorld> {
+
         @Override
         public int compare(BuildWorld buildWorld1, BuildWorld buildWorld2) {
             return Long.compare(buildWorld1.getCreationDate(), buildWorld2.getCreationDate());

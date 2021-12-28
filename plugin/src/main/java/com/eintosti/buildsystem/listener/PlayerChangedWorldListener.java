@@ -38,6 +38,7 @@ import java.util.UUID;
  * @author einTosti
  */
 public class PlayerChangedWorldListener implements Listener {
+
     private final BuildSystem plugin;
     private final ArmorStandManager armorStandManager;
     private final InventoryManager inventoryManager;
@@ -114,12 +115,14 @@ public class PlayerChangedWorldListener implements Listener {
     }
 
     private void setGoldBlock(BuildWorld buildWorld) {
-        if (buildWorld == null) return;
-        if (buildWorld.getType() != WorldType.VOID) return;
-        if (buildWorld.getStatus() != WorldStatus.NOT_STARTED) return;
+        if (buildWorld == null || buildWorld.getType() != WorldType.VOID || buildWorld.getStatus() != WorldStatus.NOT_STARTED) {
+            return;
+        }
 
         World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
-        if (bukkitWorld == null) return;
+        if (bukkitWorld == null) {
+            return;
+        }
 
         if (plugin.isVoidBlock()) {
             bukkitWorld.getBlockAt(0, 64, 0).setType(Material.GOLD_BLOCK);

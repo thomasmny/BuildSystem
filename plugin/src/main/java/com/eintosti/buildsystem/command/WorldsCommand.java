@@ -44,6 +44,7 @@ import java.util.logging.Level;
  * @author einTosti
  */
 public class WorldsCommand implements CommandExecutor {
+
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
     private final WorldManager worldManager;
@@ -257,10 +258,14 @@ public class WorldsCommand implements CommandExecutor {
                     File worldContainer = Bukkit.getWorldContainer();
                     String[] directories = worldContainer.list((dir, name) -> {
                         File worldFolder = new File(dir, name);
-                        if (!worldFolder.isDirectory()) return false;
+                        if (!worldFolder.isDirectory()) {
+                            return false;
+                        }
 
                         File levelFile = new File(dir + File.separator + name + File.separator + "level.dat");
-                        if (!levelFile.exists()) return false;
+                        if (!levelFile.exists()) {
+                            return false;
+                        }
 
                         BuildWorld buildWorld = worldManager.getBuildWorld(name);
                         return buildWorld == null;

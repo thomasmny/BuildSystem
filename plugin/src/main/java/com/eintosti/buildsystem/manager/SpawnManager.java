@@ -22,6 +22,7 @@ import org.bukkit.entity.Player;
  * @author einTosti
  */
 public class SpawnManager {
+
     private final WorldManager worldManager;
     private final SpawnConfig spawnConfig;
 
@@ -34,7 +35,9 @@ public class SpawnManager {
     }
 
     public boolean teleport(Player player) {
-        if (!spawnExists()) return false;
+        if (!spawnExists()) {
+            return false;
+        }
 
         BuildWorld buildWorld = worldManager.getBuildWorld(spawnName);
         if (buildWorld != null) {

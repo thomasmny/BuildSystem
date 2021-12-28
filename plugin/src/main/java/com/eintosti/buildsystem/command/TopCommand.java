@@ -26,6 +26,7 @@ import java.util.logging.Level;
  * @author einTosti
  */
 public class TopCommand implements CommandExecutor {
+
     private final BuildSystem plugin;
     private final WorldManager worldManager;
 
@@ -41,18 +42,19 @@ public class TopCommand implements CommandExecutor {
             plugin.getLogger().log(Level.WARNING, plugin.getString("sender_not_player"));
             return true;
         }
-        Player player = (Player) sender;
 
+        Player player = (Player) sender;
         if (!player.hasPermission("buildsystem.top")) {
             plugin.sendPermissionMessage(player);
             return true;
         }
 
-        if (args.length == 0) {
-            sendToTop(player);
-        } else {
+        if (args.length != 0) {
             player.sendMessage(plugin.getString("top_usage"));
+            return true;
         }
+
+        sendToTop(player);
         return true;
     }
 

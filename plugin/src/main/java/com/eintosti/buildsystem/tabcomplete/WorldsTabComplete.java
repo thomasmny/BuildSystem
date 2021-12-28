@@ -27,6 +27,7 @@ import java.util.List;
  * @author einTosti
  */
 public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
+
     private final WorldManager worldManager;
 
     public WorldsTabComplete(BuildSystem plugin) {
@@ -38,7 +39,9 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         ArrayList<String> arrayList = new ArrayList<>();
 
-        if (!(sender instanceof Player)) return arrayList;
+        if (!(sender instanceof Player)) {
+            return arrayList;
+        }
         Player player = (Player) sender;
 
         switch (args.length) {
@@ -95,10 +98,14 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                             }
 
                             File worldFolder = new File(dir, name);
-                            if (!worldFolder.isDirectory()) return false;
+                            if (!worldFolder.isDirectory()) {
+                                return false;
+                            }
 
                             File levelFile = new File(dir + File.separator + name + File.separator + "level.dat");
-                            if (!levelFile.exists()) return false;
+                            if (!levelFile.exists()) {
+                                return false;
+                            }
 
                             BuildWorld buildWorld = worldManager.getBuildWorld(name);
                             return buildWorld == null;

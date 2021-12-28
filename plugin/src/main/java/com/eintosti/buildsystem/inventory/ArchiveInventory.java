@@ -14,6 +14,7 @@ import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.WorldStatus;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
@@ -26,6 +27,9 @@ import java.util.UUID;
  * @author einTosti
  */
 public class ArchiveInventory {
+
+    private static final int MAX_WORLDS = 36;
+
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
     private final WorldManager worldManager;
@@ -37,13 +41,14 @@ public class ArchiveInventory {
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
         this.worldManager = plugin.getWorldManager();
+
         this.invIndex = new HashMap<>();
     }
 
     private Inventory createInventory(Player player) {
         Inventory inventory = Bukkit.createInventory(null, 54, plugin.getString("archive_title"));
 
-        int numOfWorlds = (numOfWorlds(player) / 36) + (numOfWorlds(player) % 36 == 0 ? 0 : 1);
+        int numOfWorlds = (numOfWorlds(player) / MAX_WORLDS) + (numOfWorlds(player) % MAX_WORLDS == 0 ? 0 : 1);
         inventoryManager.fillMultiInvWithGlass(plugin, inventory, player, invIndex, numOfWorlds);
         inventoryManager.addGlassPane(plugin, player, inventory, 49);
 
@@ -75,7 +80,7 @@ public class ArchiveInventory {
     private void addWorlds(Player player) {
         int columnWorld = 9, maxColumnWorld = 44;
         int numWorlds = numOfWorlds(player);
-        int numInventories = (numWorlds % 36 == 0 ? numWorlds : numWorlds + 1) != 0 ? (numWorlds % 36 == 0 ? numWorlds : numWorlds + 1) : 1;
+        int numInventories = (numWorlds % MAX_WORLDS == 0 ? numWorlds : numWorlds + 1) != 0 ? (numWorlds % MAX_WORLDS == 0 ? numWorlds : numWorlds + 1) : 1;
 
         inventories = new Inventory[numInventories];
         Inventory inventory = createInventory(player);
@@ -101,11 +106,16 @@ public class ArchiveInventory {
     }
 
     private boolean isValid(Player player, BuildWorld buildWorld) {
-        if (buildWorld.getStatus() == WorldStatus.ARCHIVE && !buildWorld.isPrivate()) {
-            if (player.hasPermission(buildWorld.getPermission()) || buildWorld.getPermission().equalsIgnoreCase("-")) {
-                return Bukkit.getWorld(buildWorld.getName()) != null || (Bukkit.getWorld(buildWorld.getName()) == null && !buildWorld.isLoaded());
-            }
+        if (buildWorld.getStatus() != WorldStatus.ARCHIVE || buildWorld.isPrivate()) {
+            return false;
         }
+
+        String worldPermission = buildWorld.getPermission();
+        if (worldPermission.equalsIgnoreCase("-") || player.hasPermission(worldPermission)) {
+            World world = Bukkit.getWorld(buildWorld.getName());
+            return world != null || !buildWorld.isLoaded();
+        }
+
         return false;
     }
 

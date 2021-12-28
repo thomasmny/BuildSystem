@@ -26,6 +26,7 @@ import java.util.UUID;
  * @author einTosti
  */
 public class PlayerTeleportListener implements Listener {
+
     private final BuildSystem plugin;
     private final WorldManager worldManager;
 
@@ -47,9 +48,13 @@ public class PlayerTeleportListener implements Listener {
         }
 
         Location to = event.getTo();
-        if (to == null) return;
+        if (to == null) {
+            return;
+        }
         World toWorld = to.getWorld();
-        if (toWorld == null) return;
+        if (toWorld == null) {
+            return;
+        }
 
         String worldName = to.getWorld().getName();
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);

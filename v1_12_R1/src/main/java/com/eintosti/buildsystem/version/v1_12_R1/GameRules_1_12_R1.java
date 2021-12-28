@@ -26,6 +26,7 @@ import java.util.*;
  * @author einTosti
  */
 public class GameRules_1_12_R1 implements GameRules {
+
     private final Map<UUID, Integer> invIndex;
     private final int[] slots = new int[]{11, 12, 13, 14, 15, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33};
 
@@ -130,15 +131,23 @@ public class GameRules_1_12_R1 implements GameRules {
     @Override
     public void toggleGameRule(InventoryClickEvent event, World world) {
         int slot = event.getSlot();
-        if (!isValidSlot(slot)) return;
+        if (!isValidSlot(slot)) {
+            return;
+        }
 
         ItemStack itemStack = event.getCurrentItem();
-        if (itemStack == null) return;
+        if (itemStack == null) {
+            return;
+        }
 
         ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null) return;
+        if (itemMeta == null) {
+            return;
+        }
 
-        if (!itemMeta.hasDisplayName()) return;
+        if (!itemMeta.hasDisplayName()) {
+            return;
+        }
         String displayName = itemMeta.getDisplayName();
 
         String gameRule = ChatColor.stripColor(displayName);
@@ -169,7 +178,9 @@ public class GameRules_1_12_R1 implements GameRules {
 
     private boolean isValidSlot(int slot) {
         for (int i : this.slots) {
-            if (i == slot) return true;
+            if (i == slot) {
+                return true;
+            }
         }
         return false;
     }

@@ -22,6 +22,7 @@ import java.util.logging.Level;
  * @author einTosti
  */
 public class SpeedCommand implements CommandExecutor {
+
     private final BuildSystem plugin;
 
     public SpeedCommand(BuildSystem plugin) {
@@ -35,50 +36,56 @@ public class SpeedCommand implements CommandExecutor {
             plugin.getLogger().log(Level.WARNING, plugin.getString("sender_not_player"));
             return true;
         }
-        Player player = (Player) sender;
 
+        Player player = (Player) sender;
         if (!player.hasPermission("buildsystem.speed")) {
             plugin.sendPermissionMessage(player);
             return true;
         }
 
-        if (args.length == 0) {
-            plugin.getSpeedInventory().openInventory(player);
-            XSound.BLOCK_CHEST_OPEN.play(player);
-        } else if (args.length == 1) {
-            switch (args[0].toLowerCase()) {
-                case "1":
-                    setSpeed(player, 0.2f, args);
-                    break;
-                case "2":
-                    setSpeed(player, 0.4f, args);
-                    break;
-                case "3":
-                    setSpeed(player, 0.6f, args);
-                    break;
-                case "4":
-                    setSpeed(player, 0.8f, args);
-                    break;
-                case "5":
-                    setSpeed(player, 1.0f, args);
-                    break;
-                default:
-                    player.sendMessage(plugin.getString("speed_usage"));
-                    break;
-            }
-        } else {
-            player.sendMessage(plugin.getString("speed_usage"));
+        switch (args.length) {
+            case 0:
+                plugin.getSpeedInventory().openInventory(player);
+                XSound.BLOCK_CHEST_OPEN.play(player);
+                break;
+            case 1:
+                String speedString = args[0];
+                switch (speedString) {
+                    case "1":
+                        setSpeed(player, 0.2f, speedString);
+                        break;
+                    case "2":
+                        setSpeed(player, 0.4f, speedString);
+                        break;
+                    case "3":
+                        setSpeed(player, 0.6f, speedString);
+                        break;
+                    case "4":
+                        setSpeed(player, 0.8f, speedString);
+                        break;
+                    case "5":
+                        setSpeed(player, 1.0f, speedString);
+                        break;
+                    default:
+                        player.sendMessage(plugin.getString("speed_usage"));
+                        break;
+                }
+                break;
+            default:
+                player.sendMessage(plugin.getString("speed_usage"));
+                break;
         }
+
         return true;
     }
 
-    private void setSpeed(Player player, float speed, String[] args) {
+    private void setSpeed(Player player, float speed, String speedString) {
         if (player.isFlying()) {
             player.setFlySpeed(speed - 0.1f);
-            player.sendMessage(plugin.getString("speed_set_flying").replace("%speed%", args[0]));
+            player.sendMessage(plugin.getString("speed_set_flying").replace("%speed%", speedString));
         } else {
             player.setWalkSpeed(speed);
-            player.sendMessage(plugin.getString("speed_set_walking").replace("%speed%", args[0]));
+            player.sendMessage(plugin.getString("speed_set_walking").replace("%speed%", speedString));
         }
     }
 }

@@ -26,6 +26,7 @@ import org.bukkit.event.Listener;
  * @author einTosti
  */
 public class EditSessionListener implements Listener {
+
     private final BuildSystem plugin;
     private final WorldManager worldManager;
 

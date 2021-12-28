@@ -55,6 +55,7 @@ import java.util.UUID;
  * @author einTosti
  */
 public class InventoryClickListener implements Listener {
+
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
     private final NoClipManager noClipManager;
@@ -110,8 +111,6 @@ public class InventoryClickListener implements Listener {
         event.setCancelled(true);
 
         switch (event.getSlot()) {
-            default:
-                return;
             case 11:
                 worldsInventory.openInventory(player);
                 break;
@@ -124,6 +123,8 @@ public class InventoryClickListener implements Listener {
             case 15:
                 settingsInventory.openInventory(player);
                 break;
+            default:
+                return;
         }
         XSound.ENTITY_CHICKEN_EGG.play(player);
     }
@@ -193,6 +194,7 @@ public class InventoryClickListener implements Listener {
                     break;
             }
         }
+
         manageInventoryClick(event, player, itemStack);
     }
 
@@ -241,9 +243,11 @@ public class InventoryClickListener implements Listener {
             return;
         }
 
-        if (!(event.getWhoClicked() instanceof Player)) return;
-        Player player = (Player) event.getWhoClicked();
+        if (!(event.getWhoClicked() instanceof Player)) {
+            return;
+        }
 
+        Player player = (Player) event.getWhoClicked();
         InventoryAction action = event.getAction();
         InventoryType type = event.getInventory().getType();
         int slot = event.getRawSlot();
@@ -257,17 +261,21 @@ public class InventoryClickListener implements Listener {
             case PLACE_SOME:
             case PLACE_ONE:
             case SWAP_WITH_CURSOR:
-                if (type == InventoryType.CHEST) {
-                    event.setCancelled(slot < 45 || slot > 80);
-                    if (action == InventoryAction.SWAP_WITH_CURSOR) {
-                        if (!(slot >= 45 && slot <= 80)) {
-                            event.setCancelled(true);
-                            if ((slot >= 11 && slot <= 15) || (slot >= 20 && slot <= 25) || (slot >= 29 && slot <= 34)) {
-                                ItemStack itemStack = event.getCursor();
-                                event.setCurrentItem(itemStack);
-                                player.setItemOnCursor(null);
-                            }
-                        }
+                if (type != InventoryType.CHEST) {
+                    return;
+                }
+
+                event.setCancelled(slot < 45 || slot > 80);
+                if (action != InventoryAction.SWAP_WITH_CURSOR) {
+                    return;
+                }
+
+                if (!(slot >= 45 && slot <= 80)) {
+                    event.setCancelled(true);
+                    if ((slot >= 11 && slot <= 15) || (slot >= 20 && slot <= 25) || (slot >= 29 && slot <= 34)) {
+                        ItemStack itemStack = event.getCursor();
+                        event.setCurrentItem(itemStack);
+                        player.setItemOnCursor(null);
                     }
                 }
                 break;
@@ -316,7 +324,9 @@ public class InventoryClickListener implements Listener {
         }
 
         Inventory inventory = event.getClickedInventory();
-        if (inventory == null) return;
+        if (inventory == null) {
+            return;
+        }
 
         boolean createPrivateWorld = worldManager.createPrivateWorldPlayers.contains(player);
 
@@ -426,7 +436,9 @@ public class InventoryClickListener implements Listener {
         }
 
         ItemStack itemStack = event.getCurrentItem();
-        if (itemStack == null) return;
+        if (itemStack == null) {
+            return;
+        }
 
         switch (event.getSlot()) {
             case 20:
@@ -494,7 +506,9 @@ public class InventoryClickListener implements Listener {
 
     private void changeTime(Player player, BuildWorld buildWorld) {
         World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
-        if (bukkitWorld == null) return;
+        if (bukkitWorld == null) {
+            return;
+        }
 
         BuildWorld.Time time = editInventory.getWorldTime(bukkitWorld);
         switch (time) {
@@ -514,7 +528,9 @@ public class InventoryClickListener implements Listener {
 
     private void removeEntities(Player player, BuildWorld buildWorld) {
         World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
-        if (bukkitWorld == null) return;
+        if (bukkitWorld == null) {
+            return;
+        }
 
         int entitiesRemoved = 0;
         for (Entity entity : bukkitWorld.getEntities()) {
@@ -532,16 +548,6 @@ public class InventoryClickListener implements Listener {
         return !IGNORED_ENTITIES.contains(entity.getType());
     }
 
-    private CreateInventory.Page getCurrentPage(Inventory inventory) {
-        if (inventory.getItem(12).containsEnchantment(Enchantment.KNOCKBACK)) {
-            return CreateInventory.Page.PREDEFINED;
-        } else if (inventory.getItem(13).containsEnchantment(Enchantment.KNOCKBACK)) {
-            return CreateInventory.Page.GENERATOR;
-        } else {
-            return CreateInventory.Page.TEMPLATES;
-        }
-    }
-
     private static final ImmutableSet<EntityType> IGNORED_ENTITIES = Sets.immutableEnumSet(
             EntityType.ARMOR_STAND,
             EntityType.ENDER_CRYSTAL,
@@ -556,6 +562,16 @@ public class InventoryClickListener implements Listener {
             EntityType.MINECART_TNT,
             EntityType.PLAYER
     );
+
+    private CreateInventory.Page getCurrentPage(Inventory inventory) {
+        if (inventory.getItem(12).containsEnchantment(Enchantment.KNOCKBACK)) {
+            return CreateInventory.Page.PREDEFINED;
+        } else if (inventory.getItem(13).containsEnchantment(Enchantment.KNOCKBACK)) {
+            return CreateInventory.Page.GENERATOR;
+        } else {
+            return CreateInventory.Page.TEMPLATES;
+        }
+    }
 
     @EventHandler
     public void onBuildersInventoryClick(InventoryClickEvent event) {
@@ -574,10 +590,14 @@ public class InventoryClickListener implements Listener {
         }
 
         ItemStack itemStack = event.getCurrentItem();
-        if (itemStack == null) return;
+        if (itemStack == null) {
+            return;
+        }
 
         ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null) return;
+        if (itemMeta == null) {
+            return;
+        }
 
         Material material = itemStack.getType();
         if (material != XMaterial.PLAYER_HEAD.parseMaterial()) {
@@ -599,9 +619,15 @@ public class InventoryClickListener implements Listener {
                 builderInventory.incrementInv(player);
                 break;
             default:
-                if (slot == 4) return;
-                if (!itemMeta.hasDisplayName()) return;
-                if (!event.isShiftClick()) return;
+                if (slot == 4) {
+                    return;
+                }
+                if (!itemMeta.hasDisplayName()) {
+                    return;
+                }
+                if (!event.isShiftClick()) {
+                    return;
+                }
 
                 String builderName = ChatColor.stripColor(itemMeta.getDisplayName());
                 UUID builderId = UUIDFetcher.getUUID(builderName);
@@ -632,10 +658,11 @@ public class InventoryClickListener implements Listener {
         }
 
         ItemStack itemStack = event.getCurrentItem();
-        if (itemStack == null) return;
-        Material material = itemStack.getType();
+        if (itemStack == null) {
+            return;
+        }
 
-        switch (material) {
+        switch (itemStack.getType()) {
             case PLAYER_HEAD:
                 int slot = event.getSlot();
                 if (slot == 36) {
@@ -665,17 +692,25 @@ public class InventoryClickListener implements Listener {
     public void onStatusInventoryClick(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
         String selectedWorld = inventoryManager.selectedWorld(player);
-        if (selectedWorld == null) return;
+        if (selectedWorld == null) {
+            return;
+        }
 
         if (!event.getView().getTitle().equals(plugin.getString("status_title").replace("%world%", selectedWorld))) {
             return;
         }
+
         event.setCancelled(true);
 
         ItemStack itemStack = event.getCurrentItem();
-        if (itemStack == null) return;
+        if (itemStack == null) {
+            return;
+        }
+
         Material itemType = itemStack.getType();
-        if (itemType == Material.AIR || !itemStack.hasItemMeta()) return;
+        if (itemType == Material.AIR || !itemStack.hasItemMeta()) {
+            return;
+        }
 
         BuildWorld buildWorld = plugin.selectedWorld.get(player.getUniqueId());
         if (buildWorld == null) {
@@ -1067,9 +1102,9 @@ public class InventoryClickListener implements Listener {
 
     @EventHandler
     public void onClearInventory(InventoryCreativeEvent event) {
-        if (event.getClick() != ClickType.CREATIVE) return;
-        if (event.getSlotType() != InventoryType.SlotType.QUICKBAR) return;
-        if (event.getAction() != InventoryAction.PLACE_ALL) return;
+        if (event.getClick() != ClickType.CREATIVE || event.getSlotType() != InventoryType.SlotType.QUICKBAR || event.getAction() != InventoryAction.PLACE_ALL) {
+            return;
+        }
 
         Player player = (Player) event.getWhoClicked();
         ArrayList<Integer> navigatorSlots = inventoryManager.getNavigatorSlots(player);

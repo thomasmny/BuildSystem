@@ -3,7 +3,9 @@
     "config:base",
     ":disableDependencyDashboard"
   ],
-  "labels": ["renovate"],
+  "labels": [
+    "renovate"
+  ],
   "commitMessagePrefix": "chore: ",
   "rebaseWhen": "conflicted"
 }

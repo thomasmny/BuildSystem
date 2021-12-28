@@ -22,6 +22,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
  * @author einTosti
  */
 public class PlayerQuitListener implements Listener {
+
     private final BuildSystem plugin;
     private final SettingsManager settingsManager;
 
@@ -66,7 +67,9 @@ public class PlayerQuitListener implements Listener {
         }
 
         for (Player pl : Bukkit.getOnlinePlayers()) { // Show player to all players who had him/her hidden
-            if (!settingsManager.getSettings(pl).isHidePlayers()) continue;
+            if (!settingsManager.getSettings(pl).isHidePlayers()) {
+                continue;
+            }
             pl.showPlayer(player);
         }
     }

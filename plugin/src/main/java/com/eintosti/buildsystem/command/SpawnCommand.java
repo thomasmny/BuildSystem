@@ -26,6 +26,7 @@ import java.util.logging.Level;
  * @author einTosti
  */
 public class SpawnCommand implements CommandExecutor {
+
     private final BuildSystem plugin;
     private final SpawnManager spawnManager;
     private final WorldManager worldManager;
@@ -43,16 +44,15 @@ public class SpawnCommand implements CommandExecutor {
             plugin.getLogger().log(Level.WARNING, plugin.getString("sender_not_player"));
             return true;
         }
+
         Player player = (Player) sender;
 
         switch (args.length) {
             case 0:
                 if (!spawnManager.teleport(player)) {
                     player.sendMessage(plugin.getString("spawn_unavailable"));
-                } else {
-                    if (plugin.isSpawnTeleportMessage()) {
-                        player.sendMessage(plugin.getString("spawn_teleported"));
-                    }
+                } else if (plugin.isSpawnTeleportMessage()) {
+                    player.sendMessage(plugin.getString("spawn_teleported"));
                 }
                 break;
 

@@ -20,6 +20,7 @@ import java.util.Base64;
 import java.util.UUID;
 
 public class ItemSkulls {
+
     private static Class<?> skullMetaClass;
 
     static {

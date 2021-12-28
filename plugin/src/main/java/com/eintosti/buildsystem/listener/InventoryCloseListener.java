@@ -25,6 +25,7 @@ import org.bukkit.inventory.ItemStack;
  * @author einTosti
  */
 public class InventoryCloseListener implements Listener {
+
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
     private final WorldManager worldManager;
@@ -38,14 +39,18 @@ public class InventoryCloseListener implements Listener {
 
     @EventHandler
     public void onPrivateInventoryClose(InventoryCloseEvent event) {
-        if (!(event.getPlayer() instanceof Player)) return;
+        if (!(event.getPlayer() instanceof Player)) {
+            return;
+        }
         Player player = (Player) event.getPlayer();
         worldManager.createPrivateWorldPlayers.remove(player);
     }
 
     @EventHandler
     public void onSetupInventoryClose(InventoryCloseEvent event) {
-        if (!event.getView().getTitle().equals(plugin.getString("setup_title"))) return;
+        if (!event.getView().getTitle().equals(plugin.getString("setup_title"))) {
+            return;
+        }
         setNewItems(event);
     }
 

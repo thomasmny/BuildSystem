@@ -25,6 +25,7 @@ import java.util.logging.Level;
  * @author einTosti
  */
 public class BuildCommand implements CommandExecutor {
+
     private final BuildSystem plugin;
 
     public BuildCommand(BuildSystem plugin) {
@@ -38,8 +39,8 @@ public class BuildCommand implements CommandExecutor {
             plugin.getLogger().log(Level.WARNING, plugin.getString("sender_not_player"));
             return true;
         }
-        Player player = (Player) sender;
 
+        Player player = (Player) sender;
         if (!player.hasPermission("buildsystem.build")) {
             plugin.sendPermissionMessage(player);
             return true;
@@ -47,7 +48,7 @@ public class BuildCommand implements CommandExecutor {
 
         switch (args.length) {
             case 0:
-                toggleBuildMode(player, null, false);
+                toggleBuildMode(player, null, true);
                 break;
             case 1:
                 Player target = Bukkit.getPlayer(args[0]);
@@ -55,7 +56,7 @@ public class BuildCommand implements CommandExecutor {
                     player.sendMessage(plugin.getString("build_player_not_found"));
                     return true;
                 }
-                toggleBuildMode(target, player, true);
+                toggleBuildMode(target, player, false);
                 break;
             default:
                 player.sendMessage(plugin.getString("build_usage"));
@@ -65,7 +66,7 @@ public class BuildCommand implements CommandExecutor {
         return true;
     }
 
-    private void toggleBuildMode(Player target, Player sender, boolean extended) {
+    private void toggleBuildMode(Player target, Player sender, boolean self) {
         UUID targetUuid = target.getUniqueId();
 
         if (plugin.buildPlayers.contains(targetUuid)) {
@@ -76,7 +77,7 @@ public class BuildCommand implements CommandExecutor {
             }
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
-            if (!extended) {
+            if (self) {
                 target.sendMessage(plugin.getString("build_deactivated_self"));
             } else {
                 XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(sender);
@@ -89,7 +90,7 @@ public class BuildCommand implements CommandExecutor {
             target.setGameMode(GameMode.CREATIVE);
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
-            if (!extended) {
+            if (self) {
                 target.sendMessage(plugin.getString("build_activated_self"));
             } else {
                 XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(sender);

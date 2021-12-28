@@ -23,6 +23,7 @@ import java.util.List;
  * @author einTosti
  */
 public class PhysicsTabComplete extends ArgumentSorter implements TabCompleter {
+
     private final WorldManager worldManager;
 
     public PhysicsTabComplete(BuildSystem plugin) {
@@ -34,7 +35,9 @@ public class PhysicsTabComplete extends ArgumentSorter implements TabCompleter {
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         ArrayList<String> arrayList = new ArrayList<>();
 
-        if (!(sender instanceof Player)) return arrayList;
+        if (!(sender instanceof Player)) {
+            return arrayList;
+        }
         Player player = (Player) sender;
 
         if (args.length == 1) {
