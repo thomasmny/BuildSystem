@@ -151,8 +151,6 @@ public class WorldManipulateListener implements Listener {
         Cancellable cancellable = (Cancellable) event;
 
         if (plugin.canBypass(player)) {
-            cancellable.setCancelled(false);
-            checkIfPlayerInteractEvent(event, Event.Result.ALLOW);
             return false;
         }
 
@@ -169,8 +167,6 @@ public class WorldManipulateListener implements Listener {
         Cancellable cancellable = (Cancellable) event;
 
         if (plugin.canBypass(player)) {
-            cancellable.setCancelled(false);
-            checkIfPlayerInteractEvent(event, Event.Result.ALLOW);
             return false;
         }
 
@@ -187,14 +183,10 @@ public class WorldManipulateListener implements Listener {
         Cancellable cancellable = (Cancellable) event;
 
         if (plugin.canBypass(player)) {
-            cancellable.setCancelled(false);
-            checkIfPlayerInteractEvent(event, Event.Result.ALLOW);
             return false;
         }
 
         if (buildWorld.getCreatorId() != null && buildWorld.getCreatorId().equals(player.getUniqueId())) {
-            cancellable.setCancelled(false);
-            checkIfPlayerInteractEvent(event, Event.Result.ALLOW);
             return false;
         }
 
