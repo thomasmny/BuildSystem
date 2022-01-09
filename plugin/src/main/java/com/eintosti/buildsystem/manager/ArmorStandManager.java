@@ -75,12 +75,12 @@ public class ArmorStandManager {
 
     private ArmorStand spawnWorldNavigator(Player player) {
         Location navigatorLocation = calculatePosition(player, SPREAD / 2 * -1);
-        return spawnArmorStand(player, navigatorLocation, "§aWorld Navigator", true, "http://textures.minecraft.net/texture/d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622");
+        return spawnArmorStand(player, navigatorLocation, "§aWorld Navigator", true, "https://textures.minecraft.net/texture/d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622");
     }
 
     private ArmorStand spawnWorldArchive(Player player) {
         Location archiveLocation = calculatePosition(player, 0);
-        return spawnArmorStand(player, archiveLocation, "§6World Archive", true, "http://textures.minecraft.net/texture/7f6bf958abd78295eed6ffc293b1aa59526e80f54976829ea068337c2f5e8");
+        return spawnArmorStand(player, archiveLocation, "§6World Archive", true, "https://textures.minecraft.net/texture/7f6bf958abd78295eed6ffc293b1aa59526e80f54976829ea068337c2f5e8");
     }
 
     private ArmorStand spawnPrivateWorlds(Player player) {

@@ -174,7 +174,6 @@
                                 <exclude>com/cryptomorin/xseries/XEnchantment*</exclude>
                                 <exclude>com/cryptomorin/xseries/XEntity*</exclude>
                                 <exclude>com/cryptomorin/xseries/XItemStack*</exclude>
-                                <exclude>com/cryptomorin/xseries/XMaterialUtil*</exclude>
                                 <exclude>com/cryptomorin/xseries/XPotion*</exclude>
                             </excludes>
                         </filter>

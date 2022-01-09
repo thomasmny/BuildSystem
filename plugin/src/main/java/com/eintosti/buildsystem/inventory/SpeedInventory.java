@@ -31,11 +31,11 @@ public class SpeedInventory {
         Inventory inventory = Bukkit.createInventory(null, 27, plugin.getString("speed_title"));
         fillGuiWithGlass(player, inventory);
 
-        inventoryManager.addUrlSkull(inventory, 11, plugin.getString("speed_1"), "http://textures.minecraft.net/texture/71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530");
-        inventoryManager.addUrlSkull(inventory, 12, plugin.getString("speed_2"), "http://textures.minecraft.net/texture/4cd9eeee883468881d83848a46bf3012485c23f75753b8fbe8487341419847");
-        inventoryManager.addUrlSkull(inventory, 13, plugin.getString("speed_3"), "http://textures.minecraft.net/texture/1d4eae13933860a6df5e8e955693b95a8c3b15c36b8b587532ac0996bc37e5");
-        inventoryManager.addUrlSkull(inventory, 14, plugin.getString("speed_4"), "http://textures.minecraft.net/texture/d2e78fb22424232dc27b81fbcb47fd24c1acf76098753f2d9c28598287db5");
-        inventoryManager.addUrlSkull(inventory, 15, plugin.getString("speed_5"), "http://textures.minecraft.net/texture/6d57e3bc88a65730e31a14e3f41e038a5ecf0891a6c243643b8e5476ae2");
+        inventoryManager.addUrlSkull(inventory, 11, plugin.getString("speed_1"), "https://textures.minecraft.net/texture/71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530");
+        inventoryManager.addUrlSkull(inventory, 12, plugin.getString("speed_2"), "https://textures.minecraft.net/texture/4cd9eeee883468881d83848a46bf3012485c23f75753b8fbe8487341419847");
+        inventoryManager.addUrlSkull(inventory, 13, plugin.getString("speed_3"), "https://textures.minecraft.net/texture/1d4eae13933860a6df5e8e955693b95a8c3b15c36b8b587532ac0996bc37e5");
+        inventoryManager.addUrlSkull(inventory, 14, plugin.getString("speed_4"), "https://textures.minecraft.net/texture/d2e78fb22424232dc27b81fbcb47fd24c1acf76098753f2d9c28598287db5");
+        inventoryManager.addUrlSkull(inventory, 15, plugin.getString("speed_5"), "https://textures.minecraft.net/texture/6d57e3bc88a65730e31a14e3f41e038a5ecf0891a6c243643b8e5476ae2");
 
         return inventory;
     }

@@ -88,7 +88,7 @@ public class ArchiveInventory {
         int index = 0;
         inventories[index] = inventory;
         if (numWorlds == 0) {
-            inventoryManager.addUrlSkull(inventory, 22, plugin.getString("archive_no_worlds"), "http://textures.minecraft.net/texture/2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6");
+            inventoryManager.addUrlSkull(inventory, 22, plugin.getString("archive_no_worlds"), "https://textures.minecraft.net/texture/2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6");
             return;
         }
 

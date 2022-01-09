@@ -47,9 +47,9 @@ public class CreateInventory {
         Inventory inventory = Bukkit.createInventory(null, 45, plugin.getString("create_title"));
         fillGuiWithGlass(player, inventory, page);
 
-        addPageItem(inventory, page, Page.PREDEFINED, 12, inventoryManager.getUrlSkull(plugin.getString("create_predefined_worlds"), "http://textures.minecraft.net/texture/2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78"));
-        addPageItem(inventory, page, Page.GENERATOR, 13, inventoryManager.getUrlSkull(plugin.getString("create_generators"), "http://textures.minecraft.net/texture/b2f79016cad84d1ae21609c4813782598e387961be13c15682752f126dce7a"));
-        addPageItem(inventory, page, Page.TEMPLATES, 14, inventoryManager.getUrlSkull(plugin.getString("create_templates"), "http://textures.minecraft.net/texture/d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c"));
+        addPageItem(inventory, page, Page.PREDEFINED, 12, inventoryManager.getUrlSkull(plugin.getString("create_predefined_worlds"), "https://textures.minecraft.net/texture/2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78"));
+        addPageItem(inventory, page, Page.GENERATOR, 13, inventoryManager.getUrlSkull(plugin.getString("create_generators"), "https://textures.minecraft.net/texture/b2f79016cad84d1ae21609c4813782598e387961be13c15682752f126dce7a"));
+        addPageItem(inventory, page, Page.TEMPLATES, 14, inventoryManager.getUrlSkull(plugin.getString("create_templates"), "https://textures.minecraft.net/texture/d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c"));
 
         switch (page) {
             case PREDEFINED:
@@ -60,7 +60,7 @@ public class CreateInventory {
                 inventoryManager.addItemStack(inventory, 33, inventoryManager.getCreateItem(WorldType.VOID), plugin.getString("create_void_world"));
                 break;
             case GENERATOR:
-                inventoryManager.addUrlSkull(inventory, 31, plugin.getString("create_generators_create_world"), "http://textures.minecraft.net/texture/3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
+                inventoryManager.addUrlSkull(inventory, 31, plugin.getString("create_generators_create_world"), "https://textures.minecraft.net/texture/3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
                 break;
         }
         // Template stuff is done during inventory open
@@ -137,13 +137,13 @@ public class CreateInventory {
             case TEMPLATES:
                 UUID playerUUID = player.getUniqueId();
                 if (numTemplates > 1 && invIndex.get(playerUUID) > 0) {
-                    inventoryManager.addUrlSkull(inventory, 38, plugin.getString("gui_previous_page"), "http://textures.minecraft.net/texture/f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
+                    inventoryManager.addUrlSkull(inventory, 38, plugin.getString("gui_previous_page"), "https://textures.minecraft.net/texture/f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
                 } else {
                     inventoryManager.addGlassPane(plugin, player, inventory, 38);
                 }
 
                 if (numTemplates > 1 && invIndex.get(playerUUID) < (numTemplates - 1)) {
-                    inventoryManager.addUrlSkull(inventory, 42, plugin.getString("gui_next_page"), "http://textures.minecraft.net/texture/d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
+                    inventoryManager.addUrlSkull(inventory, 42, plugin.getString("gui_next_page"), "https://textures.minecraft.net/texture/d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
                 } else {
                     inventoryManager.addGlassPane(plugin, player, inventory, 42);
                 }

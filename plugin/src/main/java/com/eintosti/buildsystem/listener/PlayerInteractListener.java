@@ -11,6 +11,7 @@ package com.eintosti.buildsystem.listener;
 import com.cryptomorin.xseries.XBlock;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
+import com.cryptomorin.xseries.XTag;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.ArmorStandManager;
 import com.eintosti.buildsystem.manager.InventoryManager;
@@ -20,7 +21,6 @@ import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.Builder;
 import com.eintosti.buildsystem.object.world.WorldStatus;
-import com.google.common.collect.Sets;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -215,7 +215,7 @@ public class PlayerInteractListener implements Listener {
         }
 
         Material material = itemStack.getType();
-        if (!PLANTS.contains(XMaterial.matchXMaterial(material))) {
+        if (!XTag.FLOWERS.isTagged(XMaterial.matchXMaterial(material))) {
             return;
         }
 
@@ -232,15 +232,15 @@ public class PlayerInteractListener implements Listener {
     /**
      * Not every player can always interact with the {@link BuildWorld} they are in.
      * <p>
-     * Reasons an interaction could be cancelled:
-     * - The world has its {@link WorldStatus} set to archived
-     * - The world has a setting enabled which disallows certain events
-     * - The world only allows {@link Builder}s to build and the player is not such a builder
+     * Reasons an interaction could be cancelled:<br>
+     * - The world has its {@link WorldStatus} set to archived<br>
+     * - The world has a setting enabled which disallows certain events<br>
+     * - The world only allows {@link Builder}s to build and the player is not such a builder<br>
      * <p>
-     * However, a player can override these reasons if:
-     * - The player has the permission `buildsystem.admin`
-     * - The player has the permission `buildsystem.bypass.archive`
-     * - The player has used `/build` to enter build-mode
+     * However, a player can override these reasons if:<br>
+     * - The player has the permission `buildsystem.admin`<br>
+     * - The player has the permission `buildsystem.bypass.archive`<br>
+     * - The player has used `/build` to enter build-mode<br>
      *
      * @param event the event which was called by the world manipulation
      * @return if the interaction with the world is valid
@@ -291,7 +291,7 @@ public class PlayerInteractListener implements Listener {
 
         Material material = itemStack.getType();
         XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-        if (!SIGNS.contains(xMaterial)) {
+        if (!XTag.SIGNS.isTagged(xMaterial)) {
             return;
         }
 
@@ -402,7 +402,8 @@ public class PlayerInteractListener implements Listener {
         if (material == plugin.getWorldEditWand().parseMaterial()) {
             return;
         }
-        if (!DISABLED_BLOCKS.contains(XMaterial.matchXMaterial(block.getType()))) {
+
+        if (!XTag.isInteractable(XMaterial.matchXMaterial(block.getType()))) {
             return;
         }
 
@@ -414,7 +415,7 @@ public class PlayerInteractListener implements Listener {
         XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
         String materialName = material.toString();
 
-        if (SIGNS.contains(xMaterial)) {
+        if (XTag.SIGNS.isTagged(xMaterial)) {
             if (!XMaterial.supports(13)) {
                 material = Material.valueOf("WALL_SIGN");
             } else {
@@ -423,7 +424,7 @@ public class PlayerInteractListener implements Listener {
             }
         }
 
-        if (!XMaterial.supports(13) && materialName.endsWith("_ITEM")) {
+        if (!XMaterial.supports(13) && XTag.isItem(xMaterial)) {
             material = Material.valueOf(materialName.replace("_ITEM", ""));
         }
 
@@ -437,194 +438,13 @@ public class PlayerInteractListener implements Listener {
     // Could be a separate class but this makes it easier
     @EventHandler
     public void onInventoryOpen(InventoryOpenEvent event) {
-        Player player = (Player) event.getPlayer();
-        UUID playerUuid = player.getUniqueId();
-        if (!cachePlayers.contains(playerUuid)) {
-            return;
+        if (cachePlayers.remove(event.getPlayer().getUniqueId())) {
+            event.setCancelled(true);
         }
-        event.setCancelled(true);
-        cachePlayers.remove(playerUuid);
     }
 
     @SuppressWarnings("deprecation")
     private DyeColor getItemColor(ItemStack itemStack) {
         return DyeColor.getByWoolData((byte) itemStack.getDurability());
     }
-
-    private static final Set<XMaterial> SIGNS = Sets.newHashSet(
-            XMaterial.ACACIA_SIGN,
-            XMaterial.BIRCH_SIGN,
-            XMaterial.CRIMSON_SIGN,
-            XMaterial.DARK_OAK_SIGN,
-            XMaterial.JUNGLE_SIGN,
-            XMaterial.OAK_SIGN,
-            XMaterial.SPRUCE_SIGN,
-            XMaterial.WARPED_SIGN
-    );
-
-    private static final Set<XMaterial> PLANTS = Sets.newHashSet(
-            XMaterial.ACACIA_SAPLING,
-            XMaterial.ALLIUM,
-            XMaterial.AZURE_BLUET,
-            XMaterial.BEETROOT_SEEDS,
-            XMaterial.BIRCH_SAPLING,
-            XMaterial.BLUE_ORCHID,
-            XMaterial.BROWN_MUSHROOM,
-            XMaterial.CRIMSON_FUNGUS,
-            XMaterial.CRIMSON_ROOTS,
-            XMaterial.DANDELION,
-            XMaterial.DARK_OAK_SAPLING,
-            XMaterial.DEAD_BUSH,
-            XMaterial.FERN,
-            XMaterial.GRASS,
-            XMaterial.JUNGLE_SAPLING,
-            XMaterial.LARGE_FERN,
-            XMaterial.LILAC,
-            XMaterial.MELON_SEEDS,
-            XMaterial.NETHER_SPROUTS,
-            XMaterial.OAK_SAPLING,
-            XMaterial.ORANGE_TULIP,
-            XMaterial.OXEYE_DAISY,
-            XMaterial.PEONY,
-            XMaterial.PINK_TULIP,
-            XMaterial.POPPY,
-            XMaterial.PUMPKIN_SEEDS,
-            XMaterial.RED_MUSHROOM,
-            XMaterial.RED_TULIP,
-            XMaterial.ROSE_BUSH,
-            XMaterial.SEAGRASS,
-            XMaterial.SPRUCE_SAPLING,
-            XMaterial.SUNFLOWER,
-            XMaterial.TALL_GRASS,
-            XMaterial.TALL_SEAGRASS,
-            XMaterial.TWISTING_VINES,
-            XMaterial.WARPED_FUNGUS,
-            XMaterial.WARPED_ROOTS,
-            XMaterial.WEEPING_VINES,
-            XMaterial.WHEAT_SEEDS,
-            XMaterial.WHITE_TULIP
-    );
-
-    private static final Set<XMaterial> DISABLED_BLOCKS = Sets.newHashSet(
-            XMaterial.ACACIA_BUTTON,
-            XMaterial.ACACIA_DOOR,
-            XMaterial.ACACIA_FENCE,
-            XMaterial.ACACIA_FENCE_GATE,
-            XMaterial.ACACIA_SIGN,
-            XMaterial.ACACIA_TRAPDOOR,
-            XMaterial.ACACIA_WALL_SIGN,
-            XMaterial.ANVIL,
-            XMaterial.BARREL,
-            XMaterial.BELL,
-            XMaterial.BIRCH_BUTTON,
-            XMaterial.BIRCH_DOOR,
-            XMaterial.BIRCH_FENCE,
-            XMaterial.BIRCH_FENCE_GATE,
-            XMaterial.BIRCH_SIGN,
-            XMaterial.BIRCH_TRAPDOOR,
-            XMaterial.BIRCH_WALL_SIGN,
-            XMaterial.BLACK_BED,
-            XMaterial.BLACK_SHULKER_BOX,
-            XMaterial.BLAST_FURNACE,
-            XMaterial.BLUE_BED,
-            XMaterial.BLUE_SHULKER_BOX,
-            XMaterial.BROWN_BED,
-            XMaterial.BROWN_SHULKER_BOX,
-            XMaterial.CARTOGRAPHY_TABLE,
-            XMaterial.CHEST,
-            XMaterial.CHIPPED_ANVIL,
-            XMaterial.CRAFTING_TABLE,
-            XMaterial.CRIMSON_BUTTON,
-            XMaterial.CRIMSON_DOOR,
-            XMaterial.CRIMSON_FENCE,
-            XMaterial.CRIMSON_FENCE_GATE,
-            XMaterial.CRIMSON_SIGN,
-            XMaterial.CRIMSON_TRAPDOOR,
-            XMaterial.CRIMSON_WALL_SIGN,
-            XMaterial.CYAN_BED,
-            XMaterial.CYAN_SHULKER_BOX,
-            XMaterial.DAMAGED_ANVIL,
-            XMaterial.DARK_OAK_BUTTON,
-            XMaterial.DARK_OAK_DOOR,
-            XMaterial.DARK_OAK_FENCE,
-            XMaterial.DARK_OAK_FENCE_GATE,
-            XMaterial.DARK_OAK_SIGN,
-            XMaterial.DARK_OAK_TRAPDOOR,
-            XMaterial.DARK_OAK_WALL_SIGN,
-            XMaterial.DAYLIGHT_DETECTOR,
-            XMaterial.DISPENSER,
-            XMaterial.DROPPER,
-            XMaterial.ENCHANTING_TABLE,
-            XMaterial.ENDER_CHEST,
-            XMaterial.FURNACE,
-            XMaterial.GRAY_BED,
-            XMaterial.GRAY_SHULKER_BOX,
-            XMaterial.GREEN_BED,
-            XMaterial.GREEN_SHULKER_BOX,
-            XMaterial.GRINDSTONE,
-            XMaterial.HOPPER,
-            XMaterial.IRON_DOOR,
-            XMaterial.IRON_TRAPDOOR,
-            XMaterial.JUKEBOX,
-            XMaterial.JUNGLE_BUTTON,
-            XMaterial.JUNGLE_DOOR,
-            XMaterial.JUNGLE_FENCE,
-            XMaterial.JUNGLE_FENCE_GATE,
-            XMaterial.JUNGLE_SIGN,
-            XMaterial.JUNGLE_TRAPDOOR,
-            XMaterial.JUNGLE_WALL_SIGN,
-            XMaterial.LEVER,
-            XMaterial.LIGHT_BLUE_BED,
-            XMaterial.LIGHT_BLUE_SHULKER_BOX,
-            XMaterial.LIGHT_GRAY_BED,
-            XMaterial.LIGHT_GRAY_SHULKER_BOX,
-            XMaterial.LIME_BED,
-            XMaterial.LOOM,
-            XMaterial.MAGENTA_BED,
-            XMaterial.MAGENTA_SHULKER_BOX,
-            XMaterial.MOVING_PISTON,
-            XMaterial.NETHER_BRICK_FENCE,
-            XMaterial.NOTE_BLOCK,
-            XMaterial.OAK_BUTTON,
-            XMaterial.OAK_DOOR,
-            XMaterial.OAK_FENCE,
-            XMaterial.OAK_FENCE_GATE,
-            XMaterial.OAK_SIGN,
-            XMaterial.OAK_TRAPDOOR,
-            XMaterial.OAK_WALL_SIGN,
-            XMaterial.ORANGE_BED,
-            XMaterial.ORANGE_SHULKER_BOX,
-            XMaterial.PINK_BED,
-            XMaterial.PINK_SHULKER_BOX,
-            XMaterial.PISTON,
-            XMaterial.PURPLE_BED,
-            XMaterial.PURPLE_SHULKER_BOX,
-            XMaterial.RED_BED,
-            XMaterial.RED_SHULKER_BOX,
-            XMaterial.SHULKER_BOX,
-            XMaterial.SMITHING_TABLE,
-            XMaterial.SMOKER,
-            XMaterial.SPRUCE_BUTTON,
-            XMaterial.SPRUCE_DOOR,
-            XMaterial.SPRUCE_FENCE,
-            XMaterial.SPRUCE_FENCE_GATE,
-            XMaterial.SPRUCE_SIGN,
-            XMaterial.SPRUCE_TRAPDOOR,
-            XMaterial.SPRUCE_WALL_SIGN,
-            XMaterial.STICKY_PISTON,
-            XMaterial.STONE_BUTTON,
-            XMaterial.STONECUTTER,
-            XMaterial.TRAPPED_CHEST,
-            XMaterial.WARPED_BUTTON,
-            XMaterial.WARPED_DOOR,
-            XMaterial.WARPED_FENCE,
-            XMaterial.WARPED_FENCE_GATE,
-            XMaterial.WARPED_SIGN,
-            XMaterial.WARPED_TRAPDOOR,
-            XMaterial.WARPED_WALL_SIGN,
-            XMaterial.WHITE_BED,
-            XMaterial.WHITE_SHULKER_BOX,
-            XMaterial.YELLOW_BED,
-            XMaterial.YELLOW_SHULKER_BOX
-    );
 }

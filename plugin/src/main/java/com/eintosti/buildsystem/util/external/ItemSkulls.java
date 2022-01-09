@@ -54,8 +54,8 @@ public class ItemSkulls {
         try {
             Field profileField = skullMetaClass.getDeclaredField("profile");
             profileField.setAccessible(true);
-            if (!skinURL.startsWith("http://textures.minecraft.net/texture/")) {
-                skinURL = "http://textures.minecraft.net/texture/" + skinURL;
+            if (!skinURL.startsWith("https://textures.minecraft.net/texture/")) {
+                skinURL = "https://textures.minecraft.net/texture/" + skinURL;
             }
             profileField.set(meta, getProfile(skinURL));
         } catch (Exception e) {

@@ -88,7 +88,7 @@ public class PrivateInventory {
         int index = 0;
         inventories[index] = inventory;
         if (numWorlds == 0) {
-            inventoryManager.addUrlSkull(inventory, 22, plugin.getString("private_no_worlds"), "http://textures.minecraft.net/texture/2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6");
+            inventoryManager.addUrlSkull(inventory, 22, plugin.getString("private_no_worlds"), "https://textures.minecraft.net/texture/2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6");
             return;
         }
 
@@ -126,7 +126,7 @@ public class PrivateInventory {
             inventoryManager.addGlassPane(plugin, player, inventory, 49);
             return;
         }
-        inventoryManager.addUrlSkull(inventory, 49, plugin.getString("private_create_world"), "http://textures.minecraft.net/texture/3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
+        inventoryManager.addUrlSkull(inventory, 49, plugin.getString("private_create_world"), "https://textures.minecraft.net/texture/3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
     }
 
     public Integer getInvIndex(Player player) {

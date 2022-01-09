@@ -55,13 +55,13 @@ public class GameRuleInventory {
         int invIndex = gameRules.getInvIndex(playerUUID);
 
         if (numGameRules > 1 && invIndex > 0) {
-            inventoryManager.addUrlSkull(inventory, 36, plugin.getString("gui_previous_page"), "http://textures.minecraft.net/texture/f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
+            inventoryManager.addUrlSkull(inventory, 36, plugin.getString("gui_previous_page"), "https://textures.minecraft.net/texture/f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
         } else {
             inventoryManager.addGlassPane(plugin, player, inventory, 36);
         }
 
         if (numGameRules > 1 && invIndex < (numGameRules - 1)) {
-            inventoryManager.addUrlSkull(inventory, 44, plugin.getString("gui_next_page"), "http://textures.minecraft.net/texture/d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
+            inventoryManager.addUrlSkull(inventory, 44, plugin.getString("gui_next_page"), "https://textures.minecraft.net/texture/d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
         } else {
             inventoryManager.addGlassPane(plugin, player, inventory, 44);
         }

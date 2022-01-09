@@ -126,15 +126,15 @@ public class WorldManipulateListener implements Listener {
     /**
      * Not every player can always interact with the {@link BuildWorld} they are in.
      * <p>
-     * Reasons an interaction could be cancelled:
-     * - The world has its {@link WorldStatus} set to archived
-     * - The world has a setting enabled which disallows certain events
-     * - The world only allows {@link Builder}s to build and the player is not such a builder
+     * Reasons an interaction could be cancelled:<br>
+     * - The world has its {@link WorldStatus} set to archived<br>
+     * - The world has a setting enabled which disallows certain events<br>
+     * - The world only allows {@link Builder}s to build and the player is not such a builder<br>
      * <p>
-     * However, a player can override these reasons if:
-     * - The player has the permission `buildsystem.admin`
-     * - The player has the permission `buildsystem.bypass.archive`
-     * - The player has used `/build` to enter build-mode
+     * However, a player can override these reasons if:<br>
+     * - The player has the permission `buildsystem.admin`<br>
+     * - The player has the permission `buildsystem.bypass.archive`<br>
+     * - The player has used `/build` to enter build-mode<br>
      *
      * @param player the player who manipulated the world
      * @param event  the event which was called by the world manipulation
@@ -169,7 +169,7 @@ public class WorldManipulateListener implements Listener {
 
         if (buildWorld.getStatus() == WorldStatus.ARCHIVE) {
             cancellable.setCancelled(true);
-            checkIfPlayerInteractEvent(event, Event.Result.DENY);
+            denyPlayerInteraction(event);
             return true;
         }
 
@@ -185,7 +185,7 @@ public class WorldManipulateListener implements Listener {
 
         if (!worldSetting) {
             cancellable.setCancelled(true);
-            checkIfPlayerInteractEvent(event, Event.Result.DENY);
+            denyPlayerInteraction(event);
             return true;
         }
 
@@ -205,17 +205,17 @@ public class WorldManipulateListener implements Listener {
 
         if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
             cancellable.setCancelled(true);
-            checkIfPlayerInteractEvent(event, Event.Result.DENY);
+            denyPlayerInteraction(event);
             return true;
         }
 
         return false;
     }
 
-    private void checkIfPlayerInteractEvent(Event event, Event.Result result) {
+    private void denyPlayerInteraction(Event event) {
         if (event instanceof PlayerInteractEvent) {
-            ((PlayerInteractEvent) event).setUseItemInHand(result);
-            ((PlayerInteractEvent) event).setUseInteractedBlock(result);
+            ((PlayerInteractEvent) event).setUseItemInHand(Event.Result.DENY);
+            ((PlayerInteractEvent) event).setUseInteractedBlock(Event.Result.DENY);
         }
     }
 
