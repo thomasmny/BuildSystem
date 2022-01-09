@@ -135,7 +135,7 @@ public class EditInventory {
         }
 
         int worldTime = (int) bukkitWorld.getTime();
-        int noonTime = plugin.getNoonTime();
+        int noonTime = plugin.getConfigValues().getNoonTime();
 
         if (worldTime >= 0 && worldTime < noonTime) {
             return BuildWorld.Time.SUNRISE;

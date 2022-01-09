@@ -25,6 +25,7 @@ import com.eintosti.buildsystem.object.settings.WorldSort;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.WorldStatus;
 import com.eintosti.buildsystem.object.world.WorldType;
+import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.external.UUIDFetcher;
 import com.eintosti.buildsystem.version.GameRules;
 import com.google.common.collect.ImmutableSet;
@@ -57,6 +58,8 @@ import java.util.UUID;
 public class InventoryClickListener implements Listener {
 
     private final BuildSystem plugin;
+    private final ConfigValues configValues;
+
     private final InventoryManager inventoryManager;
     private final NoClipManager noClipManager;
     private final SettingsManager settingsManager;
@@ -76,6 +79,8 @@ public class InventoryClickListener implements Listener {
 
     public InventoryClickListener(BuildSystem plugin) {
         this.plugin = plugin;
+        this.configValues = plugin.getConfigValues();
+
         this.inventoryManager = plugin.getInventoryManager();
         this.noClipManager = plugin.getNoClipManager();
         this.settingsManager = plugin.getSettingsManager();
@@ -513,13 +518,13 @@ public class InventoryClickListener implements Listener {
         BuildWorld.Time time = editInventory.getWorldTime(bukkitWorld);
         switch (time) {
             case SUNRISE:
-                bukkitWorld.setTime(plugin.getNoonTime());
+                bukkitWorld.setTime(configValues.getNoonTime());
                 break;
             case NOON:
-                bukkitWorld.setTime(plugin.getNightTime());
+                bukkitWorld.setTime(configValues.getNightTime());
                 break;
             case NIGHT:
-                bukkitWorld.setTime(plugin.getSunriseTime());
+                bukkitWorld.setTime(configValues.getSunriseTime());
                 break;
         }
 
@@ -920,7 +925,7 @@ public class InventoryClickListener implements Listener {
                 settings.setPlacePlants(!settings.isPlacePlants());
                 break;
             case 30:
-                if (!plugin.isScoreboard()) {
+                if (!configValues.isScoreboard()) {
                     XSound.ENTITY_ITEM_BREAK.play(player);
                     return;
                 }

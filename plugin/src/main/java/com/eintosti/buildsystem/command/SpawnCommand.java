@@ -51,7 +51,7 @@ public class SpawnCommand implements CommandExecutor {
             case 0:
                 if (!spawnManager.teleport(player)) {
                     player.sendMessage(plugin.getString("spawn_unavailable"));
-                } else if (plugin.isSpawnTeleportMessage()) {
+                } else if (plugin.getConfigValues().isSpawnTeleportMessage()) {
                     player.sendMessage(plugin.getString("spawn_teleported"));
                 }
                 break;

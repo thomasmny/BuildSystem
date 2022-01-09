@@ -15,6 +15,7 @@ import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.WorldStatus;
+import com.eintosti.buildsystem.util.ConfigValues;
 import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -32,12 +33,16 @@ import java.util.HashSet;
 public class PlayerCommandPreprocessListener implements Listener {
 
     private final BuildSystem plugin;
+    private final ConfigValues configValues;
+
     private final InventoryManager inventoryManager;
     private final SettingsManager settingsManager;
     private final WorldManager worldManager;
 
     public PlayerCommandPreprocessListener(BuildSystem plugin) {
         this.plugin = plugin;
+        this.configValues = plugin.getConfigValues();
+
         this.inventoryManager = plugin.getInventoryManager();
         this.settingsManager = plugin.getSettingsManager();
         this.worldManager = plugin.getWorldManager();
@@ -55,7 +60,7 @@ public class PlayerCommandPreprocessListener implements Listener {
         Player player = event.getPlayer();
 
         if (command.equalsIgnoreCase("/clear")) {
-            ItemStack navigatorItem = inventoryManager.getItemStack(plugin.getNavigatorItem(), plugin.getString("navigator_item"));
+            ItemStack navigatorItem = inventoryManager.getItemStack(configValues.getNavigatorItem(), plugin.getString("navigator_item"));
             if (!player.getInventory().contains(navigatorItem)) {
                 return;
             }
@@ -70,7 +75,7 @@ public class PlayerCommandPreprocessListener implements Listener {
             return;
         }
 
-        if (plugin.isBlockWorldEditNonBuilder()) {
+        if (configValues.isBlockWorldEditNonBuilder()) {
             if (!DISABLED_COMMANDS.contains(command)) {
                 return;
             }
@@ -278,7 +283,7 @@ public class PlayerCommandPreprocessListener implements Listener {
             return;
         }
 
-        if (plugin.isCreatorIsBuilder() && buildWorld.getCreatorId() != null && buildWorld.getCreatorId().equals(player.getUniqueId())) {
+        if (configValues.isCreatorIsBuilder() && buildWorld.getCreatorId() != null && buildWorld.getCreatorId().equals(player.getUniqueId())) {
             return;
         }
 

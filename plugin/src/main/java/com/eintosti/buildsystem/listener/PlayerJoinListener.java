@@ -17,6 +17,7 @@ import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.WorldStatus;
+import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.external.UpdateChecker;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -35,6 +36,8 @@ import org.bukkit.potion.PotionEffectType;
 public class PlayerJoinListener implements Listener {
 
     private final BuildSystem plugin;
+    private final ConfigValues configValues;
+
     private final InventoryManager inventoryManager;
     private final SettingsManager settingsManager;
     private final SpawnManager spawnManager;
@@ -42,17 +45,20 @@ public class PlayerJoinListener implements Listener {
 
     public PlayerJoinListener(BuildSystem plugin) {
         this.plugin = plugin;
+        this.configValues = plugin.getConfigValues();
+
         this.inventoryManager = plugin.getInventoryManager();
         this.settingsManager = plugin.getSettingsManager();
         this.spawnManager = plugin.getSpawnManager();
         this.worldManager = plugin.getWorldManager();
+
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void sendPlayerJoinMessage(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        String joinMessage = plugin.isJoinQuitMessages() ? plugin.getString("player_join").replace("%player%", player.getName()) : null;
+        String joinMessage = configValues.isJoinQuitMessages() ? plugin.getString("player_join").replace("%player%", player.getName()) : null;
         event.setJoinMessage(joinMessage);
     }
 
@@ -70,7 +76,7 @@ public class PlayerJoinListener implements Listener {
                 player.sendMessage(plugin.getString("physics_deactivated_in_world").replace("%world%", buildWorld.getName()));
             }
 
-            if (plugin.isArchiveVanish() && buildWorld.getStatus() == WorldStatus.ARCHIVE) {
+            if (configValues.isArchiveVanish() && buildWorld.getStatus() == WorldStatus.ARCHIVE) {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, false, false), false);
                 Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
             }
@@ -80,13 +86,16 @@ public class PlayerJoinListener implements Listener {
         if (settings.isNoClip()) {
             plugin.getNoClipManager().startNoClip(player);
         }
+
         if (settings.isScoreboard()) {
             settingsManager.startScoreboard(player);
             plugin.forceUpdateSidebar(player);
         }
+
         if (settings.isSpawnTeleport()) {
             spawnManager.teleport(player);
         }
+
         if (settings.isClearInventory()) {
             player.getInventory().clear();
         }
@@ -94,15 +103,13 @@ public class PlayerJoinListener implements Listener {
         manageHidePlayer(player);
         addJoinItem(player);
 
-        if (plugin.isUpdateChecker()) {
-            if (player.hasPermission("buildsystem.updates")) {
-                performUpdateCheck(player);
-            }
+        if (player.hasPermission("buildsystem.updates")) {
+            performUpdateCheck(player);
         }
     }
 
     private void addJoinItem(Player player) {
-        if (!plugin.isGiveNavigatorOnJoin()) {
+        if (!configValues.isGiveNavigatorOnJoin()) {
             return;
         }
 
@@ -115,7 +122,7 @@ public class PlayerJoinListener implements Listener {
             return;
         }
 
-        ItemStack itemStack = inventoryManager.getItemStack(plugin.getNavigatorItem(), plugin.getString("navigator_item"));
+        ItemStack itemStack = inventoryManager.getItemStack(configValues.getNavigatorItem(), plugin.getString("navigator_item"));
         ItemStack slot8 = playerInventory.getItem(8);
         if (slot8 == null || slot8.getType() == XMaterial.AIR.parseMaterial()) {
             playerInventory.setItem(8, itemStack);
@@ -139,6 +146,10 @@ public class PlayerJoinListener implements Listener {
     }
 
     private void performUpdateCheck(Player player) {
+        if (!configValues.isUpdateChecker()) {
+            return;
+        }
+
         UpdateChecker.init(plugin, BuildSystem.PLUGIN_ID)
                 .requestUpdateCheck()
                 .whenComplete((result, e) -> {

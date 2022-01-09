@@ -34,7 +34,7 @@ public class WorldConfig extends ConfigurationFile {
     }
 
     public void loadWorlds(WorldManager worldManager) {
-        if (plugin.isUnloadWorlds()) {
+        if (plugin.getConfigValues().isUnloadWorlds()) {
             plugin.getLogger().log(Level.INFO, "*** Unload worlds is enabled ***");
             plugin.getLogger().log(Level.INFO, "*** Therefore worlds will not be loaded ***");
             return;

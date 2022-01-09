@@ -122,11 +122,11 @@ public class BuildSystemExpansion extends PlaceholderExpansion {
             case "blockplacement":
                 return String.valueOf(buildWorld.isBlockPlacement());
             case "builders":
-                return plugin.getBuilders(buildWorld);
+                return buildWorld.getBuildersInfo();
             case "buildersenabled":
                 return String.valueOf(buildWorld.isBuilders());
             case "creation":
-                return plugin.formatDate(buildWorld.getCreationDate());
+                return buildWorld.getFormattedCreationDate();
             case "creator":
                 return buildWorld.getCreator();
             case "creatorid":
@@ -152,7 +152,7 @@ public class BuildSystemExpansion extends PlaceholderExpansion {
             case "status":
                 return buildWorld.getStatusName();
             case "time":
-                return plugin.getWorldTime(buildWorld);
+                return buildWorld.getWorldTime();
             case "type":
                 return buildWorld.getTypeName();
             case "world":

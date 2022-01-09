@@ -9,6 +9,7 @@
 package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.util.ConfigValues;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -20,16 +21,16 @@ import org.bukkit.event.weather.WeatherChangeEvent;
  */
 public class WeatherChangeListener implements Listener {
 
-    private final BuildSystem plugin;
+    private final ConfigValues configValues;
 
     public WeatherChangeListener(BuildSystem plugin) {
-        this.plugin = plugin;
+        this.configValues = plugin.getConfigValues();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onWeatherChange(WeatherChangeEvent event) {
-        if (!plugin.isLockWeather()) {
+        if (!configValues.isLockWeather()) {
             return;
         }
 
@@ -40,7 +41,7 @@ public class WeatherChangeListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onThunderChange(ThunderChangeEvent event) {
-        if (!plugin.isLockWeather()) {
+        if (!configValues.isLockWeather()) {
             return;
         }
 

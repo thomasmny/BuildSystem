@@ -21,6 +21,7 @@ import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.Builder;
 import com.eintosti.buildsystem.object.world.WorldStatus;
+import com.eintosti.buildsystem.util.ConfigValues;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -50,6 +51,8 @@ import java.util.UUID;
 public class PlayerInteractListener implements Listener {
 
     private final BuildSystem plugin;
+    private final ConfigValues configValues;
+
     private final ArmorStandManager armorStandManager;
     private final InventoryManager inventoryManager;
     private final SettingsManager settingsManager;
@@ -59,6 +62,8 @@ public class PlayerInteractListener implements Listener {
 
     public PlayerInteractListener(BuildSystem plugin) {
         this.plugin = plugin;
+        this.configValues = plugin.getConfigValues();
+
         this.armorStandManager = plugin.getArmorStandManager();
         this.inventoryManager = plugin.getInventoryManager();
         this.settingsManager = plugin.getSettingsManager();
@@ -88,7 +93,7 @@ public class PlayerInteractListener implements Listener {
 
         String displayName = itemMeta.getDisplayName();
         XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-        if (xMaterial == plugin.getNavigatorItem()) {
+        if (xMaterial == configValues.getNavigatorItem()) {
             if (!displayName.equals(plugin.getString("navigator_item"))) {
                 return;
             }
@@ -125,7 +130,7 @@ public class PlayerInteractListener implements Listener {
                     String findItemName = plugin.getString("navigator_item");
                     ItemStack replaceItem = inventoryManager.getItemStack(XMaterial.BARRIER, plugin.getString("barrier_item"));
 
-                    inventoryManager.replaceItem(player, findItemName, plugin.getNavigatorItem(), replaceItem);
+                    inventoryManager.replaceItem(player, findItemName, configValues.getNavigatorItem(), replaceItem);
                 } else {
                     player.sendMessage(plugin.getString("worlds_navigator_open"));
                 }
@@ -399,7 +404,7 @@ public class PlayerInteractListener implements Listener {
         }
 
         Material material = itemStack.getType();
-        if (material == plugin.getWorldEditWand().parseMaterial()) {
+        if (material == configValues.getWorldEditWand().parseMaterial()) {
             return;
         }
 

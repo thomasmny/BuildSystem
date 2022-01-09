@@ -305,7 +305,7 @@ public class WorldsCommand implements CommandExecutor {
             }
 
             case "item": {
-                player.getInventory().addItem(inventoryManager.getItemStack(plugin.getNavigatorItem(), plugin.getString("navigator_item")));
+                player.getInventory().addItem(inventoryManager.getItemStack(plugin.getConfigValues().getNavigatorItem(), plugin.getString("navigator_item")));
                 player.sendMessage(plugin.getString("worlds_item_receive"));
                 break;
             }
@@ -638,16 +638,16 @@ public class WorldsCommand implements CommandExecutor {
                     .replace("%type%", buildWorld.getTypeName())
                     .replace("%private%", String.valueOf(buildWorld.isPrivate()))
                     .replace("%builders_enabled%", String.valueOf(buildWorld.isBuilders()))
-                    .replace("%builders%", plugin.getBuilders(buildWorld))
+                    .replace("%builders%", buildWorld.getBuildersInfo())
                     .replace("%block_breaking%", String.valueOf(buildWorld.isBlockBreaking()))
                     .replace("%block_placement%", String.valueOf(buildWorld.isBlockPlacement()))
                     .replace("%item%", buildWorld.getMaterial().name())
                     .replace("%status%", buildWorld.getStatusName())
                     .replace("%project%", buildWorld.getProject())
                     .replace("%permission%", buildWorld.getPermission())
-                    .replace("%time%", plugin.getWorldTime(buildWorld))
-                    .replace("%creation%", plugin.formatDate(buildWorld.getCreationDate()))
-                    .replace("%date%", plugin.formatDate(buildWorld.getCreationDate()))
+                    .replace("%time%", buildWorld.getWorldTime())
+                    .replace("%creation%", buildWorld.getFormattedCreationDate())
+                    .replace("%date%", buildWorld.getFormattedCreationDate())
                     .replace("%physics%", String.valueOf(buildWorld.isPhysics()))
                     .replace("%explosions%", String.valueOf(buildWorld.isExplosions()))
                     .replace("%mobai%", String.valueOf(buildWorld.isMobAI()))

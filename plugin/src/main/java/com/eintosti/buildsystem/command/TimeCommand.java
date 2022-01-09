@@ -9,6 +9,7 @@
 package com.eintosti.buildsystem.command;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.util.ConfigValues;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -25,9 +26,11 @@ import java.util.logging.Level;
 public class TimeCommand implements CommandExecutor {
 
     private final BuildSystem plugin;
+    private final ConfigValues configValues;
 
     public TimeCommand(BuildSystem plugin) {
         this.plugin = plugin;
+        this.configValues = plugin.getConfigValues();
         plugin.getCommand("day").setExecutor(this);
         plugin.getCommand("night").setExecutor(this);
     }
@@ -51,7 +54,7 @@ public class TimeCommand implements CommandExecutor {
                 switch (args.length) {
                     case 0: {
                         World world = player.getWorld();
-                        world.setTime(plugin.getNoonTime());
+                        world.setTime(configValues.getNoonTime());
                         player.sendMessage(plugin.getString("day_set").replace("%world%", world.getName()));
                         break;
                     }
@@ -61,7 +64,7 @@ public class TimeCommand implements CommandExecutor {
                             player.sendMessage(plugin.getString("day_unknown_world"));
                             return true;
                         }
-                        world.setTime(plugin.getNoonTime());
+                        world.setTime(configValues.getNoonTime());
                         player.sendMessage(plugin.getString("day_set").replace("%world%", world.getName()));
                         break;
                     }
@@ -81,7 +84,7 @@ public class TimeCommand implements CommandExecutor {
                 switch (args.length) {
                     case 0: {
                         World world = player.getWorld();
-                        world.setTime(plugin.getNightTime());
+                        world.setTime(configValues.getNightTime());
                         player.sendMessage(plugin.getString("night_set").replace("%world%", world.getName()));
                         break;
                     }
@@ -91,7 +94,7 @@ public class TimeCommand implements CommandExecutor {
                             player.sendMessage(plugin.getString("night_unknown_world"));
                             return true;
                         }
-                        world.setTime(plugin.getNightTime());
+                        world.setTime(configValues.getNightTime());
                         player.sendMessage(plugin.getString("night_set").replace("%world%", world.getName()));
                         break;
                     }

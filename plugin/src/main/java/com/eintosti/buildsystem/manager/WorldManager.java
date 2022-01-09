@@ -14,6 +14,7 @@ import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.object.world.WorldType;
 import com.eintosti.buildsystem.object.world.*;
+import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.FileUtils;
 import com.eintosti.buildsystem.util.config.WorldConfig;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
@@ -41,14 +42,18 @@ import java.util.logging.Level;
 public class WorldManager {
 
     private final BuildSystem plugin;
+    private final ConfigValues configValues;
     private final WorldConfig worldConfig;
-    private final List<BuildWorld> buildWorlds = new ArrayList<>();
+    private final List<BuildWorld> buildWorlds;
 
     public HashSet<Player> createPrivateWorldPlayers;
 
     public WorldManager(BuildSystem plugin) {
         this.plugin = plugin;
+        this.configValues = plugin.getConfigValues();
         this.worldConfig = new WorldConfig(plugin);
+        this.buildWorlds = new ArrayList<>();
+
         this.createPrivateWorldPlayers = new HashSet<>();
     }
 
@@ -245,7 +250,7 @@ public class WorldManager {
 
         switch (worldType) {
             case VOID:
-                if (plugin.isVoidBlock()) {
+                if (configValues.isVoidBlock()) {
                     bukkitWorld.getBlockAt(0, 64, 0).setType(Material.GOLD_BLOCK);
                 }
                 bukkitWorld.setSpawnLocation(0, 65, 0);
@@ -315,10 +320,10 @@ public class WorldManager {
         World bukkitWorld = Bukkit.createWorld(worldCreator);
 
         if (bukkitWorld != null) {
-            bukkitWorld.setDifficulty(Difficulty.valueOf(plugin.getWorldDifficulty()));
-            bukkitWorld.setTime(plugin.getNoonTime());
-            bukkitWorld.getWorldBorder().setSize(plugin.getWorldBorderSize());
-            plugin.getDefaultGameRules().forEach(bukkitWorld::setGameRuleValue);
+            bukkitWorld.setDifficulty(Difficulty.valueOf(configValues.getWorldDifficulty()));
+            bukkitWorld.setTime(configValues.getNoonTime());
+            bukkitWorld.getWorldBorder().setSize(configValues.getWorldBorderSize());
+            configValues.getDefaultGameRules().forEach(bukkitWorld::setGameRuleValue);
         }
 
         return bukkitWorld;
@@ -400,7 +405,7 @@ public class WorldManager {
      */
     public void importWorlds(Player player, String[] worldList) {
         int worlds = worldList.length;
-        int delay = plugin.getImportDelay();
+        int delay = configValues.getImportDelay();
 
         player.sendMessage(plugin.getString("worlds_importall_started").replace("%amount%", String.valueOf(worlds)));
         player.sendMessage(plugin.getString("worlds_importall_delay").replace("%delay%", String.valueOf(delay)));
@@ -614,7 +619,7 @@ public class WorldManager {
      */
     public void teleport(Player player, BuildWorld buildWorld) {
         boolean hadToLoad = false;
-        if (plugin.isUnloadWorlds() && !buildWorld.isLoaded()) {
+        if (configValues.isUnloadWorlds() && !buildWorld.isLoaded()) {
             buildWorld.load(player);
             hadToLoad = true;
         }

@@ -104,7 +104,7 @@ public class WorldManipulateListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(PlayerInteractEvent event) {
         ItemStack itemStack = event.getItem();
-        if (itemStack != null && itemStack.getType() == plugin.getWorldEditWand().parseMaterial()) {
+        if (itemStack != null && itemStack.getType() == plugin.getConfigValues().getWorldEditWand().parseMaterial()) {
             return;
         }
 

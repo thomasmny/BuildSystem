@@ -14,6 +14,7 @@ import com.eintosti.buildsystem.object.settings.Colour;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.settings.WorldSort;
 import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.config.SettingsConfig;
 import fr.mrmicky.fastboard.FastBoard;
 import org.bukkit.Bukkit;
@@ -30,6 +31,7 @@ import java.util.*;
 public class SettingsManager {
 
     private final BuildSystem plugin;
+    private final ConfigValues configValues;
     private final SettingsConfig settingsConfig;
     private final WorldManager worldManager;
 
@@ -38,6 +40,7 @@ public class SettingsManager {
 
     public SettingsManager(BuildSystem plugin) {
         this.plugin = plugin;
+        this.configValues = plugin.getConfigValues();
         this.settingsConfig = new SettingsConfig(plugin);
         this.worldManager = plugin.getWorldManager();
 
@@ -67,7 +70,7 @@ public class SettingsManager {
     }
 
     public void startScoreboard(Player player) {
-        if (!plugin.isScoreboard()) {
+        if (!configValues.isScoreboard()) {
             return;
         }
 
@@ -80,13 +83,13 @@ public class SettingsManager {
             return;
         }
 
-        board.updateTitle(plugin.getScoreboardTitle());
+        board.updateTitle(configValues.getScoreboardTitle());
         BukkitTask scoreboardTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> updateScoreboard(player, board), 0L, 20L);
         settings.setScoreboardTask(scoreboardTask);
     }
 
     public void startScoreboard() {
-        if (!plugin.isScoreboard()) {
+        if (!configValues.isScoreboard()) {
             return;
         }
 
@@ -103,7 +106,7 @@ public class SettingsManager {
     private void updateScoreboard(Player player, FastBoard board) {
         ArrayList<String> body = new ArrayList<>();
 
-        for (String line : plugin.getScoreboardBody()) {
+        for (String line : configValues.getScoreboardBody()) {
             body.add(injectPlaceholders(line, player));
         }
 
@@ -113,14 +116,17 @@ public class SettingsManager {
     private String injectPlaceholders(String originalString, Player player) {
         String worldName = player.getWorld().getName();
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        if (buildWorld == null) {
+            return "§f-";
+        }
 
         return originalString
                 .replace("%world%", worldName)
-                .replace("%status%", plugin.getStatus(buildWorld))
-                .replace("%permission%", plugin.getPermission(buildWorld))
-                .replace("%project%", plugin.getProject(buildWorld))
-                .replace("%creator%", plugin.getCreator(buildWorld))
-                .replace("%creation%", plugin.getCreationDate(buildWorld));
+                .replace("%status%", buildWorld.getStatus().toString())
+                .replace("%permission%", buildWorld.getPermission())
+                .replace("%project%", buildWorld.getProject())
+                .replace("%creator%", buildWorld.getCreator())
+                .replace("%creation%", buildWorld.getFormattedCreationDate());
     }
 
     private void stopScoreboard(Player player, Settings settings) {

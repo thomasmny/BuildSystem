@@ -8,7 +8,6 @@
 
 package com.eintosti.buildsystem;
 
-import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.command.*;
 import com.eintosti.buildsystem.expansion.BuildSystemExpansion;
 import com.eintosti.buildsystem.inventory.*;
@@ -17,6 +16,7 @@ import com.eintosti.buildsystem.manager.*;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.tabcomplete.*;
+import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.Messages;
 import com.eintosti.buildsystem.util.SkullCache;
 import com.eintosti.buildsystem.util.bstats.Metrics;
@@ -33,8 +33,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -57,45 +55,9 @@ public class BuildSystem extends JavaPlugin {
     public Map<UUID, Float> playerFlySpeed;
 
     public Set<Player> openNavigator;
-    public Set<String> blackListedWorldsToUnload;
     public Set<UUID> buildPlayers;
 
-    private String prefix;
     private String version;
-    private String dateFormat;
-    private String worldDifficulty;
-    private String timeUntilUnload;
-
-    private boolean archiveVanish;
-    private boolean scoreboard;
-    private boolean spawnTeleportMessage;
-    private boolean joinQuitMessages;
-    private boolean lockWeather;
-    private boolean unloadWorlds;
-    private boolean voidBlock;
-    private boolean updateChecker;
-    private boolean blockWorldEditNonBuilder;
-    private boolean creatorIsBuilder;
-    private boolean giveNavigatorOnJoin;
-    private boolean worldPhysics;
-    private boolean worldExplosions;
-    private boolean worldMobAi;
-    private boolean worldBlockBreaking;
-    private boolean worldBlockPlacement;
-    private boolean worldBlockInteractions;
-    private XMaterial navigatorItem;
-    private XMaterial worldEditWand;
-
-    private int sunriseTime;
-    private int noonTime;
-    private int nightTime;
-    private int worldBorderSize;
-    private int importDelay;
-
-    private Map<String, String> defaultGameRules;
-
-    private String scoreboardTitle;
-    private List<String> scoreboardBody;
 
     private WorldsCommand worldsCommand;
 
@@ -125,6 +87,7 @@ public class BuildSystem extends JavaPlugin {
     private PlayerMoveListener playerMoveListener;
     private PlayerTeleportListener playerTeleportListener;
 
+    private ConfigValues configValues;
     private CustomBlocks customBlocks;
     private GameRules gameRules;
     private SkullCache skullCache;
@@ -136,10 +99,12 @@ public class BuildSystem extends JavaPlugin {
         this.getConfig().options().copyDefaults(true);
         this.saveConfig();
 
-        this.prefix = getPrefixString();
-        this.scoreboardTitle = getString("title");
-        this.scoreboardBody = getStringList("body");
-        setConfigValues();
+        getVersion();
+        if (!setupCustomBlocks() || !setupGameRules()) {
+            return;
+        }
+
+        initClasses();
 
         this.selectedWorld = new HashMap<>();
         this.buildPlayerGamemode = new HashMap<>();
@@ -148,20 +113,13 @@ public class BuildSystem extends JavaPlugin {
         this.openNavigator = new HashSet<>();
         this.buildPlayers = new HashSet<>();
 
-        getVersion();
-        if (!setupCustomBlocks()) {
-            return;
-        }
-        if (!setupGameRules()) {
-            return;
-        }
-
-        initClasses();
         registerCommands();
         registerTabCompleter();
         registerListeners();
         registerStats();
         registerPlaceholders();
+
+        performUpdateCheck();
 
         worldManager.load();
         settingsManager.load();
@@ -179,10 +137,6 @@ public class BuildSystem extends JavaPlugin {
                 noClipManager.startNoClip(pl);
             }
         });
-
-        if (isUpdateChecker()) {
-            performUpdateCheck();
-        }
 
         Bukkit.getConsoleSender().sendMessage(ChatColor.RESET + "BuildSystem » Plugin " + ChatColor.GREEN + "enabled" + ChatColor.RESET + "!");
     }
@@ -233,6 +187,7 @@ public class BuildSystem extends JavaPlugin {
         this.statusInventory = new StatusInventory(this);
         this.worldsInventory = new WorldsInventory(this);
 
+        this.configValues = new ConfigValues(this);
         this.skullCache = new SkullCache();
     }
 
@@ -293,7 +248,8 @@ public class BuildSystem extends JavaPlugin {
                         getStringList("worldeditor_gamerules_boolean_enabled"),
                         getStringList("worldeditor_gamerules_boolean_disabled"),
                         getStringList("worldeditor_gamerules_unknown"),
-                        getStringList("worldeditor_gamerules_integer"));
+                        getStringList("worldeditor_gamerules_integer")
+                );
                 return true;
             case "v1_13_R1":
             case "v1_13_R2":
@@ -308,7 +264,8 @@ public class BuildSystem extends JavaPlugin {
                         getString("worldeditor_gamerules_title"),
                         getStringList("worldeditor_gamerules_boolean_enabled"),
                         getStringList("worldeditor_gamerules_boolean_disabled"),
-                        getStringList("worldeditor_gamerules_integer"));
+                        getStringList("worldeditor_gamerules_integer")
+                );
                 return true;
             default:
                 getLogger().log(Level.SEVERE, "\"GameRules\" not found for version: " + version);
@@ -371,7 +328,7 @@ public class BuildSystem extends JavaPlugin {
         new WeatherChangeListener(this);
         new WorldManipulateListener(this);
 
-        if (isWorldEdit() && isBlockWorldEditNonBuilder()) {
+        if (isWorldEdit() && configValues.isBlockWorldEditNonBuilder()) {
             new EditSessionListener(this);
         }
     }
@@ -385,14 +342,14 @@ public class BuildSystem extends JavaPlugin {
         int pluginId = 7427;
         Metrics metrics = new Metrics(this, pluginId);
 
-        metrics.addCustomChart(new Metrics.SimplePie("scoreboard", () -> String.valueOf(scoreboard)));
-        metrics.addCustomChart(new Metrics.SimplePie("archive_vanish", () -> String.valueOf(archiveVanish)));
-        metrics.addCustomChart(new Metrics.SimplePie("join_quit_messages", () -> String.valueOf(joinQuitMessages)));
-        metrics.addCustomChart(new Metrics.SimplePie("lock_weather", () -> String.valueOf(lockWeather)));
-        metrics.addCustomChart(new Metrics.SimplePie("unload_worlds", () -> String.valueOf(unloadWorlds)));
-        metrics.addCustomChart(new Metrics.SimplePie("void_block", () -> String.valueOf(voidBlock)));
-        metrics.addCustomChart(new Metrics.SimplePie("update_checker", () -> String.valueOf(updateChecker)));
-        metrics.addCustomChart(new Metrics.SimplePie("block_world_edit", () -> String.valueOf(blockWorldEditNonBuilder)));
+        metrics.addCustomChart(new Metrics.SimplePie("scoreboard", () -> String.valueOf(configValues.isScoreboard())));
+        metrics.addCustomChart(new Metrics.SimplePie("archive_vanish", () -> String.valueOf(configValues.isArchiveVanish())));
+        metrics.addCustomChart(new Metrics.SimplePie("join_quit_messages", () -> String.valueOf(configValues.isJoinQuitMessages())));
+        metrics.addCustomChart(new Metrics.SimplePie("lock_weather", () -> String.valueOf(configValues.isLockWeather())));
+        metrics.addCustomChart(new Metrics.SimplePie("unload_worlds", () -> String.valueOf(configValues.isUnloadWorlds())));
+        metrics.addCustomChart(new Metrics.SimplePie("void_block", () -> String.valueOf(configValues.isVoidBlock())));
+        metrics.addCustomChart(new Metrics.SimplePie("update_checker", () -> String.valueOf(configValues.isUpdateChecker())));
+        metrics.addCustomChart(new Metrics.SimplePie("block_world_edit", () -> String.valueOf(configValues.isBlockWorldEditNonBuilder())));
     }
 
     private void registerPlaceholders() {
@@ -402,6 +359,10 @@ public class BuildSystem extends JavaPlugin {
     }
 
     private void performUpdateCheck() {
+        if (!configValues.isUpdateChecker()) {
+            return;
+        }
+
         UpdateChecker.init(this, PLUGIN_ID).requestUpdateCheck().whenComplete((result, e) -> {
                     if (result.requiresUpdate()) {
                         Bukkit.getConsoleSender().sendMessage(ChatColor.YELLOW + "[BuildSystem] Great! a new update is available:" + ChatColor.GREEN + "v" + result.getNewestVersion());
@@ -437,10 +398,11 @@ public class BuildSystem extends JavaPlugin {
         Messages.getInstance().createMessageFile();
     }
 
-    private String getPrefixString() {
+    public String getPrefixString() {
         String prefix = Messages.getInstance().messageData.get("prefix");
         try {
-            return prefix != null ? ChatColor.translateAlternateColorCodes('&', prefix) : "§8× §bBuildSystem §8┃";
+            final String defaultPrefix = "§8× §bBuildSystem §8┃";
+            return prefix != null ? ChatColor.translateAlternateColorCodes('&', prefix) : defaultPrefix;
         } catch (NullPointerException e) {
             Messages.getInstance().createMessageFile();
             return getPrefixString();
@@ -449,7 +411,7 @@ public class BuildSystem extends JavaPlugin {
 
     public String getString(String key) {
         try {
-            return ChatColor.translateAlternateColorCodes('&', Messages.getInstance().messageData.get(key).replace("%prefix%", getPrefix()));
+            return ChatColor.translateAlternateColorCodes('&', Messages.getInstance().messageData.get(key).replace("%prefix%", configValues.getPrefix()));
         } catch (NullPointerException e) {
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[BuildSystem] Could not find message with key: " + key);
             Messages.getInstance().createMessageFile();
@@ -463,7 +425,7 @@ public class BuildSystem extends JavaPlugin {
             String string = Messages.getInstance().messageData.get(key);
             String[] splitString = string.substring(1, string.length() - 1).split(", ");
             for (String s : splitString) {
-                list.add(ChatColor.translateAlternateColorCodes('&', s.replace("%prefix%", getPrefix())));
+                list.add(ChatColor.translateAlternateColorCodes('&', s.replace("%prefix%", configValues.getPrefix())));
             }
             return list;
         } catch (NullPointerException e) {
@@ -485,200 +447,17 @@ public class BuildSystem extends JavaPlugin {
         for (Player pl : Bukkit.getOnlinePlayers()) {
             getSettingsManager().stopScoreboard(pl);
         }
-        setConfigValues();
+
+        configValues.setConfigValues();
 
         if (init) {
             setupCustomBlocks();
-            if (isScoreboard()) {
+            if (configValues.isScoreboard()) {
                 getSettingsManager().startScoreboard();
             } else {
                 getSettingsManager().stopScoreboard();
             }
         }
-    }
-
-    private void setConfigValues() {
-        final FileConfiguration config = getConfig();
-
-        // Messages
-        this.spawnTeleportMessage = config.getBoolean("messages.spawn-teleport-message", false);
-        this.joinQuitMessages = config.getBoolean("messages.join-quit-messages", true);
-        this.dateFormat = config.getString("messages.date-format", "dd/MM/yyyy");
-
-        // Settings
-        this.updateChecker = config.getBoolean("settings.update-checker", true);
-        this.scoreboard = config.getBoolean("settings.scoreboard", true);
-        this.archiveVanish = config.getBoolean("settings.archive-vanish", true);
-
-        this.blockWorldEditNonBuilder = config.getBoolean("settings.builder.block-worldedit-non-builder", true);
-        this.worldEditWand = XMaterial.valueOf(config.getString("settings.builder.world-edit-wand", "WOODEN_AXE"));
-        this.creatorIsBuilder = config.getBoolean("settings.builder.creator-is-builder", true);
-
-        this.navigatorItem = XMaterial.valueOf(config.getString("settings.navigator.item", "CLOCK"));
-        this.giveNavigatorOnJoin = config.getBoolean("settings.navigator.give-item-on-join", true);
-
-        // World
-        this.lockWeather = config.getBoolean("world.lock-weather", true);
-        this.worldDifficulty = config.getString("world.default.difficulty", "PEACEFUL");
-        this.sunriseTime = config.getInt("world.default.time.sunrise", 0);
-        this.noonTime = config.getInt("world.default.time.noon", 6000);
-        this.nightTime = config.getInt("world.default.time.night", 18000);
-
-        this.worldBorderSize = config.getInt("world.default.worldborder.size", 6000000);
-
-        HashMap<String, String> defaultGameRules = new HashMap<>();
-        ConfigurationSection configurationSection = config.getConfigurationSection("world.default.gamerules");
-        if (configurationSection != null) {
-            for (Map.Entry<String, Object> entry : configurationSection.getValues(true).entrySet()) {
-                String name = entry.getKey();
-                String value = entry.getValue().toString();
-                defaultGameRules.put(name, value);
-            }
-        }
-        this.defaultGameRules = defaultGameRules;
-
-        this.worldPhysics = config.getBoolean("world.default.settings.physics", true);
-        this.worldExplosions = config.getBoolean("world.default.settings.explosions", true);
-        this.worldMobAi = config.getBoolean("world.default.settings.mob-ai", true);
-        this.worldBlockBreaking = config.getBoolean("world.default.settings.block-breaking", true);
-        this.worldBlockPlacement = config.getBoolean("world.default.settings.block-placement", true);
-        this.worldBlockInteractions = config.getBoolean("world.default.settings.block-interactions", true);
-
-        this.unloadWorlds = config.getBoolean("world.unload.enabled", false);
-        this.timeUntilUnload = config.getString("world.unload.time-until-unload", "01:00:00");
-        this.blackListedWorldsToUnload = new HashSet<>(config.getStringList("world.unload.blacklisted-worlds"));
-
-        this.voidBlock = config.getBoolean("world.void-block", true);
-
-        this.importDelay = config.getInt("world.import-all.delay", 30);
-    }
-
-    public String getPrefix() {
-        return prefix;
-    }
-
-    public Boolean isArchiveVanish() {
-        return archiveVanish;
-    }
-
-    public Boolean isScoreboard() {
-        return scoreboard;
-    }
-
-    public String getDateFormat() {
-        return dateFormat;
-    }
-
-    public String getWorldDifficulty() {
-        return worldDifficulty;
-    }
-
-    public boolean isSpawnTeleportMessage() {
-        return spawnTeleportMessage;
-    }
-
-    public boolean isJoinQuitMessages() {
-        return joinQuitMessages;
-    }
-
-    public boolean isLockWeather() {
-        return lockWeather;
-    }
-
-    public boolean isUnloadWorlds() {
-        return unloadWorlds;
-    }
-
-    public boolean isVoidBlock() {
-        return voidBlock;
-    }
-
-    public boolean isUpdateChecker() {
-        return updateChecker;
-    }
-
-    public boolean isBlockWorldEditNonBuilder() {
-        return blockWorldEditNonBuilder;
-    }
-
-    public boolean isCreatorIsBuilder() {
-        return creatorIsBuilder;
-    }
-
-    public XMaterial getNavigatorItem() {
-        return navigatorItem;
-    }
-
-    public XMaterial getWorldEditWand() {
-        return worldEditWand;
-    }
-
-    public boolean isGiveNavigatorOnJoin() {
-        return giveNavigatorOnJoin;
-    }
-
-    public boolean isWorldPhysics() {
-        return worldPhysics;
-    }
-
-    public boolean isWorldExplosions() {
-        return worldExplosions;
-    }
-
-    public boolean isWorldMobAi() {
-        return worldMobAi;
-    }
-
-    public boolean isWorldBlockBreaking() {
-        return worldBlockBreaking;
-    }
-
-    public boolean isWorldBlockPlacement() {
-        return worldBlockPlacement;
-    }
-
-    public boolean isWorldBlockInteractions() {
-        return worldBlockInteractions;
-    }
-
-    public int getSunriseTime() {
-        return sunriseTime;
-    }
-
-    public int getNoonTime() {
-        return noonTime;
-    }
-
-    public int getNightTime() {
-        return nightTime;
-    }
-
-    public int getWorldBorderSize() {
-        return worldBorderSize;
-    }
-
-    public Map<String, String> getDefaultGameRules() {
-        return defaultGameRules;
-    }
-
-    public int getImportDelay() {
-        return importDelay;
-    }
-
-    public long getTimeUntilUnload() {
-        String[] timeArray = timeUntilUnload.split(":");
-        int hours = Integer.parseInt(timeArray[0]);
-        int minutes = Integer.parseInt(timeArray[1]);
-        int seconds = Integer.parseInt(timeArray[2]);
-        return hours * 3600L + minutes * 60L + seconds;
-    }
-
-    public String getScoreboardTitle() {
-        return scoreboardTitle;
-    }
-
-    public List<String> getScoreboardBody() {
-        return scoreboardBody;
     }
 
     public WorldsCommand getWorldsCommand() {
@@ -777,6 +556,10 @@ public class BuildSystem extends JavaPlugin {
         return playerTeleportListener;
     }
 
+    public ConfigValues getConfigValues() {
+        return configValues;
+    }
+
     public CustomBlocks getCustomBlocks() {
         return customBlocks;
     }
@@ -789,83 +572,8 @@ public class BuildSystem extends JavaPlugin {
         return skullCache;
     }
 
-    public String getStatus(BuildWorld buildWorld) {
-        if (buildWorld == null) {
-            return "§f-";
-        }
-        return buildWorld.getStatusName();
-    }
-
-    public String getPermission(BuildWorld buildWorld) {
-        if (buildWorld == null) {
-            return "§f-";
-        }
-        return buildWorld.getPermission();
-    }
-
-    public String getProject(BuildWorld buildWorld) {
-        if (buildWorld == null) {
-            return "§f-";
-        }
-        return buildWorld.getProject();
-    }
-
-    public String getCreator(BuildWorld buildWorld) {
-        if (buildWorld == null) {
-            return "§f-";
-        }
-        return buildWorld.getCreator();
-    }
-
-    public String getWorldTime(BuildWorld buildWorld) {
-        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
-        if (bukkitWorld == null) {
-            return "?";
-        }
-        return String.valueOf(bukkitWorld.getTime());
-    }
-
-    public String getCreationDate(BuildWorld buildWorld) {
-        if (buildWorld == null) {
-            return "§f-";
-        }
-        return formatDate(buildWorld.getCreationDate());
-    }
-
-    public String formatDate(long date) {
-        return date > 0 ? new SimpleDateFormat(getDateFormat()).format(date) : "-";
-    }
-
-    public String getBuilders(BuildWorld buildWorld) {
-        if (buildWorld == null) {
-            return "§f-";
-        }
-
-        String template = getString("world_item_builders_builder_template");
-        ArrayList<String> builderNames = new ArrayList<>();
-
-        if (isCreatorIsBuilder()) {
-            if (buildWorld.getCreator() != null && !buildWorld.getCreator().equals("-")) {
-                builderNames.add(buildWorld.getCreator());
-            }
-        }
-
-        builderNames.addAll(buildWorld.getBuilderNames());
-
-        String string = "";
-        if (builderNames.isEmpty()) {
-            string = template.replace("%builder%", "-").trim();
-        } else {
-            for (String builderName : builderNames) {
-                string = string.concat(template.replace("%builder%", builderName));
-            }
-            string = string.trim();
-        }
-        return string.substring(0, string.length() - 1);
-    }
-
     public void forceUpdateSidebar(BuildWorld buildWorld) {
-        if (!isScoreboard()) {
+        if (!configValues.isScoreboard()) {
             return;
         }
 
@@ -878,9 +586,10 @@ public class BuildSystem extends JavaPlugin {
     }
 
     public void forceUpdateSidebar(Player player) {
-        if (!isScoreboard() || !settingsManager.getSettings(player).isScoreboard()) {
+        if (!configValues.isScoreboard() || !settingsManager.getSettings(player).isScoreboard()) {
             return;
         }
+
         settingsManager.updateScoreboard(player);
     }
 }

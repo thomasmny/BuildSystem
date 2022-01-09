@@ -15,6 +15,7 @@ import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.Builder;
 import com.eintosti.buildsystem.object.world.WorldStatus;
 import com.eintosti.buildsystem.object.world.WorldType;
+import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.config.SetupConfig;
 import com.eintosti.buildsystem.util.external.ItemSkulls;
 import org.bukkit.configuration.ConfigurationSection;
@@ -35,6 +36,7 @@ import java.util.*;
 public class InventoryManager {
 
     private final BuildSystem plugin;
+    private final ConfigValues configValues;
     private final SetupConfig setupConfig;
 
     private XMaterial normalCreateItem, flatCreateItem, netherCreateItem, endCreateItem, voidCreateItem, customCreateItem;
@@ -43,11 +45,12 @@ public class InventoryManager {
 
     public InventoryManager(BuildSystem plugin) {
         this.plugin = plugin;
+        this.configValues = plugin.getConfigValues();
         this.setupConfig = new SetupConfig(plugin);
     }
 
     public boolean isNavigator(ItemStack itemStack) {
-        if (itemStack == null || itemStack.getType() != plugin.getNavigatorItem().parseMaterial()) {
+        if (itemStack == null || itemStack.getType() != configValues.getNavigatorItem().parseMaterial()) {
             return false;
         }
 
@@ -238,7 +241,7 @@ public class InventoryManager {
                     .replace("%permission%", buildWorld.getPermission())
                     .replace("%status%", buildWorld.getStatusName())
                     .replace("%creator%", buildWorld.getCreator())
-                    .replace("%creation%", plugin.formatDate(buildWorld.getCreationDate()));
+                    .replace("%creation%", buildWorld.getFormattedCreationDate());
 
             if (!line.contains("%builders%")) {
                 lore.add(replace);
@@ -267,11 +270,12 @@ public class InventoryManager {
         String template = plugin.getString("world_item_builders_builder_template");
         ArrayList<Builder> builders = new ArrayList<>();
 
-        if (plugin.isCreatorIsBuilder()) {
+        if (configValues.isCreatorIsBuilder()) {
             if (buildWorld.getCreator() != null && !buildWorld.getCreator().equals("-")) {
                 builders.add(new Builder(buildWorld.getCreatorId(), buildWorld.getCreator()));
             }
         }
+
         builders.addAll(buildWorld.getBuilders());
 
         ArrayList<String> builderNames = new ArrayList<>();

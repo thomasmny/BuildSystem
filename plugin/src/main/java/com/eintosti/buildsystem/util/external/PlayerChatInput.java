@@ -33,7 +33,7 @@ public class PlayerChatInput implements Listener {
     private final UUID playerUuid;
     private final boolean inputMode;
 
-    private static final Map<UUID, PlayerChatInput> inputs = new HashMap<>();
+    private final Map<UUID, PlayerChatInput> inputs = new HashMap<>();
 
     public PlayerChatInput(BuildSystem plugin, Player player, String titleKey, InputRunnable runWhenComplete) {
         this.plugin = plugin;

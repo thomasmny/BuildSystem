@@ -13,6 +13,7 @@ import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.SpawnManager;
+import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.external.UUIDFetcher;
 import org.bukkit.*;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -21,6 +22,7 @@ import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -30,6 +32,7 @@ import java.util.logging.Level;
 public class BuildWorld implements ConfigurationSerializable {
 
     private final BuildSystem plugin;
+    private final ConfigValues configValues;
 
     private String name;
     private String creator;
@@ -61,6 +64,7 @@ public class BuildWorld implements ConfigurationSerializable {
 
     public BuildWorld(BuildSystem plugin, String name, String creator, UUID creatorId, WorldType worldType, long date, boolean privateWorld, String... chunkGeneratorString) {
         this.plugin = plugin;
+        this.configValues = plugin.getConfigValues();
 
         this.name = name;
         this.creator = creator;
@@ -74,12 +78,12 @@ public class BuildWorld implements ConfigurationSerializable {
         this.builders = new ArrayList<>();
         this.date = date;
 
-        this.physics = plugin.isWorldPhysics();
-        this.explosions = plugin.isWorldExplosions();
-        this.mobAI = plugin.isWorldMobAi();
-        this.blockBreaking = plugin.isWorldBlockBreaking();
-        this.blockPlacement = plugin.isWorldBlockPlacement();
-        this.blockInteractions = plugin.isWorldBlockInteractions();
+        this.physics = configValues.isWorldPhysics();
+        this.explosions = configValues.isWorldExplosions();
+        this.mobAI = configValues.isWorldMobAi();
+        this.blockBreaking = configValues.isWorldBlockBreaking();
+        this.blockPlacement = configValues.isWorldBlockPlacement();
+        this.blockInteractions = configValues.isWorldBlockInteractions();
         this.buildersEnabled = isPrivate();
         this.chunkGeneratorString = (chunkGeneratorString != null && chunkGeneratorString.length > 0) ? chunkGeneratorString[0] : null;
 
@@ -114,8 +118,8 @@ public class BuildWorld implements ConfigurationSerializable {
             this.material = XMaterial.PLAYER_HEAD;
         }
 
-        if (plugin.isUnloadWorlds()) {
-            this.seconds = plugin.getTimeUntilUnload();
+        if (configValues.isUnloadWorlds()) {
+            this.seconds = configValues.getTimeUntilUnload();
             this.loaded = (Bukkit.getWorld(name) != null);
             startUnloadTask();
         } else {
@@ -148,6 +152,8 @@ public class BuildWorld implements ConfigurationSerializable {
             String chunkGeneratorString
     ) {
         this.plugin = plugin;
+        this.configValues = plugin.getConfigValues();
+
         this.name = name;
         this.creator = creator;
         this.creatorId = creatorId;
@@ -170,8 +176,8 @@ public class BuildWorld implements ConfigurationSerializable {
         this.chunkGenerator = chunkGenerator;
         this.chunkGeneratorString = chunkGeneratorString;
 
-        if (plugin.isUnloadWorlds()) {
-            this.seconds = plugin.getTimeUntilUnload();
+        if (configValues.isUnloadWorlds()) {
+            this.seconds = configValues.getTimeUntilUnload();
             this.loaded = (Bukkit.getWorld(name) != null);
             startUnloadTask();
         } else {
@@ -338,6 +344,13 @@ public class BuildWorld implements ConfigurationSerializable {
     }
 
     /**
+     * @return The creation date in the format provided by the config
+     */
+    public String getFormattedCreationDate() {
+        return date > 0 ? new SimpleDateFormat(configValues.getDateFormat()).format(date) : "-";
+    }
+
+    /**
      * @return The name of the {@link ChunkGenerator} which is used to generate the world
      */
     public String getChunkGeneratorString() {
@@ -451,6 +464,31 @@ public class BuildWorld implements ConfigurationSerializable {
         this.buildersEnabled = buildersEnabled;
     }
 
+    public String getBuildersInfo() {
+        String template = plugin.getString("world_item_builders_builder_template");
+        ArrayList<String> builderNames = new ArrayList<>();
+
+        if (configValues.isCreatorIsBuilder()) {
+            if (getCreator() != null && !getCreator().equals("-")) {
+                builderNames.add(getCreator());
+            }
+        }
+
+        builderNames.addAll(getBuilderNames());
+
+        String string = "";
+        if (builderNames.isEmpty()) {
+            string = template.replace("%builder%", "-").trim();
+        } else {
+            for (String builderName : builderNames) {
+                string = string.concat(template.replace("%builder%", builderName));
+            }
+            string = string.trim();
+        }
+
+        return string.substring(0, string.length() - 1);
+    }
+
     /**
      * @return List of all {@link Builder}'s names
      */
@@ -522,6 +560,14 @@ public class BuildWorld implements ConfigurationSerializable {
         return builderList.length() > 0 ? builderList.substring(1) : builderList.toString();
     }
 
+    public String getWorldTime() {
+        World bukkitWorld = Bukkit.getWorld(getName());
+        if (bukkitWorld == null) {
+            return "?";
+        }
+        return String.valueOf(bukkitWorld.getTime());
+    }
+
     /**
      * @return Whether the {@link World} has been loaded, allowing a {@link Player} to join the world
      */
@@ -530,7 +576,7 @@ public class BuildWorld implements ConfigurationSerializable {
     }
 
     public void startUnloadTask() {
-        if (!plugin.isUnloadWorlds()) {
+        if (!configValues.isUnloadWorlds()) {
             return;
         }
         this.unloadTask = Bukkit.getScheduler().runTaskLater(plugin, this::unload, 20L * seconds);
@@ -553,7 +599,7 @@ public class BuildWorld implements ConfigurationSerializable {
             return;
         }
 
-        if (plugin.blackListedWorldsToUnload.contains(name) || isSpawnWorld(bukkitWorld)) {
+        if (configValues.getBlackListedWorldsToUnload().contains(name) || isSpawnWorld(bukkitWorld)) {
             return;
         }
 

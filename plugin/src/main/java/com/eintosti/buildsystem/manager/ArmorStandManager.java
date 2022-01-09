@@ -10,6 +10,7 @@ package com.eintosti.buildsystem.manager;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.util.external.ItemSkulls;
+import com.google.common.collect.Sets;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
@@ -17,6 +18,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -24,15 +27,12 @@ import java.util.UUID;
  */
 public class ArmorStandManager {
 
-    private final float RADIUS;
-    private final float SPREAD;
+    private static final float RADIUS = 2.2f;
+    private static final float SPREAD = 90.0f;
 
-    private final HashMap<UUID, ArmorStand[]> armorStands;
+    private final Map<UUID, ArmorStand[]> armorStands;
 
     public ArmorStandManager() {
-        this.RADIUS = 2.2f;
-        this.SPREAD = 90.0f;
-
         this.armorStands = new HashMap<>();
     }
 
@@ -103,20 +103,23 @@ public class ArmorStandManager {
         }
 
         String playerName = player.getName();
+        Set<String> names = Sets.newHashSet(
+                "§aWorld Navigator",
+                "§6World Archive",
+                "§bPrivate Worlds"
+        );
+
         for (ArmorStand armorStand : armorStands) {
             String customName = armorStand.getCustomName();
             if (customName == null) {
                 continue;
             }
 
-            if (customName.equals(playerName + " × §aWorld Navigator")) {
-                armorStand.remove();
-            }
-            if (customName.equals(playerName + " × §6World Archive")) {
-                armorStand.remove();
-            }
-            if (customName.equals(playerName + " × §bPrivate Worlds")) {
-                armorStand.remove();
+            for (String name : names) {
+                if (customName.equals(playerName + " × " + name)) {
+                    armorStand.remove();
+                    break;
+                }
             }
         }
     }
