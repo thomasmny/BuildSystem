@@ -228,8 +228,8 @@ worlds_import_invalid_character: "%prefix% &7無法導入世界: &c%world%&7. %p
 worlds_import_finished: "%prefix% &7世界&a成功&7導入."
 
 worlds_importall_usage: "%prefix% &7用法: &b/worlds importall"
-worlds_importall_no_worlds: "%prefix% &cNo worlds were found."
-worlds_importall_started: "%prefix% &7Beginning import of &b%amount% &7worlds..."
+worlds_importall_no_worlds: "%prefix% &c沒有找到世界."
+worlds_importall_started: "%prefix% &7開始導入 &b%amount% &7 個世界 ..."
 worlds_importall_delay: "%prefix% &8➥ &7Delay between each world: &b%delay%s&7."
 worlds_importall_invalid_character: "%prefix% &c✘ &7&o%world% &7contains invalid character &8(&c%char%&8)"
 worlds_importall_world_imported: "%prefix% &a✔ &7World imported: &b%world%"
