@@ -312,11 +312,11 @@ worlds_removespawn_world_spawn_removed: "%prefix% &7世界: &b%world%&7的重生
 worlds_tp_usage: "%prefix% &7用法: &b/worlds tp <世界>"
 worlds_tp_unknown_world: "%prefix% &c未知的世界"
 worlds_tp_world_not_imported: "%prefix% &c世界必須被載入 » /worlds import <世界>"
-worlds_tp_entry_forbidden: "%prefix% &cYou are not allowed to enter this world!"
+worlds_tp_entry_forbidden: "%prefix% &c你不被允許進入此世界!"
 
 worlds_unimport_usage: "%prefix% &7用法: &b/worlds import <世界> [-g <generator>]"
 worlds_unimport_unknown_world: "%prefix% &c未知的世界"
-worlds_unimport_players_world: "%prefix% &7&oThe world you were in was unimported."
+worlds_unimport_players_world: "%prefix% &7&o你所在的世界沒有被導入."
 worlds_unimport_finished: "%prefix% &b%world% &7has been &aunimported&7."
 
 
