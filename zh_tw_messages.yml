@@ -392,8 +392,8 @@ setup_create_item_lore:
  - "&7在選單顯示你的世界."
  - ""
  - "&7&nTo change&7:"
- - "&8» &7&oDrag new item onto old one"
-setup_default_item_name: "&bDefault Item"
+ - "&8» &7&oDrag new item onto old one "
+setup_default_item_name: "&b預設物品"
 setup_default_item_lore:
  - "&7The item which a world"
  - "&7has by default when created."
