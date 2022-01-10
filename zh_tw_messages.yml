@@ -523,7 +523,7 @@ worldeditor_gamerules_item: "&b遊戲規則 (Gamerules)"
 worldeditor_gamerules_lore:
  - "&7&oM管理世界的遊戲規則 (gamerules)"
 
-worldeditor_gamerules_title: "&3» &8Gamerules"
+worldeditor_gamerules_title: "&3» &8遊戲規則"
 worldeditor_gamerules_boolean_enabled:
  - "&7&n現在狀態&7: &a開啟"
 worldeditor_gamerules_boolean_disabled:
