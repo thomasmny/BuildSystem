@@ -585,7 +585,7 @@ worldeditor_permission_lore:
  - "&7&n現在狀態&7: &b%permission%"
 
 # Settings
-settings_title: "&3» &8Settings"
+settings_title: "&3» &8設定"
 
 settings_change_design_item: "&bChange Design"
 settings_change_design_lore:
