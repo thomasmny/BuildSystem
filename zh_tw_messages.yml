@@ -547,7 +547,7 @@ worldeditor_visibility_item: "&bVisibility"
 worldeditor_visibility_lore_public:
  - "&7&oChange the world's visibility"
  - ""
- - "&7&n現在狀態&7: &bPublic"
+ - "&7&n現在狀態&7: &b公開"
 worldeditor_visibility_lore_private:
  - "&7&oChange the world's visibility"
  - ""
