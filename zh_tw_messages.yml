@@ -440,12 +440,12 @@ type_private: "私人"
 
 # Worlds Status
 status_title: "&8狀態 &7» &3%world%"
-status_not_started: "&cNot Started"
-status_in_progress: "&6In Progress"
-status_almost_finished: "&aAlmost Finished"
-status_finished: "&2Finished"
-status_archive: "&9Archive"
-status_hidden: "&fHidden"
+status_not_started: "&c尚未開始"
+status_in_progress: "&6進行中"
+status_almost_finished: "&a即將完成"
+status_finished: "&2完成"
+status_archive: "&9歸檔"
+status_hidden: "&f隱藏"
 
 # Delete World
 delete_title: "&3» &8Delete World"
