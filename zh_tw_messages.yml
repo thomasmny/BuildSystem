@@ -688,15 +688,15 @@ settings_worldsort_lore_date_newest:
  - "&7&o改變世界在"
  - "&7&o導航器的排列."
  - ""
- - "&7&n現在狀態&7: &b&oCreation date (Newest)"
+ - "&7&n現在狀態&7: &b&o創建時間 (最新)"
 settings_worldsort_lore_date_oldest:
  - "&7&o改變世界在"
  - "&7&o導航器的排列."
  - ""
- - "&7&n現在狀態&7: &b&oCreation date (Oldest)"
+ - "&7&n現在狀態&7: &b&o創建時間 (最舊)"
 
 # Change Design
-design_title: "&3» &8Change Design"
+design_title: "&3» &8改變顏色"
 design_red: "紅"
 design_orange: "橘"
 design_yellow: "黃"
