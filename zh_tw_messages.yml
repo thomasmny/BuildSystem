@@ -323,9 +323,9 @@ worlds_unimport_finished: "%prefix% &7世界: &b%world% &7已被&卸載&7."
 # ---------
 # Items
 # ---------
-navigator_item: "&b&lNavigator"
-barrier_item: "&c&lClose Inventory"
-custom_skull_item: "&bCustom Skull"
+navigator_item: "&b&l導航器"
+barrier_item: "&c&l關閉庫存"
+custom_skull_item: "&b自訂頭顱"
 
 
 # ---------
