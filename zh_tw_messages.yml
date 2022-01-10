@@ -452,37 +452,37 @@ delete_title: "&3» &8D刪除世界"
 delete_world_name: "&e%world%"
 delete_world_name_lore:
  - ""
- - "&c&n警告&c: &7&oOnce a world is"
- - "&7&odeleted it is lost forever"
- - "&7&oand cannot be recovered!"
+ - "&c&n警告&c: &7&o一旦世界刪除"
+ - "&7&o該世界將"
+ - "&7&o永遠無法回復!"
 delete_world_cancel: "&c取消"
 delete_world_confirm: "&a確認"
 
 # World Editor
-worldeditor_title: "&3» &8World Editor"
+worldeditor_title: "&3» &8世界編輯"
 worldeditor_world_item: "&3&l%world%"
 
-worldeditor_blockbreaking_item: "&bBlock Breaking"
+worldeditor_blockbreaking_item: "&b方塊破壞"
 worldeditor_blockbreaking_lore:
- - "&7&oToggle whether or not blocks"
- - "&7&oare able to be broken."
+ - "&7&o切換是否可以"
+ - "&7&o破壞方塊."
 
-worldeditor_blockplacement_item: "&bBlock Placement"
+worldeditor_blockplacement_item: "&b方塊鎖定"
 worldeditor_blockplacement_lore:
- - "&7&oToggle whether or not blocks"
- - "&7&oare able to be placed."
+ - "&7&o切換是否可以"
+ - "&7&o放置方塊."
 
-worldeditor_physics_item: "&bBlock Physics"
+worldeditor_physics_item: "&b方塊物理"
 worldeditor_physics_lore:
- - "&7&oToggle whether or not block"
- - "&7&ophysics are activated."
+ - "&7&o切換是否"
+ - "&7&o啟用物理."
 
-worldeditor_time_item: "&bTime"
+worldeditor_time_item: "&b時間"
 worldeditor_time_lore:
- - "&7&oAlter the time of day"
- - "&7&oin the world."
+ - "&7&o改變在世界上"
+ - "&7&o的時間."
  - ""
- - "&7&nCurrently&7: %time%"
+ - "&7&n現在時間&7: %time%"
 worldeditor_time_lore_sunrise: "&6Sunrise"
 worldeditor_time_lore_noon: "&eNoon"
 worldeditor_time_lore_night: "&9Night"
