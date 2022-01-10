@@ -602,10 +602,10 @@ settings_disableinteract_lore:
  - "&7&oWhen enabled interactions with"
  - "&7&ocertain blocks are disabled."
 
-settings_hideplayers_item: "&bHide Players"
+settings_hideplayers_item: "&b隱藏玩家"
 settings_hideplayers_lore:
- - "&7&oWhen enabled all players"
- - "&7&oonline will be hidden."
+ - "&7&o當此選項開啟時"
+ - "&7&o將隱藏所有線上玩家."
 
 settings_instantplacesigns_item: "&bInstant Place Signs"
 settings_instantplacesigns_lore:
