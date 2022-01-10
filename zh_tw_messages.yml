@@ -438,7 +438,7 @@ type_custom: "自定義"
 type_template: "模板"
 type_private: "私人"
 
-# Worlds 狀態
+# Worlds Status
 status_title: "&8狀態 &7» &3%world%"
 status_not_started: "&c尚未開始"
 status_in_progress: "&6進行中"
@@ -723,9 +723,9 @@ speed_4: "&b4"
 speed_5: "&b5"
 
 # Secret Blocks
-blocks_title: "&3» &8Secret Blocks"
-blocks_full_oak_barch: "&bFull Oak Bark"
-blocks_full_spruce_barch: "&bFull Spruce Bark"
+blocks_title: "&3» &8秘密方塊"
+blocks_full_oak_barch: "&b全橡木樹皮"
+blocks_full_spruce_barch: "&b全杉木樹皮"
 blocks_full_birch_barch: "&bFull Birch Bark"
 blocks_full_jungle_barch: "&bFull Jungle Bark"
 blocks_full_acacia_barch: "&bFull Acacia Bark"
