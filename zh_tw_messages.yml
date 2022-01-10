@@ -293,7 +293,7 @@ worlds_setproject_unknown_world: "%prefix% &c未知的世界"
 worlds_setproject_error: "%prefix% &c請再嘗試一遍."
 worlds_setproject_set: "%prefix% &b%world%&7's project was successfully changed."
 
-worlds_setstatus_usage: "%prefix% &7用法: &b/worlds setStatus <世界>"
+worlds_setstatus_usage: "%prefix% &7用法: &b/worlds set狀態 <世界>"
 worlds_setstatus_unknown_world: "%prefix% &c未知的世界"
 worlds_setstatus_error: "%prefix% &c請再嘗試一遍."
 worlds_setstatus_set: "%prefix% &7世界: &b%world%&7的狀態已被更改為: %status%&7."
@@ -438,7 +438,7 @@ type_custom: "自定義"
 type_template: "模板"
 type_private: "私人"
 
-# Worlds Status
+# Worlds 狀態
 status_title: "&8狀態 &7» &3%world%"
 status_not_started: "&c尚未開始"
 status_in_progress: "&6進行中"
@@ -533,7 +533,7 @@ worldeditor_gamerules_unknown:
 worldeditor_gamerules_integer:
  - "&7&n現在狀態&7: &e%value%"
  - ""
- - "&8- &7&oLeft Click&8: &7decrease by 1"
+ - "&8- &7&o左鍵&8: &7decrease by 1"
  - "&8- &7&oShift &7+ &7&oLeft Click&8: &7decrease by 10"
  - "&8- &7&oRight Click&8: &7increase by 1"
  - "&8- &7&oShift &7+ &7&oRight Click&8: &7increase by 10"
@@ -563,7 +563,7 @@ worldeditor_blockinteractions_lore:
  - "&7&oToggle whether or not interactions"
  - "&7&owith blocks are cancelled."
 
-worldeditor_status_item: "&bStatus"
+worldeditor_status_item: "&b狀態"
 worldeditor_status_lore:
  - "&7&oChange the world's current"
  - "&7&ostatus."
