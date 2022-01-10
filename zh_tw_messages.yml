@@ -317,7 +317,7 @@ worlds_tp_entry_forbidden: "%prefix% &c你不被允許進入此世界!"
 worlds_unimport_usage: "%prefix% &7用法: &b/worlds import <世界> [-g <generator>]"
 worlds_unimport_unknown_world: "%prefix% &c未知的世界"
 worlds_unimport_players_world: "%prefix% &7&o你所在的世界沒有被導入."
-worlds_unimport_finished: "%prefix% &b%world% &7has been &aunimported&7."
+worlds_unimport_finished: "%prefix% &7世界: &b%world% &7已被&卸載&7."
 
 
 # ---------
