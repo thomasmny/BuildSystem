@@ -332,7 +332,7 @@ custom_skull_item: "&b自訂頭顱"
 # GUIs
 # ---------
 # Multi-page inventory
-gui_previous_page: "&b« &7Previous Page"
+gui_previous_page: "&b« &7私人頁面"
 gui_next_page: "&7下一頁 &b»"
 
 # Old Navigator
