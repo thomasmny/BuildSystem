@@ -570,7 +570,7 @@ worldeditor_status_lore:
  - ""
  - "&7&n現在狀態&7: %status%"
 
-worldeditor_project_item: "&bProject"
+worldeditor_project_item: "&b專案項目"
 worldeditor_project_lore:
  - "&7&oChange the world's current"
  - "&7&oproject."
