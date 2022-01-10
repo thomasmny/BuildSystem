@@ -592,7 +592,7 @@ settings_change_design_lore:
  - "&7&oSelect which colour the"
  - "&7&oglass panes should have."
 
-settings_clear_inventory_item: "&bClear Inventory"
+settings_clear_inventory_item: "&b清除物品欄"
 settings_clear_inventory_lore:
  - "&7&oWhen enabled a player's"
  - "&7&oinventory is cleared on join."
