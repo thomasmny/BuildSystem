@@ -429,14 +429,14 @@ create_template: "&e%template%"
 create_generators_create_world: "&eCreate world with generator"
 
 # World Type
-type_normal: "Normal"
-type_flat: "Flat"
-type_nether: "Nether"
-type_end: "End"
-type_void: "Void"
-type_custom: "Custom"
-type_template: "Template"
-type_private: "Private"
+type_normal: "正常"
+type_flat: "平坦"
+type_nether: "地獄"
+type_end: "終界"
+type_void: "虛空"
+type_custom: "自定義"
+type_template: "模板"
+type_private: "私人"
 
 # Worlds Status
 status_title: "&8Status &7» &3%world%"
