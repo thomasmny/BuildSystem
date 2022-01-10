@@ -539,9 +539,9 @@ worldeditor_gamerules_integer:
  - "&8- &7&oShift &7+ &7&o右鍵&8: &7增加 10"
 worldsettings_gamerule_:
  - ""
- - "&c&n警告&c: &7&oOnce a world is"
- - "&7&odeleted it is lost forever"
- - "&7&oand cannot be recovered!"
+ - "&c&n警告&c: &7&o一旦該世界刪除"
+ - "&7&o資料將刪除"
+ - "&7&o並永遠無法回復!"
 
 worldeditor_visibility_item: "&b可見度"
 worldeditor_visibility_lore_public:
