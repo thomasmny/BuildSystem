@@ -519,19 +519,19 @@ worldeditor_builders_builder_lore:
  - "&8- &7&oShift 點擊&8: &7移除"
 worldeditor_builders_add_builder_item: "&b添加建造者"
 
-worldeditor_gamerules_item: "&bGamerules"
+worldeditor_gamerules_item: "&b遊戲規則 (Gamerules)"
 worldeditor_gamerules_lore:
- - "&7&oManage the world's gamerules"
+ - "&7&oM管理世界的遊戲規則 (gamerules)"
 
 worldeditor_gamerules_title: "&3» &8Gamerules"
 worldeditor_gamerules_boolean_enabled:
- - "&7&nCurrently&7: &atrue"
+ - "&7&n現在狀態&7: &a開啟"
 worldeditor_gamerules_boolean_disabled:
- - "&7&nCurrently&7: &cfalse"
+ - "&7&n現在狀態&7: &cfalse"
 worldeditor_gamerules_unknown:
- - "&7&nCurrently&7: &e%value%"
+ - "&7&n現在狀態&7: &e%value%"
 worldeditor_gamerules_integer:
- - "&7&nCurrently&7: &e%value%"
+ - "&7&n現在狀態&7: &e%value%"
  - ""
  - "&8- &7&oLeft Click&8: &7decrease by 1"
  - "&8- &7&oShift &7+ &7&oLeft Click&8: &7decrease by 10"
@@ -547,11 +547,11 @@ worldeditor_visibility_item: "&bVisibility"
 worldeditor_visibility_lore_public:
  - "&7&oChange the world's visibility"
  - ""
- - "&7&nCurrently&7: &bPublic"
+ - "&7&n現在狀態&7: &bPublic"
 worldeditor_visibility_lore_private:
  - "&7&oChange the world's visibility"
  - ""
- - "&7&nCurrently&7: &bPrivate"
+ - "&7&n現在狀態&7: &bPrivate"
 
 worldeditor_mobai_item: "&bMob AI"
 worldeditor_mobai_lore:
@@ -568,21 +568,21 @@ worldeditor_status_lore:
  - "&7&oChange the world's current"
  - "&7&ostatus."
  - ""
- - "&7&nCurrently&7: %status%"
+ - "&7&n現在狀態&7: %status%"
 
 worldeditor_project_item: "&bProject"
 worldeditor_project_lore:
  - "&7&oChange the world's current"
  - "&7&oproject."
  - ""
- - "&7&nCurrently&7: &b%project%"
+ - "&7&n現在狀態&7: &b%project%"
 
 worldeditor_permission_item: "&bPermission"
 worldeditor_permission_lore:
  - "&7&oChange the world's current"
  - "&7&opermission."
  - ""
- - "&7&nCurrently&7: &b%permission%"
+ - "&7&n現在狀態&7: &b%permission%"
 
 # Settings
 settings_title: "&3» &8Settings"
@@ -668,32 +668,32 @@ settings_worldsort_lore_alphabetically_name_az:
  - "&7&oChange the way worlds are"
  - "&7&osorted in the navigator."
  - ""
- - "&7&nCurrently&7: &b&oName (A-Z)"
+ - "&7&n現在狀態&7: &b&oName (A-Z)"
 settings_worldsort_lore_alphabetically_name_za:
  - "&7&oChange the way worlds are"
  - "&7&osorted in the navigator."
  - ""
- - "&7&nCurrently&7: &b&oName (Z-A)"
+ - "&7&n現在狀態&7: &b&oName (Z-A)"
 settings_worldsort_lore_alphabetically_project_az:
  - "&7&oChange the way worlds are"
  - "&7&osorted in the navigator."
  - ""
- - "&7&nCurrently&7: &b&oProject (A-Z)"
+ - "&7&n現在狀態&7: &b&oProject (A-Z)"
 settings_worldsort_lore_alphabetically_project_za:
  - "&7&oChange the way worlds are"
  - "&7&osorted in the navigator."
  - ""
- - "&7&nCurrently&7: &b&oProject (Z-A)"
+ - "&7&n現在狀態&7: &b&oProject (Z-A)"
 settings_worldsort_lore_date_newest:
  - "&7&oChange the way worlds are"
  - "&7&osorted in the navigator."
  - ""
- - "&7&nCurrently&7: &b&oCreation date (Newest)"
+ - "&7&n現在狀態&7: &b&oCreation date (Newest)"
 settings_worldsort_lore_date_oldest:
  - "&7&oChange the way worlds are"
  - "&7&osorted in the navigator."
  - ""
- - "&7&nCurrently&7: &b&oCreation date (Oldest)"
+ - "&7&n現在狀態&7: &b&oCreation date (Oldest)"
 
 # Change Design
 design_title: "&3» &8Change Design"
