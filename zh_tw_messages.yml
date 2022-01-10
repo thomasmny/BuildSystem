@@ -553,7 +553,7 @@ worldeditor_visibility_lore_private:
  - ""
  - "&7&n現在狀態&7: &b私人"
 
-worldeditor_mobai_item: "&bMob AI"
+worldeditor_mobai_item: "&b生物 AI"
 worldeditor_mobai_lore:
  - "&7&oToggle where or not mobs"
  - "&7&ohave an AI."
