@@ -452,7 +452,7 @@ delete_title: "&3» &8D刪除世界"
 delete_world_name: "&e%world%"
 delete_world_name_lore:
  - ""
- - "&c&nWarning&c: &7&oOnce a world is"
+ - "&c&n警告&c: &7&oOnce a world is"
  - "&7&odeleted it is lost forever"
  - "&7&oand cannot be recovered!"
 delete_world_cancel: "&c取消"
@@ -539,7 +539,7 @@ worldeditor_gamerules_integer:
  - "&8- &7&oShift &7+ &7&oRight Click&8: &7increase by 10"
 worldsettings_gamerule_:
  - ""
- - "&c&nWarning&c: &7&oOnce a world is"
+ - "&c&n警告&c: &7&oOnce a world is"
  - "&7&odeleted it is lost forever"
  - "&7&oand cannot be recovered!"
 
