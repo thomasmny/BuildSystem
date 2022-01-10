@@ -555,8 +555,8 @@ worldeditor_visibility_lore_private:
 
 worldeditor_mobai_item: "&b生物 AI"
 worldeditor_mobai_lore:
- - "&7&oToggle where or not mobs"
- - "&7&ohave an AI."
+ - "&7&o切換是否啟用"
+ - "&7&o生物 AI."
 
 worldeditor_blockinteractions_item: "&bBlock Interactions"
 worldeditor_blockinteractions_lore:
