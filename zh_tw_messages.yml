@@ -223,8 +223,8 @@ worlds_import_usage: "%prefix% &7用法: &b/worlds import <世界> [-g <generato
 worlds_import_unknown_world: "%prefix% &c未知的世界"
 worlds_import_world_is_imported: "%prefix% &7這個世界已經被載入."
 worlds_import_unknown_generator: "%prefix% &c未知生成器."
-worlds_import_started: "%prefix% &7The import of &b%world% &7has started..."
-worlds_import_invalid_character: "%prefix% &7Unable to import &c%world%&7. %prefix% &7&oName contains invalid character: &c%char%"
+worlds_import_started: "%prefix% &7已開始載入世界: &b%world% &7..."
+worlds_import_invalid_character: "%prefix% &7無法導入世界: &c%world%&7. %prefix% &7&o包含無效字符: &c%char% "
 worlds_import_finished: "%prefix% &7The world was &asuccessfully &7imported."
 
 worlds_importall_usage: "%prefix% &7用法: &b/worlds importall"
