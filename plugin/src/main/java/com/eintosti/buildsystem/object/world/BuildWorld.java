@@ -14,6 +14,7 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.SpawnManager;
 import com.eintosti.buildsystem.util.ConfigValues;
+import com.eintosti.buildsystem.util.exception.UnexpectedEnumValueException;
 import com.eintosti.buildsystem.util.external.UUIDFetcher;
 import org.bukkit.*;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -111,6 +112,13 @@ public class BuildWorld implements ConfigurationSerializable {
                 break;
             case IMPORTED:
                 this.material = inventoryManager.getDefaultItem(WorldType.IMPORTED);
+                break;
+            default:
+                try {
+                    throw new UnexpectedEnumValueException(worldType.name());
+                } catch (UnexpectedEnumValueException e) {
+                    e.printStackTrace();
+                }
                 break;
         }
 
@@ -259,6 +267,13 @@ public class BuildWorld implements ConfigurationSerializable {
                 return plugin.getString("type_template");
             case PRIVATE:
                 return plugin.getString("type_private");
+            default:
+                try {
+                    throw new UnexpectedEnumValueException(worldType.name());
+                } catch (UnexpectedEnumValueException e) {
+                    e.printStackTrace();
+                }
+                break;
         }
         return "-";
     }
@@ -310,6 +325,13 @@ public class BuildWorld implements ConfigurationSerializable {
                 return plugin.getString("status_archive");
             case HIDDEN:
                 return plugin.getString("status_hidden");
+            default:
+                try {
+                    throw new UnexpectedEnumValueException(worldStatus.name());
+                } catch (UnexpectedEnumValueException e) {
+                    e.printStackTrace();
+                }
+                break;
         }
         return "-";
     }

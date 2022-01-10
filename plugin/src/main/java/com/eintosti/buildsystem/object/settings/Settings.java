@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public class Settings implements ConfigurationSerializable {
 
-    private Colour glassColor;
+    private Color glassColor;
     private NavigatorType navigatorType;
     private WorldSort worldSort;
     private boolean clearInventory;
@@ -41,7 +41,7 @@ public class Settings implements ConfigurationSerializable {
 
     public Settings() {
         this.navigatorType = NavigatorType.OLD;
-        this.glassColor = Colour.BLACK;
+        this.glassColor = Color.BLACK;
         this.worldSort = WorldSort.NAME_A_TO_Z;
         this.clearInventory = false;
         this.disableInteract = false;
@@ -59,7 +59,7 @@ public class Settings implements ConfigurationSerializable {
 
     public Settings(
             NavigatorType navigatorType,
-            Colour glassColor,
+            Color glassColor,
             WorldSort worldSort,
             boolean clearInventory,
             boolean disableInteract,
@@ -75,7 +75,7 @@ public class Settings implements ConfigurationSerializable {
             boolean trapDoor
     ) {
         this.navigatorType = navigatorType == null ? NavigatorType.OLD : navigatorType;
-        this.glassColor = glassColor == null ? Colour.BLACK : glassColor;
+        this.glassColor = glassColor == null ? Color.BLACK : glassColor;
         this.worldSort = worldSort;
         this.clearInventory = clearInventory;
         this.disableInteract = disableInteract;
@@ -99,11 +99,11 @@ public class Settings implements ConfigurationSerializable {
         this.navigatorType = navigatorType;
     }
 
-    public Colour getGlassColor() {
+    public Color getGlassColor() {
         return glassColor;
     }
 
-    public void setGlassColor(Colour glassColor) {
+    public void setGlassColor(Color glassColor) {
         this.glassColor = glassColor;
     }
 

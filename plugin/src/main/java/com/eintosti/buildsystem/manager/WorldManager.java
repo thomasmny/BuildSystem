@@ -17,6 +17,7 @@ import com.eintosti.buildsystem.object.world.*;
 import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.FileUtils;
 import com.eintosti.buildsystem.util.config.WorldConfig;
+import com.eintosti.buildsystem.util.exception.UnexpectedEnumValueException;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
 import com.eintosti.buildsystem.util.external.UUIDFetcher;
 import org.bukkit.*;
@@ -258,6 +259,8 @@ public class WorldManager {
             case FLAT:
                 int y = XMaterial.supports(18) ? -60 : 4;
                 bukkitWorld.setSpawnLocation(0, y, 0);
+                break;
+            default:
                 break;
         }
     }
@@ -646,6 +649,8 @@ public class WorldManager {
                     if (blockLocation != null) {
                         location = new Location(bukkitWorld, blockLocation.getBlockX() + 0.5, blockLocation.getBlockY() + 1, blockLocation.getBlockZ() + 0.5);
                     }
+                    break;
+                default:
                     break;
             }
         } else {

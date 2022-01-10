@@ -12,7 +12,7 @@ import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.SettingsManager;
-import com.eintosti.buildsystem.object.settings.Colour;
+import com.eintosti.buildsystem.object.settings.Color;
 import com.eintosti.buildsystem.object.settings.Settings;
 import org.bukkit.Bukkit;
 import org.bukkit.enchantments.Enchantment;
@@ -43,23 +43,23 @@ public class DesignInventory implements Listener {
         Inventory inventory = Bukkit.createInventory(null, 36, plugin.getString("design_title"));
         fillGuiWithGlass(inventory, player);
 
-        setItem(player, inventory, 10, XMaterial.RED_STAINED_GLASS, plugin.getString("design_red"), Colour.RED);
-        setItem(player, inventory, 11, XMaterial.ORANGE_STAINED_GLASS, plugin.getString("design_orange"), Colour.ORANGE);
-        setItem(player, inventory, 12, XMaterial.YELLOW_STAINED_GLASS, plugin.getString("design_yellow"), Colour.YELLOW);
-        setItem(player, inventory, 13, XMaterial.PINK_STAINED_GLASS, plugin.getString("design_pink"), Colour.PINK);
-        setItem(player, inventory, 14, XMaterial.MAGENTA_STAINED_GLASS, plugin.getString("design_magenta"), Colour.MAGENTA);
-        setItem(player, inventory, 15, XMaterial.PURPLE_STAINED_GLASS, plugin.getString("design_purple"), Colour.PURPLE);
-        setItem(player, inventory, 16, XMaterial.BROWN_STAINED_GLASS, plugin.getString("design_brown"), Colour.BROWN);
+        setItem(player, inventory, 10, XMaterial.RED_STAINED_GLASS, plugin.getString("design_red"), Color.RED);
+        setItem(player, inventory, 11, XMaterial.ORANGE_STAINED_GLASS, plugin.getString("design_orange"), Color.ORANGE);
+        setItem(player, inventory, 12, XMaterial.YELLOW_STAINED_GLASS, plugin.getString("design_yellow"), Color.YELLOW);
+        setItem(player, inventory, 13, XMaterial.PINK_STAINED_GLASS, plugin.getString("design_pink"), Color.PINK);
+        setItem(player, inventory, 14, XMaterial.MAGENTA_STAINED_GLASS, plugin.getString("design_magenta"), Color.MAGENTA);
+        setItem(player, inventory, 15, XMaterial.PURPLE_STAINED_GLASS, plugin.getString("design_purple"), Color.PURPLE);
+        setItem(player, inventory, 16, XMaterial.BROWN_STAINED_GLASS, plugin.getString("design_brown"), Color.BROWN);
 
-        setItem(player, inventory, 18, XMaterial.LIME_STAINED_GLASS, plugin.getString("design_lime"), Colour.LIME);
-        setItem(player, inventory, 19, XMaterial.GREEN_STAINED_GLASS, plugin.getString("design_green"), Colour.GREEN);
-        setItem(player, inventory, 20, XMaterial.BLUE_STAINED_GLASS, plugin.getString("design_blue"), Colour.BLUE);
-        setItem(player, inventory, 21, XMaterial.CYAN_STAINED_GLASS, plugin.getString("design_aqua"), Colour.CYAN);
-        setItem(player, inventory, 22, XMaterial.LIGHT_BLUE_STAINED_GLASS, plugin.getString("design_light_blue"), Colour.LIGHT_BLUE);
-        setItem(player, inventory, 23, XMaterial.WHITE_STAINED_GLASS, plugin.getString("design_white"), Colour.WHITE);
-        setItem(player, inventory, 24, XMaterial.LIGHT_GRAY_STAINED_GLASS, plugin.getString("design_grey"), Colour.LIGHT_GREY);
-        setItem(player, inventory, 25, XMaterial.GRAY_STAINED_GLASS, plugin.getString("design_dark_grey"), Colour.GREY);
-        setItem(player, inventory, 26, XMaterial.BLACK_STAINED_GLASS, plugin.getString("design_black"), Colour.BLACK);
+        setItem(player, inventory, 18, XMaterial.LIME_STAINED_GLASS, plugin.getString("design_lime"), Color.LIME);
+        setItem(player, inventory, 19, XMaterial.GREEN_STAINED_GLASS, plugin.getString("design_green"), Color.GREEN);
+        setItem(player, inventory, 20, XMaterial.BLUE_STAINED_GLASS, plugin.getString("design_blue"), Color.BLUE);
+        setItem(player, inventory, 21, XMaterial.CYAN_STAINED_GLASS, plugin.getString("design_aqua"), Color.CYAN);
+        setItem(player, inventory, 22, XMaterial.LIGHT_BLUE_STAINED_GLASS, plugin.getString("design_light_blue"), Color.LIGHT_BLUE);
+        setItem(player, inventory, 23, XMaterial.WHITE_STAINED_GLASS, plugin.getString("design_white"), Color.WHITE);
+        setItem(player, inventory, 24, XMaterial.LIGHT_GRAY_STAINED_GLASS, plugin.getString("design_grey"), Color.LIGHT_GRAY);
+        setItem(player, inventory, 25, XMaterial.GRAY_STAINED_GLASS, plugin.getString("design_dark_grey"), Color.GRAY);
+        setItem(player, inventory, 26, XMaterial.BLACK_STAINED_GLASS, plugin.getString("design_black"), Color.BLACK);
 
         return inventory;
     }
@@ -77,18 +77,18 @@ public class DesignInventory implements Listener {
         }
     }
 
-    private void setItem(Player player, Inventory inventory, int position, XMaterial material, String displayName, Colour colour) {
+    private void setItem(Player player, Inventory inventory, int position, XMaterial material, String displayName, Color color) {
         SettingsManager settingsManager = plugin.getSettingsManager();
         Settings settings = settingsManager.getSettings(player);
 
-        ItemStack itemStack = inventoryManager.getItemStack(material, settings.getGlassColor() == colour ? "§a" + displayName : "§7" + displayName);
+        ItemStack itemStack = inventoryManager.getItemStack(material, settings.getGlassColor() == color ? "§a" + displayName : "§7" + displayName);
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta != null) {
             itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         }
 
         itemStack.setItemMeta(itemMeta);
-        if (settings.getGlassColor() == colour) {
+        if (settings.getGlassColor() == color) {
             itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
         }
 
@@ -111,52 +111,52 @@ public class DesignInventory implements Listener {
 
         switch (event.getSlot()) {
             case 10:
-                settings.setGlassColor(Colour.RED);
+                settings.setGlassColor(Color.RED);
                 break;
             case 11:
-                settings.setGlassColor(Colour.ORANGE);
+                settings.setGlassColor(Color.ORANGE);
                 break;
             case 12:
-                settings.setGlassColor(Colour.YELLOW);
+                settings.setGlassColor(Color.YELLOW);
                 break;
             case 13:
-                settings.setGlassColor(Colour.PINK);
+                settings.setGlassColor(Color.PINK);
                 break;
             case 14:
-                settings.setGlassColor(Colour.MAGENTA);
+                settings.setGlassColor(Color.MAGENTA);
                 break;
             case 15:
-                settings.setGlassColor(Colour.PURPLE);
+                settings.setGlassColor(Color.PURPLE);
                 break;
             case 16:
-                settings.setGlassColor(Colour.BROWN);
+                settings.setGlassColor(Color.BROWN);
                 break;
             case 18:
-                settings.setGlassColor(Colour.LIME);
+                settings.setGlassColor(Color.LIME);
                 break;
             case 19:
-                settings.setGlassColor(Colour.GREEN);
+                settings.setGlassColor(Color.GREEN);
                 break;
             case 20:
-                settings.setGlassColor(Colour.BLUE);
+                settings.setGlassColor(Color.BLUE);
                 break;
             case 21:
-                settings.setGlassColor(Colour.CYAN);
+                settings.setGlassColor(Color.CYAN);
                 break;
             case 22:
-                settings.setGlassColor(Colour.LIGHT_BLUE);
+                settings.setGlassColor(Color.LIGHT_BLUE);
                 break;
             case 23:
-                settings.setGlassColor(Colour.WHITE);
+                settings.setGlassColor(Color.WHITE);
                 break;
             case 24:
-                settings.setGlassColor(Colour.LIGHT_GREY);
+                settings.setGlassColor(Color.LIGHT_GRAY);
                 break;
             case 25:
-                settings.setGlassColor(Colour.GREY);
+                settings.setGlassColor(Color.GRAY);
                 break;
             case 26:
-                settings.setGlassColor(Colour.BLACK);
+                settings.setGlassColor(Color.BLACK);
                 break;
         }
 

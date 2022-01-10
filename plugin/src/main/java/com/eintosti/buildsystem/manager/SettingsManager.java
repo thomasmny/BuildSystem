@@ -10,7 +10,7 @@ package com.eintosti.buildsystem.manager;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.object.navigator.NavigatorType;
-import com.eintosti.buildsystem.object.settings.Colour;
+import com.eintosti.buildsystem.object.settings.Color;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.settings.WorldSort;
 import com.eintosti.buildsystem.object.world.BuildWorld;
@@ -164,7 +164,7 @@ public class SettingsManager {
         Set<String> uuids = configurationSection.getKeys(false);
         uuids.forEach(uuid -> {
             NavigatorType navigatorType = NavigatorType.valueOf(configuration.getString("settings." + uuid + ".type"));
-            Colour glassColor = configuration.getString("settings." + uuid + ".glass") != null ? Colour.valueOf(configuration.getString("settings." + uuid + ".glass")) : Colour.BLACK;
+            Color glassColor = configuration.getString("settings." + uuid + ".glass") != null ? Color.matchColor(configuration.getString("settings." + uuid + ".glass")) : Color.BLACK;
             WorldSort worldSort = WorldSort.matchWorldSort(configuration.getString("settings." + uuid + ".world-sort"));
             boolean clearInventory = configuration.isBoolean("settings." + uuid + ".clear-inventory") && configuration.getBoolean("settings." + uuid + ".clear-inventory");
             boolean disableInteract = configuration.isBoolean("settings." + uuid + ".disable-interact") && configuration.getBoolean("settings." + uuid + ".disable-interact");

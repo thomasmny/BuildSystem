@@ -11,7 +11,7 @@ package com.eintosti.buildsystem.object.settings;
 /**
  * @author einTosti
  */
-public enum Colour {
+public enum Color {
     RED,
     ORANGE,
     YELLOW,
@@ -25,7 +25,15 @@ public enum Colour {
     CYAN,
     LIGHT_BLUE,
     WHITE,
-    GREY,
-    LIGHT_GREY,
-    BLACK
+    GRAY,
+    LIGHT_GRAY,
+    BLACK;
+
+    public static Color matchColor(String colorName) {
+        try {
+            return valueOf(colorName);
+        } catch (IllegalArgumentException e) {
+            return Color.BLACK;
+        }
+    }
 }

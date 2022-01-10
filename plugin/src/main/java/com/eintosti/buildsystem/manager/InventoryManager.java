@@ -19,6 +19,7 @@ import com.eintosti.buildsystem.object.world.WorldStatus;
 import com.eintosti.buildsystem.object.world.WorldType;
 import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.config.SetupConfig;
+import com.eintosti.buildsystem.util.exception.UnexpectedEnumValueException;
 import com.eintosti.buildsystem.util.external.ItemSkulls;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Material;
@@ -32,6 +33,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -419,83 +421,21 @@ public class InventoryManager {
     public XMaterial getColouredGlass(BuildSystem plugin, Player player) {
         SettingsManager settingsManager = plugin.getSettingsManager();
         Settings settings = settingsManager.getSettings(player);
-        switch (settings.getGlassColor()) {
-            case RED:
-                return XMaterial.RED_STAINED_GLASS;
-            case ORANGE:
-                return XMaterial.ORANGE_STAINED_GLASS;
-            case YELLOW:
-                return XMaterial.YELLOW_STAINED_GLASS;
-            case PINK:
-                return XMaterial.PINK_STAINED_GLASS;
-            case MAGENTA:
-                return XMaterial.MAGENTA_STAINED_GLASS;
-            case PURPLE:
-                return XMaterial.PURPLE_STAINED_GLASS;
-            case BROWN:
-                return XMaterial.BROWN_STAINED_GLASS;
-            case LIME:
-                return XMaterial.LIME_STAINED_GLASS;
-            case GREEN:
-                return XMaterial.GREEN_STAINED_GLASS;
-            case BLUE:
-                return XMaterial.BLUE_STAINED_GLASS;
-            case CYAN:
-                return XMaterial.CYAN_STAINED_GLASS;
-            case LIGHT_BLUE:
-                return XMaterial.LIGHT_BLUE_STAINED_GLASS;
-            case WHITE:
-                return XMaterial.WHITE_STAINED_GLASS;
-            case LIGHT_GREY:
-                return XMaterial.LIGHT_GRAY_STAINED_GLASS;
-            case GREY:
-                return XMaterial.GRAY_STAINED_GLASS;
-            default:
-                return XMaterial.BLACK_STAINED_GLASS;
-        }
+
+        Optional<XMaterial> glass = XMaterial.matchXMaterial(settings.getGlassColor().name() + "_STAINED_GLASS");
+        return glass.orElse(XMaterial.BLACK_STAINED_GLASS);
     }
 
     public XMaterial getColouredGlassPane(BuildSystem plugin, Player player) {
         SettingsManager settingsManager = plugin.getSettingsManager();
         Settings settings = settingsManager.getSettings(player);
-        switch (settings.getGlassColor()) {
-            case RED:
-                return XMaterial.RED_STAINED_GLASS_PANE;
-            case ORANGE:
-                return XMaterial.ORANGE_STAINED_GLASS_PANE;
-            case YELLOW:
-                return XMaterial.YELLOW_STAINED_GLASS_PANE;
-            case PINK:
-                return XMaterial.PINK_STAINED_GLASS_PANE;
-            case MAGENTA:
-                return XMaterial.MAGENTA_STAINED_GLASS_PANE;
-            case PURPLE:
-                return XMaterial.PURPLE_STAINED_GLASS_PANE;
-            case BROWN:
-                return XMaterial.BROWN_STAINED_GLASS_PANE;
-            case LIME:
-                return XMaterial.LIME_STAINED_GLASS_PANE;
-            case GREEN:
-                return XMaterial.GREEN_STAINED_GLASS_PANE;
-            case BLUE:
-                return XMaterial.BLUE_STAINED_GLASS_PANE;
-            case CYAN:
-                return XMaterial.CYAN_STAINED_GLASS_PANE;
-            case LIGHT_BLUE:
-                return XMaterial.LIGHT_BLUE_STAINED_GLASS_PANE;
-            case WHITE:
-                return XMaterial.WHITE_STAINED_GLASS_PANE;
-            case LIGHT_GREY:
-                return XMaterial.LIGHT_GRAY_STAINED_GLASS_PANE;
-            case GREY:
-                return XMaterial.GRAY_STAINED_GLASS_PANE;
-            default:
-                return XMaterial.BLACK_STAINED_GLASS_PANE;
-        }
+
+        Optional<XMaterial> glass = XMaterial.matchXMaterial(settings.getGlassColor().name() + "_STAINED_GLASS_PANE");
+        return glass.orElse(XMaterial.BLACK_STAINED_GLASS_PANE);
     }
 
     public XMaterial getCreateItem(WorldType worldType) {
-        XMaterial material = null;
+        XMaterial material;
         switch (worldType) {
             case NORMAL:
                 material = this.normalCreateItem;
@@ -533,6 +473,13 @@ public class InventoryManager {
                     material = XMaterial.FILLED_MAP;
                 }
                 break;
+            default:
+                try {
+                    throw new UnexpectedEnumValueException(worldType.name());
+                } catch (UnexpectedEnumValueException e) {
+                    e.printStackTrace();
+                    return null;
+                }
         }
         return material;
     }
@@ -541,26 +488,35 @@ public class InventoryManager {
         switch (worldType) {
             case NORMAL:
                 this.normalCreateItem = material;
-                return;
+                break;
             case FLAT:
                 this.flatCreateItem = material;
-                return;
+                break;
             case NETHER:
                 this.netherCreateItem = material;
-                return;
+                break;
             case END:
                 this.endCreateItem = material;
-                return;
+                break;
             case VOID:
                 this.voidCreateItem = material;
                 break;
             case CUSTOM:
                 this.customCreateItem = material;
+                break;
+            default:
+                try {
+                    throw new UnexpectedEnumValueException(worldType.name());
+                } catch (UnexpectedEnumValueException e) {
+                    e.printStackTrace();
+                }
+                break;
         }
     }
 
+    @Nullable
     public XMaterial getDefaultItem(WorldType worldType) {
-        XMaterial material = null;
+        XMaterial material;
         switch (worldType) {
             case NORMAL:
                 material = this.normalDefaultItem;
@@ -598,6 +554,13 @@ public class InventoryManager {
                     material = XMaterial.FURNACE;
                 }
                 break;
+            default:
+                try {
+                    throw new UnexpectedEnumValueException(worldType.name());
+                } catch (UnexpectedEnumValueException e) {
+                    e.printStackTrace();
+                    return null;
+                }
         }
         return material;
     }
@@ -606,27 +569,34 @@ public class InventoryManager {
         switch (worldType) {
             case NORMAL:
                 this.normalDefaultItem = material;
-                return;
+                break;
             case FLAT:
                 this.flatDefaultItem = material;
-                return;
+                break;
             case NETHER:
                 this.netherDefaultItem = material;
-                return;
+                break;
             case END:
                 this.endDefaultItem = material;
-                return;
+                break;
             case VOID:
                 this.voidDefaultItem = material;
-                return;
+                break;
             case IMPORTED:
                 this.importedDefaultItem = material;
+                break;
+            default:
+                try {
+                    throw new UnexpectedEnumValueException(worldType.name());
+                } catch (UnexpectedEnumValueException e) {
+                    e.printStackTrace();
+                }
                 break;
         }
     }
 
     public XMaterial getStatusItem(WorldStatus worldStatus) {
-        XMaterial material = null;
+        XMaterial material;
         switch (worldStatus) {
             case NOT_STARTED:
                 material = this.notStartedItem;
@@ -664,6 +634,13 @@ public class InventoryManager {
                     material = XMaterial.BONE_MEAL;
                 }
                 break;
+            default:
+                try {
+                    throw new UnexpectedEnumValueException(worldStatus.name());
+                } catch (UnexpectedEnumValueException e) {
+                    e.printStackTrace();
+                    return null;
+                }
         }
         return material;
     }
@@ -672,21 +649,28 @@ public class InventoryManager {
         switch (worldStatus) {
             case NOT_STARTED:
                 this.notStartedItem = material;
-                return;
+                break;
             case IN_PROGRESS:
                 this.inProgressItem = material;
-                return;
+                break;
             case ALMOST_FINISHED:
                 this.almostFinishedItem = material;
-                return;
+                break;
             case FINISHED:
                 this.finishedItem = material;
-                return;
+                break;
             case ARCHIVE:
                 this.archivedItem = material;
-                return;
+                break;
             case HIDDEN:
                 this.hiddenItem = material;
+                break;
+            default:
+                try {
+                    throw new UnexpectedEnumValueException(worldStatus.name());
+                } catch (UnexpectedEnumValueException e) {
+                    e.printStackTrace();
+                }
                 break;
         }
     }
