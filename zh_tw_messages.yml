@@ -663,7 +663,7 @@ settings_spawnteleport_lore:
  - "&7&oteleported to the spawn"
  - "&7&oif it has been set."
 
-settings_worldsort_item: "&bWorld Sort"
+settings_worldsort_item: "&b世界排序"
 settings_worldsort_lore_alphabetically_name_az:
  - "&7&o改變世界在"
  - "&7&o導航器的排列."
