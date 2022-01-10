@@ -665,33 +665,33 @@ settings_spawnteleport_lore:
 
 settings_worldsort_item: "&bWorld Sort"
 settings_worldsort_lore_alphabetically_name_az:
- - "&7&oChange the way worlds are"
- - "&7&osorted in the navigator."
+ - "&7&o改變世界在"
+ - "&7&o導航器的排列."
  - ""
  - "&7&n現在狀態&7: &b&o名稱 (A-Z)"
 settings_worldsort_lore_alphabetically_name_za:
- - "&7&oChange the way worlds are"
- - "&7&osorted in the navigator."
+ - "&7&o改變世界在"
+ - "&7&o導航器的排列."
  - ""
  - "&7&n現在狀態&7: &b&o名稱 (Z-A)"
 settings_worldsort_lore_alphabetically_project_az:
- - "&7&oChange the way worlds are"
- - "&7&osorted in the navigator."
+ - "&7&o改變世界在"
+ - "&7&o導航器的排列."
  - ""
  - "&7&n現在狀態&7: &b&oProject (A-Z)"
 settings_worldsort_lore_alphabetically_project_za:
- - "&7&oChange the way worlds are"
- - "&7&osorted in the navigator."
+ - "&7&o改變世界在"
+ - "&7&o導航器的排列."
  - ""
  - "&7&n現在狀態&7: &b&oProject (Z-A)"
 settings_worldsort_lore_date_newest:
- - "&7&oChange the way worlds are"
- - "&7&osorted in the navigator."
+ - "&7&o改變世界在"
+ - "&7&o導航器的排列."
  - ""
  - "&7&n現在狀態&7: &b&oCreation date (Newest)"
 settings_worldsort_lore_date_oldest:
- - "&7&oChange the way worlds are"
- - "&7&osorted in the navigator."
+ - "&7&o改變世界在"
+ - "&7&o導航器的排列."
  - ""
  - "&7&n現在狀態&7: &b&oCreation date (Oldest)"
 
