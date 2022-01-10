@@ -551,7 +551,7 @@ worldeditor_visibility_lore_public:
 worldeditor_visibility_lore_private:
  - "&7&o改變世界的可見度"
  - ""
- - "&7&n現在狀態&7: &bPrivate"
+ - "&7&n現在狀態&7: &b私人"
 
 worldeditor_mobai_item: "&bMob AI"
 worldeditor_mobai_lore:
