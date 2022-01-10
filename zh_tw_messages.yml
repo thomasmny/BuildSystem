@@ -172,7 +172,7 @@ worlds_builders_unknown_world: "%prefix% &c未知的世界"
 
 worlds_world_name: "世界名稱"
 worlds_world_exists: "%prefix% &c這個世界已經存在."
-worlds_world_creation_invalid_characters: "%prefix% &7&oRemoved invalid characters from world name."
+worlds_world_creation_invalid_characters: "%prefix% &7&o從世界名稱中刪除了無效字符."
 worlds_world_creation_started: "%prefix% &7The creation of &b%world% &8(&7Type: &f%type%&8) &7has started..."
 worlds_template_creation_started: "%prefix% &7The creation of &b%world% &8(&7Template: &f%template%&8) &7has started..."
 worlds_creation_finished: "%prefix% &7The world was &asuccessfully &7created."
