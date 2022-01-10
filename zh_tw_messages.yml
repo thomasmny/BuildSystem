@@ -376,20 +376,20 @@ world_item_lore_edit:
 world_item_builders_builder_template: "&b%builder%&7, "
 
 # World Archive
-archive_title: "&3» &8World Archive"
-archive_no_worlds: "&c&nNo worlds available"
+archive_title: "&3» &8世界檔案"
+archive_no_worlds: "&c&n沒有可用的世界"
 
 # Private Worlds
-private_title: "&3» &8Private Worlds"
-private_no_worlds: "&c&nNo worlds available"
-private_create_world: "&bCreate a private world"
+private_title: "&3» &8私人世界"
+private_no_worlds: "&c&n沒有可用的世界"
+private_create_world: "&b創建一個私人世界"
 
 # Setup
-setup_title: "&3» &8Setup"
-setup_create_item_name: "&bCreate World Item"
+setup_title: "&3» &8設置"
+setup_create_item_name: "&b創建一個世界物品"
 setup_create_item_lore:
- - "&7The item which is shown"
- - "&7when you create a world."
+ - "&7這個物品會用在"
+ - "&7在選單顯示你的世界."
  - ""
  - "&7&nTo change&7:"
  - "&8» &7&oDrag new item onto old one"
