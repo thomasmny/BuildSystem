@@ -131,26 +131,26 @@ skull_custom_received: "%prefix% &7你收到了一個 &b自訂頭顱&7."
 # /spawn
 spawn_usage: "%prefix% &7用法: &b/spawn"
 spawn_admin: "%prefix% &7用法: &b/spawn [set/remove]"
-spawn_teleported: "%prefix% &7You were teleported to the &bspawn&7."
-spawn_unavailable: "%prefix% &cThere isn't a spawn to teleport to."
+spawn_teleported: "%prefix% &7你已被傳送至 &b重生點&7."
+spawn_unavailable: "%prefix% &c這邊沒有重生點可以傳送."
 spawn_world_not_imported: "%prefix% &c世界必須被載入 » /worlds import <世界>"
-spawn_set: "%prefix% &7Spawn set to &b%x% %y% %z% &7in &b%world%&7."
-spawn_remove: "%prefix% &7The spawn was removed."
+spawn_set: "%prefix% &7重生點已被設在 &b%x% %y% %z% &7(世界: &b%world%&7)."
+spawn_remove: "%prefix% &7已移除重生點."
 
 # /speed
 speed_usage: "%prefix% &7用法: &b/speed [1-5]"
-speed_set_flying: "%prefix% &7Your flying speed was set to &b%speed%&7."
-speed_set_walking: "%prefix% &7Your walking speed was set to &b%speed%&7."
+speed_set_flying: "%prefix% &7已將你的飛行速度設為 &b%speed%&7."
+speed_set_walking: "%prefix% &7已將你的行走速度設為 &b%speed%&7."
 
 # /day
 day_usage: "%prefix% &7用法: &b/day [world]"
 day_unknown_world: "%prefix% &c未知的世界"
-day_set: "%prefix% &7It is now day in &b%world%&7."
+day_set: "%prefix% &7已將世界 &b%world%&7 的時間設為白天."
 
 # /night
 night_usage: "%prefix% &7用法: &b/night [world]"
 night_unknown_world: "%prefix% &c未知的世界"
-night_set: "%prefix% &7It is now night in &b%world%&7."
+night_set: "%prefix% &7已將世界 &b%world%&7. 的時間設為晚上"
 
 # /top
 top_usage: "%prefix% &7用法: &b/top"
@@ -159,7 +159,7 @@ top_failed: "%prefix% &cNo higher location was found."
 
 # /worlds
 worlds_addbuilder_usage: "%prefix% &7用法: &b/worlds addBuilder <世界>"
-worlds_addbuilder_error: "%prefix% &cError: Please try again!"
+worlds_addbuilder_error: "%prefix% &c錯誤: 請再試一遍!"
 worlds_addbuilder_unknown_world: "%prefix% &c未知的世界"
 worlds_addbuilder_player_not_found: "%prefix% &cThat player was not found."
 worlds_addbuilder_not_creator: "%prefix% &cYou are not the creator of this world."
