@@ -565,21 +565,21 @@ worldeditor_blockinteractions_lore:
 
 worldeditor_status_item: "&b狀態"
 worldeditor_status_lore:
- - "&7&oChange the world's current"
+ - "&7&o更改世界現在的"
  - "&7&ostatus."
  - ""
  - "&7&n現在狀態&7: %status%"
 
 worldeditor_project_item: "&b專案項目"
 worldeditor_project_lore:
- - "&7&oChange the world's current"
+ - "&7&o更改世界現在的"
  - "&7&oproject."
  - ""
  - "&7&n現在狀態&7: &b%project%"
 
 worldeditor_permission_item: "&bPermission"
 worldeditor_permission_lore:
- - "&7&oChange the world's current"
+ - "&7&o更改世界現在的"
  - "&7&opermission."
  - ""
  - "&7&n現在狀態&7: &b%permission%"
