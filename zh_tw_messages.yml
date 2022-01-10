@@ -187,7 +187,7 @@ worlds_delete_unknown_directory: "%prefix% &c刪除世界時發生錯誤: 未找
 worlds_delete_error: "%prefix% &c刪除世界時發生錯誤: 請再嘗試一遍!"
 worlds_delete_canceled: "%prefix% &7世界: &b%world% &7的刪除已被取消."
 worlds_delete_started: "%prefix% &7已開始刪除 世界: &b%world% &7..."
-worlds_delete_finished: "%prefix% &7The world was &asuccessfully &7deleted."
+worlds_delete_finished: "%prefix% &7該世界已被&a成功&7刪除."
 worlds_delete_players_world: "%prefix% &7&oThe world you were in was deleted."
 
 worlds_edit_usage: "%prefix% &7用法: &b/worlds edit <世界>"
