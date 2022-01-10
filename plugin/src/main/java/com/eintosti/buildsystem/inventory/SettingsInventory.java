@@ -170,7 +170,7 @@ public class SettingsInventory implements Listener {
     }
 
     @EventHandler
-    public void onSettingsInventoryClick(InventoryClickEvent event) {
+    public void onInventoryClick(InventoryClickEvent event) {
         if (!inventoryManager.checkIfValidClick(event, "settings_title")) {
             return;
         }

@@ -150,7 +150,7 @@ public class PlayerJoinListener implements Listener {
             return;
         }
 
-        UpdateChecker.init(plugin, BuildSystem.PLUGIN_ID)
+        UpdateChecker.init(plugin, BuildSystem.SPIGOT_ID)
                 .requestUpdateCheck()
                 .whenComplete((result, e) -> {
                     if (result.requiresUpdate()) {

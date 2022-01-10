@@ -37,12 +37,13 @@ public abstract class ConfigurationFile {
         if (!file.exists()) {
             configuration.options().copyDefaults(true);
             saveFile();
-        } else {
-            try {
-                configuration.load(file);
-            } catch (IOException | InvalidConfigurationException e) {
-                plugin.getLogger().log(Level.SEVERE, null, e);
-            }
+            return;
+        }
+
+        try {
+            configuration.load(file);
+        } catch (IOException | InvalidConfigurationException e) {
+            plugin.getLogger().log(Level.SEVERE, null, e);
         }
     }
 

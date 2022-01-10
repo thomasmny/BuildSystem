@@ -80,7 +80,7 @@ public class BlocksInventory implements Listener {
     }
 
     @EventHandler
-    public void onBlocksInventoryClick(InventoryClickEvent event) {
+    public void onInventoryClick(InventoryClickEvent event) {
         if (!inventoryManager.checkIfValidClick(event, "blocks_title")) {
             return;
         }

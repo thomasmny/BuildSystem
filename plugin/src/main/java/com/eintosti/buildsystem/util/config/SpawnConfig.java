@@ -21,18 +21,17 @@ public class SpawnConfig extends ConfigurationFile {
     }
 
     public void saveSpawn(Location location) {
-        if (location == null) {
+        if (location == null || location.getWorld() == null) {
             return;
         }
-        if (location.getWorld() == null) {
-            return;
-        }
+
         getFile().set("spawn", location.getWorld().getName() + ":"
                 + location.getX() + ":"
                 + location.getY() + ":"
                 + location.getZ() + ":"
                 + location.getYaw() + ":"
-                + location.getPitch());
+                + location.getPitch()
+        );
         saveFile();
     }
 }

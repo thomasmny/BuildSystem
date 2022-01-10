@@ -18,7 +18,6 @@ import com.eintosti.buildsystem.tabcomplete.*;
 import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.Messages;
 import com.eintosti.buildsystem.util.SkullCache;
-import com.eintosti.buildsystem.util.bstats.Metrics;
 import com.eintosti.buildsystem.util.external.UpdateChecker;
 import com.eintosti.buildsystem.version.CustomBlocks;
 import com.eintosti.buildsystem.version.GameRules;
@@ -27,6 +26,8 @@ import com.eintosti.buildsystem.version.v1_12_R1.GameRules_1_12_R1;
 import com.eintosti.buildsystem.version.v1_13_R1.CustomBlocks_1_13_R1;
 import com.eintosti.buildsystem.version.v1_13_R1.GameRules_1_13_R1;
 import com.eintosti.buildsystem.version.v1_14_R1.CustomBlocks_1_14_R1;
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -44,7 +45,8 @@ import java.util.logging.Level;
  */
 public class BuildSystem extends JavaPlugin {
 
-    public static final int PLUGIN_ID = 60441;
+    public static final int SPIGOT_ID = 60441;
+    public static final int METRICS_ID = 7427;
 
     private String version;
 
@@ -320,17 +322,16 @@ public class BuildSystem extends JavaPlugin {
     }
 
     private void registerStats() {
-        int pluginId = 7427;
-        Metrics metrics = new Metrics(this, pluginId);
+        Metrics metrics = new Metrics(this, METRICS_ID);
 
-        metrics.addCustomChart(new Metrics.SimplePie("scoreboard", () -> String.valueOf(configValues.isScoreboard())));
-        metrics.addCustomChart(new Metrics.SimplePie("archive_vanish", () -> String.valueOf(configValues.isArchiveVanish())));
-        metrics.addCustomChart(new Metrics.SimplePie("join_quit_messages", () -> String.valueOf(configValues.isJoinQuitMessages())));
-        metrics.addCustomChart(new Metrics.SimplePie("lock_weather", () -> String.valueOf(configValues.isLockWeather())));
-        metrics.addCustomChart(new Metrics.SimplePie("unload_worlds", () -> String.valueOf(configValues.isUnloadWorlds())));
-        metrics.addCustomChart(new Metrics.SimplePie("void_block", () -> String.valueOf(configValues.isVoidBlock())));
-        metrics.addCustomChart(new Metrics.SimplePie("update_checker", () -> String.valueOf(configValues.isUpdateChecker())));
-        metrics.addCustomChart(new Metrics.SimplePie("block_world_edit", () -> String.valueOf(configValues.isBlockWorldEditNonBuilder())));
+        metrics.addCustomChart(new SimplePie("scoreboard", () -> String.valueOf(configValues.isScoreboard())));
+        metrics.addCustomChart(new SimplePie("archive_vanish", () -> String.valueOf(configValues.isArchiveVanish())));
+        metrics.addCustomChart(new SimplePie("join_quit_messages", () -> String.valueOf(configValues.isJoinQuitMessages())));
+        metrics.addCustomChart(new SimplePie("lock_weather", () -> String.valueOf(configValues.isLockWeather())));
+        metrics.addCustomChart(new SimplePie("unload_worlds", () -> String.valueOf(configValues.isUnloadWorlds())));
+        metrics.addCustomChart(new SimplePie("void_block", () -> String.valueOf(configValues.isVoidBlock())));
+        metrics.addCustomChart(new SimplePie("update_checker", () -> String.valueOf(configValues.isUpdateChecker())));
+        metrics.addCustomChart(new SimplePie("block_world_edit", () -> String.valueOf(configValues.isBlockWorldEditNonBuilder())));
     }
 
     private void registerPlaceholders() {
@@ -344,7 +345,7 @@ public class BuildSystem extends JavaPlugin {
             return;
         }
 
-        UpdateChecker.init(this, PLUGIN_ID).requestUpdateCheck().whenComplete((result, e) -> {
+        UpdateChecker.init(this, SPIGOT_ID).requestUpdateCheck().whenComplete((result, e) -> {
                     if (result.requiresUpdate()) {
                         Bukkit.getConsoleSender().sendMessage(ChatColor.YELLOW + "[BuildSystem] Great! a new update is available:" + ChatColor.GREEN + "v" + result.getNewestVersion());
                         Bukkit.getConsoleSender().sendMessage(ChatColor.YELLOW + " ➥ Your current version: " + ChatColor.RED + this.getDescription().getVersion());

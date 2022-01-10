@@ -96,7 +96,7 @@ public class DesignInventory implements Listener {
     }
 
     @EventHandler
-    public void onDesignInventoryClick(InventoryClickEvent event) {
+    public void onInventoryClick(InventoryClickEvent event) {
         if (!inventoryManager.checkIfValidClick(event, "design_title")) {
             return;
         }

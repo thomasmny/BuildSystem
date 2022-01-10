@@ -15,6 +15,7 @@ import com.eintosti.buildsystem.object.world.BuildWorld;
 import org.bukkit.generator.ChunkGenerator;
 
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author einTosti
@@ -34,13 +35,14 @@ public class WorldConfig extends ConfigurationFile {
     }
 
     public void loadWorlds(WorldManager worldManager) {
+        Logger logger = plugin.getLogger();
         if (plugin.getConfigValues().isUnloadWorlds()) {
-            plugin.getLogger().log(Level.INFO, "*** Unload worlds is enabled ***");
-            plugin.getLogger().log(Level.INFO, "*** Therefore worlds will not be loaded ***");
+            logger.log(Level.INFO, "*** Unload worlds is enabled ***");
+            logger.log(Level.INFO, "*** Therefore worlds will not be loaded ***");
             return;
         }
 
-        plugin.getLogger().log(Level.INFO, "*** All worlds will be loaded now ***");
+        logger.log(Level.INFO, "*** All worlds will be loaded now ***");
 
         worldManager.getBuildWorlds().forEach(world -> {
             String worldName = world.getName();
@@ -51,9 +53,9 @@ public class WorldConfig extends ConfigurationFile {
                 plugin.getSkullCache().cacheSkull(worldName);
             }
 
-            plugin.getLogger().log(Level.INFO, "✔ World loaded: " + worldName);
+            logger.log(Level.INFO, "✔ World loaded: " + worldName);
         });
 
-        plugin.getLogger().log(Level.INFO, "*** All worlds have been loaded ***");
+        logger.log(Level.INFO, "*** All worlds have been loaded ***");
     }
 }

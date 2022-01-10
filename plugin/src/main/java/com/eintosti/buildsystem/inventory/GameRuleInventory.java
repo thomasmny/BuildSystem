@@ -85,13 +85,11 @@ public class GameRuleInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!event.getView().getTitle().equals(plugin.getString("worldeditor_gamerules_title"))) {
+        if (!inventoryManager.checkIfValidClick(event, "worldeditor_gamerules_title")) {
             return;
         }
 
-        event.setCancelled(true);
         Player player = (Player) event.getWhoClicked();
-
         BuildWorld buildWorld = plugin.getPlayerManager().getSelectedWorld().get(player.getUniqueId());
         if (buildWorld == null) {
             player.closeInventory();
@@ -99,12 +97,7 @@ public class GameRuleInventory implements Listener {
             return;
         }
 
-        ItemStack itemStack = event.getCurrentItem();
-        if (itemStack == null) {
-            return;
-        }
-
-        switch (itemStack.getType()) {
+        switch (event.getCurrentItem().getType()) {
             case PLAYER_HEAD:
                 int slot = event.getSlot();
                 if (slot == 36) {
