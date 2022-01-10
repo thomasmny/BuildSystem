@@ -255,9 +255,9 @@ world_info:
  - " &8- &7物理: &b%physics%"
  - " &8- &7爆炸: &b%explosions%"
  - " &8- &7方塊破壞: &b%block_breaking%"
- - " &8- &7Block placement: &b%block_placement%"
- - " &8- &7MobAI: &b%mobai%"
- - " &8- &7Custom spawn: &b%custom_spawn%"
+ - " &8- &7鎖定位置: &b%block_placement%"
+ - " &8- &7生物 AI: &b%mobai%"
+ - " &8- &7自定義生成: &b%custom_spawn%"
  - "&7&m-------------------------------------"
 
 worlds_item_receive: "%prefix% &7You received the &bNavigator&7."
