@@ -301,7 +301,7 @@ worlds_setstatus_set: "%prefix% &7世界: &b%world%&7的狀態已被更改為: %
 worlds_setpermission_usage: "%prefix% &7用法: &b/worlds setPermission <世界>"
 worlds_setpermission_unknown_world: "%prefix% &c未知的世界"
 worlds_setpermission_error: "%prefix% &c請再嘗試一遍."
-worlds_setpermission_set: "%prefix% &b%world%&7's permission was successfully changed."
+worlds_setpermission_set: "%prefix% &7世界: &b%world%&7的權限已被更改成功."
 
 worlds_setspawn_world_not_imported: "%prefix% &c世界必須被載入 » /worlds import <世界>"
 worlds_setspawn_world_spawn_set: "%prefix% &b%world%&7's spawnpoint was set."
