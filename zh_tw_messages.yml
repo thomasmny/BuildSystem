@@ -260,7 +260,7 @@ world_info:
  - " &8- &7自定義生成: &b%custom_spawn%"
  - "&7&m-------------------------------------"
 
-worlds_item_receive: "%prefix% &7You received the &b導航器&7."
+worlds_item_receive: "%prefix% &7You received the &bNavigator&7."
 
 worlds_removebuilder_usage: "%prefix% &7用法: &b/worlds removeBuilder <世界>"
 worlds_removebuilder_error: "%prefix% &cError: 請再嘗試一遍!"
@@ -335,20 +335,20 @@ custom_skull_item: "&b自訂頭顱"
 gui_previous_page: "&b« &7Previous Page"
 gui_next_page: "&7Next Page &b»"
 
-# Old 導航器
-old_navigator_title: "&3» &8導航器"
-old_navigator_world_navigator: "&aWorld 導航器"
+# Old Navigator
+old_navigator_title: "&3» &8Navigator"
+old_navigator_world_navigator: "&aWorld Navigator"
 old_navigator_world_archive: "&6World Archive"
 old_navigator_private_worlds: "&bPrivate Worlds"
 old_navigator_settings: "&cSettings"
 
-# New 導航器
+# New Navigator
 new_navigator_world_navigator: "&a&lWORLD NAVIGATOR"
 new_navigator_world_archive: "&6&lWORLD ARCHIVE"
 new_navigator_private_worlds: "&b&lPRIVATE WORLDS"
 
-# World 導航器
-world_navigator_title: "&3» &8World 導航器"
+# World Navigator
+world_navigator_title: "&3» &8World Navigator"
 world_navigator_no_worlds: "&c&nNo worlds available"
 world_navigator_create_world: "&bCreate World"
 world_item_title: "&3&l%world%"
@@ -612,13 +612,13 @@ settings_instantplacesigns_lore:
  - "&7&oWhen enabled signs are placed"
  - "&7&owithout opening the text input."
 
-settings_keep_navigator_item: "&bKeep 導航器"
+settings_keep_navigator_item: "&bKeep Navigator"
 settings_keep_navigator_lore:
  - "&7&oWhen enabled the navigator"
  - "&7&owill remain in your inventory"
  - "&7&oeven when you clear it."
 
-settings_new_navigator_item: "&bNew 導航器"
+settings_new_navigator_item: "&bNew Navigator"
 settings_new_navigator_lore:
  - "&7&oA new and improved navigator"
  - "&7&owhich is no longer a GUI."
