@@ -448,15 +448,15 @@ status_archive: "&9歸檔"
 status_hidden: "&f隱藏"
 
 # Delete World
-delete_title: "&3» &8Delete World"
+delete_title: "&3» &8D刪除世界"
 delete_world_name: "&e%world%"
 delete_world_name_lore:
  - ""
  - "&c&nWarning&c: &7&oOnce a world is"
  - "&7&odeleted it is lost forever"
  - "&7&oand cannot be recovered!"
-delete_world_cancel: "&cCancel"
-delete_world_confirm: "&aConfirm"
+delete_world_cancel: "&c取消"
+delete_world_confirm: "&a確認"
 
 # World Editor
 worldeditor_title: "&3» &8World Editor"
