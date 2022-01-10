@@ -260,7 +260,7 @@ world_info:
  - " &8- &7自定義生成: &b%custom_spawn%"
  - "&7&m-------------------------------------"
 
-worlds_item_receive: "%prefix% &7You received the &bNavigator&7."
+worlds_item_receive: "%prefix% &7你收到了&b導航器&7."
 
 worlds_removebuilder_usage: "%prefix% &7用法: &b/worlds removeBuilder <世界>"
 worlds_removebuilder_error: "%prefix% &cError: 請再嘗試一遍!"
