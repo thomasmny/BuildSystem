@@ -533,10 +533,10 @@ worldeditor_gamerules_unknown:
 worldeditor_gamerules_integer:
  - "&7&n現在狀態&7: &e%value%"
  - ""
- - "&8- &7&o左鍵&8: &7decrease by 1"
- - "&8- &7&oShift &7+ &7&oLeft Click&8: &7decrease by 10"
- - "&8- &7&oRight Click&8: &7increase by 1"
- - "&8- &7&oShift &7+ &7&oRight Click&8: &7increase by 10"
+ - "&8- &7&o左鍵&8: &7減少 1"
+ - "&8- &7&oShift &7+ &7&o左鍵&8: &7減少 10"
+ - "&8- &7&o右鍵&8: &7增加 1"
+ - "&8- &7&oShift &7+ &7&o右鍵&8: &7增加 10"
 worldsettings_gamerule_:
  - ""
  - "&c&n警告&c: &7&oOnce a world is"
