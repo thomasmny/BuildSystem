@@ -14,6 +14,7 @@ import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.XTag;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.*;
+import com.eintosti.buildsystem.object.navigator.NavigatorType;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.Builder;
@@ -117,23 +118,20 @@ public class PlayerInteractListener implements Listener {
     private void openNavigator(Player player) {
         Settings settings = settingsManager.getSettings(player);
 
-        switch (settings.getNavigatorType()) {
-            case OLD:
-                plugin.getNavigatorInventory().openInventory(player);
-                XSound.BLOCK_CHEST_OPEN.play(player);
-                break;
-            case NEW:
-                if (!playerManager.getOpenNavigator().contains(player)) {
-                    summonNewNavigator(player);
+        if (settings.getNavigatorType() == NavigatorType.OLD) {
+            plugin.getNavigatorInventory().openInventory(player);
+            XSound.BLOCK_CHEST_OPEN.play(player);
+        } else { // NEW
+            if (!playerManager.getOpenNavigator().contains(player)) {
+                summonNewNavigator(player);
 
-                    String findItemName = plugin.getString("navigator_item");
-                    ItemStack replaceItem = inventoryManager.getItemStack(XMaterial.BARRIER, plugin.getString("barrier_item"));
+                String findItemName = plugin.getString("navigator_item");
+                ItemStack replaceItem = inventoryManager.getItemStack(XMaterial.BARRIER, plugin.getString("barrier_item"));
 
-                    inventoryManager.replaceItem(player, findItemName, configValues.getNavigatorItem(), replaceItem);
-                } else {
-                    player.sendMessage(plugin.getString("worlds_navigator_open"));
-                }
-                break;
+                inventoryManager.replaceItem(player, findItemName, configValues.getNavigatorItem(), replaceItem);
+            } else {
+                player.sendMessage(plugin.getString("worlds_navigator_open"));
+            }
         }
     }
 
@@ -187,6 +185,8 @@ public class PlayerInteractListener implements Listener {
                     break;
                 case IRON_DOOR:
                     plugin.getCustomBlocks().toggleIronDoor(event);
+                    break;
+                default:
                     break;
             }
         }
@@ -333,6 +333,8 @@ public class PlayerInteractListener implements Listener {
                 parsedMaterial.ifPresent(value -> adjacent.setType(value.parseMaterial()));
                 plugin.getCustomBlocks().rotate(adjacent, player, blockFace);
                 break;
+            default:
+                break;
         }
     }
 
@@ -344,7 +346,7 @@ public class PlayerInteractListener implements Listener {
         yaw %= 360;
         int i = (int) ((yaw + 8) / 22.5);
         switch (i) {
-            case 0:
+            default:
                 return BlockFace.SOUTH;
             case 1:
                 return BlockFace.SOUTH_SOUTH_WEST;
@@ -377,7 +379,6 @@ public class PlayerInteractListener implements Listener {
             case 15:
                 return BlockFace.SOUTH_SOUTH_EAST;
         }
-        return BlockFace.SOUTH;
     }
 
     @EventHandler
