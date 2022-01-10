@@ -296,7 +296,7 @@ worlds_setproject_set: "%prefix% &b%world%&7's project was successfully changed.
 worlds_setstatus_usage: "%prefix% &7用法: &b/worlds setStatus <世界>"
 worlds_setstatus_unknown_world: "%prefix% &c未知的世界"
 worlds_setstatus_error: "%prefix% &c請再嘗試一遍."
-worlds_setstatus_set: "%prefix% &b%world%&7's status was was changed to: %status%&7."
+worlds_setstatus_set: "%prefix% &7世界: &b%world%&7的狀態已被更改為: %status%&7."
 
 worlds_setpermission_usage: "%prefix% &7用法: &b/worlds setPermission <世界>"
 worlds_setpermission_unknown_world: "%prefix% &c未知的世界"
