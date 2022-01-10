@@ -448,7 +448,7 @@ status_archive: "&9歸檔"
 status_hidden: "&f隱藏"
 
 # Delete World
-delete_title: "&3» &8D刪除世界"
+delete_title: "&3» &8刪除世界"
 delete_world_name: "&e%world%"
 delete_world_name_lore:
  - ""
