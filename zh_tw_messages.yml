@@ -304,10 +304,10 @@ worlds_setpermission_error: "%prefix% &c請再嘗試一遍."
 worlds_setpermission_set: "%prefix% &7世界: &b%world%&7的權限已被更改成功."
 
 worlds_setspawn_world_not_imported: "%prefix% &c世界必須被載入 » /worlds import <世界>"
-worlds_setspawn_world_spawn_set: "%prefix% &b%world%&7's spawnpoint was set."
+worlds_setspawn_world_spawn_set: "%prefix% &7世界: &b%world%&7的重生點已被設置."
 
 worlds_removespawn_world_not_imported: "%prefix% &c世界必須被載入 » /worlds import <世界>"
-worlds_removespawn_world_spawn_removed: "%prefix% &b%world%&7's spawnpoint was removed."
+worlds_removespawn_world_spawn_removed: "%prefix% &7世界: &b%world%&7的重生點已被移除."
 
 worlds_tp_usage: "%prefix% &7用法: &b/worlds tp <世界>"
 worlds_tp_unknown_world: "%prefix% &c未知的世界"
