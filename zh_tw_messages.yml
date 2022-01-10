@@ -275,7 +275,7 @@ worlds_rename_usage: "%prefix% &7用法: &b/worlds rename <世界>"
 worlds_rename_unknown_world: "%prefix% &c未知的世界"
 worlds_rename_error: "%prefix% &c請再嘗試一遍."
 worlds_rename_same_name: "%prefix% &c這是世界現在的名字."
-worlds_rename_set: "%prefix% &b%oldName% &7was successfully renamed to &b%newName% &7."
+worlds_rename_set: "%prefix% &7已將世界的名字從 &b%oldName% &7改為 &b%newName% &7."
 worlds_rename_players_world: "%prefix% &7&oThe world you are in is being renamed..."
 
 worlds_setitem_usage: "%prefix% &7用法: &b/worlds setItem <世界>"
