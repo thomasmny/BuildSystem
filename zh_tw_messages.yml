@@ -196,7 +196,7 @@ worlds_edit_error: "%prefix% &cError: 請再嘗試一遍."
 
 worlds_help_usage: "%prefix% &7用法: &b/worlds help [page]"
 worlds_help_invalid_page: "%prefix% &c無效頁面."
-worlds_help_title_with_page: "%prefix% &7&nWorlds Help:&8 (&7%page%/%max%&8)"
+worlds_help_title_with_page: "%prefix% &7&n世界幫助:&8 (&7%page%/%max%&8)"
 worlds_help_permission: "&7&nPermission&8: &b%permission%"
 worlds_help_help: "&7Shows the list of all subcommands."
 worlds_help_info: "&7Shows information about a world."
