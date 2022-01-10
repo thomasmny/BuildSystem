@@ -13,10 +13,7 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.XTag;
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.manager.ArmorStandManager;
-import com.eintosti.buildsystem.manager.InventoryManager;
-import com.eintosti.buildsystem.manager.SettingsManager;
-import com.eintosti.buildsystem.manager.WorldManager;
+import com.eintosti.buildsystem.manager.*;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.Builder;
@@ -55,6 +52,7 @@ public class PlayerInteractListener implements Listener {
 
     private final ArmorStandManager armorStandManager;
     private final InventoryManager inventoryManager;
+    private final PlayerManager playerManager;
     private final SettingsManager settingsManager;
     private final WorldManager worldManager;
 
@@ -66,6 +64,7 @@ public class PlayerInteractListener implements Listener {
 
         this.armorStandManager = plugin.getArmorStandManager();
         this.inventoryManager = plugin.getInventoryManager();
+        this.playerManager = plugin.getPlayerManager();
         this.settingsManager = plugin.getSettingsManager();
         this.worldManager = plugin.getWorldManager();
 
@@ -111,7 +110,7 @@ public class PlayerInteractListener implements Listener {
             }
 
             event.setCancelled(true);
-            plugin.getPlayerMoveListener().closeNavigator(player);
+            playerManager.closeNavigator(player);
         }
     }
 
@@ -124,7 +123,7 @@ public class PlayerInteractListener implements Listener {
                 XSound.BLOCK_CHEST_OPEN.play(player);
                 break;
             case NEW:
-                if (!plugin.openNavigator.contains(player)) {
+                if (!playerManager.getOpenNavigator().contains(player)) {
                     summonNewNavigator(player);
 
                     String findItemName = plugin.getString("navigator_item");
@@ -140,8 +139,8 @@ public class PlayerInteractListener implements Listener {
 
     private void summonNewNavigator(Player player) {
         UUID playerUuid = player.getUniqueId();
-        plugin.playerWalkSpeed.put(playerUuid, player.getWalkSpeed());
-        plugin.playerFlySpeed.put(playerUuid, player.getFlySpeed());
+        playerManager.getPlayerWalkSpeed().put(playerUuid, player.getWalkSpeed());
+        playerManager.getPlayerFlySpeed().put(playerUuid, player.getFlySpeed());
 
         player.setWalkSpeed(0);
         player.setFlySpeed(0);
@@ -149,7 +148,7 @@ public class PlayerInteractListener implements Listener {
         player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 250, false, false));
 
         armorStandManager.spawnArmorStands(player);
-        plugin.openNavigator.add(player);
+        playerManager.getOpenNavigator().add(player);
     }
 
     @EventHandler
@@ -261,7 +260,7 @@ public class PlayerInteractListener implements Listener {
             return true;
         }
 
-        boolean isInBuildMode = plugin.buildPlayers.contains(player.getUniqueId());
+        boolean isInBuildMode = playerManager.getBuildPlayers().contains(player.getUniqueId());
         if (buildWorld.getStatus() == WorldStatus.ARCHIVE && !isInBuildMode) {
             return false;
         }

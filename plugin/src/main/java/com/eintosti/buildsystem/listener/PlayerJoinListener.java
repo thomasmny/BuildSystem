@@ -57,9 +57,9 @@ public class PlayerJoinListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void sendPlayerJoinMessage(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        String joinMessage = configValues.isJoinQuitMessages() ? plugin.getString("player_join").replace("%player%", player.getName()) : null;
-        event.setJoinMessage(joinMessage);
+        boolean isJoinMessage = plugin.getConfigValues().isJoinQuitMessages();
+        String message = isJoinMessage ? plugin.getString("player_join").replace("%player%", event.getPlayer().getName()) : null;
+        event.setJoinMessage(message);
     }
 
     @EventHandler
@@ -89,7 +89,7 @@ public class PlayerJoinListener implements Listener {
 
         if (settings.isScoreboard()) {
             settingsManager.startScoreboard(player);
-            plugin.forceUpdateSidebar(player);
+            plugin.getPlayerManager().forceUpdateSidebar(player);
         }
 
         if (settings.isSpawnTeleport()) {

@@ -10,10 +10,7 @@ package com.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.manager.ArmorStandManager;
-import com.eintosti.buildsystem.manager.InventoryManager;
-import com.eintosti.buildsystem.manager.SettingsManager;
-import com.eintosti.buildsystem.manager.WorldManager;
+import com.eintosti.buildsystem.manager.*;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.WorldStatus;
 import com.eintosti.buildsystem.object.world.WorldType;
@@ -45,6 +42,7 @@ public class PlayerChangedWorldListener implements Listener {
 
     private final ArmorStandManager armorStandManager;
     private final InventoryManager inventoryManager;
+    private final PlayerManager playerManager;
     private final SettingsManager settingsManager;
     private final WorldManager worldManager;
 
@@ -58,6 +56,7 @@ public class PlayerChangedWorldListener implements Listener {
 
         this.armorStandManager = plugin.getArmorStandManager();
         this.inventoryManager = plugin.getInventoryManager();
+        this.playerManager = plugin.getPlayerManager();
         this.settingsManager = plugin.getSettingsManager();
         this.worldManager = plugin.getWorldManager();
 
@@ -93,7 +92,7 @@ public class PlayerChangedWorldListener implements Listener {
         checkWorldStatus(player);
 
         if (settingsManager.getSettings(player).isScoreboard()) {
-            plugin.forceUpdateSidebar(player);
+            playerManager.forceUpdateSidebar(player);
         }
     }
 
@@ -105,14 +104,14 @@ public class PlayerChangedWorldListener implements Listener {
     }
 
     private void removeBuildMode(Player player) {
-        if (!plugin.buildPlayers.contains(player.getUniqueId())) {
+        UUID playerUuid = player.getUniqueId();
+        if (!playerManager.getBuildPlayers().remove(playerUuid)) {
             return;
         }
 
-        plugin.buildPlayers.remove(player.getUniqueId());
-        if (plugin.buildPlayerGamemode.containsKey(player.getUniqueId())) {
-            player.setGameMode(plugin.buildPlayerGamemode.get(player.getUniqueId()));
-            plugin.buildPlayerGamemode.remove(player.getUniqueId());
+        if (playerManager.getPlayerGamemode().containsKey(playerUuid)) {
+            player.setGameMode(playerManager.getPlayerGamemode().get(playerUuid));
+            playerManager.getPlayerGamemode().remove(playerUuid);
         }
 
         XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);

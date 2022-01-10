@@ -17,6 +17,9 @@ import com.eintosti.buildsystem.object.settings.Settings;
 import org.bukkit.Bukkit;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -25,7 +28,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 /**
  * @author einTosti
  */
-public class DesignInventory {
+public class DesignInventory implements Listener {
 
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
@@ -33,6 +36,7 @@ public class DesignInventory {
     public DesignInventory(BuildSystem plugin) {
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     private Inventory getInventory(Player player) {
@@ -89,5 +93,73 @@ public class DesignInventory {
         }
 
         inventory.setItem(position, itemStack);
+    }
+
+    @EventHandler
+    public void onDesignInventoryClick(InventoryClickEvent event) {
+        if (!inventoryManager.checkIfValidClick(event, "design_title")) {
+            return;
+        }
+
+        Player player = (Player) event.getWhoClicked();
+        Settings settings = plugin.getSettingsManager().getSettings(player);
+        ItemStack itemStack = event.getCurrentItem();
+        if (itemStack.getType().toString().contains("STAINED_GLASS_PANE")) {
+            plugin.getSettingsInventory().openInventory(player);
+            return;
+        }
+
+        switch (event.getSlot()) {
+            case 10:
+                settings.setGlassColor(Colour.RED);
+                break;
+            case 11:
+                settings.setGlassColor(Colour.ORANGE);
+                break;
+            case 12:
+                settings.setGlassColor(Colour.YELLOW);
+                break;
+            case 13:
+                settings.setGlassColor(Colour.PINK);
+                break;
+            case 14:
+                settings.setGlassColor(Colour.MAGENTA);
+                break;
+            case 15:
+                settings.setGlassColor(Colour.PURPLE);
+                break;
+            case 16:
+                settings.setGlassColor(Colour.BROWN);
+                break;
+            case 18:
+                settings.setGlassColor(Colour.LIME);
+                break;
+            case 19:
+                settings.setGlassColor(Colour.GREEN);
+                break;
+            case 20:
+                settings.setGlassColor(Colour.BLUE);
+                break;
+            case 21:
+                settings.setGlassColor(Colour.CYAN);
+                break;
+            case 22:
+                settings.setGlassColor(Colour.LIGHT_BLUE);
+                break;
+            case 23:
+                settings.setGlassColor(Colour.WHITE);
+                break;
+            case 24:
+                settings.setGlassColor(Colour.LIGHT_GREY);
+                break;
+            case 25:
+                settings.setGlassColor(Colour.GREY);
+                break;
+            case 26:
+                settings.setGlassColor(Colour.BLACK);
+                break;
+        }
+
+        openInventory(player);
     }
 }

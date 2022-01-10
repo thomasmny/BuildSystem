@@ -10,6 +10,7 @@ package com.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.WorldStatus;
@@ -29,13 +30,16 @@ import org.bukkit.util.Vector;
  */
 public class PlayerInteractAtEntityListener implements Listener {
 
-    private final static double MAX_HEIGHT = 2.074631929397583;
-    private final static double MIN_HEIGHT = 1.4409877061843872;
+    private static final double MAX_HEIGHT = 2.074631929397583;
+    private static final double MIN_HEIGHT = 1.4409877061843872;
+
     private final BuildSystem plugin;
+    private final PlayerManager playerManager;
     private final WorldManager worldManager;
 
     public PlayerInteractAtEntityListener(BuildSystem plugin) {
         this.plugin = plugin;
+        this.playerManager = plugin.getPlayerManager();
         this.worldManager = plugin.getWorldManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -46,41 +50,38 @@ public class PlayerInteractAtEntityListener implements Listener {
         Entity entity = event.getRightClicked();
 
         disableArchivedWorlds(player, event);
-        if (!plugin.openNavigator.contains(player)) {
+
+        if (!playerManager.getOpenNavigator().contains(player) || entity.getType() != EntityType.ARMOR_STAND) {
             return;
         }
 
-        if (entity.getType() != EntityType.ARMOR_STAND) {
-            return;
-        }
-        if (entity.getCustomName() == null) {
-            return;
-        }
         String customName = entity.getCustomName();
-        if (!customName.contains(" × ")) {
+        if (customName == null || !customName.contains(" × ")) {
             return;
         }
-        event.setCancelled(true);
 
+        event.setCancelled(true);
         Vector clickedPosition = event.getClickedPosition();
         if (clickedPosition.getY() > MIN_HEIGHT && clickedPosition.getY() < MAX_HEIGHT) {
-            if (customName.startsWith(player.getName())) {
-                String invType = customName.replace(player.getName() + " × ", "");
+            if (!customName.startsWith(player.getName())) {
+                return;
+            }
 
-                switch (invType) {
-                    case "§aWorld Navigator":
-                        XSound.BLOCK_CHEST_OPEN.play(player);
-                        plugin.getWorldsInventory().openInventory(player);
-                        break;
-                    case "§6World Archive":
-                        XSound.BLOCK_CHEST_OPEN.play(player);
-                        plugin.getArchiveInventory().openInventory(player);
-                        break;
-                    case "§bPrivate Worlds":
-                        XSound.BLOCK_CHEST_OPEN.play(player);
-                        plugin.getPrivateInventory().openInventory(player);
-                        break;
-                }
+            String invType = customName.replace(player.getName() + " × ", "");
+
+            switch (invType) {
+                case "§aWorld Navigator":
+                    XSound.BLOCK_CHEST_OPEN.play(player);
+                    plugin.getWorldsInventory().openInventory(player);
+                    break;
+                case "§6World Archive":
+                    XSound.BLOCK_CHEST_OPEN.play(player);
+                    plugin.getArchiveInventory().openInventory(player);
+                    break;
+                case "§bPrivate Worlds":
+                    XSound.BLOCK_CHEST_OPEN.play(player);
+                    plugin.getPrivateInventory().openInventory(player);
+                    break;
             }
         } else {
             ItemStack itemStack = player.getItemInHand();
@@ -88,29 +89,25 @@ public class PlayerInteractAtEntityListener implements Listener {
             if (itemMeta == null) {
                 return;
             }
-            String displayName = itemMeta.getDisplayName();
 
+            String displayName = itemMeta.getDisplayName();
             if (!displayName.equals(plugin.getString("barrier_item"))) {
                 return;
             }
 
             event.setCancelled(true);
-            plugin.getPlayerMoveListener().closeNavigator(player);
+            playerManager.closeNavigator(player);
         }
     }
 
     private void disableArchivedWorlds(Player player, PlayerInteractAtEntityEvent event) {
         World bukkitWorld = player.getWorld();
         BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
-
-        if (buildWorld == null) {
-            return;
-        }
-        if (buildWorld.getStatus() != WorldStatus.ARCHIVE) {
+        if (buildWorld == null || buildWorld.getStatus() != WorldStatus.ARCHIVE) {
             return;
         }
 
-        if (!plugin.buildPlayers.contains(player.getUniqueId())) {
+        if (!playerManager.getBuildPlayers().contains(player.getUniqueId())) {
             event.setCancelled(true);
         }
     }

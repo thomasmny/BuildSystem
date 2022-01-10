@@ -222,7 +222,7 @@ public class WorldManipulateListener implements Listener {
     private void setStatus(BuildWorld buildWorld, Player player) {
         if (buildWorld.getStatus() == WorldStatus.NOT_STARTED) {
             buildWorld.setStatus(WorldStatus.IN_PROGRESS);
-            plugin.forceUpdateSidebar(player);
+            plugin.getPlayerManager().forceUpdateSidebar(player);
         }
     }
 }

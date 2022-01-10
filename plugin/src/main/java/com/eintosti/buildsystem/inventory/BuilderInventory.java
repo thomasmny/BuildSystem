@@ -9,39 +9,42 @@
 package com.eintosti.buildsystem.inventory;
 
 import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.Builder;
+import com.eintosti.buildsystem.util.external.UUIDFetcher;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 /**
  * @author einTosti
  */
-public class BuilderInventory {
+public class BuilderInventory extends PaginatedInventory implements Listener {
 
     private static final int MAX_BUILDERS = 9;
 
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
 
-    private final Map<UUID, Integer> invIndex;
-    private Inventory[] inventories;
-
-    private int numBuilders;
+    private int numBuilders = 0;
 
     public BuilderInventory(BuildSystem plugin) {
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
-
-        this.invIndex = new HashMap<>();
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     private Inventory createInventory(BuildWorld buildWorld, Player player) {
@@ -132,25 +135,65 @@ public class BuilderInventory {
         }
     }
 
-    public Integer getInvIndex(Player player) {
-        UUID playerUUID = player.getUniqueId();
-        if (!invIndex.containsKey(playerUUID)) {
-            invIndex.put(playerUUID, 0);
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!inventoryManager.checkIfValidClick(event, "worldeditor_builders_title")) {
+            return;
         }
-        return invIndex.get(playerUUID);
-    }
 
-    public void setInvIndex(Player player, int index) {
-        invIndex.put(player.getUniqueId(), index);
-    }
+        Player player = (Player) event.getWhoClicked();
+        BuildWorld buildWorld = plugin.getPlayerManager().getSelectedWorld().get(player.getUniqueId());
+        if (buildWorld == null) {
+            player.closeInventory();
+            player.sendMessage(plugin.getString("worlds_addbuilder_error"));
+            return;
+        }
 
-    public void incrementInv(Player player) {
-        UUID playerUUID = player.getUniqueId();
-        invIndex.put(playerUUID, invIndex.get(playerUUID) + 1);
-    }
+        ItemStack itemStack = event.getCurrentItem();
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta == null) {
+            return;
+        }
 
-    public void decrementInv(Player player) {
-        UUID playerUUID = player.getUniqueId();
-        invIndex.put(playerUUID, invIndex.get(playerUUID) - 1);
+        Material material = itemStack.getType();
+        if (material != XMaterial.PLAYER_HEAD.parseMaterial()) {
+            XSound.BLOCK_CHEST_OPEN.play(player);
+            plugin.getEditInventory().openInventory(player, buildWorld);
+            return;
+        }
+
+        int slot = event.getSlot();
+        switch (slot) {
+            case 18:
+                decrementInv(player);
+                break;
+            case 22:
+                XSound.ENTITY_CHICKEN_EGG.play(player);
+                plugin.getWorldsCommand().getAddBuilderInput(player, false);
+                return;
+            case 26:
+                incrementInv(player);
+                break;
+            default:
+                if (slot == 4) {
+                    return;
+                }
+                if (!itemMeta.hasDisplayName()) {
+                    return;
+                }
+                if (!event.isShiftClick()) {
+                    return;
+                }
+
+                String builderName = ChatColor.stripColor(itemMeta.getDisplayName());
+                UUID builderId = UUIDFetcher.getUUID(builderName);
+                buildWorld.removeBuilder(builderId);
+
+                XSound.ENTITY_ENDERMAN_TELEPORT.play(player);
+                player.sendMessage(plugin.getString("worlds_removebuilder_removed").replace("%builder%", builderName));
+        }
+
+        XSound.ENTITY_CHICKEN_EGG.play(player);
+        player.openInventory(getInventory(buildWorld, player));
     }
 }

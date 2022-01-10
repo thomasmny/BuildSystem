@@ -9,7 +9,7 @@
 package com.eintosti.buildsystem.command;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.listener.PlayerTeleportListener;
+import com.eintosti.buildsystem.manager.PlayerManager;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -17,6 +17,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.UUID;
 import java.util.logging.Level;
 
 /**
@@ -25,9 +26,11 @@ import java.util.logging.Level;
 public class BackCommand implements CommandExecutor {
 
     private final BuildSystem plugin;
+    private final PlayerManager playerManager;
 
     public BackCommand(BuildSystem plugin) {
         this.plugin = plugin;
+        this.playerManager = plugin.getPlayerManager();
         plugin.getCommand("back").setExecutor(this);
     }
 
@@ -54,8 +57,8 @@ public class BackCommand implements CommandExecutor {
     }
 
     private void teleportBack(Player player) {
-        PlayerTeleportListener playerTeleportListener = plugin.getPlayerTeleportListener();
-        Location previousLocation = playerTeleportListener.getPreviousLocation(player);
+        UUID playerUuid = player.getUniqueId();
+        Location previousLocation = playerManager.getPreviousLocation().get(playerUuid);
 
         if (previousLocation == null) {
             player.sendMessage(plugin.getString("back_failed"));
@@ -64,6 +67,6 @@ public class BackCommand implements CommandExecutor {
 
         player.teleport(previousLocation);
         player.sendMessage(plugin.getString("back_teleported"));
-        playerTeleportListener.resetPreviousLocation(player);
+        playerManager.getPreviousLocation().remove(playerUuid);
     }
 }

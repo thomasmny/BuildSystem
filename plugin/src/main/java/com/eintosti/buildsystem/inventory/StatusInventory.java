@@ -9,12 +9,19 @@
 package com.eintosti.buildsystem.inventory;
 
 import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
+import com.eintosti.buildsystem.manager.PlayerManager;
+import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.WorldStatus;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -23,18 +30,27 @@ import org.bukkit.inventory.meta.ItemMeta;
 /**
  * @author einTosti
  */
-public class StatusInventory {
+public class StatusInventory implements Listener {
 
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
+    private final PlayerManager playerManager;
 
     public StatusInventory(BuildSystem plugin) {
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
+        this.playerManager = plugin.getPlayerManager();
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 27, plugin.getString("status_title").replace("%world%", inventoryManager.selectedWorld(player)));
+        String selectedWorldName = playerManager.getSelectedWorldName(player);
+        if (selectedWorldName == null) {
+            selectedWorldName = "N/A";
+        }
+
+        String title = plugin.getString("status_title").replace("%world%", selectedWorldName);
+        Inventory inventory = Bukkit.createInventory(null, 27, title);
         fillGuiWithGlass(player, inventory);
 
         addItem(player, inventory, 10, inventoryManager.getStatusItem(WorldStatus.NOT_STARTED), plugin.getString("status_not_started"), WorldStatus.NOT_STARTED);
@@ -70,10 +86,77 @@ public class StatusInventory {
         }
         itemStack.setItemMeta(itemMeta);
 
-        if (plugin.selectedWorld.get(player.getUniqueId()).getStatus() == worldStatus) {
+        if (plugin.getPlayerManager().getSelectedWorld().get(player.getUniqueId()).getStatus() == worldStatus) {
             itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
         }
 
         inventory.setItem(position, itemStack);
+    }
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        Player player = (Player) event.getWhoClicked();
+        String selectedWorldName = playerManager.getSelectedWorldName(player);
+        if (selectedWorldName == null) {
+            return;
+        }
+
+        String title = plugin.getString("status_title").replace("%world%", selectedWorldName);
+        if (!event.getView().getTitle().equals(title)) {
+            return;
+        }
+
+        event.setCancelled(true);
+        ItemStack itemStack = event.getCurrentItem();
+        if (itemStack == null) {
+            return;
+        }
+
+        Material itemType = itemStack.getType();
+        if (itemType == Material.AIR || !itemStack.hasItemMeta()) {
+            return;
+        }
+
+        BuildWorld buildWorld = playerManager.getSelectedWorld().get(player.getUniqueId());
+        if (buildWorld == null) {
+            player.closeInventory();
+            player.sendMessage(plugin.getString("worlds_setstatus_error"));
+            return;
+        }
+
+        switch (event.getSlot()) {
+            case 10:
+                buildWorld.setStatus(WorldStatus.NOT_STARTED);
+                break;
+            case 11:
+                buildWorld.setStatus(WorldStatus.IN_PROGRESS);
+                break;
+            case 12:
+                buildWorld.setStatus(WorldStatus.ALMOST_FINISHED);
+                break;
+            case 13:
+                buildWorld.setStatus(WorldStatus.FINISHED);
+                break;
+            case 14:
+                buildWorld.setStatus(WorldStatus.ARCHIVE);
+                break;
+            case 16:
+                buildWorld.setStatus(WorldStatus.HIDDEN);
+                break;
+            default:
+                XSound.BLOCK_CHEST_OPEN.play(player);
+                plugin.getEditInventory().openInventory(player, buildWorld);
+                return;
+        }
+
+        playerManager.forceUpdateSidebar(buildWorld);
+        player.closeInventory();
+
+        XSound.ENTITY_CHICKEN_EGG.play(player);
+        player.sendMessage(plugin.getString("worlds_setstatus_set")
+                .replace("%world%", buildWorld.getName())
+                .replace("%status%", buildWorld.getStatusName())
+        );
+        playerManager.getSelectedWorld().remove(player.getUniqueId());
     }
 }

@@ -10,6 +10,7 @@ package com.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.manager.PlayerManager;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
@@ -27,9 +28,11 @@ import java.util.logging.Level;
 public class BuildCommand implements CommandExecutor {
 
     private final BuildSystem plugin;
+    private final PlayerManager playerManager;
 
     public BuildCommand(BuildSystem plugin) {
         this.plugin = plugin;
+        this.playerManager = plugin.getPlayerManager();
         plugin.getCommand("build").setExecutor(this);
     }
 
@@ -69,11 +72,11 @@ public class BuildCommand implements CommandExecutor {
     private void toggleBuildMode(Player target, Player sender, boolean self) {
         UUID targetUuid = target.getUniqueId();
 
-        if (plugin.buildPlayers.contains(targetUuid)) {
-            plugin.buildPlayers.remove(targetUuid);
-            if (plugin.buildPlayerGamemode.containsKey(targetUuid)) {
-                target.setGameMode(plugin.buildPlayerGamemode.get(targetUuid));
-                plugin.buildPlayerGamemode.remove(targetUuid);
+        if (playerManager.getBuildPlayers().contains(targetUuid)) {
+            playerManager.getBuildPlayers().remove(targetUuid);
+            if (playerManager.getPlayerGamemode().containsKey(targetUuid)) {
+                target.setGameMode(playerManager.getPlayerGamemode().get(targetUuid));
+                playerManager.getPlayerGamemode().remove(targetUuid);
             }
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
@@ -85,8 +88,8 @@ public class BuildCommand implements CommandExecutor {
                 target.sendMessage(plugin.getString("build_deactivated_other_target").replace("%sender%", sender.getName()));
             }
         } else {
-            plugin.buildPlayers.add(targetUuid);
-            plugin.buildPlayerGamemode.put(targetUuid, target.getGameMode());
+            playerManager.getBuildPlayers().add(targetUuid);
+            playerManager.getPlayerGamemode().put(targetUuid, target.getGameMode());
             target.setGameMode(GameMode.CREATIVE);
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);

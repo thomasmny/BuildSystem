@@ -9,38 +9,40 @@
 package com.eintosti.buildsystem.inventory;
 
 import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
+import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.WorldType;
 import org.bukkit.Bukkit;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 /**
  * @author einTosti
  */
-public class CreateInventory {
+public class CreateInventory extends PaginatedInventory implements Listener {
 
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
-
-    private final Map<UUID, Integer> invIndex;
-    private Inventory[] inventories;
+    private final WorldManager worldManager;
 
     private int numTemplates = 0;
 
     public CreateInventory(BuildSystem plugin) {
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
-        this.invIndex = new HashMap<>();
+        this.worldManager = plugin.getWorldManager();
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     private Inventory getInventory(Player player, Page page) {
@@ -62,8 +64,10 @@ public class CreateInventory {
             case GENERATOR:
                 inventoryManager.addUrlSkull(inventory, 31, plugin.getString("create_generators_create_world"), "https://textures.minecraft.net/texture/3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
                 break;
+            case TEMPLATES:
+                // Template stuff is done during inventory open
+                break;
         }
-        // Template stuff is done during inventory open
 
         return inventory;
     }
@@ -151,26 +155,110 @@ public class CreateInventory {
         }
     }
 
-    public Integer getInvIndex(Player player) {
-        UUID playerUUID = player.getUniqueId();
-        if (!invIndex.containsKey(playerUUID)) {
-            setInvIndex(player, 0);
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!inventoryManager.checkIfValidClick(event, "create_title")) {
+            return;
         }
-        return invIndex.get(playerUUID);
+
+        Player player = (Player) event.getWhoClicked();
+        boolean privateWorld = worldManager.createPrivateWorldPlayers.contains(player);
+        CreateInventory.Page newPage = null;
+
+        switch (event.getSlot()) {
+            case 12:
+                newPage = CreateInventory.Page.PREDEFINED;
+                break;
+            case 13:
+                newPage = CreateInventory.Page.GENERATOR;
+                break;
+            case 14:
+                newPage = CreateInventory.Page.TEMPLATES;
+                break;
+        }
+
+        if (newPage != null) {
+            openInventory(player, newPage);
+            if (privateWorld) {
+                worldManager.createPrivateWorldPlayers.add(player);
+            }
+            XSound.ENTITY_CHICKEN_EGG.play(player);
+            return;
+        }
+
+        Inventory inventory = event.getClickedInventory();
+        if (inventory == null) {
+            return;
+        }
+
+        boolean createPrivateWorld = worldManager.createPrivateWorldPlayers.contains(player);
+
+        switch (getCurrentPage(inventory)) {
+            case PREDEFINED: {
+                WorldType worldType = null;
+
+                switch (event.getSlot()) {
+                    case 29:
+                        worldType = WorldType.NORMAL;
+                        break;
+                    case 30:
+                        worldType = WorldType.FLAT;
+                        break;
+                    case 31:
+                        worldType = WorldType.NETHER;
+                        break;
+                    case 32:
+                        worldType = WorldType.END;
+                        break;
+                    case 33:
+                        worldType = WorldType.VOID;
+                        break;
+                }
+
+                if (worldType != null) {
+                    worldManager.startWorldNameInput(player, worldType, null, createPrivateWorld);
+                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                }
+                break;
+            }
+
+            case TEMPLATES: {
+                ItemStack itemStack = event.getCurrentItem();
+                if (itemStack.getType() == XMaterial.FILLED_MAP.parseMaterial()) {
+                    worldManager.startWorldNameInput(player, WorldType.TEMPLATE, itemStack.getItemMeta().getDisplayName(), createPrivateWorld);
+                } else if (itemStack.getType() == XMaterial.PLAYER_HEAD.parseMaterial()) {
+                    switch (event.getSlot()) {
+                        case 38:
+                            decrementInv(player);
+                            break;
+                        case 42:
+                            incrementInv(player);
+                            break;
+                    }
+                    openInventory(player, CreateInventory.Page.TEMPLATES);
+                }
+                XSound.ENTITY_CHICKEN_EGG.play(player);
+                break;
+            }
+
+            default: {
+                if (event.getSlot() == 31) {
+                    worldManager.startWorldNameInput(player, WorldType.CUSTOM, null, createPrivateWorld);
+                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                }
+                break;
+            }
+        }
     }
 
-    public void setInvIndex(Player player, int index) {
-        invIndex.put(player.getUniqueId(), index);
-    }
-
-    public void incrementInv(Player player) {
-        UUID playerUUID = player.getUniqueId();
-        invIndex.put(playerUUID, invIndex.get(playerUUID) + 1);
-    }
-
-    public void decrementInv(Player player) {
-        UUID playerUUID = player.getUniqueId();
-        invIndex.put(playerUUID, invIndex.get(playerUUID) - 1);
+    private CreateInventory.Page getCurrentPage(Inventory inventory) {
+        if (inventory.getItem(12).containsEnchantment(Enchantment.KNOCKBACK)) {
+            return CreateInventory.Page.PREDEFINED;
+        } else if (inventory.getItem(13).containsEnchantment(Enchantment.KNOCKBACK)) {
+            return CreateInventory.Page.GENERATOR;
+        } else {
+            return CreateInventory.Page.TEMPLATES;
+        }
     }
 
     public enum Page {

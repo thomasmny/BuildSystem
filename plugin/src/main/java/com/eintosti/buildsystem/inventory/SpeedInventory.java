@@ -8,16 +8,20 @@
 
 package com.eintosti.buildsystem.inventory;
 
+import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 
 /**
  * @author einTosti
  */
-public class SpeedInventory {
+public class SpeedInventory implements Listener {
 
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
@@ -25,6 +29,7 @@ public class SpeedInventory {
     public SpeedInventory(BuildSystem plugin) {
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     private Inventory getInventory(Player player) {
@@ -47,6 +52,52 @@ public class SpeedInventory {
     private void fillGuiWithGlass(Player player, Inventory inventory) {
         for (int i = 0; i <= 26; i++) {
             inventoryManager.addGlassPane(plugin, player, inventory, i);
+        }
+    }
+
+    @EventHandler
+    public void oInventoryClick(InventoryClickEvent event) {
+        if (!inventoryManager.checkIfValidClick(event, "speed_title")) {
+            return;
+        }
+
+        Player player = (Player) event.getWhoClicked();
+        if (!player.hasPermission("buildsystem.speed")) {
+            player.closeInventory();
+            return;
+        }
+
+        switch (event.getSlot()) {
+            case 11:
+                setSpeed(player, 0.2f, 1);
+                break;
+            case 12:
+                setSpeed(player, 0.4f, 2);
+                break;
+            case 13:
+                setSpeed(player, 0.6f, 3);
+                break;
+            case 14:
+                setSpeed(player, 0.8f, 4);
+                break;
+            case 15:
+                setSpeed(player, 1.0f, 5);
+                break;
+            default:
+                return;
+        }
+
+        XSound.ENTITY_CHICKEN_EGG.play(player);
+        player.closeInventory();
+    }
+
+    private void setSpeed(Player player, float speed, int num) {
+        if (player.isFlying()) {
+            player.setFlySpeed(speed - 0.1f);
+            player.sendMessage(plugin.getString("speed_set_flying").replace("%speed%", String.valueOf(num)));
+        } else {
+            player.setWalkSpeed(speed);
+            player.sendMessage(plugin.getString("speed_set_walking").replace("%speed%", String.valueOf(num)));
         }
     }
 }

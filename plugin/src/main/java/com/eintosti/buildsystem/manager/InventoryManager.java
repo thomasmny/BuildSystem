@@ -9,6 +9,8 @@
 package com.eintosti.buildsystem.manager;
 
 import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.XSound;
+import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.world.BuildWorld;
@@ -18,9 +20,12 @@ import com.eintosti.buildsystem.object.world.WorldType;
 import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.config.SetupConfig;
 import com.eintosti.buildsystem.util.external.ItemSkulls;
+import org.apache.commons.lang.StringUtils;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -39,6 +44,9 @@ public class InventoryManager {
     private final ConfigValues configValues;
     private final SetupConfig setupConfig;
 
+    private final PlayerManager playerManager;
+    private final WorldManager worldManager;
+
     private XMaterial normalCreateItem, flatCreateItem, netherCreateItem, endCreateItem, voidCreateItem, customCreateItem;
     private XMaterial normalDefaultItem, flatDefaultItem, netherDefaultItem, endDefaultItem, voidDefaultItem, importedDefaultItem;
     private XMaterial notStartedItem, inProgressItem, almostFinishedItem, finishedItem, archivedItem, hiddenItem;
@@ -47,6 +55,9 @@ public class InventoryManager {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
         this.setupConfig = new SetupConfig(plugin);
+
+        this.playerManager = plugin.getPlayerManager();
+        this.worldManager = plugin.getWorldManager();
     }
 
     public boolean isNavigator(ItemStack itemStack) {
@@ -193,6 +204,20 @@ public class InventoryManager {
         addUrlSkull(inventory, position, displayName, url, Arrays.asList(lore));
     }
 
+    public boolean checkIfValidClick(InventoryClickEvent event, String titleKey) {
+        if (!event.getView().getTitle().equals(plugin.getString(titleKey))) {
+            return false;
+        }
+
+        ItemStack itemStack = event.getCurrentItem();
+        if ((itemStack == null) || (itemStack.getType() == Material.AIR) || (!itemStack.hasItemMeta())) {
+            return false;
+        }
+
+        event.setCancelled(true);
+        return true;
+    }
+
     public void addWorldItem(Player player, Inventory inventory, int position, BuildWorld buildWorld) {
         String worldName = buildWorld.getName();
         String displayName = plugin.getString("world_item_title").replace("%world%", worldName);
@@ -202,6 +227,72 @@ public class InventoryManager {
         } else {
             addItemStack(inventory, position, buildWorld.getMaterial(), displayName, getLore(player, buildWorld));
         }
+    }
+
+    public void manageInventoryClick(InventoryClickEvent event, Player player, ItemStack itemStack) {
+        if (itemStack == null || itemStack.getItemMeta() == null) {
+            return;
+        }
+
+        int slot = event.getSlot();
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        String displayName = itemMeta.getDisplayName();
+
+        if (slot == 22) {
+            if (displayName.equals(plugin.getString("world_navigator_no_worlds"))
+                    || displayName.equals(plugin.getString("archive_no_worlds"))
+                    || displayName.equals(plugin.getString("private_no_worlds"))) {
+                return;
+            }
+        }
+
+        if (slot >= 9 && slot <= 44) {
+            BuildWorld buildWorld = worldManager.getBuildWorld(getWorldName(displayName));
+            manageWorldItemClick(event, player, itemMeta, buildWorld);
+        }
+
+        if (slot >= 45 && slot <= 53) {
+            if (itemStack.getType() != XMaterial.PLAYER_HEAD.parseMaterial()) {
+                XSound.BLOCK_CHEST_OPEN.play(player);
+                plugin.getNavigatorInventory().openInventory(player);
+            }
+        }
+    }
+
+    private void manageWorldItemClick(InventoryClickEvent event, Player player, ItemMeta itemMeta, BuildWorld buildWorld) {
+        if (event.isLeftClick() || !player.hasPermission("buildsystem.edit")) {
+            performNonEditClick(player, itemMeta);
+            return;
+        }
+
+        if (buildWorld.isLoaded()) {
+            playerManager.getSelectedWorld().put(player.getUniqueId(), buildWorld);
+            XSound.BLOCK_CHEST_OPEN.play(player);
+            plugin.getEditInventory().openInventory(player, buildWorld);
+        } else {
+            player.closeInventory();
+            XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
+            String subtitle = plugin.getString("world_not_loaded");
+            Titles.sendTitle(player, "", subtitle);
+        }
+    }
+
+    private void performNonEditClick(Player player, ItemMeta itemMeta) {
+        playerManager.closeNavigator(player);
+        teleport(player, getWorldName(itemMeta.getDisplayName()));
+    }
+
+    private void teleport(Player player, String worldName) {
+        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        if (buildWorld == null) {
+            return;
+        }
+        worldManager.teleport(player, buildWorld);
+    }
+
+    private String getWorldName(String input) {
+        String template = plugin.getString("world_item_title").replace("%world%", "");
+        return StringUtils.difference(template, input);
     }
 
     public List<BuildWorld> sortWorlds(Player player, WorldManager worldManager, BuildSystem plugin) {
@@ -401,19 +492,6 @@ public class InventoryManager {
             default:
                 return XMaterial.BLACK_STAINED_GLASS_PANE;
         }
-    }
-
-    public String selectedWorld(Player player) {
-        BuildWorld selectedWorld = plugin.selectedWorld.get(player.getUniqueId());
-        if (selectedWorld == null) {
-            return null;
-        }
-
-        String selectedWorldName = selectedWorld.getName();
-        if (selectedWorldName.length() > 17) {
-            selectedWorldName = selectedWorldName.substring(0, 14) + "...";
-        }
-        return selectedWorldName;
     }
 
     public XMaterial getCreateItem(WorldType worldType) {

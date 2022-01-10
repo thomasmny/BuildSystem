@@ -8,23 +8,27 @@
 
 package com.eintosti.buildsystem.inventory;
 
+import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * @author einTosti
  */
-public class WorldsInventory {
+public class WorldsInventory extends PaginatedInventory implements Listener {
 
     private final static int MAX_WORLDS = 36;
 
@@ -32,15 +36,11 @@ public class WorldsInventory {
     private final InventoryManager inventoryManager;
     private final WorldManager worldManager;
 
-    private final Map<UUID, Integer> invIndex;
-    private Inventory[] inventories;
-
     public WorldsInventory(BuildSystem plugin) {
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
         this.worldManager = plugin.getWorldManager();
-
-        this.invIndex = new HashMap<>();
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     private Inventory createInventory(Player player) {
@@ -56,7 +56,7 @@ public class WorldsInventory {
     private int numOfWorlds(Player player) {
         int numOfWorlds = 0;
         for (BuildWorld buildWorld : worldManager.getBuildWorlds()) {
-            if (isValid(player, buildWorld)) {
+            if (isValidWorld(player, buildWorld)) {
                 numOfWorlds++;
             }
         }
@@ -100,9 +100,10 @@ public class WorldsInventory {
 
         List<BuildWorld> buildWorlds = inventoryManager.sortWorlds(player, worldManager, plugin);
         for (BuildWorld buildWorld : buildWorlds) {
-            if (isValid(player, buildWorld)) {
+            if (isValidWorld(player, buildWorld)) {
                 inventoryManager.addWorldItem(player, inventory, columnWorld++, buildWorld);
             }
+
             if (columnWorld > maxColumnWorld) {
                 columnWorld = 9;
                 inventory = createInventory(player);
@@ -111,7 +112,7 @@ public class WorldsInventory {
         }
     }
 
-    private boolean isValid(Player player, BuildWorld buildWorld) {
+    private boolean isValidWorld(Player player, BuildWorld buildWorld) {
         if (buildWorld.isPrivate()) {
             return false;
         }
@@ -131,25 +132,34 @@ public class WorldsInventory {
         return false;
     }
 
-    public Integer getInvIndex(Player player) {
-        UUID playerUUID = player.getUniqueId();
-        if (!invIndex.containsKey(playerUUID)) {
-            setInvIndex(player, 0);
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!inventoryManager.checkIfValidClick(event, "world_navigator_title")) {
+            return;
         }
-        return invIndex.get(playerUUID);
-    }
 
-    public void setInvIndex(Player player, int index) {
-        invIndex.put(player.getUniqueId(), index);
-    }
+        Player player = (Player) event.getWhoClicked();
+        ItemStack itemStack = event.getCurrentItem();
+        Material itemType = itemStack.getType();
 
-    public void incrementInv(Player player) {
-        UUID playerUUID = player.getUniqueId();
-        invIndex.put(playerUUID, invIndex.get(playerUUID) + 1);
-    }
+        if (itemType == XMaterial.PLAYER_HEAD.parseMaterial()) {
+            switch (event.getSlot()) {
+                case 45:
+                    decrementInv(player);
+                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    openInventory(player);
+                    break;
+                case 49:
+                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    plugin.getCreateInventory().openInventory(player, CreateInventory.Page.PREDEFINED);
+                    break;
+                case 53:
+                    incrementInv(player);
+                    openInventory(player);
+                    break;
+            }
+        }
 
-    public void decrementInv(Player player) {
-        UUID playerUUID = player.getUniqueId();
-        invIndex.put(playerUUID, invIndex.get(playerUUID) - 1);
+        inventoryManager.manageInventoryClick(event, player, itemStack);
     }
 }

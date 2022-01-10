@@ -8,16 +8,20 @@
 
 package com.eintosti.buildsystem.inventory;
 
+import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 
 /**
  * @author einTosti
  */
-public class NavigatorInventory {
+public class NavigatorInventory implements Listener {
 
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
@@ -25,6 +29,7 @@ public class NavigatorInventory {
     public NavigatorInventory(BuildSystem plugin) {
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     private Inventory getInventory(Player player) {
@@ -48,5 +53,33 @@ public class NavigatorInventory {
         for (int i = 0; i <= 26; i++) {
             inventoryManager.addGlassPane(plugin, player, inventory, i);
         }
+    }
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!inventoryManager.checkIfValidClick(event, "old_navigator_title")) {
+            return;
+        }
+
+        Player player = (Player) event.getWhoClicked();
+
+        switch (event.getSlot()) {
+            case 11:
+                plugin.getWorldsInventory().openInventory(player);
+                break;
+            case 12:
+                plugin.getArchiveInventory().openInventory(player);
+                break;
+            case 13:
+                plugin.getPrivateInventory().openInventory(player);
+                break;
+            case 15:
+                plugin.getSettingsInventory().openInventory(player);
+                break;
+            default:
+                return;
+        }
+
+        XSound.ENTITY_CHICKEN_EGG.play(player);
     }
 }

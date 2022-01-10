@@ -9,13 +9,20 @@
 package com.eintosti.buildsystem.inventory;
 
 import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.util.ConfigValues;
+import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -23,19 +30,24 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author einTosti
  */
-public class EditInventory {
+public class EditInventory implements Listener {
 
     private final BuildSystem plugin;
+    private final ConfigValues configValues;
     private final InventoryManager inventoryManager;
 
     public EditInventory(BuildSystem plugin) {
         this.plugin = plugin;
+        this.configValues = plugin.getConfigValues();
         this.inventoryManager = plugin.getInventoryManager();
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     public Inventory getInventory(Player player, BuildWorld buildWorld) {
@@ -190,4 +202,138 @@ public class EditInventory {
         }
         return lore;
     }
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!inventoryManager.checkIfValidClick(event, "worldeditor_title")) {
+            return;
+        }
+
+        Player player = (Player) event.getWhoClicked();
+        BuildWorld buildWorld = plugin.getPlayerManager().getSelectedWorld().get(player.getUniqueId());
+        if (buildWorld == null) {
+            player.closeInventory();
+            player.sendMessage(plugin.getString("worlds_edit_error"));
+            return;
+        }
+
+        switch (event.getSlot()) {
+            case 20:
+                buildWorld.setBlockBreaking(!buildWorld.isBlockBreaking());
+                break;
+            case 21:
+                buildWorld.setBlockPlacement(!buildWorld.isBlockPlacement());
+                break;
+            case 22:
+                buildWorld.setPhysics(!buildWorld.isPhysics());
+                break;
+            case 23:
+                changeTime(player, buildWorld);
+                break;
+            case 24:
+                buildWorld.setExplosions(!buildWorld.isExplosions());
+                break;
+
+            case 29:
+                removeEntities(player, buildWorld);
+                return;
+            case 30:
+                if (event.getCurrentItem().getType() != XMaterial.BARRIER.parseMaterial()) {
+                    if (event.isRightClick()) {
+                        XSound.BLOCK_CHEST_OPEN.play(player);
+                        player.openInventory(plugin.getBuilderInventory().getInventory(buildWorld, player));
+                        return;
+                    }
+                    buildWorld.setBuilders(!buildWorld.isBuilders());
+                }
+                break;
+            case 31:
+                buildWorld.setMobAI(!buildWorld.isMobAI());
+                break;
+            case 32:
+                buildWorld.setPrivate(!buildWorld.isPrivate());
+                break;
+            case 33:
+                buildWorld.setBlockInteractions(!buildWorld.isBlockInteractions());
+                break;
+
+            case 38:
+                XSound.BLOCK_CHEST_OPEN.play(player);
+                plugin.getGameRuleInventory().openInventory(player, buildWorld);
+                return;
+            case 39:
+                XSound.ENTITY_CHICKEN_EGG.play(player);
+                plugin.getStatusInventory().openInventory(player);
+                return;
+            case 41:
+                XSound.ENTITY_CHICKEN_EGG.play(player);
+                plugin.getWorldsCommand().getProjectInput(player, false);
+                return;
+            case 42:
+                XSound.ENTITY_CHICKEN_EGG.play(player);
+                plugin.getWorldsCommand().getPermissionInput(player, false);
+                return;
+
+            default:
+                return;
+        }
+
+        XSound.ENTITY_CHICKEN_EGG.play(player);
+        openInventory(player, buildWorld);
+    }
+
+    private void changeTime(Player player, BuildWorld buildWorld) {
+        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
+        if (bukkitWorld == null) {
+            return;
+        }
+
+        BuildWorld.Time time = getWorldTime(bukkitWorld);
+        switch (time) {
+            case SUNRISE:
+                bukkitWorld.setTime(configValues.getNoonTime());
+                break;
+            case NOON:
+                bukkitWorld.setTime(configValues.getNightTime());
+                break;
+            case NIGHT:
+                bukkitWorld.setTime(configValues.getSunriseTime());
+                break;
+        }
+
+        openInventory(player, buildWorld);
+    }
+
+    private void removeEntities(Player player, BuildWorld buildWorld) {
+        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
+        if (bukkitWorld == null) {
+            return;
+        }
+
+        AtomicInteger entitiesRemoved = new AtomicInteger();
+        bukkitWorld.getEntities().stream()
+                .filter(entity -> !IGNORED_ENTITIES.contains(entity.getType()))
+                .forEach(entity -> {
+                    entity.remove();
+                    entitiesRemoved.incrementAndGet();
+                });
+
+        player.closeInventory();
+        player.sendMessage(plugin.getString("worldeditor_butcher_removed").replace("%amount%", String.valueOf(entitiesRemoved.get())));
+    }
+
+    private static final Set<EntityType> IGNORED_ENTITIES = Sets.newHashSet(
+            EntityType.ARMOR_STAND,
+            EntityType.ENDER_CRYSTAL,
+            EntityType.ITEM_FRAME,
+            EntityType.FALLING_BLOCK,
+            EntityType.MINECART,
+            EntityType.MINECART_CHEST,
+            EntityType.MINECART_COMMAND,
+            EntityType.MINECART_FURNACE,
+            EntityType.MINECART_HOPPER,
+            EntityType.MINECART_MOB_SPAWNER,
+            EntityType.MINECART_TNT,
+            EntityType.PLAYER
+    );
 }

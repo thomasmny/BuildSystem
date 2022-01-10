@@ -34,15 +34,15 @@ public class PlayerQuitListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void sendPlayerQuitMessage(PlayerQuitEvent event) {
-        Player player = event.getPlayer();
-        String joinMessage = plugin.getConfigValues().isJoinQuitMessages() ? plugin.getString("player_quit").replace("%player%", player.getName()) : null;
-        event.setQuitMessage(joinMessage);
+        boolean isQuitMessage = plugin.getConfigValues().isJoinQuitMessages();
+        String message = isQuitMessage ? plugin.getString("player_quit").replace("%player%", event.getPlayer().getName()) : null;
+        event.setQuitMessage(message);
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        plugin.getPlayerMoveListener().closeNavigator(player);
+        plugin.getPlayerManager().closeNavigator(player);
 
         Settings settings = settingsManager.getSettings(player);
         if (settings.isNoClip()) {

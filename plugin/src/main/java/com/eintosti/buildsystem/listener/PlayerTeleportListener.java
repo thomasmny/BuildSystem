@@ -9,6 +9,7 @@
 package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import org.bukkit.Bukkit;
@@ -19,23 +20,19 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
-import java.util.HashMap;
-import java.util.UUID;
-
 /**
  * @author einTosti
  */
 public class PlayerTeleportListener implements Listener {
 
     private final BuildSystem plugin;
+    private final PlayerManager playerManager;
     private final WorldManager worldManager;
-
-    private final HashMap<UUID, Location> previousLocation;
 
     public PlayerTeleportListener(BuildSystem plugin) {
         this.plugin = plugin;
+        this.playerManager = plugin.getPlayerManager();
         this.worldManager = plugin.getWorldManager();
-        this.previousLocation = new HashMap<>();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -44,13 +41,14 @@ public class PlayerTeleportListener implements Listener {
         Player player = event.getPlayer();
 
         if (event.getCause() != PlayerTeleportEvent.TeleportCause.UNKNOWN) {
-            previousLocation.put(player.getUniqueId(), event.getFrom());
+            playerManager.getPreviousLocation().put(player.getUniqueId(), event.getFrom());
         }
 
         Location to = event.getTo();
         if (to == null) {
             return;
         }
+
         World toWorld = to.getWorld();
         if (toWorld == null) {
             return;
@@ -69,13 +67,5 @@ public class PlayerTeleportListener implements Listener {
                 event.setCancelled(true);
             }
         }
-    }
-
-    public Location getPreviousLocation(Player player) {
-        return previousLocation.get(player.getUniqueId());
-    }
-
-    public void resetPreviousLocation(Player player) {
-        previousLocation.remove(player.getUniqueId());
     }
 }

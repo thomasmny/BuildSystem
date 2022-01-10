@@ -14,12 +14,18 @@ import com.eintosti.buildsystem.object.world.WorldStatus;
 import com.eintosti.buildsystem.object.world.WorldType;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
 /**
  * @author einTosti
  */
-public class SetupInventory {
+public class SetupInventory implements Listener {
 
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
@@ -27,6 +33,7 @@ public class SetupInventory {
     public SetupInventory(BuildSystem plugin) {
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     private Inventory getInventory(Player player) {
@@ -67,6 +74,49 @@ public class SetupInventory {
     private void fillGuiWithGlass(Player player, Inventory inventory) {
         for (int i = 0; i <= 44; i++) {
             inventoryManager.addGlassPane(plugin, player, inventory, i);
+        }
+    }
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!inventoryManager.checkIfValidClick(event, "setup_title")) {
+            return;
+        }
+
+        Player player = (Player) event.getWhoClicked();
+        InventoryAction action = event.getAction();
+        InventoryType type = event.getInventory().getType();
+        int slot = event.getRawSlot();
+
+        switch (action) {
+            case PICKUP_ALL:
+            case PICKUP_ONE:
+            case PICKUP_SOME:
+            case PICKUP_HALF:
+            case PLACE_ALL:
+            case PLACE_SOME:
+            case PLACE_ONE:
+            case SWAP_WITH_CURSOR:
+                if (type != InventoryType.CHEST) {
+                    return;
+                }
+
+                event.setCancelled(slot < 45 || slot > 80);
+                if (action != InventoryAction.SWAP_WITH_CURSOR) {
+                    return;
+                }
+
+                if (!(slot >= 45 && slot <= 80)) {
+                    if ((slot >= 11 && slot <= 15) || (slot >= 20 && slot <= 25) || (slot >= 29 && slot <= 34)) {
+                        ItemStack itemStack = event.getCursor();
+                        event.setCurrentItem(itemStack);
+                        player.setItemOnCursor(null);
+                    }
+                }
+                break;
+            default:
+                event.setCancelled(true);
+                break;
         }
     }
 }

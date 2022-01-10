@@ -14,7 +14,6 @@ import com.eintosti.buildsystem.inventory.*;
 import com.eintosti.buildsystem.listener.*;
 import com.eintosti.buildsystem.manager.*;
 import com.eintosti.buildsystem.object.settings.Settings;
-import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.tabcomplete.*;
 import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.Messages;
@@ -30,16 +29,14 @@ import com.eintosti.buildsystem.version.v1_13_R1.GameRules_1_13_R1;
 import com.eintosti.buildsystem.version.v1_14_R1.CustomBlocks_1_14_R1;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 
 /**
@@ -47,15 +44,7 @@ import java.util.logging.Level;
  */
 public class BuildSystem extends JavaPlugin {
 
-    public final static int PLUGIN_ID = 60441;
-
-    public Map<UUID, BuildWorld> selectedWorld;
-    public Map<UUID, GameMode> buildPlayerGamemode;
-    public Map<UUID, Float> playerWalkSpeed;
-    public Map<UUID, Float> playerFlySpeed;
-
-    public Set<Player> openNavigator;
-    public Set<UUID> buildPlayers;
+    public static final int PLUGIN_ID = 60441;
 
     private String version;
 
@@ -64,6 +53,7 @@ public class BuildSystem extends JavaPlugin {
     private ArmorStandManager armorStandManager;
     private InventoryManager inventoryManager;
     private NoClipManager noClipManager;
+    private PlayerManager playerManager;
     private SettingsManager settingsManager;
     private SpawnManager spawnManager;
     private WorldManager worldManager;
@@ -84,9 +74,6 @@ public class BuildSystem extends JavaPlugin {
     private StatusInventory statusInventory;
     private WorldsInventory worldsInventory;
 
-    private PlayerMoveListener playerMoveListener;
-    private PlayerTeleportListener playerTeleportListener;
-
     private ConfigValues configValues;
     private CustomBlocks customBlocks;
     private GameRules gameRules;
@@ -105,13 +92,6 @@ public class BuildSystem extends JavaPlugin {
         }
 
         initClasses();
-
-        this.selectedWorld = new HashMap<>();
-        this.buildPlayerGamemode = new HashMap<>();
-        this.playerWalkSpeed = new HashMap<>();
-        this.playerFlySpeed = new HashMap<>();
-        this.openNavigator = new HashSet<>();
-        this.buildPlayers = new HashSet<>();
 
         registerCommands();
         registerTabCompleter();
@@ -146,7 +126,7 @@ public class BuildSystem extends JavaPlugin {
         Bukkit.getOnlinePlayers().forEach(pl -> {
             settingsManager.stopScoreboard(pl);
             noClipManager.stopNoClip(pl.getUniqueId());
-            playerMoveListener.closeNavigator(pl);
+            playerManager.closeNavigator(pl);
         });
 
         reloadConfig();
@@ -166,6 +146,7 @@ public class BuildSystem extends JavaPlugin {
         this.inventoryManager = new InventoryManager(this);
         this.inventoryManager.loadTypes();
         this.inventoryManager.loadStatus();
+        this.playerManager = new PlayerManager(this);
         this.noClipManager = new NoClipManager(this);
         this.worldManager = new WorldManager(this);
         this.settingsManager = new SettingsManager(this);
@@ -312,18 +293,18 @@ public class BuildSystem extends JavaPlugin {
         new BlockPlaceListener(this);
         new EntitySpawnListener(this);
         new FoodLevelChangeListener(this);
-        new InventoryClickListener(this);
         new InventoryCloseListener(this);
+        new InventoryCreativeListener(this);
         new PlayerChangedWorldListener(this);
         new PlayerCommandPreprocessListener(this);
         new PlayerInteractAtEntityListener(this);
         new PlayerInteractListener(this);
         new PlayerInventoryClearListener(this);
         new PlayerJoinListener(this);
-        this.playerMoveListener = new PlayerMoveListener(this);
+        new PlayerMoveListener(this);
         new PlayerQuitListener(this);
         new PlayerRespawnListener(this);
-        this.playerTeleportListener = new PlayerTeleportListener(this);
+        new PlayerTeleportListener(this);
         new SignChangeListener(this);
         new WeatherChangeListener(this);
         new WorldManipulateListener(this);
@@ -436,7 +417,9 @@ public class BuildSystem extends JavaPlugin {
     }
 
     public boolean canBypass(Player player) {
-        return player.hasPermission("buildsystem.admin") || player.hasPermission("buildsystem.bypass.archive") || this.buildPlayers.contains(player.getUniqueId());
+        return player.hasPermission("buildsystem.admin")
+                || player.hasPermission("buildsystem.bypass.archive")
+                || playerManager.getBuildPlayers().contains(player.getUniqueId());
     }
 
     public void sendPermissionMessage(CommandSender sender) {
@@ -470,6 +453,10 @@ public class BuildSystem extends JavaPlugin {
 
     public InventoryManager getInventoryManager() {
         return inventoryManager;
+    }
+
+    public PlayerManager getPlayerManager() {
+        return playerManager;
     }
 
     public NoClipManager getNoClipManager() {
@@ -548,14 +535,6 @@ public class BuildSystem extends JavaPlugin {
         return worldsInventory;
     }
 
-    public PlayerMoveListener getPlayerMoveListener() {
-        return playerMoveListener;
-    }
-
-    public PlayerTeleportListener getPlayerTeleportListener() {
-        return playerTeleportListener;
-    }
-
     public ConfigValues getConfigValues() {
         return configValues;
     }
@@ -570,26 +549,5 @@ public class BuildSystem extends JavaPlugin {
 
     public SkullCache getSkullCache() {
         return skullCache;
-    }
-
-    public void forceUpdateSidebar(BuildWorld buildWorld) {
-        if (!configValues.isScoreboard()) {
-            return;
-        }
-
-        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
-        if (bukkitWorld == null) {
-            return;
-        }
-
-        bukkitWorld.getPlayers().forEach(this::forceUpdateSidebar);
-    }
-
-    public void forceUpdateSidebar(Player player) {
-        if (!configValues.isScoreboard() || !settingsManager.getSettings(player).isScoreboard()) {
-            return;
-        }
-
-        settingsManager.updateScoreboard(player);
     }
 }

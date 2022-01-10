@@ -8,6 +8,7 @@
 
 package com.eintosti.buildsystem.inventory;
 
+import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
@@ -15,14 +16,18 @@ import com.eintosti.buildsystem.version.GameRules;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.UUID;
 
 /**
  * @author einTosti
  */
-public class GameRuleInventory {
+public class GameRuleInventory implements Listener {
 
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
@@ -32,6 +37,7 @@ public class GameRuleInventory {
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
         this.gameRules = plugin.getGameRules();
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     public void openInventory(Player player, BuildWorld buildWorld) {
@@ -75,5 +81,52 @@ public class GameRuleInventory {
             }
         }
         return true;
+    }
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!event.getView().getTitle().equals(plugin.getString("worldeditor_gamerules_title"))) {
+            return;
+        }
+
+        event.setCancelled(true);
+        Player player = (Player) event.getWhoClicked();
+
+        BuildWorld buildWorld = plugin.getPlayerManager().getSelectedWorld().get(player.getUniqueId());
+        if (buildWorld == null) {
+            player.closeInventory();
+            player.sendMessage(plugin.getString("worlds_edit_error"));
+            return;
+        }
+
+        ItemStack itemStack = event.getCurrentItem();
+        if (itemStack == null) {
+            return;
+        }
+
+        switch (itemStack.getType()) {
+            case PLAYER_HEAD:
+                int slot = event.getSlot();
+                if (slot == 36) {
+                    gameRules.decrementInv(player);
+                } else if (slot == 44) {
+                    gameRules.incrementInv(player);
+                }
+                break;
+
+            case FILLED_MAP:
+            case MAP:
+                World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
+                gameRules.toggleGameRule(event, bukkitWorld);
+                break;
+
+            default:
+                XSound.BLOCK_CHEST_OPEN.play(player);
+                plugin.getEditInventory().openInventory(player, buildWorld);
+                return;
+        }
+
+        XSound.ENTITY_CHICKEN_EGG.play(player);
+        openInventory(player, buildWorld);
     }
 }

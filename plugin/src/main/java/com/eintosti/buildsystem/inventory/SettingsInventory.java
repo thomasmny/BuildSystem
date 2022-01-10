@@ -9,26 +9,34 @@
 package com.eintosti.buildsystem.inventory;
 
 import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
+import com.eintosti.buildsystem.manager.NoClipManager;
 import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.object.navigator.NavigatorType;
 import com.eintosti.buildsystem.object.settings.Settings;
+import com.eintosti.buildsystem.object.settings.WorldSort;
 import com.eintosti.buildsystem.util.ConfigValues;
 import org.bukkit.Bukkit;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import java.util.List;
 
 /**
  * @author einTosti
  */
-public class SettingsInventory {
+public class SettingsInventory implements Listener {
 
     private final BuildSystem plugin;
     private final ConfigValues configValues;
@@ -42,6 +50,7 @@ public class SettingsInventory {
 
         this.inventoryManager = plugin.getInventoryManager();
         this.settingsManager = plugin.getSettingsManager();
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     private Inventory getInventory(Player player) {
@@ -158,5 +167,134 @@ public class SettingsInventory {
 
         itemStack.setItemMeta(itemMeta);
         inventory.setItem(33, itemStack);
+    }
+
+    @EventHandler
+    public void onSettingsInventoryClick(InventoryClickEvent event) {
+        if (!inventoryManager.checkIfValidClick(event, "settings_title")) {
+            return;
+        }
+
+        Player player = (Player) event.getWhoClicked();
+        Settings settings = settingsManager.getSettings(player);
+
+        switch (event.getSlot()) {
+            case 11:
+                plugin.getDesignInventory().openInventory(player);
+                XSound.ENTITY_ITEM_PICKUP.play(player);
+                return;
+            case 12:
+                settings.setClearInventory(!settings.isClearInventory());
+                break;
+            case 13:
+                settings.setDisableInteract(!settings.isDisableInteract());
+                break;
+            case 14:
+                settings.setHidePlayers(!settings.isHidePlayers());
+                toggleHidePlayers(player, settings);
+                break;
+            case 15:
+                settings.setInstantPlaceSigns(!settings.isInstantPlaceSigns());
+                break;
+
+            case 20:
+                settings.setKeepNavigator(!settings.isKeepNavigator());
+                break;
+            case 21:
+                if (settings.getNavigatorType().equals(NavigatorType.OLD)) {
+                    settings.setNavigatorType(NavigatorType.NEW);
+                } else {
+                    settings.setNavigatorType(NavigatorType.OLD);
+                    plugin.getArmorStandManager().removeArmorStands(player);
+                    if (player.hasPotionEffect(PotionEffectType.BLINDNESS)) {
+                        player.removePotionEffect(PotionEffectType.BLINDNESS);
+                    }
+                }
+                break;
+            case 22:
+                if (!settings.isNightVision()) {
+                    settings.setNightVision(true);
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0, false, false));
+                } else {
+                    settings.setNightVision(false);
+                    if (player.hasPotionEffect(PotionEffectType.NIGHT_VISION)) {
+                        player.removePotionEffect(PotionEffectType.NIGHT_VISION);
+                    }
+                }
+                break;
+            case 23:
+                NoClipManager noClipManager = plugin.getNoClipManager();
+                if (!settings.isNoClip()) {
+                    settings.setNoClip(true);
+                    noClipManager.startNoClip(player);
+                } else {
+                    settings.setNoClip(false);
+                    noClipManager.stopNoClip(player.getUniqueId());
+                }
+                break;
+            case 24:
+                settings.setTrapDoor(!settings.isTrapDoor());
+                break;
+
+            case 29:
+                settings.setPlacePlants(!settings.isPlacePlants());
+                break;
+            case 30:
+                if (!configValues.isScoreboard()) {
+                    XSound.ENTITY_ITEM_BREAK.play(player);
+                    return;
+                }
+                if (settings.isScoreboard()) {
+                    settings.setScoreboard(false);
+                    settingsManager.stopScoreboard(player);
+                } else {
+                    settings.setScoreboard(true);
+                    settingsManager.startScoreboard(player);
+                    plugin.getPlayerManager().forceUpdateSidebar(player);
+                }
+                break;
+            case 31:
+                settings.setSlabBreaking(!settings.isSlabBreaking());
+                break;
+            case 32:
+                settings.setSpawnTeleport(!settings.isSpawnTeleport());
+                break;
+            case 33:
+                switch (settings.getWorldSort()) {
+                    case NAME_A_TO_Z:
+                        settings.setWorldSort(WorldSort.NAME_Z_TO_A);
+                        break;
+                    case NAME_Z_TO_A:
+                        settings.setWorldSort(WorldSort.PROJECT_A_TO_Z);
+                        break;
+                    case PROJECT_A_TO_Z:
+                        settings.setWorldSort(WorldSort.PROJECT_Z_TO_A);
+                        break;
+                    case PROJECT_Z_TO_A:
+                        settings.setWorldSort(WorldSort.NEWEST_FIRST);
+                        break;
+                    case NEWEST_FIRST:
+                        settings.setWorldSort(WorldSort.OLDEST_FIRST);
+                        break;
+                    case OLDEST_FIRST:
+                        settings.setWorldSort(WorldSort.NAME_A_TO_Z);
+                        break;
+                }
+                break;
+            default:
+                return;
+        }
+
+        XSound.ENTITY_ITEM_PICKUP.play(player);
+        plugin.getSettingsInventory().openInventory(player);
+    }
+
+    @SuppressWarnings("deprecation")
+    private void toggleHidePlayers(Player player, Settings settings) {
+        if (settings.isHidePlayers()) {
+            Bukkit.getOnlinePlayers().forEach(player::hidePlayer);
+        } else {
+            Bukkit.getOnlinePlayers().forEach(player::showPlayer);
+        }
     }
 }
