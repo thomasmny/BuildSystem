@@ -281,7 +281,7 @@ worlds_rename_players_world: "%prefix% &7&o你所在的世界正在重命名..."
 worlds_setitem_usage: "%prefix% &7用法: &b/worlds setItem <世界>"
 worlds_setitem_unknown_world: "%prefix% &c未知的世界"
 worlds_setitem_hand_empty: "%prefix% &c您手中沒有物品."
-worlds_setitem_set: "%prefix% &b%world%&7's item was successfully changed."
+worlds_setitem_set: "%prefix% &7世界: &b%world%&7的物品已被更改."
 
 worlds_setcreator_usage: "%prefix% &7用法: &b/worlds setCreator <世界>"
 worlds_setcreator_unknown_world: "%prefix% &c未知的世界"
