@@ -225,7 +225,7 @@ worlds_import_world_is_imported: "%prefix% &7這個世界已經被導入."
 worlds_import_unknown_generator: "%prefix% &c未知生成器."
 worlds_import_started: "%prefix% &7已開始導入世界: &b%world% &7..."
 worlds_import_invalid_character: "%prefix% &7無法導入世界: &c%world%&7. %prefix% &7&o包含無效字符: &c%char% "
-worlds_import_finished: "%prefix% &7The world was &asuccessfully &7imported."
+worlds_import_finished: "%prefix% &7世界&a成功&7導入."
 
 worlds_importall_usage: "%prefix% &7用法: &b/worlds importall"
 worlds_importall_no_worlds: "%prefix% &cNo worlds were found."
