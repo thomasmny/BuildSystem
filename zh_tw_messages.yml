@@ -286,7 +286,7 @@ worlds_setitem_set: "%prefix% &7世界: &b%world%&7的物品已被更改."
 worlds_setcreator_usage: "%prefix% &7用法: &b/worlds setCreator <世界>"
 worlds_setcreator_unknown_world: "%prefix% &c未知的世界"
 worlds_setcreator_error: "%prefix% &c請再嘗試一遍."
-worlds_setcreator_set: "%prefix% &b%world%&7's creator was successfully changed."
+worlds_setcreator_set: "%prefix% &7世界: &b%world%&7的創作者已被更改."
 
 worlds_setproject_usage: "%prefix% &7用法: &b/worlds setProject <世界>"
 worlds_setproject_unknown_world: "%prefix% &c未知的世界"
