@@ -594,8 +594,8 @@ settings_change_design_lore:
 
 settings_clear_inventory_item: "&b清除物品欄"
 settings_clear_inventory_lore:
- - "&7&oWhen enabled a player's"
- - "&7&oinventory is cleared on join."
+ - "&7&o當此選項開啟時"
+ - "&7&o將清除加入的玩家的物品欄"
 
 settings_disableinteract_item: "&bDisable Block Interactions"
 settings_disableinteract_lore:
