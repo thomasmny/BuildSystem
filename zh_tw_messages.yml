@@ -178,7 +178,7 @@ worlds_template_creation_started: "%prefix% &7世界: &b%world% &8(&7模板: &f%
 worlds_creation_finished: "%prefix% &7世界已&a成功&7創建."
 worlds_template_does_not_exist: "%prefix% &c此模板不存在."
 
-worlds_unknown_command: "%prefix% &7Unknown command: &b/worlds help"
+worlds_unknown_command: "%prefix% &7未知指令: &b/worlds help"
 worlds_navigator_open: "%prefix% &cYou have already opened the navigator!"
 
 worlds_delete_usage: "%prefix% &7用法: &b/worlds delete <世界>"
