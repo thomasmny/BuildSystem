@@ -183,7 +183,7 @@ worlds_navigator_open: "%prefix% &c您已經打開了導航器!"
 
 worlds_delete_usage: "%prefix% &7用法: &b/worlds delete <世界>"
 worlds_delete_unknown_world: "%prefix% &c未知的世界"
-worlds_delete_unknown_directory: "%prefix% &cError while deleting world: Directory not found!"
+worlds_delete_unknown_directory: "%prefix% &c刪除世界時發生錯誤: 未找到此目錄!"
 worlds_delete_error: "%prefix% &cError while deleting world: Please try again!"
 worlds_delete_canceled: "%prefix% &7The deletion of &b%world% &7was canceled."
 worlds_delete_started: "%prefix% &7The deletion of &b%world% &7has started..."
