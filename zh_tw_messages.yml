@@ -269,7 +269,7 @@ worlds_removebuilder_player_not_found: "%prefix% &c找不到這個玩家."
 worlds_removebuilder_not_creator: "%prefix% &c你不是此世界的創作者."
 worlds_removebuilder_not_yourself: "%prefix% &c您不能將自己從創作者中移除."
 worlds_removebuilder_not_builder: "%prefix% &c此玩家不是建造者."
-worlds_removebuilder_removed: "%prefix% &b%builder% &7已被&c移除&7as a builder."
+worlds_removebuilder_removed: "%prefix% &b%builder% &7已被從建造者中&c移除&7."
 
 worlds_rename_usage: "%prefix% &7用法: &b/worlds rename <世界>"
 worlds_rename_unknown_world: "%prefix% &c未知的世界"
