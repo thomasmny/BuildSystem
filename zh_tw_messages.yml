@@ -439,7 +439,7 @@ type_template: "模板"
 type_private: "私人"
 
 # Worlds Status
-status_title: "&8Status &7» &3%world%"
+status_title: "&8狀態 &7» &3%world%"
 status_not_started: "&cNot Started"
 status_in_progress: "&6In Progress"
 status_almost_finished: "&aAlmost Finished"
