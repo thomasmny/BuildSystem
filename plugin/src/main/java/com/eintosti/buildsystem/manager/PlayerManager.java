@@ -40,7 +40,6 @@ public class PlayerManager {
 
     private final BuildSystem plugin;
     private final ConfigValues configValues;
-    private final SettingsManager settingsManager;
 
     private final Map<UUID, Location> previousLocation;
     private final Map<UUID, BuildWorld> selectedWorld;
@@ -49,14 +48,12 @@ public class PlayerManager {
     private final Map<UUID, Float> playerWalkSpeed;
     private final Map<UUID, Float> playerFlySpeed;
 
-
     private final Set<Player> openNavigator;
     private final Set<UUID> buildPlayers;
 
     public PlayerManager(BuildSystem plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
-        this.settingsManager = plugin.getSettingsManager();
 
         this.previousLocation = new HashMap<>();
         this.selectedWorld = new HashMap<>();
@@ -127,6 +124,7 @@ public class PlayerManager {
     }
 
     public void forceUpdateSidebar(Player player) {
+        SettingsManager settingsManager = plugin.getSettingsManager();
         if (!configValues.isScoreboard() || !settingsManager.getSettings(player).isScoreboard()) {
             return;
         }

@@ -218,6 +218,7 @@ public class Messages {
         setMessage(sb, config, "worlds_world_name", "World name");
         setMessage(sb, config, "worlds_world_exists", "%prefix% &cThis world already exists.");
         setMessage(sb, config, "worlds_world_creation_invalid_characters", "%prefix% &7&oRemoved invalid characters from world name.");
+        setMessage(sb, config, "worlds_world_creation_name_bank", "%prefix% &cThe world name cannot be blank.");
         setMessage(sb, config, "worlds_world_creation_started", "%prefix% &7The creation of &b%world% &8(&7Type: &f%type%&8) &7has started...");
         setMessage(sb, config, "worlds_template_creation_started", "%prefix% &7The creation of &b%world% &8(&7Template: &f%template%&8) &7has started...");
         setMessage(sb, config, "worlds_creation_finished", "%prefix% &7The world was &asuccessfully &7created.");

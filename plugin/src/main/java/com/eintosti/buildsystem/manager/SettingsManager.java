@@ -38,6 +38,9 @@ public class SettingsManager {
     private final Map<UUID, Settings> settings;
     private final Map<UUID, FastBoard> boards;
 
+    private final String scoreboardTitle;
+    private final List<String> scoreboardBody;
+
     public SettingsManager(BuildSystem plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
@@ -46,6 +49,9 @@ public class SettingsManager {
 
         this.settings = new HashMap<>();
         this.boards = new HashMap<>();
+
+        this.scoreboardTitle = plugin.getString("title");
+        this.scoreboardBody = plugin.getStringList("body");
     }
 
     private void createSettings(UUID uuid) {
@@ -83,7 +89,7 @@ public class SettingsManager {
             return;
         }
 
-        board.updateTitle(configValues.getScoreboardTitle());
+        board.updateTitle(this.scoreboardTitle);
         BukkitTask scoreboardTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> updateScoreboard(player, board), 0L, 20L);
         settings.setScoreboardTask(scoreboardTask);
     }
@@ -106,7 +112,7 @@ public class SettingsManager {
     private void updateScoreboard(Player player, FastBoard board) {
         ArrayList<String> body = new ArrayList<>();
 
-        for (String line : configValues.getScoreboardBody()) {
+        for (String line : this.scoreboardBody) {
             body.add(injectPlaceholders(line, player));
         }
 
@@ -114,19 +120,42 @@ public class SettingsManager {
     }
 
     private String injectPlaceholders(String originalString, Player player) {
+        if (!originalString.matches(".*%*%.*")) {
+            return originalString;
+        }
+
         String worldName = player.getWorld().getName();
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+
+        return originalString
+                .replace("%world%", worldName)
+                .replace("%status%", parseWorldInformation(buildWorld, "%status%"))
+                .replace("%permission%", parseWorldInformation(buildWorld, "%permission%"))
+                .replace("%project%", parseWorldInformation(buildWorld, "%project%"))
+                .replace("%creator%", parseWorldInformation(buildWorld, "%creator%"))
+                .replace("%creation%", parseWorldInformation(buildWorld, "%creation%"));
+    }
+
+    // Is there an easier way of doing this?
+    private String parseWorldInformation(BuildWorld buildWorld, String input) {
         if (buildWorld == null) {
             return "§f-";
         }
 
-        return originalString
-                .replace("%world%", worldName)
-                .replace("%status%", buildWorld.getStatus().toString())
-                .replace("%permission%", buildWorld.getPermission())
-                .replace("%project%", buildWorld.getProject())
-                .replace("%creator%", buildWorld.getCreator())
-                .replace("%creation%", buildWorld.getFormattedCreationDate());
+        switch (input) {
+            case "%status%":
+                return buildWorld.getStatusName();
+            case "%permission%":
+                return buildWorld.getPermission();
+            case "%project%":
+                return buildWorld.getProject();
+            case "%creator%":
+                return buildWorld.getCreator();
+            case "%creation%":
+                return buildWorld.getFormattedCreationDate();
+            default:
+                return "§f-";
+        }
     }
 
     private void stopScoreboard(Player player, Settings settings) {

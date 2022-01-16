@@ -21,7 +21,7 @@ world:
       night: 18000
     worldborder:
       size: 6000000
-    difficulty: PEACEFUL
+    difficulty: "PEACEFUL"
     gamerules:
       doDaylightCycle: false
       doMobSpawning: false

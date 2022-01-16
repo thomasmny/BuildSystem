@@ -85,8 +85,10 @@ public class BuildSystem extends JavaPlugin {
     public void onEnable() {
         createLanguageFile();
         createTemplateFolder();
+
         this.getConfig().options().copyDefaults(true);
         this.saveConfig();
+        this.configValues = new ConfigValues(this);
 
         getVersion();
         if (!setupCustomBlocks() || !setupGameRules()) {
@@ -145,10 +147,10 @@ public class BuildSystem extends JavaPlugin {
 
     private void initClasses() {
         this.armorStandManager = new ArmorStandManager();
+        this.playerManager = new PlayerManager(this);
         this.inventoryManager = new InventoryManager(this);
         this.inventoryManager.loadTypes();
         this.inventoryManager.loadStatus();
-        this.playerManager = new PlayerManager(this);
         this.noClipManager = new NoClipManager(this);
         this.worldManager = new WorldManager(this);
         this.settingsManager = new SettingsManager(this);
@@ -170,7 +172,6 @@ public class BuildSystem extends JavaPlugin {
         this.statusInventory = new StatusInventory(this);
         this.worldsInventory = new WorldsInventory(this);
 
-        this.configValues = new ConfigValues(this);
         this.skullCache = new SkullCache();
     }
 
@@ -393,7 +394,7 @@ public class BuildSystem extends JavaPlugin {
 
     public String getString(String key) {
         try {
-            return ChatColor.translateAlternateColorCodes('&', Messages.getInstance().messageData.get(key).replace("%prefix%", configValues.getPrefix()));
+            return ChatColor.translateAlternateColorCodes('&', Messages.getInstance().messageData.get(key).replace("%prefix%", getPrefixString()));
         } catch (NullPointerException e) {
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[BuildSystem] Could not find message with key: " + key);
             Messages.getInstance().createMessageFile();
@@ -407,7 +408,7 @@ public class BuildSystem extends JavaPlugin {
             String string = Messages.getInstance().messageData.get(key);
             String[] splitString = string.substring(1, string.length() - 1).split(", ");
             for (String s : splitString) {
-                list.add(ChatColor.translateAlternateColorCodes('&', s.replace("%prefix%", configValues.getPrefix())));
+                list.add(ChatColor.translateAlternateColorCodes('&', s.replace("%prefix%", getPrefixString())));
             }
             return list;
         } catch (NullPointerException e) {

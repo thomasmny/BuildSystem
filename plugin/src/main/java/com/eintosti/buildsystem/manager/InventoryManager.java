@@ -47,7 +47,6 @@ public class InventoryManager {
     private final SetupConfig setupConfig;
 
     private final PlayerManager playerManager;
-    private final WorldManager worldManager;
 
     private XMaterial normalCreateItem, flatCreateItem, netherCreateItem, endCreateItem, voidCreateItem, customCreateItem;
     private XMaterial normalDefaultItem, flatDefaultItem, netherDefaultItem, endDefaultItem, voidDefaultItem, importedDefaultItem;
@@ -59,7 +58,6 @@ public class InventoryManager {
         this.setupConfig = new SetupConfig(plugin);
 
         this.playerManager = plugin.getPlayerManager();
-        this.worldManager = plugin.getWorldManager();
     }
 
     public boolean isNavigator(ItemStack itemStack) {
@@ -249,7 +247,7 @@ public class InventoryManager {
         }
 
         if (slot >= 9 && slot <= 44) {
-            BuildWorld buildWorld = worldManager.getBuildWorld(getWorldName(displayName));
+            BuildWorld buildWorld = plugin.getWorldManager().getBuildWorld(getWorldName(displayName));
             manageWorldItemClick(event, player, itemMeta, buildWorld);
         }
 
@@ -285,6 +283,7 @@ public class InventoryManager {
     }
 
     private void teleport(Player player, String worldName) {
+        WorldManager worldManager = plugin.getWorldManager();
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
             return;

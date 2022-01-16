@@ -9,22 +9,29 @@
 package com.eintosti.buildsystem.expansion;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.manager.WorldManager;
+import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author einTosti
  */
 public class BuildSystemExpansion extends PlaceholderExpansion {
 
+    private static final String SETTINGS_KEY = "settings";
+
     private final BuildSystem plugin;
+    private final SettingsManager settingsManager;
     private final WorldManager worldManager;
 
     public BuildSystemExpansion(BuildSystem plugin) {
         this.plugin = plugin;
+        this.settingsManager = plugin.getSettingsManager();
         this.worldManager = plugin.getWorldManager();
     }
 
@@ -104,6 +111,76 @@ public class BuildSystemExpansion extends PlaceholderExpansion {
             return "";
         }
 
+        if (identifier.matches(".*_.*") && identifier.split("_")[0].equalsIgnoreCase(SETTINGS_KEY)) {
+            return parseSettingsPlaceholder(player, identifier);
+        } else {
+            return parseBuildWorldPlaceholder(player, identifier);
+        }
+    }
+
+    /**
+     * This is the method called when a placeholder with the identifier
+     * {@code %buildsystem_settings_<setting>%} is found
+     *
+     * @param player     A Player.
+     * @param identifier A String containing the identifier/value.
+     * @return possibly-null String of the requested identifier.
+     */
+    @Nullable
+    private String parseSettingsPlaceholder(Player player, String identifier) {
+        Settings settings = settingsManager.getSettings(player);
+        String settingIdentifier = identifier.split("_")[1];
+
+        switch (settingIdentifier.toLowerCase()) {
+            case "navigatortype":
+                return settings.getNavigatorType().toString();
+            case "glasscolor":
+                return settings.getGlassColor().toString();
+            case "worldsort":
+                return settings.getWorldSort().toString();
+            case "clearinventory":
+                return String.valueOf(settings.isClearInventory());
+            case "disableinteract":
+                return String.valueOf(settings.isDisableInteract());
+            case "hideplayers":
+                return String.valueOf(settings.isHidePlayers());
+            case "instantplacesigns":
+                return String.valueOf(settings.isInstantPlaceSigns());
+            case "keepnavigator":
+                return String.valueOf(settings.isKeepNavigator());
+            case "nightvision":
+                return String.valueOf(settings.isNightVision());
+            case "noclip":
+                return String.valueOf(settings.isNoClip());
+            case "placeplants":
+                return String.valueOf(settings.isPlacePlants());
+            case "scoreboard":
+                return String.valueOf(settings.isScoreboard());
+            case "slabbreaking":
+                return String.valueOf(settings.isSlabBreaking());
+            case "spawnteleport":
+                return String.valueOf(settings.isSpawnTeleport());
+            case "opentrapdoors":
+                return String.valueOf(settings.isTrapDoor());
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * This is the method called when a placeholder with the identifier needed for
+     * {@link BuildSystemExpansion#parseSettingsPlaceholder(Player, String)} is not found
+     *
+     * The default layout for a world placeholder is {@code %buildsystem_<value>%}.
+     * If a world is not specified by using the format {@code %buildsystem_<value>_<world>%}
+     * then the world the player is currently in will be used.
+     *
+     * @param player     A Player.
+     * @param identifier A String containing the identifier/value.
+     * @return possibly-null String of the requested identifier.
+     */
+    @Nullable
+    private String parseBuildWorldPlaceholder(Player player, String identifier) {
         String worldName = player.getWorld().getName();
         if (identifier.matches(".*_.*")) {
             String[] splitString = identifier.split("_");
@@ -157,8 +234,8 @@ public class BuildSystemExpansion extends PlaceholderExpansion {
                 return buildWorld.getTypeName();
             case "world":
                 return buildWorld.getName();
+            default:
+                return null;
         }
-
-        return null;
     }
 }

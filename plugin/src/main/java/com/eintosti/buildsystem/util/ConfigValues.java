@@ -10,6 +10,7 @@ package com.eintosti.buildsystem.util;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.BuildSystem;
+import org.bukkit.Difficulty;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -22,10 +23,12 @@ public class ConfigValues {
 
     private final BuildSystem plugin;
 
-    private String prefix;
     private String dateFormat;
-    private String worldDifficulty;
     private String timeUntilUnload;
+
+    private XMaterial navigatorItem;
+    private XMaterial worldEditWand;
+    private Difficulty worldDifficulty;
 
     private boolean archiveVanish;
     private boolean scoreboard;
@@ -44,8 +47,6 @@ public class ConfigValues {
     private boolean worldBlockBreaking;
     private boolean worldBlockPlacement;
     private boolean worldBlockInteractions;
-    private XMaterial navigatorItem;
-    private XMaterial worldEditWand;
 
     private int sunriseTime;
     private int noonTime;
@@ -56,19 +57,12 @@ public class ConfigValues {
     private Map<String, String> defaultGameRules;
     private Set<String> blackListedWorldsToUnload;
 
-    private String scoreboardTitle;
-    private List<String> scoreboardBody;
-
     public ConfigValues(BuildSystem plugin) {
         this.plugin = plugin;
         setConfigValues();
     }
 
     public void setConfigValues() {
-        this.prefix = plugin.getPrefixString();
-        this.scoreboardTitle = plugin.getString("title");
-        this.scoreboardBody = plugin.getStringList("body");
-
         final FileConfiguration config = plugin.getConfig();
 
         // Messages
@@ -90,14 +84,14 @@ public class ConfigValues {
 
         // World
         this.lockWeather = config.getBoolean("world.lock-weather", true);
-        this.worldDifficulty = config.getString("world.default.difficulty", "PEACEFUL");
+        this.worldDifficulty = Difficulty.valueOf(config.getString("world.default.difficulty".toUpperCase(), "PEACEFUL"));
         this.sunriseTime = config.getInt("world.default.time.sunrise", 0);
         this.noonTime = config.getInt("world.default.time.noon", 6000);
         this.nightTime = config.getInt("world.default.time.night", 18000);
 
         this.worldBorderSize = config.getInt("world.default.worldborder.size", 6000000);
 
-        HashMap<String, String> defaultGameRules = new HashMap<>();
+        Map<String, String> defaultGameRules = new HashMap<>();
         ConfigurationSection configurationSection = config.getConfigurationSection("world.default.gamerules");
         if (configurationSection != null) {
             for (Map.Entry<String, Object> entry : configurationSection.getValues(true).entrySet()) {
@@ -124,15 +118,11 @@ public class ConfigValues {
         this.importDelay = config.getInt("world.import-all.delay", 30);
     }
 
-    public String getPrefix() {
-        return prefix;
-    }
-
     public String getDateFormat() {
         return dateFormat;
     }
 
-    public String getWorldDifficulty() {
+    public Difficulty getWorldDifficulty() {
         return worldDifficulty;
     }
 
@@ -246,13 +236,5 @@ public class ConfigValues {
 
     public Set<String> getBlackListedWorldsToUnload() {
         return blackListedWorldsToUnload;
-    }
-
-    public String getScoreboardTitle() {
-        return scoreboardTitle;
-    }
-
-    public List<String> getScoreboardBody() {
-        return scoreboardBody;
     }
 }

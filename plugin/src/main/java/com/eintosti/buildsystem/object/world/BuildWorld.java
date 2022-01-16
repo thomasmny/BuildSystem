@@ -268,14 +268,8 @@ public class BuildWorld implements ConfigurationSerializable {
             case PRIVATE:
                 return plugin.getString("type_private");
             default:
-                try {
-                    throw new UnexpectedEnumValueException(worldType.name());
-                } catch (UnexpectedEnumValueException e) {
-                    e.printStackTrace();
-                }
-                break;
+                return "-";
         }
-        return "-";
     }
 
     /**
@@ -326,14 +320,8 @@ public class BuildWorld implements ConfigurationSerializable {
             case HIDDEN:
                 return plugin.getString("status_hidden");
             default:
-                try {
-                    throw new UnexpectedEnumValueException(worldStatus.name());
-                } catch (UnexpectedEnumValueException e) {
-                    e.printStackTrace();
-                }
-                break;
+                return "-";
         }
-        return "-";
     }
 
     /**

@@ -17,7 +17,6 @@ import com.eintosti.buildsystem.object.world.*;
 import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.FileUtils;
 import com.eintosti.buildsystem.util.config.WorldConfig;
-import com.eintosti.buildsystem.util.exception.UnexpectedEnumValueException;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
 import com.eintosti.buildsystem.util.external.UUIDFetcher;
 import org.bukkit.*;
@@ -93,8 +92,13 @@ public class WorldManager {
                 }
             }
 
-            player.closeInventory();
             String worldName = input.replaceAll("[^A-Za-z0-9/_-]", "").replace(" ", "_").trim();
+            if (worldName.isEmpty()) {
+                player.sendMessage(plugin.getString("worlds_world_creation_name_bank"));
+                return;
+            }
+
+            player.closeInventory();
             manageWorldType(player, worldName, worldType, template, false);
         });
     }
@@ -323,7 +327,7 @@ public class WorldManager {
         World bukkitWorld = Bukkit.createWorld(worldCreator);
 
         if (bukkitWorld != null) {
-            bukkitWorld.setDifficulty(Difficulty.valueOf(configValues.getWorldDifficulty()));
+            bukkitWorld.setDifficulty(configValues.getWorldDifficulty());
             bukkitWorld.setTime(configValues.getNoonTime());
             bukkitWorld.getWorldBorder().setSize(configValues.getWorldBorderSize());
             configValues.getDefaultGameRules().forEach(bukkitWorld::setGameRuleValue);
@@ -548,8 +552,13 @@ public class WorldManager {
                 break;
             }
         }
+
         player.closeInventory();
         newName = newName.replaceAll("[^A-Za-z0-9/_-]", "").replace(" ", "_").trim();
+        if (newName.isEmpty()) {
+            player.sendMessage(plugin.getString("worlds_world_creation_name_bank"));
+            return;
+        }
 
         File oldWorldFile = new File(Bukkit.getWorldContainer(), buildWorld.getName());
         File newWorldFile = new File(Bukkit.getWorldContainer(), newName);

@@ -25,8 +25,8 @@ public class FileUtils {
     /**
      * Copies a file to a new location preserving the file date.
      *
-     * @param source An existing file to copy, must not be null
-     * @param target The new file, must not be null
+     * @param source An existing file to copy, must not be {@code null}
+     * @param target The new file, must not be {@code null}
      */
     public static void copy(@NotNull File source, @NotNull File target) {
         try {

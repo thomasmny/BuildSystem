@@ -127,9 +127,9 @@ public final class UpdateChecker {
     /**
      * Get the last update result that was queried by {@link #requestUpdateCheck()}. If no
      * update check was performed since this class' initialization, this method will
-     * return null.
+     * return {@code null}.
      *
-     * @return the last update check result. null if none.
+     * @return the last update check result. {@code null} if none.
      */
     @Nullable
     public UpdateResult getLastResult() {
@@ -146,18 +146,16 @@ public final class UpdateChecker {
      * If an instance of UpdateChecker has already been initialized, this method will act
      * similarly to {@link #get()} (which is recommended after initialization).
      *
-     * @param plugin        the plugin for which to check updates. Cannot be null
+     * @param plugin        the plugin for which to check updates. Cannot be {@code null}
      * @param pluginID      the ID of the plugin as identified in the SpigotMC resource link.
      *                      For example, "https://www.spigotmc.org/resources/veinminer.<b>12038</b>/" would
      *                      expect "12038" as a value. The value must be greater than 0
-     * @param versionScheme a custom version scheme parser. Cannot be null
+     * @param versionScheme a custom version scheme parser. Cannot be {@code null}
      * @return the UpdateChecker instance
      */
     @NotNull
     public static UpdateChecker init(@NotNull JavaPlugin plugin, int pluginID, @NotNull VersionScheme versionScheme) {
-        Preconditions.checkArgument(plugin != null, "Plugin cannot be null");
         Preconditions.checkArgument(pluginID > 0, "Plugin ID must be greater than 0");
-        Preconditions.checkArgument(versionScheme != null, "null version schemes are unsupported");
 
         return (instance == null) ? instance = new UpdateChecker(plugin, pluginID, versionScheme) : instance;
     }
@@ -167,7 +165,7 @@ public final class UpdateChecker {
      * If an instance of UpdateChecker has already been initialized, this method will act
      * similarly to {@link #get()} (which is recommended after initialization).
      *
-     * @param plugin   the plugin for which to check updates. Cannot be null
+     * @param plugin   the plugin for which to check updates. Cannot be {@code null}
      * @param pluginID the ID of the plugin as identified in the SpigotMC resource link.
      *                 For example, "https://www.spigotmc.org/resources/veinminer.<b>12038</b>/" would
      *                 expect "12038" as a value. The value must be greater than 0
@@ -194,7 +192,7 @@ public final class UpdateChecker {
      * Check whether the UpdateChecker has been initialized or not (if
      * {@link #init(JavaPlugin, int)} has been invoked) and {@link #get()} is safe to use.
      *
-     * @return true if initialized, false otherwise
+     * @return {@code true} if initialized, {@code false} otherwise
      */
     public static boolean isInitialized() {
         return instance != null;
@@ -213,7 +211,7 @@ public final class UpdateChecker {
          *
          * @param first  the first version to check
          * @param second the second version to check
-         * @return the greater of the two versions. null if unsupported version schemes
+         * @return the greater of the two versions. {@code null} if unsupported version schemes
          */
         @Nullable
         String compareVersions(@NotNull String first, @NotNull String second);
@@ -306,7 +304,7 @@ public final class UpdateChecker {
         /**
          * Check whether this result requires the user to update.
          *
-         * @return true if requires update, false otherwise
+         * @return {@code true} if requires update, {@code false} otherwise
          */
         public boolean requiresUpdate() {
             return reason == UpdateReason.NEW_UPDATE;

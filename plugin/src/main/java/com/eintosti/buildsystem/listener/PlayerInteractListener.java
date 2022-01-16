@@ -33,6 +33,7 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
@@ -122,16 +123,16 @@ public class PlayerInteractListener implements Listener {
             plugin.getNavigatorInventory().openInventory(player);
             XSound.BLOCK_CHEST_OPEN.play(player);
         } else { // NEW
-            if (!playerManager.getOpenNavigator().contains(player)) {
-                summonNewNavigator(player);
-
-                String findItemName = plugin.getString("navigator_item");
-                ItemStack replaceItem = inventoryManager.getItemStack(XMaterial.BARRIER, plugin.getString("barrier_item"));
-
-                inventoryManager.replaceItem(player, findItemName, configValues.getNavigatorItem(), replaceItem);
-            } else {
+            if (playerManager.getOpenNavigator().contains(player)) {
                 player.sendMessage(plugin.getString("worlds_navigator_open"));
+                return;
             }
+
+            summonNewNavigator(player);
+
+            String findItemName = plugin.getString("navigator_item");
+            ItemStack replaceItem = inventoryManager.getItemStack(XMaterial.BARRIER, plugin.getString("barrier_item"));
+            inventoryManager.replaceItem(player, findItemName, configValues.getNavigatorItem(), replaceItem);
         }
     }
 
@@ -301,7 +302,7 @@ public class PlayerInteractListener implements Listener {
 
         Block clickedBlock = event.getClickedBlock();
         BlockFace blockFace = event.getBlockFace();
-        if (clickedBlock == null) {
+        if (clickedBlock == null || blockFace == BlockFace.DOWN) {
             return;
         }
 
@@ -310,11 +311,8 @@ public class PlayerInteractListener implements Listener {
             return;
         }
 
-        if (blockFace == BlockFace.DOWN) {
-            return;
-        } else {
-            event.setUseItemInHand(Event.Result.DENY);
-        }
+        event.setUseItemInHand(Event.Result.DENY);
+        event.setCancelled(true);
 
         switch (blockFace) {
             case UP:
@@ -346,8 +344,6 @@ public class PlayerInteractListener implements Listener {
         yaw %= 360;
         int i = (int) ((yaw + 8) / 22.5);
         switch (i) {
-            default:
-                return BlockFace.SOUTH;
             case 1:
                 return BlockFace.SOUTH_SOUTH_WEST;
             case 2:
@@ -378,6 +374,8 @@ public class PlayerInteractListener implements Listener {
                 return BlockFace.SOUTH_EAST;
             case 15:
                 return BlockFace.SOUTH_SOUTH_EAST;
+            default:
+                return BlockFace.SOUTH;
         }
     }
 
@@ -404,11 +402,8 @@ public class PlayerInteractListener implements Listener {
         }
 
         Material material = itemStack.getType();
-        if (material == configValues.getWorldEditWand().parseMaterial()) {
-            return;
-        }
-
-        if (!XTag.isInteractable(XMaterial.matchXMaterial(block.getType()))) {
+        XMaterial xMaterial = XMaterial.matchXMaterial(material);
+        if (xMaterial == configValues.getWorldEditWand()) {
             return;
         }
 
@@ -417,20 +412,21 @@ public class PlayerInteractListener implements Listener {
         event.setUseItemInHand(Event.Result.DENY);
         event.setUseInteractedBlock(Event.Result.DENY);
 
-        XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-        String materialName = material.toString();
+        if (!XMaterial.supports(13) && XTag.isItem(xMaterial)) {
+            material = Material.valueOf(material.toString().replace("_ITEM", ""));
+        }
 
         if (XTag.SIGNS.isTagged(xMaterial)) {
             if (!XMaterial.supports(13)) {
                 material = Material.valueOf("WALL_SIGN");
             } else {
-                String[] splitMaterial = materialName.split("_");
+                String[] splitMaterial = material.toString().split("_");
                 material = Material.valueOf(splitMaterial[0] + "_WALL_SIGN");
             }
         }
 
-        if (!XMaterial.supports(13) && XTag.isItem(xMaterial)) {
-            material = Material.valueOf(materialName.replace("_ITEM", ""));
+        if (!material.isBlock()) {
+            return;
         }
 
         Block adjacent = block.getRelative(event.getBlockFace());
@@ -440,7 +436,10 @@ public class PlayerInteractListener implements Listener {
         plugin.getCustomBlocks().rotate(adjacent, player, null);
     }
 
-    // Could be a separate class but this makes it easier
+    /**
+     * Stop {@link Player} from opening {@link Inventory} because the event should be cancelled
+     * as it was fired due to an interaction caused in {@link PlayerInteractListener#manageDisabledInteractSetting}
+     */
     @EventHandler
     public void onInventoryOpen(InventoryOpenEvent event) {
         if (cachePlayers.remove(event.getPlayer().getUniqueId())) {
