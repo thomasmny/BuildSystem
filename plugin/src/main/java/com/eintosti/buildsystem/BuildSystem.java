@@ -83,15 +83,18 @@ public class BuildSystem extends JavaPlugin {
     private SkullCache skullCache;
 
     @Override
-    public void onEnable() {
+    public void onLoad() {
         createLanguageFile();
         createTemplateFolder();
+        getVersion();
+    }
 
+    @Override
+    public void onEnable() {
         this.getConfig().options().copyDefaults(true);
         this.saveConfig();
         this.configValues = new ConfigValues(this);
 
-        getVersion();
         if (!setupCustomBlocks() || !setupGameRules()) {
             return;
         }
