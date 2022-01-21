@@ -54,10 +54,10 @@ public class CustomBlocks_1_12_R1 extends DirectionUtils implements CustomBlocks
         Block block = event.getBlockPlaced();
         ItemStack itemStack = event.getItemInHand();
         ItemMeta itemMeta = itemStack.getItemMeta();
-
         if (itemMeta == null || !itemMeta.hasDisplayName()) {
             return;
         }
+
         String displayName = itemMeta.getDisplayName();
 
         Bukkit.getScheduler().runTask(plugin, () -> {

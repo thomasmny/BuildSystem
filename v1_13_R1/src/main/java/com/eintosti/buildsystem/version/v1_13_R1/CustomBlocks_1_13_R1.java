@@ -43,10 +43,10 @@ public class CustomBlocks_1_13_R1 extends DirectionUtils implements CustomBlocks
         Block block = event.getBlockPlaced();
         ItemStack itemStack = event.getItemInHand();
         ItemMeta itemMeta = itemStack.getItemMeta();
-
         if (itemMeta == null || !itemMeta.hasDisplayName()) {
             return;
         }
+
         String displayName = itemMeta.getDisplayName();
         Player player = event.getPlayer();
 
@@ -158,13 +158,10 @@ public class CustomBlocks_1_13_R1 extends DirectionUtils implements CustomBlocks
     @Override
     public void modifySlab(PlayerInteractEvent event) {
         Block block = event.getClickedBlock();
-        if (block == null) {
+        if (block == null || !(block.getBlockData() instanceof Slab)) {
             return;
         }
 
-        if (!(block.getBlockData() instanceof Slab)) {
-            return;
-        }
         Slab slab = (Slab) block.getBlockData();
         if (slab.getType() != Slab.Type.DOUBLE) {
             return;

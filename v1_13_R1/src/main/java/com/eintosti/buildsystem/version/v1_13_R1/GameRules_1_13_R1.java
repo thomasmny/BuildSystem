@@ -29,17 +29,19 @@ public class GameRules_1_13_R1 implements GameRules {
 
     private final String inventoryTitle;
     private final List<String> booleanEnabledLore, booleanDisabledLore;
+    private final List<String> unknownLore;
     private final List<String> integerLore;
 
     private Inventory[] inventories;
     private int numGameRules = 0;
 
-    public GameRules_1_13_R1(String inventoryTitle, List<String> booleanEnabledLore, List<String> booleanDisabledLore, List<String> integerLore) {
+    public GameRules_1_13_R1(String inventoryTitle, List<String> booleanEnabledLore, List<String> booleanDisabledLore, List<String> unknownLore, List<String> integerLore) {
         this.invIndex = new HashMap<>();
 
         this.inventoryTitle = inventoryTitle;
         this.booleanEnabledLore = booleanEnabledLore;
         this.booleanDisabledLore = booleanDisabledLore;
+        this.unknownLore = unknownLore;
         this.integerLore = integerLore;
     }
 
@@ -102,9 +104,11 @@ public class GameRules_1_13_R1 implements GameRules {
         if (gameRule == null) {
             return false;
         }
+
         if (gameRule.getType().equals(Boolean.class)) {
             return (Boolean) world.getGameRuleValue(gameRule);
         }
+
         return true;
     }
 
@@ -112,15 +116,11 @@ public class GameRules_1_13_R1 implements GameRules {
         List<String> lore;
         if (isBoolean(gameRule)) {
             boolean enabled = (Boolean) world.getGameRuleValue(GameRule.getByName(gameRule));
-            if (enabled) {
-                lore = this.booleanEnabledLore;
-            } else {
-                lore = this.booleanDisabledLore;
-            }
+            lore = enabled ? this.booleanEnabledLore : this.booleanDisabledLore;
         } else {
             List<String> integerLore = new ArrayList<>();
-            this.integerLore.forEach(line -> integerLore.add(
-                    line.replace("%value%", "" + world.getGameRuleValue(GameRule.getByName(gameRule)))));
+            this.integerLore.forEach(line ->
+                    integerLore.add(line.replace("%value%", "" + world.getGameRuleValue(GameRule.getByName(gameRule)))));
             lore = integerLore;
         }
         return lore;

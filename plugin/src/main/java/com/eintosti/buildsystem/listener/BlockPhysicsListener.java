@@ -75,12 +75,6 @@ public class BlockPhysicsListener implements Listener {
     }
 
     private boolean isCustomRedstoneLamp(Block block) {
-        List<MetadataValue> metadataValues = block.getMetadata("CustomRedstoneLamp");
-        for (MetadataValue value : metadataValues) {
-            if (value.asBoolean()) {
-                return true;
-            }
-        }
         return block.getType().name().equals("REDSTONE_LAMP_ON");
     }
 

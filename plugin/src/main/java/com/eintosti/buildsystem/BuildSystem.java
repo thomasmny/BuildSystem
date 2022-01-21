@@ -13,20 +13,13 @@ import com.eintosti.buildsystem.expansion.BuildSystemExpansion;
 import com.eintosti.buildsystem.inventory.*;
 import com.eintosti.buildsystem.listener.*;
 import com.eintosti.buildsystem.manager.*;
+import com.eintosti.buildsystem.object.internal.ServerVersion;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.tabcomplete.*;
-import com.eintosti.buildsystem.util.ConfigValues;
-import com.eintosti.buildsystem.util.Messages;
-import com.eintosti.buildsystem.util.RBGUtils;
-import com.eintosti.buildsystem.util.SkullCache;
+import com.eintosti.buildsystem.util.*;
 import com.eintosti.buildsystem.util.external.UpdateChecker;
 import com.eintosti.buildsystem.version.CustomBlocks;
 import com.eintosti.buildsystem.version.GameRules;
-import com.eintosti.buildsystem.version.v1_12_R1.CustomBlocks_1_12_R1;
-import com.eintosti.buildsystem.version.v1_12_R1.GameRules_1_12_R1;
-import com.eintosti.buildsystem.version.v1_13_R1.CustomBlocks_1_13_R1;
-import com.eintosti.buildsystem.version.v1_13_R1.GameRules_1_13_R1;
-import com.eintosti.buildsystem.version.v1_14_R1.CustomBlocks_1_14_R1;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
@@ -40,6 +33,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+
+import static com.eintosti.buildsystem.object.internal.ServerVersion.UNKNOWN;
 
 /**
  * @author einTosti
@@ -96,10 +91,7 @@ public class BuildSystem extends JavaPlugin {
         this.saveConfig();
         this.configValues = new ConfigValues(this);
 
-        if (!setupCustomBlocks() || !setupGameRules()) {
-            return;
-        }
-
+        initVersionedClasses();
         initClasses();
 
         registerCommands();
@@ -150,6 +142,19 @@ public class BuildSystem extends JavaPlugin {
         Bukkit.getConsoleSender().sendMessage(ChatColor.RESET + "BuildSystem » Plugin " + ChatColor.RED + "disabled" + ChatColor.RESET + "!");
     }
 
+    private void initVersionedClasses() {
+        ServerVersion serverVersion = ServerVersion.matchServerVersion(version);
+        if (serverVersion == UNKNOWN) {
+            getLogger().log(Level.SEVERE, "BuildSystem does not support your server version: " + version);
+            getLogger().log(Level.SEVERE, "Disabling plugin... ");
+            this.setEnabled(false);
+            return;
+        }
+
+        this.customBlocks = serverVersion.initCustomBlocks();
+        this.gameRules = serverVersion.initGameRules();
+    }
+
     private void initClasses() {
         this.armorStandManager = new ArmorStandManager();
         this.playerManager = new PlayerManager(this);
@@ -186,81 +191,6 @@ public class BuildSystem extends JavaPlugin {
             getLogger().log(Level.INFO, "Detected server version: " + version);
         } catch (ArrayIndexOutOfBoundsException e) {
             getLogger().log(Level.SEVERE, "Unknown server version");
-        }
-    }
-
-    public boolean setupCustomBlocks() {
-        switch (version) {
-            case "v1_8_R1":
-            case "v1_8_R2":
-            case "v1_8_R3":
-            case "v1_9_R1":
-            case "v1_9_R2":
-            case "v1_10_R1":
-            case "v1_11_R1":
-            case "v1_12_R1":
-                this.customBlocks = new CustomBlocks_1_12_R1(this);
-                return true;
-            case "v1_13_R1":
-            case "v1_13_R2":
-                this.customBlocks = new CustomBlocks_1_13_R1(this);
-                return true;
-            case "v1_14_R1":
-            case "v1_15_R1":
-            case "v1_16_R1":
-            case "v1_16_R2":
-            case "v1_16_R3":
-            case "v1_17_R1":
-            case "v1_18_R1":
-                this.customBlocks = new CustomBlocks_1_14_R1(this);
-                return true;
-            default:
-                getLogger().log(Level.SEVERE, "\"CustomBlocks\" not found for version: " + version);
-                getLogger().log(Level.SEVERE, "Please report this bug to einTosti with your server version");
-                this.setEnabled(false);
-                return false;
-        }
-    }
-
-    public boolean setupGameRules() {
-        switch (version) {
-            case "v1_8_R1":
-            case "v1_8_R2":
-            case "v1_8_R3":
-            case "v1_9_R1":
-            case "v1_9_R2":
-            case "v1_10_R1":
-            case "v1_11_R1":
-            case "v1_12_R1":
-                this.gameRules = new GameRules_1_12_R1(
-                        getString("worldeditor_gamerules_title"),
-                        getStringList("worldeditor_gamerules_boolean_enabled"),
-                        getStringList("worldeditor_gamerules_boolean_disabled"),
-                        getStringList("worldeditor_gamerules_unknown"),
-                        getStringList("worldeditor_gamerules_integer")
-                );
-                return true;
-            case "v1_13_R1":
-            case "v1_13_R2":
-            case "v1_14_R1":
-            case "v1_15_R1":
-            case "v1_16_R1":
-            case "v1_16_R2":
-            case "v1_16_R3":
-            case "v1_17_R1":
-            case "v1_18_R1":
-                this.gameRules = new GameRules_1_13_R1(
-                        getString("worldeditor_gamerules_title"),
-                        getStringList("worldeditor_gamerules_boolean_enabled"),
-                        getStringList("worldeditor_gamerules_boolean_disabled"),
-                        getStringList("worldeditor_gamerules_integer")
-                );
-                return true;
-            default:
-                getLogger().log(Level.SEVERE, "\"GameRules\" not found for version: " + version);
-                getLogger().log(Level.SEVERE, "Please report this bug to einTosti with your server version");
-                this.setEnabled(false);
-                return false;
         }
     }
 
@@ -445,7 +375,7 @@ public class BuildSystem extends JavaPlugin {
         configValues.setConfigValues();
 
         if (init) {
-            setupCustomBlocks();
+            initVersionedClasses();
             if (configValues.isScoreboard()) {
                 getSettingsManager().startScoreboard();
             } else {
