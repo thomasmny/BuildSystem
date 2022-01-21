@@ -17,6 +17,7 @@ import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.tabcomplete.*;
 import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.Messages;
+import com.eintosti.buildsystem.util.RBGUtils;
 import com.eintosti.buildsystem.util.SkullCache;
 import com.eintosti.buildsystem.util.external.UpdateChecker;
 import com.eintosti.buildsystem.version.CustomBlocks;
@@ -385,7 +386,7 @@ public class BuildSystem extends JavaPlugin {
         String prefix = Messages.getInstance().messageData.get("prefix");
         try {
             final String defaultPrefix = "§8× §bBuildSystem §8┃";
-            return prefix != null ? ChatColor.translateAlternateColorCodes('&', prefix) : defaultPrefix;
+            return prefix != null ? ChatColor.translateAlternateColorCodes('&', RBGUtils.color(prefix)) : defaultPrefix;
         } catch (NullPointerException e) {
             Messages.getInstance().createMessageFile();
             return getPrefixString();
@@ -394,7 +395,8 @@ public class BuildSystem extends JavaPlugin {
 
     public String getString(String key) {
         try {
-            return ChatColor.translateAlternateColorCodes('&', Messages.getInstance().messageData.get(key).replace("%prefix%", getPrefixString()));
+            String message = Messages.getInstance().messageData.get(key).replace("%prefix%", getPrefixString());
+            return ChatColor.translateAlternateColorCodes('&', RBGUtils.color(message));
         } catch (NullPointerException e) {
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[BuildSystem] Could not find message with key: " + key);
             Messages.getInstance().createMessageFile();
@@ -408,7 +410,8 @@ public class BuildSystem extends JavaPlugin {
             String string = Messages.getInstance().messageData.get(key);
             String[] splitString = string.substring(1, string.length() - 1).split(", ");
             for (String s : splitString) {
-                list.add(ChatColor.translateAlternateColorCodes('&', s.replace("%prefix%", getPrefixString())));
+                String message = s.replace("%prefix%", getPrefixString());
+                list.add(ChatColor.translateAlternateColorCodes('&', RBGUtils.color(message)));
             }
             return list;
         } catch (NullPointerException e) {
