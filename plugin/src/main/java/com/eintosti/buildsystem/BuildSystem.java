@@ -25,7 +25,8 @@ import com.eintosti.buildsystem.command.SpeedCommand;
 import com.eintosti.buildsystem.command.TimeCommand;
 import com.eintosti.buildsystem.command.TopCommand;
 import com.eintosti.buildsystem.command.WorldsCommand;
-import com.eintosti.buildsystem.expansion.BuildSystemExpansion;
+import com.eintosti.buildsystem.expansion.luckperms.LuckPermsExpansion;
+import com.eintosti.buildsystem.expansion.placeholderapi.PlaceholderApiExpansion;
 import com.eintosti.buildsystem.inventory.ArchiveInventory;
 import com.eintosti.buildsystem.inventory.BlocksInventory;
 import com.eintosti.buildsystem.inventory.BuilderInventory;
@@ -144,6 +145,9 @@ public class BuildSystem extends JavaPlugin {
     private GameRules gameRules;
     private SkullCache skullCache;
 
+    private LuckPermsExpansion luckPermsExpansion;
+    private PlaceholderApiExpansion placeholderApiExpansion;
+
     @Override
     public void onLoad() {
         createLanguageFile();
@@ -169,7 +173,7 @@ public class BuildSystem extends JavaPlugin {
         registerTabCompleter();
         registerListeners();
         registerStats();
-        registerPlaceholders();
+        registerExpansions();
 
         performUpdateCheck();
 
@@ -204,6 +208,8 @@ public class BuildSystem extends JavaPlugin {
         settingsManager.save();
         spawnManager.save();
         inventoryManager.save();
+
+        unregisterExpansions();
 
         Bukkit.getConsoleSender().sendMessage(ChatColor.RESET + "BuildSystem » Plugin " + ChatColor.RED + "disabled" + ChatColor.RESET + "!");
     }
@@ -311,15 +317,6 @@ public class BuildSystem extends JavaPlugin {
         new SignChangeListener(this);
         new WeatherChangeListener(this);
         new WorldManipulateListener(this);
-
-        if (isWorldEdit() && configValues.isBlockWorldEditNonBuilder()) {
-            new EditSessionListener(this);
-        }
-    }
-
-    private boolean isWorldEdit() {
-        PluginManager pluginManager = Bukkit.getPluginManager();
-        return pluginManager.getPlugin("FastAsyncWorldEdit") != null || pluginManager.getPlugin("WorldEdit") != null;
     }
 
     private void registerStats() {
@@ -335,9 +332,31 @@ public class BuildSystem extends JavaPlugin {
         metrics.addCustomChart(new SimplePie("block_world_edit", () -> String.valueOf(configValues.isBlockWorldEditNonBuilder())));
     }
 
-    private void registerPlaceholders() {
-        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            new BuildSystemExpansion(this).register();
+    private void registerExpansions() {
+        PluginManager pluginManager = Bukkit.getPluginManager();
+
+        if (pluginManager.getPlugin("PlaceholderAPI") != null) {
+            this.placeholderApiExpansion = new PlaceholderApiExpansion(this);
+            this.placeholderApiExpansion.register();
+        }
+
+        if (pluginManager.getPlugin("LuckPerms") != null) {
+            this.luckPermsExpansion = new LuckPermsExpansion(this);
+            this.luckPermsExpansion.registerAll();
+        }
+
+        if (configValues.isBlockWorldEditNonBuilder() && (pluginManager.getPlugin("FastAsyncWorldEdit") != null || pluginManager.getPlugin("WorldEdit") != null)) {
+            new EditSessionListener(this);
+        }
+    }
+
+    private void unregisterExpansions() {
+        if (this.placeholderApiExpansion != null) {
+            this.placeholderApiExpansion.unregister();
+        }
+
+        if (this.luckPermsExpansion != null) {
+            this.luckPermsExpansion.unregisterAll();
         }
     }
 

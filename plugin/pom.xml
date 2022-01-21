@@ -57,30 +57,32 @@
             <version>1.5.21</version>
             <scope>provided</scope>
         </dependency>
-        <!-- PlaceholderAPI -->
-        <dependency>
-            <groupId>me.clip</groupId>
-            <artifactId>placeholderapi</artifactId>
-            <version>2.11.1</version>
-            <scope>provided</scope>
-        </dependency>
         <!-- XSeries -->
         <dependency>
             <groupId>com.github.cryptomorin</groupId>
             <artifactId>XSeries</artifactId>
             <version>8.6.0.0.1</version>
+            <scope>compile</scope>
         </dependency>
         <!-- FastBoard -->
         <dependency>
             <groupId>fr.mrmicky</groupId>
             <artifactId>fastboard</artifactId>
             <version>1.2.1</version>
+            <scope>compile</scope>
         </dependency>
-        <!-- Adventure Text -->
+        <!-- LuckPerms -->
         <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-text-minimessage</artifactId>
-            <version>4.1.0-SNAPSHOT</version>
+            <groupId>net.luckperms</groupId>
+            <artifactId>api</artifactId>
+            <version>5.3</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- PlaceholderAPI -->
+        <dependency>
+            <groupId>me.clip</groupId>
+            <artifactId>placeholderapi</artifactId>
+            <version>2.11.1</version>
             <scope>provided</scope>
         </dependency>
         <!-- FAWE Core -->

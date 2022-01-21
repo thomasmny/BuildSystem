@@ -80,6 +80,10 @@ public class WorldManager {
                 .orElse(null);
     }
 
+    public BuildWorld getBuildWorld(World world) {
+        return getBuildWorld(world.getName());
+    }
+
     public List<BuildWorld> getBuildWorlds() {
         return buildWorlds;
     }

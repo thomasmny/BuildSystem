@@ -30,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -47,14 +48,15 @@ public class BuildWorld implements ConfigurationSerializable {
     private String creator;
     private UUID creatorId;
     private final WorldType worldType;
+    private final List<Builder> builders;
+    private final long creationDate;
+
     private XMaterial material;
     private boolean privateWorld;
     private WorldStatus worldStatus;
     private String project;
     private String permission;
     private String customSpawn;
-    private final ArrayList<Builder> builders;
-    private final long date;
 
     private final String chunkGeneratorString;
     private ChunkGenerator chunkGenerator;
@@ -71,7 +73,16 @@ public class BuildWorld implements ConfigurationSerializable {
     private boolean loaded;
     private BukkitTask unloadTask;
 
-    public BuildWorld(BuildSystem plugin, String name, String creator, UUID creatorId, WorldType worldType, long date, boolean privateWorld, String... chunkGeneratorString) {
+    public BuildWorld(
+            BuildSystem plugin,
+            String name,
+            String creator,
+            UUID creatorId,
+            WorldType worldType,
+            long creationDate,
+            boolean privateWorld,
+            String... chunkGeneratorString
+    ) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
 
@@ -85,7 +96,7 @@ public class BuildWorld implements ConfigurationSerializable {
         this.permission = "-";
         this.customSpawn = null;
         this.builders = new ArrayList<>();
-        this.date = date;
+        this.creationDate = creationDate;
 
         this.physics = configValues.isWorldPhysics();
         this.explosions = configValues.isWorldExplosions();
@@ -154,7 +165,7 @@ public class BuildWorld implements ConfigurationSerializable {
             WorldStatus worldStatus,
             String project,
             String permission,
-            long date,
+            long creationDate,
             boolean physics,
             boolean explosions,
             boolean mobAI,
@@ -179,7 +190,7 @@ public class BuildWorld implements ConfigurationSerializable {
         this.worldStatus = worldStatus;
         this.project = project;
         this.permission = permission;
-        this.date = date;
+        this.creationDate = creationDate;
         this.physics = physics;
         this.explosions = explosions;
         this.mobAI = mobAI;
@@ -358,14 +369,14 @@ public class BuildWorld implements ConfigurationSerializable {
      * @return The amount of milliseconds that have passed since `January 1, 1970 UTC`, until the world was created
      */
     public long getCreationDate() {
-        return date;
+        return creationDate;
     }
 
     /**
      * @return The creation date in the format provided by the config
      */
     public String getFormattedCreationDate() {
-        return date > 0 ? new SimpleDateFormat(configValues.getDateFormat()).format(date) : "-";
+        return creationDate > 0 ? new SimpleDateFormat(configValues.getDateFormat()).format(creationDate) : "-";
     }
 
     /**
@@ -474,7 +485,7 @@ public class BuildWorld implements ConfigurationSerializable {
     /**
      * @return List of all {@link Builder}s
      */
-    public ArrayList<Builder> getBuilders() {
+    public List<Builder> getBuilders() {
         return builders;
     }
 
