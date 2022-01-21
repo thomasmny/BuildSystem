@@ -11,17 +11,13 @@ package com.eintosti.buildsystem.util;
 import com.eintosti.buildsystem.BuildSystem;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 
 /**
@@ -29,18 +25,15 @@ import java.util.logging.Level;
  */
 public class Messages {
 
-    private static Messages instance;
-    public HashMap<String, String> messageData = new HashMap<>();
+    private final BuildSystem plugin;
+    private final Map<String, String> messageData;
 
-    public static synchronized Messages getInstance() {
-        if (instance == null) {
-            instance = new Messages();
-        }
-        return instance;
+    public Messages(BuildSystem plugin) {
+        this.plugin = plugin;
+        this.messageData = new HashMap<>();
     }
 
     public void createMessageFile() {
-        JavaPlugin plugin = JavaPlugin.getPlugin(BuildSystem.class);
         File file = new File(plugin.getDataFolder() + File.separator + "messages.yml");
         try {
             if (file.createNewFile()) {
@@ -85,7 +78,15 @@ public class Messages {
         addLine(sb, "# Scoreboard");
         addLine(sb, "# ---------");
         setMessage(sb, config, "title", "&b&lBuildSystem");
-        setList(sb, config, "body", Arrays.asList("&7&m                     &8", "&7World:", " &b%world%", " ", "&7Status:", " %status%", "&7&m                     &7"));
+        setList(sb, config, "body", Arrays.asList(
+                "&7&m                     &8",
+                "&7World:",
+                " &b%world%",
+                " ",
+                "&7Status:",
+                " %status%",
+                "&7&m                     &7"
+        ));
         addLine(sb, "");
         addLine(sb, "");
         addLine(sb, "# ---------");
@@ -420,7 +421,8 @@ public class Messages {
                 "%builders%",
                 "",
                 "&8- &7&oLeft click&8: &7Teleport",
-                "&8- &7&oRight click&8: &7Edit"));
+                "&8- &7&oRight click&8: &7Edit"
+        ));
         setMessage(sb, config, "world_item_builders_builder_template", "&b%builder%&7, ");
         addLine(sb, "");
         addLine(sb, "# World Archive");
@@ -699,5 +701,9 @@ public class Messages {
         for (String value : values) {
             stringBuilder.append(" - \"").append(value).append("\"").append("\n");
         }
+    }
+
+    public Map<String, String> getMessageData() {
+        return messageData;
     }
 }

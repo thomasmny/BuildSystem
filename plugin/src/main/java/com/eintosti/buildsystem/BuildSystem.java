@@ -77,6 +77,7 @@ public class BuildSystem extends JavaPlugin {
     private StatusInventory statusInventory;
     private WorldsInventory worldsInventory;
 
+    private Messages messages;
     private ConfigValues configValues;
     private CustomBlocks customBlocks;
     private GameRules gameRules;
@@ -86,7 +87,7 @@ public class BuildSystem extends JavaPlugin {
     public void onLoad() {
         createLanguageFile();
         createTemplateFolder();
-        getVersion();
+        parseServerVersion();
     }
 
     @Override
@@ -176,10 +177,10 @@ public class BuildSystem extends JavaPlugin {
         this.statusInventory = new StatusInventory(this);
         this.worldsInventory = new WorldsInventory(this);
 
-        this.skullCache = new SkullCache();
+        this.skullCache = new SkullCache(version);
     }
 
-    private void getVersion() {
+    private void parseServerVersion() {
         try {
             this.version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
             getLogger().log(Level.INFO, "Detected server version: " + version);
@@ -382,27 +383,29 @@ public class BuildSystem extends JavaPlugin {
         if (getDataFolder().mkdir()) {
             getLogger().log(Level.INFO, "Created \"BuildSystem\" folder");
         }
-        Messages.getInstance().createMessageFile();
+
+        this.messages = new Messages(this);
+        messages.createMessageFile();
     }
 
     public String getPrefixString() {
-        String prefix = Messages.getInstance().messageData.get("prefix");
+        String prefix = messages.getMessageData().get("prefix");
         try {
             final String defaultPrefix = "§8× §bBuildSystem §8┃";
             return prefix != null ? ChatColor.translateAlternateColorCodes('&', RBGUtils.color(prefix)) : defaultPrefix;
         } catch (NullPointerException e) {
-            Messages.getInstance().createMessageFile();
+            messages.createMessageFile();
             return getPrefixString();
         }
     }
 
     public String getString(String key) {
         try {
-            String message = Messages.getInstance().messageData.get(key).replace("%prefix%", getPrefixString());
+            String message = messages.getMessageData().get(key).replace("%prefix%", getPrefixString());
             return ChatColor.translateAlternateColorCodes('&', RBGUtils.color(message));
         } catch (NullPointerException e) {
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[BuildSystem] Could not find message with key: " + key);
-            Messages.getInstance().createMessageFile();
+            messages.createMessageFile();
             return getString(key);
         }
     }
@@ -410,7 +413,7 @@ public class BuildSystem extends JavaPlugin {
     public List<String> getStringList(String key) {
         try {
             List<String> list = new ArrayList<>();
-            String string = Messages.getInstance().messageData.get(key);
+            String string = messages.getMessageData().get(key);
             String[] splitString = string.substring(1, string.length() - 1).split(", ");
             for (String s : splitString) {
                 String message = s.replace("%prefix%", getPrefixString());
@@ -419,7 +422,7 @@ public class BuildSystem extends JavaPlugin {
             return list;
         } catch (NullPointerException e) {
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[BuildSystem] Could not get list with key: " + key);
-            Messages.getInstance().createMessageFile();
+            messages.createMessageFile();
             return getStringList(key);
         }
     }

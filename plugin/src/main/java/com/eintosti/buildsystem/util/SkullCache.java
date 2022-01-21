@@ -27,9 +27,7 @@ public class SkullCache {
 
     private final Map<String, Object> skullCache;
 
-    public SkullCache() {
-        String version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-
+    public SkullCache(String version) {
         try {
             this.craftItemStackClass = Class.forName("org.bukkit.craftbukkit." + version + ".inventory.CraftItemStack");
         } catch (ClassNotFoundException e) {
@@ -60,8 +58,8 @@ public class SkullCache {
 
     public void cacheSkull(String name) {
         try {
-            Bukkit.getLogger().log(Level.INFO, "Cached Skull for: " + name);
             skullCache.put(name, getSkullAndNmsObject(name)[1]);
+            Bukkit.getLogger().log(Level.INFO, "Cached Skull for: " + name);
         } catch (Exception e) {
             e.printStackTrace();
         }
