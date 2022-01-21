@@ -9,6 +9,7 @@
 package com.eintosti.buildsystem.manager;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.object.settings.Settings;
 import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -112,10 +113,38 @@ public class NoClipManager {
         return noClipPlayers.contains(uuid);
     }
 
+    /**
+     * Only add a player to the list of No-Clip players if {@link Settings#isNoClip} is equal to {@code true}.
+     *
+     * @param player   The player to add
+     * @param settings The player's settings
+     */
+    public void startNoClip(Player player, Settings settings) {
+        if (!settings.isNoClip()) {
+            noClipPlayers.remove(player.getUniqueId());
+            return;
+        }
+
+        startNoClip(player);
+    }
+
+    /**
+     * Forcefully add a player to the list of NoClip players.
+     *
+     * @param player The player to add
+     */
     public void startNoClip(Player player) {
         noClipPlayers.add(player.getUniqueId());
     }
 
+    /**
+     * Only remove a player from the list of No-Clip players if said player has
+     * No-Clip enabled, i.e. {@link NoClipManager#isNoClip} is equal to {@code true}.
+     * <p>
+     * Will also set the player to their previous {@link GameMode}.
+     *
+     * @param uuid The uuid of the player to remove
+     */
     public void stopNoClip(UUID uuid) {
         if (!isNoClip(uuid)) {
             return;

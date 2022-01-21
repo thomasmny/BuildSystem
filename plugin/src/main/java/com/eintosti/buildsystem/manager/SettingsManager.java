@@ -59,14 +59,17 @@ public class SettingsManager {
         this.scoreboardBody = plugin.getStringList("body");
     }
 
-    private void createSettings(UUID uuid) {
-        if (!settings.containsKey(uuid)) {
-            settings.put(uuid, new Settings());
+    private Settings createSettings(UUID uuid) {
+        if (!this.settings.containsKey(uuid)) {
+            Settings settings = new Settings();
+            this.settings.put(uuid, settings);
+            return settings;
         }
+        return this.settings.get(uuid);
     }
 
-    public void createSettings(Player player) {
-        createSettings(player.getUniqueId());
+    public Settings createSettings(Player player) {
+        return createSettings(player.getUniqueId());
     }
 
     public Settings getSettings(UUID uuid) {
@@ -80,6 +83,26 @@ public class SettingsManager {
         return getSettings(player.getUniqueId());
     }
 
+    /**
+     * Only set a player's scoreboard if {@link Settings#isScoreboard} is equal to {@code true}.
+     *
+     * @param player   The player object
+     * @param settings The player's settings
+     */
+    public void startScoreboard(Player player, Settings settings) {
+        if (!settings.isScoreboard()) {
+            stopScoreboard(player, settings);
+            return;
+        }
+
+        startScoreboard(player);
+    }
+
+    /**
+     * Only set a player's scoreboard if {@link Settings#isScoreboard} is equal to {@code true}.
+     *
+     * @param player The player object
+     */
     public void startScoreboard(Player player) {
         if (!configValues.isScoreboard()) {
             return;
@@ -99,6 +122,9 @@ public class SettingsManager {
         settings.setScoreboardTask(scoreboardTask);
     }
 
+    /**
+     * Set each player's scoreboard if they have {@link Settings#isScoreboard} enabled.
+     */
     public void startScoreboard() {
         if (!configValues.isScoreboard()) {
             return;

@@ -157,8 +157,13 @@ public class BuildSystem extends JavaPlugin {
         this.saveConfig();
         this.configValues = new ConfigValues(this);
 
-        initVersionedClasses();
         initClasses();
+        if (!initVersionedClasses()) {
+            getLogger().log(Level.SEVERE, "BuildSystem does not support your server version: " + version);
+            getLogger().log(Level.SEVERE, "Disabling plugin... ");
+            this.setEnabled(false);
+            return;
+        }
 
         registerCommands();
         registerTabCompleter();
@@ -175,14 +180,9 @@ public class BuildSystem extends JavaPlugin {
         Bukkit.getOnlinePlayers().forEach(pl -> {
             getSkullCache().cacheSkull(pl.getName());
 
-            settingsManager.createSettings(pl);
-            Settings settings = settingsManager.getSettings(pl);
-            if (settings.isScoreboard()) {
-                settingsManager.startScoreboard(pl);
-            }
-            if (settings.isNoClip()) {
-                noClipManager.startNoClip(pl);
-            }
+            Settings settings = settingsManager.createSettings(pl);
+            settingsManager.startScoreboard(pl, settings);
+            noClipManager.startNoClip(pl, settings);
         });
 
         Bukkit.getConsoleSender().sendMessage(ChatColor.RESET + "BuildSystem » Plugin " + ChatColor.GREEN + "enabled" + ChatColor.RESET + "!");
@@ -208,17 +208,16 @@ public class BuildSystem extends JavaPlugin {
         Bukkit.getConsoleSender().sendMessage(ChatColor.RESET + "BuildSystem » Plugin " + ChatColor.RED + "disabled" + ChatColor.RESET + "!");
     }
 
-    private void initVersionedClasses() {
+    private boolean initVersionedClasses() {
         ServerVersion serverVersion = ServerVersion.matchServerVersion(version);
         if (serverVersion == UNKNOWN) {
-            getLogger().log(Level.SEVERE, "BuildSystem does not support your server version: " + version);
-            getLogger().log(Level.SEVERE, "Disabling plugin... ");
-            this.setEnabled(false);
-            return;
+            return false;
         }
 
         this.customBlocks = serverVersion.initCustomBlocks();
         this.gameRules = serverVersion.initGameRules();
+
+        return true;
     }
 
     private void initClasses() {
