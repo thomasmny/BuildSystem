@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-package com.eintosti.buildsystem.expansion;
+package com.eintosti.buildsystem.expansion.placeholderapi;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.SettingsManager;
@@ -21,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author einTosti
  */
-public class BuildSystemExpansion extends PlaceholderExpansion {
+public class PlaceholderApiExpansion extends PlaceholderExpansion {
 
     private static final String SETTINGS_KEY = "settings";
 
@@ -29,7 +29,7 @@ public class BuildSystemExpansion extends PlaceholderExpansion {
     private final SettingsManager settingsManager;
     private final WorldManager worldManager;
 
-    public BuildSystemExpansion(BuildSystem plugin) {
+    public PlaceholderApiExpansion(BuildSystem plugin) {
         this.plugin = plugin;
         this.settingsManager = plugin.getSettingsManager();
         this.worldManager = plugin.getWorldManager();
@@ -169,7 +169,7 @@ public class BuildSystemExpansion extends PlaceholderExpansion {
 
     /**
      * This is the method called when a placeholder with the identifier needed for
-     * {@link BuildSystemExpansion#parseSettingsPlaceholder(Player, String)} is not found
+     * {@link PlaceholderApiExpansion#parseSettingsPlaceholder(Player, String)} is not found
      * <p>
      * The default layout for a world placeholder is {@code %buildsystem_<value>%}.
      * If a world is not specified by using the format {@code %buildsystem_<value>_<world>%}
