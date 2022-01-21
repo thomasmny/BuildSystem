@@ -27,6 +27,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -78,7 +79,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
     }
 
     private void addItems(BuildWorld buildWorld, Player player) {
-        ArrayList<Builder> builders = buildWorld.getBuilders();
+        List<Builder> builders = buildWorld.getBuilders();
         this.numBuilders = builders.size();
         int numInventories = (numBuilders % MAX_BUILDERS == 0 ? numBuilders : numBuilders + 1) != 0 ? (numBuilders % MAX_BUILDERS == 0 ? numBuilders : numBuilders + 1) : 1;
 

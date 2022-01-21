@@ -286,7 +286,6 @@ public class WorldsCommand implements CommandExecutor {
             }
 
             case "info": {
-                //TODO: Print information about the custom generator?
                 if (!player.hasPermission("buildsystem.info")) {
                     plugin.sendPermissionMessage(player);
                     return true;
@@ -632,6 +631,7 @@ public class WorldsCommand implements CommandExecutor {
         return commandComponent;
     }
 
+    //TODO: Print information about the custom generator?
     private void sendInfoMessage(Player player, BuildWorld buildWorld) {
         List<String> infoMessage = new ArrayList<>();
         for (String line : plugin.getStringList("world_info")) {
@@ -654,7 +654,6 @@ public class WorldsCommand implements CommandExecutor {
                     .replace("%physics%", String.valueOf(buildWorld.isPhysics()))
                     .replace("%explosions%", String.valueOf(buildWorld.isExplosions()))
                     .replace("%mobai%", String.valueOf(buildWorld.isMobAI()))
-                    .replace("%customspawn%", getCustomSpawn(buildWorld))
                     .replace("%custom_spawn%", getCustomSpawn(buildWorld));
             infoMessage.add(replace);
         }
