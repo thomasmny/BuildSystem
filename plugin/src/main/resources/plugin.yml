@@ -4,7 +4,7 @@ api-version: "1.13"
 author: einTosti
 main: com.eintosti.buildsystem.BuildSystem
 description: Powerful, easy to use system for builders
-softdepend: [ PlaceholderAPI ]
+softdepend: [ PlaceholderAPI, WorldEdit ]
 
 commands:
   back:
