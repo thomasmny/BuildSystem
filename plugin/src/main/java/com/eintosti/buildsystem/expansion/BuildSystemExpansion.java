@@ -170,7 +170,7 @@ public class BuildSystemExpansion extends PlaceholderExpansion {
     /**
      * This is the method called when a placeholder with the identifier needed for
      * {@link BuildSystemExpansion#parseSettingsPlaceholder(Player, String)} is not found
-     *
+     * <p>
      * The default layout for a world placeholder is {@code %buildsystem_<value>%}.
      * If a world is not specified by using the format {@code %buildsystem_<value>_<world>%}
      * then the world the player is currently in will be used.

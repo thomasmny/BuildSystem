@@ -20,7 +20,15 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.*;
+import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.event.block.BlockFadeEvent;
+import org.bukkit.event.block.BlockFormEvent;
+import org.bukkit.event.block.BlockFromToEvent;
+import org.bukkit.event.block.BlockGrowEvent;
+import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.block.BlockRedstoneEvent;
+import org.bukkit.event.block.BlockSpreadEvent;
+import org.bukkit.event.block.LeavesDecayEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.metadata.MetadataValue;
@@ -75,6 +83,12 @@ public class BlockPhysicsListener implements Listener {
     }
 
     private boolean isCustomRedstoneLamp(Block block) {
+        List<MetadataValue> metadataValues = block.getMetadata("CustomRedstoneLamp");
+        for (MetadataValue value : metadataValues) {
+            if (value.asBoolean()) {
+                return true;
+            }
+        }
         return block.getType().name().equals("REDSTONE_LAMP_ON");
     }
 
