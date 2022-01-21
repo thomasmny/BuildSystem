@@ -47,20 +47,20 @@ public class RBGUtils {
     private static String applyFormats(String input) {
         String text = input;
 
-        text = parseFormat1(text);
-        text = parseFormat2(text);
-        text = parseFormat3(text);
+        text = parseDefaultFormat(text);
+        text = parseBracketFormat(text);
+        text = parseSpigotFormat(text);
 
         return text;
     }
 
     //&#RRGGBB
-    private static String parseFormat1(String input) {
+    private static String parseDefaultFormat(String input) {
         return input.replace("&#", "#");
     }
 
     //{#RRGGBB}
-    private static String parseFormat2(String input) {
+    private static String parseBracketFormat(String input) {
         String text = input;
         Matcher matcher = BRACKET_HEX.matcher(text);
 
@@ -74,8 +74,8 @@ public class RBGUtils {
     }
 
     //&x&R&R&G&G&B&B
-    private static String parseFormat3(String input) {
-        String text = input.replace('\u00a7', '&');
+    private static String parseSpigotFormat(String input) {
+        String text = input.replace('§', '&');
 
         Matcher matcher = SPIGOT_HEX.matcher(text);
         while (matcher.find()) {
