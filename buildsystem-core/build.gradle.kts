@@ -38,7 +38,7 @@ dependencies {
     compileOnly("com.mojang:authlib:1.5.25")
     compileOnly("net.luckperms:api:5.3")
     compileOnly("me.clip:placeholderapi:2.11.1")
-    compileOnly("com.sk89q.worldedit:worldedit-core:7.2.0-SNAPSHOT")
+    compileOnly("com.sk89q.worldedit:worldedit-core:7.2.9")
     compileOnly("org.jetbrains:annotations:23.0.0")
 
     implementation("com.github.cryptomorin:XSeries:8.6.1")
