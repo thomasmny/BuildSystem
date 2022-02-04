@@ -39,6 +39,7 @@ dependencies {
     compileOnly("net.luckperms:api:5.3")
     compileOnly("me.clip:placeholderapi:2.11.1")
     compileOnly("com.sk89q.worldedit:worldedit-core:7.2.0-SNAPSHOT")
+    compileOnly("org.jetbrains:annotations:23.0.0")
 
     implementation("com.github.cryptomorin:XSeries:8.6.1")
     implementation("fr.mrmicky:fastboard:1.2.1")
