@@ -35,7 +35,7 @@ dependencies {
     }
 
     compileOnly("org.spigotmc:spigot-api:1.18-R0.1-SNAPSHOT")
-    compileOnly("com.mojang:authlib:1.5.21")
+    compileOnly("com.mojang:authlib:1.5.25")
     compileOnly("net.luckperms:api:5.3")
     compileOnly("me.clip:placeholderapi:2.11.1")
     compileOnly("com.sk89q.worldedit:worldedit-core:7.2.0-SNAPSHOT")
