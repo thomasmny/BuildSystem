@@ -224,6 +224,10 @@ public class CreateInventory extends PaginatedInventory implements Listener {
 
             case TEMPLATES: {
                 ItemStack itemStack = event.getCurrentItem();
+                if (itemStack == null) {
+                    return;
+                }
+
                 if (itemStack.getType() == XMaterial.FILLED_MAP.parseMaterial()) {
                     worldManager.startWorldNameInput(player, WorldType.TEMPLATE, itemStack.getItemMeta().getDisplayName(), createPrivateWorld);
                 } else if (itemStack.getType() == XMaterial.PLAYER_HEAD.parseMaterial()) {
@@ -251,18 +255,30 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         }
     }
 
-    private CreateInventory.Page getCurrentPage(Inventory inventory) {
-        if (inventory.getItem(12).containsEnchantment(Enchantment.KNOCKBACK)) {
-            return CreateInventory.Page.PREDEFINED;
-        } else if (inventory.getItem(13).containsEnchantment(Enchantment.KNOCKBACK)) {
-            return CreateInventory.Page.GENERATOR;
-        } else {
-            return CreateInventory.Page.TEMPLATES;
+    private Page getCurrentPage(Inventory inventory) {
+        for (Page page : Page.values()) {
+            ItemStack itemStack = inventory.getItem(page.getSlot());
+            if (itemStack != null && itemStack.containsEnchantment(Enchantment.KNOCKBACK)) {
+                return page;
+            }
         }
+        return Page.PREDEFINED;
     }
 
     public enum Page {
-        PREDEFINED, TEMPLATES, GENERATOR
+        PREDEFINED(12),
+        TEMPLATES(13),
+        GENERATOR(14);
+
+        private final int slot;
+
+        Page(int slot) {
+            this.slot = slot;
+        }
+
+        public int getSlot() {
+            return slot;
+        }
     }
 
     private static class TemplateFilter implements FileFilter {

@@ -92,7 +92,7 @@ public class PlayerCommandPreprocessListener implements Listener {
         }
     }
 
-    private final static HashSet<String> DISABLED_COMMANDS = Sets.newHashSet(
+    private static final HashSet<String> DISABLED_COMMANDS = Sets.newHashSet(
             "/worldedit",
             "/we",
 

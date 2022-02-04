@@ -401,7 +401,7 @@ public class InventoryManager {
         return builderNames;
     }
 
-    public void fillMultiInvWithGlass(BuildSystem plugin, Inventory inventory, Player player, Map<UUID, Integer> invIndex, int numOfPages) {
+    public void fillMultiInvWithGlass(BuildSystem plugin, Inventory inventory, Player player, int currentPage, int numOfPages) {
         for (int i = 0; i <= 8; i++) {
             addGlassPane(plugin, player, inventory, i);
         }
@@ -412,13 +412,13 @@ public class InventoryManager {
             addGlassPane(plugin, player, inventory, i);
         }
 
-        if (numOfPages > 1 && invIndex.get(player.getUniqueId()) > 0) {
+        if (numOfPages > 1 && currentPage > 0) {
             addUrlSkull(inventory, 45, plugin.getString("gui_previous_page"), "https://textures.minecraft.net/texture/f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
         } else {
             addGlassPane(plugin, player, inventory, 45);
         }
 
-        if (numOfPages > 1 && invIndex.get(player.getUniqueId()) < (numOfPages - 1)) {
+        if (numOfPages > 1 && currentPage < (numOfPages - 1)) {
             addUrlSkull(inventory, 53, plugin.getString("gui_next_page"), "https://textures.minecraft.net/texture/d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
         } else {
             addGlassPane(plugin, player, inventory, 53);

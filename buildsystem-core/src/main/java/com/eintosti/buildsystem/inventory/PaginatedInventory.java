@@ -27,7 +27,7 @@ public abstract class PaginatedInventory {
         this.invIndex = new HashMap<>();
     }
 
-    public Integer getInvIndex(Player player) {
+    public int getInvIndex(Player player) {
         UUID playerUUID = player.getUniqueId();
         if (!invIndex.containsKey(playerUUID)) {
             setInvIndex(player, 0);

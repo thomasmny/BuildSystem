@@ -105,9 +105,6 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
 
     public Inventory getInventory(BuildWorld buildWorld, Player player) {
         addItems(buildWorld, player);
-        if (getInvIndex(player) == null) {
-            setInvIndex(player, 0);
-        }
         return inventories[getInvIndex(player)];
     }
 
