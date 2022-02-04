@@ -34,7 +34,7 @@ dependencies {
         implementation(project(it.path))
     }
 
-    compileOnly("org.spigotmc:spigot-api:1.18-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.18-rc3-R0.1-SNAPSHOT")
     compileOnly("com.mojang:authlib:1.5.25")
     compileOnly("net.luckperms:api:5.3")
     compileOnly("me.clip:placeholderapi:2.11.1")
