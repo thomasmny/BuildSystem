@@ -15,9 +15,9 @@ import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.object.world.WorldStatus;
-import com.eintosti.buildsystem.object.world.WorldType;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
+import com.eintosti.buildsystem.api.world.WorldStatus;
+import com.eintosti.buildsystem.api.world.WorldType;
 import com.eintosti.buildsystem.util.ConfigValues;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -76,12 +76,12 @@ public class PlayerChangedWorldListener implements Listener {
         Player player = event.getPlayer();
         String worldName = player.getWorld().getName();
 
-        BuildWorld oldWorld = worldManager.getBuildWorld(event.getFrom().getName());
+        CraftBuildWorld oldWorld = worldManager.getBuildWorld(event.getFrom().getName());
         if (oldWorld != null && configValues.isUnloadWorlds()) {
             oldWorld.resetUnloadTask();
         }
 
-        BuildWorld newWorld = worldManager.getBuildWorld(worldName);
+        CraftBuildWorld newWorld = worldManager.getBuildWorld(worldName);
         if (newWorld != null) {
             if (!newWorld.isPhysics()) {
                 if (player.hasPermission("buildsystem.physics.message")) {
@@ -122,7 +122,7 @@ public class PlayerChangedWorldListener implements Listener {
         player.sendMessage(plugin.getString("build_deactivated_self"));
     }
 
-    private void setGoldBlock(BuildWorld buildWorld) {
+    private void setGoldBlock(CraftBuildWorld buildWorld) {
         if (buildWorld == null || buildWorld.getType() != WorldType.VOID || buildWorld.getStatus() != WorldStatus.NOT_STARTED) {
             return;
         }
@@ -140,7 +140,7 @@ public class PlayerChangedWorldListener implements Listener {
     @SuppressWarnings("deprecation")
     private void checkWorldStatus(Player player) {
         String worldName = player.getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
             return;
         }

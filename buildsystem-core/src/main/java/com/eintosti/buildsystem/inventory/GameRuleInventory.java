@@ -11,7 +11,7 @@ package com.eintosti.buildsystem.inventory;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
 import com.eintosti.buildsystem.version.GameRules;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -39,7 +39,7 @@ public class GameRuleInventory implements Listener {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    public void openInventory(Player player, BuildWorld buildWorld) {
+    public void openInventory(Player player, CraftBuildWorld buildWorld) {
         World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
 
         Inventory inventory = gameRules.getInventory(player, bukkitWorld);
@@ -89,7 +89,7 @@ public class GameRuleInventory implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        BuildWorld buildWorld = plugin.getPlayerManager().getSelectedWorld().get(player.getUniqueId());
+        CraftBuildWorld buildWorld = plugin.getPlayerManager().getSelectedWorld().get(player.getUniqueId());
         if (buildWorld == null) {
             player.closeInventory();
             player.sendMessage(plugin.getString("worlds_edit_error"));

@@ -11,7 +11,7 @@ package com.eintosti.buildsystem.util.config;
 import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
 import org.bukkit.generator.ChunkGenerator;
 
 import java.util.logging.Level;
@@ -29,7 +29,7 @@ public class WorldConfig extends ConfigurationFile {
         this.plugin = plugin;
     }
 
-    public void saveWorld(BuildWorld buildWorld) {
+    public void saveWorld(CraftBuildWorld buildWorld) {
         getFile().set("worlds." + buildWorld.getName(), buildWorld.serialize());
         saveFile();
     }
@@ -44,12 +44,12 @@ public class WorldConfig extends ConfigurationFile {
 
         logger.log(Level.INFO, "*** All worlds will be loaded now ***");
 
-        worldManager.getBuildWorlds().forEach(world -> {
-            String worldName = world.getName();
-            ChunkGenerator chunkGenerator = world.getChunkGenerator();
-            worldManager.generateBukkitWorld(worldName, world.getType(), chunkGenerator);
+        worldManager.getBuildWorlds().forEach(buildWorld -> {
+            String worldName = buildWorld.getName();
+            ChunkGenerator chunkGenerator = buildWorld.getChunkGenerator();
+            worldManager.generateBukkitWorld(worldName, buildWorld.getType(), chunkGenerator);
 
-            if (world.getMaterial() == XMaterial.PLAYER_HEAD) {
+            if (buildWorld.getXMaterial() == XMaterial.PLAYER_HEAD) {
                 plugin.getSkullCache().cacheSkull(worldName);
             }
 

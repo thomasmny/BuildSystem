@@ -13,7 +13,7 @@ import com.eintosti.buildsystem.object.navigator.NavigatorType;
 import com.eintosti.buildsystem.object.settings.Color;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.settings.WorldSort;
-import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
 import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.config.SettingsConfig;
 import fr.mrmicky.fastboard.FastBoard;
@@ -156,7 +156,7 @@ public class SettingsManager {
         }
 
         String worldName = player.getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(worldName);
 
         return originalString
                 .replace("%world%", worldName)
@@ -168,7 +168,7 @@ public class SettingsManager {
     }
 
     // Is there an easier way of doing this?
-    private String parseWorldInformation(BuildWorld buildWorld, String input) {
+    private String parseWorldInformation(CraftBuildWorld buildWorld, String input) {
         if (buildWorld == null) {
             return "§f-";
         }
@@ -181,7 +181,7 @@ public class SettingsManager {
             case "%project%":
                 return buildWorld.getProject();
             case "%creator%":
-                return buildWorld.getCreator();
+                return buildWorld.getCreatorName();
             case "%creation%":
                 return buildWorld.getFormattedCreationDate();
             default:

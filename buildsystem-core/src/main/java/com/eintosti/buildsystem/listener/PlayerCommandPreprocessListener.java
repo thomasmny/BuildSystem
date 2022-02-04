@@ -13,8 +13,8 @@ import com.eintosti.buildsystem.event.PlayerInventoryClearEvent;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.object.world.WorldStatus;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
+import com.eintosti.buildsystem.api.world.WorldStatus;
 import com.eintosti.buildsystem.util.ConfigValues;
 import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
@@ -80,7 +80,7 @@ public class PlayerCommandPreprocessListener implements Listener {
                 return;
             }
 
-            BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+            CraftBuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
             if (buildWorld == null) {
                 return;
             }
@@ -269,7 +269,7 @@ public class PlayerCommandPreprocessListener implements Listener {
             "/vr--"
     );
 
-    private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
+    private boolean disableArchivedWorlds(CraftBuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
         if (!plugin.canBypass(player) && buildWorld.getStatus() == WorldStatus.ARCHIVE) {
             event.setCancelled(true);
             player.sendMessage(plugin.getString("command_archive_world"));
@@ -278,7 +278,7 @@ public class PlayerCommandPreprocessListener implements Listener {
         return false;
     }
 
-    private void checkBuilders(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
+    private void checkBuilders(CraftBuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
         if (plugin.canBypass(player)) {
             return;
         }
@@ -287,7 +287,7 @@ public class PlayerCommandPreprocessListener implements Listener {
             return;
         }
 
-        if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
+        if (buildWorld.isBuildersEnabled() && !buildWorld.isBuilder(player)) {
             event.setCancelled(true);
             player.sendMessage(plugin.getString("command_not_builder"));
         }

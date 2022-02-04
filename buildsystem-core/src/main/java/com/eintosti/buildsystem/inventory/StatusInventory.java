@@ -13,8 +13,8 @@ import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.PlayerManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.object.world.WorldStatus;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
+import com.eintosti.buildsystem.api.world.WorldStatus;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -117,7 +117,7 @@ public class StatusInventory implements Listener {
             return;
         }
 
-        BuildWorld buildWorld = playerManager.getSelectedWorld().get(player.getUniqueId());
+        CraftBuildWorld buildWorld = playerManager.getSelectedWorld().get(player.getUniqueId());
         if (buildWorld == null) {
             player.closeInventory();
             player.sendMessage(plugin.getString("worlds_setstatus_error"));

@@ -10,7 +10,7 @@ package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
 import com.eintosti.buildsystem.util.ManageEntityAI;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
@@ -38,7 +38,7 @@ public class EntitySpawnListener implements Listener {
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
         if (buildWorld == null || buildWorld.isMobAI()) {
             return;
         }

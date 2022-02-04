@@ -15,8 +15,8 @@ import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.manager.SpawnManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.settings.Settings;
-import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.object.world.WorldStatus;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
+import com.eintosti.buildsystem.api.world.WorldStatus;
 import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.external.UpdateChecker;
 import org.bukkit.Bukkit;
@@ -70,7 +70,7 @@ public class PlayerJoinListener implements Listener {
         plugin.getSkullCache().cacheSkull(player.getName());
 
         String worldName = player.getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld != null) {
             if (!buildWorld.isPhysics() && player.hasPermission("buildsystem.physics.message")) {
                 player.sendMessage(plugin.getString("physics_deactivated_in_world").replace("%world%", buildWorld.getName()));

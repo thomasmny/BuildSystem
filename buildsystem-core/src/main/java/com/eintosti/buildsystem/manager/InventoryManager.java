@@ -12,11 +12,12 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.api.world.Builder;
 import com.eintosti.buildsystem.object.settings.Settings;
-import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.object.world.Builder;
-import com.eintosti.buildsystem.object.world.WorldStatus;
-import com.eintosti.buildsystem.object.world.WorldType;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
+import com.eintosti.buildsystem.object.world.CraftBuilder;
+import com.eintosti.buildsystem.api.world.WorldStatus;
+import com.eintosti.buildsystem.api.world.WorldType;
 import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.config.SetupConfig;
 import com.eintosti.buildsystem.util.exception.UnexpectedEnumValueException;
@@ -40,10 +41,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * @author einTosti
@@ -226,14 +225,14 @@ public class InventoryManager {
         return true;
     }
 
-    public void addWorldItem(Player player, Inventory inventory, int position, BuildWorld buildWorld) {
+    public void addWorldItem(Player player, Inventory inventory, int position, CraftBuildWorld buildWorld) {
         String worldName = buildWorld.getName();
         String displayName = plugin.getString("world_item_title").replace("%world%", worldName);
 
-        if (buildWorld.getMaterial() == XMaterial.PLAYER_HEAD) {
+        if (buildWorld.getXMaterial() == XMaterial.PLAYER_HEAD) {
             addSkull(inventory, position, displayName, worldName, getLore(player, buildWorld));
         } else {
-            addItemStack(inventory, position, buildWorld.getMaterial(), displayName, getLore(player, buildWorld));
+            addItemStack(inventory, position, buildWorld.getXMaterial(), displayName, getLore(player, buildWorld));
         }
     }
 
@@ -255,7 +254,7 @@ public class InventoryManager {
         }
 
         if (slot >= 9 && slot <= 44) {
-            BuildWorld buildWorld = plugin.getWorldManager().getBuildWorld(getWorldName(displayName));
+            CraftBuildWorld buildWorld = plugin.getWorldManager().getBuildWorld(getWorldName(displayName));
             manageWorldItemClick(event, player, itemMeta, buildWorld);
         }
 
@@ -267,7 +266,7 @@ public class InventoryManager {
         }
     }
 
-    private void manageWorldItemClick(InventoryClickEvent event, Player player, ItemMeta itemMeta, BuildWorld buildWorld) {
+    private void manageWorldItemClick(InventoryClickEvent event, Player player, ItemMeta itemMeta, CraftBuildWorld buildWorld) {
         if (event.isLeftClick() || !player.hasPermission("buildsystem.edit")) {
             performNonEditClick(player, itemMeta);
             return;
@@ -292,7 +291,7 @@ public class InventoryManager {
 
     private void teleport(Player player, String worldName) {
         WorldManager worldManager = plugin.getWorldManager();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
             return;
         }
@@ -304,8 +303,8 @@ public class InventoryManager {
         return StringUtils.difference(template, input);
     }
 
-    public List<BuildWorld> sortWorlds(Player player, WorldManager worldManager, BuildSystem plugin) {
-        List<BuildWorld> buildWorlds = new ArrayList<>(worldManager.getBuildWorlds());
+    public List<CraftBuildWorld> sortWorlds(Player player, WorldManager worldManager, BuildSystem plugin) {
+        List<CraftBuildWorld> buildWorlds = new ArrayList<>(worldManager.getBuildWorlds());
         Settings settings = plugin.getSettingsManager().getSettings(player);
         switch (settings.getWorldSort()) {
             default: // NAME_A_TO_Z
@@ -332,7 +331,7 @@ public class InventoryManager {
         return buildWorlds;
     }
 
-    private List<String> getLore(Player player, BuildWorld buildWorld) {
+    private List<String> getLore(Player player, CraftBuildWorld buildWorld) {
         List<String> messageList = player.hasPermission("buildsystem.edit") ? plugin.getStringList("world_item_lore_edit") :
                 plugin.getStringList("world_item_lore_normal");
         List<String> lore = new ArrayList<>();
@@ -340,7 +339,7 @@ public class InventoryManager {
             String replace = line.replace("%project%", buildWorld.getProject())
                     .replace("%permission%", buildWorld.getPermission())
                     .replace("%status%", buildWorld.getStatusName())
-                    .replace("%creator%", buildWorld.getCreator())
+                    .replace("%creator%", buildWorld.getCreatorName())
                     .replace("%creation%", buildWorld.getFormattedCreationDate());
 
             if (!line.contains("%builders%")) {
@@ -366,13 +365,13 @@ public class InventoryManager {
         return lore;
     }
 
-    private ArrayList<String> formatBuilders(BuildWorld buildWorld) {
+    private ArrayList<String> formatBuilders(CraftBuildWorld buildWorld) {
         String template = plugin.getString("world_item_builders_builder_template");
-        ArrayList<Builder> builders = new ArrayList<>();
+        List<Builder> builders = new ArrayList<>();
 
         if (configValues.isCreatorIsBuilder()) {
-            if (buildWorld.getCreator() != null && !buildWorld.getCreator().equals("-")) {
-                builders.add(new Builder(buildWorld.getCreatorId(), buildWorld.getCreator()));
+            if (buildWorld.getCreatorName() != null && !buildWorld.getCreatorName().equals("-")) {
+                builders.add(new CraftBuilder(buildWorld.getCreatorId(), buildWorld.getCreatorName()));
             }
         }
 
@@ -758,10 +757,10 @@ public class InventoryManager {
         }
     }
 
-    private static class CreationComparator implements Comparator<BuildWorld> {
+    private static class CreationComparator implements Comparator<CraftBuildWorld> {
 
         @Override
-        public int compare(BuildWorld buildWorld1, BuildWorld buildWorld2) {
+        public int compare(CraftBuildWorld buildWorld1, CraftBuildWorld buildWorld2) {
             return Long.compare(buildWorld1.getCreationDate(), buildWorld2.getCreationDate());
         }
     }
