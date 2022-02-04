@@ -66,4 +66,13 @@ tasks {
         relocate("fr.mrmicky.fastboard", "$shadePath.fastboard")
         relocate("org.bstats", "$shadePath.bstats")
     }
+
+    processResources {
+        from(sourceSets.main.get().resources.srcDirs) {
+            filesMatching("plugin.yml") {
+                expand("version" to project.version)
+            }
+            duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        }
+    }
 }

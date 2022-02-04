@@ -1,9 +1,10 @@
 name: BuildSystem
-version: ${project.version}
+version: ${version}
 api-version: "1.13"
 author: einTosti
 main: com.eintosti.buildsystem.BuildSystem
 description: Powerful, easy to use system for builders
+website: https://buildsystem.eintosti.com
 softdepend: [ LuckPerms, PlaceholderAPI, WorldEdit ]
 
 commands:
