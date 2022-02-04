@@ -11,7 +11,9 @@ jobs:
       fail-fast: true
 
     steps:
-      - uses: actions/checkout@v2.4.0
+      - name: Checkout Git Repository
+        uses: actions/checkout@v2.4.0
+
       - name: JDK ${{ matrix.java }}
         uses: actions/setup-java@v2.5.0
         with:
@@ -19,5 +21,10 @@ jobs:
           cache: 'maven'
           distribution: 'temurin'
 
-      - name: Build with Maven
-        run: mvn -B package --file pom.xml
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build with Gradle
+        run: ./gradlew clean build
