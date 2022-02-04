@@ -107,7 +107,7 @@ You can find a full guide with tutorials, commands and permissions [here](https:
 ### Compilation
 
 1. Build with `/gradlew clean build`.
-2. Then you will find the plugin jar `BuildSystem-<identifier>` obtained in **buildsystem-core/build/libs**. 
+2. Then you can use the plugin jar `BuildSystem-<identifier>` obtained in **buildsystem-core/build/libs**. 
 
 ### PR Policy
 
