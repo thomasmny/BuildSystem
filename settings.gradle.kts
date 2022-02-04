@@ -12,5 +12,11 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
-include("buildsystem-abstraction:common")
-findProject(":buildsystem-abstraction:common")?.name = "common"
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+    }
+}
+
+enableFeaturePreview("VERSION_CATALOGS")

@@ -22,28 +22,21 @@ repositories {
     }
 }
 
-val abstract = configurations.create("abstract") {
-    description = "Adapters to include in the JAR"
-    isCanBeConsumed = false
-    isCanBeResolved = true
-    shouldResolveConsistentlyWith(configurations["runtimeClasspath"])
-}
-
 dependencies {
     project.project(":buildsystem-abstraction").subprojects.forEach {
         implementation(project(it.path))
     }
 
-    compileOnly("org.spigotmc:spigot-api:1.18-R0.1-SNAPSHOT")
-    compileOnly("com.mojang:authlib:1.5.21")
-    compileOnly("net.luckperms:api:5.3")
-    compileOnly("me.clip:placeholderapi:2.11.1")
-    compileOnly("com.sk89q.worldedit:worldedit-core:7.2.0-SNAPSHOT")
-    compileOnly("org.jetbrains:annotations:23.0.0")
+    compileOnly(libs.spigot)
+    compileOnly(libs.authlib)
+    compileOnly(libs.luckperms)
+    compileOnly(libs.placeholderapi)
+    compileOnly(libs.worldedit)
+    compileOnly(libs.annotations)
 
-    implementation("com.github.cryptomorin:XSeries:8.6.1")
-    implementation("fr.mrmicky:fastboard:1.2.1")
-    implementation("org.bstats:bstats-bukkit:3.0.0")
+    implementation(libs.xseries)
+    implementation(libs.fastboard)
+    implementation(libs.bstats)
 }
 
 tasks {
@@ -68,9 +61,9 @@ tasks {
             it.tasks.named("assemble")
         })
 
-        fun reloc(pkg: String) = relocate(pkg, "com.eintosti.buildsystem.util.external.$pkg")
-        reloc("com.cryptomorin.xseries")
-        reloc("fr.mrmicky.fastboard")
-        reloc("org.bstats")
+        val shadePath = "com.eintosti.buildsystem.util.external"
+        relocate("com.cryptomorin.xseries", "$shadePath.xseries")
+        relocate("fr.mrmicky.fastboard", "$shadePath.fastboard")
+        relocate("org.bstats", "$shadePath.bstats")
     }
 }
