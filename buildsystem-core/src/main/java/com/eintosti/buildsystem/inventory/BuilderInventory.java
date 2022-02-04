@@ -11,9 +11,10 @@ package com.eintosti.buildsystem.inventory;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.api.world.Builder;
 import com.eintosti.buildsystem.manager.InventoryManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.object.world.Builder;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
+import com.eintosti.buildsystem.object.world.CraftBuilder;
 import com.eintosti.buildsystem.util.external.UUIDFetcher;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -47,7 +48,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    private Inventory createInventory(BuildWorld buildWorld, Player player) {
+    private Inventory createInventory(CraftBuildWorld buildWorld, Player player) {
         Inventory inventory = Bukkit.createInventory(null, 27, plugin.getString("worldeditor_builders_title"));
         fillGuiWithGlass(inventory, player);
 
@@ -57,17 +58,17 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         return inventory;
     }
 
-    private void addCreatorInfoItem(Inventory inventory, BuildWorld buildWorld) {
-        String creatorName = buildWorld.getCreator();
+    private void addCreatorInfoItem(Inventory inventory, CraftBuildWorld buildWorld) {
+        String creatorName = buildWorld.getCreatorName();
         if (creatorName == null || creatorName.equalsIgnoreCase("-")) {
             inventoryManager.addItemStack(inventory, 4, XMaterial.BARRIER, plugin.getString("worldeditor_builders_no_creator_item"));
         } else {
             inventoryManager.addSkull(inventory, 4, plugin.getString("worldeditor_builders_creator_item"),
-                    buildWorld.getCreator(), plugin.getString("worldeditor_builders_creator_lore").replace("%creator%", buildWorld.getCreator()));
+                    buildWorld.getCreatorName(), plugin.getString("worldeditor_builders_creator_lore").replace("%creator%", buildWorld.getCreatorName()));
         }
     }
 
-    private void addBuilderAddItem(Inventory inventory, BuildWorld buildWorld, Player player) {
+    private void addBuilderAddItem(Inventory inventory, CraftBuildWorld buildWorld, Player player) {
         UUID creatorId = buildWorld.getCreatorId();
         if ((creatorId != null && creatorId.equals(player.getUniqueId())) || player.hasPermission("buildsystem.admin")) {
             inventoryManager.addUrlSkull(inventory, 22, plugin.getString("worldeditor_builders_add_builder_item"),
@@ -77,7 +78,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         }
     }
 
-    private void addItems(BuildWorld buildWorld, Player player) {
+    private void addItems(CraftBuildWorld buildWorld, Player player) {
         List<Builder> builders = buildWorld.getBuilders();
         this.numBuilders = builders.size();
         int numInventories = (numBuilders % MAX_BUILDERS == 0 ? numBuilders : numBuilders + 1) != 0 ? (numBuilders % MAX_BUILDERS == 0 ? numBuilders : numBuilders + 1) : 1;
@@ -103,7 +104,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         }
     }
 
-    public Inventory getInventory(BuildWorld buildWorld, Player player) {
+    public Inventory getInventory(CraftBuildWorld buildWorld, Player player) {
         addItems(buildWorld, player);
         return inventories[getInvIndex(player)];
     }
@@ -139,7 +140,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        BuildWorld buildWorld = plugin.getPlayerManager().getSelectedWorld().get(player.getUniqueId());
+        CraftBuildWorld buildWorld = plugin.getPlayerManager().getSelectedWorld().get(player.getUniqueId());
         if (buildWorld == null) {
             player.closeInventory();
             player.sendMessage(plugin.getString("worlds_addbuilder_error"));

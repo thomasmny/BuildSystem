@@ -11,9 +11,9 @@ package com.eintosti.buildsystem.listener;
 import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.object.world.Builder;
-import com.eintosti.buildsystem.object.world.WorldStatus;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
+import com.eintosti.buildsystem.object.world.CraftBuilder;
+import com.eintosti.buildsystem.api.world.WorldStatus;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -50,7 +50,7 @@ public class WorldManipulateListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
         if (buildWorld == null) {
             return;
         }
@@ -67,7 +67,7 @@ public class WorldManipulateListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
         if (buildWorld == null) {
             return;
         }
@@ -84,7 +84,7 @@ public class WorldManipulateListener implements Listener {
         }
         Player player = (Player) event.getDamager();
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
         if (buildWorld == null) {
             return;
         }
@@ -97,7 +97,7 @@ public class WorldManipulateListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerArmorStandManipulate(PlayerArmorStandManipulateEvent event) {
         Player player = event.getPlayer();
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
         if (buildWorld == null) {
             return;
         }
@@ -113,7 +113,7 @@ public class WorldManipulateListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
         if (buildWorld == null) {
             return;
         }
@@ -128,12 +128,12 @@ public class WorldManipulateListener implements Listener {
     }
 
     /**
-     * Not every player can always interact with the {@link BuildWorld} they are in.
+     * Not every player can always interact with the {@link CraftBuildWorld} they are in.
      * <p>
      * Reasons an interaction could be cancelled:<br>
      * - The world has its {@link WorldStatus} set to archived<br>
      * - The world has a setting enabled which disallows certain events<br>
-     * - The world only allows {@link Builder}s to build and the player is not such a builder<br>
+     * - The world only allows {@link CraftBuilder}s to build and the player is not such a builder<br>
      * <p>
      * However, a player can override these reasons if:<br>
      * - The player has the permission `buildsystem.admin`<br>
@@ -146,7 +146,7 @@ public class WorldManipulateListener implements Listener {
      */
     private boolean manageWorldInteraction(Player player, Event event, boolean worldSetting) {
         String worldName = player.getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
             return false;
         }
@@ -164,7 +164,7 @@ public class WorldManipulateListener implements Listener {
         return false;
     }
 
-    private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, Event event) {
+    private boolean disableArchivedWorlds(CraftBuildWorld buildWorld, Player player, Event event) {
         Cancellable cancellable = (Cancellable) event;
 
         if (plugin.canBypass(player)) {
@@ -196,7 +196,7 @@ public class WorldManipulateListener implements Listener {
         return false;
     }
 
-    private boolean checkBuilders(BuildWorld buildWorld, Player player, Event event) {
+    private boolean checkBuilders(CraftBuildWorld buildWorld, Player player, Event event) {
         Cancellable cancellable = (Cancellable) event;
 
         if (plugin.canBypass(player)) {
@@ -207,7 +207,7 @@ public class WorldManipulateListener implements Listener {
             return false;
         }
 
-        if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
+        if (buildWorld.isBuildersEnabled() && !buildWorld.isBuilder(player)) {
             cancellable.setCancelled(true);
             denyPlayerInteraction(event);
             return true;
@@ -223,7 +223,7 @@ public class WorldManipulateListener implements Listener {
         }
     }
 
-    private void setStatus(BuildWorld buildWorld, Player player) {
+    private void setStatus(CraftBuildWorld buildWorld, Player player) {
         if (buildWorld.getStatus() == WorldStatus.NOT_STARTED) {
             buildWorld.setStatus(WorldStatus.IN_PROGRESS);
             plugin.getPlayerManager().forceUpdateSidebar(player);

@@ -10,7 +10,7 @@ package com.eintosti.buildsystem.command;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
 import com.eintosti.buildsystem.util.ManageEntityAI;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -72,7 +72,7 @@ public class NoAICommand implements CommandExecutor {
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
         if (buildWorld == null) {
             player.sendMessage(plugin.getString("noai_world_not_imported"));
             return;

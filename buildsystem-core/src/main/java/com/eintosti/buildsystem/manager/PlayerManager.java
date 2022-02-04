@@ -12,7 +12,7 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.ActionBar;
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
 import com.eintosti.buildsystem.util.ConfigValues;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -48,7 +48,7 @@ public class PlayerManager {
     private final ConfigValues configValues;
 
     private final Map<UUID, Location> previousLocation;
-    private final Map<UUID, BuildWorld> selectedWorld;
+    private final Map<UUID, CraftBuildWorld> selectedWorld;
     private final Map<UUID, String> lastLookedAt;
     private final Map<UUID, GameMode> playerGamemode;
     private final Map<UUID, Float> playerWalkSpeed;
@@ -74,13 +74,13 @@ public class PlayerManager {
         initEntityChecker();
     }
 
-    public Map<UUID, BuildWorld> getSelectedWorld() {
+    public Map<UUID, CraftBuildWorld> getSelectedWorld() {
         return selectedWorld;
     }
 
     @Nullable
     public String getSelectedWorldName(Player player) {
-        BuildWorld selectedWorld = getSelectedWorld().get(player.getUniqueId());
+        CraftBuildWorld selectedWorld = getSelectedWorld().get(player.getUniqueId());
         if (selectedWorld == null) {
             return null;
         }
@@ -116,7 +116,7 @@ public class PlayerManager {
         return buildPlayers;
     }
 
-    public void forceUpdateSidebar(BuildWorld buildWorld) {
+    public void forceUpdateSidebar(CraftBuildWorld buildWorld) {
         if (!configValues.isScoreboard()) {
             return;
         }

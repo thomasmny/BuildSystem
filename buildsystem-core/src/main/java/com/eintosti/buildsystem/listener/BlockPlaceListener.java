@@ -11,7 +11,7 @@ package com.eintosti.buildsystem.listener;
 import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -41,7 +41,7 @@ public class BlockPlaceListener implements Listener {
         Player player = event.getPlayer();
         String worldName = player.getWorld().getName();
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         boolean isBuildWorld = buildWorld != null;
 
         ItemStack itemStack = player.getItemInHand();

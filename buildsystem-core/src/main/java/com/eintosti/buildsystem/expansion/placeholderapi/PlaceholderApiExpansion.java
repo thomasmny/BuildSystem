@@ -9,10 +9,11 @@
 package com.eintosti.buildsystem.expansion.placeholderapi;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.api.world.BuildWorld;
 import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.settings.Settings;
-import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -188,7 +189,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             identifier = splitString[0];
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
             return "-";
         }
@@ -201,11 +202,11 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "builders":
                 return buildWorld.getBuildersInfo();
             case "buildersenabled":
-                return String.valueOf(buildWorld.isBuilders());
+                return String.valueOf(buildWorld.isBuildersEnabled());
             case "creation":
                 return buildWorld.getFormattedCreationDate();
             case "creator":
-                return buildWorld.getCreator();
+                return buildWorld.getCreatorName();
             case "creatorid":
                 return String.valueOf(buildWorld.getCreatorId());
             case "explosions":
@@ -213,7 +214,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "loaded":
                 return String.valueOf(buildWorld.isLoaded());
             case "material":
-                return String.valueOf(buildWorld.getMaterial().parseMaterial());
+                return String.valueOf(buildWorld.getXMaterial().parseMaterial());
             case "mobai":
                 return String.valueOf(buildWorld.isMobAI());
             case "permission":

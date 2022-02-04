@@ -20,9 +20,9 @@ import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.navigator.NavigatorType;
 import com.eintosti.buildsystem.object.settings.Settings;
-import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.object.world.Builder;
-import com.eintosti.buildsystem.object.world.WorldStatus;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
+import com.eintosti.buildsystem.object.world.CraftBuilder;
+import com.eintosti.buildsystem.api.world.WorldStatus;
 import com.eintosti.buildsystem.util.ConfigValues;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
@@ -239,12 +239,12 @@ public class PlayerInteractListener implements Listener {
     }
 
     /**
-     * Not every player can always interact with the {@link BuildWorld} they are in.
+     * Not every player can always interact with the {@link CraftBuildWorld} they are in.
      * <p>
      * Reasons an interaction could be cancelled:<br>
      * - The world has its {@link WorldStatus} set to archived<br>
      * - The world has a setting enabled which disallows certain events<br>
-     * - The world only allows {@link Builder}s to build and the player is not such a builder<br>
+     * - The world only allows {@link CraftBuilder}s to build and the player is not such a builder<br>
      * <p>
      * However, a player can override these reasons if:<br>
      * - The player has the permission `buildsystem.admin`<br>
@@ -260,7 +260,7 @@ public class PlayerInteractListener implements Listener {
             return true;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
         if (buildWorld == null) {
             return true;
         }
@@ -274,7 +274,7 @@ public class PlayerInteractListener implements Listener {
             return false;
         }
 
-        if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
+        if (buildWorld.isBuildersEnabled() && !buildWorld.isBuilder(player)) {
             return buildWorld.getCreatorId() == null || buildWorld.getCreatorId().equals(player.getUniqueId());
         }
 

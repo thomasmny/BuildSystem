@@ -13,8 +13,8 @@ import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.object.world.WorldStatus;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
+import com.eintosti.buildsystem.api.world.WorldStatus;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -66,7 +66,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
 
     private int numOfWorlds(Player player) {
         int numOfWorlds = 0;
-        for (BuildWorld buildWorld : worldManager.getBuildWorlds()) {
+        for (CraftBuildWorld buildWorld : worldManager.getBuildWorlds()) {
             if (isValidWorld(player, buildWorld)) {
                 numOfWorlds++;
             }
@@ -103,7 +103,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         }
 
         int columnWorld = 9, maxColumnWorld = 44;
-        for (BuildWorld buildWorld : inventoryManager.sortWorlds(player, worldManager, plugin)) {
+        for (CraftBuildWorld buildWorld : inventoryManager.sortWorlds(player, worldManager, plugin)) {
             if (isValidWorld(player, buildWorld)) {
                 inventoryManager.addWorldItem(player, inventory, columnWorld++, buildWorld);
             }
@@ -116,7 +116,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         }
     }
 
-    private boolean isValidWorld(Player player, BuildWorld buildWorld) {
+    private boolean isValidWorld(Player player, CraftBuildWorld buildWorld) {
         if (buildWorld.isPrivate()) {
             return showPrivateWorlds;
         }

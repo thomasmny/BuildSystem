@@ -10,7 +10,7 @@ package com.eintosti.buildsystem.manager;
 
 import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
 import com.eintosti.buildsystem.util.config.SpawnConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -39,7 +39,7 @@ public class SpawnManager {
             return false;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(spawnName);
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(spawnName);
         if (buildWorld != null) {
             if (!buildWorld.isLoaded()) {
                 buildWorld.load(player);
@@ -98,7 +98,7 @@ public class SpawnManager {
         float yaw = Float.parseFloat(parts[4]);
         float pitch = Float.parseFloat(parts[5]);
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
             buildWorld = worldManager.loadWorld(worldName);
         }

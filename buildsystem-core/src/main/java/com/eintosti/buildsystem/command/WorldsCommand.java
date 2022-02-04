@@ -15,9 +15,9 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.object.world.Builder;
-import com.eintosti.buildsystem.object.world.Generator;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
+import com.eintosti.buildsystem.object.world.CraftBuilder;
+import com.eintosti.buildsystem.api.world.Generator;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
 import com.eintosti.buildsystem.util.external.UUIDFetcher;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -87,7 +87,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
 
                 if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
+                    CraftBuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
                     if (buildWorld == null) {
                         player.sendMessage(plugin.getString("worlds_addbuilder_unknown_world"));
                         return true;
@@ -114,7 +114,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
 
                 if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
+                    CraftBuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
                     if (buildWorld == null) {
                         player.sendMessage(plugin.getString("worlds_builders_unknown_world"));
                         return true;
@@ -134,7 +134,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
 
                 if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
+                    CraftBuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
                     if (buildWorld == null) {
                         player.sendMessage(plugin.getString("worlds_delete_unknown_world"));
                         return true;
@@ -155,7 +155,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
 
                 if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
+                    CraftBuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
                     if (buildWorld == null) {
                         player.sendMessage(plugin.getString("worlds_edit_unknown_world"));
                         return true;
@@ -198,7 +198,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
 
                 if (args.length >= 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
+                    CraftBuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
                     if (buildWorld != null) {
                         player.sendMessage(plugin.getString("worlds_import_world_is_imported"));
                         return true;
@@ -270,7 +270,7 @@ public class WorldsCommand implements CommandExecutor {
                             return false;
                         }
 
-                        BuildWorld buildWorld = worldManager.getBuildWorld(name);
+                        CraftBuildWorld buildWorld = worldManager.getBuildWorld(name);
                         return buildWorld == null;
                     });
 
@@ -291,7 +291,7 @@ public class WorldsCommand implements CommandExecutor {
                     return true;
                 }
 
-                BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+                CraftBuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
                 if (args.length == 2) {
                     if (buildWorld == null) {
                         player.sendMessage(plugin.getString("worlds_info_unknown_world"));
@@ -319,7 +319,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
 
                 if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
+                    CraftBuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
                     if (buildWorld == null) {
                         player.sendMessage(plugin.getString("worlds_removebuilder_unknown_world"));
                         return true;
@@ -345,7 +345,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
 
                 if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
+                    CraftBuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
                     if (buildWorld == null) {
                         player.sendMessage(plugin.getString("worlds_rename_unknown_world"));
                         return true;
@@ -366,7 +366,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
 
                 if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
+                    CraftBuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
                     if (buildWorld == null) {
                         player.sendMessage(plugin.getString("worlds_setcreator_unknown_world"));
                         return true;
@@ -387,7 +387,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
 
                 if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
+                    CraftBuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
                     if (buildWorld == null) {
                         player.sendMessage(plugin.getString("worlds_setitem_unknown_world"));
                         return true;
@@ -399,7 +399,7 @@ public class WorldsCommand implements CommandExecutor {
                         return true;
                     }
 
-                    buildWorld.setMaterial(XMaterial.matchXMaterial(itemStack));
+                    buildWorld.setXMaterial(XMaterial.matchXMaterial(itemStack));
                     player.sendMessage(plugin.getString("worlds_setitem_set").replace("%world%", buildWorld.getName()));
                 } else {
                     player.sendMessage(plugin.getString("worlds_setitem_usage"));
@@ -414,7 +414,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
 
                 if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
+                    CraftBuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
                     if (buildWorld == null) {
                         player.sendMessage(plugin.getString("worlds_setpermission_unknown_world"));
                         return true;
@@ -435,7 +435,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
 
                 if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
+                    CraftBuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
                     if (buildWorld == null) {
                         player.sendMessage(plugin.getString("worlds_setproject_unknown_world"));
                         return true;
@@ -456,7 +456,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
 
                 if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
+                    CraftBuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
                     if (buildWorld == null) {
                         player.sendMessage(plugin.getString("worlds_setstatus_unknown_world"));
                         return true;
@@ -476,7 +476,7 @@ public class WorldsCommand implements CommandExecutor {
                     return true;
                 }
 
-                BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+                CraftBuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
                 if (buildWorld == null) {
                     player.sendMessage(plugin.getString("worlds_setspawn_world_not_imported"));
                     return true;
@@ -493,7 +493,7 @@ public class WorldsCommand implements CommandExecutor {
                     return true;
                 }
 
-                BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+                CraftBuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
                 if (buildWorld == null) {
                     player.sendMessage(plugin.getString("worlds_removespawn_world_not_imported"));
                     return true;
@@ -511,7 +511,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
 
                 if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
+                    CraftBuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
                     if (buildWorld == null) {
                         player.sendMessage(plugin.getString("worlds_tp_unknown_world"));
                         return true;
@@ -542,7 +542,7 @@ public class WorldsCommand implements CommandExecutor {
                 }
 
                 if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
+                    CraftBuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
                     if (buildWorld == null) {
                         player.sendMessage(plugin.getString("worlds_unimport_unknown_world"));
                         return true;
@@ -632,19 +632,19 @@ public class WorldsCommand implements CommandExecutor {
     }
 
     //TODO: Print information about the custom generator?
-    private void sendInfoMessage(Player player, BuildWorld buildWorld) {
+    private void sendInfoMessage(Player player, CraftBuildWorld buildWorld) {
         List<String> infoMessage = new ArrayList<>();
         for (String line : plugin.getStringList("world_info")) {
             String replace = line
                     .replace("%world%", buildWorld.getName())
-                    .replace("%creator%", buildWorld.getCreator())
+                    .replace("%creator%", buildWorld.getCreatorName())
                     .replace("%type%", buildWorld.getTypeName())
                     .replace("%private%", String.valueOf(buildWorld.isPrivate()))
-                    .replace("%builders_enabled%", String.valueOf(buildWorld.isBuilders()))
+                    .replace("%builders_enabled%", String.valueOf(buildWorld.isBuildersEnabled()))
                     .replace("%builders%", buildWorld.getBuildersInfo())
                     .replace("%block_breaking%", String.valueOf(buildWorld.isBlockBreaking()))
                     .replace("%block_placement%", String.valueOf(buildWorld.isBlockPlacement()))
-                    .replace("%item%", buildWorld.getMaterial().name())
+                    .replace("%item%", buildWorld.getXMaterial().name())
                     .replace("%status%", buildWorld.getStatusName())
                     .replace("%project%", buildWorld.getProject())
                     .replace("%permission%", buildWorld.getPermission())
@@ -662,7 +662,7 @@ public class WorldsCommand implements CommandExecutor {
         player.sendMessage(stringBuilder.toString());
     }
 
-    private String getCustomSpawn(BuildWorld buildWorld) {
+    private String getCustomSpawn(CraftBuildWorld buildWorld) {
         if (buildWorld.getCustomSpawn() == null) {
             return "-";
         }
@@ -686,7 +686,7 @@ public class WorldsCommand implements CommandExecutor {
     }
 
     public void getAddBuilderInput(Player player, boolean closeInventory) {
-        BuildWorld buildWorld = playerManager.getSelectedWorld().get(player.getUniqueId());
+        CraftBuildWorld buildWorld = playerManager.getSelectedWorld().get(player.getUniqueId());
         if (buildWorld == null) {
             player.closeInventory();
             player.sendMessage(plugin.getString("worlds_addbuilder_error"));
@@ -696,7 +696,6 @@ public class WorldsCommand implements CommandExecutor {
         new PlayerChatInput(plugin, player, "enter_player_name", input -> {
             String builderName = input.trim();
             Player builderPlayer = Bukkit.getPlayer(builderName);
-            Builder builder;
             UUID builderId;
 
             if (builderPlayer == null) {
@@ -706,9 +705,8 @@ public class WorldsCommand implements CommandExecutor {
                     player.closeInventory();
                     return;
                 }
-                builder = new Builder(builderId, builderName);
             } else {
-                builder = new Builder(builderPlayer);
+                builderName = builderPlayer.getName();
                 builderId = builderPlayer.getUniqueId();
             }
 
@@ -724,7 +722,7 @@ public class WorldsCommand implements CommandExecutor {
                 return;
             }
 
-            buildWorld.addBuilder(builder);
+            buildWorld.addBuilder(builderId, builderName);
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
             player.sendMessage(plugin.getString("worlds_addbuilder_added").replace("%builder%", builderName));
 
@@ -737,7 +735,7 @@ public class WorldsCommand implements CommandExecutor {
     }
 
     private void getCreatorInput(Player player) {
-        BuildWorld buildWorld = playerManager.getSelectedWorld().get(player.getUniqueId());
+        CraftBuildWorld buildWorld = playerManager.getSelectedWorld().get(player.getUniqueId());
         if (buildWorld == null) {
             player.closeInventory();
             player.sendMessage(plugin.getString("worlds_setcreator_error"));
@@ -746,7 +744,7 @@ public class WorldsCommand implements CommandExecutor {
 
         new PlayerChatInput(plugin, player, "enter_world_creator", input -> {
             String creator = input.trim();
-            buildWorld.setCreator(creator);
+            buildWorld.setCreatorName(creator);
             if (!creator.equalsIgnoreCase("-")) {
                 buildWorld.setCreatorId(UUIDFetcher.getUUID(creator));
             } else {
@@ -761,7 +759,7 @@ public class WorldsCommand implements CommandExecutor {
     }
 
     public void getProjectInput(Player player, boolean closeInventory) {
-        BuildWorld buildWorld = playerManager.getSelectedWorld().get(player.getUniqueId());
+        CraftBuildWorld buildWorld = playerManager.getSelectedWorld().get(player.getUniqueId());
         if (buildWorld == null) {
             player.closeInventory();
             player.sendMessage(plugin.getString("worlds_setproject_error"));
@@ -784,7 +782,7 @@ public class WorldsCommand implements CommandExecutor {
     }
 
     public void getPermissionInput(Player player, boolean closeInventory) {
-        BuildWorld buildWorld = playerManager.getSelectedWorld().get(player.getUniqueId());
+        CraftBuildWorld buildWorld = playerManager.getSelectedWorld().get(player.getUniqueId());
         if (buildWorld == null) {
             player.closeInventory();
             player.sendMessage(plugin.getString("worlds_setpermission_error"));
@@ -806,7 +804,7 @@ public class WorldsCommand implements CommandExecutor {
     }
 
     public void getRemoveBuilderInput(Player player, boolean closeInventory) {
-        BuildWorld buildWorld = playerManager.getSelectedWorld().get(player.getUniqueId());
+        CraftBuildWorld buildWorld = playerManager.getSelectedWorld().get(player.getUniqueId());
         if (buildWorld == null) {
             player.closeInventory();
             player.sendMessage(plugin.getString("worlds_removebuilder_error"));
@@ -854,7 +852,7 @@ public class WorldsCommand implements CommandExecutor {
     }
 
     private void getRenameInput(Player player) {
-        BuildWorld buildWorld = playerManager.getSelectedWorld().get(player.getUniqueId());
+        CraftBuildWorld buildWorld = playerManager.getSelectedWorld().get(player.getUniqueId());
         if (buildWorld == null) {
             player.closeInventory();
             player.sendMessage(plugin.getString("worlds_rename_unknown_world"));

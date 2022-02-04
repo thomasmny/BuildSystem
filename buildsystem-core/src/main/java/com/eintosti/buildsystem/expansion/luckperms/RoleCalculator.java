@@ -10,7 +10,7 @@ package com.eintosti.buildsystem.expansion.luckperms;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
 import net.luckperms.api.context.ContextCalculator;
 import net.luckperms.api.context.ContextConsumer;
 import net.luckperms.api.context.ContextSet;
@@ -35,7 +35,7 @@ public class RoleCalculator implements ContextCalculator<Player> {
 
     @Override
     public void calculate(@NonNull Player player, @NonNull ContextConsumer contextConsumer) {
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld());
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld());
         contextConsumer.accept(KEY, Role.matchRole(player, buildWorld).toString());
     }
 
@@ -53,12 +53,13 @@ public class RoleCalculator implements ContextCalculator<Player> {
         BUILDER,
         GUEST;
 
-        public static Role matchRole(Player player, BuildWorld buildWorld) {
+        public static Role matchRole(Player player, CraftBuildWorld buildWorld) {
             if (buildWorld == null) {
                 return GUEST;
             }
 
             UUID playerUuid = player.getUniqueId();
+
             if (buildWorld.getCreatorId().equals(playerUuid)) {
                 return CREATOR;
             } else if (buildWorld.isBuilder(playerUuid)) {

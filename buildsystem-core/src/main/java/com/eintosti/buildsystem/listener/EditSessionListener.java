@@ -10,8 +10,8 @@ package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.object.world.WorldStatus;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
+import com.eintosti.buildsystem.api.world.WorldStatus;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.event.extent.EditSessionEvent;
@@ -49,7 +49,7 @@ public class EditSessionListener implements Listener {
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
         if (buildWorld == null) {
             return;
         }
@@ -60,7 +60,7 @@ public class EditSessionListener implements Listener {
         }
     }
 
-    private void disableArchivedWorlds(BuildWorld buildWorld, Player player, EditSessionEvent event) {
+    private void disableArchivedWorlds(CraftBuildWorld buildWorld, Player player, EditSessionEvent event) {
         if (plugin.canBypass(player)) {
             return;
         }
@@ -70,7 +70,7 @@ public class EditSessionListener implements Listener {
         }
     }
 
-    private void checkBuilders(BuildWorld buildWorld, Player player, EditSessionEvent event) {
+    private void checkBuilders(CraftBuildWorld buildWorld, Player player, EditSessionEvent event) {
         if (plugin.canBypass(player)) {
             return;
         }
@@ -79,7 +79,7 @@ public class EditSessionListener implements Listener {
             return;
         }
 
-        if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
+        if (buildWorld.isBuildersEnabled() && !buildWorld.isBuilder(player)) {
             event.setExtent(new NullExtent());
         }
     }

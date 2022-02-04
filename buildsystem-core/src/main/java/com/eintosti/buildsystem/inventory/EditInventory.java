@@ -11,8 +11,9 @@ package com.eintosti.buildsystem.inventory;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.api.world.BuildWorld;
 import com.eintosti.buildsystem.manager.InventoryManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
 import com.eintosti.buildsystem.util.ConfigValues;
 import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
@@ -50,7 +51,7 @@ public class EditInventory implements Listener {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    public Inventory getInventory(Player player, BuildWorld buildWorld) {
+    public Inventory getInventory(Player player, CraftBuildWorld buildWorld) {
         Inventory inventory = Bukkit.createInventory(null, 54, plugin.getString("worldeditor_title"));
         fillGuiWithGlass(player, inventory);
 
@@ -74,7 +75,7 @@ public class EditInventory implements Listener {
         return inventory;
     }
 
-    public void openInventory(Player player, BuildWorld buildWorld) {
+    public void openInventory(Player player, CraftBuildWorld buildWorld) {
         player.openInventory(getInventory(player, buildWorld));
     }
 
@@ -84,13 +85,13 @@ public class EditInventory implements Listener {
         }
     }
 
-    private void addBuildWorldInfoItem(Inventory inventory, BuildWorld buildWorld) {
+    private void addBuildWorldInfoItem(Inventory inventory, CraftBuildWorld buildWorld) {
         String displayName = plugin.getString("worldeditor_world_item").replace("%world%", buildWorld.getName());
 
-        if (buildWorld.getMaterial() == XMaterial.PLAYER_HEAD) {
+        if (buildWorld.getXMaterial() == XMaterial.PLAYER_HEAD) {
             inventoryManager.addSkull(inventory, 4, displayName, buildWorld.getName());
         } else {
-            inventoryManager.addItemStack(inventory, 4, buildWorld.getMaterial(), displayName);
+            inventoryManager.addItemStack(inventory, 4, buildWorld.getXMaterial(), displayName);
         }
     }
 
@@ -117,7 +118,7 @@ public class EditInventory implements Listener {
 
         XMaterial xMaterial = XMaterial.WHITE_STAINED_GLASS;
         String value = plugin.getString("worldeditor_time_lore_unknown");
-        BuildWorld.Time time = getWorldTime(bukkitWorld);
+        CraftBuildWorld.Time time = getWorldTime(bukkitWorld);
 
         switch (time) {
             case SUNRISE:
@@ -141,27 +142,27 @@ public class EditInventory implements Listener {
         inventoryManager.addItemStack(inventory, 23, xMaterial, plugin.getString("worldeditor_time_item"), lore);
     }
 
-    public BuildWorld.Time getWorldTime(World bukkitWorld) {
+    public CraftBuildWorld.Time getWorldTime(World bukkitWorld) {
         if (bukkitWorld == null) {
-            return BuildWorld.Time.UNKNOWN;
+            return CraftBuildWorld.Time.UNKNOWN;
         }
 
         int worldTime = (int) bukkitWorld.getTime();
         int noonTime = plugin.getConfigValues().getNoonTime();
 
         if (worldTime >= 0 && worldTime < noonTime) {
-            return BuildWorld.Time.SUNRISE;
+            return CraftBuildWorld.Time.SUNRISE;
         } else if (worldTime >= noonTime && worldTime < 13000) {
-            return BuildWorld.Time.NOON;
+            return CraftBuildWorld.Time.NOON;
         } else {
-            return BuildWorld.Time.NIGHT;
+            return CraftBuildWorld.Time.NIGHT;
         }
     }
 
     private void addBuildersItem(Inventory inventory, BuildWorld buildWorld, Player player) {
         UUID creatorId = buildWorld.getCreatorId();
         if ((creatorId != null && creatorId.equals(player.getUniqueId())) || player.hasPermission("buildsystem.admin")) {
-            addSettingsItem(inventory, 30, XMaterial.IRON_PICKAXE, buildWorld.isBuilders(), plugin.getString("worldeditor_builders_item"), plugin.getStringList("worldeditor_builders_lore"));
+            addSettingsItem(inventory, 30, XMaterial.IRON_PICKAXE, buildWorld.isBuildersEnabled(), plugin.getString("worldeditor_builders_item"), plugin.getStringList("worldeditor_builders_lore"));
         } else {
             inventoryManager.addItemStack(inventory, 30, XMaterial.BARRIER, plugin.getString("worldeditor_builders_not_creator_item"), plugin.getStringList("worldeditor_builders_not_creator_lore"));
         }
@@ -179,7 +180,7 @@ public class EditInventory implements Listener {
         inventoryManager.addItemStack(inventory, 32, xMaterial, plugin.getString("worldeditor_visibility_item"), lore);
     }
 
-    private List<String> getStatusLore(BuildWorld buildWorld) {
+    private List<String> getStatusLore(CraftBuildWorld buildWorld) {
         List<String> lore = new ArrayList<>();
         for (String line : plugin.getStringList("worldeditor_status_lore")) {
             lore.add(line.replace("%status%", buildWorld.getStatusName()));
@@ -187,7 +188,7 @@ public class EditInventory implements Listener {
         return lore;
     }
 
-    private List<String> getProjectLore(BuildWorld buildWorld) {
+    private List<String> getProjectLore(CraftBuildWorld buildWorld) {
         List<String> lore = new ArrayList<>();
         for (String line : plugin.getStringList("worldeditor_project_lore")) {
             lore.add(line.replace("%project%", buildWorld.getProject()));
@@ -195,7 +196,7 @@ public class EditInventory implements Listener {
         return lore;
     }
 
-    private List<String> getPermissionLore(BuildWorld buildWorld) {
+    private List<String> getPermissionLore(CraftBuildWorld buildWorld) {
         List<String> lore = new ArrayList<>();
         for (String line : plugin.getStringList("worldeditor_permission_lore")) {
             lore.add(line.replace("%permission%", buildWorld.getPermission()));
@@ -210,7 +211,7 @@ public class EditInventory implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        BuildWorld buildWorld = plugin.getPlayerManager().getSelectedWorld().get(player.getUniqueId());
+        CraftBuildWorld buildWorld = plugin.getPlayerManager().getSelectedWorld().get(player.getUniqueId());
         if (buildWorld == null) {
             player.closeInventory();
             player.sendMessage(plugin.getString("worlds_edit_error"));
@@ -244,7 +245,7 @@ public class EditInventory implements Listener {
                         player.openInventory(plugin.getBuilderInventory().getInventory(buildWorld, player));
                         return;
                     }
-                    buildWorld.setBuilders(!buildWorld.isBuilders());
+                    buildWorld.setBuildersEnabled(!buildWorld.isBuildersEnabled());
                 }
                 break;
             case 31:
@@ -282,13 +283,13 @@ public class EditInventory implements Listener {
         openInventory(player, buildWorld);
     }
 
-    private void changeTime(Player player, BuildWorld buildWorld) {
+    private void changeTime(Player player, CraftBuildWorld buildWorld) {
         World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
         if (bukkitWorld == null) {
             return;
         }
 
-        BuildWorld.Time time = getWorldTime(bukkitWorld);
+        CraftBuildWorld.Time time = getWorldTime(bukkitWorld);
         switch (time) {
             case SUNRISE:
                 bukkitWorld.setTime(configValues.getNoonTime());
@@ -304,7 +305,7 @@ public class EditInventory implements Listener {
         openInventory(player, buildWorld);
     }
 
-    private void removeEntities(Player player, BuildWorld buildWorld) {
+    private void removeEntities(Player player, CraftBuildWorld buildWorld) {
         World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
         if (bukkitWorld == null) {
             return;

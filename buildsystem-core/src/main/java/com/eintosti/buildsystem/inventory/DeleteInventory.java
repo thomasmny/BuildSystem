@@ -11,8 +11,9 @@ package com.eintosti.buildsystem.inventory;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.api.world.BuildWorld;
 import com.eintosti.buildsystem.manager.InventoryManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -34,7 +35,7 @@ public class DeleteInventory implements Listener {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    private Inventory getInventory(Player player, BuildWorld buildWorld) {
+    private Inventory getInventory(Player player, CraftBuildWorld buildWorld) {
         Inventory inventory = Bukkit.createInventory(null, 45, plugin.getString("delete_title"));
         fillGuiWithGlass(player, inventory);
 
@@ -45,7 +46,7 @@ public class DeleteInventory implements Listener {
         return inventory;
     }
 
-    public void openInventory(Player player, BuildWorld buildWorld) {
+    public void openInventory(Player player, CraftBuildWorld buildWorld) {
         player.openInventory(getInventory(player, buildWorld));
     }
 

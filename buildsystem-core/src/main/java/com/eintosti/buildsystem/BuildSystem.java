@@ -8,6 +8,7 @@
 
 package com.eintosti.buildsystem;
 
+import com.eintosti.buildsystem.api.BuildApiProvider;
 import com.eintosti.buildsystem.command.BackCommand;
 import com.eintosti.buildsystem.command.BlocksCommand;
 import com.eintosti.buildsystem.command.BuildCommand;
@@ -251,6 +252,7 @@ public class BuildSystem extends JavaPlugin {
         this.statusInventory = new StatusInventory(this);
         this.worldsInventory = new WorldsInventory(this);
 
+        new BuildApiProvider(this);
         this.skullCache = new SkullCache(version);
     }
 

@@ -6,16 +6,20 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-package com.eintosti.buildsystem.object.world;
+package com.eintosti.buildsystem.api.world;
 
 /**
  * @author einTosti
  */
-public enum WorldStatus {
-    NOT_STARTED,
-    IN_PROGRESS,
-    ALMOST_FINISHED,
-    FINISHED,
-    ARCHIVE,
-    HIDDEN
+public enum WorldType {
+    NORMAL,
+    FLAT,
+    NETHER,
+    END,
+    VOID,
+    TEMPLATE,
+    PRIVATE,
+    IMPORTED,
+    CUSTOM,
+    UNKNOWN
 }
