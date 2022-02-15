@@ -3,7 +3,7 @@
 spigot = "1.18.1-R0.1-SNAPSHOT"
 
 # Plugins
-luckperms = "5.3"
+luckperms = "5.4"
 worldedit = "7.2.9"
 placeholderapi = "2.11.1"
 
