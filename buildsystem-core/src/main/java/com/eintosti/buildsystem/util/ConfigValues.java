@@ -56,6 +56,8 @@ public class ConfigValues {
     private int nightTime;
     private int worldBorderSize;
     private int importDelay;
+    private int maxPublicWorldAmount;
+    private int maxPrivateWorldAmount;
 
     private Map<String, String> defaultGameRules;
     private Set<String> blackListedWorldsToUnload;
@@ -116,9 +118,12 @@ public class ConfigValues {
         this.timeUntilUnload = config.getString("world.unload.time-until-unload", "01:00:00");
         this.blackListedWorldsToUnload = new HashSet<>(config.getStringList("world.unload.blacklisted-worlds"));
 
-        this.voidBlock = config.getBoolean("world.void-block", true);
-
         this.importDelay = config.getInt("world.import-all.delay", 30);
+
+        this.maxPublicWorldAmount = config.getInt("world.max-amount.public", -1);
+        this.maxPrivateWorldAmount = config.getInt("world.max-amount.private", -1);
+
+        this.voidBlock = config.getBoolean("world.void-block", true);
     }
 
     public String getDateFormat() {
@@ -231,6 +236,10 @@ public class ConfigValues {
 
     public int getImportDelay() {
         return importDelay;
+    }
+
+    public int getMaxWorldAmount(boolean privateWorld) {
+        return privateWorld ? maxPrivateWorldAmount : maxPublicWorldAmount;
     }
 
     public Map<String, String> getDefaultGameRules() {

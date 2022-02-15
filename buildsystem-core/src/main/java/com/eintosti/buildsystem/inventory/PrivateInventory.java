@@ -49,7 +49,7 @@ public class PrivateInventory extends FilteredWorldsInventory implements Listene
 
     private void addWorldCreateItem(Inventory inventory, Player player) {
         BuildWorld buildWorld = worldManager.getBuildWorld(player.getName());
-        if (buildWorld != null || !player.hasPermission("buildsystem.createprivate")) {
+        if (buildWorld != null || !player.hasPermission("buildsystem.create.private")) {
             inventoryManager.addGlassPane(plugin, player, inventory, 49);
             return;
         }

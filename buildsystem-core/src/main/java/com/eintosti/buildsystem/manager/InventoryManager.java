@@ -405,17 +405,15 @@ public class InventoryManager {
         for (int i = 0; i <= 8; i++) {
             addGlassPane(plugin, player, inventory, i);
         }
-        for (int i = 46; i <= 48; i++) {
-            addGlassPane(plugin, player, inventory, i);
-        }
-        for (int i = 50; i <= 52; i++) {
-            addGlassPane(plugin, player, inventory, i);
-        }
 
         if (numOfPages > 1 && currentPage > 0) {
             addUrlSkull(inventory, 45, plugin.getString("gui_previous_page"), "https://textures.minecraft.net/texture/f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
         } else {
             addGlassPane(plugin, player, inventory, 45);
+        }
+
+        for (int i = 46; i <= 52; i++) {
+            addGlassPane(plugin, player, inventory, i);
         }
 
         if (numOfPages > 1 && currentPage < (numOfPages - 1)) {

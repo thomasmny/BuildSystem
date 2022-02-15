@@ -59,7 +59,9 @@ public class RoleCalculator implements ContextCalculator<Player> {
             }
 
             UUID playerUuid = player.getUniqueId();
-            if (buildWorld.getCreatorId().equals(playerUuid)) {
+            UUID creatorUuid = buildWorld.getCreatorId();
+
+            if (creatorUuid != null && creatorUuid.equals(playerUuid)) {
                 return CREATOR;
             } else if (buildWorld.isBuilder(playerUuid)) {
                 return BUILDER;

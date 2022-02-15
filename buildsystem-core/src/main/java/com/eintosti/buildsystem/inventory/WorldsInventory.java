@@ -44,7 +44,7 @@ public class WorldsInventory extends FilteredWorldsInventory implements Listener
     }
 
     private void addWorldCreateItem(Inventory inventory, Player player) {
-        if (!player.hasPermission("buildsystem.createworld")) {
+        if (!player.hasPermission("buildsystem.create.public")) {
             inventoryManager.addGlassPane(plugin, player, inventory, 49);
             return;
         }
