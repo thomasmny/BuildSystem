@@ -118,6 +118,33 @@ public class PlayerManager {
     }
 
     /**
+     * Gets whether the given player is allowed to create a new {@link BuildWorld}.<br>
+     * This depends on the following factors:
+     * <ul>
+     *  <li>Is the maximum amount of worlds set by the config less than the amount of existing worlds?</li>
+     *  <li>Is the maximum amount of worlds created by the player less than the amount of worlds said player is allowed to create?</li>
+     * <ul>
+     *
+     * @param player The player trying to create a world
+     * @return {@code true} if the player is allowed to create a world, otherwise {@code false}
+     */
+    public boolean canCreateWorld(Player player, boolean showPrivateWorlds) {
+        WorldManager worldManager = plugin.getWorldManager();
+
+        int maxWorldAmountConfig = configValues.getMaxWorldAmount(showPrivateWorlds);
+        if (maxWorldAmountConfig >= 0 && worldManager.getBuildWorlds().size() >= maxWorldAmountConfig) {
+            return false;
+        }
+
+        int maxWorldAmountPlayer = getMaxWorlds(player, showPrivateWorlds);
+        if (maxWorldAmountPlayer >= 0 && worldManager.getBuildWorldsCreatedByPlayer(player, showPrivateWorlds).size() >= maxWorldAmountPlayer) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Returns the maximum amount of {@link BuildWorld}s a player can create.<br>
      * If the player has the permission {@code buildsystem.admin}</li>, unlimited worlds can be created.<br>
      * Otherwise, there are two different permissions to set said amount:<br>

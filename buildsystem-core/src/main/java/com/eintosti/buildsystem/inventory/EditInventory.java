@@ -12,10 +12,12 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
+import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.util.ConfigValues;
 import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
@@ -42,11 +44,13 @@ public class EditInventory implements Listener {
     private final BuildSystem plugin;
     private final ConfigValues configValues;
     private final InventoryManager inventoryManager;
+    private final PlayerManager playerManager;
 
     public EditInventory(BuildSystem plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
         this.inventoryManager = plugin.getInventoryManager();
+        this.playerManager = plugin.getPlayerManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -64,7 +68,7 @@ public class EditInventory implements Listener {
         inventoryManager.addItemStack(inventory, 29, XMaterial.DIAMOND_SWORD, plugin.getString("worldeditor_butcher_item"), plugin.getStringList("worldeditor_butcher_lore"));
         addBuildersItem(inventory, buildWorld, player);
         addSettingsItem(inventory, 31, XMaterial.ARMOR_STAND, buildWorld.isMobAI(), plugin.getString("worldeditor_mobai_item"), plugin.getStringList("worldeditor_mobai_lore"));
-        addPrivateItem(inventory, buildWorld);
+        addVisibilityItem(inventory, buildWorld, player);
         addSettingsItem(inventory, 33, XMaterial.TRIPWIRE_HOOK, buildWorld.isBlockInteractions(), plugin.getString("worldeditor_blockinteractions_item"), plugin.getStringList("worldeditor_blockinteractions_lore"));
         inventoryManager.addItemStack(inventory, 38, XMaterial.FILLED_MAP, plugin.getString("worldeditor_gamerules_item"), plugin.getStringList("worldeditor_gamerules_lore"));
         inventoryManager.addItemStack(inventory, 39, inventoryManager.getStatusItem(buildWorld.getStatus()), plugin.getString("worldeditor_status_item"), getStatusLore(buildWorld));
@@ -167,7 +171,15 @@ public class EditInventory implements Listener {
         }
     }
 
-    private void addPrivateItem(Inventory inventory, BuildWorld buildWorld) {
+    private void addVisibilityItem(Inventory inventory, BuildWorld buildWorld, Player player) {
+        int slot = 32;
+        String displayName = plugin.getString("worldeditor_visibility_item");
+
+        if (!playerManager.canCreateWorld(player, !buildWorld.isPrivate())) {
+            inventoryManager.addItemStack(inventory, slot, XMaterial.BARRIER, "§c§m" + ChatColor.stripColor(displayName));
+            return;
+        }
+
         XMaterial xMaterial = XMaterial.ENDER_EYE;
         List<String> lore = plugin.getStringList("worldeditor_visibility_lore_public");
 
@@ -176,7 +188,7 @@ public class EditInventory implements Listener {
             lore = plugin.getStringList("worldeditor_visibility_lore_private");
         }
 
-        inventoryManager.addItemStack(inventory, 32, xMaterial, plugin.getString("worldeditor_visibility_item"), lore);
+        inventoryManager.addItemStack(inventory, slot, xMaterial, displayName, lore);
     }
 
     private List<String> getStatusLore(BuildWorld buildWorld) {
@@ -209,6 +221,11 @@ public class EditInventory implements Listener {
             return;
         }
 
+        ItemStack itemStack = event.getCurrentItem();
+        if (itemStack == null) {
+            return;
+        }
+
         Player player = (Player) event.getWhoClicked();
         BuildWorld buildWorld = plugin.getPlayerManager().getSelectedWorld().get(player.getUniqueId());
         if (buildWorld == null) {
@@ -238,19 +255,25 @@ public class EditInventory implements Listener {
                 removeEntities(player, buildWorld);
                 return;
             case 30:
-                if (event.getCurrentItem().getType() != XMaterial.BARRIER.parseMaterial()) {
-                    if (event.isRightClick()) {
-                        XSound.BLOCK_CHEST_OPEN.play(player);
-                        player.openInventory(plugin.getBuilderInventory().getInventory(buildWorld, player));
-                        return;
-                    }
-                    buildWorld.setBuilders(!buildWorld.isBuilders());
+                if (itemStack.getType() == XMaterial.BARRIER.parseMaterial()) {
+                    XSound.ENTITY_ITEM_BREAK.play(player);
+                    return;
                 }
+                if (event.isRightClick()) {
+                    XSound.BLOCK_CHEST_OPEN.play(player);
+                    player.openInventory(plugin.getBuilderInventory().getInventory(buildWorld, player));
+                    return;
+                }
+                buildWorld.setBuilders(!buildWorld.isBuilders());
                 break;
             case 31:
                 buildWorld.setMobAI(!buildWorld.isMobAI());
                 break;
             case 32:
+                if (itemStack.getType() == XMaterial.BARRIER.parseMaterial()) {
+                    XSound.ENTITY_ITEM_BREAK.play(player);
+                    return;
+                }
                 buildWorld.setPrivate(!buildWorld.isPrivate());
                 break;
             case 33:

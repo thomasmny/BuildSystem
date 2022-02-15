@@ -12,11 +12,9 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
-import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.WorldStatus;
-import com.eintosti.buildsystem.util.ConfigValues;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -36,9 +34,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
     private static final int MAX_WORLDS = 36;
 
     private final BuildSystem plugin;
-    private final ConfigValues configValues;
     private final InventoryManager inventoryManager;
-    private final PlayerManager playerManager;
     private final WorldManager worldManager;
 
     private final String inventoryName;
@@ -48,9 +44,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
 
     public FilteredWorldsInventory(BuildSystem plugin, String inventoryName, String noWorldsText, boolean showPrivateWorlds, Set<WorldStatus> validStatus) {
         this.plugin = plugin;
-        this.configValues = plugin.getConfigValues();
         this.inventoryManager = plugin.getInventoryManager();
-        this.playerManager = plugin.getPlayerManager();
         this.worldManager = plugin.getWorldManager();
 
         this.inventoryName = inventoryName;
@@ -80,31 +74,6 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         return (int) worldManager.getBuildWorlds().stream()
                 .filter(buildWorld -> isValidWorld(player, buildWorld))
                 .count();
-    }
-
-    /**
-     * Gets whether the given player is allowed to create a new {@link BuildWorld}.<br>
-     * This depends on the following factors:
-     * <ul>
-     *  <li>Is the maximum amount of worlds set by the config less than the amount of existing worlds?</li>
-     *  <li>Is the maximum amount of worlds created by the player less than the amount of worlds said player is allowed to create?</li>
-     * <ul>
-     *
-     * @param player The player trying to create a world
-     * @return {@code true} if the player is allowed to create a world, otherwise {@code false}
-     */
-    protected boolean canCreateWorld(Player player) {
-        int maxWorldAmountConfig = configValues.getMaxWorldAmount(showPrivateWorlds);
-        if (maxWorldAmountConfig > 0 && worldManager.getBuildWorlds().size() >= maxWorldAmountConfig) {
-            return false;
-        }
-
-        int maxWorldAmountPlayer = playerManager.getMaxWorlds(player, showPrivateWorlds);
-        if (maxWorldAmountPlayer > 0 && worldManager.getBuildWorldsCreatedByPlayer(player, showPrivateWorlds).size() >= maxWorldAmountPlayer) {
-            return false;
-        }
-
-        return true;
     }
 
     public void openInventory(Player player) {
@@ -184,7 +153,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
                     return;
                 case 49:
                     XSound.ENTITY_CHICKEN_EGG.play(player);
-                    plugin.getCreateInventory().openInventory(player, CreateInventory.Page.PREDEFINED);
+                    plugin.getCreateInventory().openInventory(player, CreateInventory.Page.PREDEFINED, showPrivateWorlds);
                     return;
                 case 53:
                     incrementInv(player);

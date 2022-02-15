@@ -10,6 +10,7 @@ package com.eintosti.buildsystem.inventory;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
+import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.object.world.WorldStatus;
 import com.google.common.collect.Sets;
 import org.bukkit.entity.Player;
@@ -23,6 +24,7 @@ public class WorldsInventory extends FilteredWorldsInventory implements Listener
 
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
+    private final PlayerManager playerManager;
 
     public WorldsInventory(BuildSystem plugin) {
         super(plugin, "world_navigator_title", "world_navigator_no_worlds", false,
@@ -30,6 +32,7 @@ public class WorldsInventory extends FilteredWorldsInventory implements Listener
 
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
+        this.playerManager = plugin.getPlayerManager();
 
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -37,7 +40,7 @@ public class WorldsInventory extends FilteredWorldsInventory implements Listener
     @Override
     protected Inventory createInventory(Player player) {
         Inventory inventory = super.createInventory(player);
-        if (super.canCreateWorld(player)) {
+        if (playerManager.canCreateWorld(player, false)) {
             addWorldCreateItem(inventory, player);
         }
         return inventory;

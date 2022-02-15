@@ -37,6 +37,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
     private final WorldManager worldManager;
 
     private int numTemplates = 0;
+    private boolean createPrivateWorld;
 
     public CreateInventory(BuildSystem plugin) {
         this.plugin = plugin;
@@ -72,7 +73,9 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         return inventory;
     }
 
-    public void openInventory(Player player, Page page) {
+    public void openInventory(Player player, Page page, boolean createPrivateWorld) {
+        this.createPrivateWorld = createPrivateWorld;
+
         if (page == Page.TEMPLATES) {
             addTemplates(player, page);
             player.openInventory(inventories[getInvIndex(player)]);
@@ -162,7 +165,6 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        boolean privateWorld = worldManager.createPrivateWorldPlayers.contains(player);
         CreateInventory.Page newPage = null;
 
         switch (event.getSlot()) {
@@ -178,10 +180,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         }
 
         if (newPage != null) {
-            openInventory(player, newPage);
-            if (privateWorld) {
-                worldManager.createPrivateWorldPlayers.add(player);
-            }
+            openInventory(player, newPage, this.createPrivateWorld);
             XSound.ENTITY_CHICKEN_EGG.play(player);
             return;
         }
@@ -192,7 +191,6 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         }
 
         int slot = event.getSlot();
-        boolean createPrivateWorld = worldManager.createPrivateWorldPlayers.contains(player);
 
         switch (Page.getCurrentPage(inventory)) {
             case PREDEFINED: {
@@ -248,7 +246,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
                         } else if (slot == 42) {
                             incrementInv(player);
                         }
-                        openInventory(player, CreateInventory.Page.TEMPLATES);
+                        openInventory(player, CreateInventory.Page.TEMPLATES, createPrivateWorld);
                         break;
                     default:
                         return;

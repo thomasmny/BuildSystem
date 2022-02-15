@@ -61,17 +61,15 @@ public class WorldManager {
     private final BuildSystem plugin;
     private final ConfigValues configValues;
     private final WorldConfig worldConfig;
-    private final List<BuildWorld> buildWorlds;
 
-    public Set<Player> createPrivateWorldPlayers;
+    private final List<BuildWorld> buildWorlds;
 
     public WorldManager(BuildSystem plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
         this.worldConfig = new WorldConfig(plugin);
-        this.buildWorlds = new ArrayList<>();
 
-        this.createPrivateWorldPlayers = new HashSet<>();
+        this.buildWorlds = new ArrayList<>();
     }
 
     /**
@@ -122,7 +120,7 @@ public class WorldManager {
     /**
      * Gets a list of all {@link BuildWorld}s created by the given player.
      *
-     * @param player The player who created the world
+     * @param player       The player who created the world
      * @param privateWorld {@code true} if to return private worlds, otherwise {@code false}
      * @return A list of all worlds created by the given player.
      */
@@ -135,7 +133,7 @@ public class WorldManager {
     /**
      * Gets if a {@link BuildWorld}'s visibility is equal to the given visibility.
      *
-     * @param buildWorld The world object
+     * @param buildWorld   The world object
      * @param privateWorld Should the world's visibility be equal to private?
      * @return {@code true} if the world's visibility is equal to the given visibility, otherwise {@code false}
      */
@@ -238,12 +236,21 @@ public class WorldManager {
             return;
         }
 
-        BuildWorld buildWorld = new BuildWorld(plugin, worldName, player.getName(), player.getUniqueId(), worldType, System.currentTimeMillis(), privateWorld);
+        BuildWorld buildWorld = new BuildWorld(
+                plugin,
+                worldName,
+                player.getName(),
+                player.getUniqueId(),
+                worldType,
+                System.currentTimeMillis(),
+                privateWorld
+        );
         buildWorlds.add(buildWorld);
 
         player.sendMessage(plugin.getString("worlds_world_creation_started")
-                .replace("%world%", buildWorld.getName())
-                .replace("%type%", buildWorld.getTypeName()));
+                .replace("%world%", worldName)
+                .replace("%type%", buildWorld.getTypeName())
+        );
         finishPreparationsAndGenerate(buildWorld);
         player.sendMessage(plugin.getString("worlds_creation_finished"));
     }
