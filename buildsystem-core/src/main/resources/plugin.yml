@@ -70,7 +70,7 @@ permissions:
   buildsystem.gui:
     description: Open the "Worlds-GUI".
     default: true
-  buildsystem.createprivate:
+  buildsystem.create.private:
     description: Create a private world.
     default: true
   buildsystem.physics.message:

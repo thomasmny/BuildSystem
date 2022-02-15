@@ -22,6 +22,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
@@ -114,6 +115,87 @@ public class PlayerManager {
 
     public Set<UUID> getBuildPlayers() {
         return buildPlayers;
+    }
+
+    /**
+     * Gets whether the given player is allowed to create a new {@link BuildWorld}.<br>
+     * This depends on the following factors:
+     * <ul>
+     *  <li>Is the maximum amount of worlds set by the config less than the amount of existing worlds?</li>
+     *  <li>Is the maximum amount of worlds created by the player less than the amount of worlds said player is allowed to create?</li>
+     * <ul>
+     *
+     * @param player The player trying to create a world
+     * @return {@code true} if the player is allowed to create a world, otherwise {@code false}
+     */
+    public boolean canCreateWorld(Player player, boolean showPrivateWorlds) {
+        WorldManager worldManager = plugin.getWorldManager();
+
+        int maxWorldAmountConfig = configValues.getMaxWorldAmount(showPrivateWorlds);
+        if (maxWorldAmountConfig >= 0 && worldManager.getBuildWorlds().size() >= maxWorldAmountConfig) {
+            return false;
+        }
+
+        int maxWorldAmountPlayer = getMaxWorlds(player, showPrivateWorlds);
+        if (maxWorldAmountPlayer >= 0 && worldManager.getBuildWorldsCreatedByPlayer(player, showPrivateWorlds).size() >= maxWorldAmountPlayer) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns the maximum amount of {@link BuildWorld}s a player can create.<br>
+     * If the player has the permission {@code buildsystem.admin}</li>, unlimited worlds can be created.<br>
+     * Otherwise, there are two different permissions to set said amount:<br>
+     * To set the maximum of...
+     * <ul>
+     *  <li>...public worlds, use {@code buildsystem.create.public.<amount>}</li>
+     *  <li>...private worlds, use {@code buildsystem.create.private.<amount>}</li>
+     * <ul>
+     *
+     * @param player The player object
+     * @return If set, the maximum amount of worlds a player can create, otherwise -1
+     */
+    public int getMaxWorlds(Player player, boolean privateWorld) {
+        int max = -1;
+        if (player.hasPermission("buildsystem.admin")) {
+            return -1;
+        }
+
+        for (PermissionAttachmentInfo permission : player.getEffectivePermissions()) {
+            String permissionString = permission.getPermission();
+            String[] splitPermission = permissionString.split("\\.");
+
+            if (splitPermission.length != 4) {
+                continue;
+            }
+
+            if (!splitPermission[1].equalsIgnoreCase("create")) {
+                continue;
+            }
+
+            String worldVisibility = privateWorld ? "private" : "public";
+            if (!splitPermission[2].equalsIgnoreCase(worldVisibility)) {
+                continue;
+            }
+
+            String amountString = splitPermission[3];
+            if (amountString.equals("*")) {
+                return -1;
+            }
+
+            try {
+                int amount = Integer.parseInt(amountString);
+                if (amount > max) {
+                    max = amount;
+                }
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return max;
     }
 
     public void forceUpdateSidebar(BuildWorld buildWorld) {

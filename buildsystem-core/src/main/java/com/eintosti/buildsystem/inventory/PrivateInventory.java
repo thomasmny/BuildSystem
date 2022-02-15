@@ -10,6 +10,7 @@ package com.eintosti.buildsystem.inventory;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
+import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.WorldStatus;
@@ -25,6 +26,7 @@ public class PrivateInventory extends FilteredWorldsInventory implements Listene
 
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
+    private final PlayerManager playerManager;
     private final WorldManager worldManager;
 
     public PrivateInventory(BuildSystem plugin) {
@@ -33,6 +35,7 @@ public class PrivateInventory extends FilteredWorldsInventory implements Listene
 
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
+        this.playerManager = plugin.getPlayerManager();
         this.worldManager = plugin.getWorldManager();
 
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -41,7 +44,7 @@ public class PrivateInventory extends FilteredWorldsInventory implements Listene
     @Override
     protected Inventory createInventory(Player player) {
         Inventory inventory = super.createInventory(player);
-        if (super.canCreateWorld(player)) {
+        if (playerManager.canCreateWorld(player, true)) {
             addWorldCreateItem(inventory, player);
         }
         return inventory;
@@ -49,7 +52,7 @@ public class PrivateInventory extends FilteredWorldsInventory implements Listene
 
     private void addWorldCreateItem(Inventory inventory, Player player) {
         BuildWorld buildWorld = worldManager.getBuildWorld(player.getName());
-        if (buildWorld != null || !player.hasPermission("buildsystem.createprivate")) {
+        if (buildWorld != null || !player.hasPermission("buildsystem.create.private")) {
             inventoryManager.addGlassPane(plugin, player, inventory, 49);
             return;
         }

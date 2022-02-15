@@ -34,6 +34,11 @@ world:
       block-placement: true
       block-interactions: true
   lock-weather: true
+  import-all:
+    delay: 30
+  max-amount:
+    public: -1
+    private: -1
   unload:
     enabled: false
     time-until-unload: "01:00:00"
@@ -42,5 +47,3 @@ world:
       - world_nether
       - worth_the_end
   void-block: true
-  import-all:
-    delay: 30

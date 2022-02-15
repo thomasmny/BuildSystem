@@ -37,6 +37,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
     private final WorldManager worldManager;
 
     private int numTemplates = 0;
+    private boolean createPrivateWorld;
 
     public CreateInventory(BuildSystem plugin) {
         this.plugin = plugin;
@@ -49,9 +50,9 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         Inventory inventory = Bukkit.createInventory(null, 45, plugin.getString("create_title"));
         fillGuiWithGlass(player, inventory, page);
 
-        addPageItem(inventory, page, Page.PREDEFINED, 12, inventoryManager.getUrlSkull(plugin.getString("create_predefined_worlds"), "https://textures.minecraft.net/texture/2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78"));
-        addPageItem(inventory, page, Page.GENERATOR, 13, inventoryManager.getUrlSkull(plugin.getString("create_generators"), "https://textures.minecraft.net/texture/b2f79016cad84d1ae21609c4813782598e387961be13c15682752f126dce7a"));
-        addPageItem(inventory, page, Page.TEMPLATES, 14, inventoryManager.getUrlSkull(plugin.getString("create_templates"), "https://textures.minecraft.net/texture/d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c"));
+        addPageItem(inventory, page, Page.PREDEFINED, inventoryManager.getUrlSkull(plugin.getString("create_predefined_worlds"), "https://textures.minecraft.net/texture/2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78"));
+        addPageItem(inventory, page, Page.GENERATOR, inventoryManager.getUrlSkull(plugin.getString("create_generators"), "https://textures.minecraft.net/texture/b2f79016cad84d1ae21609c4813782598e387961be13c15682752f126dce7a"));
+        addPageItem(inventory, page, Page.TEMPLATES, inventoryManager.getUrlSkull(plugin.getString("create_templates"), "https://textures.minecraft.net/texture/d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c"));
 
         switch (page) {
             case PREDEFINED:
@@ -72,7 +73,9 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         return inventory;
     }
 
-    public void openInventory(Player player, Page page) {
+    public void openInventory(Player player, Page page, boolean createPrivateWorld) {
+        this.createPrivateWorld = createPrivateWorld;
+
         if (page == Page.TEMPLATES) {
             addTemplates(player, page);
             player.openInventory(inventories[getInvIndex(player)]);
@@ -81,11 +84,11 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         }
     }
 
-    private void addPageItem(Inventory inventory, Page currentPage, Page page, int position, ItemStack itemStack) {
+    private void addPageItem(Inventory inventory, Page currentPage, Page page, ItemStack itemStack) {
         if (currentPage == page) {
-            itemStack.addUnsafeEnchantment(Enchantment.KNOCKBACK, 1);
+            itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
         }
-        inventory.setItem(position, itemStack);
+        inventory.setItem(page.getSlot(), itemStack);
     }
 
     private void addTemplates(Player player, Page page) {
@@ -162,7 +165,6 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        boolean privateWorld = worldManager.createPrivateWorldPlayers.contains(player);
         CreateInventory.Page newPage = null;
 
         switch (event.getSlot()) {
@@ -178,10 +180,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         }
 
         if (newPage != null) {
-            openInventory(player, newPage);
-            if (privateWorld) {
-                worldManager.createPrivateWorldPlayers.add(player);
-            }
+            openInventory(player, newPage, this.createPrivateWorld);
             XSound.ENTITY_CHICKEN_EGG.play(player);
             return;
         }
@@ -191,13 +190,13 @@ public class CreateInventory extends PaginatedInventory implements Listener {
             return;
         }
 
-        boolean createPrivateWorld = worldManager.createPrivateWorldPlayers.contains(player);
+        int slot = event.getSlot();
 
-        switch (getCurrentPage(inventory)) {
+        switch (Page.getCurrentPage(inventory)) {
             case PREDEFINED: {
                 WorldType worldType = null;
 
-                switch (event.getSlot()) {
+                switch (slot) {
                     case 29:
                         worldType = WorldType.NORMAL;
                         break;
@@ -222,58 +221,61 @@ public class CreateInventory extends PaginatedInventory implements Listener {
                 break;
             }
 
+            case GENERATOR: {
+                if (slot == 31) {
+                    worldManager.startWorldNameInput(player, WorldType.CUSTOM, null, createPrivateWorld);
+                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                }
+                break;
+            }
+
             case TEMPLATES: {
                 ItemStack itemStack = event.getCurrentItem();
                 if (itemStack == null) {
                     return;
                 }
 
-                if (itemStack.getType() == XMaterial.FILLED_MAP.parseMaterial()) {
-                    worldManager.startWorldNameInput(player, WorldType.TEMPLATE, itemStack.getItemMeta().getDisplayName(), createPrivateWorld);
-                } else if (itemStack.getType() == XMaterial.PLAYER_HEAD.parseMaterial()) {
-                    switch (event.getSlot()) {
-                        case 38:
+                XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
+                switch (xMaterial) {
+                    case FILLED_MAP:
+                        worldManager.startWorldNameInput(player, WorldType.TEMPLATE, itemStack.getItemMeta().getDisplayName(), createPrivateWorld);
+                        break;
+                    case PLAYER_HEAD:
+                        if (slot == 38) {
                             decrementInv(player);
-                            break;
-                        case 42:
+                        } else if (slot == 42) {
                             incrementInv(player);
-                            break;
-                    }
-                    openInventory(player, CreateInventory.Page.TEMPLATES);
+                        }
+                        openInventory(player, CreateInventory.Page.TEMPLATES, createPrivateWorld);
+                        break;
+                    default:
+                        return;
                 }
                 XSound.ENTITY_CHICKEN_EGG.play(player);
                 break;
             }
-
-            default: {
-                if (event.getSlot() == 31) {
-                    worldManager.startWorldNameInput(player, WorldType.CUSTOM, null, createPrivateWorld);
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
-                }
-                break;
-            }
         }
-    }
-
-    private Page getCurrentPage(Inventory inventory) {
-        for (Page page : Page.values()) {
-            ItemStack itemStack = inventory.getItem(page.getSlot());
-            if (itemStack != null && itemStack.containsEnchantment(Enchantment.KNOCKBACK)) {
-                return page;
-            }
-        }
-        return Page.PREDEFINED;
     }
 
     public enum Page {
         PREDEFINED(12),
-        TEMPLATES(13),
-        GENERATOR(14);
+        GENERATOR(13),
+        TEMPLATES(14);
 
         private final int slot;
 
         Page(int slot) {
             this.slot = slot;
+        }
+
+        public static Page getCurrentPage(Inventory inventory) {
+            for (Page page : Page.values()) {
+                ItemStack itemStack = inventory.getItem(page.getSlot());
+                if (itemStack != null && itemStack.containsEnchantment(Enchantment.DURABILITY)) {
+                    return page;
+                }
+            }
+            return Page.PREDEFINED;
         }
 
         public int getSlot() {

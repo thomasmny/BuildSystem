@@ -64,19 +64,16 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         return inventory;
     }
 
+    /**
+     * Gets the amount of worlds that are to be displayed in the inventory.
+     *
+     * @param player The player to show the inventory to
+     * @return The amount of worlds
+     */
     private int numOfWorlds(Player player) {
-        int numOfWorlds = 0;
-        for (BuildWorld buildWorld : worldManager.getBuildWorlds()) {
-            if (isValidWorld(player, buildWorld)) {
-                numOfWorlds++;
-            }
-        }
-        return numOfWorlds;
-    }
-
-    boolean canCreateWorld(Player player) {
-        //TODO: Add maximum world amount
-        return true;
+        return (int) worldManager.getBuildWorlds().stream()
+                .filter(buildWorld -> isValidWorld(player, buildWorld))
+                .count();
     }
 
     public void openInventory(Player player) {
@@ -117,8 +114,8 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
     }
 
     private boolean isValidWorld(Player player, BuildWorld buildWorld) {
-        if (buildWorld.isPrivate()) {
-            return showPrivateWorlds;
+        if (!worldManager.isCorrectVisibility(buildWorld, showPrivateWorlds)) {
+            return false;
         }
 
         String worldPermission = buildWorld.getPermission();
@@ -153,15 +150,16 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
                     decrementInv(player);
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     openInventory(player);
-                    break;
+                    return;
                 case 49:
                     XSound.ENTITY_CHICKEN_EGG.play(player);
-                    plugin.getCreateInventory().openInventory(player, CreateInventory.Page.PREDEFINED);
-                    break;
+                    plugin.getCreateInventory().openInventory(player, CreateInventory.Page.PREDEFINED, showPrivateWorlds);
+                    return;
                 case 53:
                     incrementInv(player);
+                    XSound.ENTITY_CHICKEN_EGG.play(player);
                     openInventory(player);
-                    break;
+                    return;
             }
         }
 

@@ -38,15 +38,6 @@ public class InventoryCloseListener implements Listener {
     }
 
     @EventHandler
-    public void onPrivateInventoryClose(InventoryCloseEvent event) {
-        if (!(event.getPlayer() instanceof Player)) {
-            return;
-        }
-        Player player = (Player) event.getPlayer();
-        worldManager.createPrivateWorldPlayers.remove(player);
-    }
-
-    @EventHandler
     public void onSetupInventoryClose(InventoryCloseEvent event) {
         if (!event.getView().getTitle().equals(plugin.getString("setup_title"))) {
             return;
