@@ -55,11 +55,11 @@ tasks {
     }
 
     shadowJar {
-        archiveFileName.set("${rootProject.name}-${project.version}.jar")
-
         dependsOn(project.project(":buildsystem-abstraction").subprojects.map {
             it.tasks.named("assemble")
         })
+
+        archiveFileName.set("${rootProject.name}-${project.version}.jar")
 
         val shadePath = "com.eintosti.buildsystem.util.external"
         relocate("com.cryptomorin.xseries", "$shadePath.xseries")

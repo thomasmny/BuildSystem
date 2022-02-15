@@ -18,5 +18,3 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-
-enableFeaturePreview("VERSION_CATALOGS")
