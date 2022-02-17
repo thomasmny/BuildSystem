@@ -9,6 +9,7 @@
 package com.eintosti.buildsystem.manager;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.api.settings.Settings;
 import com.eintosti.buildsystem.object.settings.CraftSettings;
 import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
@@ -119,7 +120,7 @@ public class NoClipManager {
      * @param player   The player to add
      * @param settings The player's settings
      */
-    public void startNoClip(Player player, CraftSettings settings) {
+    public void startNoClip(Player player, Settings settings) {
         if (!settings.isNoClip()) {
             noClipPlayers.remove(player.getUniqueId());
             return;

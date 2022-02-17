@@ -14,6 +14,7 @@ import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.XTag;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.api.settings.NavigatorType;
+import com.eintosti.buildsystem.api.settings.Settings;
 import com.eintosti.buildsystem.api.world.WorldStatus;
 import com.eintosti.buildsystem.manager.ArmorStandManager;
 import com.eintosti.buildsystem.manager.InventoryManager;
@@ -121,7 +122,7 @@ public class PlayerInteractListener implements Listener {
     }
 
     private void openNavigator(Player player) {
-        CraftSettings settings = settingsManager.getSettings(player);
+        Settings settings = settingsManager.getSettings(player);
 
         if (settings.getNavigatorType() == NavigatorType.OLD) {
             plugin.getNavigatorInventory().openInventory(player);
@@ -171,7 +172,7 @@ public class PlayerInteractListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        CraftSettings settings = settingsManager.getSettings(player);
+        Settings settings = settingsManager.getSettings(player);
         if (!settings.isOpenTrapDoor()) {
             return;
         }
@@ -206,7 +207,7 @@ public class PlayerInteractListener implements Listener {
         Player player = event.getPlayer();
         Action action = event.getAction();
 
-        CraftSettings settings = settingsManager.getSettings(player);
+        Settings settings = settingsManager.getSettings(player);
         if (settings.isSlabBreaking() && action == Action.LEFT_CLICK_BLOCK) {
             plugin.getCustomBlocks().modifySlab(event);
         }
@@ -229,7 +230,7 @@ public class PlayerInteractListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        CraftSettings settings = settingsManager.getSettings(player);
+        Settings settings = settingsManager.getSettings(player);
         if (!settings.isPlacePlants()) {
             return;
         }
@@ -288,7 +289,7 @@ public class PlayerInteractListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        CraftSettings settings = settingsManager.getSettings(player);
+        Settings settings = settingsManager.getSettings(player);
         if (!settings.isInstantPlaceSigns()) {
             return;
         }
@@ -390,7 +391,7 @@ public class PlayerInteractListener implements Listener {
             return;
         }
 
-        CraftSettings settings = settingsManager.getSettings(player);
+        Settings settings = settingsManager.getSettings(player);
         if (!settings.isDisableInteract()) {
             return;
         }

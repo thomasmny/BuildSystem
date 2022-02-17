@@ -12,6 +12,7 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.api.settings.NavigatorType;
+import com.eintosti.buildsystem.api.settings.Settings;
 import com.eintosti.buildsystem.api.settings.WorldSort;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.NoClipManager;
@@ -57,7 +58,7 @@ public class SettingsInventory implements Listener {
         Inventory inventory = Bukkit.createInventory(null, 45, plugin.getString("settings_title"));
         fillGuiWithGlass(player, inventory);
 
-        CraftSettings settings = settingsManager.getSettings(player);
+        Settings settings = settingsManager.getSettings(player);
         addDesignItem(inventory, player);
         addClearInventoryItem(inventory, player);
         addSettingsItem(inventory, 13, XMaterial.DIAMOND_AXE, settings.isDisableInteract(), plugin.getString("settings_disableinteract_item"), plugin.getStringList("settings_disableinteract_lore"));
@@ -107,7 +108,7 @@ public class SettingsInventory implements Listener {
     }
 
     private void addClearInventoryItem(Inventory inventory, Player player) {
-        CraftSettings settings = settingsManager.getSettings(player);
+        Settings settings = settingsManager.getSettings(player);
         XMaterial xMaterial = settings.isClearInventory() ? XMaterial.MINECART : XMaterial.CHEST_MINECART;
         addSettingsItem(inventory, 12, xMaterial, settings.isClearInventory(), plugin.getString("settings_clear_inventory_item"), plugin.getStringList("settings_clear_inventory_lore"));
     }
@@ -127,7 +128,7 @@ public class SettingsInventory implements Listener {
     }
 
     private void addWorldSortItem(Inventory inventory, Player player) {
-        CraftSettings settings = settingsManager.getSettings(player);
+        Settings settings = settingsManager.getSettings(player);
 
         String url;
         List<String> lore;
@@ -176,7 +177,7 @@ public class SettingsInventory implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        CraftSettings settings = settingsManager.getSettings(player);
+        Settings settings = settingsManager.getSettings(player);
 
         switch (event.getSlot()) {
             case 11:
@@ -290,7 +291,7 @@ public class SettingsInventory implements Listener {
     }
 
     @SuppressWarnings("deprecation")
-    private void toggleHidePlayers(Player player, CraftSettings settings) {
+    private void toggleHidePlayers(Player player, Settings settings) {
         if (settings.isHidePlayers()) {
             Bukkit.getOnlinePlayers().forEach(player::hidePlayer);
         } else {

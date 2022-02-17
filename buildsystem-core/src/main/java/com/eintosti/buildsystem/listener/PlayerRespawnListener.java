@@ -9,6 +9,7 @@
 package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.api.settings.Settings;
 import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.manager.SpawnManager;
 import com.eintosti.buildsystem.object.settings.CraftSettings;
@@ -34,7 +35,7 @@ public class PlayerRespawnListener implements Listener {
     @EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();
-        CraftSettings settings = settingsManager.getSettings(player);
+        Settings settings = settingsManager.getSettings(player);
 
         if (settings.isSpawnTeleport() && spawnManager.spawnExists()) {
             event.setRespawnLocation(spawnManager.getSpawn());

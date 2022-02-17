@@ -11,18 +11,19 @@ package com.eintosti.buildsystem.event;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author einTosti
  */
 public class PlayerInventoryClearEvent extends Event {
 
-    private static final HandlerList HANDLERS = new HandlerList();
-
+    private static final HandlerList handlers = new HandlerList();
     private final Player player;
-    private final ArrayList<Integer> navigatorSlots;
+    private final List<Integer> navigatorSlots;
 
     public PlayerInventoryClearEvent(Player player, ArrayList<Integer> navigatorSlots) {
         this.player = player;
@@ -33,16 +34,17 @@ public class PlayerInventoryClearEvent extends Event {
         return player;
     }
 
-    public ArrayList<Integer> getNavigatorSlots() {
+    public List<Integer> getNavigatorSlots() {
         return navigatorSlots;
     }
 
+    @NotNull
     @Override
     public HandlerList getHandlers() {
-        return HANDLERS;
+        return handlers;
     }
 
     public static HandlerList getHandlerList() {
-        return HANDLERS;
+        return handlers;
     }
 }

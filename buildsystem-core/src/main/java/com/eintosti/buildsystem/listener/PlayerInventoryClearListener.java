@@ -9,6 +9,7 @@
 package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.api.settings.Settings;
 import com.eintosti.buildsystem.event.PlayerInventoryClearEvent;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.SettingsManager;
@@ -39,10 +40,11 @@ public class PlayerInventoryClearListener implements Listener {
     @EventHandler
     public void onPlayerInventoryClear(PlayerInventoryClearEvent event) {
         Player player = event.getPlayer();
-        CraftSettings settings = settingsManager.getSettings(player);
+        Settings settings = settingsManager.getSettings(player);
         if (!settings.isKeepNavigator()) {
             return;
         }
+
         if (!player.hasPermission("buildsystem.gui")) {
             return;
         }

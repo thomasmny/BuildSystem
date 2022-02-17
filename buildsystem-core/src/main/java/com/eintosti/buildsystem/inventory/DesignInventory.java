@@ -11,6 +11,7 @@ package com.eintosti.buildsystem.inventory;
 import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.api.settings.GlassColor;
+import com.eintosti.buildsystem.api.settings.Settings;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.object.settings.CraftSettings;
@@ -79,7 +80,7 @@ public class DesignInventory implements Listener {
 
     private void setItem(Player player, Inventory inventory, int position, XMaterial material, String displayName, GlassColor color) {
         SettingsManager settingsManager = plugin.getSettingsManager();
-        CraftSettings settings = settingsManager.getSettings(player);
+        Settings settings = settingsManager.getSettings(player);
 
         ItemStack itemStack = inventoryManager.getItemStack(material, settings.getGlassColor() == color ? "§a" + displayName : "§7" + displayName);
         ItemMeta itemMeta = itemStack.getItemMeta();
@@ -102,7 +103,7 @@ public class DesignInventory implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        CraftSettings settings = plugin.getSettingsManager().getSettings(player);
+        Settings settings = plugin.getSettingsManager().getSettings(player);
         ItemStack itemStack = event.getCurrentItem();
         if (itemStack.getType().toString().contains("STAINED_GLASS_PANE")) {
             plugin.getSettingsInventory().openInventory(player);

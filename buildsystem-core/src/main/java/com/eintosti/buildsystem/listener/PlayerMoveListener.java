@@ -10,6 +10,7 @@ package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.api.settings.NavigatorType;
+import com.eintosti.buildsystem.api.settings.Settings;
 import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.object.settings.CraftSettings;
@@ -43,7 +44,7 @@ public class PlayerMoveListener implements Listener {
             return;
         }
 
-        CraftSettings settings = settingsManager.getSettings(player);
+        Settings settings = settingsManager.getSettings(player);
         if (!settings.getNavigatorType().equals(NavigatorType.NEW)) {
             return;
         }
