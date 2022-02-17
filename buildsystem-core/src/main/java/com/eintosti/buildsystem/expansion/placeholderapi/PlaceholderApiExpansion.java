@@ -9,10 +9,9 @@
 package com.eintosti.buildsystem.expansion.placeholderapi;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.api.world.BuildWorld;
 import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.settings.Settings;
+import com.eintosti.buildsystem.object.settings.CraftSettings;
 import com.eintosti.buildsystem.object.world.CraftBuildWorld;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
@@ -129,7 +128,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
      */
     @Nullable
     private String parseSettingsPlaceholder(Player player, String identifier) {
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
         String settingIdentifier = identifier.split("_")[1];
 
         switch (settingIdentifier.toLowerCase()) {
@@ -162,7 +161,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "spawnteleport":
                 return String.valueOf(settings.isSpawnTeleport());
             case "opentrapdoors":
-                return String.valueOf(settings.isTrapDoor());
+                return String.valueOf(settings.isOpenTrapDoor());
             default:
                 return null;
         }

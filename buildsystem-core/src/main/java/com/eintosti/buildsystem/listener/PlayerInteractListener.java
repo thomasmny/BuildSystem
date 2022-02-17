@@ -13,16 +13,16 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.XTag;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.api.settings.NavigatorType;
+import com.eintosti.buildsystem.api.world.WorldStatus;
 import com.eintosti.buildsystem.manager.ArmorStandManager;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.navigator.NavigatorType;
-import com.eintosti.buildsystem.object.settings.Settings;
+import com.eintosti.buildsystem.object.settings.CraftSettings;
 import com.eintosti.buildsystem.object.world.CraftBuildWorld;
 import com.eintosti.buildsystem.object.world.CraftBuilder;
-import com.eintosti.buildsystem.api.world.WorldStatus;
 import com.eintosti.buildsystem.util.ConfigValues;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
@@ -121,7 +121,7 @@ public class PlayerInteractListener implements Listener {
     }
 
     private void openNavigator(Player player) {
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
 
         if (settings.getNavigatorType() == NavigatorType.OLD) {
             plugin.getNavigatorInventory().openInventory(player);
@@ -171,8 +171,8 @@ public class PlayerInteractListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        Settings settings = settingsManager.getSettings(player);
-        if (!settings.isTrapDoor()) {
+        CraftSettings settings = settingsManager.getSettings(player);
+        if (!settings.isOpenTrapDoor()) {
             return;
         }
 
@@ -206,7 +206,7 @@ public class PlayerInteractListener implements Listener {
         Player player = event.getPlayer();
         Action action = event.getAction();
 
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
         if (settings.isSlabBreaking() && action == Action.LEFT_CLICK_BLOCK) {
             plugin.getCustomBlocks().modifySlab(event);
         }
@@ -229,7 +229,7 @@ public class PlayerInteractListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
         if (!settings.isPlacePlants()) {
             return;
         }
@@ -288,7 +288,7 @@ public class PlayerInteractListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
         if (!settings.isInstantPlaceSigns()) {
             return;
         }
@@ -390,7 +390,7 @@ public class PlayerInteractListener implements Listener {
             return;
         }
 
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
         if (!settings.isDisableInteract()) {
             return;
         }

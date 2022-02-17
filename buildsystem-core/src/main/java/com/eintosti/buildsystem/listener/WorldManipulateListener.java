@@ -10,10 +10,11 @@ package com.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.api.event.data.BuildWorldStatusChangeEvent.Reason;
+import com.eintosti.buildsystem.api.world.WorldStatus;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.CraftBuildWorld;
 import com.eintosti.buildsystem.object.world.CraftBuilder;
-import com.eintosti.buildsystem.api.world.WorldStatus;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -56,7 +57,7 @@ public class WorldManipulateListener implements Listener {
         }
 
         if (!manageWorldInteraction(player, event, buildWorld.isBlockBreaking())) {
-            setStatus(buildWorld, player);
+            setStatus(buildWorld, player, Reason.BLOCK_BREAK);
         }
     }
 
@@ -73,7 +74,7 @@ public class WorldManipulateListener implements Listener {
         }
 
         if (!manageWorldInteraction(player, event, buildWorld.isBlockPlacement())) {
-            setStatus(buildWorld, player);
+            setStatus(buildWorld, player, Reason.BLOCK_PLACE);
         }
     }
 
@@ -223,9 +224,9 @@ public class WorldManipulateListener implements Listener {
         }
     }
 
-    private void setStatus(CraftBuildWorld buildWorld, Player player) {
+    private void setStatus(CraftBuildWorld buildWorld, Player player, Reason reason) {
         if (buildWorld.getStatus() == WorldStatus.NOT_STARTED) {
-            buildWorld.setStatus(WorldStatus.IN_PROGRESS);
+            buildWorld.setStatus(WorldStatus.IN_PROGRESS, reason);
             plugin.getPlayerManager().forceUpdateSidebar(player);
         }
     }

@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-package com.eintosti.buildsystem.object.settings;
+package com.eintosti.buildsystem.api.settings;
 
 /**
  * @author einTosti

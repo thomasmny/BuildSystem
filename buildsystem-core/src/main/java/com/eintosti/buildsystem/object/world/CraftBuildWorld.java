@@ -11,6 +11,11 @@ package com.eintosti.buildsystem.object.world;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.api.event.data.BuildWorldMaterialChangeEvent;
+import com.eintosti.buildsystem.api.event.data.BuildWorldPermissionChangeEvent;
+import com.eintosti.buildsystem.api.event.data.BuildWorldProjectChangeEvent;
+import com.eintosti.buildsystem.api.event.data.BuildWorldStatusChangeEvent;
+import com.eintosti.buildsystem.api.event.data.BuildWorldStatusChangeEvent.Reason;
 import com.eintosti.buildsystem.api.world.BuildWorld;
 import com.eintosti.buildsystem.api.world.Builder;
 import com.eintosti.buildsystem.api.world.WorldStatus;
@@ -308,15 +313,19 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
 
     @Override
     public void setMaterial(Material material) {
-        this.material = XMaterial.matchXMaterial(material);
+        setXMaterial(XMaterial.matchXMaterial(material));
     }
 
     public XMaterial getXMaterial() {
         return material;
     }
 
-    public void setXMaterial(XMaterial material) {
-        this.material = material;
+    public void setXMaterial(XMaterial xMaterial) {
+        Material oldMaterial = this.material.parseMaterial();
+        Material newMaterial = xMaterial.parseMaterial();
+
+        this.material = xMaterial;
+        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldMaterialChangeEvent(this, oldMaterial, newMaterial));
     }
 
     @Override
@@ -326,7 +335,13 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
 
     @Override
     public void setStatus(WorldStatus worldStatus) {
+        setStatus(worldStatus, Reason.PLUGIN);
+    }
+
+    public void setStatus(WorldStatus worldStatus, Reason reason) {
+        WorldStatus oldStatus = this.worldStatus;
         this.worldStatus = worldStatus;
+        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldStatusChangeEvent(this, oldStatus, worldStatus, reason));
     }
 
     public String getStatusName() {
@@ -355,7 +370,9 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
 
     @Override
     public void setProject(String project) {
+        String oldProject = this.project;
         this.project = project;
+        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldProjectChangeEvent(this, oldProject, project));
     }
 
     @Override
@@ -365,7 +382,9 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
 
     @Override
     public void setPermission(String permission) {
+        String oldPermission = this.permission;
         this.permission = permission;
+        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPermissionChangeEvent(this, oldPermission, permission));
     }
 
     @Override
@@ -516,7 +535,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
     }
 
     @Override
-    public Builder getBuilder(Player player){
+    public Builder getBuilder(Player player) {
         return getBuilder(player.getUniqueId());
     }
 

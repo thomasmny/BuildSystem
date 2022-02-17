@@ -6,11 +6,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-package com.eintosti.buildsystem.object.navigator;
+package com.eintosti.buildsystem.api.settings;
 
 /**
  * @author einTosti
  */
 public enum NavigatorType {
-    OLD, NEW
+    NEW,
+    OLD
 }

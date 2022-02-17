@@ -9,11 +9,11 @@
 package com.eintosti.buildsystem.inventory;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.api.world.BuildWorld;
+import com.eintosti.buildsystem.api.world.WorldStatus;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.object.world.WorldStatus;
 import com.google.common.collect.Sets;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;

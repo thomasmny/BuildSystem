@@ -13,7 +13,7 @@ import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.api.world.Builder;
-import com.eintosti.buildsystem.object.settings.Settings;
+import com.eintosti.buildsystem.object.settings.CraftSettings;
 import com.eintosti.buildsystem.object.world.CraftBuildWorld;
 import com.eintosti.buildsystem.object.world.CraftBuilder;
 import com.eintosti.buildsystem.api.world.WorldStatus;
@@ -305,7 +305,7 @@ public class InventoryManager {
 
     public List<CraftBuildWorld> sortWorlds(Player player, WorldManager worldManager, BuildSystem plugin) {
         List<CraftBuildWorld> buildWorlds = new ArrayList<>(worldManager.getBuildWorlds());
-        Settings settings = plugin.getSettingsManager().getSettings(player);
+        CraftSettings settings = plugin.getSettingsManager().getSettings(player);
         switch (settings.getWorldSort()) {
             default: // NAME_A_TO_Z
                 buildWorlds.sort(Comparator.comparing(worldOne -> worldOne.getName().toLowerCase()));
@@ -424,7 +424,7 @@ public class InventoryManager {
 
     public XMaterial getColouredGlass(BuildSystem plugin, Player player) {
         SettingsManager settingsManager = plugin.getSettingsManager();
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
 
         Optional<XMaterial> glass = XMaterial.matchXMaterial(settings.getGlassColor().name() + "_STAINED_GLASS");
         return glass.orElse(XMaterial.BLACK_STAINED_GLASS);
@@ -432,7 +432,7 @@ public class InventoryManager {
 
     public XMaterial getColouredGlassPane(BuildSystem plugin, Player player) {
         SettingsManager settingsManager = plugin.getSettingsManager();
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
 
         Optional<XMaterial> glass = XMaterial.matchXMaterial(settings.getGlassColor().name() + "_STAINED_GLASS_PANE");
         return glass.orElse(XMaterial.BLACK_STAINED_GLASS_PANE);

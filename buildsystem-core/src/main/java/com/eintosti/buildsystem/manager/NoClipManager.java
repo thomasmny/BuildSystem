@@ -9,7 +9,7 @@
 package com.eintosti.buildsystem.manager;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.object.settings.Settings;
+import com.eintosti.buildsystem.object.settings.CraftSettings;
 import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -114,12 +114,12 @@ public class NoClipManager {
     }
 
     /**
-     * Only add a player to the list of No-Clip players if {@link Settings#isNoClip} is equal to {@code true}.
+     * Only add a player to the list of No-Clip players if {@link CraftSettings#isNoClip} is equal to {@code true}.
      *
      * @param player   The player to add
      * @param settings The player's settings
      */
-    public void startNoClip(Player player, Settings settings) {
+    public void startNoClip(Player player, CraftSettings settings) {
         if (!settings.isNoClip()) {
             noClipPlayers.remove(player.getUniqueId());
             return;

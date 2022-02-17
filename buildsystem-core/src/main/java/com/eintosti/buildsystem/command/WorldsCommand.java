@@ -12,12 +12,12 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.api.event.data.BuildWorldMaterialChangeEvent;
+import com.eintosti.buildsystem.api.world.Generator;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.CraftBuildWorld;
-import com.eintosti.buildsystem.object.world.CraftBuilder;
-import com.eintosti.buildsystem.api.world.Generator;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
 import com.eintosti.buildsystem.util.external.UUIDFetcher;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -398,6 +398,9 @@ public class WorldsCommand implements CommandExecutor {
                         player.sendMessage(plugin.getString("worlds_setitem_hand_empty"));
                         return true;
                     }
+
+                    Material oldMaterial = buildWorld.getMaterial();
+                    Material newMaterial = itemStack.getType();
 
                     buildWorld.setXMaterial(XMaterial.matchXMaterial(itemStack));
                     player.sendMessage(plugin.getString("worlds_setitem_set").replace("%world%", buildWorld.getName()));

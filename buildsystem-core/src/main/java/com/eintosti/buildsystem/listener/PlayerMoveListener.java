@@ -9,10 +9,10 @@
 package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.api.settings.NavigatorType;
 import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.manager.SettingsManager;
-import com.eintosti.buildsystem.object.navigator.NavigatorType;
-import com.eintosti.buildsystem.object.settings.Settings;
+import com.eintosti.buildsystem.object.settings.CraftSettings;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -43,7 +43,7 @@ public class PlayerMoveListener implements Listener {
             return;
         }
 
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
         if (!settings.getNavigatorType().equals(NavigatorType.NEW)) {
             return;
         }

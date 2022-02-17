@@ -72,7 +72,7 @@ import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.manager.SpawnManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.internal.ServerVersion;
-import com.eintosti.buildsystem.object.settings.Settings;
+import com.eintosti.buildsystem.object.settings.CraftSettings;
 import com.eintosti.buildsystem.tabcomplete.ConfigTabComplete;
 import com.eintosti.buildsystem.tabcomplete.EmptyTabComplete;
 import com.eintosti.buildsystem.tabcomplete.GamemodeTabComplete;
@@ -183,7 +183,7 @@ public class BuildSystem extends JavaPlugin {
         Bukkit.getOnlinePlayers().forEach(pl -> {
             getSkullCache().cacheSkull(pl.getName());
 
-            Settings settings = settingsManager.createSettings(pl);
+            CraftSettings settings = settingsManager.createSettings(pl);
             settingsManager.startScoreboard(pl, settings);
             noClipManager.startNoClip(pl, settings);
         });

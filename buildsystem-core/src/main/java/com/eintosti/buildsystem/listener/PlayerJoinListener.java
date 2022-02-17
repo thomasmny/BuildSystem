@@ -14,7 +14,7 @@ import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.manager.SpawnManager;
 import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.settings.Settings;
+import com.eintosti.buildsystem.object.settings.CraftSettings;
 import com.eintosti.buildsystem.object.world.CraftBuildWorld;
 import com.eintosti.buildsystem.api.world.WorldStatus;
 import com.eintosti.buildsystem.util.ConfigValues;
@@ -82,7 +82,7 @@ public class PlayerJoinListener implements Listener {
             }
         }
 
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
         if (settings.isNoClip()) {
             plugin.getNoClipManager().startNoClip(player);
         }

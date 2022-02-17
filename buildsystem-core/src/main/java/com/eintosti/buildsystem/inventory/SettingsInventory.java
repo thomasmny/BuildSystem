@@ -11,12 +11,12 @@ package com.eintosti.buildsystem.inventory;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.api.settings.NavigatorType;
+import com.eintosti.buildsystem.api.settings.WorldSort;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.NoClipManager;
 import com.eintosti.buildsystem.manager.SettingsManager;
-import com.eintosti.buildsystem.object.navigator.NavigatorType;
-import com.eintosti.buildsystem.object.settings.Settings;
-import com.eintosti.buildsystem.object.settings.WorldSort;
+import com.eintosti.buildsystem.object.settings.CraftSettings;
 import com.eintosti.buildsystem.util.ConfigValues;
 import org.bukkit.Bukkit;
 import org.bukkit.enchantments.Enchantment;
@@ -57,7 +57,7 @@ public class SettingsInventory implements Listener {
         Inventory inventory = Bukkit.createInventory(null, 45, plugin.getString("settings_title"));
         fillGuiWithGlass(player, inventory);
 
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
         addDesignItem(inventory, player);
         addClearInventoryItem(inventory, player);
         addSettingsItem(inventory, 13, XMaterial.DIAMOND_AXE, settings.isDisableInteract(), plugin.getString("settings_disableinteract_item"), plugin.getStringList("settings_disableinteract_lore"));
@@ -67,7 +67,7 @@ public class SettingsInventory implements Listener {
         addSettingsItem(inventory, 21, configValues.getNavigatorItem(), settings.getNavigatorType().equals(NavigatorType.NEW), plugin.getString("settings_new_navigator_item"), plugin.getStringList("settings_new_navigator_lore"));
         addSettingsItem(inventory, 22, XMaterial.GOLDEN_CARROT, settings.isNightVision(), plugin.getString("settings_nightvision_item"), plugin.getStringList("settings_nightvision_lore"));
         addSettingsItem(inventory, 23, XMaterial.BRICKS, settings.isNoClip(), plugin.getString("settings_no_clip_item"), plugin.getStringList("settings_no_clip_lore"));
-        addSettingsItem(inventory, 24, XMaterial.IRON_TRAPDOOR, settings.isTrapDoor(), plugin.getString("settings_open_trapdoors_item"), plugin.getStringList("settings_open_trapdoors_lore"));
+        addSettingsItem(inventory, 24, XMaterial.IRON_TRAPDOOR, settings.isOpenTrapDoor(), plugin.getString("settings_open_trapdoors_item"), plugin.getStringList("settings_open_trapdoors_lore"));
         addSettingsItem(inventory, 29, XMaterial.FERN, settings.isPlacePlants(), plugin.getString("settings_placeplants_item"), plugin.getStringList("settings_placeplants_lore"));
         addSettingsItem(inventory, 30, XMaterial.PAPER, settings.isScoreboard(), configValues.isScoreboard() ? plugin.getString("settings_scoreboard_item") : plugin.getString("settings_scoreboard_disabled_item"),
                 configValues.isScoreboard() ? plugin.getStringList("settings_scoreboard_lore") : plugin.getStringList("settings_scoreboard_disabled_lore"));
@@ -107,7 +107,7 @@ public class SettingsInventory implements Listener {
     }
 
     private void addClearInventoryItem(Inventory inventory, Player player) {
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
         XMaterial xMaterial = settings.isClearInventory() ? XMaterial.MINECART : XMaterial.CHEST_MINECART;
         addSettingsItem(inventory, 12, xMaterial, settings.isClearInventory(), plugin.getString("settings_clear_inventory_item"), plugin.getStringList("settings_clear_inventory_lore"));
     }
@@ -127,7 +127,7 @@ public class SettingsInventory implements Listener {
     }
 
     private void addWorldSortItem(Inventory inventory, Player player) {
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
 
         String url;
         List<String> lore;
@@ -176,7 +176,7 @@ public class SettingsInventory implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
 
         switch (event.getSlot()) {
             case 11:
@@ -233,7 +233,7 @@ public class SettingsInventory implements Listener {
                 }
                 break;
             case 24:
-                settings.setTrapDoor(!settings.isTrapDoor());
+                settings.setOpenTrapDoor(!settings.isOpenTrapDoor());
                 break;
 
             case 29:
@@ -290,7 +290,7 @@ public class SettingsInventory implements Listener {
     }
 
     @SuppressWarnings("deprecation")
-    private void toggleHidePlayers(Player player, Settings settings) {
+    private void toggleHidePlayers(Player player, CraftSettings settings) {
         if (settings.isHidePlayers()) {
             Bukkit.getOnlinePlayers().forEach(player::hidePlayer);
         } else {

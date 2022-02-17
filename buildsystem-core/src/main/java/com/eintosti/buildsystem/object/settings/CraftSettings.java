@@ -8,7 +8,10 @@
 
 package com.eintosti.buildsystem.object.settings;
 
-import com.eintosti.buildsystem.object.navigator.NavigatorType;
+import com.eintosti.buildsystem.api.settings.GlassColor;
+import com.eintosti.buildsystem.api.settings.NavigatorType;
+import com.eintosti.buildsystem.api.settings.Settings;
+import com.eintosti.buildsystem.api.settings.WorldSort;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
@@ -19,9 +22,9 @@ import java.util.Map;
 /**
  * @author einTosti
  */
-public class Settings implements ConfigurationSerializable {
+public class CraftSettings implements Settings, ConfigurationSerializable {
 
-    private Color glassColor;
+    private GlassColor glassColor;
     private NavigatorType navigatorType;
     private WorldSort worldSort;
     private boolean clearInventory;
@@ -31,17 +34,17 @@ public class Settings implements ConfigurationSerializable {
     private boolean keepNavigator;
     private boolean nightVision;
     private boolean noClip;
+    private boolean openTrapDoor;
     private boolean placePlants;
     private boolean scoreboard;
     private boolean slabBreaking;
     private boolean spawnTeleport;
-    private boolean trapDoor;
 
     private BukkitTask scoreboardTask;
 
-    public Settings() {
+    public CraftSettings() {
         this.navigatorType = NavigatorType.OLD;
-        this.glassColor = Color.BLACK;
+        this.glassColor = GlassColor.BLACK;
         this.worldSort = WorldSort.NAME_A_TO_Z;
         this.clearInventory = false;
         this.disableInteract = false;
@@ -54,12 +57,12 @@ public class Settings implements ConfigurationSerializable {
         this.scoreboard = true;
         this.slabBreaking = false;
         this.spawnTeleport = true;
-        this.trapDoor = false;
+        this.openTrapDoor = false;
     }
 
-    public Settings(
+    public CraftSettings(
             NavigatorType navigatorType,
-            Color glassColor,
+            GlassColor glassColor,
             WorldSort worldSort,
             boolean clearInventory,
             boolean disableInteract,
@@ -72,10 +75,10 @@ public class Settings implements ConfigurationSerializable {
             boolean scoreboard,
             boolean slabBreaking,
             boolean spawnTeleport,
-            boolean trapDoor
+            boolean openTrapDoor
     ) {
         this.navigatorType = navigatorType == null ? NavigatorType.OLD : navigatorType;
-        this.glassColor = glassColor == null ? Color.BLACK : glassColor;
+        this.glassColor = glassColor == null ? GlassColor.BLACK : glassColor;
         this.worldSort = worldSort;
         this.clearInventory = clearInventory;
         this.disableInteract = disableInteract;
@@ -88,127 +91,157 @@ public class Settings implements ConfigurationSerializable {
         this.scoreboard = scoreboard;
         this.slabBreaking = slabBreaking;
         this.spawnTeleport = spawnTeleport;
-        this.trapDoor = trapDoor;
+        this.openTrapDoor = openTrapDoor;
     }
 
+    @Override
     public NavigatorType getNavigatorType() {
         return navigatorType;
     }
 
+    @Override
     public void setNavigatorType(NavigatorType navigatorType) {
         this.navigatorType = navigatorType;
     }
 
-    public Color getGlassColor() {
+    @Override
+    public GlassColor getGlassColor() {
         return glassColor;
     }
 
-    public void setGlassColor(Color glassColor) {
+    @Override
+    public void setGlassColor(GlassColor glassColor) {
         this.glassColor = glassColor;
     }
 
+    @Override
     public WorldSort getWorldSort() {
         return worldSort;
     }
 
+    @Override
     public void setWorldSort(WorldSort worldSort) {
         this.worldSort = worldSort;
     }
 
+    @Override
     public boolean isClearInventory() {
         return clearInventory;
     }
 
+    @Override
     public void setClearInventory(boolean clearInventory) {
         this.clearInventory = clearInventory;
     }
 
+    @Override
     public boolean isDisableInteract() {
         return disableInteract;
     }
 
+    @Override
     public void setDisableInteract(boolean disableInteract) {
         this.disableInteract = disableInteract;
     }
 
+    @Override
     public boolean isHidePlayers() {
         return hidePlayers;
     }
 
+    @Override
     public void setHidePlayers(boolean hidePlayers) {
         this.hidePlayers = hidePlayers;
     }
 
+    @Override
     public boolean isInstantPlaceSigns() {
         return instantPlaceSigns;
     }
 
+    @Override
     public void setInstantPlaceSigns(boolean instantPlaceSigns) {
         this.instantPlaceSigns = instantPlaceSigns;
     }
 
+    @Override
     public boolean isKeepNavigator() {
         return keepNavigator;
     }
 
+    @Override
     public void setKeepNavigator(boolean keepNavigator) {
         this.keepNavigator = keepNavigator;
     }
 
+    @Override
     public boolean isNightVision() {
         return nightVision;
     }
 
+    @Override
     public void setNightVision(boolean nightVision) {
         this.nightVision = nightVision;
     }
 
+    @Override
     public boolean isNoClip() {
         return noClip;
     }
 
+    @Override
     public void setNoClip(boolean noClip) {
         this.noClip = noClip;
     }
 
+    @Override
     public boolean isPlacePlants() {
         return placePlants;
     }
 
+    @Override
     public void setPlacePlants(boolean placePlants) {
         this.placePlants = placePlants;
     }
 
+    @Override
     public boolean isScoreboard() {
         return scoreboard;
     }
 
+    @Override
     public void setScoreboard(boolean scoreboard) {
         this.scoreboard = scoreboard;
     }
 
+    @Override
     public boolean isSlabBreaking() {
         return slabBreaking;
     }
 
+    @Override
     public void setSlabBreaking(boolean slabBreaking) {
         this.slabBreaking = slabBreaking;
     }
 
+    @Override
     public boolean isSpawnTeleport() {
         return spawnTeleport;
     }
 
+    @Override
     public void setSpawnTeleport(boolean spawnTeleport) {
         this.spawnTeleport = spawnTeleport;
     }
 
-    public boolean isTrapDoor() {
-        return trapDoor;
+    @Override
+    public boolean isOpenTrapDoor() {
+        return openTrapDoor;
     }
 
-    public void setTrapDoor(boolean trapDoor) {
-        this.trapDoor = trapDoor;
+    @Override
+    public void setOpenTrapDoor(boolean openTrapDoor) {
+        this.openTrapDoor = openTrapDoor;
     }
 
     public BukkitTask getScoreboardTask() {
@@ -219,8 +252,9 @@ public class Settings implements ConfigurationSerializable {
         this.scoreboardTask = scoreboardTask;
     }
 
+    @NotNull
     @Override
-    public @NotNull Map<String, Object> serialize() {
+    public Map<String, Object> serialize() {
         Map<String, Object> settings = new HashMap<>();
 
         settings.put("type", getNavigatorType().toString());
@@ -228,7 +262,7 @@ public class Settings implements ConfigurationSerializable {
         settings.put("world-sort", getWorldSort().toString());
         settings.put("slab-breaking", isSlabBreaking());
         settings.put("no-clip", isNoClip());
-        settings.put("trapdoor", isTrapDoor());
+        settings.put("trapdoor", isOpenTrapDoor());
         settings.put("nightvision", isNightVision());
         settings.put("scoreboard", isScoreboard());
         settings.put("keep-navigator", isKeepNavigator());

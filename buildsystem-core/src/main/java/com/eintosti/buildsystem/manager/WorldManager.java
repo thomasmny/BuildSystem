@@ -12,11 +12,15 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.object.world.Builder;
-import com.eintosti.buildsystem.object.world.Generator;
-import com.eintosti.buildsystem.object.world.WorldStatus;
-import com.eintosti.buildsystem.object.world.WorldType;
+import com.eintosti.buildsystem.api.event.BuildWorldDeleteEvent;
+import com.eintosti.buildsystem.api.event.BuildWorldImportEvent;
+import com.eintosti.buildsystem.api.world.BuildWorld;
+import com.eintosti.buildsystem.api.world.Builder;
+import com.eintosti.buildsystem.api.world.Generator;
+import com.eintosti.buildsystem.api.world.WorldStatus;
+import com.eintosti.buildsystem.api.world.WorldType;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
+import com.eintosti.buildsystem.object.world.CraftBuilder;
 import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.FileUtils;
 import com.eintosti.buildsystem.util.config.WorldConfig;
@@ -61,15 +65,17 @@ public class WorldManager {
     private final BuildSystem plugin;
     private final ConfigValues configValues;
     private final WorldConfig worldConfig;
+    private final List<CraftBuildWorld> buildWorlds;
 
-    private final List<BuildWorld> buildWorlds;
+    public Set<Player> createPrivateWorldPlayers;
 
     public WorldManager(BuildSystem plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
         this.worldConfig = new WorldConfig(plugin);
-
         this.buildWorlds = new ArrayList<>();
+
+        this.createPrivateWorldPlayers = new HashSet<>();
     }
 
     /**
@@ -78,7 +84,7 @@ public class WorldManager {
      * @param worldName The name of the world
      * @return The world object if one was found, {@code null} otherwise
      */
-    public BuildWorld getBuildWorld(String worldName) {
+    public CraftBuildWorld getBuildWorld(String worldName) {
         return this.buildWorlds.stream()
                 .filter(buildWorld -> buildWorld.getName().equalsIgnoreCase(worldName))
                 .findFirst()
@@ -91,7 +97,7 @@ public class WorldManager {
      * @param world The bukkit world object
      * @return The world object if one was found, {@code null} otherwise
      */
-    public BuildWorld getBuildWorld(World world) {
+    public CraftBuildWorld getBuildWorld(World world) {
         return getBuildWorld(world.getName());
     }
 
@@ -100,7 +106,7 @@ public class WorldManager {
      *
      * @return A list of all worlds
      */
-    public List<BuildWorld> getBuildWorlds() {
+    public List<CraftBuildWorld> getBuildWorlds() {
         return buildWorlds;
     }
 
@@ -146,12 +152,12 @@ public class WorldManager {
     }
 
     /**
-     * Gets the name (and in doing so removes all illegal characters) of the {@link BuildWorld} the player is trying to create.
+     * Gets the name of the {@link BuildWorld} the player is trying to create and removes all illegal characters.
      * If the world is going to be a private world, its name will be equal to the player's name.
      *
      * @param player       The player who is creating the world
      * @param worldType    The world type
-     * @param template     The name of the template world, if any, otherwise {@code null}
+     * @param template     The name of the template world, if any, otherwise `null`
      * @param privateWorld Is world going to be a private world?
      */
     public void startWorldNameInput(Player player, WorldType worldType, @Nullable String template, boolean privateWorld) {
@@ -186,7 +192,7 @@ public class WorldManager {
      * @param player       The player who is creating the world
      * @param worldName    The name of the world
      * @param worldType    The world type
-     * @param template     The name of the template world. Only if the world is being created with a template, otherwise {@code null}
+     * @param template     The name of the template world. Only if the world is being created with a template, otherwise ``null
      * @param privateWorld Is world going to be a private world?
      */
     private void manageWorldType(Player player, String worldName, WorldType worldType, @Nullable String template, boolean privateWorld) {
@@ -224,7 +230,7 @@ public class WorldManager {
     }
 
     /**
-     * Generate a {@link BuildWorld} with a predefined generator.
+     * Generate a {@link CraftBuildWorld} with a predefined generator.
      *
      * @param player       The player who is creating the world
      * @param worldName    The name of the world
@@ -236,27 +242,18 @@ public class WorldManager {
             return;
         }
 
-        BuildWorld buildWorld = new BuildWorld(
-                plugin,
-                worldName,
-                player.getName(),
-                player.getUniqueId(),
-                worldType,
-                System.currentTimeMillis(),
-                privateWorld
-        );
+        CraftBuildWorld buildWorld = new CraftBuildWorld(plugin, worldName, player.getName(), player.getUniqueId(), worldType, System.currentTimeMillis(), privateWorld);
         buildWorlds.add(buildWorld);
 
         player.sendMessage(plugin.getString("worlds_world_creation_started")
-                .replace("%world%", worldName)
-                .replace("%type%", buildWorld.getTypeName())
-        );
+                .replace("%world%", buildWorld.getName())
+                .replace("%type%", buildWorld.getTypeName()));
         finishPreparationsAndGenerate(buildWorld);
         player.sendMessage(plugin.getString("worlds_creation_finished"));
     }
 
     /**
-     * Generate a {@link BuildWorld} with a custom generator.
+     * Generate a {@link CraftBuildWorld} with a custom generator.
      *
      * @param player       The player who is creating the world
      * @param worldName    The name of the world
@@ -268,12 +265,11 @@ public class WorldManager {
             return;
         }
 
+        //Get Generator
         new PlayerChatInput(plugin, player, "enter_generator_name", input -> {
-            List<String> genArray;
-            if (input.contains(":")) {
-                genArray = Arrays.asList(input.split(":"));
-            } else {
-                genArray = Arrays.asList(input, input);
+            List<String> genArray = Arrays.asList(input.split(":"));
+            if (genArray.size() < 2) {
+                genArray.add("");
             }
 
             ChunkGenerator chunkGenerator = getChunkGenerator(genArray.get(0), genArray.get(1), worldName);
@@ -285,7 +281,7 @@ public class WorldManager {
                 plugin.getLogger().log(Level.INFO, "Using custom world generator: " + input);
             }
 
-            BuildWorld buildWorld = new BuildWorld(plugin, worldName, player.getName(), player.getUniqueId(), WorldType.CUSTOM, System.currentTimeMillis(), privateWorld, input);
+            CraftBuildWorld buildWorld = new CraftBuildWorld(plugin, worldName, player.getName(), player.getUniqueId(), WorldType.CUSTOM, System.currentTimeMillis(), privateWorld, input);
             buildWorlds.add(buildWorld);
 
             player.sendMessage(plugin.getString("worlds_world_creation_started")
@@ -297,7 +293,7 @@ public class WorldManager {
     }
 
     /**
-     * Generate a {@link BuildWorld} with a template.
+     * Generate a {@link CraftBuildWorld} with a template.
      *
      * @param player       The player who is creating the world
      * @param worldName    The name of the world
@@ -318,7 +314,7 @@ public class WorldManager {
             return;
         }
 
-        BuildWorld buildWorld = new BuildWorld(plugin, worldName, player.getName(), player.getUniqueId(), WorldType.TEMPLATE, System.currentTimeMillis(), privateWorld);
+        CraftBuildWorld buildWorld = new CraftBuildWorld(plugin, worldName, player.getName(), player.getUniqueId(), WorldType.TEMPLATE, System.currentTimeMillis(), privateWorld);
         buildWorlds.add(buildWorld);
 
         player.sendMessage(plugin.getString("worlds_template_creation_started")
@@ -336,7 +332,7 @@ public class WorldManager {
      *
      * @param buildWorld The build world object
      */
-    private void finishPreparationsAndGenerate(BuildWorld buildWorld) {
+    private void finishPreparationsAndGenerate(CraftBuildWorld buildWorld) {
         WorldType worldType = buildWorld.getType();
         World bukkitWorld = generateBukkitWorld(buildWorld.getName(), worldType);
 
@@ -357,7 +353,7 @@ public class WorldManager {
     }
 
     /**
-     * Generate the {@link World} linked to a {@link BuildWorld}.
+     * Generate the {@link World} linked to a {@link CraftBuildWorld}.
      *
      * @param worldName       The name of the world
      * @param worldType       The world type
@@ -412,6 +408,7 @@ public class WorldManager {
         }
 
         World bukkitWorld = Bukkit.createWorld(worldCreator);
+
         if (bukkitWorld != null) {
             bukkitWorld.setDifficulty(configValues.getWorldDifficulty());
             bukkitWorld.setTime(configValues.getNoonTime());
@@ -423,7 +420,7 @@ public class WorldManager {
     }
 
     /**
-     * Parse the {@link ChunkGenerator} for the generation of a {@link BuildWorld} with {@link WorldType#CUSTOM}
+     * Parse the {@link ChunkGenerator} for the generation of a {@link CraftBuildWorld} with {@link WorldType#CUSTOM}
      *
      * @param generator   The plugin's (generator) name
      * @param generatorId Unique ID, if any, that was specified to indicate which generator was requested
@@ -443,7 +440,7 @@ public class WorldManager {
     }
 
     /**
-     * Import a {@link BuildWorld} from a world directory.
+     * Import a {@link CraftBuildWorld} from a world directory.
      *
      * @param player        The player who is creating the world
      * @param worldName     Name of the world that the chunk generator should be applied to.
@@ -453,10 +450,7 @@ public class WorldManager {
     public void importWorld(Player player, String worldName, Generator generator, String... generatorName) {
         for (String charString : worldName.split("")) {
             if (charString.matches("[^A-Za-z0-9/_-]")) {
-                player.sendMessage(plugin.getString("worlds_import_invalid_character")
-                        .replace("%world%", worldName)
-                        .replace("%char%", charString)
-                );
+                player.sendMessage(plugin.getString("worlds_import_invalid_character").replace("%world%", worldName).replace("%char%", charString));
                 return;
             }
         }
@@ -482,7 +476,8 @@ public class WorldManager {
         }
 
         player.sendMessage(plugin.getString("worlds_import_started").replace("%world%", worldName));
-        buildWorlds.add(new BuildWorld(plugin, worldName, "-", null, WorldType.IMPORTED, FileUtils.getDirectoryCreation(file), false));
+        CraftBuildWorld buildWorld = new CraftBuildWorld(plugin, worldName, "-", null, WorldType.IMPORTED, FileUtils.getDirectoryCreation(file), false);
+        buildWorlds.add(buildWorld);
 
         if (chunkGenerator == null) {
             generateBukkitWorld(worldName, generator.getWorldType());
@@ -490,11 +485,13 @@ public class WorldManager {
             generateBukkitWorld(worldName, generator.getWorldType(), chunkGenerator);
         }
 
+        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldImportEvent(buildWorld, player));
+
         player.sendMessage(plugin.getString("worlds_import_finished"));
     }
 
     /**
-     * Import all {@link BuildWorld} from a given list of world names.
+     * Import all {@link CraftBuildWorld} from a given list of world names.
      *
      * @param player    The player who is creating the world
      * @param worldList The list of world to be imported
@@ -521,7 +518,7 @@ public class WorldManager {
                 }
 
                 long creation = FileUtils.getDirectoryCreation(new File(Bukkit.getWorldContainer(), worldName));
-                buildWorlds.add(new BuildWorld(plugin, worldName, "-", null, WorldType.IMPORTED, creation, false));
+                buildWorlds.add(new CraftBuildWorld(plugin, worldName, "-", null, WorldType.IMPORTED, creation, false));
                 generateBukkitWorld(worldName, WorldType.VOID);
                 player.sendMessage(plugin.getString("worlds_importall_world_imported").replace("%world%", worldName));
 
@@ -534,12 +531,12 @@ public class WorldManager {
     }
 
     /**
-     * Unimport an existing {@link BuildWorld}.
-     * In comparison to {@link #deleteWorld(Player, BuildWorld)}, unimporting a world does not delete the world's directory.
+     * Unimport an existing {@link CraftBuildWorld}.
+     * In comparison to {@link #deleteWorld(Player, CraftBuildWorld)}, unimporting a world does not delete the world's directory.
      *
      * @param buildWorld The build world object
      */
-    public void unimportWorld(BuildWorld buildWorld) {
+    public void unimportWorld(CraftBuildWorld buildWorld) {
         this.buildWorlds.remove(buildWorld);
 
         removePlayersFromWorld(buildWorld.getName(), plugin.getString("worlds_unimport_players_world"));
@@ -552,32 +549,38 @@ public class WorldManager {
     }
 
     /**
-     * Delete an existing {@link BuildWorld}.
-     * In comparison to {@link #unimportWorld(BuildWorld)}, deleting a world deletes the world's directory.
+     * Delete an existing {@link CraftBuildWorld}.
+     * In comparison to {@link #unimportWorld(CraftBuildWorld)}, deleting a world deletes the world's directory.
      *
      * @param player     The player who issued the deletion
      * @param buildWorld The build world object
      */
-    public void deleteWorld(Player player, BuildWorld buildWorld) {
+    public void deleteWorld(Player player, CraftBuildWorld buildWorld) {
         if (!buildWorlds.contains(buildWorld)) {
             player.sendMessage(plugin.getString("worlds_delete_unknown_world"));
             return;
         }
 
-        String worldName = buildWorld.getName();
-        if (Bukkit.getWorld(worldName) != null) {
-            removePlayersFromWorld(worldName, plugin.getString("worlds_delete_players_world"));
-            unimportWorld(buildWorld);
+        unimportWorld(buildWorld);
+
+        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
+        if (bukkitWorld != null) {
+            removePlayersFromWorld(buildWorld.getName(), plugin.getString("worlds_delete_players_world"));
+            Bukkit.getServer().unloadWorld(bukkitWorld, false);
+            Bukkit.getWorlds().remove(bukkitWorld);
         }
 
-        File deleteFolder = new File(Bukkit.getWorldContainer(), worldName);
+        File deleteFolder = new File(Bukkit.getWorldContainer(), buildWorld.getName());
         if (!deleteFolder.exists()) {
             player.sendMessage(plugin.getString("worlds_delete_unknown_directory"));
             return;
         }
 
-        player.sendMessage(plugin.getString("worlds_delete_started").replace("%world%", worldName));
+        player.sendMessage(plugin.getString("worlds_delete_started").replace("%world%", buildWorld.getName()));
+
         FileUtils.deleteDirectory(deleteFolder);
+        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldDeleteEvent(buildWorld, player));
+
         player.sendMessage(plugin.getString("worlds_delete_finished"));
     }
 
@@ -619,13 +622,13 @@ public class WorldManager {
     }
 
     /**
-     * Change the name of a {@link BuildWorld} to a given name.
+     * Change the name of a {@link CraftBuildWorld} to a given name.
      *
      * @param player     The player who issued the world rename
      * @param buildWorld The build world object
      * @param newName    The name the world should be renamed to
      */
-    public void renameWorld(Player player, BuildWorld buildWorld, String newName) {
+    public void renameWorld(Player player, CraftBuildWorld buildWorld, String newName) {
         String oldName = buildWorld.getName();
         if (oldName.equalsIgnoreCase(newName)) {
             player.sendMessage(plugin.getString("worlds_rename_same_name"));
@@ -710,12 +713,12 @@ public class WorldManager {
     }
 
     /**
-     * Teleport a player to a {@link BuildWorld}.
+     * Teleport a player to a {@link CraftBuildWorld}.
      *
      * @param player     The player to be teleported
      * @param buildWorld The build world object
      */
-    public void teleport(Player player, BuildWorld buildWorld) {
+    public void teleport(Player player, CraftBuildWorld buildWorld) {
         boolean hadToLoad = false;
         if (configValues.isUnloadWorlds() && !buildWorld.isLoaded()) {
             buildWorld.load(player);
@@ -805,7 +808,7 @@ public class WorldManager {
         worldConfig.loadWorlds(this);
     }
 
-    public BuildWorld loadWorld(String worldName) {
+    public CraftBuildWorld loadWorld(String worldName) {
         FileConfiguration configuration = worldConfig.getFile();
         if (configuration == null) {
             return null;
@@ -819,7 +822,7 @@ public class WorldManager {
         WorldStatus worldStatus = WorldStatus.valueOf(configuration.getString("worlds." + worldName + ".status"));
         String project = configuration.getString("worlds." + worldName + ".project");
         String permission = configuration.getString("worlds." + worldName + ".permission");
-        long date = configuration.isLong("worlds." + worldName + ".date") ? configuration.getLong("worlds." + worldName + ".date") : -1;
+        long creationDate = configuration.isLong("worlds." + worldName + ".date") ? configuration.getLong("worlds." + worldName + ".date") : -1;
         boolean physics = configuration.getBoolean("worlds." + worldName + ".physics");
         boolean explosions = !configuration.isBoolean("worlds." + worldName + ".explosions") || configuration.getBoolean("worlds." + worldName + ".explosions");
         boolean mobAI = !configuration.isBoolean("worlds." + worldName + ".mobai") || configuration.getBoolean("worlds." + worldName + ".mobai");
@@ -828,7 +831,7 @@ public class WorldManager {
         boolean blockPlacement = !configuration.isBoolean("worlds." + worldName + ".block-placement") || configuration.getBoolean("worlds." + worldName + ".block-placement");
         boolean blockInteractions = !configuration.isBoolean("worlds." + worldName + ".block-interactions") || configuration.getBoolean("worlds." + worldName + ".block-interactions");
         boolean buildersEnabled = configuration.isBoolean("worlds." + worldName + ".builders-enabled") && configuration.getBoolean("worlds." + worldName + ".builders-enabled");
-        ArrayList<Builder> builders = parseBuilders(configuration, worldName);
+        List<Builder> builders = parseBuilders(configuration, worldName);
         String chunkGeneratorString = configuration.getString("worlds." + worldName + ".chunk-generator");
         ChunkGenerator chunkGenerator = parseChunkGenerator(configuration, worldName);
 
@@ -837,7 +840,7 @@ public class WorldManager {
             worldType = WorldType.FLAT;
         }
 
-        BuildWorld buildWorld = new BuildWorld(
+        CraftBuildWorld buildWorld = new CraftBuildWorld(
                 plugin,
                 worldName,
                 creator,
@@ -848,7 +851,7 @@ public class WorldManager {
                 worldStatus,
                 project,
                 permission,
-                date,
+                creationDate,
                 physics,
                 explosions,
                 mobAI,
@@ -899,8 +902,8 @@ public class WorldManager {
         }
     }
 
-    private ArrayList<Builder> parseBuilders(FileConfiguration configuration, String worldName) {
-        ArrayList<Builder> builders = new ArrayList<>();
+    private List<Builder> parseBuilders(FileConfiguration configuration, String worldName) {
+        List<Builder> builders = new ArrayList<>();
 
         if (configuration.isString("worlds." + worldName + ".builders")) {
             String buildersString = configuration.getString("worlds." + worldName + ".builders");
@@ -908,7 +911,7 @@ public class WorldManager {
                 String[] splitBuilders = buildersString.split(";");
                 for (String builder : splitBuilders) {
                     String[] information = builder.split(",");
-                    builders.add(new Builder(UUID.fromString(information[0]), information[1]));
+                    builders.add(new CraftBuilder(UUID.fromString(information[0]), information[1]));
                 }
             }
         }

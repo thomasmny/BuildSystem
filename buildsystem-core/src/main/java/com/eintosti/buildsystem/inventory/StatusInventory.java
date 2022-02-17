@@ -11,6 +11,7 @@ package com.eintosti.buildsystem.inventory;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.api.event.data.BuildWorldStatusChangeEvent.Reason;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.object.world.CraftBuildWorld;
@@ -126,22 +127,22 @@ public class StatusInventory implements Listener {
 
         switch (event.getSlot()) {
             case 10:
-                buildWorld.setStatus(WorldStatus.NOT_STARTED);
+                buildWorld.setStatus(WorldStatus.NOT_STARTED, Reason.COMMAND);
                 break;
             case 11:
-                buildWorld.setStatus(WorldStatus.IN_PROGRESS);
+                buildWorld.setStatus(WorldStatus.IN_PROGRESS, Reason.COMMAND);
                 break;
             case 12:
-                buildWorld.setStatus(WorldStatus.ALMOST_FINISHED);
+                buildWorld.setStatus(WorldStatus.ALMOST_FINISHED, Reason.COMMAND);
                 break;
             case 13:
-                buildWorld.setStatus(WorldStatus.FINISHED);
+                buildWorld.setStatus(WorldStatus.FINISHED, Reason.COMMAND);
                 break;
             case 14:
-                buildWorld.setStatus(WorldStatus.ARCHIVE);
+                buildWorld.setStatus(WorldStatus.ARCHIVE, Reason.COMMAND);
                 break;
             case 16:
-                buildWorld.setStatus(WorldStatus.HIDDEN);
+                buildWorld.setStatus(WorldStatus.HIDDEN, Reason.COMMAND);
                 break;
             default:
                 XSound.BLOCK_CHEST_OPEN.play(player);

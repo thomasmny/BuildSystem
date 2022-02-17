@@ -9,8 +9,11 @@
 package com.eintosti.buildsystem.api;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.api.settings.Settings;
 import com.eintosti.buildsystem.api.world.BuildWorld;
+import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.manager.WorldManager;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,9 +23,11 @@ import java.util.List;
  */
 public class BuildApiProvider implements BuildAPI {
 
+    private final SettingsManager settingsManager;
     private final WorldManager worldManager;
 
     public BuildApiProvider(BuildSystem plugin) {
+        this.settingsManager = plugin.getSettingsManager();
         this.worldManager = plugin.getWorldManager();
     }
 
@@ -34,5 +39,10 @@ public class BuildApiProvider implements BuildAPI {
     @Override
     public BuildWorld getBuildWorld(String name) {
         return worldManager.getBuildWorld(name);
+    }
+
+    @Override
+    public Settings getSettings(Player player) {
+        return settingsManager.getSettings(player);
     }
 }

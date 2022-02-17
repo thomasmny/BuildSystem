@@ -11,10 +11,10 @@ package com.eintosti.buildsystem.inventory;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.api.world.BuildWorld;
 import com.eintosti.buildsystem.manager.InventoryManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -73,7 +73,7 @@ public class DeleteInventory implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        BuildWorld buildWorld = plugin.getPlayerManager().getSelectedWorld().get(player.getUniqueId());
+        CraftBuildWorld buildWorld = plugin.getPlayerManager().getSelectedWorld().get(player.getUniqueId());
         if (buildWorld == null) {
             player.sendMessage(plugin.getString("worlds_delete_error"));
             player.closeInventory();

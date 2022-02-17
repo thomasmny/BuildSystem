@@ -9,10 +9,10 @@
 package com.eintosti.buildsystem.manager;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.object.navigator.NavigatorType;
-import com.eintosti.buildsystem.object.settings.Color;
-import com.eintosti.buildsystem.object.settings.Settings;
-import com.eintosti.buildsystem.object.settings.WorldSort;
+import com.eintosti.buildsystem.api.settings.GlassColor;
+import com.eintosti.buildsystem.api.settings.NavigatorType;
+import com.eintosti.buildsystem.api.settings.WorldSort;
+import com.eintosti.buildsystem.object.settings.CraftSettings;
 import com.eintosti.buildsystem.object.world.CraftBuildWorld;
 import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.config.SettingsConfig;
@@ -40,7 +40,7 @@ public class SettingsManager {
     private final SettingsConfig settingsConfig;
     private final WorldManager worldManager;
 
-    private final Map<UUID, Settings> settings;
+    private final Map<UUID, CraftSettings> settings;
     private final Map<UUID, FastBoard> boards;
 
     private final String scoreboardTitle;
@@ -59,37 +59,37 @@ public class SettingsManager {
         this.scoreboardBody = plugin.getStringList("body");
     }
 
-    private Settings createSettings(UUID uuid) {
+    private CraftSettings createSettings(UUID uuid) {
         if (!this.settings.containsKey(uuid)) {
-            Settings settings = new Settings();
+            CraftSettings settings = new CraftSettings();
             this.settings.put(uuid, settings);
             return settings;
         }
         return this.settings.get(uuid);
     }
 
-    public Settings createSettings(Player player) {
+    public CraftSettings createSettings(Player player) {
         return createSettings(player.getUniqueId());
     }
 
-    public Settings getSettings(UUID uuid) {
+    public CraftSettings getSettings(UUID uuid) {
         if (settings.get(uuid) == null) {
             createSettings(uuid);
         }
         return settings.get(uuid);
     }
 
-    public Settings getSettings(Player player) {
+    public CraftSettings getSettings(Player player) {
         return getSettings(player.getUniqueId());
     }
 
     /**
-     * Only set a player's scoreboard if {@link Settings#isScoreboard} is equal to {@code true}.
+     * Only set a player's scoreboard if {@link CraftSettings#isScoreboard} is equal to {@code true}.
      *
      * @param player   The player object
      * @param settings The player's settings
      */
-    public void startScoreboard(Player player, Settings settings) {
+    public void startScoreboard(Player player, CraftSettings settings) {
         if (!settings.isScoreboard()) {
             stopScoreboard(player, settings);
             return;
@@ -99,7 +99,7 @@ public class SettingsManager {
     }
 
     /**
-     * Only set a player's scoreboard if {@link Settings#isScoreboard} is equal to {@code true}.
+     * Only set a player's scoreboard if {@link CraftSettings#isScoreboard} is equal to {@code true}.
      *
      * @param player The player object
      */
@@ -108,7 +108,7 @@ public class SettingsManager {
             return;
         }
 
-        Settings settings = getSettings(player);
+        CraftSettings settings = getSettings(player);
         FastBoard board = new FastBoard(player);
         this.boards.put(player.getUniqueId(), board);
 
@@ -123,7 +123,7 @@ public class SettingsManager {
     }
 
     /**
-     * Set each player's scoreboard if they have {@link Settings#isScoreboard} enabled.
+     * Set each player's scoreboard if they have {@link CraftSettings#isScoreboard} enabled.
      */
     public void startScoreboard() {
         if (!configValues.isScoreboard()) {
@@ -189,7 +189,7 @@ public class SettingsManager {
         }
     }
 
-    private void stopScoreboard(Player player, Settings settings) {
+    private void stopScoreboard(Player player, CraftSettings settings) {
         BukkitTask scoreboardTask = settings.getScoreboardTask();
         if (scoreboardTask != null) {
             scoreboardTask.cancel();
@@ -224,7 +224,7 @@ public class SettingsManager {
         Set<String> uuids = configurationSection.getKeys(false);
         uuids.forEach(uuid -> {
             NavigatorType navigatorType = NavigatorType.valueOf(configuration.getString("settings." + uuid + ".type"));
-            Color glassColor = configuration.getString("settings." + uuid + ".glass") != null ? Color.matchColor(configuration.getString("settings." + uuid + ".glass")) : Color.BLACK;
+            GlassColor glassColor = configuration.getString("settings." + uuid + ".glass") != null ? GlassColor.matchColor(configuration.getString("settings." + uuid + ".glass")) : GlassColor.BLACK;
             WorldSort worldSort = WorldSort.matchWorldSort(configuration.getString("settings." + uuid + ".world-sort"));
             boolean clearInventory = configuration.isBoolean("settings." + uuid + ".clear-inventory") && configuration.getBoolean("settings." + uuid + ".clear-inventory");
             boolean disableInteract = configuration.isBoolean("settings." + uuid + ".disable-interact") && configuration.getBoolean("settings." + uuid + ".disable-interact");
@@ -239,7 +239,7 @@ public class SettingsManager {
             boolean spawnTeleport = !configuration.isBoolean("settings." + uuid + ".spawn-teleport") || configuration.getBoolean("settings." + uuid + ".spawn-teleport");
             boolean trapDoor = configuration.getBoolean("settings." + uuid + ".trapdoor");
 
-            this.settings.put(UUID.fromString(uuid), new Settings(
+            this.settings.put(UUID.fromString(uuid), new CraftSettings(
                     navigatorType,
                     glassColor,
                     worldSort,

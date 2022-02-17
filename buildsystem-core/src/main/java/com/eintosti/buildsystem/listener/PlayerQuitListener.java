@@ -10,7 +10,7 @@ package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.SettingsManager;
-import com.eintosti.buildsystem.object.settings.Settings;
+import com.eintosti.buildsystem.object.settings.CraftSettings;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -44,7 +44,7 @@ public class PlayerQuitListener implements Listener {
         Player player = event.getPlayer();
         plugin.getPlayerManager().closeNavigator(player);
 
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
         if (settings.isNoClip()) {
             plugin.getNoClipManager().stopNoClip(player.getUniqueId());
         }

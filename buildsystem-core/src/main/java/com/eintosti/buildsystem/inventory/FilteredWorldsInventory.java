@@ -11,10 +11,11 @@ package com.eintosti.buildsystem.inventory;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.api.world.BuildWorld;
+import com.eintosti.buildsystem.api.world.WorldStatus;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.object.world.WorldStatus;
+import com.eintosti.buildsystem.object.world.CraftBuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -100,7 +101,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         }
 
         int columnWorld = 9, maxColumnWorld = 44;
-        for (BuildWorld buildWorld : inventoryManager.sortWorlds(player, worldManager, plugin)) {
+        for (CraftBuildWorld buildWorld : inventoryManager.sortWorlds(player, worldManager, plugin)) {
             if (isValidWorld(player, buildWorld)) {
                 inventoryManager.addWorldItem(player, inventory, columnWorld++, buildWorld);
             }

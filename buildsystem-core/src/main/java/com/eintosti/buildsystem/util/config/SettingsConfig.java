@@ -9,7 +9,7 @@
 package com.eintosti.buildsystem.util.config;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.object.settings.Settings;
+import com.eintosti.buildsystem.object.settings.CraftSettings;
 
 import java.util.UUID;
 
@@ -22,7 +22,7 @@ public class SettingsConfig extends ConfigurationFile {
         super(plugin, "settings.yml");
     }
 
-    public void saveSettings(UUID uuid, Settings settings) {
+    public void saveSettings(UUID uuid, CraftSettings settings) {
         getFile().set("settings." + uuid.toString(), settings.serialize());
         saveFile();
     }
