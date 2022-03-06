@@ -21,6 +21,7 @@ import java.util.List;
 public class PlayerInventoryClearEvent extends Event {
 
     private static final HandlerList handlers = new HandlerList();
+
     private final Player player;
     private final List<Integer> navigatorSlots;
 

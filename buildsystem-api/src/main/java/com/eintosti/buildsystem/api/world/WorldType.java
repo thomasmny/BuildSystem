@@ -8,7 +8,6 @@
 
 package com.eintosti.buildsystem.api.world;
 
-import com.eintosti.buildsystem.util.ConfigValues;
 import org.bukkit.World.Environment;
 
 /**
@@ -37,8 +36,6 @@ public enum WorldType {
 
     /**
      * A completely empty world with no blocks at all, except the block a player spawns on.
-     *
-     * @see ConfigValues#isVoidBlock()
      */
     VOID,
 

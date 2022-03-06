@@ -781,7 +781,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
         world.put("builders-enabled", isBuildersEnabled());
         world.put("builders", saveBuilders());
         if (customSpawn != null) {
-            world.put("spawn", customSpawn);
+            world.put("spawn", getCustomSpawnString());
         }
         if (chunkGeneratorName != null) {
             world.put("chunk-generator", getChunkGeneratorName());
