@@ -17,7 +17,6 @@ import net.luckperms.api.context.ContextSet;
 import net.luckperms.api.context.ImmutableContextSet;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
@@ -40,7 +39,6 @@ public class RoleCalculator implements ContextCalculator<Player> {
         contextConsumer.accept(KEY, Role.matchRole(player, buildWorld).toString());
     }
 
-    @NotNull
     @Override
     public ContextSet estimatePotentialContexts() {
         ImmutableContextSet.Builder builder = ImmutableContextSet.builder();

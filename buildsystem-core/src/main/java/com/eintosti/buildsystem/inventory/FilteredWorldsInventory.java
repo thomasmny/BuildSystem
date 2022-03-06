@@ -101,7 +101,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         }
 
         int columnWorld = 9, maxColumnWorld = 44;
-        for (CraftBuildWorld buildWorld : inventoryManager.sortWorlds(player, worldManager, plugin)) {
+        for (CraftBuildWorld buildWorld : inventoryManager.sortWorlds(worldManager, plugin.getSettingsManager().getSettings(player))) {
             if (isValidWorld(player, buildWorld)) {
                 inventoryManager.addWorldItem(player, inventory, columnWorld++, buildWorld);
             }

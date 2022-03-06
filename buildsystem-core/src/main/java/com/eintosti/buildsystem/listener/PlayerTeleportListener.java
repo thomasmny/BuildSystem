@@ -39,7 +39,6 @@ public class PlayerTeleportListener implements Listener {
     @EventHandler
     public void onPlayerTeleport(PlayerTeleportEvent event) {
         Player player = event.getPlayer();
-
         if (event.getCause() != PlayerTeleportEvent.TeleportCause.UNKNOWN) {
             playerManager.getPreviousLocation().put(player.getUniqueId(), event.getFrom());
         }
@@ -56,7 +55,6 @@ public class PlayerTeleportListener implements Listener {
 
         String worldName = to.getWorld().getName();
         CraftBuildWorld buildWorld = worldManager.getBuildWorld(worldName);
-
         if (buildWorld == null) {
             return;
         }

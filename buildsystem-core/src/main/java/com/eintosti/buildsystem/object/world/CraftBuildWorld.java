@@ -11,7 +11,6 @@ package com.eintosti.buildsystem.object.world;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.api.event.data.BuildWorldMaterialChangeEvent;
 import com.eintosti.buildsystem.api.event.data.BuildWorldPermissionChangeEvent;
 import com.eintosti.buildsystem.api.event.data.BuildWorldProjectChangeEvent;
 import com.eintosti.buildsystem.api.event.data.BuildWorldStatusChangeEvent;
@@ -36,6 +35,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 /**
  * @author einTosti
@@ -55,7 +56,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
     private final ConfigValues configValues;
 
     private String name;
-    private String creator;
+    private String creatorName;
     private UUID creatorId;
     private final WorldType worldType;
     private final List<Builder> builders;
@@ -68,8 +69,8 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
     private String permission;
     private String customSpawn;
 
-    private final String chunkGeneratorString;
     private ChunkGenerator chunkGenerator;
+    private final String chunkGeneratorName;
 
     private boolean physics;
     private boolean explosions;
@@ -86,18 +87,18 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
     public CraftBuildWorld(
             BuildSystem plugin,
             String name,
-            String creator,
+            String creatorName,
             UUID creatorId,
             WorldType worldType,
             long creationDate,
             boolean privateWorld,
-            String... chunkGeneratorString
+            String... chunkGeneratorName
     ) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
 
         this.name = name;
-        this.creator = creator;
+        this.creatorName = creatorName;
         this.creatorId = creatorId;
         this.worldType = worldType;
         this.privateWorld = privateWorld;
@@ -115,7 +116,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
         this.blockPlacement = configValues.isWorldBlockPlacement();
         this.blockInteractions = configValues.isWorldBlockInteractions();
         this.buildersEnabled = isPrivate();
-        this.chunkGeneratorString = (chunkGeneratorString != null && chunkGeneratorString.length > 0) ? chunkGeneratorString[0] : null;
+        this.chunkGeneratorName = (chunkGeneratorName != null && chunkGeneratorName.length > 0) ? chunkGeneratorName[0] : null;
 
         InventoryManager inventoryManager = plugin.getInventoryManager();
         switch (worldType) {
@@ -135,7 +136,6 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
                 this.material = inventoryManager.getDefaultItem(WorldType.VOID);
                 break;
             case CUSTOM:
-                //TODO: Make an own item for custom generated worlds?
             case TEMPLATE:
                 this.material = XMaterial.FILLED_MAP;
                 break;
@@ -167,7 +167,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
     public CraftBuildWorld(
             BuildSystem plugin,
             String name,
-            String creator,
+            String creatorName,
             UUID creatorId,
             WorldType worldType,
             boolean privateWorld,
@@ -186,13 +186,13 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
             boolean buildersEnabled,
             List<Builder> builders,
             ChunkGenerator chunkGenerator,
-            String chunkGeneratorString
+            String chunkGeneratorName
     ) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
 
         this.name = name;
-        this.creator = creator;
+        this.creatorName = creatorName;
         this.creatorId = creatorId;
         this.worldType = worldType;
         this.privateWorld = privateWorld;
@@ -211,7 +211,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
         this.buildersEnabled = buildersEnabled;
         this.builders = builders;
         this.chunkGenerator = chunkGenerator;
-        this.chunkGeneratorString = chunkGeneratorString;
+        this.chunkGeneratorName = chunkGeneratorName;
 
         if (configValues.isUnloadWorlds()) {
             this.seconds = configValues.getTimeUntilUnload();
@@ -234,12 +234,12 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
 
     @Override
     public String getCreatorName() {
-        return creator;
+        return creatorName;
     }
 
     @Override
-    public void setCreatorName(String creator) {
-        this.creator = creator;
+    public void setCreatorName(String name) {
+        this.creatorName = name;
     }
 
     @Override
@@ -252,20 +252,32 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
         this.creatorId = creatorId;
     }
 
+    /**
+     * Get the world creator as a builder.
+     *
+     * @return The creator as a builder
+     */
+    public Builder getCreator() {
+        return new CraftBuilder(creatorId, creatorName);
+    }
+
+    /**
+     * Save the creator's unique-id in a string which is suitable to be stored.
+     *
+     * @return The creator's unique-id as a string
+     */
+    @Nullable
     private String saveCreatorId() {
-        String idString;
-        if (getCreatorId() == null) {
-            String creator = getCreatorName();
-            if (creator != null && !creator.equalsIgnoreCase("-")) {
-                UUID uuid = UUIDFetcher.getUUID(creator);
-                idString = String.valueOf(uuid);
-            } else {
-                idString = null;
-            }
-        } else {
-            idString = String.valueOf(getCreatorId());
+        if (creatorId != null) {
+            return String.valueOf(getCreatorId());
         }
-        return idString;
+
+        String creator = getCreatorName();
+        if (creator != null && !creator.equalsIgnoreCase("-")) {
+            return String.valueOf(UUIDFetcher.getUUID(creator));
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -273,6 +285,12 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
         return worldType;
     }
 
+    /**
+     * Get the display name of a {@link WorldType}.
+     *
+     * @return the type's display name
+     * @see CraftBuildWorld#getType()
+     */
     public String getTypeName() {
         switch (worldType) {
             case NORMAL:
@@ -306,9 +324,12 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
         this.privateWorld = privateWorld;
     }
 
-    @Override
-    public Material getMaterial() {
-        return material.parseMaterial();
+    public XMaterial getXMaterial() {
+        return material;
+    }
+
+    public void setXMaterial(XMaterial material) {
+        this.material = material;
     }
 
     @Override
@@ -316,16 +337,9 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
         setXMaterial(XMaterial.matchXMaterial(material));
     }
 
-    public XMaterial getXMaterial() {
-        return material;
-    }
-
-    public void setXMaterial(XMaterial xMaterial) {
-        Material oldMaterial = this.material.parseMaterial();
-        Material newMaterial = xMaterial.parseMaterial();
-
-        this.material = xMaterial;
-        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldMaterialChangeEvent(this, oldMaterial, newMaterial));
+    @Override
+    public Material getMaterial() {
+        return material.parseMaterial();
     }
 
     @Override
@@ -339,11 +353,16 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
     }
 
     public void setStatus(WorldStatus worldStatus, Reason reason) {
-        WorldStatus oldStatus = this.worldStatus;
+        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldStatusChangeEvent(this, this.worldStatus, worldStatus, reason));
         this.worldStatus = worldStatus;
-        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldStatusChangeEvent(this, oldStatus, worldStatus, reason));
     }
 
+    /**
+     * Get the display name of a {@link WorldStatus}.
+     *
+     * @return the status's display name
+     * @see CraftBuildWorld#getStatus()
+     */
     public String getStatusName() {
         switch (worldStatus) {
             case NOT_STARTED:
@@ -370,9 +389,8 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
 
     @Override
     public void setProject(String project) {
-        String oldProject = this.project;
+        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldProjectChangeEvent(this, this.project, project));
         this.project = project;
-        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldProjectChangeEvent(this, oldProject, project));
     }
 
     @Override
@@ -382,9 +400,8 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
 
     @Override
     public void setPermission(String permission) {
-        String oldPermission = this.permission;
+        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPermissionChangeEvent(this, this.permission, permission));
         this.permission = permission;
-        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPermissionChangeEvent(this, oldPermission, permission));
     }
 
     @Override
@@ -392,17 +409,29 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
         return creationDate;
     }
 
+    /**
+     * Get the creation date in the format provided by the config.
+     *
+     * @return The formatted creation date
+     * @see CraftBuildWorld#getCreationDate()
+     */
     public String getFormattedCreationDate() {
         return creationDate > 0 ? new SimpleDateFormat(configValues.getDateFormat()).format(creationDate) : "-";
-    }
-
-    public String getChunkGeneratorString() {
-        return chunkGeneratorString;
     }
 
     @Override
     public ChunkGenerator getChunkGenerator() {
         return chunkGenerator;
+    }
+
+    /**
+     * Get the name of the {@link ChunkGenerator} which is used to generate the world.
+     *
+     * @return The generator name
+     * @see CraftBuildWorld#getChunkGenerator()
+     */
+    public String getChunkGeneratorName() {
+        return chunkGeneratorName;
     }
 
     @Override
@@ -436,13 +465,34 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
     }
 
     @Override
-    public String getCustomSpawn() {
+    public boolean hasCustomSpawn() {
+        return customSpawn != null;
+    }
+
+    @Override
+    public Location getCustomSpawn() {
+        if (!hasCustomSpawn()) {
+            return null;
+        }
+
+        String[] spawnString = customSpawn.split(";");
+        return new Location(
+                Bukkit.getWorld(getName()),
+                Double.parseDouble(spawnString[0]),
+                Double.parseDouble(spawnString[1]),
+                Double.parseDouble(spawnString[2]),
+                Float.parseFloat(spawnString[3]),
+                Float.parseFloat(spawnString[4])
+        );
+    }
+
+    public String getCustomSpawnString() {
         return customSpawn;
     }
 
     @Override
-    public void setCustomSpawn(Location location) {
-        this.customSpawn = location.getX() + ";" + location.getY() + ";" + location.getZ() + ";" + location.getYaw() + ";" + location.getPitch();
+    public void setCustomSpawn(Location customSpawn) {
+        this.customSpawn = customSpawn.getX() + ";" + customSpawn.getY() + ";" + customSpawn.getZ() + ";" + customSpawn.getYaw() + ";" + customSpawn.getPitch();
     }
 
     @Override
@@ -486,22 +536,27 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
     }
 
     @Override
-    public List<Builder> getBuilders() {
-        return builders;
-    }
-
-    @Override
     public void setBuildersEnabled(boolean buildersEnabled) {
         this.buildersEnabled = buildersEnabled;
     }
 
+    @Override
+    public List<Builder> getBuilders() {
+        return builders;
+    }
+
+    /**
+     * Format the {@code %builder%} placeholder.
+     *
+     * @return The list of builders which have been added to the given world as a string
+     */
     public String getBuildersInfo() {
         String template = plugin.getString("world_item_builders_builder_template");
-        ArrayList<String> builderNames = new ArrayList<>();
+        List<String> builderNames = new ArrayList<>();
 
         if (configValues.isCreatorIsBuilder()) {
-            if (getCreatorName() != null && !getCreatorName().equals("-")) {
-                builderNames.add(getCreatorName());
+            if (creatorName != null && !creatorName.equals("-")) {
+                builderNames.add(creatorName);
             }
         }
 
@@ -520,13 +575,18 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
         return string.substring(0, string.length() - 1);
     }
 
-    public ArrayList<String> getBuilderNames() {
-        ArrayList<String> builderName = new ArrayList<>();
-        getBuilders().forEach(builder -> builderName.add(builder.getName()));
-        return builderName;
+    /**
+     * Get a list of all {@link Builder} names
+     *
+     * @return A list of all builder names
+     */
+    public List<String> getBuilderNames() {
+        return getBuilders().stream()
+                .map(Builder::getName)
+                .collect(Collectors.toList());
     }
 
-    @Override
+    @Nullable
     public Builder getBuilder(UUID uuid) {
         return this.builders.parallelStream()
                 .filter(builder -> builder.getUuid().equals(uuid))
@@ -571,9 +631,14 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
 
     @Override
     public void removeBuilder(Player player) {
-        removeBuilder(player.getUniqueId());
+        removeBuilder(getBuilder(player));
     }
 
+    /**
+     * Save the list of {@link Builder}s in a string which is suitable to be stored.
+     *
+     * @return The list of builders as a string
+     */
     private String saveBuilders() {
         StringBuilder builderList = new StringBuilder();
         for (Builder builder : getBuilders()) {
@@ -582,6 +647,11 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
         return builderList.length() > 0 ? builderList.substring(1) : builderList.toString();
     }
 
+    /**
+     * Get the time in the {@link World} linked to the build world.
+     *
+     * @return The world time
+     */
     public String getWorldTime() {
         World bukkitWorld = Bukkit.getWorld(getName());
         if (bukkitWorld == null) {
@@ -669,7 +739,11 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
         String subtitle = plugin.getString("loading_world").replace("%world%", name);
         Titles.sendTitle(player, "", subtitle);
 
-        load();
+        plugin.getLogger().log(Level.INFO, "*** Loading world \"" + name + "\" ***");
+        Bukkit.createWorld(new WorldCreator(name));
+        this.loaded = true;
+
+        resetUnloadTask();
     }
 
     @Override
@@ -693,7 +767,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
         world.put("creator-id", saveCreatorId());
         world.put("type", getType().name());
         world.put("private", isPrivate());
-        world.put("item", getXMaterial().name());
+        world.put("item", getMaterial().name());
         world.put("status", getStatus().toString());
         world.put("project", getProject());
         world.put("permission", getPermission());
@@ -709,8 +783,8 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
         if (customSpawn != null) {
             world.put("spawn", customSpawn);
         }
-        if (chunkGeneratorString != null) {
-            world.put("chunk-generator", getChunkGeneratorString());
+        if (chunkGeneratorName != null) {
+            world.put("chunk-generator", getChunkGeneratorName());
         }
 
         return world;

@@ -17,8 +17,8 @@ import java.util.UUID;
  */
 public class CraftBuilder implements Builder {
 
-    private UUID uuid;
-    private String name;
+    private final UUID uuid;
+    private final String name;
 
     public CraftBuilder(UUID uuid, String name) {
         this.uuid = uuid;
@@ -31,18 +31,8 @@ public class CraftBuilder implements Builder {
     }
 
     @Override
-    public void setUuid(UUID uuid) {
-        this.uuid = uuid;
-    }
-
-    @Override
     public String getName() {
         return name;
-    }
-
-    @Override
-    public void setName(String name) {
-        this.name = name;
     }
 
     @Override

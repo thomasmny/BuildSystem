@@ -31,6 +31,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -116,7 +117,7 @@ public class WorldManager {
      * @param player The player who created the world
      * @return A list of all worlds created by the given player.
      */
-    public List<BuildWorld> getBuildWorldsCreatedByPlayer(Player player) {
+    public List<CraftBuildWorld> getBuildWorldsCreatedByPlayer(Player player) {
         return getBuildWorlds().stream()
                 .filter(buildWorld -> buildWorld.getCreatorId() != null)
                 .filter(buildWorld -> buildWorld.getCreatorId().equals(player.getUniqueId()))
@@ -130,7 +131,7 @@ public class WorldManager {
      * @param privateWorld {@code true} if to return private worlds, otherwise {@code false}
      * @return A list of all worlds created by the given player.
      */
-    public List<BuildWorld> getBuildWorldsCreatedByPlayer(Player player, boolean privateWorld) {
+    public List<CraftBuildWorld> getBuildWorldsCreatedByPlayer(Player player, boolean privateWorld) {
         return getBuildWorldsCreatedByPlayer(player).stream()
                 .filter(buildWorld -> isCorrectVisibility(buildWorld, privateWorld))
                 .collect(Collectors.toList());
@@ -247,7 +248,8 @@ public class WorldManager {
 
         player.sendMessage(plugin.getString("worlds_world_creation_started")
                 .replace("%world%", buildWorld.getName())
-                .replace("%type%", buildWorld.getTypeName()));
+                .replace("%type%", buildWorld.getTypeName())
+        );
         finishPreparationsAndGenerate(buildWorld);
         player.sendMessage(plugin.getString("worlds_creation_finished"));
     }
@@ -265,7 +267,6 @@ public class WorldManager {
             return;
         }
 
-        //Get Generator
         new PlayerChatInput(plugin, player, "enter_generator_name", input -> {
             List<String> genArray = Arrays.asList(input.split(":"));
             if (genArray.size() < 2) {
@@ -286,7 +287,8 @@ public class WorldManager {
 
             player.sendMessage(plugin.getString("worlds_world_creation_started")
                     .replace("%world%", buildWorld.getName())
-                    .replace("%type%", buildWorld.getTypeName()));
+                    .replace("%type%", buildWorld.getTypeName())
+            );
             generateBukkitWorld(worldName, buildWorld.getType(), chunkGenerator);
             player.sendMessage(plugin.getString("worlds_creation_finished"));
         });
@@ -319,7 +321,8 @@ public class WorldManager {
 
         player.sendMessage(plugin.getString("worlds_template_creation_started")
                 .replace("%world%", buildWorld.getName())
-                .replace("%template%", template));
+                .replace("%template%", template)
+        );
         FileUtils.copy(templateFile, worldFile);
         Bukkit.createWorld(WorldCreator.name(worldName)
                 .type(org.bukkit.WorldType.FLAT)
@@ -360,7 +363,7 @@ public class WorldManager {
      * @param chunkGenerators Custom chunk generator to be used, if any
      * @return The world object
      */
-    public World generateBukkitWorld(String worldName, WorldType worldType, ChunkGenerator... chunkGenerators) {
+    public World generateBukkitWorld(String worldName, WorldType worldType, @Nullable ChunkGenerator... chunkGenerators) {
         WorldCreator worldCreator = new WorldCreator(worldName);
         org.bukkit.WorldType bukkitWorldType;
 
@@ -388,17 +391,17 @@ public class WorldManager {
             case NETHER:
                 worldCreator.generateStructures(true);
                 bukkitWorldType = org.bukkit.WorldType.NORMAL;
-                worldCreator.environment(org.bukkit.World.Environment.NETHER);
+                worldCreator.environment(Environment.NETHER);
                 break;
             case END:
                 worldCreator.generateStructures(true);
                 bukkitWorldType = org.bukkit.WorldType.NORMAL;
-                worldCreator.environment(org.bukkit.World.Environment.THE_END);
+                worldCreator.environment(Environment.THE_END);
                 break;
             default:
                 worldCreator.generateStructures(true);
                 bukkitWorldType = org.bukkit.WorldType.NORMAL;
-                worldCreator.environment(org.bukkit.World.Environment.NORMAL);
+                worldCreator.environment(Environment.NORMAL);
                 break;
         }
         worldCreator.type(bukkitWorldType);
@@ -420,7 +423,7 @@ public class WorldManager {
     }
 
     /**
-     * Parse the {@link ChunkGenerator} for the generation of a {@link CraftBuildWorld} with {@link WorldType#CUSTOM}
+     * Parse the {@link ChunkGenerator} for the generation of a {@link BuildWorld} with {@link WorldType#CUSTOM}
      *
      * @param generator   The plugin's (generator) name
      * @param generatorId Unique ID, if any, that was specified to indicate which generator was requested
@@ -478,20 +481,14 @@ public class WorldManager {
         player.sendMessage(plugin.getString("worlds_import_started").replace("%world%", worldName));
         CraftBuildWorld buildWorld = new CraftBuildWorld(plugin, worldName, "-", null, WorldType.IMPORTED, FileUtils.getDirectoryCreation(file), false);
         buildWorlds.add(buildWorld);
-
-        if (chunkGenerator == null) {
-            generateBukkitWorld(worldName, generator.getWorldType());
-        } else {
-            generateBukkitWorld(worldName, generator.getWorldType(), chunkGenerator);
-        }
+        generateBukkitWorld(worldName, generator.getWorldType(), chunkGenerator);
 
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldImportEvent(buildWorld, player));
-
         player.sendMessage(plugin.getString("worlds_import_finished"));
     }
 
     /**
-     * Import all {@link CraftBuildWorld} from a given list of world names.
+     * Import all {@link BuildWorld}s from a given list of world names.
      *
      * @param player    The player who is creating the world
      * @param worldList The list of world to be imported
@@ -549,7 +546,7 @@ public class WorldManager {
     }
 
     /**
-     * Delete an existing {@link CraftBuildWorld}.
+     * Delete an existing {@link BuildWorld}.
      * In comparison to {@link #unimportWorld(CraftBuildWorld)}, deleting a world deletes the world's directory.
      *
      * @param player     The player who issued the deletion
@@ -732,7 +729,9 @@ public class WorldManager {
         }
 
         Location location = bukkitWorld.getSpawnLocation().add(0.5, 0, 0.5);
-        if (buildWorld.getCustomSpawn() == null) {
+        if (buildWorld.hasCustomSpawn()) {
+            location = buildWorld.getCustomSpawn();
+        } else {
             switch (buildWorld.getType()) {
                 case NETHER:
                 case END:
@@ -751,9 +750,6 @@ public class WorldManager {
                 default:
                     break;
             }
-        } else {
-            String[] spawnString = buildWorld.getCustomSpawn().split(";");
-            location = new Location(bukkitWorld, Double.parseDouble(spawnString[0]), Double.parseDouble(spawnString[1]), Double.parseDouble(spawnString[2]), Float.parseFloat(spawnString[3]), Float.parseFloat(spawnString[4]));
         }
 
         Location finalLocation = location;

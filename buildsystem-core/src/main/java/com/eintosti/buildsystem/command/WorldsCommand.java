@@ -12,7 +12,6 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.api.event.data.BuildWorldMaterialChangeEvent;
 import com.eintosti.buildsystem.api.world.Generator;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.PlayerManager;
@@ -666,20 +665,11 @@ public class WorldsCommand implements CommandExecutor {
     }
 
     private String getCustomSpawn(CraftBuildWorld buildWorld) {
-        if (buildWorld.getCustomSpawn() == null) {
+        if (!buildWorld.hasCustomSpawn()) {
             return "-";
         }
 
-        String[] spawnString = buildWorld.getCustomSpawn().split(";");
-        Location location = new Location(
-                Bukkit.getWorld(buildWorld.getName()),
-                Double.parseDouble(spawnString[0]),
-                Double.parseDouble(spawnString[1]),
-                Double.parseDouble(spawnString[2]),
-                Float.parseFloat(spawnString[3]),
-                Float.parseFloat(spawnString[4])
-        );
-
+        Location location = buildWorld.getCustomSpawn();
         return "XYZ: " + round(location.getX()) + " / " + round(location.getY()) + " / " + round(location.getZ());
     }
 

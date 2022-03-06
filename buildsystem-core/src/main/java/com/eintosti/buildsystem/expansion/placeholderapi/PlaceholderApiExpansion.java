@@ -9,7 +9,6 @@
 package com.eintosti.buildsystem.expansion.placeholderapi;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.api.settings.Settings;
 import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.settings.CraftSettings;
@@ -129,7 +128,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
      */
     @Nullable
     private String parseSettingsPlaceholder(Player player, String identifier) {
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
         String settingIdentifier = identifier.split("_")[1];
 
         switch (settingIdentifier.toLowerCase()) {
@@ -226,7 +225,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "physics":
                 return String.valueOf(buildWorld.isPhysics());
             case "spawn":
-                return buildWorld.getCustomSpawn();
+                return buildWorld.getCustomSpawnString();
             case "status":
                 return buildWorld.getStatusName();
             case "time":

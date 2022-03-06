@@ -25,7 +25,7 @@ public class PlayerInventoryClearEvent extends Event {
     private final Player player;
     private final List<Integer> navigatorSlots;
 
-    public PlayerInventoryClearEvent(Player player, ArrayList<Integer> navigatorSlots) {
+    public PlayerInventoryClearEvent(Player player, List<Integer> navigatorSlots) {
         this.player = player;
         this.navigatorSlots = navigatorSlots;
     }

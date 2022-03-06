@@ -15,11 +15,17 @@ import java.util.UUID;
  */
 public interface Builder {
 
+    /**
+     * Gets the unique id of this builder.
+     *
+     * @return The unique id
+     */
     UUID getUuid();
 
-    void setUuid(UUID uuid);
-
+    /**
+     * Gets the name of this builder.
+     *
+     * @return The name
+     */
     String getName();
-
-    void setName(String name);
 }

@@ -26,6 +26,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * @author einTosti
@@ -66,7 +67,7 @@ public class PlayerCommandPreprocessListener implements Listener {
             }
 
             if (settingsManager.getSettings(player).isKeepNavigator()) {
-                ArrayList<Integer> navigatorSlots = inventoryManager.getNavigatorSlots(player);
+                List<Integer> navigatorSlots = inventoryManager.getNavigatorSlots(player);
                 Bukkit.getScheduler().runTaskLater(plugin, () -> {
                     PlayerInventoryClearEvent playerInventoryClearEvent = new PlayerInventoryClearEvent(player, navigatorSlots);
                     Bukkit.getServer().getPluginManager().callEvent(playerInventoryClearEvent);
