@@ -40,11 +40,11 @@ public class BuildSystemCommand implements CommandExecutor {
             return true;
         }
 
-        sendCommandMessage(sender);
+        sendCommandMessage((Player) sender);
         return true;
     }
 
-    private void sendCommandMessage(CommandSender sender) {
+    private void sendCommandMessage(Player player) {
         TextComponent line1 = new TextComponent("§7§m----------------------------------------------------\n");
         TextComponent line2 = new TextComponent(plugin.getString("buildsystem_title") + "\n");
         TextComponent line3 = new TextComponent("§7 \n");
@@ -67,7 +67,7 @@ public class BuildSystemCommand implements CommandExecutor {
         TextComponent line20 = createComponent("/worlds help", " §8» " + plugin.getString("buildsystem_worlds"), "/worlds help", "-");
         TextComponent line21 = new TextComponent("§7§m----------------------------------------------------");
 
-        sender.spigot().sendMessage(line1, line2, line3, line4, line5, line6, line7, line8, line9, line10, line11, line12, line13, line14, line15, line16, line17, line18, line19, line20, line21);
+        player.spigot().sendMessage(line1, line2, line3, line4, line5, line6, line7, line8, line9, line10, line11, line12, line13, line14, line15, line16, line17, line18, line19, line20, line21);
     }
 
     private TextComponent createComponent(String command, String text, String suggest, String permission) {

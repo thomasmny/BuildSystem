@@ -13,6 +13,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author einTosti
@@ -22,9 +23,9 @@ public class PlayerInventoryClearEvent extends Event {
     private static final HandlerList HANDLERS = new HandlerList();
 
     private final Player player;
-    private final ArrayList<Integer> navigatorSlots;
+    private final List<Integer> navigatorSlots;
 
-    public PlayerInventoryClearEvent(Player player, ArrayList<Integer> navigatorSlots) {
+    public PlayerInventoryClearEvent(Player player, List<Integer> navigatorSlots) {
         this.player = player;
         this.navigatorSlots = navigatorSlots;
     }
@@ -33,7 +34,7 @@ public class PlayerInventoryClearEvent extends Event {
         return player;
     }
 
-    public ArrayList<Integer> getNavigatorSlots() {
+    public List<Integer> getNavigatorSlots() {
         return navigatorSlots;
     }
 

@@ -27,6 +27,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -392,17 +393,17 @@ public class WorldManager {
             case NETHER:
                 worldCreator.generateStructures(true);
                 bukkitWorldType = org.bukkit.WorldType.NORMAL;
-                worldCreator.environment(org.bukkit.World.Environment.NETHER);
+                worldCreator.environment(Environment.NETHER);
                 break;
             case END:
                 worldCreator.generateStructures(true);
                 bukkitWorldType = org.bukkit.WorldType.NORMAL;
-                worldCreator.environment(org.bukkit.World.Environment.THE_END);
+                worldCreator.environment(Environment.THE_END);
                 break;
             default:
                 worldCreator.generateStructures(true);
                 bukkitWorldType = org.bukkit.WorldType.NORMAL;
-                worldCreator.environment(org.bukkit.World.Environment.NORMAL);
+                worldCreator.environment(Environment.NORMAL);
                 break;
         }
         worldCreator.type(bukkitWorldType);

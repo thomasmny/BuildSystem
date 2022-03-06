@@ -204,9 +204,14 @@ public class GameRules_1_12_R1 implements GameRules {
     @Override
     public int getInvIndex(UUID uuid) {
         if (!invIndex.containsKey(uuid)) {
-            invIndex.put(uuid, 0);
+            resetInvIndex(uuid);
         }
         return invIndex.get(uuid);
+    }
+
+    @Override
+    public void resetInvIndex(UUID uuid) {
+        invIndex.put(uuid, 0);
     }
 
     @Override
