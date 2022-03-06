@@ -340,7 +340,11 @@ public class InventoryManager {
     }
 
     /**
+<<<<<<< HEAD
      * Sort the list of worlds to match the given {@link WorldSort}.
+=======
+     * Sort the list of worlds to match the given {@link com.eintosti.buildsystem.object.settings.WorldSort}.
+>>>>>>> master
      *
      * @param worldManager The world manager object
      * @param settings     The settings that provide the sorting method

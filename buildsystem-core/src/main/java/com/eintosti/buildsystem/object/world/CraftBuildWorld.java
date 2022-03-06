@@ -242,7 +242,14 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
         this.creatorName = name;
     }
 
-    @Override
+    /**
+     * Get the unique-id of the player who created the world.
+     * <p>
+     * In older versions of the plugin, the creator was not saved which is why {@code null} can be returned.
+     *
+     * @return The unique-id of the player who created the world
+     */
+    @Nullable
     public UUID getCreatorId() {
         return creatorId;
     }
@@ -289,7 +296,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
      * Get the display name of a {@link WorldType}.
      *
      * @return the type's display name
-     * @see CraftBuildWorld#getType()
+     * @see BuildWorld#getType()
      */
     public String getTypeName() {
         switch (worldType) {
@@ -361,7 +368,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
      * Get the display name of a {@link WorldStatus}.
      *
      * @return the status's display name
-     * @see CraftBuildWorld#getStatus()
+     * @see BuildWorld#getStatus() ()
      */
     public String getStatusName() {
         switch (worldStatus) {
@@ -413,7 +420,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
      * Get the creation date in the format provided by the config.
      *
      * @return The formatted creation date
-     * @see CraftBuildWorld#getCreationDate()
+     * @see BuildWorld#getCreationDate()
      */
     public String getFormattedCreationDate() {
         return creationDate > 0 ? new SimpleDateFormat(configValues.getDateFormat()).format(creationDate) : "-";
@@ -425,10 +432,9 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
     }
 
     /**
-     * Get the name of the {@link ChunkGenerator} which is used to generate the world.
+     * Get whether block physics are activated in the world.
      *
-     * @return The generator name
-     * @see CraftBuildWorld#getChunkGenerator()
+     * @return {@code true} if world physics are currently enabled, otherwise {@code false}
      */
     public String getChunkGeneratorName() {
         return chunkGeneratorName;
@@ -546,7 +552,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
     }
 
     /**
-     * Format the {@code %builder%} placeholder.
+     * Formats the {@code %builder%} placeholder.
      *
      * @return The list of builders which have been added to the given world as a string
      */
@@ -576,7 +582,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
     }
 
     /**
-     * Get a list of all {@link Builder} names
+     * Gets a list of all {@link Builder} names
      *
      * @return A list of all builder names
      */
@@ -586,7 +592,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
                 .collect(Collectors.toList());
     }
 
-    @Nullable
+    @Override
     public Builder getBuilder(UUID uuid) {
         return this.builders.parallelStream()
                 .filter(builder -> builder.getUuid().equals(uuid))
