@@ -60,6 +60,7 @@ public interface BuildWorld {
      *
      * @return The unique-id of the player who created the world
      */
+    @Nullable
     UUID getCreatorId();
 
     /**

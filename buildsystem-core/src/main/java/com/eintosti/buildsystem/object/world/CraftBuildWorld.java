@@ -242,14 +242,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
         this.creatorName = name;
     }
 
-    /**
-     * Get the unique-id of the player who created the world.
-     * <p>
-     * In older versions of the plugin, the creator was not saved which is why {@code null} can be returned.
-     *
-     * @return The unique-id of the player who created the world
-     */
-    @Nullable
+    @Override
     public UUID getCreatorId() {
         return creatorId;
     }
@@ -260,7 +253,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
     }
 
     /**
-     * Get the world creator as a builder.
+     * Gets the world creator as a builder.
      *
      * @return The creator as a builder
      */
@@ -269,7 +262,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
     }
 
     /**
-     * Save the creator's unique-id in a string which is suitable to be stored.
+     * Saves the creator's unique-id in a string which is suitable to be stored.
      *
      * @return The creator's unique-id as a string
      */
@@ -293,7 +286,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
     }
 
     /**
-     * Get the display name of a {@link WorldType}.
+     * Gets the display name of a {@link WorldType}.
      *
      * @return the type's display name
      * @see BuildWorld#getType()
