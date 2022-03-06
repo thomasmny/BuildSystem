@@ -284,6 +284,7 @@ public class EditInventory implements Listener {
 
             case 38:
                 XSound.BLOCK_CHEST_OPEN.play(player);
+                plugin.getGameRules().resetInvIndex(player.getUniqueId());
                 plugin.getGameRuleInventory().openInventory(player, buildWorld);
                 return;
             case 39:
@@ -344,7 +345,9 @@ public class EditInventory implements Listener {
                 });
 
         player.closeInventory();
-        player.sendMessage(plugin.getString("worldeditor_butcher_removed").replace("%amount%", String.valueOf(entitiesRemoved.get())));
+        player.sendMessage(plugin.getString("worldeditor_butcher_removed")
+                .replace("%amount%", String.valueOf(entitiesRemoved.get()))
+        );
     }
 
     private static final Set<EntityType> IGNORED_ENTITIES = Sets.newHashSet(

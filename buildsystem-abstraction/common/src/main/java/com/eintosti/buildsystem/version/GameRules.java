@@ -32,6 +32,8 @@ public interface GameRules {
 
     int getInvIndex(UUID uuid);
 
+    void resetInvIndex(UUID uuid);
+
     int getNumGameRules();
 
     int[] getSlots();

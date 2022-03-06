@@ -197,14 +197,6 @@ public class GameRules_1_13_R1 implements GameRules {
     }
 
     @Override
-    public int getInvIndex(UUID uuid) {
-        if (!invIndex.containsKey(uuid)) {
-            invIndex.put(uuid, 0);
-        }
-        return invIndex.get(uuid);
-    }
-
-    @Override
     public void incrementInv(Player player) {
         UUID playerUUID = player.getUniqueId();
         invIndex.put(playerUUID, invIndex.get(playerUUID) + 1);
@@ -214,6 +206,19 @@ public class GameRules_1_13_R1 implements GameRules {
     public void decrementInv(Player player) {
         UUID playerUUID = player.getUniqueId();
         invIndex.put(playerUUID, invIndex.get(playerUUID) - 1);
+    }
+
+    @Override
+    public int getInvIndex(UUID uuid) {
+        if (!invIndex.containsKey(uuid)) {
+            resetInvIndex(uuid);
+        }
+        return invIndex.get(uuid);
+    }
+
+    @Override
+    public void resetInvIndex(UUID uuid) {
+        invIndex.put(uuid, 0);
     }
 
     @Override
