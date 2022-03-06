@@ -240,4 +240,3 @@ public class CustomBlocks_1_14_R1 extends DirectionUtils implements CustomBlocks
         furnace.update();
     }
 }
-

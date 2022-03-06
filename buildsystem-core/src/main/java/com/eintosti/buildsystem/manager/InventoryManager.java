@@ -40,10 +40,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * @author einTosti
@@ -90,9 +88,9 @@ public class InventoryManager {
         return false;
     }
 
-    public ArrayList<Integer> getNavigatorSlots(Player player) {
+    public List<Integer> getNavigatorSlots(Player player) {
         PlayerInventory playerInventory = player.getInventory();
-        ArrayList<Integer> navigatorSlots = new ArrayList<>();
+        List<Integer> navigatorSlots = new ArrayList<>();
 
         for (int i = 0; i < playerInventory.getSize(); i++) {
             ItemStack currentItem = playerInventory.getItem(i);
@@ -237,6 +235,16 @@ public class InventoryManager {
         }
     }
 
+    /**
+     * Manage clicking in a {@link com.eintosti.buildsystem.inventory.FilteredWorldsInventory}.
+     * <p>
+     * If the clicked item is the icon of a {@link BuildWorld}, the click is managed by {@link InventoryManager#manageWorldItemClick(InventoryClickEvent, Player, ItemMeta, BuildWorld)}.
+     * Otherwise, the {@link com.eintosti.buildsystem.inventory.NavigatorInventory} is opened if the glass pane at the bottom of the inventory is clicked.
+     *
+     * @param event     The click event object to modify
+     * @param player    The player who clicked
+     * @param itemStack The clicked item
+     */
     public void manageInventoryClick(InventoryClickEvent event, Player player, ItemStack itemStack) {
         if (itemStack == null || itemStack.getItemMeta() == null) {
             return;
@@ -246,27 +254,39 @@ public class InventoryManager {
         ItemMeta itemMeta = itemStack.getItemMeta();
         String displayName = itemMeta.getDisplayName();
 
-        if (slot == 22) {
-            if (displayName.equals(plugin.getString("world_navigator_no_worlds"))
-                    || displayName.equals(plugin.getString("archive_no_worlds"))
-                    || displayName.equals(plugin.getString("private_no_worlds"))) {
-                return;
-            }
+        if (slot == 22 &&
+                displayName.equals(plugin.getString("world_navigator_no_worlds"))
+                || displayName.equals(plugin.getString("archive_no_worlds"))
+                || displayName.equals(plugin.getString("private_no_worlds"))) {
+            return;
         }
 
         if (slot >= 9 && slot <= 44) {
             BuildWorld buildWorld = plugin.getWorldManager().getBuildWorld(getWorldName(displayName));
             manageWorldItemClick(event, player, itemMeta, buildWorld);
+            return;
         }
 
-        if (slot >= 45 && slot <= 53) {
-            if (itemStack.getType() != XMaterial.PLAYER_HEAD.parseMaterial()) {
-                XSound.BLOCK_CHEST_OPEN.play(player);
-                plugin.getNavigatorInventory().openInventory(player);
-            }
+        if (slot >= 45 && slot <= 53 && itemStack.getType() != XMaterial.PLAYER_HEAD.parseMaterial()) {
+            XSound.BLOCK_CHEST_OPEN.play(player);
+            plugin.getNavigatorInventory().openInventory(player);
         }
     }
 
+    /**
+     * Manage the clicking of an {@link ItemStack} that represents a {@link BuildWorld}.
+     * <p>
+     * If the click is a...
+     * <ul>
+     *   <l>...left click, the world is loaded (if previously unloaded) and the player is teleported to said world.</li>
+     *   <li>...right click and the player has the permission {@code buildsystem.edit}, the {@link com.eintosti.buildsystem.inventory.EditInventory} for the world is opened for said player. If the player does not the the required permission the click is handeled as a normal left click.</li>
+     * </ul>
+     *
+     * @param event      The click event to modify
+     * @param player     The player who clicked
+     * @param itemMeta   The item meta of the clicked item
+     * @param buildWorld The world represents by the clicked item
+     */
     private void manageWorldItemClick(InventoryClickEvent event, Player player, ItemMeta itemMeta, BuildWorld buildWorld) {
         if (event.isLeftClick() || !player.hasPermission("buildsystem.edit")) {
             performNonEditClick(player, itemMeta);
@@ -285,6 +305,12 @@ public class InventoryManager {
         }
     }
 
+    /**
+     * A "non-edit click" is a click (i.e. a right click) which does not open the {@link com.eintosti.buildsystem.inventory.EditInventory}.
+     *
+     * @param player   The player who clicked
+     * @param itemMeta The item meta of the clicked item
+     */
     private void performNonEditClick(Player player, ItemMeta itemMeta) {
         playerManager.closeNavigator(player);
         teleport(player, getWorldName(itemMeta.getDisplayName()));
@@ -299,27 +325,39 @@ public class InventoryManager {
         worldManager.teleport(player, buildWorld);
     }
 
+    /**
+     * Parse the name of a world from the given input.
+     *
+     * @param input The string to parse the name from
+     * @return The name of the world
+     */
     private String getWorldName(String input) {
         String template = plugin.getString("world_item_title").replace("%world%", "");
         return StringUtils.difference(template, input);
     }
 
-    public List<BuildWorld> sortWorlds(Player player, WorldManager worldManager, BuildSystem plugin) {
+    /**
+     * Sort the list of worlds to match the given {@link com.eintosti.buildsystem.object.settings.WorldSort}.
+     *
+     * @param worldManager The world manager object
+     * @param settings     The settings that provide the sorting method
+     * @return The list of sorted worlds
+     */
+    public List<BuildWorld> sortWorlds(WorldManager worldManager, Settings settings) {
         List<BuildWorld> buildWorlds = new ArrayList<>(worldManager.getBuildWorlds());
-        Settings settings = plugin.getSettingsManager().getSettings(player);
         switch (settings.getWorldSort()) {
             default: // NAME_A_TO_Z
-                buildWorlds.sort(Comparator.comparing(worldOne -> worldOne.getName().toLowerCase()));
+                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getName().toLowerCase()));
                 break;
             case NAME_Z_TO_A:
-                buildWorlds.sort(Comparator.comparing(worldOne -> worldOne.getName().toLowerCase()));
+                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getName().toLowerCase()));
                 Collections.reverse(buildWorlds);
                 break;
             case PROJECT_A_TO_Z:
-                buildWorlds.sort(Comparator.comparing(worldOne -> worldOne.getProject().toLowerCase()));
+                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getProject().toLowerCase()));
                 break;
             case PROJECT_Z_TO_A:
-                buildWorlds.sort(Comparator.comparing(worldOne -> worldOne.getProject().toLowerCase()));
+                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getProject().toLowerCase()));
                 Collections.reverse(buildWorlds);
                 break;
             case NEWEST_FIRST:
@@ -332,12 +370,19 @@ public class InventoryManager {
         return buildWorlds;
     }
 
+    /**
+     * Get the lore which will be displayed in an inventory.
+     *
+     * @param player The player whom the lore will be shown to
+     * @param buildWorld The world the lore displays information about
+     * @return The formatted lore
+     */
     private List<String> getLore(Player player, BuildWorld buildWorld) {
-        List<String> messageList = player.hasPermission("buildsystem.edit") ? plugin.getStringList("world_item_lore_edit") :
-                plugin.getStringList("world_item_lore_normal");
+        List<String> messageList = player.hasPermission("buildsystem.edit") ? plugin.getStringList("world_item_lore_edit") : plugin.getStringList("world_item_lore_normal");
         List<String> lore = new ArrayList<>();
         for (String line : messageList) {
-            String replace = line.replace("%project%", buildWorld.getProject())
+            String replace = line
+                    .replace("%project%", buildWorld.getProject())
                     .replace("%permission%", buildWorld.getPermission())
                     .replace("%status%", buildWorld.getStatusName())
                     .replace("%creator%", buildWorld.getCreator())
@@ -345,30 +390,40 @@ public class InventoryManager {
 
             if (!line.contains("%builders%")) {
                 lore.add(replace);
-            } else {
-                ArrayList<String> builders = formatBuilders(buildWorld);
-                for (int i = 0; i < builders.size(); i++) {
-                    String builderString = builders.get(i).trim();
-                    if (builderString.isEmpty()) {
-                        continue;
-                    }
+                return lore;
+            }
 
-                    if (i == 0) {
-                        builderString = line.replace("%builders%", builderString);
-                    }
-                    if (i == builders.size() - 1) {
-                        builderString = builderString.substring(0, builderString.length() - 1);
-                    }
-                    lore.add(builderString);
+            List<String> builders = formatBuilders(buildWorld);
+            for (int i = 0; i < builders.size(); i++) {
+                String builderString = builders.get(i).trim();
+                if (builderString.isEmpty()) {
+                    continue;
                 }
+
+                if (i == 0) {
+                    builderString = line.replace("%builders%", builderString);
+                }
+
+                if (i == builders.size() - 1) {
+                    builderString = builderString.substring(0, builderString.length() - 1);
+                }
+
+                lore.add(builderString);
             }
         }
         return lore;
     }
 
-    private ArrayList<String> formatBuilders(BuildWorld buildWorld) {
+    /**
+     * Format the {@code %builder%} placeholder which can be used by a lore.
+     *
+     * @param buildWorld The world which provides the builders
+     * @return The formatted list of builders which have been added to the given world
+     * @see BuildWorld#getBuildersInfo()
+     */
+    private List<String> formatBuilders(BuildWorld buildWorld) {
         String template = plugin.getString("world_item_builders_builder_template");
-        ArrayList<Builder> builders = new ArrayList<>();
+        List<Builder> builders = new ArrayList<>();
 
         if (configValues.isCreatorIsBuilder()) {
             if (buildWorld.getCreator() != null && !buildWorld.getCreator().equals("-")) {
@@ -378,7 +433,7 @@ public class InventoryManager {
 
         builders.addAll(buildWorld.getBuilders());
 
-        ArrayList<String> builderNames = new ArrayList<>();
+        List<String> builderNames = new ArrayList<>();
         if (builders.isEmpty()) {
             String string = template.replace("%builder%", "-").trim();
             builderNames.add(string);

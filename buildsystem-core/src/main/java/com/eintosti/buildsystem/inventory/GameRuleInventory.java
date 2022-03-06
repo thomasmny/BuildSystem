@@ -20,6 +20,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.UUID;
 
@@ -30,19 +31,17 @@ public class GameRuleInventory implements Listener {
 
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
-    private final GameRules gameRules;
 
     public GameRuleInventory(BuildSystem plugin) {
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
-        this.gameRules = plugin.getGameRules();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     public void openInventory(Player player, BuildWorld buildWorld) {
         World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
 
-        Inventory inventory = gameRules.getInventory(player, bukkitWorld);
+        Inventory inventory = plugin.getGameRules().getInventory(player, bukkitWorld);
         fillGuiWithGlass(player, inventory);
 
         player.openInventory(inventory);
@@ -56,6 +55,7 @@ public class GameRuleInventory implements Listener {
         }
 
         UUID playerUUID = player.getUniqueId();
+        GameRules gameRules = plugin.getGameRules();
         int numGameRules = gameRules.getNumGameRules();
         int invIndex = gameRules.getInvIndex(playerUUID);
 
@@ -73,7 +73,7 @@ public class GameRuleInventory implements Listener {
     }
 
     private boolean isValidSlot(int slot) {
-        int[] slots = gameRules.getSlots();
+        int[] slots = plugin.getGameRules().getSlots();
         for (int i : slots) {
             if (i == slot) {
                 return false;
@@ -88,6 +88,11 @@ public class GameRuleInventory implements Listener {
             return;
         }
 
+        ItemStack itemStack = event.getCurrentItem();
+        if (itemStack == null) {
+            return;
+        }
+
         Player player = (Player) event.getWhoClicked();
         BuildWorld buildWorld = plugin.getPlayerManager().getSelectedWorld().get(player.getUniqueId());
         if (buildWorld == null) {
@@ -96,7 +101,9 @@ public class GameRuleInventory implements Listener {
             return;
         }
 
-        switch (event.getCurrentItem().getType()) {
+        GameRules gameRules = plugin.getGameRules();
+
+        switch (itemStack.getType()) {
             case PLAYER_HEAD:
                 int slot = event.getSlot();
                 if (slot == 36) {
