@@ -17,7 +17,6 @@ import com.eintosti.buildsystem.api.settings.WorldSort;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.NoClipManager;
 import com.eintosti.buildsystem.manager.SettingsManager;
-import com.eintosti.buildsystem.object.settings.CraftSettings;
 import com.eintosti.buildsystem.util.ConfigValues;
 import org.bukkit.Bukkit;
 import org.bukkit.enchantments.Enchantment;

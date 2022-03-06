@@ -20,7 +20,6 @@ import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.inventory.InventoryType;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**

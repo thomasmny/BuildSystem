@@ -27,12 +27,12 @@ not to forget: let each player decide which settings whey think are best for the
 * **Full guide:**
   You can find a full guide with tutorials, commands and permissions [here](https://eintosti.gitbook.io/buildsystem/).
 * **Downloads:**
-  * [SpigotMC](https://spigotmc.org/resources/buildsystem-1-8-1-18.60441/)
-  * [Chunkfactory](https://chunkfactory.com/product/buildsystem-1-8-1-15.1049/)
-  * [MC-Market](https://www.mc-market.org/resources/12399/)
+    * [SpigotMC](https://spigotmc.org/resources/buildsystem-1-8-1-18.60441/)
+    * [Chunkfactory](https://chunkfactory.com/product/buildsystem-1-8-1-15.1049/)
+    * [MC-Market](https://www.mc-market.org/resources/12399/)
 * **Support:**
-  * [GitHub issue tracker](https://github.com/einTosti/BuildSystem/issues)
-  * [Discord](https://discord.gg/rduPF3yk62)
+    * [GitHub issue tracker](https://github.com/einTosti/BuildSystem/issues)
+    * [Discord](https://discord.gg/rduPF3yk62)
 * **Donations:**
   Donations are **100%** voluntary. However, I am truly grateful for every single one of you who decides to do so as
   each donation helps me to continue developing the project further. If you wish to donate anything, you can do

@@ -10,11 +10,10 @@ package com.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.manager.InventoryManager;
-import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.api.world.WorldStatus;
 import com.eintosti.buildsystem.api.world.WorldType;
-import org.bukkit.entity.Player;
+import com.eintosti.buildsystem.manager.InventoryManager;
+import com.eintosti.buildsystem.manager.WorldManager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;

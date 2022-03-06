@@ -11,7 +11,6 @@ package com.eintosti.buildsystem.command;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.api.world.BuildWorld;
 import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.world.CraftBuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;

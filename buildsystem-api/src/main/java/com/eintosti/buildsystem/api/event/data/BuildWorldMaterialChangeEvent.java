@@ -10,7 +10,6 @@ package com.eintosti.buildsystem.api.event.data;
 
 import com.eintosti.buildsystem.api.world.BuildWorld;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
 
 /**
  * @author einTosti
