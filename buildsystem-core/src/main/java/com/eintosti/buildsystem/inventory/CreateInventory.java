@@ -13,7 +13,7 @@ import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.world.WorldType;
+import com.eintosti.buildsystem.object.world.data.WorldType;
 import org.bukkit.Bukkit;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;

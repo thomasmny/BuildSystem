@@ -14,7 +14,6 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -56,7 +55,7 @@ public class DeleteInventory implements Listener {
         final int[] redSlots = new int[]{5, 6, 7, 8, 14, 16, 17, 23, 24, 25, 26};
 
         for (int slot : greenSlots) {
-            inventoryManager.addItemStack(inventory, slot, XMaterial.GREEN_STAINED_GLASS_PANE, "§f");
+            inventoryManager.addItemStack(inventory, slot, XMaterial.LIME_STAINED_GLASS_PANE, "§f");
         }
         for (int slot : blackSlots) {
             inventoryManager.addItemStack(inventory, slot, XMaterial.BLACK_STAINED_GLASS_PANE, "§f");
@@ -80,19 +79,16 @@ public class DeleteInventory implements Listener {
             return;
         }
 
-        switch (event.getSlot()) {
-            case 11:
-                XSound.ENTITY_PLAYER_LEVELUP.play(player);
-                plugin.getWorldManager().deleteWorld(player, buildWorld);
-                break;
-            case 15:
-                XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-                player.sendMessage(plugin.getString("worlds_delete_canceled").replace("%world%", buildWorld.getName()));
-                break;
-            default:
-                return;
-        }
+        int slot = event.getSlot();
+        if (slot == 11) {
+            XSound.ENTITY_PLAYER_LEVELUP.play(player);
+            player.closeInventory();
+            plugin.getWorldManager().deleteWorld(player, buildWorld);
+        } else if (slot == 15) {
+            XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
+            player.closeInventory();
+            player.sendMessage(plugin.getString("worlds_delete_canceled").replace("%world%", buildWorld.getName()));
 
-        player.closeInventory();
+        }
     }
 }

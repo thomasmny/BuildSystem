@@ -16,7 +16,7 @@ import com.eintosti.buildsystem.manager.SpawnManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.object.world.WorldStatus;
+import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.external.UpdateChecker;
 import org.bukkit.Bukkit;

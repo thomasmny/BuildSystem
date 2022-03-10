@@ -14,9 +14,11 @@ import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.Builder;
-import com.eintosti.buildsystem.object.world.Generator;
-import com.eintosti.buildsystem.object.world.WorldStatus;
-import com.eintosti.buildsystem.object.world.WorldType;
+import com.eintosti.buildsystem.object.world.data.WorldStatus;
+import com.eintosti.buildsystem.object.world.data.WorldType;
+import com.eintosti.buildsystem.object.world.generator.DeprecatedVoidGenerator;
+import com.eintosti.buildsystem.object.world.generator.Generator;
+import com.eintosti.buildsystem.object.world.generator.ModernVoidGenerator;
 import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.FileUtils;
 import com.eintosti.buildsystem.util.config.WorldConfig;
@@ -37,7 +39,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -46,7 +47,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -393,34 +393,38 @@ public class WorldManager {
             case VOID:
                 worldCreator.generateStructures(false);
                 bukkitWorldType = org.bukkit.WorldType.FLAT;
-                if (XMaterial.supports(13)) {
-                    worldCreator.generator(new ChunkGenerator() {
-                        @Override
-                        @SuppressWarnings("deprecation")
-                        public @NotNull
-                        ChunkData generateChunkData(@NotNull World world, @NotNull Random random, int x, int z, @NotNull BiomeGrid biome) {
-                            return createChunkData(world);
-                        }
-                    });
+                if (XMaterial.supports(17)) {
+                    worldCreator.generator(new ModernVoidGenerator());
+                } else if (XMaterial.supports(13)) {
+                    worldCreator.generator(new DeprecatedVoidGenerator());
                 } else {
                     worldCreator.generatorSettings("2;0;1");
                 }
                 break;
+
             case FLAT:
             case PRIVATE:
                 worldCreator.generateStructures(false);
                 bukkitWorldType = org.bukkit.WorldType.FLAT;
                 break;
+
             case NETHER:
                 worldCreator.generateStructures(true);
                 bukkitWorldType = org.bukkit.WorldType.NORMAL;
                 worldCreator.environment(Environment.NETHER);
                 break;
+
             case END:
                 worldCreator.generateStructures(true);
                 bukkitWorldType = org.bukkit.WorldType.NORMAL;
                 worldCreator.environment(Environment.THE_END);
                 break;
+
+            case CUSTOM:
+                if (chunkGenerators != null && chunkGenerators.length > 0) {
+                    worldCreator.generator(chunkGenerators[0]);
+                }
+
             default:
                 worldCreator.generateStructures(true);
                 bukkitWorldType = org.bukkit.WorldType.NORMAL;
@@ -428,10 +432,6 @@ public class WorldManager {
                 break;
         }
         worldCreator.type(bukkitWorldType);
-
-        if (chunkGenerators != null && chunkGenerators.length > 0) {
-            worldCreator.generator(chunkGenerators[0]);
-        }
 
         World bukkitWorld = Bukkit.createWorld(worldCreator);
         if (bukkitWorld != null) {
@@ -491,9 +491,11 @@ public class WorldManager {
 
         ChunkGenerator chunkGenerator = null;
         if (generator == Generator.CUSTOM) {
-            List<String> genArray = Arrays.asList(generatorName[0].split(":"));
-            if (genArray.size() < 2) {
-                genArray.add("");
+            List<String> genArray;
+            if (generatorName[0].contains(":")) {
+                genArray = Arrays.asList(generatorName[0].split(":"));
+            } else {
+                genArray = Arrays.asList(generatorName[0], generatorName[0]);
             }
 
             chunkGenerator = getChunkGenerator(genArray.get(0), genArray.get(1), worldName);
@@ -857,7 +859,7 @@ public class WorldManager {
         boolean blockPlacement = !configuration.isBoolean("worlds." + worldName + ".block-placement") || configuration.getBoolean("worlds." + worldName + ".block-placement");
         boolean blockInteractions = !configuration.isBoolean("worlds." + worldName + ".block-interactions") || configuration.getBoolean("worlds." + worldName + ".block-interactions");
         boolean buildersEnabled = configuration.isBoolean("worlds." + worldName + ".builders-enabled") && configuration.getBoolean("worlds." + worldName + ".builders-enabled");
-        ArrayList<Builder> builders = parseBuilders(configuration, worldName);
+        List<Builder> builders = parseBuilders(configuration, worldName);
         String chunkGeneratorString = configuration.getString("worlds." + worldName + ".chunk-generator");
         ChunkGenerator chunkGenerator = parseChunkGenerator(configuration, worldName);
 
@@ -896,19 +898,19 @@ public class WorldManager {
     }
 
     private XMaterial parseMaterial(FileConfiguration configuration, String worldName) {
-        try {
-            String itemString = configuration.getString("worlds." + worldName + ".item", XMaterial.BEDROCK.toString());
-            Optional<XMaterial> xMaterial = XMaterial.matchXMaterial(itemString);
-            if (xMaterial.isPresent()) {
-                return xMaterial.get();
-            } else {
-                plugin.getLogger().log(Level.WARNING, "[BuildSystem] Unknown material found for \"" + worldName + "\" (" + configuration.getString("worlds." + worldName + ".item").split(":")[0] + ").");
-                plugin.getLogger().log(Level.WARNING, "[BuildSystem] Material changed to BEDROCK.");
-                return XMaterial.BEDROCK;
-            }
-        } catch (IllegalArgumentException e) {
-            plugin.getLogger().log(Level.WARNING, "[BuildSystem] Unknown material found for \"" + worldName + "\" (" + configuration.getString("worlds." + worldName + ".item").split(":")[0] + ").");
-            plugin.getLogger().log(Level.WARNING, "[BuildSystem] Material changed to BEDROCK.");
+        String itemString = configuration.getString("worlds." + worldName + ".item");
+        if (itemString == null) {
+            itemString = XMaterial.BEDROCK.name();
+            plugin.getLogger().warning("Could not find Material for \"" + worldName + "\".");
+            plugin.getLogger().warning("Material changed to BEDROCK.");
+        }
+
+        Optional<XMaterial> xMaterial = XMaterial.matchXMaterial(itemString);
+        if (xMaterial.isPresent()) {
+            return xMaterial.get();
+        } else {
+            plugin.getLogger().warning("Unknown material found for \"" + worldName + "\" (" + itemString + ").");
+            plugin.getLogger().warning("Material changed to BEDROCK.");
             return XMaterial.BEDROCK;
         }
     }
@@ -928,8 +930,8 @@ public class WorldManager {
         }
     }
 
-    private ArrayList<Builder> parseBuilders(FileConfiguration configuration, String worldName) {
-        ArrayList<Builder> builders = new ArrayList<>();
+    private List<Builder> parseBuilders(FileConfiguration configuration, String worldName) {
+        List<Builder> builders = new ArrayList<>();
 
         if (configuration.isString("worlds." + worldName + ".builders")) {
             String buildersString = configuration.getString("worlds." + worldName + ".builders");
@@ -954,10 +956,13 @@ public class WorldManager {
             String generator = configuration.getString("worlds." + worldName + ".chunk-generator");
 
             if (generator != null && !generator.isEmpty()) {
-                List<String> genArray = new ArrayList<>(Arrays.asList(generator.split(":")));
-                if (genArray.size() < 2) {
-                    genArray.add("");
+                List<String> genArray;
+                if (generator.contains(":")) {
+                    genArray = Arrays.asList(generator.split(":"));
+                } else {
+                    genArray = Arrays.asList(generator, generator);
                 }
+
                 chunkGenerator = getChunkGenerator(genArray.get(0), genArray.get(1), worldName);
             }
         }

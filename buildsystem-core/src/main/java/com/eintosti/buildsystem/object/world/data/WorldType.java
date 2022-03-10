@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-package com.eintosti.buildsystem.object.world;
+package com.eintosti.buildsystem.object.world.data;
 
 import com.eintosti.buildsystem.util.ConfigValues;
 import org.bukkit.World.Environment;

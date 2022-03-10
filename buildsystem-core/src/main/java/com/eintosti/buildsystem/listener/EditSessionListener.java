@@ -11,7 +11,7 @@ package com.eintosti.buildsystem.listener;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.object.world.WorldStatus;
+import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.event.extent.EditSessionEvent;

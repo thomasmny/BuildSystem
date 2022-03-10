@@ -17,7 +17,7 @@ import java.util.UUID;
  */
 public class Builder {
 
-    private UUID uuid;
+    private final UUID uuid;
     private String name;
 
     public Builder(Player player) {
@@ -32,10 +32,6 @@ public class Builder {
 
     public UUID getUuid() {
         return uuid;
-    }
-
-    public void setUuid(UUID uuid) {
-        this.uuid = uuid;
     }
 
     public String getName() {

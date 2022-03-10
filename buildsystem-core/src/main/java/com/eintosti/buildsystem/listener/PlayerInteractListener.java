@@ -22,7 +22,7 @@ import com.eintosti.buildsystem.object.navigator.NavigatorType;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.Builder;
-import com.eintosti.buildsystem.object.world.WorldStatus;
+import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.eintosti.buildsystem.util.ConfigValues;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;

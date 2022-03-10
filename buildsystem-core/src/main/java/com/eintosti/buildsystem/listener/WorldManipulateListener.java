@@ -13,7 +13,7 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.Builder;
-import com.eintosti.buildsystem.object.world.WorldStatus;
+import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -130,15 +130,19 @@ public class WorldManipulateListener implements Listener {
     /**
      * Not every player can always interact with the {@link BuildWorld} they are in.
      * <p>
-     * Reasons an interaction could be cancelled:<br>
-     * - The world has its {@link WorldStatus} set to archived<br>
-     * - The world has a setting enabled which disallows certain events<br>
-     * - The world only allows {@link Builder}s to build and the player is not such a builder<br>
+     * Reasons an interaction could be cancelled:
+     * <ul>
+     *     <li>The world has its {@link WorldStatus} set to archived;</li>
+     *     <li>The world has a setting enabled which disallows certain events;</li>
+     *     <li>The world only allows {@link Builder}s to build and the player is not such a builder.</li>
+     * </ul>
      * <p>
-     * However, a player can override these reasons if:<br>
-     * - The player has the permission `buildsystem.admin`<br>
-     * - The player has the permission `buildsystem.bypass.archive`<br>
-     * - The player has used `/build` to enter build-mode<br>
+     * However, a player can override these reasons if:
+     * <ul>
+     *     <li>The player has the permission {@code buildsystem.admin};</li>
+     *     <li>The player has the permission {@code buildsystem.bypass.archive};</li>
+     *     <li>The player has used {@code /build} to enter build-mode.</li>
+     * </ul>
      *
      * @param player the player who manipulated the world
      * @param event  the event which was called by the world manipulation
@@ -165,14 +169,12 @@ public class WorldManipulateListener implements Listener {
     }
 
     private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, Event event) {
-        Cancellable cancellable = (Cancellable) event;
-
         if (plugin.canBypass(player)) {
             return false;
         }
 
         if (buildWorld.getStatus() == WorldStatus.ARCHIVE) {
-            cancellable.setCancelled(true);
+            ((Cancellable) event).setCancelled(true);
             denyPlayerInteraction(event);
             return true;
         }
@@ -181,14 +183,12 @@ public class WorldManipulateListener implements Listener {
     }
 
     private boolean checkWorldSettings(Player player, Event event, boolean worldSetting) {
-        Cancellable cancellable = (Cancellable) event;
-
         if (plugin.canBypass(player)) {
             return false;
         }
 
         if (!worldSetting) {
-            cancellable.setCancelled(true);
+            ((Cancellable) event).setCancelled(true);
             denyPlayerInteraction(event);
             return true;
         }
@@ -197,8 +197,6 @@ public class WorldManipulateListener implements Listener {
     }
 
     private boolean checkBuilders(BuildWorld buildWorld, Player player, Event event) {
-        Cancellable cancellable = (Cancellable) event;
-
         if (plugin.canBypass(player)) {
             return false;
         }
@@ -208,7 +206,7 @@ public class WorldManipulateListener implements Listener {
         }
 
         if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
-            cancellable.setCancelled(true);
+            ((Cancellable) event).setCancelled(true);
             denyPlayerInteraction(event);
             return true;
         }

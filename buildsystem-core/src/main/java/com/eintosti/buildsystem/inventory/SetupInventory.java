@@ -10,8 +10,8 @@ package com.eintosti.buildsystem.inventory;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
-import com.eintosti.buildsystem.object.world.WorldStatus;
-import com.eintosti.buildsystem.object.world.WorldType;
+import com.eintosti.buildsystem.object.world.data.WorldStatus;
+import com.eintosti.buildsystem.object.world.data.WorldType;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
