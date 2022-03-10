@@ -738,11 +738,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
         String subtitle = plugin.getString("loading_world").replace("%world%", name);
         Titles.sendTitle(player, "", subtitle);
 
-        plugin.getLogger().log(Level.INFO, "*** Loading world \"" + name + "\" ***");
-        Bukkit.createWorld(new WorldCreator(name));
-        this.loaded = true;
-
-        resetUnloadTask();
+        load();
     }
 
     @Override

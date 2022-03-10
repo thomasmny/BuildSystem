@@ -36,7 +36,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -340,11 +340,7 @@ public class InventoryManager {
     }
 
     /**
-     * <<<<<<< HEAD
      * Sort the list of worlds to match the given {@link WorldSort}.
-     * =======
-     * Sort the list of worlds to match the given {@link com.eintosti.buildsystem.object.settings.WorldSort}.
-     * >>>>>>> master
      *
      * @param worldManager The world manager object
      * @param settings     The settings that provide the sorting method
@@ -501,6 +497,7 @@ public class InventoryManager {
         return glass.orElse(XMaterial.BLACK_STAINED_GLASS_PANE);
     }
 
+    @NotNull
     public XMaterial getCreateItem(WorldType worldType) {
         XMaterial material;
         switch (worldType) {
@@ -541,12 +538,7 @@ public class InventoryManager {
                 }
                 break;
             default:
-                try {
-                    throw new UnexpectedEnumValueException(worldType.name());
-                } catch (UnexpectedEnumValueException e) {
-                    e.printStackTrace();
-                    return null;
-                }
+                return XMaterial.BEDROCK;
         }
         return material;
     }
@@ -581,7 +573,7 @@ public class InventoryManager {
         }
     }
 
-    @Nullable
+    @NotNull
     public XMaterial getDefaultItem(WorldType worldType) {
         XMaterial material;
         switch (worldType) {
@@ -622,12 +614,7 @@ public class InventoryManager {
                 }
                 break;
             default:
-                try {
-                    throw new UnexpectedEnumValueException(worldType.name());
-                } catch (UnexpectedEnumValueException e) {
-                    e.printStackTrace();
-                    return null;
-                }
+                return XMaterial.BEDROCK;
         }
         return material;
     }
@@ -662,6 +649,7 @@ public class InventoryManager {
         }
     }
 
+    @NotNull
     public XMaterial getStatusItem(WorldStatus worldStatus) {
         XMaterial material;
         switch (worldStatus) {
@@ -702,12 +690,7 @@ public class InventoryManager {
                 }
                 break;
             default:
-                try {
-                    throw new UnexpectedEnumValueException(worldStatus.name());
-                } catch (UnexpectedEnumValueException e) {
-                    e.printStackTrace();
-                    return null;
-                }
+                return XMaterial.BEDROCK;
         }
         return material;
     }

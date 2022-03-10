@@ -150,7 +150,7 @@ public class WorldManager {
     }
 
     /**
-     * Gets the name (and in doing so removes all illegal characters) of the {@link BuildWorld} the player is trying to create.
+     * Gets the name of the {@link BuildWorld} the player is trying to create and removes all illegal characters.
      * If the world is going to be a private world, its name will be equal to the player's name.
      *
      * @param player       The player who is creating the world
@@ -185,7 +185,7 @@ public class WorldManager {
     }
 
     /**
-     * Depending on the {@link BuildWorld}'s {@link WorldType}, the corresponding {@link World} will be generated in a different way.
+     * Depending on the {@link BuildWorld}'s {@link WorldType}, the corresponding {@link World} will be generated in a different way.<br>
      * Then, if the creation of the world was successful and the config is set accordingly, the player is teleported to the world.
      *
      * @param player       The player who is creating the world
