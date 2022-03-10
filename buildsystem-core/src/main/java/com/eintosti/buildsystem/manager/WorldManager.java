@@ -438,6 +438,7 @@ public class WorldManager {
             bukkitWorld.setDifficulty(configValues.getWorldDifficulty());
             bukkitWorld.setTime(configValues.getNoonTime());
             bukkitWorld.getWorldBorder().setSize(configValues.getWorldBorderSize());
+            bukkitWorld.setKeepSpawnInMemory(configValues.isTeleportAfterCreation());
             configValues.getDefaultGameRules().forEach(bukkitWorld::setGameRuleValue);
         }
 
