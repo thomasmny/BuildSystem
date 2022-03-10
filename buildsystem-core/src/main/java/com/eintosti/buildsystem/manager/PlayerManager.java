@@ -14,7 +14,7 @@ import com.cryptomorin.xseries.messages.ActionBar;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.api.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.CraftBuildWorld;
-import com.eintosti.buildsystem.util.ConfigValues;
+import com.eintosti.buildsystem.util.config.ConfigValues;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;

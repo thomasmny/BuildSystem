@@ -17,7 +17,7 @@ import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.manager.SpawnManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.CraftBuildWorld;
-import com.eintosti.buildsystem.util.ConfigValues;
+import com.eintosti.buildsystem.util.config.ConfigValues;
 import com.eintosti.buildsystem.util.external.UpdateChecker;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;

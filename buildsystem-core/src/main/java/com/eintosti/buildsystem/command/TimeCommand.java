@@ -9,7 +9,7 @@
 package com.eintosti.buildsystem.command;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.util.ConfigValues;
+import com.eintosti.buildsystem.util.config.ConfigValues;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;

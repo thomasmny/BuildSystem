@@ -20,7 +20,7 @@ import com.eintosti.buildsystem.api.world.WorldStatus;
 import com.eintosti.buildsystem.api.world.WorldType;
 import com.eintosti.buildsystem.inventory.EditInventory;
 import com.eintosti.buildsystem.object.world.CraftBuildWorld;
-import com.eintosti.buildsystem.util.ConfigValues;
+import com.eintosti.buildsystem.util.config.ConfigValues;
 import com.eintosti.buildsystem.util.config.SetupConfig;
 import com.eintosti.buildsystem.util.exception.UnexpectedEnumValueException;
 import com.eintosti.buildsystem.util.external.ItemSkulls;
@@ -340,11 +340,11 @@ public class InventoryManager {
     }
 
     /**
-<<<<<<< HEAD
+     * <<<<<<< HEAD
      * Sort the list of worlds to match the given {@link WorldSort}.
-=======
+     * =======
      * Sort the list of worlds to match the given {@link com.eintosti.buildsystem.object.settings.WorldSort}.
->>>>>>> master
+     * >>>>>>> master
      *
      * @param worldManager The world manager object
      * @param settings     The settings that provide the sorting method

@@ -21,7 +21,7 @@ import com.eintosti.buildsystem.api.world.WorldStatus;
 import com.eintosti.buildsystem.api.world.WorldType;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.SpawnManager;
-import com.eintosti.buildsystem.util.ConfigValues;
+import com.eintosti.buildsystem.util.config.ConfigValues;
 import com.eintosti.buildsystem.util.exception.UnexpectedEnumValueException;
 import com.eintosti.buildsystem.util.external.UUIDFetcher;
 import org.bukkit.Bukkit;

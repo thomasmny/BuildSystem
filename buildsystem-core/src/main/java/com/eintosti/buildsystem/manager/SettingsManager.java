@@ -14,7 +14,7 @@ import com.eintosti.buildsystem.api.settings.NavigatorType;
 import com.eintosti.buildsystem.api.settings.WorldSort;
 import com.eintosti.buildsystem.object.settings.CraftSettings;
 import com.eintosti.buildsystem.object.world.CraftBuildWorld;
-import com.eintosti.buildsystem.util.ConfigValues;
+import com.eintosti.buildsystem.util.config.ConfigValues;
 import com.eintosti.buildsystem.util.config.SettingsConfig;
 import fr.mrmicky.fastboard.FastBoard;
 import org.bukkit.Bukkit;
