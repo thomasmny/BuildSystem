@@ -6,6 +6,7 @@ settings:
   update-checker: true
   scoreboard: true
   archive-vanish: true
+  teleport-after-creation: true
   builder:
     block-worldedit-non-builder: true
     world-edit-wand: "WOODEN_AXE"

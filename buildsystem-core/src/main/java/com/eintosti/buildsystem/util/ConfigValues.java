@@ -37,6 +37,7 @@ public class ConfigValues {
     private boolean scoreboard;
     private boolean spawnTeleportMessage;
     private boolean joinQuitMessages;
+    private boolean teleportAfterCreation;
     private boolean lockWeather;
     private boolean unloadWorlds;
     private boolean voidBlock;
@@ -79,6 +80,7 @@ public class ConfigValues {
         this.updateChecker = config.getBoolean("settings.update-checker", true);
         this.scoreboard = config.getBoolean("settings.scoreboard", true);
         this.archiveVanish = config.getBoolean("settings.archive-vanish", true);
+        this.teleportAfterCreation = config.getBoolean("settings.teleport-after-creation", true);
 
         this.blockWorldEditNonBuilder = config.getBoolean("settings.builder.block-worldedit-non-builder", true);
         this.worldEditWand = XMaterial.valueOf(config.getString("settings.builder.world-edit-wand", "WOODEN_AXE"));
@@ -144,6 +146,10 @@ public class ConfigValues {
 
     public boolean isArchiveVanish() {
         return archiveVanish;
+    }
+
+    public boolean isTeleportAfterCreation() {
+        return teleportAfterCreation;
     }
 
     public boolean isScoreboard() {
