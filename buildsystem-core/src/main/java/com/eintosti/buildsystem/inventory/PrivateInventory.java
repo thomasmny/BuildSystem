@@ -13,7 +13,7 @@ import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.object.world.WorldStatus;
+import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.google.common.collect.Sets;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;

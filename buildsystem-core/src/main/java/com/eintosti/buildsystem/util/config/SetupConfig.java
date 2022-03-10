@@ -10,8 +10,8 @@ package com.eintosti.buildsystem.util.config;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.object.world.WorldStatus;
-import com.eintosti.buildsystem.object.world.WorldType;
+import com.eintosti.buildsystem.object.world.data.WorldStatus;
+import com.eintosti.buildsystem.object.world.data.WorldType;
 
 /**
  * @author einTosti

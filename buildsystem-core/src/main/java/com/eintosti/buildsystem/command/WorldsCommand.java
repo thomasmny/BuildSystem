@@ -17,7 +17,7 @@ import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.Builder;
-import com.eintosti.buildsystem.object.world.Generator;
+import com.eintosti.buildsystem.object.world.generator.Generator;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
 import com.eintosti.buildsystem.util.external.UUIDFetcher;
 import net.md_5.bungee.api.chat.ClickEvent;

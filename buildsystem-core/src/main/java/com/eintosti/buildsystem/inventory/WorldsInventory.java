@@ -11,7 +11,7 @@ package com.eintosti.buildsystem.inventory;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.PlayerManager;
-import com.eintosti.buildsystem.object.world.WorldStatus;
+import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.google.common.collect.Sets;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;

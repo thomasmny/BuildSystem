@@ -15,8 +15,8 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.Builder;
-import com.eintosti.buildsystem.object.world.WorldStatus;
-import com.eintosti.buildsystem.object.world.WorldType;
+import com.eintosti.buildsystem.object.world.data.WorldStatus;
+import com.eintosti.buildsystem.object.world.data.WorldType;
 import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.config.SetupConfig;
 import com.eintosti.buildsystem.util.exception.UnexpectedEnumValueException;
@@ -373,7 +373,7 @@ public class InventoryManager {
     /**
      * Get the lore which will be displayed in an inventory.
      *
-     * @param player The player whom the lore will be shown to
+     * @param player     The player whom the lore will be shown to
      * @param buildWorld The world the lore displays information about
      * @return The formatted lore
      */
