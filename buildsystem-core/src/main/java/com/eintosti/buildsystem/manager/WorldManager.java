@@ -182,6 +182,7 @@ public class WorldManager {
 
     /**
      * Depending on the {@link BuildWorld}'s {@link WorldType}, the corresponding {@link World} will be generated in a different way.
+     * Then, if the creation of the world was successful and the config is set accordingly, the player is teleported to the world.
      *
      * @param player       The player who is creating the world
      * @param worldName    The name of the world
@@ -192,14 +193,28 @@ public class WorldManager {
     private void manageWorldType(Player player, String worldName, WorldType worldType, @Nullable String template, boolean privateWorld) {
         switch (worldType) {
             default:
-                createWorld(player, worldName, worldType, privateWorld);
+                if (!createWorld(player, worldName, worldType, privateWorld)) {
+                    return;
+                }
                 break;
             case CUSTOM:
-                createCustomWorld(player, worldName, privateWorld);
+                if (!createCustomWorld(player, worldName, privateWorld)) {
+                    return;
+                }
                 break;
             case TEMPLATE:
-                createTemplateWorld(player, worldName, ChatColor.stripColor(template), privateWorld);
+                if (!createTemplateWorld(player, worldName, ChatColor.stripColor(template), privateWorld)) {
+                    return;
+                }
                 break;
+        }
+
+        if (configValues.isTeleportAfterCreation()) {
+            BuildWorld buildWorld = getBuildWorld(worldName);
+            if (buildWorld == null) {
+                return;
+            }
+            teleport(player, buildWorld);
         }
     }
 
@@ -230,10 +245,11 @@ public class WorldManager {
      * @param worldName    The name of the world
      * @param worldType    The world type
      * @param privateWorld Is world going to be a private world?
+     * @return {@code true} if the world was successfully created, {@code false otherwise}
      */
-    public void createWorld(Player player, String worldName, WorldType worldType, boolean privateWorld) {
+    public boolean createWorld(Player player, String worldName, WorldType worldType, boolean privateWorld) {
         if (worldExists(player, worldName)) {
-            return;
+            return false;
         }
 
         BuildWorld buildWorld = new BuildWorld(
@@ -253,6 +269,7 @@ public class WorldManager {
         );
         finishPreparationsAndGenerate(buildWorld);
         player.sendMessage(plugin.getString("worlds_creation_finished"));
+        return true;
     }
 
     /**
@@ -261,11 +278,12 @@ public class WorldManager {
      * @param player       The player who is creating the world
      * @param worldName    The name of the world
      * @param privateWorld Is world going to be a private world?
+     * @return {@code true} if the world was successfully created, {@code false otherwise}
      * @author Ein_Jojo
      */
-    public void createCustomWorld(Player player, String worldName, boolean privateWorld) {
+    public boolean createCustomWorld(Player player, String worldName, boolean privateWorld) {
         if (worldExists(player, worldName)) {
-            return;
+            return false;
         }
 
         new PlayerChatInput(plugin, player, "enter_generator_name", input -> {
@@ -294,6 +312,7 @@ public class WorldManager {
             generateBukkitWorld(worldName, buildWorld.getType(), chunkGenerator);
             player.sendMessage(plugin.getString("worlds_creation_finished"));
         });
+        return true;
     }
 
     /**
@@ -303,19 +322,20 @@ public class WorldManager {
      * @param worldName    The name of the world
      * @param template     The name of the template world
      * @param privateWorld Is world going to be a private world?
+     * @return {@code true} if the world was successfully created, {@code false otherwise}
      */
-    private void createTemplateWorld(Player player, String worldName, String template, boolean privateWorld) {
+    private boolean createTemplateWorld(Player player, String worldName, String template, boolean privateWorld) {
         boolean worldExists = getBuildWorld(worldName) != null;
         File worldFile = new File(Bukkit.getWorldContainer(), worldName);
         if (worldExists || worldFile.exists()) {
             player.sendMessage(plugin.getString("worlds_world_exists"));
-            return;
+            return false;
         }
 
         File templateFile = new File(plugin.getDataFolder() + File.separator + "templates" + File.separator + template);
         if (!templateFile.exists()) {
             player.sendMessage(plugin.getString("worlds_template_does_not_exist"));
-            return;
+            return false;
         }
 
         BuildWorld buildWorld = new BuildWorld(plugin, worldName, player.getName(), player.getUniqueId(), WorldType.TEMPLATE, System.currentTimeMillis(), privateWorld);
@@ -329,6 +349,7 @@ public class WorldManager {
                 .type(org.bukkit.WorldType.FLAT)
                 .generateStructures(false));
         player.sendMessage(plugin.getString("worlds_creation_finished"));
+        return true;
     }
 
     /**
@@ -485,15 +506,22 @@ public class WorldManager {
         }
 
         player.sendMessage(plugin.getString("worlds_import_started").replace("%world%", worldName));
-        buildWorlds.add(new BuildWorld(plugin, worldName, "-", null, WorldType.IMPORTED, FileUtils.getDirectoryCreation(file), false));
-
-        if (chunkGenerator == null) {
-            generateBukkitWorld(worldName, generator.getWorldType());
-        } else {
-            generateBukkitWorld(worldName, generator.getWorldType(), chunkGenerator);
-        }
-
+        BuildWorld buildWorld = new BuildWorld(
+                plugin,
+                worldName,
+                "-",
+                null,
+                WorldType.IMPORTED,
+                FileUtils.getDirectoryCreation(file),
+                false
+        );
+        buildWorlds.add(buildWorld);
+        generateBukkitWorld(worldName, generator.getWorldType(), chunkGenerator);
         player.sendMessage(plugin.getString("worlds_import_finished"));
+
+        if (configValues.isTeleportAfterCreation()) {
+            teleport(player, buildWorld);
+        }
     }
 
     /**
