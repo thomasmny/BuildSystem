@@ -4,7 +4,7 @@ spigot = "1.18.2-R0.1-SNAPSHOT"
 
 # Plugins
 luckperms = "5.4"
-worldedit = "7.2.9"
+worldedit = "7.2.10"
 placeholderapi = "2.11.1"
 
 # Third Party
