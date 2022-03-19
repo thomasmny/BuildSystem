@@ -43,8 +43,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -330,9 +330,9 @@ public class PlayerInteractListener implements Listener {
             case EAST:
             case SOUTH:
             case WEST:
-                String[] splitName = xMaterial.name().split("_");
-                Optional<XMaterial> parsedMaterial = XMaterial.matchXMaterial(splitName[0] + "_WALL_" + splitName[1]);
-                parsedMaterial.ifPresent(value -> adjacent.setType(value.parseMaterial()));
+                String[] parts = xMaterial.name().split("_");
+                String type = String.join("_", Arrays.copyOf(parts, parts.length - 1));
+                XMaterial.matchXMaterial(type + "_WALL_SIGN").ifPresent(value -> adjacent.setType(value.parseMaterial()));
                 plugin.getCustomBlocks().rotate(adjacent, player, blockFace);
                 break;
             default:

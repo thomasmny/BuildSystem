@@ -166,8 +166,7 @@ public class WorldsCommand implements CommandExecutor {
                         plugin.getEditInventory().openInventory(player, buildWorld);
                     } else {
                         XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-                        String subtitle = plugin.getString("world_not_loaded");
-                        Titles.sendTitle(player, "", subtitle);
+                        Titles.sendTitle(player, 5, 70, 20, " ", plugin.getString("world_not_loaded"));
                     }
                 } else {
                     player.sendMessage(plugin.getString("worlds_edit_usage"));

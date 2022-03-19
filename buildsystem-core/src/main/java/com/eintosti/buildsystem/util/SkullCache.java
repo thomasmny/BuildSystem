@@ -59,7 +59,7 @@ public class SkullCache {
     public void cacheSkull(String name) {
         try {
             skullCache.put(name, getSkullAndNmsObject(name)[1]);
-            Bukkit.getLogger().log(Level.INFO, "Cached Skull for: " + name);
+            Bukkit.getLogger().log(Level.INFO, "Cached skull for: " + name);
         } catch (Exception e) {
             e.printStackTrace();
         }

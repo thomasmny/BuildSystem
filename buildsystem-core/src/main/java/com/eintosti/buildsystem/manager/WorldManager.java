@@ -588,7 +588,7 @@ public class WorldManager {
      * In comparison to {@link #unimportWorld(BuildWorld)}, deleting a world deletes the world's directory.
      *
      * @param player     The player who issued the deletion
-     * @param buildWorld The build world object
+     * @param buildWorld The world to be deleted
      */
     public void deleteWorld(Player player, BuildWorld buildWorld) {
         if (!buildWorlds.contains(buildWorld)) {
@@ -599,7 +599,6 @@ public class WorldManager {
         String worldName = buildWorld.getName();
         if (Bukkit.getWorld(worldName) != null) {
             removePlayersFromWorld(worldName, plugin.getString("worlds_delete_players_world"));
-            unimportWorld(buildWorld);
         }
 
         File deleteFolder = new File(Bukkit.getWorldContainer(), worldName);
@@ -609,6 +608,7 @@ public class WorldManager {
         }
 
         player.sendMessage(plugin.getString("worlds_delete_started").replace("%world%", worldName));
+        unimportWorld(buildWorld);
         FileUtils.deleteDirectory(deleteFolder);
         player.sendMessage(plugin.getString("worlds_delete_finished"));
     }
@@ -627,6 +627,7 @@ public class WorldManager {
         }
 
         SpawnManager spawnManager = plugin.getSpawnManager();
+        Location spawnLocation = Bukkit.getWorlds().get(0).getSpawnLocation().add(0.5, 0, 0.5);
 
         Bukkit.getOnlinePlayers().forEach(player -> {
             World playerWorld = player.getWorld();
@@ -634,7 +635,6 @@ public class WorldManager {
                 return;
             }
 
-            Location spawnLocation = Bukkit.getWorlds().get(0).getSpawnLocation().add(0.5, 0, 0.5);
             if (spawnManager.spawnExists()) {
                 if (!spawnManager.getSpawnWorld().equals(playerWorld)) {
                     spawnManager.teleport(player);

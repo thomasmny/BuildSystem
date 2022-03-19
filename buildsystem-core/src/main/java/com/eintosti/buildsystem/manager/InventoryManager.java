@@ -300,8 +300,7 @@ public class InventoryManager {
         } else {
             player.closeInventory();
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-            String subtitle = plugin.getString("world_not_loaded");
-            Titles.sendTitle(player, "", subtitle);
+            Titles.sendTitle(player, 5, 70, 20, " ", plugin.getString("world_not_loaded"));
         }
     }
 

@@ -14,13 +14,12 @@ import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.google.common.collect.Sets;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
 import org.bukkit.inventory.Inventory;
 
 /**
  * @author einTosti
  */
-public class WorldsInventory extends FilteredWorldsInventory implements Listener {
+public class WorldsInventory extends FilteredWorldsInventory {
 
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
@@ -33,8 +32,6 @@ public class WorldsInventory extends FilteredWorldsInventory implements Listener
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
         this.playerManager = plugin.getPlayerManager();
-
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @Override

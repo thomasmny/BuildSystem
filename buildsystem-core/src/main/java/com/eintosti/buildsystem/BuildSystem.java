@@ -22,6 +22,7 @@ import com.eintosti.buildsystem.manager.SpawnManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.internal.ServerVersion;
 import com.eintosti.buildsystem.object.settings.Settings;
+import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.tabcomplete.ConfigTabComplete;
 import com.eintosti.buildsystem.tabcomplete.EmptyTabComplete;
 import com.eintosti.buildsystem.tabcomplete.GamemodeTabComplete;
@@ -408,6 +409,7 @@ public class BuildSystem extends JavaPlugin {
 
         if (init) {
             initVersionedClasses();
+            worldManager.getBuildWorlds().forEach(BuildWorld::manageUnload);
             if (configValues.isScoreboard()) {
                 getSettingsManager().startScoreboard();
             } else {

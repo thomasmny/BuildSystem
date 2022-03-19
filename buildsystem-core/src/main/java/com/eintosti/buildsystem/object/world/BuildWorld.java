@@ -148,13 +148,7 @@ public class BuildWorld implements ConfigurationSerializable {
             this.material = XMaterial.PLAYER_HEAD;
         }
 
-        if (configValues.isUnloadWorlds()) {
-            this.seconds = configValues.getTimeUntilUnload();
-            this.loaded = (Bukkit.getWorld(name) != null);
-            startUnloadTask();
-        } else {
-            this.loaded = true;
-        }
+        manageUnload();
     }
 
     public BuildWorld(
@@ -206,13 +200,7 @@ public class BuildWorld implements ConfigurationSerializable {
         this.chunkGenerator = chunkGenerator;
         this.chunkGeneratorName = chunkGeneratorName;
 
-        if (configValues.isUnloadWorlds()) {
-            this.seconds = configValues.getTimeUntilUnload();
-            this.loaded = (Bukkit.getWorld(name) != null);
-            startUnloadTask();
-        } else {
-            this.loaded = true;
-        }
+        manageUnload();
     }
 
     /**
@@ -788,6 +776,16 @@ public class BuildWorld implements ConfigurationSerializable {
         return loaded;
     }
 
+    public void manageUnload() {
+        if (configValues.isUnloadWorlds()) {
+            this.seconds = configValues.getTimeUntilUnload();
+            this.loaded = (Bukkit.getWorld(name) != null);
+            startUnloadTask();
+        } else {
+            this.loaded = true;
+        }
+    }
+
     public void startUnloadTask() {
         if (!configValues.isUnloadWorlds()) {
             return;
@@ -857,8 +855,7 @@ public class BuildWorld implements ConfigurationSerializable {
         }
 
         player.closeInventory();
-        String subtitle = plugin.getString("loading_world").replace("%world%", name);
-        Titles.sendTitle(player, "", subtitle);
+        Titles.sendTitle(player, 5, 70, 20, " ", plugin.getString("loading_world").replace("%world%", name));
 
         plugin.getLogger().log(Level.INFO, "*** Loading world \"" + name + "\" ***");
         Bukkit.createWorld(new WorldCreator(name));
