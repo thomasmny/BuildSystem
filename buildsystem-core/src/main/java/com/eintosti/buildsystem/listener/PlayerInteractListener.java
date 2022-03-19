@@ -329,7 +329,7 @@ public class PlayerInteractListener implements Listener {
             case EAST:
             case SOUTH:
             case WEST:
-                String type = xMaterial.name().replace("SIGN", "");
+                String type = xMaterial.name().replace("_SIGN", "");
                 XMaterial.matchXMaterial(type + "_WALL_SIGN").ifPresent(value -> adjacent.setType(value.parseMaterial()));
                 plugin.getCustomBlocks().rotate(adjacent, player, blockFace);
                 break;
