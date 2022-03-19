@@ -50,7 +50,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 /**
@@ -300,7 +299,7 @@ public class WorldManager {
                 XSound.ENTITY_ITEM_BREAK.play(player);
                 return;
             } else {
-                plugin.getLogger().log(Level.INFO, "Using custom world generator: " + input);
+                plugin.getLogger().info("Using custom world generator: " + input);
             }
 
             BuildWorld buildWorld = new BuildWorld(plugin, worldName, player.getName(), player.getUniqueId(), WorldType.CUSTOM, System.currentTimeMillis(), privateWorld, input);

@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 /**
  * @author einTosti
@@ -41,7 +40,7 @@ public class Messages {
         File file = new File(plugin.getDataFolder() + File.separator + "messages.yml");
         try {
             if (file.createNewFile()) {
-                plugin.getLogger().log(Level.INFO, "Created messages.yml");
+                plugin.getLogger().info("Created messages.yml");
             }
         } catch (IOException e) {
             e.printStackTrace();

@@ -15,19 +15,16 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
 
 /**
  * @author einTosti
  */
 public abstract class ConfigurationFile {
 
-    private final BuildSystem plugin;
     private final File file;
     private final FileConfiguration configuration;
 
     public ConfigurationFile(BuildSystem plugin, String fileName) {
-        this.plugin = plugin;
         this.file = new File(plugin.getDataFolder(), fileName);
         this.configuration = YamlConfiguration.loadConfiguration(file);
         loadFile();
@@ -43,7 +40,7 @@ public abstract class ConfigurationFile {
         try {
             configuration.load(file);
         } catch (IOException | InvalidConfigurationException e) {
-            plugin.getLogger().log(Level.SEVERE, null, e);
+            e.printStackTrace();
         }
     }
 
@@ -51,7 +48,7 @@ public abstract class ConfigurationFile {
         try {
             configuration.save(file);
         } catch (IOException e) {
-            plugin.getLogger().log(Level.SEVERE, null, e);
+            e.printStackTrace();
         }
     }
 

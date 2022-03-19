@@ -50,7 +50,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 /**
  * @author einTosti
@@ -112,8 +111,8 @@ public class BuildSystem extends JavaPlugin {
 
         initClasses();
         if (!initVersionedClasses()) {
-            getLogger().log(Level.SEVERE, "BuildSystem does not support your server version: " + version);
-            getLogger().log(Level.SEVERE, "Disabling plugin... ");
+            getLogger().severe("BuildSystem does not support your server version: " + version);
+            getLogger().severe("Disabling plugin... ");
             this.setEnabled(false);
             return;
         }
@@ -208,9 +207,9 @@ public class BuildSystem extends JavaPlugin {
     private void parseServerVersion() {
         try {
             this.version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-            getLogger().log(Level.INFO, "Detected server version: " + version);
+            getLogger().info("Detected server version: " + version);
         } catch (ArrayIndexOutOfBoundsException e) {
-            getLogger().log(Level.SEVERE, "Unknown server version");
+            getLogger().severe("Unknown server version");
         }
     }
 
@@ -338,13 +337,13 @@ public class BuildSystem extends JavaPlugin {
     private void createTemplateFolder() {
         File templateFolder = new File(getDataFolder() + File.separator + "templates");
         if (templateFolder.mkdir()) {
-            getLogger().log(Level.INFO, "Created \"templates\" folder");
+            getLogger().info("Created \"templates\" folder");
         }
     }
 
     private void createLanguageFile() {
         if (getDataFolder().mkdir()) {
-            getLogger().log(Level.INFO, "Created \"BuildSystem\" folder");
+            getLogger().info("Created \"BuildSystem\" folder");
         }
 
         this.messages = new Messages(this);

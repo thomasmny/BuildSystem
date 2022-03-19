@@ -17,7 +17,6 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
-import java.util.logging.Level;
 
 /**
  * @author einTosti
@@ -44,7 +43,7 @@ public class LuckPermsExpansion {
     }
 
     private void register(String option, Supplier<ContextCalculator<Player>> calculatorSupplier) {
-        plugin.getLogger().log(Level.INFO, "Registering '" + option + "' calculator");
+        plugin.getLogger().info("Registering '" + option + "' calculator");
         ContextCalculator<Player> calculator = calculatorSupplier.get();
         this.contextManager.registerCalculator(calculator);
         this.registeredCalculators.add(calculator);

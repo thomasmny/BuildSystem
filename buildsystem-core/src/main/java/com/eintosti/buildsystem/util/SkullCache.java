@@ -16,7 +16,6 @@ import org.bukkit.inventory.meta.SkullMeta;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 
 /**
  * @author einTosti
@@ -59,7 +58,7 @@ public class SkullCache {
     public void cacheSkull(String name) {
         try {
             skullCache.put(name, getSkullAndNmsObject(name)[1]);
-            Bukkit.getLogger().log(Level.INFO, "Cached skull for: " + name);
+            Bukkit.getLogger().info("Cached skull for: " + name);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -19,8 +19,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.logging.Level;
-
 /**
  * @author einTosti
  */
@@ -38,7 +36,7 @@ public class PhysicsCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            plugin.getLogger().log(Level.WARNING, plugin.getString("sender_not_player"));
+            plugin.getLogger().warning(plugin.getString("sender_not_player"));
             return true;
         }
 

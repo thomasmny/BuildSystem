@@ -39,7 +39,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Level;
 
 /**
  * @author einTosti
@@ -63,7 +62,7 @@ public class WorldsCommand implements CommandExecutor {
     @SuppressWarnings("deprecation")
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            plugin.getLogger().log(Level.WARNING, plugin.getString("sender_not_player"));
+            plugin.getLogger().warning(plugin.getString("sender_not_player"));
             return true;
         }
         Player player = (Player) sender;

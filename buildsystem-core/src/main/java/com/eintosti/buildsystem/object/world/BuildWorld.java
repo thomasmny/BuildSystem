@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 /**
@@ -821,6 +820,7 @@ public class BuildWorld implements ConfigurationSerializable {
 
         Bukkit.unloadWorld(bukkitWorld, true);
         Bukkit.getWorlds().remove(bukkitWorld);
+        plugin.getLogger().info("*** Unloaded world \"" + name + "\" ***");
 
         this.loaded = false;
         this.unloadTask = null;
@@ -857,7 +857,7 @@ public class BuildWorld implements ConfigurationSerializable {
         player.closeInventory();
         Titles.sendTitle(player, 5, 70, 20, " ", plugin.getString("loading_world").replace("%world%", name));
 
-        plugin.getLogger().log(Level.INFO, "*** Loading world \"" + name + "\" ***");
+        plugin.getLogger().info("*** Loading world \"" + name + "\" ***");
         Bukkit.createWorld(new WorldCreator(name));
         this.loaded = true;
 
@@ -869,7 +869,7 @@ public class BuildWorld implements ConfigurationSerializable {
             return;
         }
 
-        plugin.getLogger().log(Level.INFO, "*** Loading world \"" + name + "\" ***");
+        plugin.getLogger().info("*** Loading world \"" + name + "\" ***");
         Bukkit.createWorld(new WorldCreator(name));
         this.loaded = true;
 

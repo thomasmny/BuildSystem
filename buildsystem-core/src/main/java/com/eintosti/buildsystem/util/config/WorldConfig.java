@@ -13,7 +13,6 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -36,12 +35,12 @@ public class WorldConfig extends ConfigurationFile {
     public void loadWorlds(WorldManager worldManager) {
         Logger logger = plugin.getLogger();
         if (plugin.getConfigValues().isUnloadWorlds()) {
-            logger.log(Level.INFO, "*** Unload worlds is enabled ***");
-            logger.log(Level.INFO, "*** Therefore worlds will not be loaded ***");
+            logger.info("*** Unload worlds is enabled ***");
+            logger.info("*** Therefore worlds will not be loaded ***");
             return;
         }
 
-        logger.log(Level.INFO, "*** All worlds will be loaded now ***");
+        logger.info("*** All worlds will be loaded now ***");
 
         worldManager.getBuildWorlds().forEach(world -> {
             String worldName = world.getName();
@@ -51,9 +50,9 @@ public class WorldConfig extends ConfigurationFile {
                 plugin.getSkullCache().cacheSkull(worldName);
             }
 
-            logger.log(Level.INFO, "✔ World loaded: " + worldName);
+            logger.info("✔ World loaded: " + worldName);
         });
 
-        logger.log(Level.INFO, "*** All worlds have been loaded ***");
+        logger.info("*** All worlds have been loaded ***");
     }
 }
