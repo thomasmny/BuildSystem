@@ -71,11 +71,15 @@ public class SettingsInventory implements Listener {
         addSettingsItem(inventory, 29, XMaterial.FERN, settings.isPlacePlants(), plugin.getString("settings_placeplants_item"), plugin.getStringList("settings_placeplants_lore"));
         addSettingsItem(inventory, 30, XMaterial.PAPER, settings.isScoreboard(), configValues.isScoreboard() ? plugin.getString("settings_scoreboard_item") : plugin.getString("settings_scoreboard_disabled_item"),
                 configValues.isScoreboard() ? plugin.getStringList("settings_scoreboard_lore") : plugin.getStringList("settings_scoreboard_disabled_lore"));
-        addSettingsItem(inventory, 31, XMaterial.SMOOTH_STONE_SLAB, settings.isSlabBreaking(), plugin.getString("settings_slab_breaking_item"), plugin.getStringList("settings_slab_breaking_lore"));
+        addSettingsItem(inventory, 31, getSlabBreakingMaterial(), settings.isSlabBreaking(), plugin.getString("settings_slab_breaking_item"), plugin.getStringList("settings_slab_breaking_lore"));
         addSettingsItem(inventory, 32, XMaterial.MAGMA_CREAM, settings.isSpawnTeleport(), plugin.getString("settings_spawnteleport_item"), plugin.getStringList("settings_spawnteleport_lore"));
         addWorldSortItem(inventory, player);
 
         return inventory;
+    }
+
+    private XMaterial getSlabBreakingMaterial() {
+        return XMaterial.supports(13) ? XMaterial.SMOOTH_STONE_SLAB : XMaterial.STONE_SLAB;
     }
 
     public void openInventory(Player player) {
