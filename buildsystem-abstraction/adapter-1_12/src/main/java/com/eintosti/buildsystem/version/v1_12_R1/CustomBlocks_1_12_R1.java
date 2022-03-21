@@ -204,7 +204,7 @@ public class CustomBlocks_1_12_R1 extends DirectionUtils implements CustomBlocks
                 changedMaterial = Material.STONE_SLAB2;
                 break;
             default:
-                if (changedMaterial != null) {
+                if (changedMaterial == null) {
                     return;
                 }
                 break;
