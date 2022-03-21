@@ -96,13 +96,11 @@ public class SettingsInventory implements Listener {
         ItemStack itemStack = material.parseItem();
         ItemMeta itemMeta = itemStack.getItemMeta();
 
-        if (itemMeta != null) {
-            itemMeta.setDisplayName(displayName);
-            itemMeta.setLore(lore);
-            itemMeta.addItemFlags(ItemFlag.values());
-        }
-
+        itemMeta.setDisplayName(displayName);
+        itemMeta.setLore(lore);
+        itemMeta.addItemFlags(ItemFlag.values());
         itemStack.setItemMeta(itemMeta);
+
         if (enabled) {
             itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
         }
@@ -120,10 +118,8 @@ public class SettingsInventory implements Listener {
         ItemStack itemStack = inventoryManager.getItemStack(inventoryManager.getColouredGlass(plugin, player), plugin.getString("settings_change_design_item"));
         ItemMeta itemMeta = itemStack.getItemMeta();
 
-        if (itemMeta != null) {
-            itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-            itemMeta.setLore(plugin.getStringList("settings_change_design_lore"));
-        }
+        itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        itemMeta.setLore(plugin.getStringList("settings_change_design_lore"));
         itemStack.setItemMeta(itemMeta);
         itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
 
