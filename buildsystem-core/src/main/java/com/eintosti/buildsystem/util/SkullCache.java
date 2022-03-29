@@ -22,9 +22,9 @@ import java.util.Map;
  */
 public class SkullCache {
 
-    private Class<?> craftItemStackClass;
-
     private final Map<String, Object> skullCache;
+
+    private Class<?> craftItemStackClass;
 
     public SkullCache(String version) {
         try {
@@ -37,7 +37,7 @@ public class SkullCache {
     }
 
     @SuppressWarnings("deprecation")
-    private ItemStack getPlayerSkull(String name) {
+    private ItemStack getSkull(String name) {
         ItemStack skull = XMaterial.PLAYER_HEAD.parseItem();
         SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
 
@@ -47,17 +47,15 @@ public class SkullCache {
         return skull;
     }
 
-    private Object[] getSkullAndNmsObject(String name) throws Exception {
-        ItemStack skull = getPlayerSkull(name);
+    private Object getNmsSkull(String name) throws Exception {
+        ItemStack skull = getSkull(name);
         Method getNMSItem = craftItemStackClass.getMethod("asNMSCopy", ItemStack.class);
-        Object nmsItem = getNMSItem.invoke(null, skull);
-
-        return new Object[]{skull, nmsItem};
+        return getNMSItem.invoke(null, skull);
     }
 
     public void cacheSkull(String name) {
         try {
-            skullCache.put(name, getSkullAndNmsObject(name)[1]);
+            skullCache.put(name, getNmsSkull(name));
             Bukkit.getLogger().info("Cached skull for: " + name);
         } catch (Exception e) {
             e.printStackTrace();
@@ -66,18 +64,9 @@ public class SkullCache {
 
     public ItemStack getCachedSkull(String name) {
         try {
+            this.skullCache.putIfAbsent(name, getNmsSkull(name));
             Object cachedSkull = this.skullCache.get(name);
-
-            if (cachedSkull != null) {
-                return (ItemStack) craftItemStackClass.getMethod("asBukkitCopy", cachedSkull.getClass()).invoke(null, cachedSkull);
-            } else {
-                Object[] skullAndNmsObject = getSkullAndNmsObject(name);
-                ItemStack skull = (ItemStack) skullAndNmsObject[0];
-                Object nmsSkullObject = skullAndNmsObject[1];
-
-                this.skullCache.put(name, nmsSkullObject);
-                return skull;
-            }
+            return (ItemStack) craftItemStackClass.getMethod("asBukkitCopy", cachedSkull.getClass()).invoke(null, cachedSkull);
         } catch (Exception e) {
             e.printStackTrace();
         }
