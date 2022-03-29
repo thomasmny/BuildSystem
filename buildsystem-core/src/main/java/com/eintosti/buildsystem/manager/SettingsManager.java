@@ -9,13 +9,13 @@
 package com.eintosti.buildsystem.manager;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.config.ConfigValues;
+import com.eintosti.buildsystem.config.SettingsConfig;
 import com.eintosti.buildsystem.object.navigator.NavigatorType;
 import com.eintosti.buildsystem.object.settings.Color;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.settings.WorldSort;
 import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.util.ConfigValues;
-import com.eintosti.buildsystem.util.config.SettingsConfig;
 import fr.mrmicky.fastboard.FastBoard;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;

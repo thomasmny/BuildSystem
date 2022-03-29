@@ -10,8 +10,8 @@ package com.eintosti.buildsystem.manager;
 
 import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.config.SpawnConfig;
 import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.util.config.SpawnConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;

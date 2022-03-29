@@ -9,13 +9,13 @@
 package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.event.PlayerInventoryClearEvent;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
-import com.eintosti.buildsystem.util.ConfigValues;
 import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;

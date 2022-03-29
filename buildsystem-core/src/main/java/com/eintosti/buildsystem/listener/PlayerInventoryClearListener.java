@@ -40,10 +40,7 @@ public class PlayerInventoryClearListener implements Listener {
     public void onPlayerInventoryClear(PlayerInventoryClearEvent event) {
         Player player = event.getPlayer();
         Settings settings = settingsManager.getSettings(player);
-        if (!settings.isKeepNavigator()) {
-            return;
-        }
-        if (!player.hasPermission("buildsystem.gui")) {
+        if (!settings.isKeepNavigator() || !player.hasPermission("buildsystem.gui")) {
             return;
         }
 

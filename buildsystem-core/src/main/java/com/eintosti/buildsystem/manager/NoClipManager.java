@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -31,8 +32,8 @@ import java.util.UUID;
 public class NoClipManager {
 
     private final BuildSystem plugin;
-    private final HashMap<UUID, GameMode> previousGameMode;
-    private final HashSet<UUID> noClipPlayers;
+    private final Map<UUID, GameMode> previousGameMode;
+    private final Set<UUID> noClipPlayers;
 
     public NoClipManager(BuildSystem plugin) {
         this.plugin = plugin;

@@ -11,6 +11,7 @@ package com.eintosti.buildsystem.event;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -37,6 +38,7 @@ public class PlayerInventoryClearEvent extends Event {
         return navigatorSlots;
     }
 
+    @NotNull
     @Override
     public HandlerList getHandlers() {
         return HANDLERS;

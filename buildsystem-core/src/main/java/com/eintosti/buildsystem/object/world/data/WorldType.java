@@ -8,7 +8,7 @@
 
 package com.eintosti.buildsystem.object.world.data;
 
-import com.eintosti.buildsystem.util.ConfigValues;
+import com.eintosti.buildsystem.config.ConfigValues;
 import org.bukkit.World.Environment;
 
 /**

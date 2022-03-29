@@ -50,4 +50,3 @@ public class SpawnTabComplete extends ArgumentSorter implements TabCompleter {
         set, remove
     }
 }
-

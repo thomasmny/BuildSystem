@@ -9,6 +9,7 @@
 package com.eintosti.buildsystem;
 
 import com.eintosti.buildsystem.command.*;
+import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.expansion.luckperms.LuckPermsExpansion;
 import com.eintosti.buildsystem.expansion.placeholderapi.PlaceholderApiExpansion;
 import com.eintosti.buildsystem.inventory.*;
@@ -31,7 +32,6 @@ import com.eintosti.buildsystem.tabcomplete.SpawnTabComplete;
 import com.eintosti.buildsystem.tabcomplete.SpeedTabComplete;
 import com.eintosti.buildsystem.tabcomplete.TimeTabComplete;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
-import com.eintosti.buildsystem.util.ConfigValues;
 import com.eintosti.buildsystem.util.Messages;
 import com.eintosti.buildsystem.util.RBGUtils;
 import com.eintosti.buildsystem.util.SkullCache;
@@ -112,7 +112,7 @@ public class BuildSystem extends JavaPlugin {
         initClasses();
         if (!initVersionedClasses()) {
             getLogger().severe("BuildSystem does not support your server version: " + version);
-            getLogger().severe("Disabling plugin... ");
+            getLogger().severe("Disabling plugin...");
             this.setEnabled(false);
             return;
         }

@@ -11,13 +11,13 @@ package com.eintosti.buildsystem.object.world;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.SpawnManager;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.eintosti.buildsystem.object.world.data.WorldType;
-import com.eintosti.buildsystem.util.ConfigValues;
+import com.eintosti.buildsystem.util.UUIDFetcher;
 import com.eintosti.buildsystem.util.exception.UnexpectedEnumValueException;
-import com.eintosti.buildsystem.util.external.UUIDFetcher;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -775,19 +775,21 @@ public class BuildWorld implements ConfigurationSerializable {
     }
 
     public void manageUnload() {
-        if (configValues.isUnloadWorlds()) {
-            this.seconds = configValues.getTimeUntilUnload();
-            this.loaded = (Bukkit.getWorld(name) != null);
-            startUnloadTask();
-        } else {
+        if (!configValues.isUnloadWorlds()) {
             this.loaded = true;
+            return;
         }
+
+        this.seconds = configValues.getTimeUntilUnload();
+        this.loaded = (Bukkit.getWorld(name) != null);
+        startUnloadTask();
     }
 
     public void startUnloadTask() {
         if (!configValues.isUnloadWorlds()) {
             return;
         }
+
         this.unloadTask = Bukkit.getScheduler().runTaskLater(plugin, this::unload, 20L * seconds);
     }
 
@@ -795,6 +797,7 @@ public class BuildWorld implements ConfigurationSerializable {
         if (this.unloadTask != null) {
             this.unloadTask.cancel();
         }
+
         startUnloadTask();
     }
 
@@ -856,11 +859,7 @@ public class BuildWorld implements ConfigurationSerializable {
         player.closeInventory();
         Titles.sendTitle(player, 5, 70, 20, " ", plugin.getString("loading_world").replace("%world%", name));
 
-        plugin.getLogger().info("*** Loading world \"" + name + "\" ***");
-        plugin.getWorldManager().generateBukkitWorld(name, worldType, chunkGenerator);
-        this.loaded = true;
-
-        resetUnloadTask();
+        load();
     }
 
     public void load() {

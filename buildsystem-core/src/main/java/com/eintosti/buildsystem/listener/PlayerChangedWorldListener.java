@@ -10,6 +10,7 @@ package com.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.manager.ArmorStandManager;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.PlayerManager;
@@ -18,7 +19,6 @@ import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.eintosti.buildsystem.object.world.data.WorldType;
-import com.eintosti.buildsystem.util.ConfigValues;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;

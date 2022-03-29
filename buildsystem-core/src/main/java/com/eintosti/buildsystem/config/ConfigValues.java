@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-package com.eintosti.buildsystem.util;
+package com.eintosti.buildsystem.config;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.BuildSystem;
