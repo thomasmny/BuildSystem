@@ -22,7 +22,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.WorldCreator;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
@@ -858,7 +857,7 @@ public class BuildWorld implements ConfigurationSerializable {
         Titles.sendTitle(player, 5, 70, 20, " ", plugin.getString("loading_world").replace("%world%", name));
 
         plugin.getLogger().info("*** Loading world \"" + name + "\" ***");
-        Bukkit.createWorld(new WorldCreator(name));
+        plugin.getWorldManager().generateBukkitWorld(name, worldType, chunkGenerator);
         this.loaded = true;
 
         resetUnloadTask();
@@ -870,7 +869,7 @@ public class BuildWorld implements ConfigurationSerializable {
         }
 
         plugin.getLogger().info("*** Loading world \"" + name + "\" ***");
-        Bukkit.createWorld(new WorldCreator(name));
+        plugin.getWorldManager().generateBukkitWorld(name, worldType, chunkGenerator);
         this.loaded = true;
 
         resetUnloadTask();
