@@ -26,6 +26,7 @@ import com.eintosti.buildsystem.util.UUIDFetcher;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Difficulty;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -308,7 +309,7 @@ public class WorldManager {
             player.sendMessage(plugin.getString("worlds_world_creation_started")
                     .replace("%world%", buildWorld.getName())
                     .replace("%type%", buildWorld.getTypeName()));
-            generateBukkitWorld(worldName, buildWorld.getType(), chunkGenerator);
+            generateBukkitWorld(worldName, buildWorld.getType(), buildWorld.getDifficulty(), chunkGenerator);
             player.sendMessage(plugin.getString("worlds_creation_finished"));
         });
         return true;
@@ -358,7 +359,7 @@ public class WorldManager {
      */
     private void finishPreparationsAndGenerate(BuildWorld buildWorld) {
         WorldType worldType = buildWorld.getType();
-        World bukkitWorld = generateBukkitWorld(buildWorld.getName(), worldType);
+        World bukkitWorld = generateBukkitWorld(buildWorld.getName(), worldType, buildWorld.getDifficulty(), buildWorld.getChunkGenerator());
 
         switch (worldType) {
             case VOID:
@@ -381,10 +382,11 @@ public class WorldManager {
      *
      * @param worldName       The name of the world
      * @param worldType       The world type
+     * @param difficulty      The world's difficulty
      * @param chunkGenerators Custom chunk generator to be used, if any
      * @return The world object
      */
-    public World generateBukkitWorld(String worldName, WorldType worldType, ChunkGenerator... chunkGenerators) {
+    public World generateBukkitWorld(String worldName, WorldType worldType, Difficulty difficulty, ChunkGenerator... chunkGenerators) {
         WorldCreator worldCreator = new WorldCreator(worldName);
         org.bukkit.WorldType bukkitWorldType;
 
@@ -434,7 +436,7 @@ public class WorldManager {
 
         World bukkitWorld = Bukkit.createWorld(worldCreator);
         if (bukkitWorld != null) {
-            bukkitWorld.setDifficulty(configValues.getWorldDifficulty());
+            bukkitWorld.setDifficulty(difficulty);
             bukkitWorld.setTime(configValues.getNoonTime());
             bukkitWorld.getWorldBorder().setSize(configValues.getWorldBorderSize());
             bukkitWorld.setKeepSpawnInMemory(configValues.isTeleportAfterCreation());
@@ -516,7 +518,7 @@ public class WorldManager {
                 false
         );
         buildWorlds.add(buildWorld);
-        generateBukkitWorld(worldName, generator.getWorldType(), chunkGenerator);
+        generateBukkitWorld(worldName, generator.getWorldType(), buildWorld.getDifficulty(), chunkGenerator);
         player.sendMessage(plugin.getString("worlds_import_finished"));
 
         if (configValues.isTeleportAfterCreation()) {
@@ -552,8 +554,9 @@ public class WorldManager {
                 }
 
                 long creation = FileUtils.getDirectoryCreation(new File(Bukkit.getWorldContainer(), worldName));
-                buildWorlds.add(new BuildWorld(plugin, worldName, "-", null, WorldType.IMPORTED, creation, false));
-                generateBukkitWorld(worldName, WorldType.VOID);
+                BuildWorld buildWorld = new BuildWorld(plugin, worldName, "-", null, WorldType.IMPORTED, creation, false);
+                buildWorlds.add(buildWorld);
+                generateBukkitWorld(worldName, WorldType.VOID, buildWorld.getDifficulty());
                 player.sendMessage(plugin.getString("worlds_importall_world_imported").replace("%world%", worldName));
 
                 if (!(worldsImported.get() < worlds)) {
@@ -709,7 +712,7 @@ public class WorldManager {
         FileUtils.deleteDirectory(oldWorldFile);
 
         buildWorld.setName(newName);
-        World newWorld = generateBukkitWorld(buildWorld.getName(), buildWorld.getType(), buildWorld.getChunkGenerator());
+        World newWorld = generateBukkitWorld(buildWorld.getName(), buildWorld.getType(), buildWorld.getDifficulty(), buildWorld.getChunkGenerator());
         Location spawnLocation = oldWorld.getSpawnLocation();
         spawnLocation.setWorld(newWorld);
 
@@ -850,14 +853,10 @@ public class WorldManager {
         boolean blockPlacement = !configuration.isBoolean("worlds." + worldName + ".block-placement") || configuration.getBoolean("worlds." + worldName + ".block-placement");
         boolean blockInteractions = !configuration.isBoolean("worlds." + worldName + ".block-interactions") || configuration.getBoolean("worlds." + worldName + ".block-interactions");
         boolean buildersEnabled = configuration.isBoolean("worlds." + worldName + ".builders-enabled") && configuration.getBoolean("worlds." + worldName + ".builders-enabled");
+        Difficulty difficulty = Difficulty.valueOf(configuration.getString("worlds." + worldName + ".difficulty", "PEACEFUL").toUpperCase());
         List<Builder> builders = parseBuilders(configuration, worldName);
         String chunkGeneratorString = configuration.getString("worlds." + worldName + ".chunk-generator");
         ChunkGenerator chunkGenerator = parseChunkGenerator(configuration, worldName);
-
-        if (worldType == WorldType.PRIVATE) {
-            privateWorld = true;
-            worldType = WorldType.FLAT;
-        }
 
         BuildWorld buildWorld = new BuildWorld(
                 plugin,
@@ -879,6 +878,7 @@ public class WorldManager {
                 blockPlacement,
                 blockInteractions,
                 buildersEnabled,
+                difficulty,
                 builders,
                 chunkGenerator,
                 chunkGeneratorString

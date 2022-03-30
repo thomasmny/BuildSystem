@@ -71,7 +71,8 @@ public class EditInventory implements Listener {
         addVisibilityItem(inventory, buildWorld, player);
         addSettingsItem(inventory, 33, XMaterial.TRIPWIRE_HOOK, buildWorld.isBlockInteractions(), plugin.getString("worldeditor_blockinteractions_item"), plugin.getStringList("worldeditor_blockinteractions_lore"));
         inventoryManager.addItemStack(inventory, 38, XMaterial.FILLED_MAP, plugin.getString("worldeditor_gamerules_item"), plugin.getStringList("worldeditor_gamerules_lore"));
-        inventoryManager.addItemStack(inventory, 39, inventoryManager.getStatusItem(buildWorld.getStatus()), plugin.getString("worldeditor_status_item"), getStatusLore(buildWorld));
+        addDifficultyItem(inventory, buildWorld);
+        inventoryManager.addItemStack(inventory, 40, inventoryManager.getStatusItem(buildWorld.getStatus()), plugin.getString("worldeditor_status_item"), getStatusLore(buildWorld));
         inventoryManager.addItemStack(inventory, 41, XMaterial.ANVIL, plugin.getString("worldeditor_project_item"), getProjectLore(buildWorld));
         inventoryManager.addItemStack(inventory, 42, XMaterial.PAPER, plugin.getString("worldeditor_permission_item"), getPermissionLore(buildWorld));
 
@@ -121,9 +122,8 @@ public class EditInventory implements Listener {
 
         XMaterial xMaterial = XMaterial.WHITE_STAINED_GLASS;
         String value = plugin.getString("worldeditor_time_lore_unknown");
-        BuildWorld.Time time = getWorldTime(bukkitWorld);
 
-        switch (time) {
+        switch (getWorldTime(bukkitWorld)) {
             case SUNRISE:
                 xMaterial = XMaterial.ORANGE_STAINED_GLASS;
                 value = plugin.getString("worldeditor_time_lore_sunrise");
@@ -189,6 +189,30 @@ public class EditInventory implements Listener {
         }
 
         inventoryManager.addItemStack(inventory, slot, xMaterial, displayName, lore);
+    }
+
+    private void addDifficultyItem(Inventory inventory, BuildWorld buildWorld) {
+        XMaterial xMaterial;
+
+        switch (buildWorld.getDifficulty()) {
+            case EASY:
+                xMaterial = XMaterial.GOLDEN_HELMET;
+                break;
+            case NORMAL:
+                xMaterial = XMaterial.IRON_HELMET;
+                break;
+            case HARD:
+                xMaterial = XMaterial.DIAMOND_HELMET;
+                break;
+            default:
+                xMaterial = XMaterial.LEATHER_HELMET;
+                break;
+        }
+
+        ArrayList<String> lore = new ArrayList<>();
+        plugin.getStringList("worldeditor_difficulty_lore").forEach(line -> lore.add(line.replace("%difficulty%", buildWorld.getDifficultyName())));
+
+        inventoryManager.addItemStack(inventory, 39, xMaterial, plugin.getString("worldeditor_difficulty_item"), lore);
     }
 
     private List<String> getStatusLore(BuildWorld buildWorld) {
@@ -286,6 +310,10 @@ public class EditInventory implements Listener {
                 plugin.getGameRuleInventory().openInventory(player, buildWorld);
                 return;
             case 39:
+                buildWorld.cycleDifficulty();
+                buildWorld.getWorld().setDifficulty(buildWorld.getDifficulty());
+                break;
+            case 40:
                 XSound.ENTITY_CHICKEN_EGG.play(player);
                 plugin.getStatusInventory().openInventory(player);
                 return;

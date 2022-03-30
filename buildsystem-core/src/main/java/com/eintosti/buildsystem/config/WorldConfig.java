@@ -44,7 +44,7 @@ public class WorldConfig extends ConfigurationFile {
 
         worldManager.getBuildWorlds().forEach(world -> {
             String worldName = world.getName();
-            worldManager.generateBukkitWorld(worldName, world.getType(), world.getChunkGenerator());
+            worldManager.generateBukkitWorld(worldName, world.getType(), world.getDifficulty(), world.getChunkGenerator());
 
             if (world.getMaterial() == XMaterial.PLAYER_HEAD) {
                 plugin.getSkullCache().cacheSkull(worldName);

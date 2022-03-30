@@ -20,6 +20,7 @@ import com.eintosti.buildsystem.util.UUIDFetcher;
 import com.eintosti.buildsystem.util.exception.UnexpectedEnumValueException;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.Difficulty;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -70,6 +71,7 @@ public class BuildWorld implements ConfigurationSerializable {
     private boolean blockPlacement;
     private boolean blockInteractions;
     private boolean buildersEnabled;
+    private Difficulty difficulty;
 
     private long seconds;
     private boolean loaded;
@@ -107,6 +109,7 @@ public class BuildWorld implements ConfigurationSerializable {
         this.blockPlacement = configValues.isWorldBlockPlacement();
         this.blockInteractions = configValues.isWorldBlockInteractions();
         this.buildersEnabled = isPrivate();
+        this.difficulty = configValues.getWorldDifficulty();
         this.chunkGeneratorName = (chunkGeneratorName != null && chunkGeneratorName.length > 0) ? chunkGeneratorName[0] : null;
 
         InventoryManager inventoryManager = plugin.getInventoryManager();
@@ -169,6 +172,7 @@ public class BuildWorld implements ConfigurationSerializable {
             boolean blockPlacement,
             boolean blockInteractions,
             boolean buildersEnabled,
+            Difficulty difficulty,
             List<Builder> builders,
             ChunkGenerator chunkGenerator,
             String chunkGeneratorName
@@ -194,11 +198,21 @@ public class BuildWorld implements ConfigurationSerializable {
         this.blockPlacement = blockPlacement;
         this.blockInteractions = blockInteractions;
         this.buildersEnabled = buildersEnabled;
+        this.difficulty = difficulty;
         this.builders = builders;
         this.chunkGenerator = chunkGenerator;
         this.chunkGeneratorName = chunkGeneratorName;
 
         manageUnload();
+    }
+
+    /**
+     * Get the world linked to this object.
+     *
+     * @return The bukkit world
+     */
+    public World getWorld() {
+        return Bukkit.getWorld(name);
     }
 
     /**
@@ -378,7 +392,7 @@ public class BuildWorld implements ConfigurationSerializable {
      * Get the display name of a {@link WorldStatus}.
      *
      * @return the status's display name
-     * @see BuildWorld#getStatus() ()
+     * @see BuildWorld#getStatus()
      */
     public String getStatusName() {
         switch (worldStatus) {
@@ -606,6 +620,56 @@ public class BuildWorld implements ConfigurationSerializable {
      */
     public void setBlockInteractions(boolean blockInteractions) {
         this.blockInteractions = blockInteractions;
+    }
+
+    /**
+     * Gets the world's difficulty
+     *
+     * @return the difficulty
+     */
+    public Difficulty getDifficulty() {
+        return difficulty;
+    }
+
+    /**
+     * Get the display name of a {@link Difficulty}.
+     *
+     * @return the difficulty's display name
+     * @see BuildWorld#getDifficulty()
+     */
+    public String getDifficultyName() {
+        switch (difficulty) {
+            case PEACEFUL:
+                return plugin.getString("difficulty_peaceful");
+            case EASY:
+                return plugin.getString("difficulty_easy");
+            case NORMAL:
+                return plugin.getString("difficulty_normal");
+            case HARD:
+                return plugin.getString("difficulty_hard");
+            default:
+                return "-";
+        }
+    }
+
+    /**
+     * Cycles to the next {@link Difficulty}.
+     */
+    public void cycleDifficulty() {
+        switch (difficulty) {
+            case PEACEFUL:
+                this.difficulty = Difficulty.EASY;
+                break;
+            case EASY:
+                this.difficulty = Difficulty.NORMAL;
+                break;
+            case NORMAL:
+                this.difficulty = Difficulty.HARD;
+                break;
+            case HARD:
+                this.difficulty = Difficulty.PEACEFUL;
+                break;
+        }
     }
 
     /**
@@ -868,7 +932,7 @@ public class BuildWorld implements ConfigurationSerializable {
         }
 
         plugin.getLogger().info("*** Loading world \"" + name + "\" ***");
-        plugin.getWorldManager().generateBukkitWorld(name, worldType, chunkGenerator);
+        plugin.getWorldManager().generateBukkitWorld(name, worldType, difficulty, chunkGenerator);
         this.loaded = true;
 
         resetUnloadTask();
@@ -893,6 +957,7 @@ public class BuildWorld implements ConfigurationSerializable {
         world.put("block-breaking", isBlockBreaking());
         world.put("block-placement", isBlockPlacement());
         world.put("block-interactions", isBlockInteractions());
+        world.put("difficulty", getDifficulty().toString());
         world.put("builders-enabled", isBuilders());
         world.put("builders", saveBuilders());
         if (customSpawn != null) {
