@@ -91,7 +91,7 @@ public class ConfigValues {
 
         // World
         this.lockWeather = config.getBoolean("world.lock-weather", true);
-        this.worldDifficulty = Difficulty.valueOf(config.getString("world.default.difficulty".toUpperCase(), "PEACEFUL"));
+        this.worldDifficulty = Difficulty.valueOf(config.getString("world.default.difficulty", "PEACEFUL").toUpperCase());
         this.sunriseTime = config.getInt("world.default.time.sunrise", 0);
         this.noonTime = config.getInt("world.default.time.noon", 6000);
         this.nightTime = config.getInt("world.default.time.night", 18000);
