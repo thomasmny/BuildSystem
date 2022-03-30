@@ -618,11 +618,14 @@ public class WorldManager {
      *
      * @param worldName The name of the world
      * @param message   The message sent to a player when they are removed from the world
+     * @return A list of all players who were teleported out of the world
      */
-    private void removePlayersFromWorld(String worldName, String message) {
+    private List<Player> removePlayersFromWorld(String worldName, String message) {
+        List<Player> players = new ArrayList<>();
+
         World bukkitWorld = Bukkit.getWorld(worldName);
         if (bukkitWorld == null) {
-            return;
+            return players;
         }
 
         SpawnManager spawnManager = plugin.getSpawnManager();
@@ -646,7 +649,10 @@ public class WorldManager {
             }
 
             player.sendMessage(message);
+            players.add(player);
         });
+
+        return players;
     }
 
     /**
@@ -677,58 +683,42 @@ public class WorldManager {
             return;
         }
 
-        File oldWorldFile = new File(Bukkit.getWorldContainer(), buildWorld.getName());
-        File newWorldFile = new File(Bukkit.getWorldContainer(), newName);
-        World oldWorld = Bukkit.getWorld(buildWorld.getName());
+        if (Bukkit.getWorld(oldName) == null && !buildWorld.isLoaded()) {
+            buildWorld.load();
+        }
 
+        World oldWorld = Bukkit.getWorld(oldName);
         if (oldWorld == null) {
             player.sendMessage(plugin.getString("worlds_rename_unknown_world"));
             return;
         }
 
+        List<Player> removedPlayers = removePlayersFromWorld(oldName, plugin.getString("worlds_rename_players_world"));
         oldWorld.save();
-        FileUtils.copy(oldWorldFile, newWorldFile);
+        Bukkit.getServer().unloadWorld(oldWorld, true);
 
         String finalName = newName;
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             worldConfig.getFile().set("worlds." + finalName, worldConfig.getFile().getConfigurationSection("worlds." + buildWorld.getName()));
-            worldConfig.getFile().set("worlds." + buildWorld.getName(), null);
+            worldConfig.getFile().set("worlds." + oldName, null);
         });
 
-        List<Player> players = new ArrayList<>();
-        SpawnManager spawnManager = plugin.getSpawnManager();
-        Location defaultSpawn = Bukkit.getWorlds().get(0).getSpawnLocation().add(0.5, 0, 0.5);
-
-        oldWorld.getPlayers().forEach(pl -> {
-            players.add(pl);
-            if (spawnManager.spawnExists()) {
-                if (!Objects.equals(spawnManager.getSpawn().getWorld(), pl.getWorld())) {
-                    spawnManager.teleport(pl);
-                } else {
-                    pl.teleport(defaultSpawn);
-                }
-            } else {
-                pl.teleport(defaultSpawn);
-            }
-            pl.sendMessage(plugin.getString("worlds_rename_players_world"));
-        });
-
-        Bukkit.getServer().unloadWorld(oldWorld, false);
-        File deleteFolder = oldWorld.getWorldFolder();
-        FileUtils.deleteDirectory(deleteFolder);
+        File oldWorldFile = new File(Bukkit.getWorldContainer(), oldName);
+        File newWorldFile = new File(Bukkit.getWorldContainer(), newName);
+        FileUtils.copy(oldWorldFile, newWorldFile);
+        FileUtils.deleteDirectory(oldWorldFile);
 
         buildWorld.setName(newName);
-        World newWorld = generateBukkitWorld(buildWorld.getName(), buildWorld.getType());
+        World newWorld = generateBukkitWorld(buildWorld.getName(), buildWorld.getType(), buildWorld.getChunkGenerator());
         Location spawnLocation = oldWorld.getSpawnLocation();
         spawnLocation.setWorld(newWorld);
 
-        players.forEach(pl -> {
-            if (pl != null) {
-                pl.teleport(spawnLocation.add(0.5, 0, 0.5));
-            }
-        });
-        players.clear();
+        removedPlayers.stream()
+                .filter(Objects::nonNull)
+                .forEach(pl -> pl.teleport(spawnLocation.add(0.5, 0, 0.5)));
+        removedPlayers.clear();
 
+        SpawnManager spawnManager = plugin.getSpawnManager();
         if (spawnManager.spawnExists() && Objects.equals(spawnManager.getSpawnWorld(), oldWorld)) {
             Location oldSpawn = spawnManager.getSpawn();
             Location newSpawn = new Location(spawnLocation.getWorld(), oldSpawn.getX(), oldSpawn.getY(), oldSpawn.getZ(), oldSpawn.getYaw(), oldSpawn.getPitch());
@@ -737,7 +727,8 @@ public class WorldManager {
 
         player.sendMessage(plugin.getString("worlds_rename_set")
                 .replace("%oldName%", oldName)
-                .replace("%newName%", newName));
+                .replace("%newName%", newName)
+        );
     }
 
     /**

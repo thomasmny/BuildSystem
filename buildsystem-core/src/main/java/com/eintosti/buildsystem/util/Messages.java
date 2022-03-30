@@ -326,7 +326,7 @@ public class Messages {
         setMessage(sb, config, "worlds_rename_unknown_world", "%prefix% &cUnknown world.");
         setMessage(sb, config, "worlds_rename_error", "%prefix% &cPlease try again.");
         setMessage(sb, config, "worlds_rename_same_name", "%prefix% &cThis is the world's current name.");
-        setMessage(sb, config, "worlds_rename_set", "%prefix% &b%oldName% &7was successfully renamed to &b%newName% &7.");
+        setMessage(sb, config, "worlds_rename_set", "%prefix% &b%oldName% &7was successfully renamed to &b%newName%&7.");
         setMessage(sb, config, "worlds_rename_players_world", "%prefix% &7&oThe world you are in is being renamed...");
         addLine(sb, "");
         setMessage(sb, config, "worlds_setitem_usage", "%prefix% &7Usage: &b/worlds setItem <world>");
