@@ -50,25 +50,21 @@ import java.util.UUID;
 /**
  * @author einTosti
  */
-public class PlayerInteractListener implements Listener {
+public class SettingsInteractListener implements Listener {
 
     private final BuildSystem plugin;
     private final ConfigValues configValues;
 
-    private final ArmorStandManager armorStandManager;
-    private final InventoryManager inventoryManager;
     private final PlayerManager playerManager;
     private final SettingsManager settingsManager;
     private final WorldManager worldManager;
 
     private final Set<UUID> cachePlayers;
 
-    public PlayerInteractListener(BuildSystem plugin) {
+    public SettingsInteractListener(BuildSystem plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
 
-        this.armorStandManager = plugin.getArmorStandManager();
-        this.inventoryManager = plugin.getInventoryManager();
         this.playerManager = plugin.getPlayerManager();
         this.settingsManager = plugin.getSettingsManager();
         this.worldManager = plugin.getWorldManager();
@@ -76,81 +72,6 @@ public class PlayerInteractListener implements Listener {
         this.cachePlayers = new HashSet<>();
 
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
-    }
-
-    @EventHandler
-    public void manageNavigatorInteraction(PlayerInteractEvent event) {
-        ItemStack itemStack = event.getItem();
-        if (itemStack == null || itemStack.getType() == Material.AIR) {
-            return;
-        }
-
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null || !itemMeta.hasDisplayName()) {
-            return;
-        }
-
-        Player player = event.getPlayer();
-        if (player.getOpenInventory().getTopInventory().getType() != InventoryType.CRAFTING) {
-            return;
-        }
-
-        String displayName = itemMeta.getDisplayName();
-        XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-        if (xMaterial == configValues.getNavigatorItem()) {
-            if (!displayName.equals(plugin.getString("navigator_item"))) {
-                return;
-            }
-
-            if (!player.hasPermission("buildsystem.gui")) {
-                plugin.sendPermissionMessage(player);
-                return;
-            }
-
-            event.setCancelled(true);
-            openNavigator(player);
-        } else if (xMaterial == XMaterial.BARRIER) {
-            if (!displayName.equals(plugin.getString("barrier_item"))) {
-                return;
-            }
-
-            event.setCancelled(true);
-            playerManager.closeNavigator(player);
-        }
-    }
-
-    private void openNavigator(Player player) {
-        Settings settings = settingsManager.getSettings(player);
-
-        if (settings.getNavigatorType() == NavigatorType.OLD) {
-            plugin.getNavigatorInventory().openInventory(player);
-            XSound.BLOCK_CHEST_OPEN.play(player);
-        } else { // NEW
-            if (playerManager.getOpenNavigator().contains(player)) {
-                player.sendMessage(plugin.getString("worlds_navigator_open"));
-                return;
-            }
-
-            summonNewNavigator(player);
-
-            String findItemName = plugin.getString("navigator_item");
-            ItemStack replaceItem = inventoryManager.getItemStack(XMaterial.BARRIER, plugin.getString("barrier_item"));
-            inventoryManager.replaceItem(player, findItemName, configValues.getNavigatorItem(), replaceItem);
-        }
-    }
-
-    private void summonNewNavigator(Player player) {
-        UUID playerUuid = player.getUniqueId();
-        playerManager.getPlayerWalkSpeed().put(playerUuid, player.getWalkSpeed());
-        playerManager.getPlayerFlySpeed().put(playerUuid, player.getFlySpeed());
-
-        player.setWalkSpeed(0);
-        player.setFlySpeed(0);
-        player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, Integer.MAX_VALUE, 0, false, false));
-        player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 250, false, false));
-
-        armorStandManager.spawnArmorStands(player);
-        playerManager.getOpenNavigator().add(player);
     }
 
     @EventHandler
@@ -440,7 +361,7 @@ public class PlayerInteractListener implements Listener {
 
     /**
      * Stop {@link Player} from opening {@link Inventory} because the event should be cancelled
-     * as it was fired due to an interaction caused in {@link PlayerInteractListener#manageDisabledInteractSetting}
+     * as it was fired due to an interaction caused in {@link SettingsInteractListener#manageDisabledInteractSetting}
      */
     @EventHandler
     public void onInventoryOpen(InventoryOpenEvent event) {
