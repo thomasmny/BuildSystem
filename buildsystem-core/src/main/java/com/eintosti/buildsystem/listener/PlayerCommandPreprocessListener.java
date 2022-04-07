@@ -10,7 +10,7 @@ package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.config.ConfigValues;
-import com.eintosti.buildsystem.event.PlayerInventoryClearEvent;
+import com.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.manager.WorldManager;

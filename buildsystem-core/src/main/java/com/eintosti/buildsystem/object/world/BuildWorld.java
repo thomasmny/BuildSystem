@@ -12,6 +12,8 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.config.ConfigValues;
+import com.eintosti.buildsystem.event.world.BuildWorldLoadEvent;
+import com.eintosti.buildsystem.event.world.BuildWorldUnloadEvent;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.SpawnManager;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
@@ -865,6 +867,20 @@ public class BuildWorld implements ConfigurationSerializable {
         startUnloadTask();
     }
 
+    private void unload() {
+        World bukkitWorld = Bukkit.getWorld(name);
+        if (bukkitWorld == null) {
+            return;
+        }
+
+        if (!bukkitWorld.getPlayers().isEmpty()) {
+            resetUnloadTask();
+            return;
+        }
+
+        forceUnload();
+    }
+
     public void forceUnload() {
         if (!isLoaded()) {
             return;
@@ -890,20 +906,9 @@ public class BuildWorld implements ConfigurationSerializable {
 
         this.loaded = false;
         this.unloadTask = null;
-    }
 
-    private void unload() {
-        World bukkitWorld = Bukkit.getWorld(name);
-        if (bukkitWorld == null) {
-            return;
-        }
-
-        if (!bukkitWorld.getPlayers().isEmpty()) {
-            resetUnloadTask();
-            return;
-        }
-
-        forceUnload();
+        BuildWorldUnloadEvent event = new BuildWorldUnloadEvent(this);
+        Bukkit.getServer().getPluginManager().callEvent(event);
     }
 
     private boolean isSpawnWorld(World bukkitWorld) {
@@ -934,6 +939,9 @@ public class BuildWorld implements ConfigurationSerializable {
         plugin.getLogger().info("*** Loading world \"" + name + "\" ***");
         plugin.getWorldManager().generateBukkitWorld(name, worldType, difficulty, chunkGenerator);
         this.loaded = true;
+
+        BuildWorldLoadEvent event = new BuildWorldLoadEvent(this);
+        Bukkit.getServer().getPluginManager().callEvent(event);
 
         resetUnloadTask();
     }

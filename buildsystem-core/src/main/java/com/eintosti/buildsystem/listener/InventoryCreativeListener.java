@@ -9,7 +9,7 @@
 package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.event.PlayerInventoryClearEvent;
+import com.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;

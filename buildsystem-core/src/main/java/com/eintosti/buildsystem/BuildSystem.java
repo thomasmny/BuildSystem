@@ -248,6 +248,7 @@ public class BuildSystem extends JavaPlugin {
         new AsyncPlayerChatListener(this);
         new BlockPhysicsListener(this);
         new BlockPlaceListener(this);
+        new BuildWorldResetUnloadListener(this);
         new EntitySpawnListener(this);
         new FoodLevelChangeListener(this);
         new InventoryCloseListener(this);
