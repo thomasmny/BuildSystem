@@ -228,6 +228,11 @@ public class NavigatorListener implements Listener {
      */
     @EventHandler
     public void preventBarrierDrop(PlayerDropItemEvent event) {
+        Player player = event.getPlayer();
+        if (!playerManager.getOpenNavigator().contains(player)) {
+            return;
+        }
+
         if (isCloseNavigatorItem(event.getItemDrop().getItemStack())) {
             event.setCancelled(true);
         }
