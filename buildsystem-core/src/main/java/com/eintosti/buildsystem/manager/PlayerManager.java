@@ -243,7 +243,7 @@ public class PlayerManager {
     }
 
     private void replaceBarrier(Player player) {
-        if (!player.hasPermission("buildsystem.gui")) {
+        if (!player.hasPermission("buildsystem.navigator.item")) {
             return;
         }
 

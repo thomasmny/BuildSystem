@@ -102,7 +102,7 @@ public class PlayerInteractListener implements Listener {
                 return;
             }
 
-            if (!player.hasPermission("buildsystem.gui")) {
+            if (!player.hasPermission("buildsystem.navigator.item")) {
                 plugin.sendPermissionMessage(player);
                 return;
             }
