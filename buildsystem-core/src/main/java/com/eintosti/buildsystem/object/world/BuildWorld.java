@@ -895,20 +895,13 @@ public class BuildWorld implements ConfigurationSerializable {
             return;
         }
 
-        bukkitWorld.save();
-        for (Chunk chunk : bukkitWorld.getLoadedChunks()) {
-            chunk.unload();
-        }
-
-        Bukkit.unloadWorld(bukkitWorld, true);
         Bukkit.getWorlds().remove(bukkitWorld);
-        plugin.getLogger().info("*** Unloaded world \"" + name + "\" ***");
-
+        Bukkit.unloadWorld(bukkitWorld, true);
         this.loaded = false;
         this.unloadTask = null;
 
-        BuildWorldUnloadEvent event = new BuildWorldUnloadEvent(this);
-        Bukkit.getServer().getPluginManager().callEvent(event);
+        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldUnloadEvent(this));
+        plugin.getLogger().info("*** Unloaded world \"" + name + "\" ***");
     }
 
     private boolean isSpawnWorld(World bukkitWorld) {
@@ -940,8 +933,7 @@ public class BuildWorld implements ConfigurationSerializable {
         plugin.getWorldManager().generateBukkitWorld(name, worldType, difficulty, chunkGenerator);
         this.loaded = true;
 
-        BuildWorldLoadEvent event = new BuildWorldLoadEvent(this);
-        Bukkit.getServer().getPluginManager().callEvent(event);
+        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldLoadEvent(this));
 
         resetUnloadTask();
     }

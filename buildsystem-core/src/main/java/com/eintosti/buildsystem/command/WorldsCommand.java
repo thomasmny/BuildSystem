@@ -68,7 +68,7 @@ public class WorldsCommand implements CommandExecutor {
         Player player = (Player) sender;
 
         if (args.length == 0) {
-            if (!player.hasPermission("buildsystem.gui")) {
+            if (!player.hasPermission("buildsystem.navigator.item")) {
                 plugin.sendPermissionMessage(player);
                 return true;
             }
@@ -305,6 +305,11 @@ public class WorldsCommand implements CommandExecutor {
             }
 
             case "item": {
+                if (!player.hasPermission("buildsystem.navigator.item")) {
+                    plugin.sendPermissionMessage(player);
+                    return true;
+                }
+
                 player.getInventory().addItem(inventoryManager.getItemStack(plugin.getConfigValues().getNavigatorItem(), plugin.getString("navigator_item")));
                 player.sendMessage(plugin.getString("worlds_item_receive"));
                 break;
@@ -590,7 +595,7 @@ public class WorldsCommand implements CommandExecutor {
             case 1:
                 line4 = createComponent("/worlds help <page>", " §8» " + plugin.getString("worlds_help_help"), "/worlds help", "-");
                 line5 = createComponent("/worlds info", " §8» " + plugin.getString("worlds_help_info"), "/worlds info", "buildsystem.info");
-                line6 = createComponent("/worlds item", " §8» " + plugin.getString("worlds_help_item"), "/worlds item", "-");
+                line6 = createComponent("/worlds item", " §8» " + plugin.getString("worlds_help_item"), "/worlds item", "buildsystem.navigator.item");
                 line7 = createComponent("/worlds tp <world>", " §8» " + plugin.getString("worlds_help_tp"), "/worlds tp ", "buildsystem.worldtp");
                 line8 = createComponent("/worlds edit <world>", " §8» " + plugin.getString("worlds_help_edit"), "/worlds edit ", "buildsystem.edit");
                 line9 = createComponent("/worlds addBuilder <world>", " §8» " + plugin.getString("worlds_help_addbuilder"), "/worlds addBuilder ", "buildsystem.addbuilder");
