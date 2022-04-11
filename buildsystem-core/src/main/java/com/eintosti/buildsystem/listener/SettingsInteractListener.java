@@ -75,8 +75,8 @@ public class SettingsInteractListener implements Listener {
     }
 
     @EventHandler
-    public void onIronPlayerInteract(PlayerInteractEvent event) {
-        if (event.isCancelled()) {
+    public void manageIronDoorSetting(PlayerInteractEvent event) {
+        if (!isValid(event)) {
             return;
         }
 
@@ -118,8 +118,8 @@ public class SettingsInteractListener implements Listener {
     }
 
     @EventHandler
-    public void onSlabPlayerInteract(PlayerInteractEvent event) {
-        if (event.isCancelled()) {
+    public void manageSlabSetting(PlayerInteractEvent event) {
+        if (!isValid(event)) {
             return;
         }
 
@@ -133,8 +133,8 @@ public class SettingsInteractListener implements Listener {
     }
 
     @EventHandler
-    public void onPlacePlantsPlayerInteract(PlayerInteractEvent event) {
-        if (event.isCancelled() || event.getAction() != Action.RIGHT_CLICK_BLOCK || !isValid(event)) {
+    public void managePlacePlantsSetting(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || !isValid(event)) {
             return;
         }
 
@@ -158,52 +158,9 @@ public class SettingsInteractListener implements Listener {
         plugin.getCustomBlocks().setPlant(event);
     }
 
-    /**
-     * Not every player can always interact with the {@link BuildWorld} they are in.
-     * <p>
-     * Reasons an interaction could be cancelled:<br>
-     * - The world has its {@link WorldStatus} set to archived<br>
-     * - The world has a setting enabled which disallows certain events<br>
-     * - The world only allows {@link Builder}s to build and the player is not such a builder<br>
-     * <p>
-     * However, a player can override these reasons if:<br>
-     * - The player has the permission `buildsystem.admin`<br>
-     * - The player has the permission `buildsystem.bypass.archive`<br>
-     * - The player has used `/build` to enter build-mode<br>
-     *
-     * @param event the event which was called by the world manipulation
-     * @return if the interaction with the world is valid
-     */
-    private boolean isValid(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        if (plugin.canBypass(player)) {
-            return true;
-        }
-
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
-        if (buildWorld == null) {
-            return true;
-        }
-
-        boolean isInBuildMode = playerManager.getBuildPlayers().contains(player.getUniqueId());
-        if (buildWorld.getStatus() == WorldStatus.ARCHIVE && !isInBuildMode) {
-            return false;
-        }
-
-        if (!buildWorld.isBlockPlacement() && !isInBuildMode) {
-            return false;
-        }
-
-        if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
-            return buildWorld.getCreatorId() == null || buildWorld.getCreatorId().equals(player.getUniqueId());
-        }
-
-        return true;
-    }
-
     @EventHandler
     public void manageInstantPlaceSignsSetting(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || !isValid(event)) {
             return;
         }
 
@@ -259,53 +216,10 @@ public class SettingsInteractListener implements Listener {
         }
     }
 
-    private BlockFace getDirection(Player player) {
-        float yaw = player.getLocation().getYaw();
-        if (yaw < 0) {
-            yaw += 360;
-        }
-        yaw %= 360;
-        int i = (int) ((yaw + 8) / 22.5);
-        switch (i) {
-            case 1:
-                return BlockFace.SOUTH_SOUTH_WEST;
-            case 2:
-                return BlockFace.SOUTH_WEST;
-            case 3:
-                return BlockFace.WEST_SOUTH_WEST;
-            case 4:
-                return BlockFace.WEST;
-            case 5:
-                return BlockFace.WEST_NORTH_WEST;
-            case 6:
-                return BlockFace.NORTH_WEST;
-            case 7:
-                return BlockFace.NORTH_NORTH_WEST;
-            case 8:
-                return BlockFace.NORTH;
-            case 9:
-                return BlockFace.NORTH_NORTH_EAST;
-            case 10:
-                return BlockFace.NORTH_EAST;
-            case 11:
-                return BlockFace.EAST_NORTH_EAST;
-            case 12:
-                return BlockFace.EAST;
-            case 13:
-                return BlockFace.EAST_SOUTH_EAST;
-            case 14:
-                return BlockFace.SOUTH_EAST;
-            case 15:
-                return BlockFace.SOUTH_SOUTH_EAST;
-            default:
-                return BlockFace.SOUTH;
-        }
-    }
-
     @EventHandler
     public void manageDisabledInteractSetting(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        if (player.isSneaking() || event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || !isValid(event)) {
             return;
         }
 
@@ -357,6 +271,96 @@ public class SettingsInteractListener implements Listener {
         XBlock.setColor(adjacent, getItemColor(itemStack));
 
         plugin.getCustomBlocks().rotate(adjacent, player, null);
+    }
+
+    /**
+     * Not every player can always interact with the {@link BuildWorld} they are in.
+     * <p>
+     * Reasons an interaction could be cancelled:<br>
+     * - The world has its {@link WorldStatus} set to archived<br>
+     * - The world has a setting enabled which disallows certain events<br>
+     * - The world only allows {@link Builder}s to build and the player is not such a builder<br>
+     * <p>
+     * However, a player can override these reasons if:<br>
+     * - The player has the permission `buildsystem.admin`<br>
+     * - The player has the permission `buildsystem.bypass.archive`<br>
+     * - The player has used `/build` to enter build-mode<br>
+     *
+     * @param event the event which was called by the world manipulation
+     * @return if the interaction with the world is valid
+     */
+    private boolean isValid(PlayerInteractEvent event) {
+        if (event.isCancelled()) {
+            return false;
+        }
+
+        Player player = event.getPlayer();
+        if (plugin.canBypass(player)) {
+            return true;
+        }
+
+        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+        if (buildWorld == null) {
+            return true;
+        }
+
+        boolean isInBuildMode = playerManager.getBuildPlayers().contains(player.getUniqueId());
+        if (buildWorld.getStatus() == WorldStatus.ARCHIVE && !isInBuildMode) {
+            return false;
+        }
+
+        if (!buildWorld.isBlockPlacement() && !isInBuildMode) {
+            return false;
+        }
+
+        if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
+            return buildWorld.getCreatorId() == null || buildWorld.getCreatorId().equals(player.getUniqueId());
+        }
+
+        return true;
+    }
+
+    private BlockFace getDirection(Player player) {
+        float yaw = player.getLocation().getYaw();
+        if (yaw < 0) {
+            yaw += 360;
+        }
+        yaw %= 360;
+        int i = (int) ((yaw + 8) / 22.5);
+        switch (i) {
+            case 1:
+                return BlockFace.SOUTH_SOUTH_WEST;
+            case 2:
+                return BlockFace.SOUTH_WEST;
+            case 3:
+                return BlockFace.WEST_SOUTH_WEST;
+            case 4:
+                return BlockFace.WEST;
+            case 5:
+                return BlockFace.WEST_NORTH_WEST;
+            case 6:
+                return BlockFace.NORTH_WEST;
+            case 7:
+                return BlockFace.NORTH_NORTH_WEST;
+            case 8:
+                return BlockFace.NORTH;
+            case 9:
+                return BlockFace.NORTH_NORTH_EAST;
+            case 10:
+                return BlockFace.NORTH_EAST;
+            case 11:
+                return BlockFace.EAST_NORTH_EAST;
+            case 12:
+                return BlockFace.EAST;
+            case 13:
+                return BlockFace.EAST_SOUTH_EAST;
+            case 14:
+                return BlockFace.SOUTH_EAST;
+            case 15:
+                return BlockFace.SOUTH_SOUTH_EAST;
+            default:
+                return BlockFace.SOUTH;
+        }
     }
 
     /**

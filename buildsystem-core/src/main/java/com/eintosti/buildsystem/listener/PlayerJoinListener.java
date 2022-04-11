@@ -113,7 +113,7 @@ public class PlayerJoinListener implements Listener {
             return;
         }
 
-        if (!player.hasPermission("buildsystem.gui")) {
+        if (!player.hasPermission("buildsystem.navigator.item")) {
             return;
         }
 

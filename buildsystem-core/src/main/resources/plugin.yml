@@ -17,7 +17,7 @@ commands:
   build:
     description: Puts you into "Build Mode".
     usage: /<command> [player]
-  buildSystem:
+  buildsystem:
     description: Overview of all plugin commands.
     usage: /<command>
   config:
