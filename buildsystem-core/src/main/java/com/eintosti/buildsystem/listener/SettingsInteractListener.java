@@ -50,25 +50,21 @@ import java.util.UUID;
 /**
  * @author einTosti
  */
-public class PlayerInteractListener implements Listener {
+public class SettingsInteractListener implements Listener {
 
     private final BuildSystem plugin;
     private final ConfigValues configValues;
 
-    private final ArmorStandManager armorStandManager;
-    private final InventoryManager inventoryManager;
     private final PlayerManager playerManager;
     private final SettingsManager settingsManager;
     private final WorldManager worldManager;
 
     private final Set<UUID> cachePlayers;
 
-    public PlayerInteractListener(BuildSystem plugin) {
+    public SettingsInteractListener(BuildSystem plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
 
-        this.armorStandManager = plugin.getArmorStandManager();
-        this.inventoryManager = plugin.getInventoryManager();
         this.playerManager = plugin.getPlayerManager();
         this.settingsManager = plugin.getSettingsManager();
         this.worldManager = plugin.getWorldManager();
@@ -79,83 +75,8 @@ public class PlayerInteractListener implements Listener {
     }
 
     @EventHandler
-    public void manageNavigatorInteraction(PlayerInteractEvent event) {
-        ItemStack itemStack = event.getItem();
-        if (itemStack == null || itemStack.getType() == Material.AIR) {
-            return;
-        }
-
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null || !itemMeta.hasDisplayName()) {
-            return;
-        }
-
-        Player player = event.getPlayer();
-        if (player.getOpenInventory().getTopInventory().getType() != InventoryType.CRAFTING) {
-            return;
-        }
-
-        String displayName = itemMeta.getDisplayName();
-        XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-        if (xMaterial == configValues.getNavigatorItem()) {
-            if (!displayName.equals(plugin.getString("navigator_item"))) {
-                return;
-            }
-
-            if (!player.hasPermission("buildsystem.navigator.item")) {
-                plugin.sendPermissionMessage(player);
-                return;
-            }
-
-            event.setCancelled(true);
-            openNavigator(player);
-        } else if (xMaterial == XMaterial.BARRIER) {
-            if (!displayName.equals(plugin.getString("barrier_item"))) {
-                return;
-            }
-
-            event.setCancelled(true);
-            playerManager.closeNavigator(player);
-        }
-    }
-
-    private void openNavigator(Player player) {
-        Settings settings = settingsManager.getSettings(player);
-
-        if (settings.getNavigatorType() == NavigatorType.OLD) {
-            plugin.getNavigatorInventory().openInventory(player);
-            XSound.BLOCK_CHEST_OPEN.play(player);
-        } else { // NEW
-            if (playerManager.getOpenNavigator().contains(player)) {
-                player.sendMessage(plugin.getString("worlds_navigator_open"));
-                return;
-            }
-
-            summonNewNavigator(player);
-
-            String findItemName = plugin.getString("navigator_item");
-            ItemStack replaceItem = inventoryManager.getItemStack(XMaterial.BARRIER, plugin.getString("barrier_item"));
-            inventoryManager.replaceItem(player, findItemName, configValues.getNavigatorItem(), replaceItem);
-        }
-    }
-
-    private void summonNewNavigator(Player player) {
-        UUID playerUuid = player.getUniqueId();
-        playerManager.getPlayerWalkSpeed().put(playerUuid, player.getWalkSpeed());
-        playerManager.getPlayerFlySpeed().put(playerUuid, player.getFlySpeed());
-
-        player.setWalkSpeed(0);
-        player.setFlySpeed(0);
-        player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, Integer.MAX_VALUE, 0, false, false));
-        player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 250, false, false));
-
-        armorStandManager.spawnArmorStands(player);
-        playerManager.getOpenNavigator().add(player);
-    }
-
-    @EventHandler
-    public void onIronPlayerInteract(PlayerInteractEvent event) {
-        if (event.isCancelled()) {
+    public void manageIronDoorSetting(PlayerInteractEvent event) {
+        if (!isValid(event)) {
             return;
         }
 
@@ -197,8 +118,8 @@ public class PlayerInteractListener implements Listener {
     }
 
     @EventHandler
-    public void onSlabPlayerInteract(PlayerInteractEvent event) {
-        if (event.isCancelled()) {
+    public void manageSlabSetting(PlayerInteractEvent event) {
+        if (!isValid(event)) {
             return;
         }
 
@@ -212,8 +133,8 @@ public class PlayerInteractListener implements Listener {
     }
 
     @EventHandler
-    public void onPlacePlantsPlayerInteract(PlayerInteractEvent event) {
-        if (event.isCancelled() || event.getAction() != Action.RIGHT_CLICK_BLOCK || !isValid(event)) {
+    public void managePlacePlantsSetting(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || !isValid(event)) {
             return;
         }
 
@@ -237,52 +158,9 @@ public class PlayerInteractListener implements Listener {
         plugin.getCustomBlocks().setPlant(event);
     }
 
-    /**
-     * Not every player can always interact with the {@link BuildWorld} they are in.
-     * <p>
-     * Reasons an interaction could be cancelled:<br>
-     * - The world has its {@link WorldStatus} set to archived<br>
-     * - The world has a setting enabled which disallows certain events<br>
-     * - The world only allows {@link Builder}s to build and the player is not such a builder<br>
-     * <p>
-     * However, a player can override these reasons if:<br>
-     * - The player has the permission `buildsystem.admin`<br>
-     * - The player has the permission `buildsystem.bypass.archive`<br>
-     * - The player has used `/build` to enter build-mode<br>
-     *
-     * @param event the event which was called by the world manipulation
-     * @return if the interaction with the world is valid
-     */
-    private boolean isValid(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        if (plugin.canBypass(player)) {
-            return true;
-        }
-
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
-        if (buildWorld == null) {
-            return true;
-        }
-
-        boolean isInBuildMode = playerManager.getBuildPlayers().contains(player.getUniqueId());
-        if (buildWorld.getStatus() == WorldStatus.ARCHIVE && !isInBuildMode) {
-            return false;
-        }
-
-        if (!buildWorld.isBlockPlacement() && !isInBuildMode) {
-            return false;
-        }
-
-        if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
-            return buildWorld.getCreatorId() == null || buildWorld.getCreatorId().equals(player.getUniqueId());
-        }
-
-        return true;
-    }
-
     @EventHandler
     public void manageInstantPlaceSignsSetting(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || !isValid(event)) {
             return;
         }
 
@@ -338,53 +216,10 @@ public class PlayerInteractListener implements Listener {
         }
     }
 
-    private BlockFace getDirection(Player player) {
-        float yaw = player.getLocation().getYaw();
-        if (yaw < 0) {
-            yaw += 360;
-        }
-        yaw %= 360;
-        int i = (int) ((yaw + 8) / 22.5);
-        switch (i) {
-            case 1:
-                return BlockFace.SOUTH_SOUTH_WEST;
-            case 2:
-                return BlockFace.SOUTH_WEST;
-            case 3:
-                return BlockFace.WEST_SOUTH_WEST;
-            case 4:
-                return BlockFace.WEST;
-            case 5:
-                return BlockFace.WEST_NORTH_WEST;
-            case 6:
-                return BlockFace.NORTH_WEST;
-            case 7:
-                return BlockFace.NORTH_NORTH_WEST;
-            case 8:
-                return BlockFace.NORTH;
-            case 9:
-                return BlockFace.NORTH_NORTH_EAST;
-            case 10:
-                return BlockFace.NORTH_EAST;
-            case 11:
-                return BlockFace.EAST_NORTH_EAST;
-            case 12:
-                return BlockFace.EAST;
-            case 13:
-                return BlockFace.EAST_SOUTH_EAST;
-            case 14:
-                return BlockFace.SOUTH_EAST;
-            case 15:
-                return BlockFace.SOUTH_SOUTH_EAST;
-            default:
-                return BlockFace.SOUTH;
-        }
-    }
-
     @EventHandler
     public void manageDisabledInteractSetting(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        if (player.isSneaking() || event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || !isValid(event)) {
             return;
         }
 
@@ -439,8 +274,98 @@ public class PlayerInteractListener implements Listener {
     }
 
     /**
+     * Not every player can always interact with the {@link BuildWorld} they are in.
+     * <p>
+     * Reasons an interaction could be cancelled:<br>
+     * - The world has its {@link WorldStatus} set to archived<br>
+     * - The world has a setting enabled which disallows certain events<br>
+     * - The world only allows {@link Builder}s to build and the player is not such a builder<br>
+     * <p>
+     * However, a player can override these reasons if:<br>
+     * - The player has the permission `buildsystem.admin`<br>
+     * - The player has the permission `buildsystem.bypass.archive`<br>
+     * - The player has used `/build` to enter build-mode<br>
+     *
+     * @param event the event which was called by the world manipulation
+     * @return if the interaction with the world is valid
+     */
+    private boolean isValid(PlayerInteractEvent event) {
+        if (event.isCancelled()) {
+            return false;
+        }
+
+        Player player = event.getPlayer();
+        if (plugin.canBypass(player)) {
+            return true;
+        }
+
+        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+        if (buildWorld == null) {
+            return true;
+        }
+
+        boolean isInBuildMode = playerManager.getBuildPlayers().contains(player.getUniqueId());
+        if (buildWorld.getStatus() == WorldStatus.ARCHIVE && !isInBuildMode) {
+            return false;
+        }
+
+        if (!buildWorld.isBlockPlacement() && !isInBuildMode) {
+            return false;
+        }
+
+        if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
+            return buildWorld.getCreatorId() == null || buildWorld.getCreatorId().equals(player.getUniqueId());
+        }
+
+        return true;
+    }
+
+    private BlockFace getDirection(Player player) {
+        float yaw = player.getLocation().getYaw();
+        if (yaw < 0) {
+            yaw += 360;
+        }
+        yaw %= 360;
+        int i = (int) ((yaw + 8) / 22.5);
+        switch (i) {
+            case 1:
+                return BlockFace.SOUTH_SOUTH_WEST;
+            case 2:
+                return BlockFace.SOUTH_WEST;
+            case 3:
+                return BlockFace.WEST_SOUTH_WEST;
+            case 4:
+                return BlockFace.WEST;
+            case 5:
+                return BlockFace.WEST_NORTH_WEST;
+            case 6:
+                return BlockFace.NORTH_WEST;
+            case 7:
+                return BlockFace.NORTH_NORTH_WEST;
+            case 8:
+                return BlockFace.NORTH;
+            case 9:
+                return BlockFace.NORTH_NORTH_EAST;
+            case 10:
+                return BlockFace.NORTH_EAST;
+            case 11:
+                return BlockFace.EAST_NORTH_EAST;
+            case 12:
+                return BlockFace.EAST;
+            case 13:
+                return BlockFace.EAST_SOUTH_EAST;
+            case 14:
+                return BlockFace.SOUTH_EAST;
+            case 15:
+                return BlockFace.SOUTH_SOUTH_EAST;
+            default:
+                return BlockFace.SOUTH;
+        }
+    }
+
+    /**
      * Stop {@link Player} from opening {@link Inventory} because the event should be cancelled
-     * as it was fired due to an interaction caused in {@link PlayerInteractListener#manageDisabledInteractSetting}
+     * as it was fired due to an interaction caused in {@link SettingsInteractListener#manageDisabledInteractSetting}
      */
     @EventHandler
     public void onInventoryOpen(InventoryOpenEvent event) {

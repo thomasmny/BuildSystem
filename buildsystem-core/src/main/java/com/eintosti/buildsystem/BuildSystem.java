@@ -253,16 +253,16 @@ public class BuildSystem extends JavaPlugin {
         new FoodLevelChangeListener(this);
         new InventoryCloseListener(this);
         new InventoryCreativeListener(this);
+        new NavigatorListener(this);
         new PlayerChangedWorldListener(this);
         new PlayerCommandPreprocessListener(this);
-        new PlayerInteractAtEntityListener(this);
-        new PlayerInteractListener(this);
         new PlayerInventoryClearListener(this);
         new PlayerJoinListener(this);
         new PlayerMoveListener(this);
         new PlayerQuitListener(this);
         new PlayerRespawnListener(this);
         new PlayerTeleportListener(this);
+        new SettingsInteractListener(this);
         new SignChangeListener(this);
         new WeatherChangeListener(this);
         new WorldManipulateListener(this);

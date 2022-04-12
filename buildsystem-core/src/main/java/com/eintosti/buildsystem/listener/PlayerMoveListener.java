@@ -52,6 +52,7 @@ public class PlayerMoveListener implements Listener {
         if (to == null) {
             return;
         }
+
         Location from = event.getFrom();
         if (from.getBlockX() != to.getBlockX() || from.getBlockZ() != to.getBlockZ()) {
             Bukkit.getServer().getScheduler().runTaskLater(plugin, () -> playerManager.closeNavigator(player), 5L);

@@ -13,6 +13,7 @@ import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.ActionBar;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.config.ConfigValues;
+import com.eintosti.buildsystem.object.navigator.NavigatorInventoryType;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -50,7 +51,7 @@ public class PlayerManager {
 
     private final Map<UUID, Location> previousLocation;
     private final Map<UUID, BuildWorld> selectedWorld;
-    private final Map<UUID, String> lastLookedAt;
+    private final Map<UUID, NavigatorInventoryType> lastLookedAt;
     private final Map<UUID, GameMode> playerGamemode;
     private final Map<UUID, Float> playerWalkSpeed;
     private final Map<UUID, Float> playerFlySpeed;
@@ -268,12 +269,12 @@ public class PlayerManager {
 
             double lookedPosition = player.getEyeLocation().getDirection().getY();
             if (lookedPosition >= MIN_HEIGHT && lookedPosition <= MAX_HEIGHT) {
-                String invType = getEntityName(player).replace(player.getName() + " × ", "");
-                String lastLookedAt = this.lastLookedAt.get(player.getUniqueId());
+                NavigatorInventoryType inventoryType = NavigatorInventoryType.matchInventoryType(player, getEntityName(player));
+                NavigatorInventoryType lastLookedAt = this.lastLookedAt.get(player.getUniqueId());
 
-                if (lastLookedAt == null || !lastLookedAt.equals(invType)) {
-                    this.lastLookedAt.put(player.getUniqueId(), invType);
-                    sendTypeInfo(player, invType);
+                if (lastLookedAt == null || lastLookedAt != inventoryType) {
+                    this.lastLookedAt.put(player.getUniqueId(), inventoryType);
+                    sendTypeInfo(player, inventoryType);
                 }
             } else {
                 ActionBar.clearActionBar(player);
@@ -328,21 +329,23 @@ public class PlayerManager {
         return entity.getCustomName();
     }
 
-    private void sendTypeInfo(Player player, String invType) {
+    private void sendTypeInfo(Player player, NavigatorInventoryType inventoryType) {
+        if (inventoryType == null) {
+            ActionBar.clearActionBar(player);
+            return;
+        }
+
         String message;
-        switch (invType) {
-            case "§aWorld Navigator":
-                message = "new_navigator_world_navigator";
-                break;
-            case "§6World Archive":
+        switch (inventoryType) {
+            case ARCHIVE:
                 message = "new_navigator_world_archive";
                 break;
-            case "§bPrivate Worlds":
+            case PRIVATE:
                 message = "new_navigator_private_worlds";
                 break;
             default:
-                ActionBar.clearActionBar(player);
-                return;
+                message = "new_navigator_world_navigator";
+                break;
         }
 
         ActionBar.sendActionBar(player, plugin.getString(message));

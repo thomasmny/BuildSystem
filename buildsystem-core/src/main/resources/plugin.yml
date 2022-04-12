@@ -17,7 +17,7 @@ commands:
   build:
     description: Puts you into "Build Mode".
     usage: /<command> [player]
-  buildSystem:
+  buildsystem:
     description: Overview of all plugin commands.
     usage: /<command>
   config:
@@ -67,11 +67,8 @@ commands:
     usage: /<command>
 
 permissions:
-  buildsystem.navigator:
+  buildsystem.gui:
     description: Open the "Worlds-GUI".
-    default: true
-  buildsystem.navigator.item:
-    description: Receive the navigator item.
     default: true
   buildsystem.create.private:
     description: Create a private world.
