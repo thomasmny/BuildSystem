@@ -75,7 +75,7 @@ public class EditSessionListener implements Listener {
             return;
         }
 
-        if (buildWorld.getCreatorId() != null && buildWorld.getCreatorId().equals(player.getUniqueId())) {
+        if (buildWorld.isCreator(player)) {
             return;
         }
 

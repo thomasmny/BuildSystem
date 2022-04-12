@@ -278,6 +278,16 @@ public class BuildWorld implements ConfigurationSerializable {
     }
 
     /**
+     * Gets whether the given player is the creator of the world.
+     *
+     * @param player The player to check
+     * @return {@code true} if the player is the creator, {@code false} otherwise
+     */
+    public boolean isCreator(Player player) {
+        return creatorId != null && creatorId.equals(player.getUniqueId());
+    }
+
+    /**
      * Save the creator's unique-id in a string which is suitable to be stored.
      *
      * @return The creator's unique-id as a string

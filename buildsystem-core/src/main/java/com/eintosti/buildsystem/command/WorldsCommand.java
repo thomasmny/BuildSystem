@@ -92,8 +92,7 @@ public class WorldsCommand implements CommandExecutor {
                         return true;
                     }
 
-                    if ((buildWorld.getCreatorId() == null || !buildWorld.getCreatorId().equals(player.getUniqueId()))
-                            && !player.hasPermission("buildsystem.admin")) {
+                    if (!buildWorld.isCreator(player) && !player.hasPermission("buildsystem.admin")) {
                         player.sendMessage(plugin.getString("worlds_addbuilder_not_creator"));
                         return true;
                     }
@@ -328,7 +327,7 @@ public class WorldsCommand implements CommandExecutor {
                         return true;
                     }
 
-                    if ((buildWorld.getCreatorId() == null || !buildWorld.getCreatorId().equals(player.getUniqueId())) && !player.hasPermission("buildsystem.admin")) {
+                    if (!buildWorld.isCreator(player) && !player.hasPermission("buildsystem.admin")) {
                         player.sendMessage(plugin.getString("worlds_removebuilder_not_creator"));
                         return true;
                     }
@@ -715,7 +714,7 @@ public class WorldsCommand implements CommandExecutor {
                 builderId = builderPlayer.getUniqueId();
             }
 
-            if (buildWorld.getCreatorId() != null && buildWorld.getCreatorId().equals(builderId)) {
+            if (buildWorld.isCreator(player)) {
                 player.sendMessage(plugin.getString("worlds_addbuilder_already_creator"));
                 player.closeInventory();
                 return;
@@ -832,7 +831,7 @@ public class WorldsCommand implements CommandExecutor {
                 builderId = builderPlayer.getUniqueId();
             }
 
-            if (buildWorld.getCreatorId() != null && buildWorld.getCreatorId().equals(builderId)) {
+            if (buildWorld.isCreator(player)) {
                 player.sendMessage(plugin.getString("worlds_removebuilder_not_yourself"));
                 player.closeInventory();
                 return;

@@ -201,7 +201,7 @@ public class WorldManipulateListener implements Listener {
             return false;
         }
 
-        if (buildWorld.getCreatorId() != null && buildWorld.getCreatorId().equals(player.getUniqueId())) {
+        if (buildWorld.isCreator(player)) {
             return false;
         }
 

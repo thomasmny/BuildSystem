@@ -112,8 +112,7 @@ public class WorldManager {
      */
     public List<BuildWorld> getBuildWorldsCreatedByPlayer(Player player) {
         return getBuildWorlds().stream()
-                .filter(buildWorld -> buildWorld.getCreatorId() != null)
-                .filter(buildWorld -> buildWorld.getCreatorId().equals(player.getUniqueId()))
+                .filter(buildWorld -> buildWorld.isCreator(player))
                 .collect(Collectors.toList());
     }
 
