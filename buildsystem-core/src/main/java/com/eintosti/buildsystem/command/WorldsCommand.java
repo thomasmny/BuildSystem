@@ -68,7 +68,7 @@ public class WorldsCommand implements CommandExecutor {
         Player player = (Player) sender;
 
         if (args.length == 0) {
-            if (!player.hasPermission("buildsystem.navigator.item")) {
+            if (!player.hasPermission("buildsystem.navigator")) {
                 plugin.sendPermissionMessage(player);
                 return true;
             }
