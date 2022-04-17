@@ -175,7 +175,7 @@ public class SettingsManager {
 
         switch (input) {
             case "%status%":
-                return buildWorld.getStatusName();
+                return buildWorld.getStatus().getName();
             case "%permission%":
                 return buildWorld.getPermission();
             case "%project%":

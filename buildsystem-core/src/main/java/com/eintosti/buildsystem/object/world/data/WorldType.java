@@ -8,8 +8,9 @@
 
 package com.eintosti.buildsystem.object.world.data;
 
-import com.eintosti.buildsystem.config.ConfigValues;
+import com.eintosti.buildsystem.BuildSystem;
 import org.bukkit.World.Environment;
+import org.bukkit.plugin.java.JavaPlugin;
 
 /**
  * @author einTosti
@@ -18,52 +19,68 @@ public enum WorldType {
     /**
      * The equivalent to a default Minecraft world with {@link Environment#NORMAL}.
      */
-    NORMAL,
+    NORMAL("type_normal"),
 
     /**
      * The equivalent to a super-flat Minecraft world.
      */
-    FLAT,
+    FLAT("type_flat"),
 
     /**
      * The equivalent to a default Minecraft world with {@link Environment#NETHER}.
      */
-    NETHER,
+    NETHER("type_nether"),
 
     /**
      * The equivalent to a default Minecraft world with {@link Environment#THE_END}.
      */
-    END,
+    END("type_end"),
 
     /**
      * A completely empty world with no blocks at all, except the block a player spawns on.
-     *
-     * @see ConfigValues#isVoidBlock()
      */
-    VOID,
+    VOID("type_void"),
 
     /**
      * A world which is an identical copy of a provided template.
      */
-    TEMPLATE,
+    TEMPLATE("type_template"),
 
     /**
      * A world which by default cannot be modified by any player except for the creator.
      */
-    PRIVATE,
+    PRIVATE("type_private"),
 
     /**
      * A world which was not created by BuildSystem but was imported, so it can be used by the plugin.
      */
-    IMPORTED,
+    IMPORTED(null),
 
     /**
      * A world with a custom chunk generator
      */
-    CUSTOM,
+    CUSTOM("type_custom"),
 
     /**
      * A world with an unknown type.
      */
-    UNKNOWN
+    UNKNOWN(null);
+
+    private final String typeNameKey;
+
+    WorldType(String typeNameKey) {
+        this.typeNameKey = typeNameKey;
+    }
+
+    /**
+     * Get the display name of the {@link WorldType}.
+     *
+     * @return The type's display name
+     */
+    public String getName() {
+        if (typeNameKey == null) {
+            return "-";
+        }
+        return JavaPlugin.getPlugin(BuildSystem.class).getString(typeNameKey);
+    }
 }

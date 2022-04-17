@@ -227,11 +227,11 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "spawn":
                 return buildWorld.getCustomSpawn();
             case "status":
-                return buildWorld.getStatusName();
+                return buildWorld.getStatus().getName();
             case "time":
                 return buildWorld.getWorldTime();
             case "type":
-                return buildWorld.getTypeName();
+                return buildWorld.getType().getName();
             case "world":
                 return buildWorld.getName();
             default:

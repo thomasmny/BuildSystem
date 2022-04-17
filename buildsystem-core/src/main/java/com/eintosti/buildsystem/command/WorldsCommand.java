@@ -550,7 +550,7 @@ public class WorldsCommand implements CommandExecutor {
                         return true;
                     }
 
-                    worldManager.unimportWorld(buildWorld);
+                    worldManager.unimportWorld(buildWorld, true);
                     player.sendMessage(plugin.getString("worlds_unimport_finished").replace("%world%", buildWorld.getName()));
                 } else {
                     player.sendMessage(plugin.getString("worlds_unimport_usage"));
@@ -640,14 +640,14 @@ public class WorldsCommand implements CommandExecutor {
             String replace = line
                     .replace("%world%", buildWorld.getName())
                     .replace("%creator%", buildWorld.getCreator())
-                    .replace("%type%", buildWorld.getTypeName())
+                    .replace("%type%", buildWorld.getType().getName())
                     .replace("%private%", String.valueOf(buildWorld.isPrivate()))
                     .replace("%builders_enabled%", String.valueOf(buildWorld.isBuilders()))
                     .replace("%builders%", buildWorld.getBuildersInfo())
                     .replace("%block_breaking%", String.valueOf(buildWorld.isBlockBreaking()))
                     .replace("%block_placement%", String.valueOf(buildWorld.isBlockPlacement()))
                     .replace("%item%", buildWorld.getMaterial().name())
-                    .replace("%status%", buildWorld.getStatusName())
+                    .replace("%status%", buildWorld.getStatus().getName())
                     .replace("%project%", buildWorld.getProject())
                     .replace("%permission%", buildWorld.getPermission())
                     .replace("%time%", buildWorld.getWorldTime())

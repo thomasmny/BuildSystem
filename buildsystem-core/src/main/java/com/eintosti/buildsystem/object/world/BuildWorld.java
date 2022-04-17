@@ -316,35 +316,6 @@ public class BuildWorld implements ConfigurationSerializable {
     }
 
     /**
-     * Get the display name of a {@link WorldType}.
-     *
-     * @return the type's display name
-     * @see BuildWorld#getType()
-     */
-    public String getTypeName() {
-        switch (worldType) {
-            case NORMAL:
-                return plugin.getString("type_normal");
-            case FLAT:
-                return plugin.getString("type_flat");
-            case NETHER:
-                return plugin.getString("type_nether");
-            case END:
-                return plugin.getString("type_end");
-            case VOID:
-                return plugin.getString("type_void");
-            case CUSTOM:
-                return plugin.getString("type_custom");
-            case TEMPLATE:
-                return plugin.getString("type_template");
-            case PRIVATE:
-                return plugin.getString("type_private");
-            default:
-                return "-";
-        }
-    }
-
-    /**
      * Get whether the world is a private world.
      * <p>
      * By default, private worlds cannot be modified by any player except for the creator.
@@ -398,31 +369,6 @@ public class BuildWorld implements ConfigurationSerializable {
      */
     public void setStatus(WorldStatus worldStatus) {
         this.worldStatus = worldStatus;
-    }
-
-    /**
-     * Get the display name of a {@link WorldStatus}.
-     *
-     * @return the status's display name
-     * @see BuildWorld#getStatus()
-     */
-    public String getStatusName() {
-        switch (worldStatus) {
-            case NOT_STARTED:
-                return plugin.getString("status_not_started");
-            case IN_PROGRESS:
-                return plugin.getString("status_in_progress");
-            case ALMOST_FINISHED:
-                return plugin.getString("status_almost_finished");
-            case FINISHED:
-                return plugin.getString("status_finished");
-            case ARCHIVE:
-                return plugin.getString("status_archive");
-            case HIDDEN:
-                return plugin.getString("status_hidden");
-            default:
-                return "-";
-        }
     }
 
     /**
@@ -834,7 +780,7 @@ public class BuildWorld implements ConfigurationSerializable {
      * @return The world time
      */
     public String getWorldTime() {
-        World bukkitWorld = Bukkit.getWorld(getName());
+        World bukkitWorld = getWorld();
         if (bukkitWorld == null) {
             return "?";
         }
@@ -857,7 +803,7 @@ public class BuildWorld implements ConfigurationSerializable {
         }
 
         this.seconds = configValues.getTimeUntilUnload();
-        this.loaded = (Bukkit.getWorld(name) != null);
+        this.loaded = (getWorld() != null);
         startUnloadTask();
     }
 
@@ -878,7 +824,7 @@ public class BuildWorld implements ConfigurationSerializable {
     }
 
     private void unload() {
-        World bukkitWorld = Bukkit.getWorld(name);
+        World bukkitWorld = getWorld();
         if (bukkitWorld == null) {
             return;
         }
@@ -888,15 +834,11 @@ public class BuildWorld implements ConfigurationSerializable {
             return;
         }
 
-        forceUnload();
+        forceUnload(true);
     }
 
-    public void forceUnload() {
-        if (!isLoaded()) {
-            return;
-        }
-
-        World bukkitWorld = Bukkit.getWorld(name);
+    public void forceUnload(boolean save) {
+        World bukkitWorld = getWorld();
         if (bukkitWorld == null) {
             return;
         }
@@ -905,8 +847,13 @@ public class BuildWorld implements ConfigurationSerializable {
             return;
         }
 
+        for (Chunk chunk : bukkitWorld.getLoadedChunks()) {
+            chunk.unload(save);
+        }
+
+        Bukkit.unloadWorld(bukkitWorld, save);
         Bukkit.getWorlds().remove(bukkitWorld);
-        Bukkit.unloadWorld(bukkitWorld, true);
+
         this.loaded = false;
         this.unloadTask = null;
 

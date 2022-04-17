@@ -213,6 +213,7 @@ public class WorldManager {
             if (buildWorld == null) {
                 return;
             }
+            buildWorld.manageUnload();
             teleport(player, buildWorld);
         }
     }
@@ -264,7 +265,7 @@ public class WorldManager {
 
         player.sendMessage(plugin.getString("worlds_world_creation_started")
                 .replace("%world%", worldName)
-                .replace("%type%", buildWorld.getTypeName())
+                .replace("%type%", buildWorld.getType().getName())
         );
         finishPreparationsAndGenerate(buildWorld);
         player.sendMessage(plugin.getString("worlds_creation_finished"));
@@ -307,7 +308,7 @@ public class WorldManager {
 
             player.sendMessage(plugin.getString("worlds_world_creation_started")
                     .replace("%world%", buildWorld.getName())
-                    .replace("%type%", buildWorld.getTypeName()));
+                    .replace("%type%", buildWorld.getType().getName()));
             generateBukkitWorld(worldName, buildWorld.getType(), buildWorld.getDifficulty(), chunkGenerator);
             player.sendMessage(plugin.getString("worlds_creation_finished"));
         });
@@ -571,12 +572,13 @@ public class WorldManager {
      * In comparison to {@link #deleteWorld(Player, BuildWorld)}, unimporting a world does not delete the world's directory.
      *
      * @param buildWorld The build world object
+     * @param save       Should the world be saved before unimporting
      */
-    public void unimportWorld(BuildWorld buildWorld) {
+    public void unimportWorld(BuildWorld buildWorld, boolean save) {
         this.buildWorlds.remove(buildWorld);
 
         removePlayersFromWorld(buildWorld.getName(), plugin.getString("worlds_unimport_players_world"));
-        buildWorld.forceUnload();
+        buildWorld.forceUnload(save);
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             this.worldConfig.getFile().set("worlds." + buildWorld.getName(), null);
@@ -586,7 +588,7 @@ public class WorldManager {
 
     /**
      * Delete an existing {@link BuildWorld}.
-     * In comparison to {@link #unimportWorld(BuildWorld)}, deleting a world deletes the world's directory.
+     * In comparison to {@link #unimportWorld(BuildWorld, boolean)}, deleting a world deletes the world's directory.
      *
      * @param player     The player who issued the deletion
      * @param buildWorld The world to be deleted
@@ -598,18 +600,19 @@ public class WorldManager {
         }
 
         String worldName = buildWorld.getName();
-        if (Bukkit.getWorld(worldName) != null) {
-            removePlayersFromWorld(worldName, plugin.getString("worlds_delete_players_world"));
-        }
-
         File deleteFolder = new File(Bukkit.getWorldContainer(), worldName);
         if (!deleteFolder.exists()) {
             player.sendMessage(plugin.getString("worlds_delete_unknown_directory"));
             return;
         }
 
+        if (Bukkit.getWorld(worldName) != null) {
+            removePlayersFromWorld(worldName, plugin.getString("worlds_delete_players_world"));
+        }
+
         player.sendMessage(plugin.getString("worlds_delete_started").replace("%world%", worldName));
-        unimportWorld(buildWorld);
+        removePlayersFromWorld(worldName, plugin.getString("worlds_delete_players_world"));
+        unimportWorld(buildWorld, false);
         FileUtils.deleteDirectory(deleteFolder);
         player.sendMessage(plugin.getString("worlds_delete_finished"));
     }

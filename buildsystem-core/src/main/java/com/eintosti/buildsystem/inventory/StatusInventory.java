@@ -155,7 +155,7 @@ public class StatusInventory implements Listener {
         XSound.ENTITY_CHICKEN_EGG.play(player);
         player.sendMessage(plugin.getString("worlds_setstatus_set")
                 .replace("%world%", buildWorld.getName())
-                .replace("%status%", buildWorld.getStatusName())
+                .replace("%status%", buildWorld.getStatus().getName())
         );
         playerManager.getSelectedWorld().remove(player.getUniqueId());
     }

@@ -218,7 +218,7 @@ public class EditInventory implements Listener {
     private List<String> getStatusLore(BuildWorld buildWorld) {
         List<String> lore = new ArrayList<>();
         for (String line : plugin.getStringList("worldeditor_status_lore")) {
-            lore.add(line.replace("%status%", buildWorld.getStatusName()));
+            lore.add(line.replace("%status%", buildWorld.getStatus().getName()));
         }
         return lore;
     }

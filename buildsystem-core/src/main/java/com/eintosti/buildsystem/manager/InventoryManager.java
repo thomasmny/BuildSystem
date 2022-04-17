@@ -383,7 +383,7 @@ public class InventoryManager {
             String replace = line
                     .replace("%project%", buildWorld.getProject())
                     .replace("%permission%", buildWorld.getPermission())
-                    .replace("%status%", buildWorld.getStatusName())
+                    .replace("%status%", buildWorld.getStatus().getName())
                     .replace("%creator%", buildWorld.getCreator())
                     .replace("%creation%", buildWorld.getFormattedCreationDate());
 
