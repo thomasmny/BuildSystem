@@ -154,7 +154,7 @@ public class WorldManager {
      * @param privateWorld Is world going to be a private world?
      */
     public void startWorldNameInput(Player player, WorldType worldType, @Nullable String template, boolean privateWorld) {
-        if (privateWorld) {
+        if (privateWorld && getBuildWorld(player.getName()) == null) {
             player.closeInventory();
             manageWorldType(player, player.getName(), worldType, template, true);
             return;
@@ -175,7 +175,7 @@ public class WorldManager {
             }
 
             player.closeInventory();
-            manageWorldType(player, worldName, worldType, template, false);
+            manageWorldType(player, worldName, worldType, template, privateWorld);
         });
     }
 
