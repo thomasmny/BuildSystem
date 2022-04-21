@@ -28,8 +28,8 @@ public class TimeTabComplete extends ArgumentSorter implements TabCompleter {
 
     public TimeTabComplete(BuildSystem plugin) {
         this.worldManager = plugin.getWorldManager();
-        plugin.getCommand("Day").setTabCompleter(this);
-        plugin.getCommand("Night").setTabCompleter(this);
+        plugin.getCommand("day").setTabCompleter(this);
+        plugin.getCommand("night").setTabCompleter(this);
     }
 
     @Override

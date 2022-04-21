@@ -28,7 +28,7 @@ public class PhysicsTabComplete extends ArgumentSorter implements TabCompleter {
 
     public PhysicsTabComplete(BuildSystem plugin) {
         this.worldManager = plugin.getWorldManager();
-        plugin.getCommand("Physics").setTabCompleter(this);
+        plugin.getCommand("physics").setTabCompleter(this);
     }
 
     @Override

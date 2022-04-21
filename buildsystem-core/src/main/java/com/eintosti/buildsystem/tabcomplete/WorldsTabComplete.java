@@ -36,7 +36,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
     public WorldsTabComplete(BuildSystem plugin) {
         this.plugin = plugin;
         this.worldManager = plugin.getWorldManager();
-        plugin.getCommand("Worlds").setTabCompleter(this);
+        plugin.getCommand("worlds").setTabCompleter(this);
     }
 
     @Override

@@ -72,6 +72,14 @@ public class ArmorStandManager {
         return armorStand;
     }
 
+    public void spawnArmorStands(Player player) {
+        ArmorStand worldNavigator = spawnWorldNavigator(player);
+        ArmorStand worldArchive = spawnWorldArchive(player);
+        ArmorStand privateWorlds = spawnPrivateWorlds(player);
+
+        this.armorStands.put(player.getUniqueId(), new ArmorStand[]{worldNavigator, worldArchive, privateWorlds});
+    }
+
     private ArmorStand spawnWorldNavigator(Player player) {
         Location navigatorLocation = calculatePosition(player, SPREAD / 2 * -1);
         return spawnArmorStand(player, navigatorLocation, NavigatorInventoryType.NAVIGATOR, true, "https://textures.minecraft.net/texture/d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622");
@@ -85,14 +93,6 @@ public class ArmorStandManager {
     private ArmorStand spawnPrivateWorlds(Player player) {
         Location privateLocation = calculatePosition(player, SPREAD / 2);
         return spawnArmorStand(player, privateLocation, NavigatorInventoryType.PRIVATE, false, player.getName());
-    }
-
-    public void spawnArmorStands(Player player) {
-        ArmorStand worldNavigator = spawnWorldNavigator(player);
-        ArmorStand worldArchive = spawnWorldArchive(player);
-        ArmorStand privateWorlds = spawnPrivateWorlds(player);
-
-        this.armorStands.put(player.getUniqueId(), new ArmorStand[]{worldNavigator, worldArchive, privateWorlds});
     }
 
     public void removeArmorStands(Player player) {

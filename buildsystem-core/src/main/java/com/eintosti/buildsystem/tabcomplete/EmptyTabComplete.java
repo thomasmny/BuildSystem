@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * The tab completer which is used for commands which do not have any arguments.
+ *
  * @author einTosti
  */
 public class EmptyTabComplete implements TabCompleter {

@@ -918,7 +918,7 @@ public class BuildWorld implements ConfigurationSerializable {
         world.put("builders-enabled", isBuilders());
         world.put("builders", saveBuilders());
         if (customSpawn != null) {
-            world.put("spawn", customSpawn);
+            world.put("spawn", getCustomSpawn());
         }
         if (chunkGeneratorName != null) {
             world.put("chunk-generator", getChunkGeneratorName());

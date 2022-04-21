@@ -17,6 +17,7 @@ import net.luckperms.api.context.ContextSet;
 import net.luckperms.api.context.ImmutableContextSet;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
@@ -39,6 +40,7 @@ public class RoleCalculator implements ContextCalculator<Player> {
         contextConsumer.accept(KEY, Role.matchRole(player, buildWorld).toString());
     }
 
+    @NotNull
     @Override
     public ContextSet estimatePotentialContexts() {
         ImmutableContextSet.Builder builder = ImmutableContextSet.builder();
@@ -49,8 +51,19 @@ public class RoleCalculator implements ContextCalculator<Player> {
     }
 
     private enum Role {
+        /**
+         * The creator of a {@link BuildWorld}.
+         */
         CREATOR,
+
+        /**
+         * A player which has been added to the list of trusted players and is therefore allowed to build in a {@link BuildWorld}.
+         */
         BUILDER,
+
+        /**
+         * A player which is neither the {@link #CREATOR} nor a {@link #BUILDER} in a {@link BuildWorld}.
+         */
         GUEST;
 
         public static Role matchRole(Player player, BuildWorld buildWorld) {
@@ -58,12 +71,9 @@ public class RoleCalculator implements ContextCalculator<Player> {
                 return GUEST;
             }
 
-            UUID playerUuid = player.getUniqueId();
-            UUID creatorUuid = buildWorld.getCreatorId();
-
-            if (creatorUuid != null && creatorUuid.equals(playerUuid)) {
+            if (buildWorld.isCreator(player)) {
                 return CREATOR;
-            } else if (buildWorld.isBuilder(playerUuid)) {
+            } else if (buildWorld.isBuilder(player.getUniqueId())) {
                 return BUILDER;
             } else {
                 return GUEST;

@@ -23,7 +23,7 @@ import java.util.List;
 public class ConfigTabComplete implements TabCompleter {
 
     public ConfigTabComplete(BuildSystem plugin) {
-        plugin.getCommand("Config").setTabCompleter(this);
+        plugin.getCommand("config").setTabCompleter(this);
     }
 
     @Override

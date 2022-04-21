@@ -67,8 +67,11 @@ commands:
     usage: /<command>
 
 permissions:
-  buildsystem.gui:
-    description: Open the "Worlds-GUI".
+  buildsystem.navigator:
+    description: Open the worlds navigator.
+    default: true
+  buildsystem.navigator.item:
+    description: Receive and use the naviagtor open.
     default: true
   buildsystem.create.private:
     description: Create a private world.

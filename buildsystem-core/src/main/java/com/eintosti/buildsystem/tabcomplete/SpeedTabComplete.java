@@ -23,7 +23,7 @@ import java.util.List;
 public class SpeedTabComplete implements TabCompleter {
 
     public SpeedTabComplete(BuildSystem plugin) {
-        plugin.getCommand("Speed").setTabCompleter(this);
+        plugin.getCommand("speed").setTabCompleter(this);
     }
 
     @Override

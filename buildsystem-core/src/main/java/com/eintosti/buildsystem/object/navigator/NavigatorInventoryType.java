@@ -8,15 +8,36 @@
 
 package com.eintosti.buildsystem.object.navigator;
 
+import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.object.world.Builder;
+import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 /**
+ * Represents the different kinds of navigator types that can be opened.
+ *
  * @author einTosti
  */
 public enum NavigatorInventoryType {
+    /**
+     * The navigator inventory which contains all {@link BuildWorld}s that are still being built.
+     */
     NAVIGATOR("§aWorld Navigator"),
+
+    /**
+     * The navigator inventory which contains all archived {@link BuildWorld}s.
+     *
+     * @see WorldStatus#ARCHIVE
+     */
     ARCHIVE("§6World Archive"),
+
+    /**
+     * The navigator inventory which contains all private {@link BuildWorld}s that can only be modified by the world's creator
+     * and all players who have been added as a {@link Builder}.
+     *
+     * @see BuildWorld#isPrivate()
+     */
     PRIVATE("§bPrivate Worlds");
 
     private final String armorStandName;
@@ -38,6 +59,13 @@ public enum NavigatorInventoryType {
         return null;
     }
 
+    /**
+     * When opening the {@link NavigatorType#NEW} navigator, each armor stand has a custom name which is unique for every player
+     * and each {@link NavigatorInventoryType}.<br>
+     * Gets said name.
+     *
+     * @return The name which an armor stand uses to represent a navigator inventory type
+     */
     public String getArmorStandName() {
         return armorStandName;
     }

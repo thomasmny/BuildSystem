@@ -24,7 +24,7 @@ import java.util.List;
 public class SpawnTabComplete extends ArgumentSorter implements TabCompleter {
 
     public SpawnTabComplete(BuildSystem plugin) {
-        plugin.getCommand("Spawn").setTabCompleter(this);
+        plugin.getCommand("spawn").setTabCompleter(this);
     }
 
     @Override
