@@ -138,6 +138,11 @@ public class WorldsCommand implements CommandExecutor {
                         return true;
                     }
 
+                    if (!buildWorld.isCreator(player) && !player.hasPermission("buildsystem.admin")) {
+                        player.sendMessage(plugin.getString("worlds_delete_not_creator"));
+                        return true;
+                    }
+
                     playerManager.getSelectedWorld().put(player.getUniqueId(), buildWorld);
                     plugin.getDeleteInventory().openInventory(player, buildWorld);
                 } else {
@@ -217,28 +222,12 @@ public class WorldsCommand implements CommandExecutor {
                         }
 
                         Generator generator;
-                        boolean customGenerator = false;
-                        switch (args[3].toLowerCase()) {
-                            case "normal":
-                                generator = Generator.NORMAL;
-                                break;
-                            case "flat":
-                                generator = Generator.FLAT;
-                                break;
-                            case "void":
-                                generator = Generator.VOID;
-                                break;
-                            default:
-                                generator = Generator.CUSTOM;
-                                customGenerator = true;
-                                break;
+                        try {
+                            generator = Generator.valueOf(args[3].toUpperCase());
+                        } catch (IllegalArgumentException e) {
+                            generator = Generator.CUSTOM;
                         }
-
-                        if (!customGenerator) {
-                            worldManager.importWorld(player, args[1], generator);
-                        } else {
-                            worldManager.importWorld(player, args[1], generator, args[3]);
-                        }
+                        worldManager.importWorld(player, args[1], generator, args[3]);
                     } else {
                         player.sendMessage(plugin.getString("worlds_import_usage"));
                     }
@@ -714,7 +703,7 @@ public class WorldsCommand implements CommandExecutor {
                 builderId = builderPlayer.getUniqueId();
             }
 
-            if (buildWorld.isCreator(player)) {
+            if (builderId.equals(player.getUniqueId()) && buildWorld.isCreator(player)) {
                 player.sendMessage(plugin.getString("worlds_addbuilder_already_creator"));
                 player.closeInventory();
                 return;

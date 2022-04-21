@@ -161,7 +161,7 @@ public class PlayerManager {
     public int getMaxWorlds(Player player, boolean privateWorld) {
         int max = -1;
         if (player.hasPermission("buildsystem.admin")) {
-            return -1;
+            return max;
         }
 
         for (PermissionAttachmentInfo permission : player.getEffectivePermissions()) {

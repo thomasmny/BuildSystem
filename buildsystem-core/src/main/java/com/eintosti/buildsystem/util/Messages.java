@@ -234,6 +234,7 @@ public class Messages {
         setMessage(sb, config, "worlds_delete_usage", "%prefix% &7Usage: &b/worlds delete <world>");
         setMessage(sb, config, "worlds_delete_unknown_world", "%prefix% &cUnknown world.");
         setMessage(sb, config, "worlds_delete_unknown_directory", "%prefix% &cError while deleting world: Directory not found!");
+        setMessage(sb, config, "worlds_delete_not_creator", "%prefix% &cYou are not the creator of this world.");
         setMessage(sb, config, "worlds_delete_error", "%prefix% &cError while deleting world: Please try again!");
         setMessage(sb, config, "worlds_delete_canceled", "%prefix% &7The deletion of &b%world% &7was canceled.");
         setMessage(sb, config, "worlds_delete_started", "%prefix% &7The deletion of &b%world% &7has started...");

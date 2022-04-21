@@ -11,8 +11,6 @@ package com.eintosti.buildsystem.inventory;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.PlayerManager;
-import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.google.common.collect.Sets;
 import org.bukkit.entity.Player;
@@ -26,7 +24,6 @@ public class PrivateInventory extends FilteredWorldsInventory {
     private final BuildSystem plugin;
     private final InventoryManager inventoryManager;
     private final PlayerManager playerManager;
-    private final WorldManager worldManager;
 
     public PrivateInventory(BuildSystem plugin) {
         super(plugin, "private_title", "private_no_worlds", true,
@@ -35,7 +32,6 @@ public class PrivateInventory extends FilteredWorldsInventory {
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
         this.playerManager = plugin.getPlayerManager();
-        this.worldManager = plugin.getWorldManager();
     }
 
     @Override
@@ -48,11 +44,10 @@ public class PrivateInventory extends FilteredWorldsInventory {
     }
 
     private void addWorldCreateItem(Inventory inventory, Player player) {
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getName());
-        if (buildWorld != null || !player.hasPermission("buildsystem.create.private")) {
+        if (player.hasPermission("buildsystem.create.private")) {
+            inventoryManager.addUrlSkull(inventory, 49, plugin.getString("private_create_world"), "https://textures.minecraft.net/texture/3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
+        } else {
             inventoryManager.addGlassPane(plugin, player, inventory, 49);
-            return;
         }
-        inventoryManager.addUrlSkull(inventory, 49, plugin.getString("private_create_world"), "https://textures.minecraft.net/texture/3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
     }
 }

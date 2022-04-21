@@ -17,6 +17,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.generator.ChunkGenerator;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -28,9 +30,11 @@ import java.util.List;
  */
 public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
 
+    private final BuildSystem plugin;
     private final WorldManager worldManager;
 
     public WorldsTabComplete(BuildSystem plugin) {
+        this.plugin = plugin;
         this.worldManager = plugin.getWorldManager();
         plugin.getCommand("Worlds").setTabCompleter(this);
     }
@@ -60,7 +64,6 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
             case 2: {
                 switch (args[0].toLowerCase()) {
                     case "builders":
-                    case "delete":
                     case "edit":
                     case "info":
                     case "rename":
@@ -71,22 +74,17 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                     case "setstatus":
                     case "tp":
                     case "unimport":
-                        worldManager.getBuildWorlds().forEach(world -> {
-                            if (player.hasPermission(world.getPermission()) || world.getPermission().equalsIgnoreCase("-")) {
-                                String worldName = world.getName();
-                                addArgument(args[1], worldName, arrayList);
-                            }
-                        });
+                        worldManager.getBuildWorlds().stream()
+                                .filter(world -> player.hasPermission(world.getPermission()) || world.getPermission().equalsIgnoreCase("-"))
+                                .forEach(world -> addArgument(args[1], world.getName(), arrayList));
                         break;
 
                     case "addbuilder":
+                    case "delete":
                     case "removebuilder":
-                        worldManager.getBuildWorlds().forEach(world -> {
-                            if (player.hasPermission("buildsystem.admin") || (world.getCreatorId() != null && world.getCreatorId().equals(player.getUniqueId()))) {
-                                String worldName = world.getName();
-                                addArgument(args[1], worldName, arrayList);
-                            }
-                        });
+                        worldManager.getBuildWorlds().stream()
+                                .filter(world -> world.isCreator(player) || player.hasPermission("buildsystem.admin"))
+                                .forEach(world -> addArgument(args[1], world.getName(), arrayList));
                         break;
 
                     case "import":
@@ -140,12 +138,12 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                 }
 
                 for (Generator value : new Generator[]{Generator.NORMAL, Generator.FLAT, Generator.VOID}) {
-                    String valueName = value.name();
-                    addArgument(args[3], valueName, arrayList);
+                    addArgument(args[3], value.name(), arrayList);
                 }
                 return arrayList;
             }
         }
+
         return arrayList;
     }
 
