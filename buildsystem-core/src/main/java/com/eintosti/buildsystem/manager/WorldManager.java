@@ -568,25 +568,6 @@ public class WorldManager {
     }
 
     /**
-     * Unimport an existing {@link BuildWorld}.
-     * In comparison to {@link #deleteWorld(Player, BuildWorld)}, unimporting a world does not delete the world's directory.
-     *
-     * @param buildWorld The build world object
-     * @param save       Should the world be saved before unimporting
-     */
-    public void unimportWorld(BuildWorld buildWorld, boolean save) {
-        this.buildWorlds.remove(buildWorld);
-
-        removePlayersFromWorld(buildWorld.getName(), plugin.getString("worlds_unimport_players_world"));
-        buildWorld.forceUnload(save);
-
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            this.worldConfig.getFile().set("worlds." + buildWorld.getName(), null);
-            this.worldConfig.saveFile();
-        });
-    }
-
-    /**
      * Delete an existing {@link BuildWorld}.
      * In comparison to {@link #unimportWorld(BuildWorld, boolean)}, deleting a world deletes the world's directory.
      *
@@ -606,15 +587,30 @@ public class WorldManager {
             return;
         }
 
-        if (Bukkit.getWorld(worldName) != null) {
-            removePlayersFromWorld(worldName, plugin.getString("worlds_delete_players_world"));
-        }
-
         player.sendMessage(plugin.getString("worlds_delete_started").replace("%world%", worldName));
         removePlayersFromWorld(worldName, plugin.getString("worlds_delete_players_world"));
-        unimportWorld(buildWorld, false);
-        FileUtils.deleteDirectory(deleteFolder);
-        player.sendMessage(plugin.getString("worlds_delete_finished"));
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            unimportWorld(buildWorld, false);
+            FileUtils.deleteDirectory(deleteFolder);
+            player.sendMessage(plugin.getString("worlds_delete_finished"));
+        }, 20L);
+    }
+
+    /**
+     * Unimport an existing {@link BuildWorld}.
+     * In comparison to {@link #deleteWorld(Player, BuildWorld)}, unimporting a world does not delete the world's directory.
+     *
+     * @param buildWorld The build world object
+     * @param save       Should the world be saved before unimporting
+     */
+    public void unimportWorld(BuildWorld buildWorld, boolean save) {
+        buildWorld.forceUnload(save);
+        this.buildWorlds.remove(buildWorld);
+        removePlayersFromWorld(buildWorld.getName(), plugin.getString("worlds_unimport_players_world"));
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            this.worldConfig.getFile().set("worlds." + buildWorld.getName(), null);
+            this.worldConfig.saveFile();
+        });
     }
 
     /**
@@ -682,8 +678,8 @@ public class WorldManager {
         }
 
         player.closeInventory();
-        newName = newName.replaceAll("[^A-Za-z0-9/_-]", "").replace(" ", "_").trim();
-        if (newName.isEmpty()) {
+        String parsedNewName = newName.replaceAll("[^A-Za-z0-9/_-]", "").replace(" ", "_").trim();
+        if (parsedNewName.isEmpty()) {
             player.sendMessage(plugin.getString("worlds_world_creation_name_bank"));
             return;
         }
@@ -699,41 +695,42 @@ public class WorldManager {
         }
 
         List<Player> removedPlayers = removePlayersFromWorld(oldName, plugin.getString("worlds_rename_players_world"));
-        oldWorld.save();
-        Bukkit.getServer().unloadWorld(oldWorld, true);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            oldWorld.save();
+            Bukkit.getServer().unloadWorld(oldWorld, true);
 
-        String finalName = newName;
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            worldConfig.getFile().set("worlds." + finalName, worldConfig.getFile().getConfigurationSection("worlds." + buildWorld.getName()));
-            worldConfig.getFile().set("worlds." + oldName, null);
-        });
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                worldConfig.getFile().set("worlds." + parsedNewName, worldConfig.getFile().getConfigurationSection("worlds." + buildWorld.getName()));
+                worldConfig.getFile().set("worlds." + oldName, null);
+            });
 
-        File oldWorldFile = new File(Bukkit.getWorldContainer(), oldName);
-        File newWorldFile = new File(Bukkit.getWorldContainer(), newName);
-        FileUtils.copy(oldWorldFile, newWorldFile);
-        FileUtils.deleteDirectory(oldWorldFile);
+            File oldWorldFile = new File(Bukkit.getWorldContainer(), oldName);
+            File newWorldFile = new File(Bukkit.getWorldContainer(), parsedNewName);
+            FileUtils.copy(oldWorldFile, newWorldFile);
+            FileUtils.deleteDirectory(oldWorldFile);
 
-        buildWorld.setName(newName);
-        World newWorld = generateBukkitWorld(buildWorld.getName(), buildWorld.getType(), buildWorld.getDifficulty(), buildWorld.getChunkGenerator());
-        Location spawnLocation = oldWorld.getSpawnLocation();
-        spawnLocation.setWorld(newWorld);
+            buildWorld.setName(parsedNewName);
+            World newWorld = generateBukkitWorld(buildWorld.getName(), buildWorld.getType(), buildWorld.getDifficulty(), buildWorld.getChunkGenerator());
+            Location spawnLocation = oldWorld.getSpawnLocation();
+            spawnLocation.setWorld(newWorld);
 
-        removedPlayers.stream()
-                .filter(Objects::nonNull)
-                .forEach(pl -> pl.teleport(spawnLocation.add(0.5, 0, 0.5)));
-        removedPlayers.clear();
+            removedPlayers.stream()
+                    .filter(Objects::nonNull)
+                    .forEach(pl -> pl.teleport(spawnLocation.add(0.5, 0, 0.5)));
+            removedPlayers.clear();
 
-        SpawnManager spawnManager = plugin.getSpawnManager();
-        if (spawnManager.spawnExists() && Objects.equals(spawnManager.getSpawnWorld(), oldWorld)) {
-            Location oldSpawn = spawnManager.getSpawn();
-            Location newSpawn = new Location(spawnLocation.getWorld(), oldSpawn.getX(), oldSpawn.getY(), oldSpawn.getZ(), oldSpawn.getYaw(), oldSpawn.getPitch());
-            spawnManager.set(newSpawn, newSpawn.getWorld().getName());
-        }
+            SpawnManager spawnManager = plugin.getSpawnManager();
+            if (spawnManager.spawnExists() && Objects.equals(spawnManager.getSpawnWorld(), oldWorld)) {
+                Location oldSpawn = spawnManager.getSpawn();
+                Location newSpawn = new Location(spawnLocation.getWorld(), oldSpawn.getX(), oldSpawn.getY(), oldSpawn.getZ(), oldSpawn.getYaw(), oldSpawn.getPitch());
+                spawnManager.set(newSpawn, newSpawn.getWorld().getName());
+            }
 
-        player.sendMessage(plugin.getString("worlds_rename_set")
-                .replace("%oldName%", oldName)
-                .replace("%newName%", newName)
-        );
+            player.sendMessage(plugin.getString("worlds_rename_set")
+                    .replace("%oldName%", oldName)
+                    .replace("%newName%", parsedNewName)
+            );
+        }, 20L);
     }
 
     /**

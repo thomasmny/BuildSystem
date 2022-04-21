@@ -379,6 +379,7 @@ public class InventoryManager {
     private List<String> getLore(Player player, BuildWorld buildWorld) {
         List<String> messageList = player.hasPermission("buildsystem.edit") ? plugin.getStringList("world_item_lore_edit") : plugin.getStringList("world_item_lore_normal");
         List<String> lore = new ArrayList<>();
+
         for (String line : messageList) {
             String replace = line
                     .replace("%project%", buildWorld.getProject())
@@ -410,6 +411,7 @@ public class InventoryManager {
                 lore.add(builderString);
             }
         }
+
         return lore;
     }
 
