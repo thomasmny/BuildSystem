@@ -69,7 +69,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
 
     private void addBuilderAddItem(Inventory inventory, BuildWorld buildWorld, Player player) {
         UUID creatorId = buildWorld.getCreatorId();
-        if ((creatorId != null && creatorId.equals(player.getUniqueId())) || player.hasPermission("buildsystem.admin")) {
+        if ((creatorId != null && creatorId.equals(player.getUniqueId())) || player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
             inventoryManager.addUrlSkull(inventory, 22, plugin.getString("worldeditor_builders_add_builder_item"),
                     "https://textures.minecraft.net/texture/3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
         } else {

@@ -113,17 +113,40 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         }
     }
 
+    /**
+     * Gets if the world should be shown to the player in the navigator.
+     * <p>
+     * The following logic is applied to determine the above:
+     * <ul>
+     *   <li>Does the player have the admin bypass permission?</li>
+     *   <li>Is the player the creator of the world?</li>
+     *   <li>Has the player been added as a builder?</li>
+     *   <li>Does the player have the permission to see the world?</li>
+     * </ul>
+     *
+     * @param player     The player who the world will be shown to
+     * @param buildWorld The world to show
+     * @return {@code true} if the world should be shown to the player in the navigator, {@code false} otherwise
+     */
     private boolean isValidWorld(Player player, BuildWorld buildWorld) {
         if (!worldManager.isCorrectVisibility(buildWorld, showPrivateWorlds)) {
             return false;
         }
 
-        String worldPermission = buildWorld.getPermission();
-        if (!worldPermission.equalsIgnoreCase("-") && !player.hasPermission(worldPermission)) {
+        if (!validStatus.contains(buildWorld.getStatus())) {
             return false;
         }
 
-        if (!validStatus.contains(buildWorld.getStatus())) {
+        if (player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
+            return true;
+        }
+
+        if (buildWorld.isCreator(player) || buildWorld.isBuilder(player)) {
+            return true;
+        }
+
+        String worldPermission = buildWorld.getPermission();
+        if (!worldPermission.equalsIgnoreCase("-") && !player.hasPermission(worldPermission)) {
             return false;
         }
 

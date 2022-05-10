@@ -17,8 +17,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.bukkit.generator.ChunkGenerator;
-import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -83,7 +81,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                     case "delete":
                     case "removebuilder":
                         worldManager.getBuildWorlds().stream()
-                                .filter(world -> world.isCreator(player) || player.hasPermission("buildsystem.admin"))
+                                .filter(world -> world.isCreator(player) || player.hasPermission(BuildSystem.ADMIN_PERMISSION))
                                 .forEach(world -> addArgument(args[1], world.getName(), arrayList));
                         break;
 

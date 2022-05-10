@@ -51,7 +51,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * @author einTosti
@@ -60,6 +59,7 @@ public class BuildSystem extends JavaPlugin {
 
     public static final int SPIGOT_ID = 60441;
     public static final int METRICS_ID = 7427;
+    public static final String ADMIN_PERMISSION = "buildsystem.admin";
 
     private String version;
 
@@ -393,25 +393,37 @@ public class BuildSystem extends JavaPlugin {
     }
 
     public boolean canBypass(Player player) {
-        return player.hasPermission("buildsystem.admin")
+        return player.hasPermission(ADMIN_PERMISSION)
                 || player.hasPermission("buildsystem.bypass.archive")
                 || playerManager.getBuildPlayers().contains(player.getUniqueId());
     }
 
-    public boolean isPermitted(Player player, String permission) {
-        if (player.hasPermission("buildsystem.admin")) {
+    /**
+     * Gets whether the given player is permission to run a command in the given world.
+     * <p>
+     * The creator of a world is allowed to the command if they have the permission, optionally ending with {@code .self}.
+     * All other players will need the permission {@code <permission>.other} to run the command.
+     *
+     * @param player     The player trying to run the command
+     * @param permission The permission needed to run the command
+     * @param world      The world the player wants to run the command on
+     * @return {@code true} if the player is allowed to run the command, {@code false} otherwise
+     */
+    public boolean isPermitted(Player player, String permission, World world) {
+        if (player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
             return true;
         }
 
-        try {
-            UUID creator = worldManager.getBuildWorld(player.getWorld()).getCreatorId();
-            if (player.getUniqueId().equals(creator)) {
-                return (player.hasPermission(permission + ".self") || player.hasPermission(permission));
-            }
-            return player.hasPermission(permission + ".other");
-        } catch (NullPointerException e) {
-            return false;
+        BuildWorld buildWorld = worldManager.getBuildWorld(world);
+        if (buildWorld == null) {
+            return true;
         }
+
+        if (buildWorld.isCreator(player)) {
+            return (player.hasPermission(permission + ".self") || player.hasPermission(permission));
+        }
+
+        return player.hasPermission(permission + ".other");
     }
 
     public void sendPermissionMessage(CommandSender sender) {

@@ -41,7 +41,8 @@ public class PhysicsCommand implements CommandExecutor {
         }
 
         Player player = (Player) sender;
-        if (!plugin.isPermitted(player, "buildsystem.physics")) {
+        World world = args.length == 0 ? player.getWorld() : Bukkit.getWorld(args[0]);
+        if (!plugin.isPermitted(player, "buildsystem.physics", world)) {
             plugin.sendPermissionMessage(player);
             return true;
         }
@@ -51,8 +52,9 @@ public class PhysicsCommand implements CommandExecutor {
                 togglePhysics(player, player.getWorld());
                 break;
             case 1:
+                //TODO: Check each world for permission individually?
                 if (args[0].equalsIgnoreCase("all") && worldManager.getBuildWorld("all") == null) {
-                    worldManager.getBuildWorlds().forEach(world -> world.setPhysics(true));
+                    worldManager.getBuildWorlds().forEach(buildWorld -> buildWorld.setPhysics(true));
                     player.sendMessage(plugin.getString("physics_activated_all"));
                 } else {
                     togglePhysics(player, Bukkit.getWorld(args[0]));

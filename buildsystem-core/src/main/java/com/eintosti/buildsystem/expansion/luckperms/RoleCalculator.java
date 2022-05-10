@@ -19,8 +19,6 @@ import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.UUID;
-
 /**
  * @author einTosti
  */

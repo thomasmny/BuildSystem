@@ -41,23 +41,22 @@ public class TimeCommand implements CommandExecutor {
         }
 
         Player player = (Player) sender;
+        World world = args.length == 0 ? player.getWorld() : Bukkit.getWorld(args[0]);
 
         switch (label.toLowerCase()) {
             case "day": {
-                if (!plugin.isPermitted(player, "buildsystem.day")) {
+                if (!plugin.isPermitted(player, "buildsystem.day", world)) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
 
                 switch (args.length) {
                     case 0: {
-                        World world = player.getWorld();
                         world.setTime(configValues.getNoonTime());
                         player.sendMessage(plugin.getString("day_set").replace("%world%", world.getName()));
                         break;
                     }
                     case 1: {
-                        World world = Bukkit.getWorld(args[0]);
                         if (world == null) {
                             player.sendMessage(plugin.getString("day_unknown_world"));
                             return true;
@@ -74,20 +73,18 @@ public class TimeCommand implements CommandExecutor {
             }
 
             case "night": {
-                if (!plugin.isPermitted(player, "buildsystem.night")) {
+                if (!plugin.isPermitted(player, "buildsystem.night", world)) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
 
                 switch (args.length) {
                     case 0: {
-                        World world = player.getWorld();
                         world.setTime(configValues.getNightTime());
                         player.sendMessage(plugin.getString("night_set").replace("%world%", world.getName()));
                         break;
                     }
                     case 1: {
-                        World world = Bukkit.getWorld(args[0]);
                         if (world == null) {
                             player.sendMessage(plugin.getString("night_unknown_world"));
                             return true;
