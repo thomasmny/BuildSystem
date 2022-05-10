@@ -399,16 +399,19 @@ public class BuildSystem extends JavaPlugin {
     }
 
     public boolean isPermitted(Player player, String permission) {
-        UUID creator = worldManager.getBuildWorld(player.getWorld()).getCreatorId();
-
         if (player.hasPermission("buildsystem.admin")) {
             return true;
         }
 
-        if (player.getUniqueId().equals(creator)) {
-            return (player.hasPermission(permission + ".self") || player.hasPermission(permission));
+        try {
+            UUID creator = worldManager.getBuildWorld(player.getWorld()).getCreatorId();
+            if (player.getUniqueId().equals(creator)) {
+                return (player.hasPermission(permission + ".self") || player.hasPermission(permission));
+            }
+            return player.hasPermission(permission + ".other");
+        } catch (NullPointerException e) {
+            return false;
         }
-        return player.hasPermission(permission + ".other");
     }
 
     public void sendPermissionMessage(CommandSender sender) {
