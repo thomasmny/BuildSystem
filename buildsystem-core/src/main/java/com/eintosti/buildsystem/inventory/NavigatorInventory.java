@@ -74,6 +74,10 @@ public class NavigatorInventory implements Listener {
                 plugin.getPrivateInventory().openInventory(player);
                 break;
             case 15:
+                if (!player.hasPermission("buildsystem.settings")) {
+                    XSound.ENTITY_ITEM_BREAK.play(player);
+                    return;
+                }
                 plugin.getSettingsInventory().openInventory(player);
                 break;
             default:

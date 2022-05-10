@@ -15,8 +15,8 @@ import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.Builder;
 import com.eintosti.buildsystem.util.UUIDFetcher;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -182,7 +182,8 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
                     return;
                 }
 
-                String builderName = ChatColor.stripColor(itemMeta.getDisplayName());
+                String template = plugin.getString("worldeditor_builders_builder_item").replace("%builder%", "");
+                String builderName = StringUtils.difference(template, itemMeta.getDisplayName());
                 UUID builderId = UUIDFetcher.getUUID(builderName);
                 buildWorld.removeBuilder(builderId);
 

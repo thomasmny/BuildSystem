@@ -686,7 +686,7 @@ public class WorldsCommand implements CommandExecutor {
 
         new PlayerChatInput(plugin, player, "enter_player_name", input -> {
             String builderName = input.trim();
-            Player builderPlayer = Bukkit.getPlayer(builderName);
+            Player builderPlayer = Bukkit.getPlayerExact(builderName);
             Builder builder;
             UUID builderId;
 
@@ -806,7 +806,7 @@ public class WorldsCommand implements CommandExecutor {
 
         new PlayerChatInput(plugin, player, "enter_player_name", input -> {
             String builderName = input.trim();
-            Player builderPlayer = Bukkit.getPlayer(builderName);
+            Player builderPlayer = Bukkit.getPlayerExact(builderName);
             UUID builderId;
 
             if (builderPlayer == null) {
@@ -820,7 +820,7 @@ public class WorldsCommand implements CommandExecutor {
                 builderId = builderPlayer.getUniqueId();
             }
 
-            if (buildWorld.isCreator(player)) {
+            if (builderId.equals(player.getUniqueId()) && buildWorld.isCreator(player)) {
                 player.sendMessage(plugin.getString("worlds_removebuilder_not_yourself"));
                 player.closeInventory();
                 return;

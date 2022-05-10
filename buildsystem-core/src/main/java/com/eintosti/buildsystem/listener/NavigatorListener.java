@@ -97,11 +97,6 @@ public class NavigatorListener implements Listener {
             return;
         }
 
-        if (!player.hasPermission("buildsystem.navigator.item")) {
-            plugin.sendPermissionMessage(player);
-            return;
-        }
-
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta == null || !itemMeta.hasDisplayName()) {
             return;
@@ -109,6 +104,11 @@ public class NavigatorListener implements Listener {
 
         XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
         if (xMaterial != configValues.getNavigatorItem() || !itemMeta.getDisplayName().equals(plugin.getString("navigator_item"))) {
+            return;
+        }
+
+        if (!player.hasPermission("buildsystem.navigator.item")) {
+            plugin.sendPermissionMessage(player);
             return;
         }
 
