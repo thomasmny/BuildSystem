@@ -44,7 +44,7 @@ public class NoAICommand implements CommandExecutor {
         }
 
         Player player = (Player) sender;
-        if (!player.hasPermission("buildsystem.noai")) {
+        if (!plugin.isPermitted(player,"buildsystem.noai")) {
             plugin.sendPermissionMessage(player);
             return true;
         }

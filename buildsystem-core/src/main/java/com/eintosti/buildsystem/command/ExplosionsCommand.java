@@ -41,7 +41,7 @@ public class ExplosionsCommand implements CommandExecutor {
         }
 
         Player player = (Player) sender;
-        if (!player.hasPermission("buildsystem.explosions")) {
+        if (!plugin.isPermitted(player, "buildsystem.explosions")) {
             plugin.sendPermissionMessage(player);
             return true;
         }
