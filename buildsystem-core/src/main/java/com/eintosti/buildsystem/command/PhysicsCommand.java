@@ -41,7 +41,7 @@ public class PhysicsCommand implements CommandExecutor {
         }
 
         Player player = (Player) sender;
-        if (!player.hasPermission("buildsystem.physics")) {
+        if (!plugin.isPermitted(player, "buildsystem.physics")) {
             plugin.sendPermissionMessage(player);
             return true;
         }

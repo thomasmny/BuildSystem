@@ -42,6 +42,7 @@ import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
@@ -50,6 +51,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author einTosti
@@ -394,6 +396,19 @@ public class BuildSystem extends JavaPlugin {
         return player.hasPermission("buildsystem.admin")
                 || player.hasPermission("buildsystem.bypass.archive")
                 || playerManager.getBuildPlayers().contains(player.getUniqueId());
+    }
+
+    public boolean isPermitted(Player player, String permission) {
+        UUID creator = worldManager.getBuildWorld(player.getWorld()).getCreatorId();
+
+        if (player.hasPermission("buildsystem.admin")) {
+            return true;
+        }
+
+        if (player.getUniqueId().equals(creator)) {
+            return (player.hasPermission(permission + ".self") || player.hasPermission(permission));
+        }
+        return player.hasPermission(permission + ".other");
     }
 
     public void sendPermissionMessage(CommandSender sender) {
