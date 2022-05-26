@@ -80,7 +80,7 @@ public class WorldsCommand implements CommandExecutor {
 
         // Most command use the structure /worlds <argument> <world> <...> which is why we assume that args[1] is the world name
         // Make sure to change if this is not the case for any specific command
-        World world = Bukkit.getWorld(args[1]);
+        World world = args.length >= 2 ? Bukkit.getWorld(args[1]) : player.getWorld();
 
         switch (args[0].toLowerCase()) {
             case "addbuilder": {
