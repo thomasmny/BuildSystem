@@ -16,6 +16,9 @@ settings:
     give-item-on-join: true
 world:
   default:
+    permission:
+      public: "-"
+      private: "worlds.%world%"
     time:
       sunrise: 0
       noon: 6000
