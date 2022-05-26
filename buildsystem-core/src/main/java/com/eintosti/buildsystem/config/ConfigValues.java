@@ -260,11 +260,7 @@ public class ConfigValues {
         return blackListedWorldsToUnload;
     }
 
-    public String getDefaultPrivatePermission() {
-        return defaultPrivatePermission;
-    }
-
-    public String getDefaultPublicPermission() {
-        return defaultPublicPermission;
+    public String getDefaultPermission(boolean privateWorld) {
+        return (privateWorld ? defaultPrivatePermission : defaultPublicPermission);
     }
 }
