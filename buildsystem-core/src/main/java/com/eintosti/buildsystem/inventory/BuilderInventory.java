@@ -15,8 +15,8 @@ import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.Builder;
 import com.eintosti.buildsystem.util.UUIDFetcher;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -69,7 +69,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
 
     private void addBuilderAddItem(Inventory inventory, BuildWorld buildWorld, Player player) {
         UUID creatorId = buildWorld.getCreatorId();
-        if ((creatorId != null && creatorId.equals(player.getUniqueId())) || player.hasPermission("buildsystem.admin")) {
+        if ((creatorId != null && creatorId.equals(player.getUniqueId())) || player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
             inventoryManager.addUrlSkull(inventory, 22, plugin.getString("worldeditor_builders_add_builder_item"),
                     "https://textures.minecraft.net/texture/3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
         } else {
@@ -182,7 +182,8 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
                     return;
                 }
 
-                String builderName = ChatColor.stripColor(itemMeta.getDisplayName());
+                String template = plugin.getString("worldeditor_builders_builder_item").replace("%builder%", "");
+                String builderName = StringUtils.difference(template, itemMeta.getDisplayName());
                 UUID builderId = UUIDFetcher.getUUID(builderName);
                 buildWorld.removeBuilder(builderId);
 

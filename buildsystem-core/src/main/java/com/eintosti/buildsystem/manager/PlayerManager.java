@@ -160,7 +160,7 @@ public class PlayerManager {
      */
     public int getMaxWorlds(Player player, boolean privateWorld) {
         int max = -1;
-        if (player.hasPermission("buildsystem.admin")) {
+        if (player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
             return max;
         }
 
