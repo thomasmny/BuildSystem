@@ -99,7 +99,7 @@ public class BuildWorld implements ConfigurationSerializable {
         this.privateWorld = privateWorld;
         this.worldStatus = WorldStatus.NOT_STARTED;
         this.project = "-";
-        this.permission = "-";
+        this.permission = configValues.getDefaultPermission(privateWorld).replace("%world%", name);
         this.customSpawn = null;
         this.builders = new ArrayList<>();
         this.creationDate = creationDate;

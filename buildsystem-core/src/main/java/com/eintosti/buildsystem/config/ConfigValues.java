@@ -28,6 +28,8 @@ public class ConfigValues {
 
     private String dateFormat;
     private String timeUntilUnload;
+    private String defaultPublicPermission;
+    private String defaultPrivatePermission;
 
     private XMaterial navigatorItem;
     private XMaterial worldEditWand;
@@ -90,6 +92,8 @@ public class ConfigValues {
         this.giveNavigatorOnJoin = config.getBoolean("settings.navigator.give-item-on-join", true);
 
         // World
+        this.defaultPublicPermission = config.getString("world.default.permission.public", "-");
+        this.defaultPrivatePermission = config.getString("world.default.permission.private", "-");
         this.lockWeather = config.getBoolean("world.lock-weather", true);
         this.worldDifficulty = Difficulty.valueOf(config.getString("world.default.difficulty", "PEACEFUL").toUpperCase());
         this.sunriseTime = config.getInt("world.default.time.sunrise", 0);
@@ -254,5 +258,9 @@ public class ConfigValues {
 
     public Set<String> getBlackListedWorldsToUnload() {
         return blackListedWorldsToUnload;
+    }
+
+    public String getDefaultPermission(boolean privateWorld) {
+        return (privateWorld ? defaultPrivatePermission : defaultPublicPermission);
     }
 }
