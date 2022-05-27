@@ -35,13 +35,11 @@ public class WorldConfig extends ConfigurationFile {
     public void loadWorlds(WorldManager worldManager) {
         Logger logger = plugin.getLogger();
         if (plugin.getConfigValues().isUnloadWorlds()) {
-            logger.info("*** Unload worlds is enabled ***");
-            logger.info("*** Therefore worlds will not be loaded ***");
+            logger.info("*** \"Unload worlds\" has been enabled in the config. Therefore worlds will not be pre-loaded ***");
             return;
         }
 
         logger.info("*** All worlds will be loaded now ***");
-
         worldManager.getBuildWorlds().forEach(world -> {
             String worldName = world.getName();
             worldManager.generateBukkitWorld(worldName, world.getType(), world.getDifficulty(), world.getChunkGenerator());
@@ -52,7 +50,6 @@ public class WorldConfig extends ConfigurationFile {
 
             logger.info("✔ World loaded: " + worldName);
         });
-
         logger.info("*** All worlds have been loaded ***");
     }
 }

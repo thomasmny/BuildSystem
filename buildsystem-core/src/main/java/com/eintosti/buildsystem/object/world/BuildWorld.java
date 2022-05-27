@@ -236,6 +236,15 @@ public class BuildWorld implements ConfigurationSerializable {
     }
 
     /**
+     * Gets whether the world has a creator
+     *
+     * @return {@code true} if the world has a reator, {@code false} otherwise
+     */
+    public boolean hasCreator() {
+        return getCreator() != null;
+    }
+
+    /**
      * Get the name of the player who created the world.
      * <p>
      * In older versions of the plugin, the creator was not saved which is why {@code null} can be returned.
