@@ -408,17 +408,17 @@ public class BuildSystem extends JavaPlugin {
      *
      * @param player     The player trying to run the command
      * @param permission The permission needed to run the command
-     * @param world      The world the player wants to run the command on
+     * @param worldName  The name of the world the player wants to run the command on
      * @return {@code true} if the player is allowed to run the command, {@code false} otherwise
      */
-    public boolean isPermitted(Player player, String permission, World world) {
+    public boolean isPermitted(Player player, String permission, String worldName) {
         if (player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
             return true;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(world);
+        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
-            // Most (if not all) command require the world to be non-null.
+            // Most command require the world to be non-null.
             // Nevertheless, return true to allow a "world is null" message to be sent.
             return true;
         }

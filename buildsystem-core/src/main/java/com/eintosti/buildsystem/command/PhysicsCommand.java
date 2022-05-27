@@ -41,8 +41,8 @@ public class PhysicsCommand implements CommandExecutor {
         }
 
         Player player = (Player) sender;
-        World world = args.length == 0 ? player.getWorld() : Bukkit.getWorld(args[0]);
-        if (!plugin.isPermitted(player, "buildsystem.physics", world)) {
+        String worldName = args.length == 0 ? player.getWorld().getName() : args[0];
+        if (!plugin.isPermitted(player, "buildsystem.physics", worldName)) {
             plugin.sendPermissionMessage(player);
             return true;
         }

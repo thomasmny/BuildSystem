@@ -41,11 +41,12 @@ public class TimeCommand implements CommandExecutor {
         }
 
         Player player = (Player) sender;
-        World world = args.length == 0 ? player.getWorld() : Bukkit.getWorld(args[0]);
+        String worldName = args.length == 0 ? player.getWorld().getName() : args[0];
+        World world = Bukkit.getWorld(worldName);
 
         switch (label.toLowerCase()) {
             case "day": {
-                if (!plugin.isPermitted(player, "buildsystem.day", world)) {
+                if (!plugin.isPermitted(player, "buildsystem.day", worldName)) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
@@ -73,7 +74,7 @@ public class TimeCommand implements CommandExecutor {
             }
 
             case "night": {
-                if (!plugin.isPermitted(player, "buildsystem.night", world)) {
+                if (!plugin.isPermitted(player, "buildsystem.night", worldName)) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
