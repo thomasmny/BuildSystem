@@ -260,27 +260,42 @@ public class EditInventory implements Listener {
 
         switch (event.getSlot()) {
             case 20:
-                buildWorld.setBlockBreaking(!buildWorld.isBlockBreaking());
+                if (hasPermission(player, "buildsystem.edit.breaking")) {
+                    buildWorld.setBlockBreaking(!buildWorld.isBlockBreaking());
+                }
                 break;
             case 21:
-                buildWorld.setBlockPlacement(!buildWorld.isBlockPlacement());
+                if (hasPermission(player, "buildsystem.edit.placement")) {
+                    buildWorld.setBlockPlacement(!buildWorld.isBlockPlacement());
+                }
                 break;
             case 22:
-                buildWorld.setPhysics(!buildWorld.isPhysics());
+                if (hasPermission(player, "buildsystem.edit.physics")) {
+                    buildWorld.setPhysics(!buildWorld.isPhysics());
+                }
                 break;
             case 23:
-                changeTime(player, buildWorld);
+                if (hasPermission(player, "buildsystem.edit.time")) {
+                    changeTime(player, buildWorld);
+                }
                 break;
             case 24:
-                buildWorld.setExplosions(!buildWorld.isExplosions());
+                if (hasPermission(player, "buildsystem.edit.explosions")) {
+                    buildWorld.setExplosions(!buildWorld.isExplosions());
+                }
                 break;
 
             case 29:
-                removeEntities(player, buildWorld);
+                if (hasPermission(player, "buildsystem.edit.entities")) {
+                    removeEntities(player, buildWorld);
+                }
                 return;
             case 30:
                 if (itemStack.getType() == XMaterial.BARRIER.parseMaterial()) {
                     XSound.ENTITY_ITEM_BREAK.play(player);
+                    return;
+                }
+                if (!hasPermission(player, "buildsystem.edit.builders")) {
                     return;
                 }
                 if (event.isRightClick()) {
@@ -291,39 +306,56 @@ public class EditInventory implements Listener {
                 buildWorld.setBuilders(!buildWorld.isBuilders());
                 break;
             case 31:
-                buildWorld.setMobAI(!buildWorld.isMobAI());
+                if (hasPermission(player, "buildsystem.edit.mobai")) {
+                    buildWorld.setMobAI(!buildWorld.isMobAI());
+                }
                 break;
             case 32:
                 if (itemStack.getType() == XMaterial.BARRIER.parseMaterial()) {
                     XSound.ENTITY_ITEM_BREAK.play(player);
                     return;
                 }
+                if (!hasPermission(player, "buildsystem.edit.visibility")) {
+                    return;
+                }
                 buildWorld.setPrivate(!buildWorld.isPrivate());
                 break;
             case 33:
-                buildWorld.setBlockInteractions(!buildWorld.isBlockInteractions());
+                if (hasPermission(player, "buildsystem.edit.interactions")) {
+                    buildWorld.setBlockInteractions(!buildWorld.isBlockInteractions());
+                }
                 break;
 
             case 38:
-                XSound.BLOCK_CHEST_OPEN.play(player);
-                plugin.getGameRules().resetInvIndex(player.getUniqueId());
-                plugin.getGameRuleInventory().openInventory(player, buildWorld);
+                if (hasPermission(player, "buildsystem.edit.gamerules")) {
+                    XSound.BLOCK_CHEST_OPEN.play(player);
+                    plugin.getGameRules().resetInvIndex(player.getUniqueId());
+                    plugin.getGameRuleInventory().openInventory(player, buildWorld);
+                }
                 return;
             case 39:
-                buildWorld.cycleDifficulty();
-                buildWorld.getWorld().setDifficulty(buildWorld.getDifficulty());
+                if (hasPermission(player, "buildsystem.edit.difficulty")) {
+                    buildWorld.cycleDifficulty();
+                    buildWorld.getWorld().setDifficulty(buildWorld.getDifficulty());
+                }
                 break;
             case 40:
-                XSound.ENTITY_CHICKEN_EGG.play(player);
-                plugin.getStatusInventory().openInventory(player);
+                if (hasPermission(player, "buildsystem.edit.status")) {
+                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    plugin.getStatusInventory().openInventory(player);
+                }
                 return;
             case 41:
-                XSound.ENTITY_CHICKEN_EGG.play(player);
-                plugin.getWorldsCommand().getProjectInput(player, false);
+                if (hasPermission(player, "buildsystem.edit.project")) {
+                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    plugin.getWorldsCommand().getProjectInput(player, false);
+                }
                 return;
             case 42:
-                XSound.ENTITY_CHICKEN_EGG.play(player);
-                plugin.getWorldsCommand().getPermissionInput(player, false);
+                if (hasPermission(player, "buildsystem.edit.permission")) {
+                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    plugin.getWorldsCommand().getPermissionInput(player, false);
+                }
                 return;
 
             default:
@@ -332,6 +364,16 @@ public class EditInventory implements Listener {
 
         XSound.ENTITY_CHICKEN_EGG.play(player);
         openInventory(player, buildWorld);
+    }
+
+    private boolean hasPermission(Player player, String permission) {
+        if (player.hasPermission(permission)) {
+            return true;
+        }
+        player.closeInventory();
+        plugin.sendPermissionMessage(player);
+        XSound.ENTITY_ITEM_BREAK.play(player);
+        return false;
     }
 
     private void changeTime(Player player, BuildWorld buildWorld) {
