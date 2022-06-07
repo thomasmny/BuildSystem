@@ -135,8 +135,12 @@ public class SettingsInteractListener implements Listener {
             return;
         }
 
-        Material material = itemStack.getType();
-        if (!XTag.FLOWERS.isTagged(XMaterial.matchXMaterial(material))) {
+        XMaterial xMaterial = XMaterial.matchXMaterial(itemStack.getType());
+        if (!XTag.FLOWERS.isTagged(xMaterial)
+                || !XTag.REPLACEABLE_PLANTS.isTagged(xMaterial)
+                || !XTag.ALIVE_CORAL_PLANTS.isTagged(xMaterial)
+                || !XTag.DEAD_CORAL_PLANTS.isTagged(xMaterial)
+                || !XTag.SAPLINGS.isTagged(xMaterial)) {
             return;
         }
 

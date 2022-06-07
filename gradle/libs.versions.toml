@@ -1,6 +1,6 @@
 [versions]
 # Platform expectations
-spigot = "1.18.2-R0.1-SNAPSHOT"
+spigot = "1.19-R0.1-SNAPSHOT"
 
 # Plugins
 luckperms = "5.4"
