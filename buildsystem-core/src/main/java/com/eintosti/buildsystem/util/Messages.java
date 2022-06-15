@@ -284,6 +284,7 @@ public class Messages {
         setMessage(sb, config, "worlds_importall_started", "%prefix% &7Beginning import of &b%amount% &7worlds...");
         setMessage(sb, config, "worlds_importall_delay", "%prefix% &8➥ &7Delay between each world: &b%delay%s&7.");
         setMessage(sb, config, "worlds_importall_invalid_character", "%prefix% &c✘ &7&o%world% &7contains invalid character &8(&c%char%&8)");
+        setMessage(sb, config, "worlds_importall_world_already_imported", "%prefix% &c&l✗ &7World already imported: &b%world%");
         setMessage(sb, config, "worlds_importall_world_imported", "%prefix% &a✔ &7World imported: &b%world%");
         setMessage(sb, config, "worlds_importall_finished", "%prefix% &7All worlds have been &asuccessfully &7imported.");
         addLine(sb, "");
