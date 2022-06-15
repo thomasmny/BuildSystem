@@ -162,13 +162,13 @@ public class WorldManager {
 
         new PlayerChatInput(plugin, player, "enter_world_name", input -> {
             for (String charString : input.split("")) {
-                if (charString.matches("[^A-Za-z0-9/_-]")) {
+                if (charString.matches("[^A-Za-z\\d/_-]")) {
                     player.sendMessage(plugin.getString("worlds_world_creation_invalid_characters"));
                     break;
                 }
             }
 
-            String worldName = input.replaceAll("[^A-Za-z0-9/_-]", "").replace(" ", "_").trim();
+            String worldName = input.replaceAll("[^A-Za-z\\d/_-]", "").replace(" ", "_").trim();
             if (worldName.isEmpty()) {
                 player.sendMessage(plugin.getString("worlds_world_creation_name_bank"));
                 return;
@@ -476,7 +476,7 @@ public class WorldManager {
      */
     public void importWorld(Player player, String worldName, Generator generator, String... generatorName) {
         for (String charString : worldName.split("")) {
-            if (charString.matches("[^A-Za-z0-9/_-]")) {
+            if (charString.matches("[^A-Za-z\\d/_-]")) {
                 player.sendMessage(plugin.getString("worlds_import_invalid_character")
                         .replace("%world%", worldName)
                         .replace("%char%", charString)
@@ -488,6 +488,11 @@ public class WorldManager {
         File file = new File(Bukkit.getWorldContainer(), worldName);
         if (!file.exists() || !file.isDirectory()) {
             player.sendMessage(plugin.getString("worlds_import_unknown_world"));
+            return;
+        }
+
+        if (getBuildWorld(worldName) != null) {
+            player.sendMessage(plugin.getString("worlds_world_exists"));
             return;
         }
 
@@ -547,10 +552,15 @@ public class WorldManager {
 
                 String worldName = worldList[i];
                 for (String charString : worldName.split("")) {
-                    if (charString.matches("[^A-Za-z0-9/_-]")) {
+                    if (charString.matches("[^A-Za-z\\d/_-]")) {
                         player.sendMessage(plugin.getString("worlds_importall_invalid_character").replace("%world%", worldName).replace("%char%", charString));
                         return;
                     }
+                }
+
+                if (getBuildWorld(worldName) != null) {
+                    player.sendMessage(plugin.getString("worlds_importall_world_already_imported").replace("%world%", worldName));
+                    return;
                 }
 
                 long creation = FileUtils.getDirectoryCreation(new File(Bukkit.getWorldContainer(), worldName));
@@ -559,7 +569,7 @@ public class WorldManager {
                 generateBukkitWorld(worldName, WorldType.VOID, buildWorld.getDifficulty());
                 player.sendMessage(plugin.getString("worlds_importall_world_imported").replace("%world%", worldName));
 
-                if (!(worldsImported.get() < worlds)) {
+                if (worldsImported.get() >= worlds) {
                     this.cancel();
                     player.sendMessage(plugin.getString("worlds_importall_finished"));
                 }
@@ -671,14 +681,14 @@ public class WorldManager {
         }
 
         for (String charString : newName.split("")) {
-            if (charString.matches("[^A-Za-z0-9/_-]")) {
+            if (charString.matches("[^A-Za-z\\d/_-]")) {
                 player.sendMessage(plugin.getString("worlds_world_creation_invalid_characters"));
                 break;
             }
         }
 
         player.closeInventory();
-        String parsedNewName = newName.replaceAll("[^A-Za-z0-9/_-]", "").replace(" ", "_").trim();
+        String parsedNewName = newName.replaceAll("[^A-Za-z\\d/_-]", "").replace(" ", "_").trim();
         if (parsedNewName.isEmpty()) {
             player.sendMessage(plugin.getString("worlds_world_creation_name_bank"));
             return;
