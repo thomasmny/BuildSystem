@@ -1,6 +1,6 @@
 ![Screenshot](.github/images/header.png)
 
-# BuildSystem ![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/Trichtern/BuildSystem/Build%20main/master) ![version](https://img.shields.io/github/v/release/Trichtern/BuildSystem) [![CodeFactor](https://www.codefactor.io/repository/github/trichtern/buildsystem/badge)](https://www.codefactor.io/repository/github/trichtern/buildsystem) [![Discord](https://img.shields.io/discord/419460301403193344.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.com/invite/Nt467Rf)
+# BuildSystem ![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/Trichtern/BuildSystem/Build%20main/master) ![version](https://img.shields.io/github/v/release/Trichtern/BuildSystem) [![CodeFactor](https://www.codefactor.io/repository/github/trichtern/buildsystem/badge)](https://www.codefactor.io/repository/github/trichtern/buildsystem) [![Discord](https://img.shields.io/discord/419460301403193344.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.com/rduPF3yk62)
 
 ## Table of contents
 
