@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-package com.eintosti.buildsystem.version;
+package com.eintosti.buildsystem.version.gamerules;
 
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -20,7 +20,7 @@ import java.util.UUID;
  */
 public interface GameRules {
 
-    Inventory getInventory(Player player, World worldName);
+    Inventory getInventory(Player player, World world);
 
     void addGameRules(World worldName);
 

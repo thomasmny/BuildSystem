@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-package com.eintosti.buildsystem.version;
+package com.eintosti.buildsystem.version.util;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;

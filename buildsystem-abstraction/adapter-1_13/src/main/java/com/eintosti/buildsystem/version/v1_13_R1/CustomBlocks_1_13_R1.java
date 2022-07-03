@@ -8,8 +8,8 @@
 
 package com.eintosti.buildsystem.version.v1_13_R1;
 
-import com.eintosti.buildsystem.version.CustomBlocks;
-import com.eintosti.buildsystem.version.DirectionUtils;
+import com.eintosti.buildsystem.version.customblocks.CustomBlocks;
+import com.eintosti.buildsystem.version.util.DirectionUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;

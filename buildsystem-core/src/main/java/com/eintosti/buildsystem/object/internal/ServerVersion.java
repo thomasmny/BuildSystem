@@ -9,8 +9,8 @@
 package com.eintosti.buildsystem.object.internal;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.version.CustomBlocks;
-import com.eintosti.buildsystem.version.GameRules;
+import com.eintosti.buildsystem.version.customblocks.CustomBlocks;
+import com.eintosti.buildsystem.version.gamerules.GameRules;
 import com.eintosti.buildsystem.version.v1_12_R1.CustomBlocks_1_12_R1;
 import com.eintosti.buildsystem.version.v1_12_R1.GameRules_1_12_R1;
 import com.eintosti.buildsystem.version.v1_13_R1.CustomBlocks_1_13_R1;
