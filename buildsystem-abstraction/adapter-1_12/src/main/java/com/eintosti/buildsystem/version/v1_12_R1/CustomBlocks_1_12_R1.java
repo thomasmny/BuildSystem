@@ -8,8 +8,8 @@
 
 package com.eintosti.buildsystem.version.v1_12_R1;
 
-import com.eintosti.buildsystem.version.CustomBlocks;
-import com.eintosti.buildsystem.version.DirectionUtils;
+import com.eintosti.buildsystem.version.customblocks.CustomBlocks;
+import com.eintosti.buildsystem.version.util.DirectionUtils;
 import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -45,7 +45,7 @@ public class CustomBlocks_1_12_R1 extends DirectionUtils implements CustomBlocks
         this.plugin = plugin;
 
         String version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-        this.mcVersion = Integer.parseInt(version.replaceAll("[^0-9]", ""));
+        this.mcVersion = Integer.parseInt(version.replaceAll("\\D", ""));
     }
 
     @Override

@@ -8,11 +8,12 @@
 
 package com.eintosti.buildsystem.inventory;
 
+import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.version.GameRules;
+import com.eintosti.buildsystem.version.gamerules.GameRules;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -20,8 +21,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -49,7 +50,7 @@ public class GameRuleInventory implements Listener {
 
     private void fillGuiWithGlass(Player player, Inventory inventory) {
         for (int i = 0; i < inventory.getSize(); i++) {
-            if (isValidSlot(i)) {
+            if (!isValidSlot(i)) {
                 inventoryManager.addGlassPane(plugin, player, inventory, i);
             }
         }
@@ -73,23 +74,12 @@ public class GameRuleInventory implements Listener {
     }
 
     private boolean isValidSlot(int slot) {
-        int[] slots = plugin.getGameRules().getSlots();
-        for (int i : slots) {
-            if (i == slot) {
-                return false;
-            }
-        }
-        return true;
+        return Arrays.stream(plugin.getGameRules().getSlots()).anyMatch(i -> i == slot);
     }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!inventoryManager.checkIfValidClick(event, "worldeditor_gamerules_title")) {
-            return;
-        }
-
-        ItemStack itemStack = event.getCurrentItem();
-        if (itemStack == null) {
             return;
         }
 
@@ -103,7 +93,7 @@ public class GameRuleInventory implements Listener {
 
         GameRules gameRules = plugin.getGameRules();
 
-        switch (itemStack.getType()) {
+        switch (XMaterial.matchXMaterial(event.getCurrentItem())) {
             case PLAYER_HEAD:
                 int slot = event.getSlot();
                 if (slot == 36) {
