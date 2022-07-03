@@ -74,6 +74,7 @@ public class BlockPlaceListener implements Listener {
                 plugin.getString("blocks_smooth_red_sandstone"),
                 plugin.getString("blocks_powered_redstone_lamp"),
                 plugin.getString("blocks_burning_furnace"),
+                plugin.getString("blocks_piston_head"),
                 plugin.getString("blocks_command_block"),
                 plugin.getString("blocks_barrier"),
                 plugin.getString("blocks_mob_spawner"),

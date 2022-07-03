@@ -52,6 +52,17 @@ public abstract class DirectionUtils {
         return BlockFace.NORTH;
     }
 
+    public BlockFace getPistonBlockFace(Player player) {
+        float pitch = player.getLocation().getPitch();
+        if (pitch <= -45) {
+            return BlockFace.DOWN;
+        } else if (pitch >= 45) {
+            return BlockFace.UP;
+        } else {
+            return getDirection(player);
+        }
+    }
+
     public boolean isTop(Player player, Block block) {
         Location location = player.getEyeLocation().clone();
         while ((!location.getBlock().equals(block)) && location.distance(player.getEyeLocation()) < 6) {

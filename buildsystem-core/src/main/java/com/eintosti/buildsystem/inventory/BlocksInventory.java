@@ -57,8 +57,9 @@ public class BlocksInventory implements Listener {
 
         inventoryManager.addUrlSkull(inventory, 28, plugin.getString("blocks_powered_redstone_lamp"), "https://textures.minecraft.net/texture/7eb4b34519fe15847dbea7229179feeb6ea57712d165dcc8ff6b785bb58911b0");
         inventoryManager.addUrlSkull(inventory, 29, plugin.getString("blocks_burning_furnace"), "https://textures.minecraft.net/texture/d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c");
-        inventoryManager.addUrlSkull(inventory, 30, plugin.getString("blocks_command_block"), "https://textures.minecraft.net/texture/8514d225b262d847c7e557b474327dcef758c2c5882e41ee6d8c5e9cd3bc914");
-        inventoryManager.addUrlSkull(inventory, 31, plugin.getString("blocks_barrier"), "https://textures.minecraft.net/texture/3ed1aba73f639f4bc42bd48196c715197be2712c3b962c97ebf9e9ed8efa025");
+        inventoryManager.addUrlSkull(inventory, 30, plugin.getString("blocks_piston_head"), "https://textures.minecraft.net/texture/aa868ce917c09af8e4c350a5807041f6509bf2b89aca45e591fbbd7d4b117d");
+        inventoryManager.addUrlSkull(inventory, 31, plugin.getString("blocks_command_block"), "https://textures.minecraft.net/texture/8514d225b262d847c7e557b474327dcef758c2c5882e41ee6d8c5e9cd3bc914");
+        inventoryManager.addUrlSkull(inventory, 32, plugin.getString("blocks_barrier"), "https://textures.minecraft.net/texture/3ed1aba73f639f4bc42bd48196c715197be2712c3b962c97ebf9e9ed8efa025");
 
         inventoryManager.addUrlSkull(inventory, 37, plugin.getString("blocks_mob_spawner"), "https://textures.minecraft.net/texture/db6bd9727abb55d5415265789d4f2984781a343c68dcaf57f554a5e9aa1cd");
         inventoryManager.addUrlSkull(inventory, 38, plugin.getString("blocks_nether_portal"), "https://textures.minecraft.net/texture/b0bfc2577f6e26c6c6f7365c2c4076bccee653124989382ce93bca4fc9e39b");
@@ -143,9 +144,12 @@ public class BlocksInventory implements Listener {
                 playerInventory.addItem(inventoryManager.getUrlSkull(plugin.getString("blocks_burning_furnace"), "https://textures.minecraft.net/texture/d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c"));
                 break;
             case 30:
-                playerInventory.addItem(inventoryManager.getUrlSkull(plugin.getString("blocks_command_block"), "https://textures.minecraft.net/texture/8514d225b262d847c7e557b474327dcef758c2c5882e41ee6d8c5e9cd3bc914"));
+                playerInventory.addItem(inventoryManager.getUrlSkull(plugin.getString("blocks_piston_head"), "https://textures.minecraft.net/texture/aa868ce917c09af8e4c350a5807041f6509bf2b89aca45e591fbbd7d4b117d"));
                 break;
             case 31:
+                playerInventory.addItem(inventoryManager.getUrlSkull(plugin.getString("blocks_command_block"), "https://textures.minecraft.net/texture/8514d225b262d847c7e557b474327dcef758c2c5882e41ee6d8c5e9cd3bc914"));
+                break;
+            case 32:
                 playerInventory.addItem(inventoryManager.getItemStack(XMaterial.BARRIER, "§bBarrier"));
                 break;
 

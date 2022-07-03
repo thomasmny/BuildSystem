@@ -675,6 +675,7 @@ public class Messages {
         setMessage(sb, config, "blocks_smooth_red_sandstone", "&bSmooth Red Sandstone");
         setMessage(sb, config, "blocks_powered_redstone_lamp", "&bPowered Redstone Lamp");
         setMessage(sb, config, "blocks_burning_furnace", "&bBurning Furnace");
+        setMessage(sb, config, "blocks_piston_head", "&bPiston Head");
         setMessage(sb, config, "blocks_command_block", "&bCommand Block");
         setMessage(sb, config, "blocks_barrier", "&bBarrier");
         setMessage(sb, config, "blocks_mob_spawner", "&bMob Spawner");
