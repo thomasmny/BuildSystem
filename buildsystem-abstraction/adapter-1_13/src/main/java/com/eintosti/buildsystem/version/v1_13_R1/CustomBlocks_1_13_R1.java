@@ -93,12 +93,9 @@ public class CustomBlocks_1_13_R1 extends DirectionUtils implements CustomBlocks
                 case 10:
                     block.setType(Material.MUSHROOM_STEM);
                     MultipleFacing block10Data = (MultipleFacing) block.getBlockData();
-                    block10Data.setFace(BlockFace.UP, false);
-                    block10Data.setFace(BlockFace.DOWN, false);
-                    block10Data.setFace(BlockFace.NORTH, false);
-                    block10Data.setFace(BlockFace.EAST, false);
-                    block10Data.setFace(BlockFace.SOUTH, false);
-                    block10Data.setFace(BlockFace.WEST, false);
+                    for (BlockFace blockFace : new BlockFace[]{BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST}) {
+                        block10Data.setFace(blockFace, false);
+                    }
                     block.setBlockData(block10Data);
                     break;
                 case 11:
@@ -120,24 +117,29 @@ public class CustomBlocks_1_13_R1 extends DirectionUtils implements CustomBlocks
                     break;
                 case 16:
                     block.setType(Material.FURNACE);
-                    powerFurnace(player, block);
+                    powerFurnace(block);
+                    rotate(block, player, null);
                     break;
                 case 17:
-                    block.setType(Material.COMMAND_BLOCK);
+                    block.setType(Material.PISTON_HEAD);
+                    rotate(block, player, getPistonBlockFace(player));
                     break;
                 case 18:
-                    block.setType(Material.BARRIER);
+                    block.setType(Material.COMMAND_BLOCK);
                     break;
                 case 19:
-                    block.setType(Material.SPAWNER);
+                    block.setType(Material.BARRIER);
                     break;
                 case 20:
-                    block.setType(Material.NETHER_PORTAL);
+                    block.setType(Material.SPAWNER);
                     break;
                 case 21:
-                    block.setType(Material.END_PORTAL);
+                    block.setType(Material.NETHER_PORTAL);
                     break;
                 case 22:
+                    block.setType(Material.END_PORTAL);
+                    break;
+                case 23:
                     block.setType(Material.DRAGON_EGG);
                     break;
                 default:
@@ -233,8 +235,7 @@ public class CustomBlocks_1_13_R1 extends DirectionUtils implements CustomBlocks
         block.setBlockData(lightable);
     }
 
-    private void powerFurnace(Player player, Block block) {
-        rotate(block, player, null);
+    private void powerFurnace(Block block) {
         Furnace furnace = (Furnace) block.getState();
         furnace.setBurnTime(Short.MAX_VALUE);
         furnace.update();

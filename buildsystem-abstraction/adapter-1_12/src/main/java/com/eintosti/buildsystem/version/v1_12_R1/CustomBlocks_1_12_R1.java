@@ -59,6 +59,7 @@ public class CustomBlocks_1_12_R1 extends DirectionUtils implements CustomBlocks
         }
 
         String displayName = itemMeta.getDisplayName();
+        Player player = event.getPlayer();
 
         Bukkit.getScheduler().runTask(plugin, () -> {
             switch (Arrays.asList(blockName).indexOf(displayName)) {
@@ -127,24 +128,28 @@ public class CustomBlocks_1_12_R1 extends DirectionUtils implements CustomBlocks
                 case 16:
                     block.setType(Material.BURNING_FURNACE);
                     powerFurnace(block);
-                    rotate(block, event.getPlayer(), null);
+                    rotate(block, player, null);
                     break;
                 case 17:
-                    block.setType(Material.COMMAND);
+                    block.setType(Material.PISTON_EXTENSION);
+                    rotate(block, player, getPistonBlockFace(player));
                     break;
                 case 18:
-                    block.setType(Material.BARRIER);
+                    block.setType(Material.COMMAND);
                     break;
                 case 19:
-                    block.setType(Material.MOB_SPAWNER);
+                    block.setType(Material.BARRIER);
                     break;
                 case 20:
-                    block.setType(Material.PORTAL);
+                    block.setType(Material.MOB_SPAWNER);
                     break;
                 case 21:
-                    block.setType(Material.ENDER_PORTAL);
+                    block.setType(Material.PORTAL);
                     break;
                 case 22:
+                    block.setType(Material.ENDER_PORTAL);
+                    break;
+                case 23:
                     block.setType(Material.DRAGON_EGG);
                     break;
                 default:
