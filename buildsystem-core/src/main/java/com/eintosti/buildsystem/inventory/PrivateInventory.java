@@ -26,7 +26,7 @@ public class PrivateInventory extends FilteredWorldsInventory {
     private final PlayerManager playerManager;
 
     public PrivateInventory(BuildSystem plugin) {
-        super(plugin, "private_title", "private_no_worlds", true,
+        super(plugin, "private_title", "private_no_worlds", Visibility.PRIVATE,
                 Sets.newHashSet(WorldStatus.NOT_STARTED, WorldStatus.IN_PROGRESS, WorldStatus.ALMOST_FINISHED, WorldStatus.FINISHED));
 
         this.plugin = plugin;
@@ -37,7 +37,7 @@ public class PrivateInventory extends FilteredWorldsInventory {
     @Override
     protected Inventory createInventory(Player player) {
         Inventory inventory = super.createInventory(player);
-        if (playerManager.canCreateWorld(player, true)) {
+        if (playerManager.canCreateWorld(player, super.getVisibility())) {
             addWorldCreateItem(inventory, player);
         }
         return inventory;

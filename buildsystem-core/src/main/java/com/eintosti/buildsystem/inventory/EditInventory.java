@@ -12,6 +12,7 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.config.ConfigValues;
+import com.eintosti.buildsystem.inventory.FilteredWorldsInventory.Visibility;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
@@ -175,7 +176,7 @@ public class EditInventory implements Listener {
         int slot = 32;
         String displayName = plugin.getString("worldeditor_visibility_item");
 
-        if (!playerManager.canCreateWorld(player, !buildWorld.isPrivate())) {
+        if (!playerManager.canCreateWorld(player, Visibility.matchVisibility(buildWorld.isPrivate()))) {
             inventoryManager.addItemStack(inventory, slot, XMaterial.BARRIER, "§c§m" + ChatColor.stripColor(displayName));
             return;
         }

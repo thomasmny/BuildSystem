@@ -14,6 +14,7 @@ import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.config.WorldConfig;
+import com.eintosti.buildsystem.inventory.FilteredWorldsInventory.Visibility;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.Builder;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
@@ -119,28 +120,33 @@ public class WorldManager {
     /**
      * Gets a list of all {@link BuildWorld}s created by the given player.
      *
-     * @param player       The player who created the world
-     * @param privateWorld {@code true} if to return private worlds, otherwise {@code false}
+     * @param player     The player who created the world
+     * @param visibility The visibility the world should have
      * @return A list of all worlds created by the given player.
      */
-    public List<BuildWorld> getBuildWorldsCreatedByPlayer(Player player, boolean privateWorld) {
+    public List<BuildWorld> getBuildWorldsCreatedByPlayer(Player player, Visibility visibility) {
         return getBuildWorldsCreatedByPlayer(player).stream()
-                .filter(buildWorld -> isCorrectVisibility(buildWorld, privateWorld))
+                .filter(buildWorld -> isCorrectVisibility(buildWorld, visibility))
                 .collect(Collectors.toList());
     }
 
     /**
      * Gets if a {@link BuildWorld}'s visibility is equal to the given visibility.
      *
-     * @param buildWorld   The world object
-     * @param privateWorld Should the world's visibility be equal to private?
+     * @param buildWorld The world object
+     * @param visibility The visibility the world should have
      * @return {@code true} if the world's visibility is equal to the given visibility, otherwise {@code false}
      */
-    public boolean isCorrectVisibility(BuildWorld buildWorld, boolean privateWorld) {
-        if (privateWorld) {
-            return buildWorld.isPrivate();
-        } else {
-            return !buildWorld.isPrivate();
+    public boolean isCorrectVisibility(BuildWorld buildWorld, Visibility visibility) {
+        switch (visibility) {
+            case PRIVATE:
+                return buildWorld.isPrivate();
+            case PUBLIC:
+                return !buildWorld.isPrivate();
+            case IGNORE:
+                return true;
+            default:
+                return false;
         }
     }
 

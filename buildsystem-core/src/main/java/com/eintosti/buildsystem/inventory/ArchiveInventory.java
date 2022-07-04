@@ -24,7 +24,7 @@ public class ArchiveInventory extends FilteredWorldsInventory {
     private final InventoryManager inventoryManager;
 
     public ArchiveInventory(BuildSystem plugin) {
-        super(plugin, "archive_title", "archive_no_worlds", false, Sets.newHashSet(WorldStatus.ARCHIVE));
+        super(plugin, "archive_title", "archive_no_worlds", Visibility.IGNORE, Sets.newHashSet(WorldStatus.ARCHIVE));
 
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();

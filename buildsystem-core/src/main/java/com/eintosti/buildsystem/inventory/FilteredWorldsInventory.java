@@ -39,17 +39,17 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
 
     private final String inventoryName;
     private final String noWorldsText;
-    private final boolean showPrivateWorlds;
+    private final Visibility visibility;
     private final Set<WorldStatus> validStatus;
 
-    public FilteredWorldsInventory(BuildSystem plugin, String inventoryName, String noWorldsText, boolean showPrivateWorlds, Set<WorldStatus> validStatus) {
+    public FilteredWorldsInventory(BuildSystem plugin, String inventoryName, String noWorldsText, Visibility visibility, Set<WorldStatus> validStatus) {
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
         this.worldManager = plugin.getWorldManager();
 
         this.inventoryName = inventoryName;
         this.noWorldsText = noWorldsText;
-        this.showPrivateWorlds = showPrivateWorlds;
+        this.visibility = visibility;
         this.validStatus = validStatus;
 
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -74,6 +74,15 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         return (int) worldManager.getBuildWorlds().stream()
                 .filter(buildWorld -> isValidWorld(player, buildWorld))
                 .count();
+    }
+
+    /**
+     * Gets the visibility of the worlds that will be displayed.
+     *
+     * @return The visibility of the worlds that will be displayed
+     */
+    protected Visibility getVisibility() {
+        return visibility;
     }
 
     public void openInventory(Player player) {
@@ -129,7 +138,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
      * @return {@code true} if the world should be shown to the player in the navigator, {@code false} otherwise
      */
     private boolean isValidWorld(Player player, BuildWorld buildWorld) {
-        if (!worldManager.isCorrectVisibility(buildWorld, showPrivateWorlds)) {
+        if (!worldManager.isCorrectVisibility(buildWorld, visibility)) {
             return false;
         }
 
@@ -176,7 +185,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
                     return;
                 case 49:
                     XSound.ENTITY_CHICKEN_EGG.play(player);
-                    plugin.getCreateInventory().openInventory(player, CreateInventory.Page.PREDEFINED, showPrivateWorlds);
+                    plugin.getCreateInventory().openInventory(player, CreateInventory.Page.PREDEFINED, visibility);
                     return;
                 case 53:
                     incrementInv(player);
@@ -187,5 +196,15 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         }
 
         inventoryManager.manageInventoryClick(event, player, itemStack);
+    }
+
+    public enum Visibility {
+        PRIVATE,
+        PUBLIC,
+        IGNORE;
+
+        public static Visibility matchVisibility(boolean isPrivateWorld) {
+            return isPrivateWorld ? PRIVATE : PUBLIC;
+        }
     }
 }

@@ -13,6 +13,7 @@ import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.ActionBar;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.config.ConfigValues;
+import com.eintosti.buildsystem.inventory.FilteredWorldsInventory.Visibility;
 import com.eintosti.buildsystem.object.navigator.NavigatorInventoryType;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import org.bukkit.Bukkit;
@@ -126,10 +127,12 @@ public class PlayerManager {
      *  <li>Is the maximum amount of worlds created by the player less than the amount of worlds said player is allowed to create?</li>
      * <ul>
      *
-     * @param player The player trying to create a world
+     * @param player     The player trying to create a world
+     * @param visibility The visibility of the world trying to be created
      * @return {@code true} if the player is allowed to create a world, otherwise {@code false}
      */
-    public boolean canCreateWorld(Player player, boolean showPrivateWorlds) {
+    public boolean canCreateWorld(Player player, Visibility visibility) {
+        boolean showPrivateWorlds = visibility == Visibility.PRIVATE;
         WorldManager worldManager = plugin.getWorldManager();
 
         int maxWorldAmountConfig = configValues.getMaxWorldAmount(showPrivateWorlds);
@@ -138,7 +141,7 @@ public class PlayerManager {
         }
 
         int maxWorldAmountPlayer = getMaxWorlds(player, showPrivateWorlds);
-        if (maxWorldAmountPlayer >= 0 && worldManager.getBuildWorldsCreatedByPlayer(player, showPrivateWorlds).size() >= maxWorldAmountPlayer) {
+        if (maxWorldAmountPlayer >= 0 && worldManager.getBuildWorldsCreatedByPlayer(player, visibility).size() >= maxWorldAmountPlayer) {
             return false;
         }
 

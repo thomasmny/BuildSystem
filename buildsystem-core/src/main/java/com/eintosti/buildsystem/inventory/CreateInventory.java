@@ -11,6 +11,7 @@ package com.eintosti.buildsystem.inventory;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.inventory.FilteredWorldsInventory.Visibility;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.data.WorldType;
@@ -37,6 +38,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
     private final WorldManager worldManager;
 
     private int numTemplates = 0;
+    private Visibility visibility;
     private boolean createPrivateWorld;
 
     public CreateInventory(BuildSystem plugin) {
@@ -73,8 +75,9 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         return inventory;
     }
 
-    public void openInventory(Player player, Page page, boolean createPrivateWorld) {
-        this.createPrivateWorld = createPrivateWorld;
+    public void openInventory(Player player, Page page, Visibility visibility) {
+        this.visibility = visibility;
+        this.createPrivateWorld = visibility == Visibility.PRIVATE;
 
         if (page == Page.TEMPLATES) {
             addTemplates(player, page);
@@ -180,7 +183,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         }
 
         if (newPage != null) {
-            openInventory(player, newPage, this.createPrivateWorld);
+            openInventory(player, newPage, this.visibility);
             XSound.ENTITY_CHICKEN_EGG.play(player);
             return;
         }
@@ -246,7 +249,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
                         } else if (slot == 42) {
                             incrementInv(player);
                         }
-                        openInventory(player, CreateInventory.Page.TEMPLATES, createPrivateWorld);
+                        openInventory(player, CreateInventory.Page.TEMPLATES, visibility);
                         break;
                     default:
                         return;
