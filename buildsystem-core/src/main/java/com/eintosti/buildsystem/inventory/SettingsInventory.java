@@ -148,6 +148,14 @@ public class SettingsInventory implements Listener {
                 url = "https://textures.minecraft.net/texture/4e91200df1cae51acc071f85c7f7f5b8449d39bb32f363b0aa51dbc85d133e";
                 lore = plugin.getStringList("settings_worldsort_lore_alphabetically_project_za");
                 break;
+            case STATUS_NOT_STARTED:
+                url = "https://textures.minecraft.net/texture/ed339d52393d5183a3664015c0b2c6c1012ea1b525ed952073311ca180a0e6";
+                lore = plugin.getStringList("settings_worldsort_lore_status_not_started");
+                break;
+            case STATUS_FINISHED:
+                url = "https://textures.minecraft.net/texture/400b9fb7aab4e3b69a5474b1a05d0a4b1449f4080a6c0f6977d0e33271c9b029";
+                lore = plugin.getStringList("settings_worldsort_lore_status_finished");
+                break;
             case NEWEST_FIRST:
                 url = "https://textures.minecraft.net/texture/71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530";
                 lore = plugin.getStringList("settings_worldsort_lore_date_newest");
@@ -260,26 +268,8 @@ public class SettingsInventory implements Listener {
                 settings.setSpawnTeleport(!settings.isSpawnTeleport());
                 break;
             case 33:
-                switch (settings.getWorldSort()) {
-                    case NAME_A_TO_Z:
-                        settings.setWorldSort(WorldSort.NAME_Z_TO_A);
-                        break;
-                    case NAME_Z_TO_A:
-                        settings.setWorldSort(WorldSort.PROJECT_A_TO_Z);
-                        break;
-                    case PROJECT_A_TO_Z:
-                        settings.setWorldSort(WorldSort.PROJECT_Z_TO_A);
-                        break;
-                    case PROJECT_Z_TO_A:
-                        settings.setWorldSort(WorldSort.NEWEST_FIRST);
-                        break;
-                    case NEWEST_FIRST:
-                        settings.setWorldSort(WorldSort.OLDEST_FIRST);
-                        break;
-                    case OLDEST_FIRST:
-                        settings.setWorldSort(WorldSort.NAME_A_TO_Z);
-                        break;
-                }
+                WorldSort newSort = event.isLeftClick() ? settings.getWorldSort().getNext() : settings.getWorldSort().getPrevious();
+                settings.setWorldSort(newSort);
                 break;
             default:
                 return;

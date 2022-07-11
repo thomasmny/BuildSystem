@@ -359,11 +359,17 @@ public class InventoryManager {
                 buildWorlds.sort(Comparator.comparing(worldA -> worldA.getProject().toLowerCase()));
                 Collections.reverse(buildWorlds);
                 break;
+            case STATUS_NOT_STARTED:
+                buildWorlds.sort(new WorldStatusComparator());
+                break;
+            case STATUS_FINISHED:
+                buildWorlds.sort(new WorldStatusComparator().reversed());
+                break;
             case NEWEST_FIRST:
-                buildWorlds.sort(new CreationComparator().reversed());
+                buildWorlds.sort(new WorldCreationComparator().reversed());
                 break;
             case OLDEST_FIRST:
-                buildWorlds.sort(new CreationComparator());
+                buildWorlds.sort(new WorldCreationComparator());
                 break;
         }
         return buildWorlds;
@@ -813,11 +819,19 @@ public class InventoryManager {
         }
     }
 
-    private static class CreationComparator implements Comparator<BuildWorld> {
+    private static class WorldCreationComparator implements Comparator<BuildWorld> {
 
         @Override
         public int compare(BuildWorld buildWorld1, BuildWorld buildWorld2) {
             return Long.compare(buildWorld1.getCreationDate(), buildWorld2.getCreationDate());
+        }
+    }
+
+    private static class WorldStatusComparator implements Comparator<BuildWorld> {
+
+        @Override
+        public int compare(BuildWorld buildWorld1, BuildWorld buildWorld2) {
+            return Integer.compare(buildWorld1.getStatus().getStage(), buildWorld2.getStatus().getStage());
         }
     }
 }

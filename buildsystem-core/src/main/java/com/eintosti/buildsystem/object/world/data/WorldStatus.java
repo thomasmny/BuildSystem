@@ -9,6 +9,7 @@
 package com.eintosti.buildsystem.object.world.data;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.object.world.BuildWorld;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -18,39 +19,41 @@ public enum WorldStatus {
     /**
      * Represent a world that has not been modified.
      */
-    NOT_STARTED("status_not_started"),
+    NOT_STARTED("status_not_started", 1),
 
     /**
      * Represents a world that is currently being built.
      * <p>
      * The status is automatically switched to this when a block is placed/broken.
      */
-    IN_PROGRESS("status_in_progress"),
+    IN_PROGRESS("status_in_progress", 2),
 
     /**
      * Represents a world that has almost been completed.
      */
-    ALMOST_FINISHED("status_almost_finished"),
+    ALMOST_FINISHED("status_almost_finished", 3),
 
     /**
      * Represents a world that has completed its building phase.
      */
-    FINISHED("status_finished"),
+    FINISHED("status_finished", 4),
 
     /**
      * Represents an old world that has been finished for a while. Blocks cannot be placed/broken in archived worlds.
      */
-    ARCHIVE("status_archive"),
+    ARCHIVE("status_archive", 5),
 
     /**
      * Represents a world that is not shown in the navigator.
      */
-    HIDDEN("status_hidden");
+    HIDDEN("status_hidden", 6);
 
     private final String typeNameKey;
+    private final int stage;
 
-    WorldStatus(String typeNameKey) {
+    WorldStatus(String typeNameKey, int stage) {
         this.typeNameKey = typeNameKey;
+        this.stage = stage;
     }
 
     /**
@@ -60,5 +63,15 @@ public enum WorldStatus {
      */
     public String getName() {
         return JavaPlugin.getPlugin(BuildSystem.class).getString(typeNameKey);
+    }
+
+    /**
+     * Gets the stage in which the {@link BuildWorld} is currently in.
+     * A higher value means the world is further in development.
+     *
+     * @return the stage in which the world is currently in.
+     */
+    public int getStage() {
+        return stage;
     }
 }
