@@ -149,13 +149,11 @@ public class SettingsInventory implements Listener {
                 lore = plugin.getStringList("settings_worldsort_lore_alphabetically_project_za");
                 break;
             case STATUS_NOT_STARTED:
-                //TODO: Change texture?
-                url = "https://textures.minecraft.net/texture/2ac58b1a3b53b9481e317a1ea4fc5eed6bafca7a25e741a32e4e3c2841278c";
+                url = "https://textures.minecraft.net/texture/ed339d52393d5183a3664015c0b2c6c1012ea1b525ed952073311ca180a0e6";
                 lore = plugin.getStringList("settings_worldsort_lore_status_not_started");
                 break;
             case STATUS_FINISHED:
-                //TODO: Change texture?
-                url = "https://textures.minecraft.net/texture/4e91200df1cae51acc071f85c7f7f5b8449d39bb32f363b0aa51dbc85d133e";
+                url = "https://textures.minecraft.net/texture/400b9fb7aab4e3b69a5474b1a05d0a4b1449f4080a6c0f6977d0e33271c9b029";
                 lore = plugin.getStringList("settings_worldsort_lore_status_finished");
                 break;
             case NEWEST_FIRST:
