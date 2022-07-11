@@ -626,6 +626,8 @@ public class Messages {
         setList(sb, config, "settings_worldsort_lore_alphabetically_name_za", Arrays.asList("&7&oChange the way worlds are", "&7&osorted in the navigator.", "", "&7&nCurrently&7: &b&oName (Z-A)"));
         setList(sb, config, "settings_worldsort_lore_alphabetically_project_az", Arrays.asList("&7&oChange the way worlds are", "&7&osorted in the navigator.", "", "&7&nCurrently&7: &b&oProject (A-Z)"));
         setList(sb, config, "settings_worldsort_lore_alphabetically_project_za", Arrays.asList("&7&oChange the way worlds are", "&7&osorted in the navigator.", "", "&7&nCurrently&7: &b&oProject (Z-A)"));
+        setList(sb, config, "settings_worldsort_lore_status_not_started", Arrays.asList("&7&oChange the way worlds are", "&7&osorted in the navigator.", "", "&7&nCurrently&7: &b&oStatus (Not Started ➡ Finished)"));
+        setList(sb, config, "settings_worldsort_lore_status_finished", Arrays.asList("&7&oChange the way worlds are", "&7&osorted in the navigator.", "", "&7&nCurrently&7: &b&oStatus (Finished ➡ Not Started)"));
         setList(sb, config, "settings_worldsort_lore_date_newest", Arrays.asList("&7&oChange the way worlds are", "&7&osorted in the navigator.", "", "&7&nCurrently&7: &b&oCreation date (Newest)"));
         setList(sb, config, "settings_worldsort_lore_date_oldest", Arrays.asList("&7&oChange the way worlds are", "&7&osorted in the navigator.", "", "&7&nCurrently&7: &b&oCreation date (Oldest)"));
         addLine(sb, "");
