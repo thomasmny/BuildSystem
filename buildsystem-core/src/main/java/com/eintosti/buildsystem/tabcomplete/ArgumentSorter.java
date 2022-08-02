@@ -8,7 +8,7 @@
 
 package com.eintosti.buildsystem.tabcomplete;
 
-import org.apache.commons.lang3.StringUtils;
+import com.eintosti.buildsystem.util.external.StringUtils;
 
 import java.util.List;
 
