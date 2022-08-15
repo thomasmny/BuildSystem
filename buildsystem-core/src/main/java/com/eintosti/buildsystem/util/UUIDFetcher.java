@@ -8,9 +8,7 @@
 
 package com.eintosti.buildsystem.util;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.mojang.util.UUIDTypeAdapter;
 
 import java.io.BufferedReader;
@@ -47,9 +45,10 @@ public class UUIDFetcher {
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL(String.format(UUID_URL, name)).openConnection();
             connection.setReadTimeout(5000);
+
             JsonObject jsonObject;
             try {
-                jsonObject = JsonParser.parseReader(new BufferedReader(new InputStreamReader(connection.getInputStream()))).getAsJsonObject();
+                jsonObject = new JsonParser().parse(new BufferedReader(new InputStreamReader(connection.getInputStream()))).getAsJsonObject();
             } catch (IllegalStateException ignored) {
                 return null;
             }
@@ -82,7 +81,7 @@ public class UUIDFetcher {
             connection.setReadTimeout(5000);
             JsonArray nameHistory;
             try {
-                nameHistory = JsonParser.parseReader(new BufferedReader(new InputStreamReader(connection.getInputStream()))).getAsJsonArray();
+                nameHistory =  new JsonParser().parse(new BufferedReader(new InputStreamReader(connection.getInputStream()))).getAsJsonArray();
             } catch (IllegalStateException ignored) {
                 return null;
             }
