@@ -16,6 +16,7 @@ import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.data.WorldType;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -58,11 +59,11 @@ public class CreateInventory extends PaginatedInventory implements Listener {
 
         switch (page) {
             case PREDEFINED:
-                inventoryManager.addItemStack(inventory, 29, inventoryManager.getCreateItem(WorldType.NORMAL), plugin.getString("create_normal_world"));
-                inventoryManager.addItemStack(inventory, 30, inventoryManager.getCreateItem(WorldType.FLAT), plugin.getString("create_flat_world"));
-                inventoryManager.addItemStack(inventory, 31, inventoryManager.getCreateItem(WorldType.NETHER), plugin.getString("create_nether_world"));
-                inventoryManager.addItemStack(inventory, 32, inventoryManager.getCreateItem(WorldType.END), plugin.getString("create_end_world"));
-                inventoryManager.addItemStack(inventory, 33, inventoryManager.getCreateItem(WorldType.VOID), plugin.getString("create_void_world"));
+                addPredefinedWorldItem(player, inventory, 29, WorldType.NORMAL, plugin.getString("create_normal_world"));
+                addPredefinedWorldItem(player, inventory, 30, WorldType.FLAT, plugin.getString("create_flat_world"));
+                addPredefinedWorldItem(player, inventory, 31, WorldType.NETHER, plugin.getString("create_nether_world"));
+                addPredefinedWorldItem(player, inventory, 32, WorldType.END, plugin.getString("create_end_world"));
+                addPredefinedWorldItem(player, inventory, 33, WorldType.VOID, plugin.getString("create_void_world"));
                 break;
             case GENERATOR:
                 inventoryManager.addUrlSkull(inventory, 31, plugin.getString("create_generators_create_world"), "https://textures.minecraft.net/texture/3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
@@ -92,6 +93,17 @@ public class CreateInventory extends PaginatedInventory implements Listener {
             itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
         }
         inventory.setItem(page.getSlot(), itemStack);
+    }
+
+    private void addPredefinedWorldItem(Player player, Inventory inventory, int position, WorldType worldType, String displayName) {
+        XMaterial material = inventoryManager.getCreateItem(worldType);
+
+        if (!player.hasPermission("buildsystem.create.type." + worldType.name().toLowerCase())) {
+            material = XMaterial.BARRIER;
+            displayName = "§c§m" + ChatColor.stripColor(displayName);
+        }
+
+        inventoryManager.addItemStack(inventory, position, material, displayName);
     }
 
     private void addTemplates(Player player, Page page) {
@@ -217,10 +229,13 @@ public class CreateInventory extends PaginatedInventory implements Listener {
                         break;
                 }
 
-                if (worldType != null) {
-                    worldManager.startWorldNameInput(player, worldType, null, createPrivateWorld);
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                if (worldType == null || !player.hasPermission("buildsystem.create.type." + worldType.name().toLowerCase())) {
+                    XSound.ENTITY_ITEM_BREAK.play(player);
+                    return;
                 }
+
+                worldManager.startWorldNameInput(player, worldType, null, createPrivateWorld);
+                XSound.ENTITY_CHICKEN_EGG.play(player);
                 break;
             }
 

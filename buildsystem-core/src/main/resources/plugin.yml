@@ -76,6 +76,21 @@ permissions:
   buildsystem.create.private:
     description: Create a private world.
     default: true
+  buildsystem.create.type.normal:
+    description: Create a normal world.
+    default: true
+  buildsystem.create.type.flat:
+    description: Create a flat world.
+    default: true
+  buildsystem.create.type.nether:
+    description: Create a nether world.
+    default: true
+  buildsystem.create.type.end:
+    description: Create an end world.
+    default: true
+  buildsystem.create.type.void:
+    description: Create a void world.
+    default: true
   buildsystem.physics.message:
     description: Receive the message that physics are disabled in a world.
     default: true
