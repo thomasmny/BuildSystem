@@ -896,7 +896,7 @@ public class BuildWorld implements ConfigurationSerializable {
         }
 
         plugin.getLogger().info("*** Loading world \"" + name + "\" ***");
-        plugin.getWorldManager().generateBukkitWorld(name, worldType, difficulty, chunkGenerator);
+        new BuildWorldCreator(plugin, this).generateBukkitWorld();
         this.loaded = true;
 
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldLoadEvent(this));
