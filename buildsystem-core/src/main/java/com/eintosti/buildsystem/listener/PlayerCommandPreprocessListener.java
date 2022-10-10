@@ -270,7 +270,7 @@ public class PlayerCommandPreprocessListener implements Listener {
     );
 
     private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
-        if (!plugin.canBypass(player) && buildWorld.getStatus() == WorldStatus.ARCHIVE) {
+        if (!worldManager.canBypassBuildRestriction(player) && buildWorld.getStatus() == WorldStatus.ARCHIVE) {
             event.setCancelled(true);
             player.sendMessage(plugin.getString("command_archive_world"));
             return true;
@@ -279,7 +279,7 @@ public class PlayerCommandPreprocessListener implements Listener {
     }
 
     private void checkBuilders(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
-        if (plugin.canBypass(player)) {
+        if (worldManager.canBypassBuildRestriction(player)) {
             return;
         }
 

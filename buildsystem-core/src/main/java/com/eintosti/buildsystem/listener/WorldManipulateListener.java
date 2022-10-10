@@ -169,7 +169,7 @@ public class WorldManipulateListener implements Listener {
     }
 
     private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, Event event) {
-        if (plugin.canBypass(player)) {
+        if (worldManager.canBypassBuildRestriction(player)) {
             return false;
         }
 
@@ -183,7 +183,7 @@ public class WorldManipulateListener implements Listener {
     }
 
     private boolean checkWorldSettings(Player player, Event event, boolean worldSetting) {
-        if (plugin.canBypass(player)) {
+        if (worldManager.canBypassBuildRestriction(player)) {
             return false;
         }
 
@@ -197,7 +197,7 @@ public class WorldManipulateListener implements Listener {
     }
 
     private boolean checkBuilders(BuildWorld buildWorld, Player player, Event event) {
-        if (plugin.canBypass(player)) {
+        if (worldManager.canBypassBuildRestriction(player)) {
             return false;
         }
 

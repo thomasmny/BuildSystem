@@ -10,6 +10,7 @@ package com.eintosti.buildsystem.command;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.config.ConfigValues;
+import com.eintosti.buildsystem.manager.WorldManager;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -25,10 +26,12 @@ public class TimeCommand implements CommandExecutor {
 
     private final BuildSystem plugin;
     private final ConfigValues configValues;
+    private final WorldManager worldManager;
 
     public TimeCommand(BuildSystem plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
+        this.worldManager = plugin.getWorldManager();
         plugin.getCommand("day").setExecutor(this);
         plugin.getCommand("night").setExecutor(this);
     }
@@ -46,7 +49,7 @@ public class TimeCommand implements CommandExecutor {
 
         switch (label.toLowerCase()) {
             case "day": {
-                if (!plugin.isPermitted(player, "buildsystem.day", worldName)) {
+                if (!worldManager.isPermitted(player, "buildsystem.day", worldName)) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
@@ -74,7 +77,7 @@ public class TimeCommand implements CommandExecutor {
             }
 
             case "night": {
-                if (!plugin.isPermitted(player, "buildsystem.night", worldName)) {
+                if (!worldManager.isPermitted(player, "buildsystem.night", worldName)) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }

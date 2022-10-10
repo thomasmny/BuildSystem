@@ -391,44 +391,6 @@ public class BuildSystem extends JavaPlugin {
         }
     }
 
-    public boolean canBypass(Player player) {
-        return player.hasPermission(ADMIN_PERMISSION)
-                || player.hasPermission("buildsystem.bypass.archive")
-                || playerManager.getBuildPlayers().contains(player.getUniqueId());
-    }
-
-    /**
-     * Gets whether the given player is permission to run a command in the given world.
-     * <p>
-     * <ul>
-     *   <li>The creator of a world is allowed to run the command if they have the given permission, optionally ending with {@code .self}.</li>
-     *   <li>All other players will need the permission {@code <permission>.other} to run the command.</li>
-     * </ul>
-     *
-     * @param player     The player trying to run the command
-     * @param permission The permission needed to run the command
-     * @param worldName  The name of the world the player wants to run the command on
-     * @return {@code true} if the player is allowed to run the command, {@code false} otherwise
-     */
-    public boolean isPermitted(Player player, String permission, String worldName) {
-        if (player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
-            return true;
-        }
-
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
-        if (buildWorld == null) {
-            // Most command require the world to be non-null.
-            // Nevertheless, return true to allow a "world is null" message to be sent.
-            return true;
-        }
-
-        if (buildWorld.isCreator(player)) {
-            return (player.hasPermission(permission + ".self") || player.hasPermission(permission));
-        }
-
-        return player.hasPermission(permission + ".other");
-    }
-
     public void sendPermissionMessage(CommandSender sender) {
         sender.sendMessage(getString("no_permissions"));
     }

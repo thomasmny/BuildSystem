@@ -84,7 +84,7 @@ public class WorldsCommand implements CommandExecutor {
 
         switch (args[0].toLowerCase()) {
             case "addbuilder": {
-                if (!plugin.isPermitted(player, "buildsystem.addbuilder", worldName)) {
+                if (!worldManager.isPermitted(player, "buildsystem.addbuilder", worldName)) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
@@ -110,7 +110,7 @@ public class WorldsCommand implements CommandExecutor {
             }
 
             case "builders": {
-                if (!plugin.isPermitted(player, "buildsystem.builders", worldName)) {
+                if (!worldManager.isPermitted(player, "buildsystem.builders", worldName)) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
@@ -130,7 +130,7 @@ public class WorldsCommand implements CommandExecutor {
             }
 
             case "delete": {
-                if (!plugin.isPermitted(player, "buildsystem.delete", worldName)) {
+                if (!worldManager.isPermitted(player, "buildsystem.delete", worldName)) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
@@ -156,7 +156,7 @@ public class WorldsCommand implements CommandExecutor {
             }
 
             case "edit": {
-                if (!plugin.isPermitted(player, "buildsystem.edit", worldName)) {
+                if (!worldManager.isPermitted(player, "buildsystem.edit", worldName)) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
@@ -282,7 +282,7 @@ public class WorldsCommand implements CommandExecutor {
                     worldName = playerWorld.getName();
                 }
 
-                if (!plugin.isPermitted(player, "buildsystem.info", worldName)) {
+                if (!worldManager.isPermitted(player, "buildsystem.info", worldName)) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
@@ -314,7 +314,7 @@ public class WorldsCommand implements CommandExecutor {
             }
 
             case "removebuilder": {
-                if (!plugin.isPermitted(player, "buildsystem.removebuilder", worldName)) {
+                if (!worldManager.isPermitted(player, "buildsystem.removebuilder", worldName)) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
@@ -340,7 +340,7 @@ public class WorldsCommand implements CommandExecutor {
             }
 
             case "rename": {
-                if (!plugin.isPermitted(player, "buildsystem.rename", worldName)) {
+                if (!worldManager.isPermitted(player, "buildsystem.rename", worldName)) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
@@ -361,7 +361,7 @@ public class WorldsCommand implements CommandExecutor {
             }
 
             case "setcreator": {
-                if (!plugin.isPermitted(player, "buildsystem.setcreator", worldName)) {
+                if (!worldManager.isPermitted(player, "buildsystem.setcreator", worldName)) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
@@ -382,7 +382,7 @@ public class WorldsCommand implements CommandExecutor {
             }
 
             case "setitem": {
-                if (!plugin.isPermitted(player, "buildsystem.setitem", worldName)) {
+                if (!worldManager.isPermitted(player, "buildsystem.setitem", worldName)) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
@@ -409,7 +409,7 @@ public class WorldsCommand implements CommandExecutor {
             }
 
             case "setpermission": {
-                if (!plugin.isPermitted(player, "buildsystem.setpermission", worldName)) {
+                if (!worldManager.isPermitted(player, "buildsystem.setpermission", worldName)) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
@@ -430,7 +430,7 @@ public class WorldsCommand implements CommandExecutor {
             }
 
             case "setproject": {
-                if (!plugin.isPermitted(player, "buildsystem.setproject", worldName)) {
+                if (!worldManager.isPermitted(player, "buildsystem.setproject", worldName)) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
@@ -451,7 +451,7 @@ public class WorldsCommand implements CommandExecutor {
             }
 
             case "setstatus": {
-                if (!plugin.isPermitted(player, "buildsystem.setstatus", worldName)) {
+                if (!worldManager.isPermitted(player, "buildsystem.setstatus", worldName)) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
@@ -473,7 +473,7 @@ public class WorldsCommand implements CommandExecutor {
 
             case "setspawn": {
                 String playerWorldName = player.getWorld().getName();
-                if (!plugin.isPermitted(player, "buildsystem.setspawn", playerWorldName)) {
+                if (!worldManager.isPermitted(player, "buildsystem.setspawn", playerWorldName)) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
@@ -491,7 +491,7 @@ public class WorldsCommand implements CommandExecutor {
 
             case "removespawn": {
                 String playerWorldName = player.getWorld().getName();
-                if (!plugin.isPermitted(player, "buildsystem.removespawn", playerWorldName)) {
+                if (!worldManager.isPermitted(player, "buildsystem.removespawn", playerWorldName)) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }

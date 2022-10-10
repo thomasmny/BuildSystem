@@ -25,14 +25,8 @@ import com.eintosti.buildsystem.object.world.generator.ModernVoidGenerator;
 import com.eintosti.buildsystem.util.FileUtils;
 import com.eintosti.buildsystem.util.UUIDFetcher;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Difficulty;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.World.Environment;
-import org.bukkit.WorldCreator;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
@@ -44,13 +38,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -819,6 +807,60 @@ public class WorldManager {
 
         Block ground = feet.getRelative(BlockFace.DOWN);
         return ground.getType().isSolid();
+    }
+
+    public boolean canEnter(Player player, BuildWorld buildWorld) {
+        if (player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
+            return true;
+        }
+
+        if (buildWorld.getPermission().equals("-")) {
+            return true;
+        }
+
+        if (buildWorld.isCreator(player) || buildWorld.isBuilder(player)) {
+            return true;
+        }
+
+        return player.hasPermission(buildWorld.getPermission());
+    }
+
+    public boolean canBypassBuildRestriction(Player player) {
+        return player.hasPermission(BuildSystem.ADMIN_PERMISSION)
+                || player.hasPermission("buildsystem.bypass.archive")
+                || plugin.getPlayerManager().getBuildPlayers().contains(player.getUniqueId());
+    }
+
+    /**
+     * Gets whether the given player is permission to run a command in the given world.
+     * <p>
+     * <ul>
+     *   <li>The creator of a world is allowed to run the command if they have the given permission, optionally ending with {@code .self}.</li>
+     *   <li>All other players will need the permission {@code <permission>.other} to run the command.</li>
+     * </ul>
+     *
+     * @param player     The player trying to run the command
+     * @param permission The permission needed to run the command
+     * @param worldName  The name of the world the player wants to run the command on
+     * @return {@code true} if the player is allowed to run the command, {@code false} otherwise
+     */
+    public boolean isPermitted(Player player, String permission, String worldName) {
+        if (player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
+            return true;
+        }
+
+        BuildWorld buildWorld = getBuildWorld(worldName);
+        if (buildWorld == null) {
+            // Most command require the world to be non-null.
+            // Nevertheless, return true to allow a "world is null" message to be sent.
+            return true;
+        }
+
+        if (buildWorld.isCreator(player)) {
+            return (player.hasPermission(permission + ".self") || player.hasPermission(permission));
+        }
+
+        return player.hasPermission(permission + ".other");
     }
 
     public void save() {

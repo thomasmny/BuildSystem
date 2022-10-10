@@ -291,7 +291,7 @@ public class SettingsInteractListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        if (plugin.canBypass(player)) {
+        if (worldManager.canBypassBuildRestriction(player)) {
             return true;
         }
 

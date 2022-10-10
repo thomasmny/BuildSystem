@@ -61,7 +61,7 @@ public class EditSessionListener implements Listener {
     }
 
     private void disableArchivedWorlds(BuildWorld buildWorld, Player player, EditSessionEvent event) {
-        if (plugin.canBypass(player)) {
+        if (worldManager.canBypassBuildRestriction(player)) {
             return;
         }
 
@@ -71,7 +71,7 @@ public class EditSessionListener implements Listener {
     }
 
     private void checkBuilders(BuildWorld buildWorld, Player player, EditSessionEvent event) {
-        if (plugin.canBypass(player)) {
+        if (worldManager.canBypassBuildRestriction(player)) {
             return;
         }
 
