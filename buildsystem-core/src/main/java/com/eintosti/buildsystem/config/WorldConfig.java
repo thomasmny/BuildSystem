@@ -12,6 +12,7 @@ import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.object.world.BuildWorldCreator;
 
 import java.util.logging.Logger;
 
@@ -42,7 +43,7 @@ public class WorldConfig extends ConfigurationFile {
         logger.info("*** All worlds will be loaded now ***");
         worldManager.getBuildWorlds().forEach(world -> {
             String worldName = world.getName();
-            worldManager.generateBukkitWorld(worldName, world.getType(), world.getDifficulty(), world.getChunkGenerator());
+            new BuildWorldCreator(plugin, world).generateBukkitWorld();
 
             if (world.getMaterial() == XMaterial.PLAYER_HEAD) {
                 plugin.getSkullCache().cacheSkull(worldName);
