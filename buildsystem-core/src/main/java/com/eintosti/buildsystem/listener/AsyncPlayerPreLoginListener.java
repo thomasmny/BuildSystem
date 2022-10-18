@@ -10,6 +10,8 @@ package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.PlayerManager;
+import com.eintosti.buildsystem.manager.SpawnManager;
+import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.player.BuildPlayer;
 import com.eintosti.buildsystem.object.player.LogoutLocation;
 import com.eintosti.buildsystem.object.settings.Settings;
@@ -27,10 +29,14 @@ public class AsyncPlayerPreLoginListener implements Listener {
 
     private final BuildSystem plugin;
     private final PlayerManager playerManager;
+    private final SpawnManager spawnManager;
+    private final WorldManager worldManager;
 
     public AsyncPlayerPreLoginListener(BuildSystem plugin) {
         this.plugin = plugin;
         this.playerManager = plugin.getPlayerManager();
+        this.spawnManager = plugin.getSpawnManager();
+        this.worldManager = plugin.getWorldManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -43,13 +49,13 @@ public class AsyncPlayerPreLoginListener implements Listener {
         }
 
         Settings settings = buildPlayer.getSettings();
-        if (settings.isSpawnTeleport()) {
+        if (settings.isSpawnTeleport() && spawnManager.spawnExists()) {
             return;
         }
 
         LogoutLocation logoutLocation = buildPlayer.getLogoutLocation();
         if (logoutLocation != null) {
-            Bukkit.getScheduler().runTask(plugin, () -> logoutLocation.getBuildWorld().load());
+            Bukkit.getScheduler().runTask(plugin, () -> worldManager.getBuildWorld(logoutLocation.getWorldName()).load());
         }
     }
 }

@@ -82,7 +82,7 @@ public class PlayerJoinListener implements Listener {
 
         manageHidePlayer(player);
 
-        if (settings.isSpawnTeleport()) {
+        if (settings.isSpawnTeleport() && spawnManager.spawnExists()) {
             spawnManager.teleport(player);
         } else {
             LogoutLocation logoutLocation = buildPlayer.getLogoutLocation();

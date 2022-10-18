@@ -410,6 +410,6 @@ public class PlayerManager {
         float yaw = Float.parseFloat(parts[4]);
         float pitch = Float.parseFloat(parts[5]);
 
-        return new LogoutLocation(plugin.getWorldManager().getBuildWorld(worldName), x, y, z, yaw, pitch);
+        return new LogoutLocation(worldName, x, y, z, yaw, pitch);
     }
 }
