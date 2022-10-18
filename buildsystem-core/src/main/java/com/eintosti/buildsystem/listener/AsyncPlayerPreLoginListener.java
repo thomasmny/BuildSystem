@@ -15,6 +15,7 @@ import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.player.BuildPlayer;
 import com.eintosti.buildsystem.object.player.LogoutLocation;
 import com.eintosti.buildsystem.object.settings.Settings;
+import com.eintosti.buildsystem.object.world.BuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -55,7 +56,14 @@ public class AsyncPlayerPreLoginListener implements Listener {
 
         LogoutLocation logoutLocation = buildPlayer.getLogoutLocation();
         if (logoutLocation != null) {
-            Bukkit.getScheduler().runTask(plugin, () -> worldManager.getBuildWorld(logoutLocation.getWorldName()).load());
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                BuildWorld buildWorld = worldManager.getBuildWorld(logoutLocation.getWorldName());
+                if (buildWorld == null) {
+                    buildPlayer.setLogoutLocation(null);
+                } else {
+                    buildWorld.load();
+                }
+            });
         }
     }
 }

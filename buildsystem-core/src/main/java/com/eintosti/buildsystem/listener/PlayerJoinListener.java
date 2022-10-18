@@ -70,17 +70,20 @@ public class PlayerJoinListener implements Listener {
         plugin.getSkullCache().cacheSkull(player.getName());
 
         BuildPlayer buildPlayer = playerManager.createBuildPlayer(player);
+        manageHidePlayer(player, buildPlayer);
+
         Settings settings = buildPlayer.getSettings();
         if (settings.isNoClip()) {
             plugin.getNoClipManager().startNoClip(player);
         }
-
         if (settings.isScoreboard()) {
             settingsManager.startScoreboard(player);
             plugin.getPlayerManager().forceUpdateSidebar(player);
         }
-
-        manageHidePlayer(player);
+        if (settings.isClearInventory()) {
+            player.getInventory().clear();
+        }
+        addJoinItem(player);
 
         if (settings.isSpawnTeleport() && spawnManager.spawnExists()) {
             spawnManager.teleport(player);
@@ -90,11 +93,6 @@ public class PlayerJoinListener implements Listener {
                 player.teleport(logoutLocation.getLocation());
             }
         }
-
-        if (settings.isClearInventory()) {
-            player.getInventory().clear();
-        }
-        addJoinItem(player);
 
         String worldName = player.getWorld().getName();
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
@@ -138,8 +136,8 @@ public class PlayerJoinListener implements Listener {
     }
 
     @SuppressWarnings("deprecation")
-    private void manageHidePlayer(Player player) {
-        if (settingsManager.getSettings(player).isHidePlayers()) { // Hide all players to player
+    private void manageHidePlayer(Player player, BuildPlayer buildPlayer) {
+        if (buildPlayer.getSettings().isHidePlayers()) { // Hide all players to player
             Bukkit.getOnlinePlayers().forEach(player::hidePlayer);
         }
 
