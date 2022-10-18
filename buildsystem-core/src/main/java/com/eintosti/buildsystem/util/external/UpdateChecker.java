@@ -39,6 +39,9 @@ import java.util.regex.Pattern;
  */
 public final class UpdateChecker {
 
+    private static final String USER_AGENT = "CHOCO-update-checker";
+    private static final String UPDATE_URL = "https://api.spigotmc.org/simple/0.1/index.php?action=getResource&id=%d";
+    private static final Pattern DECIMAL_SCHEME_PATTERN = Pattern.compile("\\d+(?:\\.\\d+)*");
     /**
      * The default version scheme for this update checker
      */
@@ -60,79 +63,16 @@ public final class UpdateChecker {
 
         return (secondSplit.length > firstSplit.length) ? second : first;
     };
-
-    private static final String USER_AGENT = "CHOCO-update-checker";
-    private static final String UPDATE_URL = "https://api.spigotmc.org/simple/0.1/index.php?action=getResource&id=%d";
-    private static final Pattern DECIMAL_SCHEME_PATTERN = Pattern.compile("\\d+(?:\\.\\d+)*");
-
     private static UpdateChecker instance;
-
-    private UpdateResult lastResult = null;
-
     private final JavaPlugin plugin;
     private final int pluginID;
     private final VersionScheme versionScheme;
+    private UpdateResult lastResult = null;
 
     private UpdateChecker(@NotNull JavaPlugin plugin, int pluginID, @NotNull VersionScheme versionScheme) {
         this.plugin = plugin;
         this.pluginID = pluginID;
         this.versionScheme = versionScheme;
-    }
-
-    /**
-     * Request an update check to Spigot. This request is asynchronous and may not
-     * complete immediately as an HTTP GET request is published to the Spigot API.
-     *
-     * @return a future update result
-     */
-    @NotNull
-    public CompletableFuture<@NotNull UpdateResult> requestUpdateCheck() {
-        return CompletableFuture.supplyAsync(() -> {
-            int responseCode;
-
-            try {
-                URL url = new URL(String.format(UPDATE_URL, pluginID));
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.addRequestProperty("User-Agent", USER_AGENT);
-                responseCode = connection.getResponseCode();
-
-                JsonReader reader = new JsonReader(new InputStreamReader(connection.getInputStream()));
-                JsonElement json = JsonParser.parseReader(reader);
-                reader.close();
-
-                if (!json.isJsonObject()) {
-                    return new UpdateResult(UpdateReason.INVALID_JSON);
-                }
-
-                String currentVersion = json.getAsJsonObject().get("current_version").getAsString();
-                String pluginVersion = plugin.getDescription().getVersion();
-                String latest = versionScheme.compareVersions(pluginVersion, currentVersion);
-
-                if (latest == null) {
-                    return new UpdateResult(UpdateReason.UNSUPPORTED_VERSION_SCHEME);
-                } else if (latest.equals(pluginVersion)) {
-                    return new UpdateResult(pluginVersion.equals(currentVersion) ? UpdateReason.UP_TO_DATE : UpdateReason.UNRELEASED_VERSION);
-                } else if (latest.equals(currentVersion)) {
-                    return new UpdateResult(UpdateReason.NEW_UPDATE, latest);
-                }
-            } catch (IOException e) {
-                return new UpdateResult(UpdateReason.COULD_NOT_CONNECT);
-            }
-
-            return new UpdateResult(responseCode == 401 ? UpdateReason.UNAUTHORIZED_QUERY : UpdateReason.UNKNOWN_ERROR);
-        });
-    }
-
-    /**
-     * Get the last update result that was queried by {@link #requestUpdateCheck()}. If no
-     * update check was performed since this class' initialization, this method will
-     * return {@code null}.
-     *
-     * @return the last update check result. {@code null} if none.
-     */
-    @Nullable
-    public UpdateResult getLastResult() {
-        return lastResult;
     }
 
     private static String[] splitVersionInfo(String version) {
@@ -198,22 +138,59 @@ public final class UpdateChecker {
     }
 
     /**
-     * A functional interface to compare two version Strings with similar version schemes.
+     * Request an update check to Spigot. This request is asynchronous and may not
+     * complete immediately as an HTTP GET request is published to the Spigot API.
+     *
+     * @return a future update result
      */
-    @FunctionalInterface
-    public interface VersionScheme {
+    @NotNull
+    public CompletableFuture<@NotNull UpdateResult> requestUpdateCheck() {
+        return CompletableFuture.supplyAsync(() -> {
+            int responseCode;
 
-        /**
-         * Compare two versions and return the higher of the two. If null is returned, it
-         * is assumed that at least one of the two versions are unsupported by this
-         * version scheme parser.
-         *
-         * @param first  the first version to check
-         * @param second the second version to check
-         * @return the greater of the two versions. {@code null} if unsupported version schemes
-         */
-        @Nullable
-        String compareVersions(@NotNull String first, @NotNull String second);
+            try {
+                URL url = new URL(String.format(UPDATE_URL, pluginID));
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.addRequestProperty("User-Agent", USER_AGENT);
+                responseCode = connection.getResponseCode();
+
+                JsonReader reader = new JsonReader(new InputStreamReader(connection.getInputStream()));
+                JsonElement json = JsonParser.parseReader(reader);
+                reader.close();
+
+                if (!json.isJsonObject()) {
+                    return new UpdateResult(UpdateReason.INVALID_JSON);
+                }
+
+                String currentVersion = json.getAsJsonObject().get("current_version").getAsString();
+                String pluginVersion = plugin.getDescription().getVersion();
+                String latest = versionScheme.compareVersions(pluginVersion, currentVersion);
+
+                if (latest == null) {
+                    return new UpdateResult(UpdateReason.UNSUPPORTED_VERSION_SCHEME);
+                } else if (latest.equals(pluginVersion)) {
+                    return new UpdateResult(pluginVersion.equals(currentVersion) ? UpdateReason.UP_TO_DATE : UpdateReason.UNRELEASED_VERSION);
+                } else if (latest.equals(currentVersion)) {
+                    return new UpdateResult(UpdateReason.NEW_UPDATE, latest);
+                }
+            } catch (IOException e) {
+                return new UpdateResult(UpdateReason.COULD_NOT_CONNECT);
+            }
+
+            return new UpdateResult(responseCode == 401 ? UpdateReason.UNAUTHORIZED_QUERY : UpdateReason.UNKNOWN_ERROR);
+        });
+    }
+
+    /**
+     * Get the last update result that was queried by {@link #requestUpdateCheck()}. If no
+     * update check was performed since this class' initialization, this method will
+     * return {@code null}.
+     *
+     * @return the last update check result. {@code null} if none.
+     */
+    @Nullable
+    public UpdateResult getLastResult() {
+        return lastResult;
     }
 
     /**
@@ -263,6 +240,25 @@ public final class UpdateChecker {
          * section.
          */
         UP_TO_DATE
+    }
+
+    /**
+     * A functional interface to compare two version Strings with similar version schemes.
+     */
+    @FunctionalInterface
+    public interface VersionScheme {
+
+        /**
+         * Compare two versions and return the higher of the two. If null is returned, it
+         * is assumed that at least one of the two versions are unsupported by this
+         * version scheme parser.
+         *
+         * @param first  the first version to check
+         * @param second the second version to check
+         * @return the greater of the two versions. {@code null} if unsupported version schemes
+         */
+        @Nullable
+        String compareVersions(@NotNull String first, @NotNull String second);
     }
 
     /**

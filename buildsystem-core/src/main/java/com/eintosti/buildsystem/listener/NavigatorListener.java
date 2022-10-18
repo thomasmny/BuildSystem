@@ -39,8 +39,6 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
-import java.util.UUID;
-
 /**
  * @author einTosti
  */

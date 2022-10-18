@@ -23,7 +23,7 @@ paperlib = { group = "io.papermc", name = "paperlib", version.ref = "paperlib" }
 # Plugins
 luckperms = { group = "net.luckperms", name = "api", version.ref = "luckperms" }
 placeholderapi = { group = "me.clip", name = "placeholderapi", version.ref = "placeholderapi" }
-worldedit  = { group = "com.sk89q.worldedit", name = "worldedit-core", version.ref = "worldedit" }
+worldedit = { group = "com.sk89q.worldedit", name = "worldedit-core", version.ref = "worldedit" }
 
 # Third Party
 annotations = { group = "org.jetbrains", name = "annotations", version.ref = "annotations" }

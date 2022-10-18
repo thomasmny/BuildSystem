@@ -29,6 +29,10 @@ public class PlayerInventoryClearEvent extends PlayerEvent {
         this.navigatorSlots = navigatorSlots;
     }
 
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
+    }
+
     public List<Integer> getNavigatorSlots() {
         return navigatorSlots;
     }
@@ -36,10 +40,6 @@ public class PlayerInventoryClearEvent extends PlayerEvent {
     @NotNull
     @Override
     public HandlerList getHandlers() {
-        return HANDLERS;
-    }
-
-    public static HandlerList getHandlerList() {
         return HANDLERS;
     }
 }
