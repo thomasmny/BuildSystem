@@ -12,6 +12,7 @@ import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.config.SpawnConfig;
 import com.eintosti.buildsystem.object.world.BuildWorld;
+import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -47,7 +48,7 @@ public class SpawnManager {
         }
 
         player.setFallDistance(0);
-        player.teleport(spawn);
+        PaperLib.teleportAsync(player, spawn);
         Titles.clearTitle(player);
 
         return true;

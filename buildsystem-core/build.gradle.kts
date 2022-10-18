@@ -13,6 +13,10 @@ repositories {
         url = uri("https://libraries.minecraft.net/")
     }
     maven {
+        name = "PaperMC"
+        url = uri("https://papermc.io/repo/repository/maven-public/")
+    }
+    maven {
         name = "EngineHub"
         url = uri("https://maven.enginehub.org/repo/")
     }
@@ -34,6 +38,7 @@ dependencies {
     compileOnly(libs.worldedit)
     compileOnly(libs.annotations)
 
+    implementation(libs.paperlib)
     implementation(libs.xseries)
     implementation(libs.fastboard)
     implementation(libs.bstats)
@@ -62,6 +67,7 @@ tasks {
         archiveFileName.set("${rootProject.name}-${project.version}.jar")
 
         val shadePath = "com.eintosti.buildsystem.util.external"
+        relocate("io.papermc.lib", "$shadePath.paperlib")
         relocate("com.cryptomorin.xseries", "$shadePath.xseries")
         relocate("fr.mrmicky.fastboard", "$shadePath.fastboard")
         relocate("org.bstats", "$shadePath.bstats")

@@ -10,6 +10,7 @@ package com.eintosti.buildsystem.command;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.PlayerManager;
+import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -64,7 +65,7 @@ public class BackCommand implements CommandExecutor {
             return;
         }
 
-        player.teleport(previousLocation);
+        PaperLib.teleportAsync(player, previousLocation);
         player.sendMessage(plugin.getString("back_teleported"));
         playerManager.getPreviousLocation().remove(playerUuid);
     }
