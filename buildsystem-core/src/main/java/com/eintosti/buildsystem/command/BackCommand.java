@@ -12,7 +12,6 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.object.player.BuildPlayer;
 import io.papermc.lib.PaperLib;
-import com.eintosti.buildsystem.object.player.BuildPlayer;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;

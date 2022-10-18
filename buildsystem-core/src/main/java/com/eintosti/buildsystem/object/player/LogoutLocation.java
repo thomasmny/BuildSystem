@@ -8,8 +8,6 @@
 
 package com.eintosti.buildsystem.object.player;
 
-import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
