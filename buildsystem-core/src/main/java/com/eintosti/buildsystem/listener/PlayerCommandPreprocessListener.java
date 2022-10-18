@@ -208,6 +208,7 @@ public class PlayerCommandPreprocessListener implements Listener {
             "/vl",
             "/vr--"
     );
+
     private final BuildSystem plugin;
     private final ConfigValues configValues;
     private final InventoryManager inventoryManager;

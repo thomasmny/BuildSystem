@@ -56,6 +56,7 @@ public class EditInventory implements Listener {
             EntityType.MINECART_TNT,
             EntityType.PLAYER
     );
+
     private final BuildSystem plugin;
     private final ConfigValues configValues;
     private final InventoryManager inventoryManager;
