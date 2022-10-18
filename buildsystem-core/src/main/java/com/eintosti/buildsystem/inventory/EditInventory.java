@@ -42,6 +42,20 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class EditInventory implements Listener {
 
+    private static final Set<EntityType> IGNORED_ENTITIES = Sets.newHashSet(
+            EntityType.ARMOR_STAND,
+            EntityType.ENDER_CRYSTAL,
+            EntityType.ITEM_FRAME,
+            EntityType.FALLING_BLOCK,
+            EntityType.MINECART,
+            EntityType.MINECART_CHEST,
+            EntityType.MINECART_COMMAND,
+            EntityType.MINECART_FURNACE,
+            EntityType.MINECART_HOPPER,
+            EntityType.MINECART_MOB_SPAWNER,
+            EntityType.MINECART_TNT,
+            EntityType.PLAYER
+    );
     private final BuildSystem plugin;
     private final ConfigValues configValues;
     private final InventoryManager inventoryManager;
@@ -252,7 +266,7 @@ public class EditInventory implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        BuildWorld buildWorld = plugin.getPlayerManager().getSelectedWorld().get(player.getUniqueId());
+        BuildWorld buildWorld = plugin.getPlayerManager().getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();
             player.sendMessage(plugin.getString("worlds_edit_error"));
@@ -418,19 +432,4 @@ public class EditInventory implements Listener {
                 .replace("%amount%", String.valueOf(entitiesRemoved.get()))
         );
     }
-
-    private static final Set<EntityType> IGNORED_ENTITIES = Sets.newHashSet(
-            EntityType.ARMOR_STAND,
-            EntityType.ENDER_CRYSTAL,
-            EntityType.ITEM_FRAME,
-            EntityType.FALLING_BLOCK,
-            EntityType.MINECART,
-            EntityType.MINECART_CHEST,
-            EntityType.MINECART_COMMAND,
-            EntityType.MINECART_FURNACE,
-            EntityType.MINECART_HOPPER,
-            EntityType.MINECART_MOB_SPAWNER,
-            EntityType.MINECART_TNT,
-            EntityType.PLAYER
-    );
 }

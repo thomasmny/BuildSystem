@@ -35,13 +35,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author einTosti
@@ -294,7 +288,7 @@ public class InventoryManager {
         }
 
         if (buildWorld.isLoaded()) {
-            playerManager.getSelectedWorld().put(player.getUniqueId(), buildWorld);
+            playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
             XSound.BLOCK_CHEST_OPEN.play(player);
             plugin.getEditInventory().openInventory(player, buildWorld);
         } else {

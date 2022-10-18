@@ -101,7 +101,7 @@ public class WorldsCommand implements CommandExecutor {
                         return true;
                     }
 
-                    playerManager.getSelectedWorld().put(player.getUniqueId(), buildWorld);
+                    playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
                     getAddBuilderInput(player, true);
                 } else {
                     player.sendMessage(plugin.getString("worlds_addbuilder_usage"));
@@ -121,7 +121,7 @@ public class WorldsCommand implements CommandExecutor {
                         player.sendMessage(plugin.getString("worlds_builders_unknown_world"));
                         return true;
                     }
-                    playerManager.getSelectedWorld().put(player.getUniqueId(), buildWorld);
+                    playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
                     player.openInventory(plugin.getBuilderInventory().getInventory(buildWorld, player));
                 } else {
                     player.sendMessage(plugin.getString("worlds_builders_usage"));
@@ -147,7 +147,7 @@ public class WorldsCommand implements CommandExecutor {
                         return true;
                     }
 
-                    playerManager.getSelectedWorld().put(player.getUniqueId(), buildWorld);
+                    playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
                     plugin.getDeleteInventory().openInventory(player, buildWorld);
                 } else {
                     player.sendMessage(plugin.getString("worlds_delete_usage"));
@@ -169,7 +169,7 @@ public class WorldsCommand implements CommandExecutor {
                     }
 
                     if (buildWorld.isLoaded()) {
-                        playerManager.getSelectedWorld().put(player.getUniqueId(), buildWorld);
+                        playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
                         plugin.getEditInventory().openInventory(player, buildWorld);
                     } else {
                         XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
@@ -331,7 +331,7 @@ public class WorldsCommand implements CommandExecutor {
                         return true;
                     }
 
-                    playerManager.getSelectedWorld().put(player.getUniqueId(), buildWorld);
+                    playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
                     getRemoveBuilderInput(player, true);
                 } else {
                     player.sendMessage(plugin.getString("worlds_removebuilder_usage"));
@@ -352,7 +352,7 @@ public class WorldsCommand implements CommandExecutor {
                         return true;
                     }
 
-                    playerManager.getSelectedWorld().put(player.getUniqueId(), buildWorld);
+                    playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
                     getRenameInput(player);
                 } else {
                     player.sendMessage(plugin.getString("worlds_rename_usage"));
@@ -373,7 +373,7 @@ public class WorldsCommand implements CommandExecutor {
                         return true;
                     }
 
-                    playerManager.getSelectedWorld().put(player.getUniqueId(), buildWorld);
+                    playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
                     getCreatorInput(player);
                 } else {
                     player.sendMessage(plugin.getString("worlds_setcreator_usage"));
@@ -421,7 +421,7 @@ public class WorldsCommand implements CommandExecutor {
                         return true;
                     }
 
-                    playerManager.getSelectedWorld().put(player.getUniqueId(), buildWorld);
+                    playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
                     getPermissionInput(player, true);
                 } else {
                     player.sendMessage(plugin.getString("worlds_setpermission_usage"));
@@ -442,7 +442,7 @@ public class WorldsCommand implements CommandExecutor {
                         return true;
                     }
 
-                    playerManager.getSelectedWorld().put(player.getUniqueId(), buildWorld);
+                    playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
                     getProjectInput(player, true);
                 } else {
                     player.sendMessage(plugin.getString("worlds_setproject_usage"));
@@ -463,7 +463,7 @@ public class WorldsCommand implements CommandExecutor {
                         return true;
                     }
 
-                    playerManager.getSelectedWorld().put(player.getUniqueId(), buildWorld);
+                    playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
                     plugin.getStatusInventory().openInventory(player);
                 } else {
                     player.sendMessage(plugin.getString("worlds_setstatus_usage"));
@@ -689,7 +689,7 @@ public class WorldsCommand implements CommandExecutor {
     }
 
     public void getAddBuilderInput(Player player, boolean closeInventory) {
-        BuildWorld buildWorld = playerManager.getSelectedWorld().get(player.getUniqueId());
+        BuildWorld buildWorld = playerManager.getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();
             player.sendMessage(plugin.getString("worlds_addbuilder_error"));
@@ -740,7 +740,7 @@ public class WorldsCommand implements CommandExecutor {
     }
 
     private void getCreatorInput(Player player) {
-        BuildWorld buildWorld = playerManager.getSelectedWorld().get(player.getUniqueId());
+        BuildWorld buildWorld = playerManager.getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();
             player.sendMessage(plugin.getString("worlds_setcreator_error"));
@@ -764,7 +764,7 @@ public class WorldsCommand implements CommandExecutor {
     }
 
     public void getProjectInput(Player player, boolean closeInventory) {
-        BuildWorld buildWorld = playerManager.getSelectedWorld().get(player.getUniqueId());
+        BuildWorld buildWorld = playerManager.getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();
             player.sendMessage(plugin.getString("worlds_setproject_error"));
@@ -787,7 +787,7 @@ public class WorldsCommand implements CommandExecutor {
     }
 
     public void getPermissionInput(Player player, boolean closeInventory) {
-        BuildWorld buildWorld = playerManager.getSelectedWorld().get(player.getUniqueId());
+        BuildWorld buildWorld = playerManager.getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();
             player.sendMessage(plugin.getString("worlds_setpermission_error"));
@@ -809,7 +809,7 @@ public class WorldsCommand implements CommandExecutor {
     }
 
     public void getRemoveBuilderInput(Player player, boolean closeInventory) {
-        BuildWorld buildWorld = playerManager.getSelectedWorld().get(player.getUniqueId());
+        BuildWorld buildWorld = playerManager.getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();
             player.sendMessage(plugin.getString("worlds_removebuilder_error"));
@@ -857,7 +857,7 @@ public class WorldsCommand implements CommandExecutor {
     }
 
     private void getRenameInput(Player player) {
-        BuildWorld buildWorld = playerManager.getSelectedWorld().get(player.getUniqueId());
+        BuildWorld buildWorld = playerManager.getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();
             player.sendMessage(plugin.getString("worlds_rename_unknown_world"));
@@ -867,7 +867,7 @@ public class WorldsCommand implements CommandExecutor {
         new PlayerChatInput(plugin, player, "enter_world_name", input -> {
             player.closeInventory();
             worldManager.renameWorld(player, buildWorld, input.trim());
-            playerManager.getSelectedWorld().remove(player.getUniqueId());
+            playerManager.getBuildPlayer(player).setCachedWorld(null);
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
             player.closeInventory();
         });

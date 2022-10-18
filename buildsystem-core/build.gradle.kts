@@ -39,6 +39,7 @@ dependencies {
     compileOnly(libs.worldedit)
     compileOnly(libs.annotations)
 
+    implementation(libs.paperlib)
     implementation(libs.xseries)
     implementation(libs.fastboard)
     implementation(libs.bstats)

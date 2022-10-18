@@ -86,7 +86,7 @@ public class StatusInventory implements Listener {
         }
         itemStack.setItemMeta(itemMeta);
 
-        if (plugin.getPlayerManager().getSelectedWorld().get(player.getUniqueId()).getStatus() == worldStatus) {
+        if (playerManager.getBuildPlayer(player).getCachedWorld().getStatus() == worldStatus) {
             itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
         }
 
@@ -117,7 +117,7 @@ public class StatusInventory implements Listener {
             return;
         }
 
-        BuildWorld buildWorld = playerManager.getSelectedWorld().get(player.getUniqueId());
+        BuildWorld buildWorld = playerManager.getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();
             player.sendMessage(plugin.getString("worlds_setstatus_error"));
@@ -157,6 +157,6 @@ public class StatusInventory implements Listener {
                 .replace("%world%", buildWorld.getName())
                 .replace("%status%", buildWorld.getStatus().getName())
         );
-        playerManager.getSelectedWorld().remove(player.getUniqueId());
+        playerManager.getBuildPlayer(player).setCachedWorld(null);
     }
 }

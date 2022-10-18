@@ -1,18 +1,18 @@
 name: "✨ New feature request"
 description: Suggest an idea for this project
-labels: ["type: feature"]
+labels: [ "type: feature" ]
 body:
   - type: markdown
     attributes:
       value: |
-       **Before You Start:**
-
-        This form is only for submitting feature requests. If you have a usage question
-        or are unsure if this is really a bug, make sure to:
-
-        - Ask on our [Discord Chat](https://discord.com/invite/rduPF3yk62)
-
-        Also try to search for your issue - another user may have already requested something similar!
+        **Before You Start:**
+        
+         This form is only for submitting feature requests. If you have a usage question
+         or are unsure if this is really a bug, make sure to:
+        
+         - Ask on our [Discord Chat](https://discord.com/invite/rduPF3yk62)
+        
+         Also try to search for your issue - another user may have already requested something similar!
 
   - type: textarea
     id: problem-description
