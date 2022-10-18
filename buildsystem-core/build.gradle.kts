@@ -33,12 +33,12 @@ dependencies {
 
     compileOnly(libs.spigot)
     compileOnly(libs.authlib)
-    compileOnly(libs.paperlib)
     compileOnly(libs.luckperms)
     compileOnly(libs.placeholderapi)
     compileOnly(libs.worldedit)
     compileOnly(libs.annotations)
 
+    implementation(libs.paperlib)
     implementation(libs.xseries)
     implementation(libs.fastboard)
     implementation(libs.bstats)
