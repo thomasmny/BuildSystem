@@ -173,7 +173,6 @@ public class WorldManager {
                         break;
                     }
                 }
-
                 nameReference.set(input.replaceAll("[^A-Za-z\\d/_-]", "").replace(" ", "_").trim());
             });
         }
@@ -202,13 +201,11 @@ public class WorldManager {
     public boolean worldExists(Player player, String worldName) {
         boolean worldExists = getBuildWorld(worldName) != null;
         File worldFile = new File(Bukkit.getWorldContainer(), worldName);
-
         if (worldExists || worldFile.exists()) {
             player.sendMessage(plugin.getString("worlds_world_exists"));
             XSound.ENTITY_ITEM_BREAK.play(player);
             return true;
         }
-
         return false;
     }
 
@@ -723,8 +720,8 @@ public class WorldManager {
         String itemString = configuration.getString("worlds." + worldName + ".item");
         if (itemString == null) {
             itemString = XMaterial.BEDROCK.name();
-            plugin.getLogger().warning("Could not find Material for \"" + worldName + "\".");
-            plugin.getLogger().warning("Material changed to BEDROCK.");
+            plugin.getLogger().warning("Unknown material found for \"" + worldName + "\" (" + itemString + ").");
+            plugin.getLogger().warning("Defaulting back to BEDROCK.");
         }
 
         Optional<XMaterial> xMaterial = XMaterial.matchXMaterial(itemString);
@@ -732,7 +729,7 @@ public class WorldManager {
             return xMaterial.get();
         } else {
             plugin.getLogger().warning("Unknown material found for \"" + worldName + "\" (" + itemString + ").");
-            plugin.getLogger().warning("Material changed to BEDROCK.");
+            plugin.getLogger().warning("Defaulting back to BEDROCK.");
             return XMaterial.BEDROCK;
         }
     }

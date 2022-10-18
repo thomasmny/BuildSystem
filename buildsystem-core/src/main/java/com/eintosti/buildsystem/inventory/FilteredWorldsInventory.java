@@ -104,7 +104,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         int index = 0;
         inventories[index] = inventory;
         if (numWorlds == 0) {
-            inventoryManager.addUrlSkull(inventory, 22, plugin.getString(noWorldsText), "https://textures.minecraft.net/texture/2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6");
+            inventoryManager.addUrlSkull(inventory, 22, plugin.getString(noWorldsText), "2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6");
             return;
         }
 

@@ -13,6 +13,7 @@ import org.bukkit.Location;
 
 /**
  * @author einTosti
+ * @since TODO
  */
 public class LogoutLocation {
 
