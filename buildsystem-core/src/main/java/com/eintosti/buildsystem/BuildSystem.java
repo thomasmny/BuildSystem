@@ -138,7 +138,7 @@ public class BuildSystem extends JavaPlugin {
             settingsManager.stopScoreboard(pl);
             noClipManager.stopNoClip(pl.getUniqueId());
             playerManager.closeNavigator(pl);
-            playerManager.getBuildPlayer(pl).setLogoutLocation(new LogoutLocation(worldManager.getBuildWorld(pl.getWorld()), pl.getLocation()));
+            playerManager.getBuildPlayer(pl).setLogoutLocation(new LogoutLocation(pl.getWorld().getName(), pl.getLocation()));
         });
 
         reloadConfig();

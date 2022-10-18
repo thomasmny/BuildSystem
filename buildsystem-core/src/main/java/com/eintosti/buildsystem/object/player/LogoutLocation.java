@@ -8,7 +8,9 @@
 
 package com.eintosti.buildsystem.object.player;
 
+import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 /**
@@ -16,12 +18,12 @@ import org.bukkit.Location;
  */
 public class LogoutLocation {
 
-    private final BuildWorld buildWorld;
+    private final String worldName;
     private final double x, y, z;
     private final float yaw, pitch;
 
-    public LogoutLocation(BuildWorld buildWorld, Location location) {
-        this.buildWorld = buildWorld;
+    public LogoutLocation(String worldName, Location location) {
+        this.worldName = worldName;
         this.x = location.getX();
         this.y = location.getY();
         this.z = location.getZ();
@@ -29,8 +31,8 @@ public class LogoutLocation {
         this.pitch = location.getPitch();
     }
 
-    public LogoutLocation(BuildWorld buildWorld, double x, double y, double z, float yaw, float pitch) {
-        this.buildWorld = buildWorld;
+    public LogoutLocation(String worldName, double x, double y, double z, float yaw, float pitch) {
+        this.worldName = worldName;
         this.x = x;
         this.y = y;
         this.z = z;
@@ -38,16 +40,16 @@ public class LogoutLocation {
         this.pitch = pitch;
     }
 
-    public BuildWorld getBuildWorld() {
-        return buildWorld;
+    public String getWorldName() {
+        return worldName;
     }
 
     public Location getLocation() {
-        return new Location(buildWorld.getWorld(), x, y, z, yaw, pitch);
+        return new Location(Bukkit.getWorld(worldName), x, y, z, yaw, pitch);
     }
 
     @Override
     public String toString() {
-        return buildWorld.getName() + ":" + x + ":" + y + ":" + z + ":" + yaw + ":" + pitch;
+        return worldName + ":" + x + ":" + y + ":" + z + ":" + yaw + ":" + pitch;
     }
 }

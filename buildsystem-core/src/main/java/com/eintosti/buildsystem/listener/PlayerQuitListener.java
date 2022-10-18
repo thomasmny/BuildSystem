@@ -62,7 +62,7 @@ public class PlayerQuitListener implements Listener {
         }
 
         playerManager.getBuildPlayer(player).setLogoutLocation(new LogoutLocation(
-                plugin.getWorldManager().getBuildWorld(player.getWorld()),
+                player.getWorld().getName(),
                 player.getLocation()
         ));
 
