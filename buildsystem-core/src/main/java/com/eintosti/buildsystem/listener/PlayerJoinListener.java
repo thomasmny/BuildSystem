@@ -11,10 +11,9 @@ package com.eintosti.buildsystem.listener;
 import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.config.ConfigValues;
-import com.eintosti.buildsystem.manager.InventoryManager;
-import com.eintosti.buildsystem.manager.SettingsManager;
-import com.eintosti.buildsystem.manager.SpawnManager;
-import com.eintosti.buildsystem.manager.WorldManager;
+import com.eintosti.buildsystem.manager.*;
+import com.eintosti.buildsystem.object.player.BuildPlayer;
+import com.eintosti.buildsystem.object.player.LogoutLocation;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
@@ -39,6 +38,7 @@ public class PlayerJoinListener implements Listener {
     private final ConfigValues configValues;
 
     private final InventoryManager inventoryManager;
+    private final PlayerManager playerManager;
     private final SettingsManager settingsManager;
     private final SpawnManager spawnManager;
     private final WorldManager worldManager;
@@ -48,6 +48,7 @@ public class PlayerJoinListener implements Listener {
         this.configValues = plugin.getConfigValues();
 
         this.inventoryManager = plugin.getInventoryManager();
+        this.playerManager = plugin.getPlayerManager();
         this.settingsManager = plugin.getSettingsManager();
         this.spawnManager = plugin.getSpawnManager();
         this.worldManager = plugin.getWorldManager();
@@ -66,8 +67,34 @@ public class PlayerJoinListener implements Listener {
     @SuppressWarnings("deprecation")
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        settingsManager.createSettings(player);
         plugin.getSkullCache().cacheSkull(player.getName());
+
+        BuildPlayer buildPlayer = playerManager.createBuildPlayer(player);
+        Settings settings = buildPlayer.getSettings();
+        if (settings.isNoClip()) {
+            plugin.getNoClipManager().startNoClip(player);
+        }
+
+        if (settings.isScoreboard()) {
+            settingsManager.startScoreboard(player);
+            plugin.getPlayerManager().forceUpdateSidebar(player);
+        }
+
+        manageHidePlayer(player);
+
+        if (settings.isSpawnTeleport()) {
+            spawnManager.teleport(player);
+        } else {
+            LogoutLocation logoutLocation = buildPlayer.getLogoutLocation();
+            if (logoutLocation != null) {
+                player.teleport(logoutLocation.getLocation());
+            }
+        }
+
+        if (settings.isClearInventory()) {
+            player.getInventory().clear();
+        }
+        addJoinItem(player);
 
         String worldName = player.getWorld().getName();
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
@@ -81,27 +108,6 @@ public class PlayerJoinListener implements Listener {
                 Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
             }
         }
-
-        Settings settings = settingsManager.getSettings(player);
-        if (settings.isNoClip()) {
-            plugin.getNoClipManager().startNoClip(player);
-        }
-
-        if (settings.isScoreboard()) {
-            settingsManager.startScoreboard(player);
-            plugin.getPlayerManager().forceUpdateSidebar(player);
-        }
-
-        if (settings.isSpawnTeleport()) {
-            spawnManager.teleport(player);
-        }
-
-        if (settings.isClearInventory()) {
-            player.getInventory().clear();
-        }
-
-        manageHidePlayer(player);
-        addJoinItem(player);
 
         if (player.hasPermission("buildsystem.updates")) {
             performUpdateCheck(player);

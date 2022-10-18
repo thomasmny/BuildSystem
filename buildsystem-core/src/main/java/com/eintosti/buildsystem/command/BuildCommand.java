@@ -11,6 +11,8 @@ package com.eintosti.buildsystem.command;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.PlayerManager;
+import com.eintosti.buildsystem.object.player.BuildPlayer;
+import com.eintosti.buildsystem.object.player.CachedValues;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
@@ -70,13 +72,12 @@ public class BuildCommand implements CommandExecutor {
 
     private void toggleBuildMode(Player target, Player sender, boolean self) {
         UUID targetUuid = target.getUniqueId();
+        BuildPlayer buildPlayer = playerManager.getBuildPlayer(targetUuid);
+        CachedValues cachedValues = buildPlayer.getCachedValues();
 
-        if (playerManager.getBuildPlayers().contains(targetUuid)) {
-            playerManager.getBuildPlayers().remove(targetUuid);
-            if (playerManager.getPlayerGamemode().containsKey(targetUuid)) {
-                target.setGameMode(playerManager.getPlayerGamemode().get(targetUuid));
-                playerManager.getPlayerGamemode().remove(targetUuid);
-            }
+        if (playerManager.getBuildModePlayers().contains(targetUuid)) {
+            playerManager.getBuildModePlayers().remove(targetUuid);
+            cachedValues.resetGameModeIfPresent(target);
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
             if (self) {
@@ -87,8 +88,8 @@ public class BuildCommand implements CommandExecutor {
                 target.sendMessage(plugin.getString("build_deactivated_other_target").replace("%sender%", sender.getName()));
             }
         } else {
-            playerManager.getBuildPlayers().add(targetUuid);
-            playerManager.getPlayerGamemode().put(targetUuid, target.getGameMode());
+            playerManager.getBuildModePlayers().add(targetUuid);
+            cachedValues.setGameMode(target.getGameMode());
             target.setGameMode(GameMode.CREATIVE);
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);

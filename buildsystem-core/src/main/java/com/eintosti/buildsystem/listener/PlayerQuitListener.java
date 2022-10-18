@@ -9,7 +9,9 @@
 package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.manager.SettingsManager;
+import com.eintosti.buildsystem.object.player.LogoutLocation;
 import com.eintosti.buildsystem.object.settings.Settings;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -24,10 +26,12 @@ import org.bukkit.event.player.PlayerQuitEvent;
 public class PlayerQuitListener implements Listener {
 
     private final BuildSystem plugin;
+    private final PlayerManager playerManager;
     private final SettingsManager settingsManager;
 
     public PlayerQuitListener(BuildSystem plugin) {
         this.plugin = plugin;
+        this.playerManager = plugin.getPlayerManager();
         this.settingsManager = plugin.getSettingsManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -42,7 +46,7 @@ public class PlayerQuitListener implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        plugin.getPlayerManager().closeNavigator(player);
+        playerManager.closeNavigator(player);
 
         Settings settings = settingsManager.getSettings(player);
         if (settings.isNoClip()) {
@@ -56,6 +60,11 @@ public class PlayerQuitListener implements Listener {
         if (settings.isClearInventory()) {
             player.getInventory().clear();
         }
+
+        playerManager.getBuildPlayer(player).setLogoutLocation(new LogoutLocation(
+                plugin.getWorldManager().getBuildWorld(player.getWorld()),
+                player.getLocation()
+        ));
 
         manageHidePlayer(player);
     }
