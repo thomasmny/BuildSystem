@@ -25,6 +25,7 @@ import com.eintosti.buildsystem.object.world.generator.ModernVoidGenerator;
 import com.eintosti.buildsystem.util.FileUtils;
 import com.eintosti.buildsystem.util.UUIDFetcher;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
+import io.papermc.lib.PaperLib;
 import org.bukkit.*;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
@@ -646,11 +647,11 @@ public class WorldManager {
                 if (!spawnManager.getSpawnWorld().equals(playerWorld)) {
                     spawnManager.teleport(player);
                 } else {
-                    player.teleport(spawnLocation);
+                    PaperLib.teleportAsync(player, spawnLocation);
                     spawnManager.remove();
                 }
             } else {
-                player.teleport(spawnLocation);
+                PaperLib.teleportAsync(player, spawnLocation);
             }
 
             player.sendMessage(message);
@@ -720,7 +721,7 @@ public class WorldManager {
 
             removedPlayers.stream()
                     .filter(Objects::nonNull)
-                    .forEach(pl -> pl.teleport(spawnLocation.add(0.5, 0, 0.5)));
+                    .forEach(pl -> PaperLib.teleportAsync(pl, spawnLocation.add(0.5, 0, 0.5)));
             removedPlayers.clear();
 
             SpawnManager spawnManager = plugin.getSpawnManager();
@@ -783,7 +784,7 @@ public class WorldManager {
 
         Location finalLocation = location;
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            player.teleport(finalLocation);
+            PaperLib.teleportAsync(player, finalLocation);
             Titles.clearTitle(player);
             XSound.ENTITY_ENDERMAN_TELEPORT.play(player);
         }, hadToLoad ? 20L : 0L);

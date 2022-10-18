@@ -10,6 +10,7 @@ package com.eintosti.buildsystem.command;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.WorldManager;
+import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -71,7 +72,7 @@ public class TopCommand implements CommandExecutor {
         }
 
         if (blockLocation != null && !Objects.equals(blockLocation.getBlock(), playerLocation.getBlock())) {
-            player.teleport(blockLocation.add(0.5, 0, 0.5));
+            PaperLib.teleportAsync(player, blockLocation.add(0.5, 0, 0.5));
             player.sendMessage(plugin.getString("top_teleported"));
         } else {
             player.sendMessage(plugin.getString("top_failed"));

@@ -1,6 +1,7 @@
 [versions]
 # Platform expectations
 spigot = "1.19.1-R0.1-SNAPSHOT"
+paperlib = "1.0.7"
 
 # Plugins
 luckperms = "5.4"
@@ -17,6 +18,7 @@ xseries = "9.1.0"
 [libraries]
 #Platform expectations
 spigot = { group = "org.spigotmc", name = "spigot-api", version.ref = "spigot" }
+paperlib = { group = "io.papermc", name = "paperlib", version.ref = "paperlib" }
 
 # Plugins
 luckperms = { group = "net.luckperms", name = "api", version.ref = "luckperms" }
