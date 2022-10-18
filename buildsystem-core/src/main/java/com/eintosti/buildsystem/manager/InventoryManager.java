@@ -294,7 +294,7 @@ public class InventoryManager {
         }
 
         if (buildWorld.isLoaded()) {
-            playerManager.getSelectedWorld().put(player.getUniqueId(), buildWorld);
+            playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
             XSound.BLOCK_CHEST_OPEN.play(player);
             plugin.getEditInventory().openInventory(player, buildWorld);
         } else {

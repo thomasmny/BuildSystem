@@ -23,12 +23,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.io.File;
+import java.util.*;
 
 /**
  * @author einTosti
@@ -40,7 +36,6 @@ public class SettingsManager {
     private final SettingsConfig settingsConfig;
     private final WorldManager worldManager;
 
-    private final Map<UUID, Settings> settings;
     private final Map<UUID, FastBoard> boards;
 
     private final String scoreboardTitle;
@@ -52,31 +47,14 @@ public class SettingsManager {
         this.settingsConfig = new SettingsConfig(plugin);
         this.worldManager = plugin.getWorldManager();
 
-        this.settings = new HashMap<>();
         this.boards = new HashMap<>();
 
         this.scoreboardTitle = plugin.getString("title");
         this.scoreboardBody = plugin.getStringList("body");
     }
 
-    private Settings createSettings(UUID uuid) {
-        if (!this.settings.containsKey(uuid)) {
-            Settings settings = new Settings();
-            this.settings.put(uuid, settings);
-            return settings;
-        }
-        return this.settings.get(uuid);
-    }
-
-    public Settings createSettings(Player player) {
-        return createSettings(player.getUniqueId());
-    }
-
     public Settings getSettings(UUID uuid) {
-        if (settings.get(uuid) == null) {
-            createSettings(uuid);
-        }
-        return settings.get(uuid);
+        return plugin.getPlayerManager().getBuildPlayer(uuid).getSettings();
     }
 
     public Settings getSettings(Player player) {
@@ -210,10 +188,6 @@ public class SettingsManager {
         Bukkit.getOnlinePlayers().forEach(this::stopScoreboard);
     }
 
-    public void save() {
-        settings.forEach(settingsConfig::saveSettings);
-    }
-
     public void load() {
         FileConfiguration configuration = settingsConfig.getFile();
         ConfigurationSection configurationSection = configuration.getConfigurationSection("settings");
@@ -239,7 +213,7 @@ public class SettingsManager {
             boolean spawnTeleport = !configuration.isBoolean("settings." + uuid + ".spawn-teleport") || configuration.getBoolean("settings." + uuid + ".spawn-teleport");
             boolean trapDoor = configuration.getBoolean("settings." + uuid + ".trapdoor");
 
-            this.settings.put(UUID.fromString(uuid), new Settings(
+            plugin.getPlayerManager().createBuildPlayer(UUID.fromString(uuid), new Settings(
                     navigatorType,
                     glassColor,
                     worldSort,
@@ -257,5 +231,10 @@ public class SettingsManager {
                     trapDoor
             ));
         });
+
+        File settingsFile = new File(plugin.getDataFolder(), "settings.yml");
+        if (settingsFile.exists()) {
+            settingsFile.delete();
+        }
     }
 }

@@ -12,13 +12,10 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.config.ConfigValues;
-import com.eintosti.buildsystem.manager.ArmorStandManager;
-import com.eintosti.buildsystem.manager.InventoryManager;
-import com.eintosti.buildsystem.manager.PlayerManager;
-import com.eintosti.buildsystem.manager.SettingsManager;
-import com.eintosti.buildsystem.manager.WorldManager;
+import com.eintosti.buildsystem.manager.*;
 import com.eintosti.buildsystem.object.navigator.NavigatorInventoryType;
 import com.eintosti.buildsystem.object.navigator.NavigatorType;
+import com.eintosti.buildsystem.object.player.CachedValues;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
@@ -137,9 +134,9 @@ public class NavigatorListener implements Listener {
     }
 
     private void summonNewNavigator(Player player) {
-        UUID playerUuid = player.getUniqueId();
-        playerManager.getPlayerWalkSpeed().put(playerUuid, player.getWalkSpeed());
-        playerManager.getPlayerFlySpeed().put(playerUuid, player.getFlySpeed());
+        CachedValues cachedValues = playerManager.getBuildPlayer(player).getCachedValues();
+        cachedValues.setWalkSpeed(player.getWalkSpeed());
+        cachedValues.setFlySpeed(player.getFlySpeed());
 
         player.setWalkSpeed(0);
         player.setFlySpeed(0);
@@ -274,7 +271,7 @@ public class NavigatorListener implements Listener {
             return;
         }
 
-        if (!playerManager.getBuildPlayers().contains(player.getUniqueId())) {
+        if (!playerManager.getBuildModePlayers().contains(player.getUniqueId())) {
             cancellable.setCancelled(true);
         }
     }

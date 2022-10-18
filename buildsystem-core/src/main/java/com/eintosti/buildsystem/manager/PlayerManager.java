@@ -13,13 +13,22 @@ import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.ActionBar;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.config.ConfigValues;
+import com.eintosti.buildsystem.config.PlayersConfig;
 import com.eintosti.buildsystem.inventory.FilteredWorldsInventory.Visibility;
 import com.eintosti.buildsystem.object.navigator.NavigatorInventoryType;
+import com.eintosti.buildsystem.object.navigator.NavigatorType;
+import com.eintosti.buildsystem.object.player.BuildPlayer;
+import com.eintosti.buildsystem.object.player.CachedValues;
+import com.eintosti.buildsystem.object.player.LogoutLocation;
+import com.eintosti.buildsystem.object.settings.Color;
+import com.eintosti.buildsystem.object.settings.Settings;
+import com.eintosti.buildsystem.object.settings.WorldSort;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -30,13 +39,7 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author einTosti
@@ -45,45 +48,54 @@ public class PlayerManager {
 
     private static final double MIN_HEIGHT = -0.16453003708696978;
     private static final double MAX_HEIGHT = 0.16481381407766063;
-    private static final float DEFAULT_SPEED = 0.2f;
 
     private final BuildSystem plugin;
+    private final PlayersConfig playersConfig;
     private final ConfigValues configValues;
 
-    private final Map<UUID, Location> previousLocation;
-    private final Map<UUID, BuildWorld> selectedWorld;
-    private final Map<UUID, NavigatorInventoryType> lastLookedAt;
-    private final Map<UUID, GameMode> playerGamemode;
-    private final Map<UUID, Float> playerWalkSpeed;
-    private final Map<UUID, Float> playerFlySpeed;
+    private final Map<UUID, BuildPlayer> buildPlayers;
 
     private final Set<Player> openNavigator;
-    private final Set<UUID> buildPlayers;
+    private final Set<UUID> buildModePlayers;
 
     public PlayerManager(BuildSystem plugin) {
         this.plugin = plugin;
+        this.playersConfig = new PlayersConfig(plugin);
         this.configValues = plugin.getConfigValues();
 
-        this.previousLocation = new HashMap<>();
-        this.selectedWorld = new HashMap<>();
-        this.lastLookedAt = new HashMap<>();
-        this.playerGamemode = new HashMap<>();
-        this.playerWalkSpeed = new HashMap<>();
-        this.playerFlySpeed = new HashMap<>();
+        this.buildPlayers = new HashMap<>();
 
         this.openNavigator = new HashSet<>();
-        this.buildPlayers = new HashSet<>();
+        this.buildModePlayers = new HashSet<>();
 
         initEntityChecker();
     }
 
-    public Map<UUID, BuildWorld> getSelectedWorld() {
-        return selectedWorld;
+    public BuildPlayer createBuildPlayer(UUID uuid, Settings settings) {
+        BuildPlayer buildPlayer = this.buildPlayers.getOrDefault(uuid, new BuildPlayer(uuid, settings));
+        this.buildPlayers.put(uuid, buildPlayer);
+        return buildPlayer;
+    }
+
+    public BuildPlayer createBuildPlayer(Player player) {
+        return createBuildPlayer(player.getUniqueId(), new Settings());
+    }
+
+    public Collection<BuildPlayer> getBuildPlayers() {
+        return this.buildPlayers.values();
+    }
+
+    public BuildPlayer getBuildPlayer(UUID uuid) {
+        return this.buildPlayers.get(uuid);
+    }
+
+    public BuildPlayer getBuildPlayer(Player player) {
+        return this.buildPlayers.get(player.getUniqueId());
     }
 
     @Nullable
     public String getSelectedWorldName(Player player) {
-        BuildWorld selectedWorld = getSelectedWorld().get(player.getUniqueId());
+        BuildWorld selectedWorld = getBuildPlayer(player.getUniqueId()).getCachedWorld();
         if (selectedWorld == null) {
             return null;
         }
@@ -95,28 +107,12 @@ public class PlayerManager {
         return selectedWorldName;
     }
 
-    public Map<UUID, Location> getPreviousLocation() {
-        return previousLocation;
-    }
-
-    public Map<UUID, GameMode> getPlayerGamemode() {
-        return playerGamemode;
-    }
-
-    public Map<UUID, Float> getPlayerWalkSpeed() {
-        return playerWalkSpeed;
-    }
-
-    public Map<UUID, Float> getPlayerFlySpeed() {
-        return playerFlySpeed;
-    }
-
     public Set<Player> getOpenNavigator() {
         return openNavigator;
     }
 
-    public Set<UUID> getBuildPlayers() {
-        return buildPlayers;
+    public Set<UUID> getBuildModePlayers() {
+        return buildModePlayers;
     }
 
     /**
@@ -228,21 +224,20 @@ public class PlayerManager {
             return;
         }
 
-        lastLookedAt.remove(player.getUniqueId());
+        BuildPlayer buildPlayer = getBuildPlayer(player.getUniqueId());
+        buildPlayer.setLastLookedAt(null);
         plugin.getArmorStandManager().removeArmorStands(player);
 
         XSound.ENTITY_ITEM_BREAK.play(player);
         ActionBar.clearActionBar(player);
         replaceBarrier(player);
 
-        UUID playerUuid = player.getUniqueId();
-        player.setWalkSpeed(playerWalkSpeed.getOrDefault(playerUuid, DEFAULT_SPEED));
-        player.setFlySpeed(playerFlySpeed.getOrDefault(playerUuid, DEFAULT_SPEED));
+        CachedValues cachedValues = buildPlayer.getCachedValues();
+        cachedValues.resetWalkSpeedIfPresent(player);
+        cachedValues.resetFlySpeedIfPresent(player);
         player.removePotionEffect(PotionEffectType.JUMP);
         player.removePotionEffect(PotionEffectType.BLINDNESS);
 
-        playerWalkSpeed.remove(playerUuid);
-        playerFlySpeed.remove(playerUuid);
         openNavigator.remove(player);
     }
 
@@ -263,29 +258,26 @@ public class PlayerManager {
     }
 
     private void checkForEntity() {
-        List<UUID> toRemove = new ArrayList<>();
-
         for (Player player : openNavigator) {
             if (getEntityName(player).isEmpty()) {
                 continue;
             }
 
+            BuildPlayer buildPlayer = getBuildPlayer(player.getUniqueId());
             double lookedPosition = player.getEyeLocation().getDirection().getY();
             if (lookedPosition >= MIN_HEIGHT && lookedPosition <= MAX_HEIGHT) {
                 NavigatorInventoryType inventoryType = NavigatorInventoryType.matchInventoryType(player, getEntityName(player));
-                NavigatorInventoryType lastLookedAt = this.lastLookedAt.get(player.getUniqueId());
+                NavigatorInventoryType lastLookedAt = buildPlayer.getLastLookedAt();
 
                 if (lastLookedAt == null || lastLookedAt != inventoryType) {
-                    this.lastLookedAt.put(player.getUniqueId(), inventoryType);
+                    buildPlayer.setLastLookedAt(inventoryType);
                     sendTypeInfo(player, inventoryType);
                 }
             } else {
                 ActionBar.clearActionBar(player);
-                toRemove.add(player.getUniqueId());
+                buildPlayer.setLastLookedAt(null);
             }
         }
-
-        toRemove.forEach(lastLookedAt::remove);
     }
 
     @Nullable
@@ -353,5 +345,71 @@ public class PlayerManager {
 
         ActionBar.sendActionBar(player, plugin.getString(message));
         XSound.ENTITY_CHICKEN_EGG.play(player);
+    }
+
+    public void save() {
+        getBuildPlayers().forEach(buildPlayer -> playersConfig.savePlayer(buildPlayer.getUniqueId(), buildPlayer));
+    }
+
+    public void load() {
+        FileConfiguration configuration = playersConfig.getFile();
+        ConfigurationSection configurationSection = configuration.getConfigurationSection("players");
+        if (configurationSection == null) {
+            return;
+        }
+
+        Set<String> uuids = configurationSection.getKeys(false);
+        uuids.forEach(uuid -> {
+            BuildPlayer buildPlayer = createBuildPlayer(
+                    UUID.fromString(uuid),
+                    loadSettings(configuration, "players." + uuid + ".settings.")
+            );
+            buildPlayer.setLogoutLocation(loadLogoutLocation(configuration, "players." + uuid + ".logout-location"));
+        });
+    }
+
+    private Settings loadSettings(FileConfiguration configuration, String pathPrefix) {
+        NavigatorType navigatorType = NavigatorType.valueOf(configuration.getString(pathPrefix + "type"));
+        Color glassColor = Color.matchColor(configuration.getString(pathPrefix + "glass"));
+        WorldSort worldSort = WorldSort.matchWorldSort(configuration.getString(pathPrefix + "world-sort"));
+        boolean clearInventory = configuration.getBoolean(pathPrefix + "clear-inventory", false);
+        boolean disableInteract = configuration.getBoolean(pathPrefix + "disable-interact", false);
+        boolean hidePlayers = configuration.getBoolean(pathPrefix + "hide-players", false);
+        boolean instantPlaceSigns = configuration.getBoolean(pathPrefix + "instant-place-signs", false);
+        boolean keepNavigator = configuration.getBoolean(pathPrefix + "keep-navigator", false);
+        boolean nightVision = configuration.getBoolean(pathPrefix + "nightvision", false);
+        boolean noClip = configuration.getBoolean(pathPrefix + "no-clip", false);
+        boolean placePlants = configuration.getBoolean(pathPrefix + "place-plants", false);
+        boolean scoreboard = configuration.getBoolean(pathPrefix + "scoreboard", true);
+        boolean slabBreaking = configuration.getBoolean(pathPrefix + "slab-breaking", false);
+        boolean spawnTeleport = configuration.getBoolean(pathPrefix + "spawn-teleport", true);
+        boolean trapDoor = configuration.getBoolean(pathPrefix + "trapdoor", false);
+
+        return new Settings(
+                navigatorType, glassColor, worldSort, clearInventory, disableInteract, hidePlayers, instantPlaceSigns,
+                keepNavigator, nightVision, noClip, placePlants, scoreboard, slabBreaking, spawnTeleport, trapDoor
+        );
+    }
+
+    @Nullable
+    private LogoutLocation loadLogoutLocation(FileConfiguration configuration, String pathPrefix) {
+        String location = configuration.getString(pathPrefix);
+        if (location == null || location.trim().equals("")) {
+            return null;
+        }
+
+        String[] parts = location.split(":");
+        if (parts.length != 6) {
+            return null;
+        }
+
+        String worldName = parts[0];
+        double x = Double.parseDouble(parts[1]);
+        double y = Double.parseDouble(parts[2]);
+        double z = Double.parseDouble(parts[3]);
+        float yaw = Float.parseFloat(parts[4]);
+        float pitch = Float.parseFloat(parts[5]);
+
+        return new LogoutLocation(plugin.getWorldManager().getBuildWorld(worldName), x, y, z, yaw, pitch);
     }
 }

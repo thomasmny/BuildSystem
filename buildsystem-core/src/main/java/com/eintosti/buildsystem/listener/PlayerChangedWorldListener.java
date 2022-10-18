@@ -109,15 +109,11 @@ public class PlayerChangedWorldListener implements Listener {
 
     private void removeBuildMode(Player player) {
         UUID playerUuid = player.getUniqueId();
-        if (!playerManager.getBuildPlayers().remove(playerUuid)) {
+        if (!playerManager.getBuildModePlayers().remove(playerUuid)) {
             return;
         }
 
-        if (playerManager.getPlayerGamemode().containsKey(playerUuid)) {
-            player.setGameMode(playerManager.getPlayerGamemode().get(playerUuid));
-            playerManager.getPlayerGamemode().remove(playerUuid);
-        }
-
+        playerManager.getBuildPlayer(playerUuid).getCachedValues().resetGameModeIfPresent(player);
         XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
         player.sendMessage(plugin.getString("build_deactivated_self"));
     }
