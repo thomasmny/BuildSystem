@@ -300,7 +300,7 @@ public class SettingsInteractListener implements Listener {
             return true;
         }
 
-        boolean isInBuildMode = playerManager.getBuildPlayers().contains(player.getUniqueId());
+        boolean isInBuildMode = playerManager.getBuildModePlayers().contains(player.getUniqueId());
         if (buildWorld.getStatus() == WorldStatus.ARCHIVE && !isInBuildMode) {
             return false;
         }

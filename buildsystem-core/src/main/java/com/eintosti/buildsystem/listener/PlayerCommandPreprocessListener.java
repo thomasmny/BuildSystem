@@ -32,66 +32,6 @@ import java.util.List;
  */
 public class PlayerCommandPreprocessListener implements Listener {
 
-    private final BuildSystem plugin;
-    private final ConfigValues configValues;
-
-    private final InventoryManager inventoryManager;
-    private final SettingsManager settingsManager;
-    private final WorldManager worldManager;
-
-    public PlayerCommandPreprocessListener(BuildSystem plugin) {
-        this.plugin = plugin;
-        this.configValues = plugin.getConfigValues();
-
-        this.inventoryManager = plugin.getInventoryManager();
-        this.settingsManager = plugin.getSettingsManager();
-        this.worldManager = plugin.getWorldManager();
-
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
-    }
-
-    @EventHandler
-    public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
-
-        String command = event.getMessage().split(" ")[0];
-        Player player = event.getPlayer();
-
-        if (command.equalsIgnoreCase("/clear")) {
-            ItemStack navigatorItem = inventoryManager.getItemStack(configValues.getNavigatorItem(), plugin.getString("navigator_item"));
-            if (!player.getInventory().contains(navigatorItem)) {
-                return;
-            }
-
-            if (settingsManager.getSettings(player).isKeepNavigator()) {
-                List<Integer> navigatorSlots = inventoryManager.getNavigatorSlots(player);
-                Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                    PlayerInventoryClearEvent playerInventoryClearEvent = new PlayerInventoryClearEvent(player, navigatorSlots);
-                    Bukkit.getServer().getPluginManager().callEvent(playerInventoryClearEvent);
-                }, 2L);
-            }
-            return;
-        }
-
-        if (configValues.isBlockWorldEditNonBuilder()) {
-            if (!DISABLED_COMMANDS.contains(command)) {
-                return;
-            }
-
-            BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
-            if (buildWorld == null) {
-                return;
-            }
-            if (disableArchivedWorlds(buildWorld, player, event)) {
-                return;
-            }
-
-            checkBuilders(buildWorld, player, event);
-        }
-    }
-
     private static final HashSet<String> DISABLED_COMMANDS = Sets.newHashSet(
             "/worldedit",
             "/we",
@@ -268,6 +208,64 @@ public class PlayerCommandPreprocessListener implements Listener {
             "/vl",
             "/vr--"
     );
+    private final BuildSystem plugin;
+    private final ConfigValues configValues;
+    private final InventoryManager inventoryManager;
+    private final SettingsManager settingsManager;
+    private final WorldManager worldManager;
+
+    public PlayerCommandPreprocessListener(BuildSystem plugin) {
+        this.plugin = plugin;
+        this.configValues = plugin.getConfigValues();
+
+        this.inventoryManager = plugin.getInventoryManager();
+        this.settingsManager = plugin.getSettingsManager();
+        this.worldManager = plugin.getWorldManager();
+
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    }
+
+    @EventHandler
+    public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+
+        String command = event.getMessage().split(" ")[0];
+        Player player = event.getPlayer();
+
+        if (command.equalsIgnoreCase("/clear")) {
+            ItemStack navigatorItem = inventoryManager.getItemStack(configValues.getNavigatorItem(), plugin.getString("navigator_item"));
+            if (!player.getInventory().contains(navigatorItem)) {
+                return;
+            }
+
+            if (settingsManager.getSettings(player).isKeepNavigator()) {
+                List<Integer> navigatorSlots = inventoryManager.getNavigatorSlots(player);
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    PlayerInventoryClearEvent playerInventoryClearEvent = new PlayerInventoryClearEvent(player, navigatorSlots);
+                    Bukkit.getServer().getPluginManager().callEvent(playerInventoryClearEvent);
+                }, 2L);
+            }
+            return;
+        }
+
+        if (configValues.isBlockWorldEditNonBuilder()) {
+            if (!DISABLED_COMMANDS.contains(command)) {
+                return;
+            }
+
+            BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+            if (buildWorld == null) {
+                return;
+            }
+            if (disableArchivedWorlds(buildWorld, player, event)) {
+                return;
+            }
+
+            checkBuilders(buildWorld, player, event);
+        }
+    }
 
     private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
         if (!worldManager.canBypassBuildRestriction(player) && buildWorld.getStatus() == WorldStatus.ARCHIVE) {

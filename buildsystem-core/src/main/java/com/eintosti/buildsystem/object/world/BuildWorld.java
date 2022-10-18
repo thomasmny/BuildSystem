@@ -20,11 +20,7 @@ import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.eintosti.buildsystem.object.world.data.WorldType;
 import com.eintosti.buildsystem.util.UUIDFetcher;
 import com.eintosti.buildsystem.util.exception.UnexpectedEnumValueException;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.Difficulty;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
@@ -33,12 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -48,24 +39,20 @@ public class BuildWorld implements ConfigurationSerializable {
 
     private final BuildSystem plugin;
     private final ConfigValues configValues;
-
-    private String name;
-    private String creator;
-    private UUID creatorId;
     private final WorldType worldType;
     private final List<Builder> builders;
     private final long creationDate;
-
+    private final String chunkGeneratorName;
+    private String name;
+    private String creator;
+    private UUID creatorId;
     private XMaterial material;
     private boolean privateWorld;
     private WorldStatus worldStatus;
     private String project;
     private String permission;
     private String customSpawn;
-
     private ChunkGenerator chunkGenerator;
-    private final String chunkGeneratorName;
-
     private boolean physics;
     private boolean explosions;
     private boolean mobAI;
@@ -649,21 +636,21 @@ public class BuildWorld implements ConfigurationSerializable {
     }
 
     /**
-     * Set whether on {@link Builder}s can modify the world.
-     *
-     * @param buildersEnabled {@code true} to disable world modification for all players who are not builders, {@code false} to enable
-     */
-    public void setBuilders(boolean buildersEnabled) {
-        this.buildersEnabled = buildersEnabled;
-    }
-
-    /**
      * Get a list of all builders who can modify the world.
      *
      * @return the list of all builders
      */
     public List<Builder> getBuilders() {
         return builders;
+    }
+
+    /**
+     * Set whether on {@link Builder}s can modify the world.
+     *
+     * @param buildersEnabled {@code true} to disable world modification for all players who are not builders, {@code false} to enable
+     */
+    public void setBuilders(boolean buildersEnabled) {
+        this.buildersEnabled = buildersEnabled;
     }
 
     /**

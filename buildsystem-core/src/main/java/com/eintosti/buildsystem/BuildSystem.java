@@ -14,24 +14,13 @@ import com.eintosti.buildsystem.expansion.luckperms.LuckPermsExpansion;
 import com.eintosti.buildsystem.expansion.placeholderapi.PlaceholderApiExpansion;
 import com.eintosti.buildsystem.inventory.*;
 import com.eintosti.buildsystem.listener.*;
-import com.eintosti.buildsystem.manager.ArmorStandManager;
-import com.eintosti.buildsystem.manager.InventoryManager;
-import com.eintosti.buildsystem.manager.NoClipManager;
-import com.eintosti.buildsystem.manager.PlayerManager;
-import com.eintosti.buildsystem.manager.SettingsManager;
-import com.eintosti.buildsystem.manager.SpawnManager;
-import com.eintosti.buildsystem.manager.WorldManager;
+import com.eintosti.buildsystem.manager.*;
 import com.eintosti.buildsystem.object.internal.ServerVersion;
+import com.eintosti.buildsystem.object.player.BuildPlayer;
+import com.eintosti.buildsystem.object.player.LogoutLocation;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.tabcomplete.ConfigTabComplete;
-import com.eintosti.buildsystem.tabcomplete.EmptyTabComplete;
-import com.eintosti.buildsystem.tabcomplete.GamemodeTabComplete;
-import com.eintosti.buildsystem.tabcomplete.PhysicsTabComplete;
-import com.eintosti.buildsystem.tabcomplete.SpawnTabComplete;
-import com.eintosti.buildsystem.tabcomplete.SpeedTabComplete;
-import com.eintosti.buildsystem.tabcomplete.TimeTabComplete;
-import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import com.eintosti.buildsystem.tabcomplete.*;
 import com.eintosti.buildsystem.util.Messages;
 import com.eintosti.buildsystem.util.RBGUtils;
 import com.eintosti.buildsystem.util.SkullCache;
@@ -127,13 +116,15 @@ public class BuildSystem extends JavaPlugin {
         performUpdateCheck();
 
         worldManager.load();
-        settingsManager.load();
+        settingsManager.load(); //TODO: Remove in v3.0
+        playerManager.load();
         spawnManager.load();
 
         Bukkit.getOnlinePlayers().forEach(pl -> {
             getSkullCache().cacheSkull(pl.getName());
 
-            Settings settings = settingsManager.createSettings(pl);
+            BuildPlayer buildPlayer = playerManager.createBuildPlayer(pl);
+            Settings settings = buildPlayer.getSettings();
             settingsManager.startScoreboard(pl, settings);
             noClipManager.startNoClip(pl, settings);
         });
@@ -147,6 +138,7 @@ public class BuildSystem extends JavaPlugin {
             settingsManager.stopScoreboard(pl);
             noClipManager.stopNoClip(pl.getUniqueId());
             playerManager.closeNavigator(pl);
+            playerManager.getBuildPlayer(pl).setLogoutLocation(new LogoutLocation(pl.getWorld().getName(), pl.getLocation()));
         });
 
         reloadConfig();
@@ -154,7 +146,7 @@ public class BuildSystem extends JavaPlugin {
         saveConfig();
 
         worldManager.save();
-        settingsManager.save();
+        playerManager.save();
         spawnManager.save();
         inventoryManager.save();
 
@@ -247,6 +239,7 @@ public class BuildSystem extends JavaPlugin {
 
     private void registerListeners() {
         new AsyncPlayerChatListener(this);
+        new AsyncPlayerPreLoginListener(this);
         new BlockPhysicsListener(this);
         new BlockPlaceListener(this);
         new BuildWorldResetUnloadListener(this);

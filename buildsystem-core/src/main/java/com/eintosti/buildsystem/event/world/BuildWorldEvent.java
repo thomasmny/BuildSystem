@@ -18,6 +18,10 @@ public class BuildWorldEvent extends Event {
         this.buildWorld = buildWorld;
     }
 
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
+    }
+
     public BuildWorld getBuildWorld() {
         return buildWorld;
     }
@@ -25,10 +29,6 @@ public class BuildWorldEvent extends Event {
     @NotNull
     @Override
     public HandlerList getHandlers() {
-        return HANDLERS;
-    }
-
-    public static HandlerList getHandlerList() {
         return HANDLERS;
     }
 }

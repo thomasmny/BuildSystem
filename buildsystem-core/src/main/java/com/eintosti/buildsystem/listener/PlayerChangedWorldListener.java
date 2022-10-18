@@ -11,11 +11,7 @@ package com.eintosti.buildsystem.listener;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.config.ConfigValues;
-import com.eintosti.buildsystem.manager.ArmorStandManager;
-import com.eintosti.buildsystem.manager.InventoryManager;
-import com.eintosti.buildsystem.manager.PlayerManager;
-import com.eintosti.buildsystem.manager.SettingsManager;
-import com.eintosti.buildsystem.manager.WorldManager;
+import com.eintosti.buildsystem.manager.*;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.eintosti.buildsystem.object.world.data.WorldType;
@@ -109,15 +105,11 @@ public class PlayerChangedWorldListener implements Listener {
 
     private void removeBuildMode(Player player) {
         UUID playerUuid = player.getUniqueId();
-        if (!playerManager.getBuildPlayers().remove(playerUuid)) {
+        if (!playerManager.getBuildModePlayers().remove(playerUuid)) {
             return;
         }
 
-        if (playerManager.getPlayerGamemode().containsKey(playerUuid)) {
-            player.setGameMode(playerManager.getPlayerGamemode().get(playerUuid));
-            playerManager.getPlayerGamemode().remove(playerUuid);
-        }
-
+        playerManager.getBuildPlayer(playerUuid).getCachedValues().resetGameModeIfPresent(player);
         XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
         player.sendMessage(plugin.getString("build_deactivated_self"));
     }

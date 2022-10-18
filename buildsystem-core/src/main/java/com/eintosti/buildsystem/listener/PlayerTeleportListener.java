@@ -41,7 +41,7 @@ public class PlayerTeleportListener implements Listener {
         Player player = event.getPlayer();
 
         if (event.getCause() != PlayerTeleportEvent.TeleportCause.UNKNOWN) {
-            playerManager.getPreviousLocation().put(player.getUniqueId(), event.getFrom());
+            playerManager.getBuildPlayer(player).setPreviousLocation(event.getFrom());
         }
 
         Location to = event.getTo();

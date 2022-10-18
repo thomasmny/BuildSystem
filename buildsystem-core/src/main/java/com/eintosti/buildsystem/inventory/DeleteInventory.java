@@ -72,7 +72,7 @@ public class DeleteInventory implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        BuildWorld buildWorld = plugin.getPlayerManager().getSelectedWorld().get(player.getUniqueId());
+        BuildWorld buildWorld = plugin.getPlayerManager().getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
             player.sendMessage(plugin.getString("worlds_delete_error"));
             player.closeInventory();
