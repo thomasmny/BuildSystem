@@ -15,6 +15,7 @@ import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
+import com.eintosti.buildsystem.util.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -56,7 +57,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
     }
 
     protected Inventory createInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 54, plugin.getString(inventoryName));
+        Inventory inventory = Bukkit.createInventory(null, 54, Messages.getString(inventoryName));
 
         int numOfPages = (numOfWorlds(player) / MAX_WORLDS) + (numOfWorlds(player) % MAX_WORLDS == 0 ? 0 : 1);
         inventoryManager.fillMultiInvWithGlass(plugin, inventory, player, getInvIndex(player), numOfPages);
@@ -104,7 +105,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         int index = 0;
         inventories[index] = inventory;
         if (numWorlds == 0) {
-            inventoryManager.addUrlSkull(inventory, 22, plugin.getString(noWorldsText), "2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6");
+            inventoryManager.addUrlSkull(inventory, 22, Messages.getString(noWorldsText), "2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6");
             return;
         }
 

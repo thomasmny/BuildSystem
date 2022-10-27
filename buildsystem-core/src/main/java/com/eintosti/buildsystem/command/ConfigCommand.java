@@ -9,6 +9,7 @@
 package com.eintosti.buildsystem.command;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.util.Messages;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -34,7 +35,7 @@ public class ConfigCommand implements CommandExecutor {
         }
 
         if (args.length != 1) {
-            sender.sendMessage(plugin.getString("config_usage"));
+            Messages.sendMessage(sender, "config_usage");
             return true;
         }
 
@@ -43,10 +44,10 @@ public class ConfigCommand implements CommandExecutor {
             case "reload":
                 plugin.reloadConfig();
                 plugin.reloadConfigData(true);
-                sender.sendMessage(plugin.getString("config_reloaded"));
+                Messages.sendMessage(sender, "config_reloaded");
                 break;
             default:
-                sender.sendMessage(plugin.getString("config_usage"));
+                Messages.sendMessage(sender, "config_usage");
                 break;
         }
 

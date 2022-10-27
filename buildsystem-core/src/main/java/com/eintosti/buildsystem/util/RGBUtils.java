@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  * @author CoasterFreakDE (Original Author)
  * @author einTosti (Ported to Java)
  */
-public class RBGUtils {
+public class RGBUtils {
 
     private static final Pattern DEFAULT_HEX = Pattern.compile("#[0-9a-fA-F]{6}");
     private static final Pattern BRACKET_HEX = Pattern.compile("\\{#[0-9a-fA-F]{6}}");

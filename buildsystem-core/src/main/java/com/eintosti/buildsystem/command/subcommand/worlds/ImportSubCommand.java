@@ -14,6 +14,7 @@ import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.generator.Generator;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import com.eintosti.buildsystem.util.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -42,21 +43,21 @@ public class ImportSubCommand extends SubCommand {
         }
 
         if (args.length < 2) {
-            player.sendMessage(plugin.getString("worlds_import_usage"));
+            Messages.sendMessage(player, "worlds_import_usage");
             return;
         }
 
         WorldManager worldManager = plugin.getWorldManager();
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld != null) {
-            player.sendMessage(plugin.getString("worlds_import_world_is_imported"));
+            Messages.sendMessage(player, "worlds_import_world_is_imported");
             return;
         }
 
         File worldFolder = new File(Bukkit.getWorldContainer(), args[1]);
         File levelFile = new File(worldFolder.getAbsolutePath() + File.separator + "level.dat");
         if (!worldFolder.isDirectory() || !levelFile.exists()) {
-            player.sendMessage(plugin.getString("worlds_import_unknown_world"));
+            Messages.sendMessage(player, "worlds_import_unknown_world");
             return;
         }
 
@@ -66,7 +67,7 @@ public class ImportSubCommand extends SubCommand {
                 break;
             case 4:
                 if (!args[2].equalsIgnoreCase("-g")) {
-                    player.sendMessage(plugin.getString("worlds_import_usage"));
+                    Messages.sendMessage(player, "worlds_import_usage");
                     return;
                 }
 
@@ -79,7 +80,7 @@ public class ImportSubCommand extends SubCommand {
                 worldManager.importWorld(player, args[1], generator, args[3]);
                 break;
             default:
-                player.sendMessage(plugin.getString("worlds_import_usage"));
+                Messages.sendMessage(player, "worlds_import_usage");
                 break;
         }
     }

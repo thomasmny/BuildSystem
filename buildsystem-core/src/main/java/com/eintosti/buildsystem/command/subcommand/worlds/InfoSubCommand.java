@@ -13,13 +13,13 @@ import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import com.eintosti.buildsystem.util.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.AbstractMap;
 
 /**
  * @author einTosti
@@ -51,48 +51,38 @@ public class InfoSubCommand extends SubCommand {
         }
 
         BuildWorld buildWorld = worldManager.getBuildWorld(playerWorld.getName());
-        if (args.length == 2) {
-            if (buildWorld == null) {
-                player.sendMessage(plugin.getString("worlds_info_unknown_world"));
-                return;
-            }
-            buildWorld = worldManager.getBuildWorld(args[1]);
-        } else {
-            player.sendMessage(plugin.getString("worlds_info_usage"));
+        if (args.length != 2) {
+            Messages.sendMessage(player, "worlds_info_usage");
+            return;
         }
 
-        sendInfoMessage(player, buildWorld);
-    }
-
-    //TODO: Print information about the custom generator?
-    private void sendInfoMessage(Player player, BuildWorld buildWorld) {
-        List<String> infoMessage = new ArrayList<>();
-        for (String line : plugin.getStringList("world_info")) {
-            infoMessage.add(line
-                    .replace("%world%", buildWorld.getName())
-                    .replace("%creator%", buildWorld.getCreator())
-                    .replace("%type%", buildWorld.getType().getName())
-                    .replace("%private%", String.valueOf(buildWorld.isPrivate()))
-                    .replace("%builders_enabled%", String.valueOf(buildWorld.isBuilders()))
-                    .replace("%builders%", buildWorld.getBuildersInfo())
-                    .replace("%block_breaking%", String.valueOf(buildWorld.isBlockBreaking()))
-                    .replace("%block_placement%", String.valueOf(buildWorld.isBlockPlacement()))
-                    .replace("%item%", buildWorld.getMaterial().name())
-                    .replace("%status%", buildWorld.getStatus().getName())
-                    .replace("%project%", buildWorld.getProject())
-                    .replace("%permission%", buildWorld.getPermission())
-                    .replace("%time%", buildWorld.getWorldTime())
-                    .replace("%creation%", buildWorld.getFormattedCreationDate())
-                    .replace("%date%", buildWorld.getFormattedCreationDate())
-                    .replace("%physics%", String.valueOf(buildWorld.isPhysics()))
-                    .replace("%explosions%", String.valueOf(buildWorld.isExplosions()))
-                    .replace("%mobai%", String.valueOf(buildWorld.isMobAI()))
-                    .replace("%custom_spawn%", getCustomSpawn(buildWorld))
-            );
+        if (buildWorld == null) {
+            Messages.sendMessage(player, "worlds_info_unknown_world");
+            return;
         }
-        StringBuilder stringBuilder = new StringBuilder();
-        infoMessage.forEach(line -> stringBuilder.append(line).append("\n"));
-        player.sendMessage(stringBuilder.toString());
+        buildWorld = worldManager.getBuildWorld(args[1]);
+
+        //TODO: Print information about the custom generator?
+        Messages.sendMessage(player, "world_info",
+                new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()),
+                new AbstractMap.SimpleEntry<>("%creator%", buildWorld.getCreatorId()),
+                new AbstractMap.SimpleEntry<>("%type%", buildWorld.getType().getName()),
+                new AbstractMap.SimpleEntry<>("%private%", buildWorld.isPrivate()),
+                new AbstractMap.SimpleEntry<>("%builders_enabled%", buildWorld.isBuilders()),
+                new AbstractMap.SimpleEntry<>("%builders%", buildWorld.getBuildersInfo()),
+                new AbstractMap.SimpleEntry<>("%block_breaking%", buildWorld.isBlockPlacement()),
+                new AbstractMap.SimpleEntry<>("%block_placement%", buildWorld.getMaterial().name()),
+                new AbstractMap.SimpleEntry<>("%status%", buildWorld.getStatus().getName()),
+                new AbstractMap.SimpleEntry<>("%project%", buildWorld.getProject()),
+                new AbstractMap.SimpleEntry<>("%permission%", buildWorld.getPermission()),
+                new AbstractMap.SimpleEntry<>("%time%", buildWorld.getWorld()),
+                new AbstractMap.SimpleEntry<>("%creation%", buildWorld.getFormattedCreationDate()),
+                new AbstractMap.SimpleEntry<>("%date%", buildWorld.getFormattedCreationDate()),
+                new AbstractMap.SimpleEntry<>("%physics%", buildWorld.isPhysics()),
+                new AbstractMap.SimpleEntry<>("%explosions%", buildWorld.isExplosions()),
+                new AbstractMap.SimpleEntry<>("%mobai%", buildWorld.isMobAI()),
+                new AbstractMap.SimpleEntry<>("%custom_spawn%", getCustomSpawn(buildWorld))
+        );
     }
 
     private String getCustomSpawn(BuildWorld buildWorld) {

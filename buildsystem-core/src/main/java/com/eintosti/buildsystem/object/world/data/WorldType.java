@@ -9,6 +9,7 @@
 package com.eintosti.buildsystem.object.world.data;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.util.Messages;
 import org.bukkit.World.Environment;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -81,6 +82,6 @@ public enum WorldType {
         if (typeNameKey == null) {
             return "-";
         }
-        return JavaPlugin.getPlugin(BuildSystem.class).getString(typeNameKey);
+        return Messages.getString(typeNameKey);
     }
 }

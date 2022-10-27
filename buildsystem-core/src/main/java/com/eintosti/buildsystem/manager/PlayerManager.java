@@ -24,6 +24,7 @@ import com.eintosti.buildsystem.object.settings.Color;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.settings.WorldSort;
 import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.util.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -248,8 +249,8 @@ public class PlayerManager {
         }
 
         InventoryManager inventoryManager = plugin.getInventoryManager();
-        String findItemName = plugin.getString("barrier_item");
-        ItemStack replaceItem = inventoryManager.getItemStack(plugin.getConfigValues().getNavigatorItem(), plugin.getString("navigator_item"));
+        String findItemName = Messages.getString("barrier_item");
+        ItemStack replaceItem = inventoryManager.getItemStack(plugin.getConfigValues().getNavigatorItem(), Messages.getString("navigator_item"));
 
         inventoryManager.replaceItem(player, findItemName, XMaterial.BARRIER, replaceItem);
     }
@@ -344,7 +345,7 @@ public class PlayerManager {
                 break;
         }
 
-        ActionBar.sendActionBar(player, plugin.getString(message));
+        ActionBar.sendActionBar(player, Messages.getString(message));
         XSound.ENTITY_CHICKEN_EGG.play(player);
     }
 

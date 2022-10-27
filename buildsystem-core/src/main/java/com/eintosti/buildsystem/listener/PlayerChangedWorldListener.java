@@ -19,6 +19,7 @@ import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.eintosti.buildsystem.object.world.data.WorldType;
+import com.eintosti.buildsystem.util.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -32,6 +33,7 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -41,7 +43,6 @@ import java.util.UUID;
  */
 public class PlayerChangedWorldListener implements Listener {
 
-    private final BuildSystem plugin;
     private final ConfigValues configValues;
 
     private final ArmorStandManager armorStandManager;
@@ -55,7 +56,6 @@ public class PlayerChangedWorldListener implements Listener {
     private final Map<UUID, ItemStack[]> playerArmor;
 
     public PlayerChangedWorldListener(BuildSystem plugin) {
-        this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
 
         this.armorStandManager = plugin.getArmorStandManager();
@@ -85,7 +85,7 @@ public class PlayerChangedWorldListener implements Listener {
         if (newWorld != null) {
             if (!newWorld.isPhysics()) {
                 if (player.hasPermission("buildsystem.physics.message")) {
-                    player.sendMessage(plugin.getString("physics_deactivated_in_world").replace("%world%", newWorld.getName()));
+                    Messages.sendMessage(player, "physics_deactivated_in_world", new AbstractMap.SimpleEntry<>("%world%", newWorld.getName()));
                 }
             }
         }
@@ -115,7 +115,7 @@ public class PlayerChangedWorldListener implements Listener {
 
         playerManager.getBuildPlayer(playerUuid).getCachedValues().resetGameModeIfPresent(player);
         XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
-        player.sendMessage(plugin.getString("build_deactivated_self"));
+        Messages.sendMessage(player, "build_deactivated_self");
     }
 
     private void setGoldBlock(BuildWorld buildWorld) {
@@ -168,7 +168,7 @@ public class PlayerChangedWorldListener implements Listener {
 
             removeArmorContent(player);
             playerInventory.clear();
-            playerInventory.setItem(8, inventoryManager.getItemStack(configValues.getNavigatorItem(), plugin.getString("navigator_item")));
+            playerInventory.setItem(8, inventoryManager.getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item")));
             setSpectatorMode(player);
 
             if (configValues.isArchiveVanish()) {
@@ -176,7 +176,7 @@ public class PlayerChangedWorldListener implements Listener {
                 Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
             }
         } else {
-            playerInventory.setItem(8, inventoryManager.getItemStack(configValues.getNavigatorItem(), plugin.getString("navigator_item")));
+            playerInventory.setItem(8, inventoryManager.getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item")));
             if (player.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
                 player.removePotionEffect(PotionEffectType.INVISIBILITY);
             }

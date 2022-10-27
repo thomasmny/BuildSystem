@@ -10,6 +10,7 @@ package com.eintosti.buildsystem.object.world.data;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.util.Messages;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -62,7 +63,7 @@ public enum WorldStatus {
      * @return The type's display name
      */
     public String getName() {
-        return JavaPlugin.getPlugin(BuildSystem.class).getString(typeNameKey);
+        return Messages.getString(typeNameKey);
     }
 
     /**

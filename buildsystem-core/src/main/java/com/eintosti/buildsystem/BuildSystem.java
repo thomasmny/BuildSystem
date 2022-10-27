@@ -65,7 +65,7 @@ import com.eintosti.buildsystem.tabcomplete.SpeedTabComplete;
 import com.eintosti.buildsystem.tabcomplete.TimeTabComplete;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import com.eintosti.buildsystem.util.Messages;
-import com.eintosti.buildsystem.util.RBGUtils;
+import com.eintosti.buildsystem.util.RGBUtils;
 import com.eintosti.buildsystem.util.SkullCache;
 import com.eintosti.buildsystem.util.external.UpdateChecker;
 import com.eintosti.buildsystem.version.customblocks.CustomBlocks;
@@ -81,7 +81,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 /**
  * @author einTosti
@@ -120,7 +123,6 @@ public class BuildSystem extends JavaPlugin {
     private StatusInventory statusInventory;
     private WorldsInventory worldsInventory;
 
-    private Messages messages;
     private ConfigValues configValues;
     private CustomBlocks customBlocks;
     private GameRules gameRules;
@@ -131,9 +133,9 @@ public class BuildSystem extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        createLanguageFile();
         createTemplateFolder();
         parseServerVersion();
+        Messages.createMessageFile();
     }
 
     @Override
@@ -374,61 +376,13 @@ public class BuildSystem extends JavaPlugin {
 
     private void createTemplateFolder() {
         File templateFolder = new File(getDataFolder() + File.separator + "templates");
-        if (templateFolder.mkdir()) {
+        if (templateFolder.mkdirs()) {
             getLogger().info("Created \"templates\" folder");
         }
     }
 
-    private void createLanguageFile() {
-        if (getDataFolder().mkdir()) {
-            getLogger().info("Created \"BuildSystem\" folder");
-        }
-
-        this.messages = new Messages(this);
-        messages.createMessageFile();
-    }
-
-    public String getPrefixString() {
-        String prefix = messages.getMessageData().get("prefix");
-        try {
-            final String defaultPrefix = "§8× §bBuildSystem §8┃";
-            return prefix != null ? ChatColor.translateAlternateColorCodes('&', RBGUtils.color(prefix)) : defaultPrefix;
-        } catch (NullPointerException e) {
-            messages.createMessageFile();
-            return getPrefixString();
-        }
-    }
-
-    public String getString(String key) {
-        try {
-            String message = messages.getMessageData().get(key).replace("%prefix%", getPrefixString());
-            return ChatColor.translateAlternateColorCodes('&', RBGUtils.color(message));
-        } catch (NullPointerException e) {
-            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[BuildSystem] Could not find message with key: " + key);
-            messages.createMessageFile();
-            return getString(key);
-        }
-    }
-
-    public List<String> getStringList(String key) {
-        try {
-            List<String> list = new ArrayList<>();
-            String string = messages.getMessageData().get(key);
-            String[] splitString = string.substring(1, string.length() - 1).split(", ");
-            for (String s : splitString) {
-                String message = s.replace("%prefix%", getPrefixString());
-                list.add(ChatColor.translateAlternateColorCodes('&', RBGUtils.color(message)));
-            }
-            return list;
-        } catch (NullPointerException e) {
-            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[BuildSystem] Could not get list with key: " + key);
-            messages.createMessageFile();
-            return getStringList(key);
-        }
-    }
-
     public void sendPermissionMessage(CommandSender sender) {
-        sender.sendMessage(getString("no_permissions"));
+        Messages.sendMessage(sender, "no_permissions");
     }
 
     public void reloadConfigData(boolean init) {

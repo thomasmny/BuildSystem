@@ -9,6 +9,7 @@
 package com.eintosti.buildsystem.object.internal;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.util.Messages;
 import com.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import com.eintosti.buildsystem.version.gamerules.GameRules;
 import com.eintosti.buildsystem.version.v1_12_R1.CustomBlocks_1_12_R1;
@@ -93,11 +94,11 @@ public enum ServerVersion {
         try {
             Constructor<?> constructor = gameRules.getConstructor(String.class, List.class, List.class, List.class, List.class);
             Object instance = constructor.newInstance(
-                    plugin.getString("worldeditor_gamerules_title"),
-                    plugin.getStringList("worldeditor_gamerules_boolean_enabled"),
-                    plugin.getStringList("worldeditor_gamerules_boolean_disabled"),
-                    plugin.getStringList("worldeditor_gamerules_unknown"),
-                    plugin.getStringList("worldeditor_gamerules_integer")
+                    Messages.getString("worldeditor_gamerules_title"),
+                    Messages.getStringList("worldeditor_gamerules_boolean_enabled"),
+                    Messages.getStringList("worldeditor_gamerules_boolean_disabled"),
+                    Messages.getStringList("worldeditor_gamerules_unknown"),
+                    Messages.getStringList("worldeditor_gamerules_integer")
             );
             return (GameRules) instance;
         } catch (Exception e) {

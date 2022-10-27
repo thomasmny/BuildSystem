@@ -18,6 +18,7 @@ import com.eintosti.buildsystem.inventory.FilteredWorldsInventory.Visibility;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.util.Messages;
 import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -33,6 +34,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -43,21 +45,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author einTosti
  */
 public class EditInventory implements Listener {
-
-    private static final Set<EntityType> IGNORED_ENTITIES = Sets.newHashSet(
-            EntityType.ARMOR_STAND,
-            EntityType.ENDER_CRYSTAL,
-            EntityType.ITEM_FRAME,
-            EntityType.FALLING_BLOCK,
-            EntityType.MINECART,
-            EntityType.MINECART_CHEST,
-            EntityType.MINECART_COMMAND,
-            EntityType.MINECART_FURNACE,
-            EntityType.MINECART_HOPPER,
-            EntityType.MINECART_MOB_SPAWNER,
-            EntityType.MINECART_TNT,
-            EntityType.PLAYER
-    );
 
     private final BuildSystem plugin;
     private final ConfigValues configValues;
@@ -73,26 +60,26 @@ public class EditInventory implements Listener {
     }
 
     public Inventory getInventory(Player player, BuildWorld buildWorld) {
-        Inventory inventory = Bukkit.createInventory(null, 54, plugin.getString("worldeditor_title"));
+        Inventory inventory = Bukkit.createInventory(null, 54, Messages.getString("worldeditor_title"));
         fillGuiWithGlass(player, inventory);
 
         addBuildWorldInfoItem(inventory, buildWorld);
 
-        addSettingsItem(inventory, 20, XMaterial.OAK_PLANKS, buildWorld.isBlockBreaking(), plugin.getString("worldeditor_blockbreaking_item"), plugin.getStringList("worldeditor_blockbreaking_lore"));
-        addSettingsItem(inventory, 21, XMaterial.POLISHED_ANDESITE, buildWorld.isBlockPlacement(), plugin.getString("worldeditor_blockplacement_item"), plugin.getStringList("worldeditor_blockplacement_lore"));
-        addSettingsItem(inventory, 22, XMaterial.SAND, buildWorld.isPhysics(), plugin.getString("worldeditor_physics_item"), plugin.getStringList("worldeditor_physics_lore"));
+        addSettingsItem(inventory, 20, XMaterial.OAK_PLANKS, buildWorld.isBlockBreaking(), Messages.getString("worldeditor_blockbreaking_item"), Messages.getStringList("worldeditor_blockbreaking_lore"));
+        addSettingsItem(inventory, 21, XMaterial.POLISHED_ANDESITE, buildWorld.isBlockPlacement(), Messages.getString("worldeditor_blockplacement_item"), Messages.getStringList("worldeditor_blockplacement_lore"));
+        addSettingsItem(inventory, 22, XMaterial.SAND, buildWorld.isPhysics(), Messages.getString("worldeditor_physics_item"), Messages.getStringList("worldeditor_physics_lore"));
         addTimeItem(inventory, buildWorld);
-        addSettingsItem(inventory, 24, XMaterial.TNT, buildWorld.isExplosions(), plugin.getString("worldeditor_explosions_item"), plugin.getStringList("worldeditor_explosions_lore"));
-        inventoryManager.addItemStack(inventory, 29, XMaterial.DIAMOND_SWORD, plugin.getString("worldeditor_butcher_item"), plugin.getStringList("worldeditor_butcher_lore"));
+        addSettingsItem(inventory, 24, XMaterial.TNT, buildWorld.isExplosions(), Messages.getString("worldeditor_explosions_item"), Messages.getStringList("worldeditor_explosions_lore"));
+        inventoryManager.addItemStack(inventory, 29, XMaterial.DIAMOND_SWORD, Messages.getString("worldeditor_butcher_item"), Messages.getStringList("worldeditor_butcher_lore"));
         addBuildersItem(inventory, buildWorld, player);
-        addSettingsItem(inventory, 31, XMaterial.ARMOR_STAND, buildWorld.isMobAI(), plugin.getString("worldeditor_mobai_item"), plugin.getStringList("worldeditor_mobai_lore"));
+        addSettingsItem(inventory, 31, XMaterial.ARMOR_STAND, buildWorld.isMobAI(), Messages.getString("worldeditor_mobai_item"), Messages.getStringList("worldeditor_mobai_lore"));
         addVisibilityItem(inventory, buildWorld, player);
-        addSettingsItem(inventory, 33, XMaterial.TRIPWIRE_HOOK, buildWorld.isBlockInteractions(), plugin.getString("worldeditor_blockinteractions_item"), plugin.getStringList("worldeditor_blockinteractions_lore"));
-        inventoryManager.addItemStack(inventory, 38, XMaterial.FILLED_MAP, plugin.getString("worldeditor_gamerules_item"), plugin.getStringList("worldeditor_gamerules_lore"));
+        addSettingsItem(inventory, 33, XMaterial.TRIPWIRE_HOOK, buildWorld.isBlockInteractions(), Messages.getString("worldeditor_blockinteractions_item"), Messages.getStringList("worldeditor_blockinteractions_lore"));
+        inventoryManager.addItemStack(inventory, 38, XMaterial.FILLED_MAP, Messages.getString("worldeditor_gamerules_item"), Messages.getStringList("worldeditor_gamerules_lore"));
         addDifficultyItem(inventory, buildWorld);
-        inventoryManager.addItemStack(inventory, 40, inventoryManager.getStatusItem(buildWorld.getStatus()), plugin.getString("worldeditor_status_item"), getStatusLore(buildWorld));
-        inventoryManager.addItemStack(inventory, 41, XMaterial.ANVIL, plugin.getString("worldeditor_project_item"), getProjectLore(buildWorld));
-        inventoryManager.addItemStack(inventory, 42, XMaterial.PAPER, plugin.getString("worldeditor_permission_item"), getPermissionLore(buildWorld));
+        inventoryManager.addItemStack(inventory, 40, inventoryManager.getStatusItem(buildWorld.getStatus()), Messages.getString("worldeditor_status_item"), getStatusLore(buildWorld));
+        inventoryManager.addItemStack(inventory, 41, XMaterial.ANVIL, Messages.getString("worldeditor_project_item"), getProjectLore(buildWorld));
+        inventoryManager.addItemStack(inventory, 42, XMaterial.PAPER, Messages.getString("worldeditor_permission_item"), getPermissionLore(buildWorld));
 
         return inventory;
     }
@@ -108,7 +95,7 @@ public class EditInventory implements Listener {
     }
 
     private void addBuildWorldInfoItem(Inventory inventory, BuildWorld buildWorld) {
-        String displayName = plugin.getString("worldeditor_world_item").replace("%world%", buildWorld.getName());
+        String displayName = Messages.getString("worldeditor_world_item", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
 
         if (buildWorld.getMaterial() == XMaterial.PLAYER_HEAD) {
             inventoryManager.addSkull(inventory, 4, displayName, buildWorld.getName());
@@ -139,28 +126,26 @@ public class EditInventory implements Listener {
         World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
 
         XMaterial xMaterial = XMaterial.WHITE_STAINED_GLASS;
-        String value = plugin.getString("worldeditor_time_lore_unknown");
+        String value = Messages.getString("worldeditor_time_lore_unknown");
 
         switch (getWorldTime(bukkitWorld)) {
             case SUNRISE:
                 xMaterial = XMaterial.ORANGE_STAINED_GLASS;
-                value = plugin.getString("worldeditor_time_lore_sunrise");
+                value = Messages.getString("worldeditor_time_lore_sunrise");
                 break;
             case NOON:
                 xMaterial = XMaterial.YELLOW_STAINED_GLASS;
-                value = plugin.getString("worldeditor_time_lore_noon");
+                value = Messages.getString("worldeditor_time_lore_noon");
                 break;
             case NIGHT:
                 xMaterial = XMaterial.BLUE_STAINED_GLASS;
-                value = plugin.getString("worldeditor_time_lore_night");
+                value = Messages.getString("worldeditor_time_lore_night");
                 break;
         }
 
-        ArrayList<String> lore = new ArrayList<>();
-        String finalValue = value;
-        plugin.getStringList("worldeditor_time_lore").forEach(line -> lore.add(line.replace("%time%", finalValue)));
-
-        inventoryManager.addItemStack(inventory, 23, xMaterial, plugin.getString("worldeditor_time_item"), lore);
+        inventoryManager.addItemStack(inventory, 23, xMaterial, Messages.getString("worldeditor_time_item"),
+                Messages.getStringList("worldeditor_time_lore", new AbstractMap.SimpleEntry<>("%time%", value))
+        );
     }
 
     public BuildWorld.Time getWorldTime(World bukkitWorld) {
@@ -183,15 +168,15 @@ public class EditInventory implements Listener {
     private void addBuildersItem(Inventory inventory, BuildWorld buildWorld, Player player) {
         UUID creatorId = buildWorld.getCreatorId();
         if ((creatorId != null && creatorId.equals(player.getUniqueId())) || player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
-            addSettingsItem(inventory, 30, XMaterial.IRON_PICKAXE, buildWorld.isBuilders(), plugin.getString("worldeditor_builders_item"), plugin.getStringList("worldeditor_builders_lore"));
+            addSettingsItem(inventory, 30, XMaterial.IRON_PICKAXE, buildWorld.isBuilders(), Messages.getString("worldeditor_builders_item"), Messages.getStringList("worldeditor_builders_lore"));
         } else {
-            inventoryManager.addItemStack(inventory, 30, XMaterial.BARRIER, plugin.getString("worldeditor_builders_not_creator_item"), plugin.getStringList("worldeditor_builders_not_creator_lore"));
+            inventoryManager.addItemStack(inventory, 30, XMaterial.BARRIER, Messages.getString("worldeditor_builders_not_creator_item"), Messages.getStringList("worldeditor_builders_not_creator_lore"));
         }
     }
 
     private void addVisibilityItem(Inventory inventory, BuildWorld buildWorld, Player player) {
         int slot = 32;
-        String displayName = plugin.getString("worldeditor_visibility_item");
+        String displayName = Messages.getString("worldeditor_visibility_item");
 
         if (!playerManager.canCreateWorld(player, Visibility.matchVisibility(buildWorld.isPrivate()))) {
             inventoryManager.addItemStack(inventory, slot, XMaterial.BARRIER, "§c§m" + ChatColor.stripColor(displayName));
@@ -199,11 +184,11 @@ public class EditInventory implements Listener {
         }
 
         XMaterial xMaterial = XMaterial.ENDER_EYE;
-        List<String> lore = plugin.getStringList("worldeditor_visibility_lore_public");
+        List<String> lore = Messages.getStringList("worldeditor_visibility_lore_public");
 
         if (buildWorld.isPrivate()) {
             xMaterial = XMaterial.ENDER_PEARL;
-            lore = plugin.getStringList("worldeditor_visibility_lore_private");
+            lore = Messages.getStringList("worldeditor_visibility_lore_private");
         }
 
         inventoryManager.addItemStack(inventory, slot, xMaterial, displayName, lore);
@@ -228,14 +213,14 @@ public class EditInventory implements Listener {
         }
 
         ArrayList<String> lore = new ArrayList<>();
-        plugin.getStringList("worldeditor_difficulty_lore").forEach(line -> lore.add(line.replace("%difficulty%", buildWorld.getDifficultyName())));
+        Messages.getStringList("worldeditor_difficulty_lore").forEach(line -> lore.add(line.replace("%difficulty%", buildWorld.getDifficultyName())));
 
-        inventoryManager.addItemStack(inventory, 39, xMaterial, plugin.getString("worldeditor_difficulty_item"), lore);
+        inventoryManager.addItemStack(inventory, 39, xMaterial, Messages.getString("worldeditor_difficulty_item"), lore);
     }
 
     private List<String> getStatusLore(BuildWorld buildWorld) {
         List<String> lore = new ArrayList<>();
-        for (String line : plugin.getStringList("worldeditor_status_lore")) {
+        for (String line : Messages.getStringList("worldeditor_status_lore")) {
             lore.add(line.replace("%status%", buildWorld.getStatus().getName()));
         }
         return lore;
@@ -243,7 +228,7 @@ public class EditInventory implements Listener {
 
     private List<String> getProjectLore(BuildWorld buildWorld) {
         List<String> lore = new ArrayList<>();
-        for (String line : plugin.getStringList("worldeditor_project_lore")) {
+        for (String line : Messages.getStringList("worldeditor_project_lore")) {
             lore.add(line.replace("%project%", buildWorld.getProject()));
         }
         return lore;
@@ -251,7 +236,7 @@ public class EditInventory implements Listener {
 
     private List<String> getPermissionLore(BuildWorld buildWorld) {
         List<String> lore = new ArrayList<>();
-        for (String line : plugin.getStringList("worldeditor_permission_lore")) {
+        for (String line : Messages.getStringList("worldeditor_permission_lore")) {
             lore.add(line.replace("%permission%", buildWorld.getPermission()));
         }
         return lore;
@@ -272,7 +257,7 @@ public class EditInventory implements Listener {
         BuildWorld buildWorld = plugin.getPlayerManager().getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();
-            player.sendMessage(plugin.getString("worlds_edit_error"));
+            Messages.sendMessage(player, "worlds_edit_error");
             return;
         }
 
@@ -431,8 +416,21 @@ public class EditInventory implements Listener {
                 });
 
         player.closeInventory();
-        player.sendMessage(plugin.getString("worldeditor_butcher_removed")
-                .replace("%amount%", String.valueOf(entitiesRemoved.get()))
-        );
+        Messages.sendMessage(player, "worldeditor_butcher_removed", new AbstractMap.SimpleEntry<>("%amount%", entitiesRemoved.get()));
     }
+
+    private static final Set<EntityType> IGNORED_ENTITIES = Sets.newHashSet(
+            EntityType.ARMOR_STAND,
+            EntityType.ENDER_CRYSTAL,
+            EntityType.ITEM_FRAME,
+            EntityType.FALLING_BLOCK,
+            EntityType.MINECART,
+            EntityType.MINECART_CHEST,
+            EntityType.MINECART_COMMAND,
+            EntityType.MINECART_FURNACE,
+            EntityType.MINECART_HOPPER,
+            EntityType.MINECART_MOB_SPAWNER,
+            EntityType.MINECART_TNT,
+            EntityType.PLAYER
+    );
 }

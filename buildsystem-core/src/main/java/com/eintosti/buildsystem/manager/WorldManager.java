@@ -23,9 +23,9 @@ import com.eintosti.buildsystem.object.world.data.WorldType;
 import com.eintosti.buildsystem.object.world.generator.CustomGenerator;
 import com.eintosti.buildsystem.object.world.generator.Generator;
 import com.eintosti.buildsystem.util.FileUtils;
+import com.eintosti.buildsystem.util.Messages;
 import com.eintosti.buildsystem.util.UUIDFetcher;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
-import org.bukkit.*;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
@@ -43,6 +43,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -50,7 +51,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -172,14 +172,14 @@ public class WorldManager {
         new PlayerChatInput(plugin, player, "enter_world_name", input -> {
             for (String charString : input.split("")) {
                 if (charString.matches("[^A-Za-z\\d/_-]")) {
-                    player.sendMessage(plugin.getString("worlds_world_creation_invalid_characters"));
+                    Messages.sendMessage(player, "worlds_world_creation_invalid_characters");
                     break;
                 }
             }
 
             String worldName = input.replaceAll("[^A-Za-z\\d/_-]", "").replace(" ", "_").trim();
             if (worldName.isEmpty()) {
-                player.sendMessage(plugin.getString("worlds_world_creation_name_bank"));
+                Messages.sendMessage(player, "worlds_world_creation_name_bank");
                 return;
             }
 
@@ -203,7 +203,7 @@ public class WorldManager {
         boolean worldExists = getBuildWorld(worldName) != null;
         File worldFile = new File(Bukkit.getWorldContainer(), worldName);
         if (worldExists || worldFile.exists()) {
-            player.sendMessage(plugin.getString("worlds_world_exists"));
+            Messages.sendMessage(player, "worlds_world_exists");
             XSound.ENTITY_ITEM_BREAK.play(player);
             return true;
         }
@@ -221,9 +221,9 @@ public class WorldManager {
     public void importWorld(Player player, String worldName, Generator generator, String generatorName) {
         for (String charString : worldName.split("")) {
             if (charString.matches("[^A-Za-z\\d/_-]")) {
-                player.sendMessage(plugin.getString("worlds_import_invalid_character")
-                        .replace("%world%", worldName)
-                        .replace("%char%", charString)
+                Messages.sendMessage(player, "worlds_import_invalid_character",
+                        new AbstractMap.SimpleEntry<>("%world%", worldName),
+                        new AbstractMap.SimpleEntry<>("%char%", charString)
                 );
                 return;
             }
@@ -231,12 +231,12 @@ public class WorldManager {
 
         File file = new File(Bukkit.getWorldContainer(), worldName);
         if (!file.exists() || !file.isDirectory()) {
-            player.sendMessage(plugin.getString("worlds_import_unknown_world"));
+            Messages.sendMessage(player, "worlds_import_unknown_world");
             return;
         }
 
         if (getBuildWorld(worldName) != null) {
-            player.sendMessage(plugin.getString("worlds_world_exists"));
+            Messages.sendMessage(player, "worlds_world_exists");
             return;
         }
 
@@ -249,12 +249,12 @@ public class WorldManager {
 
             chunkGenerator = getChunkGenerator(generatorInfo[0], generatorInfo[1], worldName);
             if (chunkGenerator == null) {
-                player.sendMessage(plugin.getString("worlds_import_unknown_generator"));
+                Messages.sendMessage(player, "worlds_import_unknown_generator");
                 return;
             }
         }
 
-        player.sendMessage(plugin.getString("worlds_import_started").replace("%world%", worldName));
+        Messages.sendMessage(player, "worlds_import_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
         BuildWorld buildWorld = new BuildWorld(
                 plugin,
                 worldName,
@@ -269,7 +269,7 @@ public class WorldManager {
         new BuildWorldCreator(plugin, buildWorld)
                 .setCustomGenerator(new CustomGenerator(generatorName, chunkGenerator))
                 .createWorld(player);
-        player.sendMessage(plugin.getString("worlds_import_finished"));
+        Messages.sendMessage(player, "worlds_import_finished");
 
         if (configValues.isTeleportAfterCreation()) {
             teleport(player, buildWorld);
@@ -306,8 +306,8 @@ public class WorldManager {
         int worlds = worldList.length;
         int delay = configValues.getImportDelay();
 
-        player.sendMessage(plugin.getString("worlds_importall_started").replace("%amount%", String.valueOf(worlds)));
-        player.sendMessage(plugin.getString("worlds_importall_delay").replace("%delay%", String.valueOf(delay)));
+        Messages.sendMessage(player, "worlds_importall_started", new AbstractMap.SimpleEntry<>("%amount%", String.valueOf(worlds)));
+        Messages.sendMessage(player, "worlds_importall_delay", new AbstractMap.SimpleEntry<>("%delay%", String.valueOf(delay)));
 
         AtomicInteger worldsImported = new AtomicInteger(0);
         new BukkitRunnable() {
@@ -318,13 +318,16 @@ public class WorldManager {
                 String worldName = worldList[i];
                 for (String charString : worldName.split("")) {
                     if (charString.matches("[^A-Za-z\\d/_-]")) {
-                        player.sendMessage(plugin.getString("worlds_importall_invalid_character").replace("%world%", worldName).replace("%char%", charString));
+                        Messages.sendMessage(player, "worlds_importall_invalid_character",
+                                new AbstractMap.SimpleEntry<>("%world%", worldName),
+                                new AbstractMap.SimpleEntry<>("%char%", charString)
+                        );
                         return;
                     }
                 }
 
                 if (getBuildWorld(worldName) != null) {
-                    player.sendMessage(plugin.getString("worlds_importall_world_already_imported").replace("%world%", worldName));
+                    Messages.sendMessage(player, "worlds_importall_world_already_imported", new AbstractMap.SimpleEntry<>("%world%", worldName));
                     return;
                 }
 
@@ -332,11 +335,11 @@ public class WorldManager {
                 BuildWorld buildWorld = new BuildWorld(plugin, worldName, "-", null, WorldType.IMPORTED, creation, false, null);
                 buildWorlds.add(buildWorld);
                 new BuildWorldCreator(plugin, buildWorld).setType(WorldType.VOID).generateBukkitWorld();
-                player.sendMessage(plugin.getString("worlds_importall_world_imported").replace("%world%", worldName));
+                Messages.sendMessage(player, "worlds_importall_world_imported", new AbstractMap.SimpleEntry<>("%world%", worldName));
 
                 if (worldsImported.get() >= worlds) {
                     this.cancel();
-                    player.sendMessage(plugin.getString("worlds_importall_finished"));
+                    Messages.sendMessage(player, "worlds_importall_finished");
                 }
             }
         }.runTaskTimer(plugin, 0, 20L * delay);
@@ -351,23 +354,23 @@ public class WorldManager {
      */
     public void deleteWorld(Player player, BuildWorld buildWorld) {
         if (!buildWorlds.contains(buildWorld)) {
-            player.sendMessage(plugin.getString("worlds_delete_unknown_world"));
+            Messages.sendMessage(player, "worlds_delete_unknown_world");
             return;
         }
 
         String worldName = buildWorld.getName();
         File deleteFolder = new File(Bukkit.getWorldContainer(), worldName);
         if (!deleteFolder.exists()) {
-            player.sendMessage(plugin.getString("worlds_delete_unknown_directory"));
+            Messages.sendMessage(player, "worlds_delete_unknown_directory");
             return;
         }
 
-        player.sendMessage(plugin.getString("worlds_delete_started").replace("%world%", worldName));
-        removePlayersFromWorld(worldName, plugin.getString("worlds_delete_players_world"));
+        Messages.sendMessage(player, "worlds_delete_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
+        removePlayersFromWorld(worldName, Messages.getString("worlds_delete_players_world"));
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             unimportWorld(buildWorld, false);
             FileUtils.deleteDirectory(deleteFolder);
-            player.sendMessage(plugin.getString("worlds_delete_finished"));
+            Messages.sendMessage(player, "worlds_delete_finished");
         }, 20L);
     }
 
@@ -381,7 +384,7 @@ public class WorldManager {
     public void unimportWorld(BuildWorld buildWorld, boolean save) {
         buildWorld.forceUnload(save);
         this.buildWorlds.remove(buildWorld);
-        removePlayersFromWorld(buildWorld.getName(), plugin.getString("worlds_unimport_players_world"));
+        removePlayersFromWorld(buildWorld.getName(), Messages.getString("worlds_unimport_players_world"));
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             this.worldConfig.getFile().set("worlds." + buildWorld.getName(), null);
             this.worldConfig.saveFile();
@@ -441,13 +444,13 @@ public class WorldManager {
     public void renameWorld(Player player, BuildWorld buildWorld, String newName) {
         String oldName = buildWorld.getName();
         if (oldName.equalsIgnoreCase(newName)) {
-            player.sendMessage(plugin.getString("worlds_rename_same_name"));
+            Messages.sendMessage(player, "worlds_rename_same_name");
             return;
         }
 
         for (String charString : newName.split("")) {
             if (charString.matches("[^A-Za-z\\d/_-]")) {
-                player.sendMessage(plugin.getString("worlds_world_creation_invalid_characters"));
+                Messages.sendMessage(player, "worlds_world_creation_invalid_characters");
                 break;
             }
         }
@@ -455,7 +458,7 @@ public class WorldManager {
         player.closeInventory();
         String parsedNewName = newName.replaceAll("[^A-Za-z\\d/_-]", "").replace(" ", "_").trim();
         if (parsedNewName.isEmpty()) {
-            player.sendMessage(plugin.getString("worlds_world_creation_name_bank"));
+            Messages.sendMessage(player, "worlds_world_creation_name_bank");
             return;
         }
 
@@ -465,11 +468,11 @@ public class WorldManager {
 
         World oldWorld = Bukkit.getWorld(oldName);
         if (oldWorld == null) {
-            player.sendMessage(plugin.getString("worlds_rename_unknown_world"));
+            Messages.sendMessage(player, "worlds_rename_unknown_world");
             return;
         }
 
-        List<Player> removedPlayers = removePlayersFromWorld(oldName, plugin.getString("worlds_rename_players_world"));
+        List<Player> removedPlayers = removePlayersFromWorld(oldName, Messages.getString("worlds_rename_players_world"));
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             oldWorld.save();
             Bukkit.getServer().unloadWorld(oldWorld, true);
@@ -501,9 +504,9 @@ public class WorldManager {
                 spawnManager.set(newSpawn, newSpawn.getWorld().getName());
             }
 
-            player.sendMessage(plugin.getString("worlds_rename_set")
-                    .replace("%oldName%", oldName)
-                    .replace("%newName%", parsedNewName)
+            Messages.sendMessage(player, "worlds_rename_set",
+                    new AbstractMap.SimpleEntry<>("%oldName%", oldName),
+                    new AbstractMap.SimpleEntry<>("%newName%", parsedNewName)
             );
         }, 20L);
     }
@@ -523,7 +526,7 @@ public class WorldManager {
 
         World bukkitWorld = Bukkit.getServer().getWorld(buildWorld.getName());
         if (bukkitWorld == null) {
-            player.sendMessage(plugin.getString("worlds_tp_unknown_world"));
+            Messages.sendMessage(player, "worlds_tp_unknown_world");
             return;
         }
 

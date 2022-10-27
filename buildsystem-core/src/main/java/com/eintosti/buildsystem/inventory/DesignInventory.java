@@ -14,6 +14,7 @@ import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.object.settings.Color;
 import com.eintosti.buildsystem.object.settings.Settings;
+import com.eintosti.buildsystem.util.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -40,26 +41,26 @@ public class DesignInventory implements Listener {
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 36, plugin.getString("design_title"));
+        Inventory inventory = Bukkit.createInventory(null, 36, Messages.getString("design_title"));
         fillGuiWithGlass(inventory, player);
 
-        setItem(player, inventory, 10, XMaterial.RED_STAINED_GLASS, plugin.getString("design_red"), Color.RED);
-        setItem(player, inventory, 11, XMaterial.ORANGE_STAINED_GLASS, plugin.getString("design_orange"), Color.ORANGE);
-        setItem(player, inventory, 12, XMaterial.YELLOW_STAINED_GLASS, plugin.getString("design_yellow"), Color.YELLOW);
-        setItem(player, inventory, 13, XMaterial.PINK_STAINED_GLASS, plugin.getString("design_pink"), Color.PINK);
-        setItem(player, inventory, 14, XMaterial.MAGENTA_STAINED_GLASS, plugin.getString("design_magenta"), Color.MAGENTA);
-        setItem(player, inventory, 15, XMaterial.PURPLE_STAINED_GLASS, plugin.getString("design_purple"), Color.PURPLE);
-        setItem(player, inventory, 16, XMaterial.BROWN_STAINED_GLASS, plugin.getString("design_brown"), Color.BROWN);
+        setItem(player, inventory, 10, XMaterial.RED_STAINED_GLASS, Messages.getString("design_red"), Color.RED);
+        setItem(player, inventory, 11, XMaterial.ORANGE_STAINED_GLASS, Messages.getString("design_orange"), Color.ORANGE);
+        setItem(player, inventory, 12, XMaterial.YELLOW_STAINED_GLASS, Messages.getString("design_yellow"), Color.YELLOW);
+        setItem(player, inventory, 13, XMaterial.PINK_STAINED_GLASS, Messages.getString("design_pink"), Color.PINK);
+        setItem(player, inventory, 14, XMaterial.MAGENTA_STAINED_GLASS, Messages.getString("design_magenta"), Color.MAGENTA);
+        setItem(player, inventory, 15, XMaterial.PURPLE_STAINED_GLASS, Messages.getString("design_purple"), Color.PURPLE);
+        setItem(player, inventory, 16, XMaterial.BROWN_STAINED_GLASS, Messages.getString("design_brown"), Color.BROWN);
 
-        setItem(player, inventory, 18, XMaterial.LIME_STAINED_GLASS, plugin.getString("design_lime"), Color.LIME);
-        setItem(player, inventory, 19, XMaterial.GREEN_STAINED_GLASS, plugin.getString("design_green"), Color.GREEN);
-        setItem(player, inventory, 20, XMaterial.BLUE_STAINED_GLASS, plugin.getString("design_blue"), Color.BLUE);
-        setItem(player, inventory, 21, XMaterial.CYAN_STAINED_GLASS, plugin.getString("design_aqua"), Color.CYAN);
-        setItem(player, inventory, 22, XMaterial.LIGHT_BLUE_STAINED_GLASS, plugin.getString("design_light_blue"), Color.LIGHT_BLUE);
-        setItem(player, inventory, 23, XMaterial.WHITE_STAINED_GLASS, plugin.getString("design_white"), Color.WHITE);
-        setItem(player, inventory, 24, XMaterial.LIGHT_GRAY_STAINED_GLASS, plugin.getString("design_grey"), Color.LIGHT_GRAY);
-        setItem(player, inventory, 25, XMaterial.GRAY_STAINED_GLASS, plugin.getString("design_dark_grey"), Color.GRAY);
-        setItem(player, inventory, 26, XMaterial.BLACK_STAINED_GLASS, plugin.getString("design_black"), Color.BLACK);
+        setItem(player, inventory, 18, XMaterial.LIME_STAINED_GLASS, Messages.getString("design_lime"), Color.LIME);
+        setItem(player, inventory, 19, XMaterial.GREEN_STAINED_GLASS, Messages.getString("design_green"), Color.GREEN);
+        setItem(player, inventory, 20, XMaterial.BLUE_STAINED_GLASS, Messages.getString("design_blue"), Color.BLUE);
+        setItem(player, inventory, 21, XMaterial.CYAN_STAINED_GLASS, Messages.getString("design_aqua"), Color.CYAN);
+        setItem(player, inventory, 22, XMaterial.LIGHT_BLUE_STAINED_GLASS, Messages.getString("design_light_blue"), Color.LIGHT_BLUE);
+        setItem(player, inventory, 23, XMaterial.WHITE_STAINED_GLASS, Messages.getString("design_white"), Color.WHITE);
+        setItem(player, inventory, 24, XMaterial.LIGHT_GRAY_STAINED_GLASS, Messages.getString("design_grey"), Color.LIGHT_GRAY);
+        setItem(player, inventory, 25, XMaterial.GRAY_STAINED_GLASS, Messages.getString("design_dark_grey"), Color.GRAY);
+        setItem(player, inventory, 26, XMaterial.BLACK_STAINED_GLASS, Messages.getString("design_black"), Color.BLACK);
 
         return inventory;
     }

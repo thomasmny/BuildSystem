@@ -10,6 +10,7 @@ package com.eintosti.buildsystem.command;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.WorldManager;
+import com.eintosti.buildsystem.util.Messages;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -39,7 +40,7 @@ public class TopCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(plugin.getString("sender_not_player"));
+            plugin.getLogger().warning(Messages.getString("sender_not_player"));
             return true;
         }
 
@@ -50,7 +51,7 @@ public class TopCommand implements CommandExecutor {
         }
 
         if (args.length != 0) {
-            player.sendMessage(plugin.getString("top_usage"));
+            Messages.sendMessage(player, "top_usage");
             return true;
         }
 
@@ -73,9 +74,9 @@ public class TopCommand implements CommandExecutor {
 
         if (blockLocation != null && !Objects.equals(blockLocation.getBlock(), playerLocation.getBlock())) {
             PaperLib.teleportAsync(player, blockLocation.add(0.5, 0, 0.5));
-            player.sendMessage(plugin.getString("top_teleported"));
+            Messages.sendMessage(player, "top_teleported");
         } else {
-            player.sendMessage(plugin.getString("top_failed"));
+            Messages.sendMessage(player, "top_failed");
         }
     }
 }

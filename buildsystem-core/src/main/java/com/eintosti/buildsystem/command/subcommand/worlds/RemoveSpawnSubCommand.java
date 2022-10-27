@@ -13,7 +13,10 @@ import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import com.eintosti.buildsystem.util.Messages;
 import org.bukkit.entity.Player;
+
+import java.util.AbstractMap;
 
 /**
  * @author einTosti
@@ -39,11 +42,11 @@ public class RemoveSpawnSubCommand extends SubCommand {
 
         BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
         if (buildWorld == null) {
-            player.sendMessage(plugin.getString("worlds_removespawn_world_not_imported"));
+            Messages.sendMessage(player, "worlds_removespawn_world_not_imported");
             return;
         }
 
         buildWorld.removeCustomSpawn();
-        player.sendMessage(plugin.getString("worlds_removespawn_world_spawn_removed").replace("%world%", buildWorld.getName()));
+        Messages.sendMessage(player, "worlds_removespawn_world_spawn_removed", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
     }
 }

@@ -12,6 +12,7 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.util.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -25,12 +26,10 @@ import org.bukkit.event.player.PlayerTeleportEvent;
  */
 public class PlayerTeleportListener implements Listener {
 
-    private final BuildSystem plugin;
     private final PlayerManager playerManager;
     private final WorldManager worldManager;
 
     public PlayerTeleportListener(BuildSystem plugin) {
-        this.plugin = plugin;
         this.playerManager = plugin.getPlayerManager();
         this.worldManager = plugin.getWorldManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -62,7 +61,7 @@ public class PlayerTeleportListener implements Listener {
 
         if (!Bukkit.getWorlds().get(0).equals(Bukkit.getWorld(worldName))) {
             if (!worldManager.canEnter(player, buildWorld)) {
-                player.sendMessage(plugin.getString("worlds_tp_entry_forbidden"));
+                Messages.sendMessage(player, "worlds_tp_entry_forbidden");
                 event.setCancelled(true);
             }
         }

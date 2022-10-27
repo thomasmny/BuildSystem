@@ -16,6 +16,7 @@ import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
+import com.eintosti.buildsystem.util.Messages;
 import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -236,7 +237,7 @@ public class PlayerCommandPreprocessListener implements Listener {
         Player player = event.getPlayer();
 
         if (command.equalsIgnoreCase("/clear")) {
-            ItemStack navigatorItem = inventoryManager.getItemStack(configValues.getNavigatorItem(), plugin.getString("navigator_item"));
+            ItemStack navigatorItem = inventoryManager.getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item"));
             if (!player.getInventory().contains(navigatorItem)) {
                 return;
             }
@@ -271,7 +272,7 @@ public class PlayerCommandPreprocessListener implements Listener {
     private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
         if (!worldManager.canBypassBuildRestriction(player) && buildWorld.getStatus() == WorldStatus.ARCHIVE) {
             event.setCancelled(true);
-            player.sendMessage(plugin.getString("command_archive_world"));
+            Messages.sendMessage(player, "command_archive_world");
             return true;
         }
         return false;
@@ -288,7 +289,7 @@ public class PlayerCommandPreprocessListener implements Listener {
 
         if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
             event.setCancelled(true);
-            player.sendMessage(plugin.getString("command_not_builder"));
+            Messages.sendMessage(player, "command_not_builder");
         }
     }
 }
