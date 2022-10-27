@@ -50,7 +50,7 @@ public class WorldsCommand implements CommandExecutor {
             return true;
         }
 
-        WorldsTabComplete.Argument argument = WorldsTabComplete.Argument.matchArgument(args[0]);
+        WorldsTabComplete.WorldsArgument argument = WorldsTabComplete.WorldsArgument.matchArgument(args[0]);
         if (argument == null) {
             player.sendMessage(plugin.getString("worlds_unknown_command"));
             return true;
@@ -143,7 +143,7 @@ public class WorldsCommand implements CommandExecutor {
                 break;
             }
             default: {
-                throw new IllegalArgumentException("Could not find subcommand: " + argument.getCommand());
+                throw new IllegalArgumentException("Could not find subcommand: " + argument.getName());
             }
         }
         subCommand.execute(player, args);

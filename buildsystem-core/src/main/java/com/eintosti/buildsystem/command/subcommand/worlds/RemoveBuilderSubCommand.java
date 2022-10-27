@@ -13,6 +13,7 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import com.eintosti.buildsystem.util.UUIDFetcher;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
 import org.bukkit.Bukkit;
@@ -23,12 +24,14 @@ import java.util.UUID;
 /**
  * @author einTosti
  */
-public class RemoveBuilderSubCommand implements SubCommand {
+public class RemoveBuilderSubCommand extends SubCommand {
 
     private final BuildSystem plugin;
     private final String worldName;
 
     public RemoveBuilderSubCommand(BuildSystem plugin, String worldName) {
+        super(WorldsTabComplete.WorldsArgument.REMOVE_BUILDER);
+
         this.plugin = plugin;
         this.worldName = worldName;
     }
@@ -36,7 +39,7 @@ public class RemoveBuilderSubCommand implements SubCommand {
     @Override
     public void execute(Player player, String[] args) {
         WorldManager worldManager = plugin.getWorldManager();
-        if (!worldManager.isPermitted(player, "buildsystem.removebuilder", worldName)) {
+        if (!worldManager.isPermitted(player, getArgument().getPermission(), worldName)) {
             plugin.sendPermissionMessage(player);
             return;
         }

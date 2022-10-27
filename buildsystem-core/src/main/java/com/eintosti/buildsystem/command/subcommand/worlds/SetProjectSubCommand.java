@@ -13,18 +13,21 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
 import org.bukkit.entity.Player;
 
 /**
  * @author einTosti
  */
-public class SetProjectSubCommand implements SubCommand {
+public class SetProjectSubCommand extends SubCommand {
 
     private final BuildSystem plugin;
     private final String worldName;
 
     public SetProjectSubCommand(BuildSystem plugin, String worldName) {
+        super(WorldsTabComplete.WorldsArgument.SET_PROJECT);
+
         this.plugin = plugin;
         this.worldName = worldName;
     }
@@ -32,7 +35,7 @@ public class SetProjectSubCommand implements SubCommand {
     @Override
     public void execute(Player player, String[] args) {
         WorldManager worldManager = plugin.getWorldManager();
-        if (!worldManager.isPermitted(player, "buildsystem.setproject", worldName)) {
+        if (!worldManager.isPermitted(player, getArgument().getPermission(), worldName)) {
             plugin.sendPermissionMessage(player);
             return;
         }

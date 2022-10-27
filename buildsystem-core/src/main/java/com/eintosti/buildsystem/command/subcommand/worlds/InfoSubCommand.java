@@ -12,6 +12,7 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -23,12 +24,14 @@ import java.util.List;
 /**
  * @author einTosti
  */
-public class InfoSubCommand implements SubCommand {
+public class InfoSubCommand extends SubCommand {
 
     private final BuildSystem plugin;
     private String worldName;
 
     public InfoSubCommand(BuildSystem plugin, String worldName) {
+        super(WorldsTabComplete.WorldsArgument.INFO);
+
         this.plugin = plugin;
         this.worldName = worldName;
     }
@@ -42,7 +45,7 @@ public class InfoSubCommand implements SubCommand {
             worldName = playerWorld.getName();
         }
 
-        if (!worldManager.isPermitted(player, "buildsystem.info", worldName)) {
+        if (!worldManager.isPermitted(player, getArgument().getPermission(), worldName)) {
             plugin.sendPermissionMessage(player);
             return;
         }

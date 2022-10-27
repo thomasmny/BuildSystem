@@ -12,6 +12,7 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -19,17 +20,19 @@ import org.bukkit.entity.Player;
 /**
  * @author einTosti
  */
-public class TeleportSubCommand implements SubCommand {
+public class TeleportSubCommand extends SubCommand {
 
     private final BuildSystem plugin;
 
     public TeleportSubCommand(BuildSystem plugin) {
+        super(WorldsTabComplete.WorldsArgument.TP);
+
         this.plugin = plugin;
     }
 
     @Override
     public void execute(Player player, String[] args) {
-        if (!player.hasPermission("buildsystem.worldtp")) {
+        if (!hasPermission(player)) {
             plugin.sendPermissionMessage(player);
             return;
         }

@@ -10,6 +10,7 @@ package com.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
+import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -19,11 +20,13 @@ import org.bukkit.entity.Player;
 /**
  * @author einTosti
  */
-public class HelpSubCommand implements SubCommand {
+public class HelpSubCommand extends SubCommand {
 
     private final BuildSystem plugin;
 
     public HelpSubCommand(BuildSystem plugin) {
+        super(WorldsTabComplete.WorldsArgument.HELP);
+
         this.plugin = plugin;
     }
 
@@ -67,32 +70,28 @@ public class HelpSubCommand implements SubCommand {
         TextComponent line12;
         TextComponent line13;
 
-        switch (page) {
-            case 1:
-                line4 = createComponent("/worlds help <page>", " §8» " + plugin.getString("worlds_help_help"), "/worlds help", "-");
-                line5 = createComponent("/worlds info", " §8» " + plugin.getString("worlds_help_info"), "/worlds info", "buildsystem.info");
-                line6 = createComponent("/worlds item", " §8» " + plugin.getString("worlds_help_item"), "/worlds item", "buildsystem.navigator.item");
-                line7 = createComponent("/worlds tp <world>", " §8» " + plugin.getString("worlds_help_tp"), "/worlds tp ", "buildsystem.worldtp");
-                line8 = createComponent("/worlds edit <world>", " §8» " + plugin.getString("worlds_help_edit"), "/worlds edit ", "buildsystem.edit");
-                line9 = createComponent("/worlds addBuilder <world>", " §8» " + plugin.getString("worlds_help_addbuilder"), "/worlds addBuilder ", "buildsystem.addbuilder");
-                line10 = createComponent("/worlds removeBuilder <world>", " §8» " + plugin.getString("worlds_help_removebuilder"), "/worlds removeBuilder ", "buildsystem.removebuilder");
-                line11 = createComponent("/worlds builders <world>", " §8» " + plugin.getString("worlds_help_builders"), "/worlds builders ", "buildsystem.builders");
-                line12 = createComponent("/worlds rename <world>", " §8» " + plugin.getString("worlds_help_rename"), "/worlds rename ", "buildsystem.rename");
-                line13 = createComponent("/worlds setItem <world>", " §8» " + plugin.getString("worlds_help_setitem"), "/worlds setItem ", "buildsystem.setitem");
-                break;
-
-            default:
-                line4 = createComponent("/worlds setCreator <world>", " §8» " + plugin.getString("worlds_help_setcreator"), "/worlds setCreator ", "buildsystem.setcreator");
-                line5 = createComponent("/worlds setProject <world>", " §8» " + plugin.getString("worlds_help_setproject"), "/worlds setProject ", "buildsystem.setproject");
-                line6 = createComponent("/worlds setPermission <world>", " §8» " + plugin.getString("worlds_help_setpermission"), "/worlds setPermission ", "buildsystem.setpermission");
-                line7 = createComponent("/worlds setStatus <world>", " §8» " + plugin.getString("worlds_help_setstatus"), "/worlds setStatus ", "buildsystem.setstatus");
-                line8 = createComponent("/worlds setSpawn", " §8» " + plugin.getString("worlds_help_setspawn"), "/worlds setSpawn", "buildsystem.setspawn");
-                line9 = createComponent("/worlds removeSpawn", " §8» " + plugin.getString("worlds_help_removespawn"), "/worlds removeSpawn", "buildsystem.removespawn");
-                line10 = createComponent("/worlds delete <world>", " §8» " + plugin.getString("worlds_help_delete"), "/worlds delete ", "buildsystem.delete");
-                line11 = createComponent("/worlds import <world>", " §8» " + plugin.getString("worlds_help_import"), "/worlds import ", "buildsystem.import");
-                line12 = createComponent("/worlds importAll", " §8» " + plugin.getString("worlds_help_importall"), "/worlds importAll", "buildsystem.import.all");
-                line13 = createComponent("/worlds unimport", " §8» " + plugin.getString("worlds_help_unimport"), "/worlds unimport", "buildsystem.unimport");
-                break;
+        if (page == 1) {
+            line4 = createComponent("/worlds help <page>", " §8» " + plugin.getString("worlds_help_help"), "/worlds help", "-");
+            line5 = createComponent("/worlds info", " §8» " + plugin.getString("worlds_help_info"), "/worlds info", "buildsystem.info");
+            line6 = createComponent("/worlds item", " §8» " + plugin.getString("worlds_help_item"), "/worlds item", "buildsystem.navigator.item");
+            line7 = createComponent("/worlds tp <world>", " §8» " + plugin.getString("worlds_help_tp"), "/worlds tp ", "buildsystem.worldtp");
+            line8 = createComponent("/worlds edit <world>", " §8» " + plugin.getString("worlds_help_edit"), "/worlds edit ", "buildsystem.edit");
+            line9 = createComponent("/worlds addBuilder <world>", " §8» " + plugin.getString("worlds_help_addbuilder"), "/worlds addBuilder ", "buildsystem.addbuilder");
+            line10 = createComponent("/worlds removeBuilder <world>", " §8» " + plugin.getString("worlds_help_removebuilder"), "/worlds removeBuilder ", "buildsystem.removebuilder");
+            line11 = createComponent("/worlds builders <world>", " §8» " + plugin.getString("worlds_help_builders"), "/worlds builders ", "buildsystem.builders");
+            line12 = createComponent("/worlds rename <world>", " §8» " + plugin.getString("worlds_help_rename"), "/worlds rename ", "buildsystem.rename");
+            line13 = createComponent("/worlds setItem <world>", " §8» " + plugin.getString("worlds_help_setitem"), "/worlds setItem ", "buildsystem.setitem");
+        } else {
+            line4 = createComponent("/worlds setCreator <world>", " §8» " + plugin.getString("worlds_help_setcreator"), "/worlds setCreator ", "buildsystem.setcreator");
+            line5 = createComponent("/worlds setProject <world>", " §8» " + plugin.getString("worlds_help_setproject"), "/worlds setProject ", "buildsystem.setproject");
+            line6 = createComponent("/worlds setPermission <world>", " §8» " + plugin.getString("worlds_help_setpermission"), "/worlds setPermission ", "buildsystem.setpermission");
+            line7 = createComponent("/worlds setStatus <world>", " §8» " + plugin.getString("worlds_help_setstatus"), "/worlds setStatus ", "buildsystem.setstatus");
+            line8 = createComponent("/worlds setSpawn", " §8» " + plugin.getString("worlds_help_setspawn"), "/worlds setSpawn", "buildsystem.setspawn");
+            line9 = createComponent("/worlds removeSpawn", " §8» " + plugin.getString("worlds_help_removespawn"), "/worlds removeSpawn", "buildsystem.removespawn");
+            line10 = createComponent("/worlds delete <world>", " §8» " + plugin.getString("worlds_help_delete"), "/worlds delete ", "buildsystem.delete");
+            line11 = createComponent("/worlds import <world>", " §8» " + plugin.getString("worlds_help_import"), "/worlds import ", "buildsystem.import");
+            line12 = createComponent("/worlds importAll", " §8» " + plugin.getString("worlds_help_importall"), "/worlds importAll", "buildsystem.import.all");
+            line13 = createComponent("/worlds unimport", " §8» " + plugin.getString("worlds_help_unimport"), "/worlds unimport", "buildsystem.unimport");
         }
 
         TextComponent line14 = new TextComponent("§7§m----------------------------------------------------");

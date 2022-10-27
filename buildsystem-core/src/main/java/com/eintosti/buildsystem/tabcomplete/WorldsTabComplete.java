@@ -9,6 +9,7 @@
 package com.eintosti.buildsystem.tabcomplete;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.command.subcommand.Argument;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.generator.Generator;
@@ -50,8 +51,8 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
 
         switch (args.length) {
             case 1: {
-                for (Argument argument : Argument.values()) {
-                    String command = argument.getCommand();
+                for (WorldsArgument argument : WorldsArgument.values()) {
+                    String command = argument.getName();
                     String permission = argument.getPermission();
 
                     if (permission == null || player.hasPermission(permission)) {
@@ -148,7 +149,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
         return arrayList;
     }
 
-    public enum Argument {
+    public enum WorldsArgument implements Argument {
         ADD_BUILDER("addBuilder", "buildsystem.addbuilder"),
         BUILDERS("builders", "buildsystem.builders"),
         DELETE("delete", "buildsystem.delete"),
@@ -173,33 +174,25 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
         private final String command;
         private final String permission;
 
-        Argument(String command, String permission) {
+        WorldsArgument(String command, String permission) {
             this.command = command;
             this.permission = permission;
         }
 
         @Nullable
-        public static Argument matchArgument(String input) {
+        public static WorldsArgument matchArgument(String input) {
             return Arrays.stream(values())
-                    .filter(argument -> argument.getCommand().equalsIgnoreCase(input))
+                    .filter(argument -> argument.getName().equalsIgnoreCase(input))
                     .findFirst()
                     .orElse(null);
         }
 
-        /**
-         * The name of the command argument.
-         *
-         * @return The command argument name
-         */
-        public String getCommand() {
+        @Override
+        public String getName() {
             return command;
         }
 
-        /**
-         * The permission required to run the command.
-         *
-         * @return The permission required to run the command
-         */
+        @Override
         public String getPermission() {
             return permission;
         }

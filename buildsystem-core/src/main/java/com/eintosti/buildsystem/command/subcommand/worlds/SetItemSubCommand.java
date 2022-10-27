@@ -13,6 +13,7 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -20,12 +21,14 @@ import org.bukkit.inventory.ItemStack;
 /**
  * @author einTosti
  */
-public class SetItemSubCommand implements SubCommand {
+public class SetItemSubCommand extends SubCommand {
 
     private final BuildSystem plugin;
     private final String worldName;
 
     public SetItemSubCommand(BuildSystem plugin, String worldName) {
+        super(WorldsTabComplete.WorldsArgument.SET_ITEM);
+
         this.plugin = plugin;
         this.worldName = worldName;
     }
@@ -33,7 +36,7 @@ public class SetItemSubCommand implements SubCommand {
     @Override
     public void execute(Player player, String[] args) {
         WorldManager worldManager = plugin.getWorldManager();
-        if (!worldManager.isPermitted(player, "buildsystem.setitem", worldName)) {
+        if (!worldManager.isPermitted(player, getArgument().getPermission(), worldName)) {
             plugin.sendPermissionMessage(player);
             return;
         }

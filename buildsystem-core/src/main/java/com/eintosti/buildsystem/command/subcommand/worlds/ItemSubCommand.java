@@ -10,22 +10,25 @@ package com.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
+import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import org.bukkit.entity.Player;
 
 /**
  * @author einTosti
  */
-public class ItemSubCommand implements SubCommand {
+public class ItemSubCommand extends SubCommand {
 
     private final BuildSystem plugin;
 
     public ItemSubCommand(BuildSystem plugin) {
+        super(WorldsTabComplete.WorldsArgument.ITEM);
+
         this.plugin = plugin;
     }
 
     @Override
     public void execute(Player player, String[] args) {
-        if (!player.hasPermission("buildsystem.navigator.item")) {
+        if (!hasPermission(player)) {
             plugin.sendPermissionMessage(player);
             return;
         }

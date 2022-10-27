@@ -554,7 +554,7 @@ public class Messages {
         setList(sb, config, "worldeditor_visibility_lore_private", Arrays.asList("&7&oChange the world's visibility", "", "&7&nCurrently&7: &bPrivate"));
         addLine(sb, "");
         setMessage(sb, config, "worldeditor_mobai_item", "&bMob AI");
-        setList(sb, config, "worldeditor_mobai_lore", Arrays.asList("&7&oToggle whether mobs have an AI."));
+        setList(sb, config, "worldeditor_mobai_lore", Collections.singletonList("&7&oToggle whether mobs have an AI."));
         addLine(sb, "");
         setMessage(sb, config, "worldeditor_blockinteractions_item", "&bBlock Interactions");
         setList(sb, config, "worldeditor_blockinteractions_lore", Arrays.asList("&7&oToggle whether interactions", "&7&owith blocks are cancelled."));

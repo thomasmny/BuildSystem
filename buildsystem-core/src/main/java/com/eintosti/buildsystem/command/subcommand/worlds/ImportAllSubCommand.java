@@ -12,6 +12,7 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -20,17 +21,19 @@ import java.io.File;
 /**
  * @author einTosti
  */
-public class ImportAllSubCommand implements SubCommand {
+public class ImportAllSubCommand extends SubCommand {
 
     private final BuildSystem plugin;
 
     public ImportAllSubCommand(BuildSystem plugin) {
+        super(WorldsTabComplete.WorldsArgument.IMPORT_ALL);
+
         this.plugin = plugin;
     }
 
     @Override
     public void execute(Player player, String[] args) {
-        if (!player.hasPermission("buildsystem.import.all")) {
+        if (!hasPermission(player)) {
             plugin.sendPermissionMessage(player);
             return;
         }

@@ -12,16 +12,19 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import org.bukkit.entity.Player;
 
 /**
  * @author einTosti
  */
-public class SetSpawnSubCommand implements SubCommand {
+public class SetSpawnSubCommand extends SubCommand {
 
     private final BuildSystem plugin;
 
     public SetSpawnSubCommand(BuildSystem plugin) {
+        super(WorldsTabComplete.WorldsArgument.SET_SPAWN);
+
         this.plugin = plugin;
     }
 
@@ -29,7 +32,7 @@ public class SetSpawnSubCommand implements SubCommand {
     public void execute(Player player, String[] args) {
         WorldManager worldManager = plugin.getWorldManager();
         String playerWorldName = player.getWorld().getName();
-        if (!worldManager.isPermitted(player, "buildsystem.setspawn", playerWorldName)) {
+        if (!worldManager.isPermitted(player, getArgument().getPermission(), playerWorldName)) {
             plugin.sendPermissionMessage(player);
             return;
         }

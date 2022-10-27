@@ -12,17 +12,20 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import org.bukkit.entity.Player;
 
 /**
  * @author einTosti
  */
-public class SetStatusSubCommand implements SubCommand {
+public class SetStatusSubCommand extends SubCommand {
 
     private final BuildSystem plugin;
     private final String worldName;
 
     public SetStatusSubCommand(BuildSystem plugin, String worldName) {
+        super(WorldsTabComplete.WorldsArgument.SET_STATUS);
+
         this.plugin = plugin;
         this.worldName = worldName;
     }
@@ -30,7 +33,7 @@ public class SetStatusSubCommand implements SubCommand {
     @Override
     public void execute(Player player, String[] args) {
         WorldManager worldManager = plugin.getWorldManager();
-        if (!worldManager.isPermitted(player, "buildsystem.setstatus", worldName)) {
+        if (!worldManager.isPermitted(player, getArgument().getPermission(), worldName)) {
             plugin.sendPermissionMessage(player);
             return;
         }
