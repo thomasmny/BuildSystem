@@ -74,6 +74,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                     case "unimport":
                         worldManager.getBuildWorlds().stream()
                                 .filter(world -> player.hasPermission(world.getPermission()) || world.getPermission().equalsIgnoreCase("-"))
+                                .filter(world -> worldManager.isPermitted(player, "buildsystem." + args[0].toLowerCase(), world.getName()))
                                 .forEach(world -> addArgument(args[1], world.getName(), arrayList));
                         break;
 
@@ -81,7 +82,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                     case "delete":
                     case "removebuilder":
                         worldManager.getBuildWorlds().stream()
-                                .filter(world -> world.isCreator(player) || player.hasPermission(BuildSystem.ADMIN_PERMISSION))
+                                .filter(world -> worldManager.isPermitted(player, "buildsystem." + args[0].toLowerCase(), world.getName()))
                                 .forEach(world -> addArgument(args[1], world.getName(), arrayList));
                         break;
 

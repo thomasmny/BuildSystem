@@ -24,16 +24,12 @@ import com.eintosti.buildsystem.object.world.generator.Generator;
 import com.eintosti.buildsystem.util.FileUtils;
 import com.eintosti.buildsystem.util.UUIDFetcher;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
-import org.bukkit.*;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.World.Environment;
-import org.bukkit.WorldCreator;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
@@ -603,7 +599,7 @@ public class WorldManager {
     }
 
     /**
-     * Gets whether the given player is permission to run a command in the given world.
+     * Gets whether the given player is permitted to run a command in the given world.
      * <p>
      * <ul>
      *   <li>The creator of a world is allowed to run the command if they have the given permission, optionally ending with {@code .self}.</li>

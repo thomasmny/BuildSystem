@@ -89,23 +89,19 @@ public class WorldsCommand implements CommandExecutor {
                     return true;
                 }
 
-                if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
-                    if (buildWorld == null) {
-                        player.sendMessage(plugin.getString("worlds_addbuilder_unknown_world"));
-                        return true;
-                    }
-
-                    if (!buildWorld.isCreator(player) && !player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
-                        player.sendMessage(plugin.getString("worlds_addbuilder_not_creator"));
-                        return true;
-                    }
-
-                    playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
-                    getAddBuilderInput(player, true);
-                } else {
+                if (args.length > 2) {
                     player.sendMessage(plugin.getString("worlds_addbuilder_usage"));
+                    return true;
                 }
+
+                BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+                if (buildWorld == null) {
+                    player.sendMessage(plugin.getString("worlds_addbuilder_unknown_world"));
+                    return true;
+                }
+
+                playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
+                getAddBuilderInput(player, true);
                 break;
             }
 
@@ -115,17 +111,18 @@ public class WorldsCommand implements CommandExecutor {
                     return true;
                 }
 
-                if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
-                    if (buildWorld == null) {
-                        player.sendMessage(plugin.getString("worlds_builders_unknown_world"));
-                        return true;
-                    }
-                    playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
-                    player.openInventory(plugin.getBuilderInventory().getInventory(buildWorld, player));
-                } else {
+                if (args.length > 2) {
                     player.sendMessage(plugin.getString("worlds_builders_usage"));
+                    return true;
                 }
+
+                BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+                if (buildWorld == null) {
+                    player.sendMessage(plugin.getString("worlds_builders_unknown_world"));
+                    return true;
+                }
+                playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
+                player.openInventory(plugin.getBuilderInventory().getInventory(buildWorld, player));
                 break;
             }
 
@@ -135,23 +132,19 @@ public class WorldsCommand implements CommandExecutor {
                     return true;
                 }
 
-                if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
-                    if (buildWorld == null) {
-                        player.sendMessage(plugin.getString("worlds_delete_unknown_world"));
-                        return true;
-                    }
-
-                    if (!buildWorld.isCreator(player) && !player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
-                        player.sendMessage(plugin.getString("worlds_delete_not_creator"));
-                        return true;
-                    }
-
-                    playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
-                    plugin.getDeleteInventory().openInventory(player, buildWorld);
-                } else {
+                if (args.length > 2) {
                     player.sendMessage(plugin.getString("worlds_delete_usage"));
+                    return true;
                 }
+
+                BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+                if (buildWorld == null) {
+                    player.sendMessage(plugin.getString("worlds_delete_unknown_world"));
+                    return true;
+                }
+
+                playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
+                plugin.getDeleteInventory().openInventory(player, buildWorld);
                 break;
             }
 
@@ -161,22 +154,23 @@ public class WorldsCommand implements CommandExecutor {
                     return true;
                 }
 
-                if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
-                    if (buildWorld == null) {
-                        player.sendMessage(plugin.getString("worlds_edit_unknown_world"));
-                        return true;
-                    }
-
-                    if (buildWorld.isLoaded()) {
-                        playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
-                        plugin.getEditInventory().openInventory(player, buildWorld);
-                    } else {
-                        XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-                        Titles.sendTitle(player, 5, 70, 20, " ", plugin.getString("world_not_loaded"));
-                    }
-                } else {
+                if (args.length > 2) {
                     player.sendMessage(plugin.getString("worlds_edit_usage"));
+                    return true;
+                }
+
+                BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+                if (buildWorld == null) {
+                    player.sendMessage(plugin.getString("worlds_edit_unknown_world"));
+                    return true;
+                }
+
+                if (buildWorld.isLoaded()) {
+                    playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
+                    plugin.getEditInventory().openInventory(player, buildWorld);
+                } else {
+                    XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
+                    Titles.sendTitle(player, 5, 70, 20, " ", plugin.getString("world_not_loaded"));
                 }
                 break;
             }
@@ -203,38 +197,39 @@ public class WorldsCommand implements CommandExecutor {
                     return true;
                 }
 
-                if (args.length >= 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
-                    if (buildWorld != null) {
-                        player.sendMessage(plugin.getString("worlds_import_world_is_imported"));
-                        return true;
-                    }
+                if (args.length < 2) {
+                    player.sendMessage(plugin.getString("worlds_import_usage"));
+                    return true;
+                }
 
-                    File worldFolder = new File(Bukkit.getWorldContainer(), args[1]);
-                    File levelFile = new File(worldFolder.getAbsolutePath() + File.separator + "level.dat");
-                    if (!worldFolder.isDirectory() || !levelFile.exists()) {
-                        player.sendMessage(plugin.getString("worlds_import_unknown_world"));
-                        return true;
-                    }
+                BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+                if (buildWorld != null) {
+                    player.sendMessage(plugin.getString("worlds_import_world_is_imported"));
+                    return true;
+                }
 
-                    if (args.length == 2) {
-                        worldManager.importWorld(player, args[1], Generator.VOID);
-                    } else if (args.length == 4) {
-                        if (!args[2].equalsIgnoreCase("-g")) {
-                            player.sendMessage(plugin.getString("worlds_import_usage"));
-                            return true;
-                        }
+                File worldFolder = new File(Bukkit.getWorldContainer(), args[1]);
+                File levelFile = new File(worldFolder.getAbsolutePath() + File.separator + "level.dat");
+                if (!worldFolder.isDirectory() || !levelFile.exists()) {
+                    player.sendMessage(plugin.getString("worlds_import_unknown_world"));
+                    return true;
+                }
 
-                        Generator generator;
-                        try {
-                            generator = Generator.valueOf(args[3].toUpperCase());
-                        } catch (IllegalArgumentException e) {
-                            generator = Generator.CUSTOM;
-                        }
-                        worldManager.importWorld(player, args[1], generator, args[3]);
-                    } else {
+                if (args.length == 2) {
+                    worldManager.importWorld(player, args[1], Generator.VOID);
+                } else if (args.length == 4) {
+                    if (!args[2].equalsIgnoreCase("-g")) {
                         player.sendMessage(plugin.getString("worlds_import_usage"));
+                        return true;
                     }
+
+                    Generator generator;
+                    try {
+                        generator = Generator.valueOf(args[3].toUpperCase());
+                    } catch (IllegalArgumentException e) {
+                        generator = Generator.CUSTOM;
+                    }
+                    worldManager.importWorld(player, args[1], generator, args[3]);
                 } else {
                     player.sendMessage(plugin.getString("worlds_import_usage"));
                 }
@@ -247,31 +242,33 @@ public class WorldsCommand implements CommandExecutor {
                     return true;
                 }
 
-                if (args.length == 1) {
-                    File worldContainer = Bukkit.getWorldContainer();
-                    String[] directories = worldContainer.list((dir, name) -> {
-                        File worldFolder = new File(dir, name);
-                        if (!worldFolder.isDirectory()) {
-                            return false;
-                        }
-
-                        File levelFile = new File(dir + File.separator + name + File.separator + "level.dat");
-                        if (!levelFile.exists()) {
-                            return false;
-                        }
-
-                        BuildWorld buildWorld = worldManager.getBuildWorld(name);
-                        return buildWorld == null;
-                    });
-
-                    if (directories == null || directories.length == 0) {
-                        player.sendMessage(plugin.getString("worlds_importall_no_worlds"));
-                        return true;
-                    }
-                    worldManager.importWorlds(player, directories);
-                } else {
+                if (args.length != 1) {
                     player.sendMessage(plugin.getString("worlds_importall_usage"));
+                    return true;
                 }
+
+                File worldContainer = Bukkit.getWorldContainer();
+                String[] directories = worldContainer.list((dir, name) -> {
+                    File worldFolder = new File(dir, name);
+                    if (!worldFolder.isDirectory()) {
+                        return false;
+                    }
+
+                    File levelFile = new File(dir + File.separator + name + File.separator + "level.dat");
+                    if (!levelFile.exists()) {
+                        return false;
+                    }
+
+                    BuildWorld buildWorld = worldManager.getBuildWorld(name);
+                    return buildWorld == null;
+                });
+
+                if (directories == null || directories.length == 0) {
+                    player.sendMessage(plugin.getString("worlds_importall_no_worlds"));
+                    return true;
+                }
+
+                worldManager.importWorlds(player, directories);
                 break;
             }
 
@@ -319,23 +316,19 @@ public class WorldsCommand implements CommandExecutor {
                     return true;
                 }
 
-                if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
-                    if (buildWorld == null) {
-                        player.sendMessage(plugin.getString("worlds_removebuilder_unknown_world"));
-                        return true;
-                    }
-
-                    if (!buildWorld.isCreator(player) && !player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
-                        player.sendMessage(plugin.getString("worlds_removebuilder_not_creator"));
-                        return true;
-                    }
-
-                    playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
-                    getRemoveBuilderInput(player, true);
-                } else {
+                if (args.length > 2) {
                     player.sendMessage(plugin.getString("worlds_removebuilder_usage"));
+                    return true;
                 }
+
+                BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+                if (buildWorld == null) {
+                    player.sendMessage(plugin.getString("worlds_removebuilder_unknown_world"));
+                    return true;
+                }
+
+                playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
+                getRemoveBuilderInput(player, true);
                 break;
             }
 
@@ -345,18 +338,19 @@ public class WorldsCommand implements CommandExecutor {
                     return true;
                 }
 
-                if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
-                    if (buildWorld == null) {
-                        player.sendMessage(plugin.getString("worlds_rename_unknown_world"));
-                        return true;
-                    }
-
-                    playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
-                    getRenameInput(player);
-                } else {
+                if (args.length > 2) {
                     player.sendMessage(plugin.getString("worlds_rename_usage"));
+                    return true;
                 }
+
+                BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+                if (buildWorld == null) {
+                    player.sendMessage(plugin.getString("worlds_rename_unknown_world"));
+                    return true;
+                }
+
+                playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
+                getRenameInput(player);
                 break;
             }
 
@@ -366,18 +360,19 @@ public class WorldsCommand implements CommandExecutor {
                     return true;
                 }
 
-                if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
-                    if (buildWorld == null) {
-                        player.sendMessage(plugin.getString("worlds_setcreator_unknown_world"));
-                        return true;
-                    }
-
-                    playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
-                    getCreatorInput(player);
-                } else {
+                if (args.length > 2) {
                     player.sendMessage(plugin.getString("worlds_setcreator_usage"));
+                    return true;
                 }
+
+                BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+                if (buildWorld == null) {
+                    player.sendMessage(plugin.getString("worlds_setcreator_unknown_world"));
+                    return true;
+                }
+
+                playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
+                getCreatorInput(player);
                 break;
             }
 
@@ -387,24 +382,25 @@ public class WorldsCommand implements CommandExecutor {
                     return true;
                 }
 
-                if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
-                    if (buildWorld == null) {
-                        player.sendMessage(plugin.getString("worlds_setitem_unknown_world"));
-                        return true;
-                    }
-
-                    ItemStack itemStack = player.getItemInHand();
-                    if (itemStack.getType().equals(Material.AIR)) {
-                        player.sendMessage(plugin.getString("worlds_setitem_hand_empty"));
-                        return true;
-                    }
-
-                    buildWorld.setMaterial(XMaterial.matchXMaterial(itemStack));
-                    player.sendMessage(plugin.getString("worlds_setitem_set").replace("%world%", buildWorld.getName()));
-                } else {
+                if (args.length > 2) {
                     player.sendMessage(plugin.getString("worlds_setitem_usage"));
+                    return true;
                 }
+
+                BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+                if (buildWorld == null) {
+                    player.sendMessage(plugin.getString("worlds_setitem_unknown_world"));
+                    return true;
+                }
+
+                ItemStack itemStack = player.getItemInHand();
+                if (itemStack.getType() == Material.AIR) {
+                    player.sendMessage(plugin.getString("worlds_setitem_hand_empty"));
+                    return true;
+                }
+
+                buildWorld.setMaterial(XMaterial.matchXMaterial(itemStack));
+                player.sendMessage(plugin.getString("worlds_setitem_set").replace("%world%", buildWorld.getName()));
                 break;
             }
 
@@ -414,18 +410,19 @@ public class WorldsCommand implements CommandExecutor {
                     return true;
                 }
 
-                if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
-                    if (buildWorld == null) {
-                        player.sendMessage(plugin.getString("worlds_setpermission_unknown_world"));
-                        return true;
-                    }
-
-                    playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
-                    getPermissionInput(player, true);
-                } else {
+                if (args.length > 2) {
                     player.sendMessage(plugin.getString("worlds_setpermission_usage"));
+                    return true;
                 }
+
+                BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+                if (buildWorld == null) {
+                    player.sendMessage(plugin.getString("worlds_setpermission_unknown_world"));
+                    return true;
+                }
+
+                playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
+                getPermissionInput(player, true);
                 break;
             }
 
@@ -435,18 +432,19 @@ public class WorldsCommand implements CommandExecutor {
                     return true;
                 }
 
-                if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
-                    if (buildWorld == null) {
-                        player.sendMessage(plugin.getString("worlds_setproject_unknown_world"));
-                        return true;
-                    }
-
-                    playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
-                    getProjectInput(player, true);
-                } else {
+                if (args.length > 2) {
                     player.sendMessage(plugin.getString("worlds_setproject_usage"));
+                    return true;
                 }
+
+                BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+                if (buildWorld == null) {
+                    player.sendMessage(plugin.getString("worlds_setproject_unknown_world"));
+                    return true;
+                }
+
+                playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
+                getProjectInput(player, true);
                 break;
             }
 
@@ -456,18 +454,19 @@ public class WorldsCommand implements CommandExecutor {
                     return true;
                 }
 
-                if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
-                    if (buildWorld == null) {
-                        player.sendMessage(plugin.getString("worlds_setstatus_unknown_world"));
-                        return true;
-                    }
-
-                    playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
-                    plugin.getStatusInventory().openInventory(player);
-                } else {
+                if (args.length > 2) {
                     player.sendMessage(plugin.getString("worlds_setstatus_usage"));
+                    return true;
                 }
+
+                BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+                if (buildWorld == null) {
+                    player.sendMessage(plugin.getString("worlds_setstatus_unknown_world"));
+                    return true;
+                }
+
+                playerManager.getBuildPlayer(player).setCachedWorld(buildWorld);
+                plugin.getStatusInventory().openInventory(player);
                 break;
             }
 
@@ -513,49 +512,50 @@ public class WorldsCommand implements CommandExecutor {
                     return true;
                 }
 
-                if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
-                    if (buildWorld == null) {
-                        player.sendMessage(plugin.getString("worlds_tp_unknown_world"));
-                        return true;
-                    }
-
-                    World bukkitWorld = Bukkit.getServer().getWorld(args[1]);
-                    if (buildWorld.isLoaded() && bukkitWorld == null) {
-                        player.sendMessage(plugin.getString("worlds_tp_unknown_world"));
-                        return true;
-                    }
-
-                    if (player.hasPermission(buildWorld.getPermission()) || buildWorld.getPermission().equalsIgnoreCase("-")) {
-                        worldManager.teleport(player, buildWorld);
-                    } else {
-                        player.sendMessage(plugin.getString("worlds_tp_entry_forbidden"));
-                    }
-                    return true;
-                } else {
+                if (args.length != 2) {
                     player.sendMessage(plugin.getString("worlds_tp_usage"));
+                    return true;
+                }
+
+                BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
+                if (buildWorld == null) {
+                    player.sendMessage(plugin.getString("worlds_tp_unknown_world"));
+                    return true;
+                }
+
+                World bukkitWorld = Bukkit.getServer().getWorld(args[1]);
+                if (buildWorld.isLoaded() && bukkitWorld == null) {
+                    player.sendMessage(plugin.getString("worlds_tp_unknown_world"));
+                    return true;
+                }
+
+                if (player.hasPermission(buildWorld.getPermission()) || buildWorld.getPermission().equalsIgnoreCase("-")) {
+                    worldManager.teleport(player, buildWorld);
+                } else {
+                    player.sendMessage(plugin.getString("worlds_tp_entry_forbidden"));
                 }
                 break;
             }
 
             case "unimport": {
-                if (!player.hasPermission("buildsystem.unimport")) {
+                if (!worldManager.isPermitted(player, "buildsystem.unimport", worldName)) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
 
-                if (args.length == 2) {
-                    BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
-                    if (buildWorld == null) {
-                        player.sendMessage(plugin.getString("worlds_unimport_unknown_world"));
-                        return true;
-                    }
-
-                    worldManager.unimportWorld(buildWorld, true);
-                    player.sendMessage(plugin.getString("worlds_unimport_finished").replace("%world%", buildWorld.getName()));
-                } else {
+                if (args.length > 2) {
                     player.sendMessage(plugin.getString("worlds_unimport_usage"));
+                    return true;
                 }
+
+                BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+                if (buildWorld == null) {
+                    player.sendMessage(plugin.getString("worlds_unimport_unknown_world"));
+                    return true;
+                }
+
+                worldManager.unimportWorld(buildWorld, true);
+                player.sendMessage(plugin.getString("worlds_unimport_finished").replace("%world%", buildWorld.getName()));
                 break;
             }
 

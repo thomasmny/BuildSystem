@@ -55,15 +55,15 @@ public class AsyncPlayerPreLoginListener implements Listener {
         }
 
         LogoutLocation logoutLocation = buildPlayer.getLogoutLocation();
-        if (logoutLocation != null) {
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                BuildWorld buildWorld = worldManager.getBuildWorld(logoutLocation.getWorldName());
-                if (buildWorld == null) {
-                    buildPlayer.setLogoutLocation(null);
-                } else {
-                    buildWorld.load();
-                }
-            });
+        if (logoutLocation == null) {
+            return;
+        }
+
+        BuildWorld buildWorld = worldManager.getBuildWorld(logoutLocation.getWorldName());
+        if (buildWorld == null) {
+            buildPlayer.setLogoutLocation(null);
+        } else {
+            Bukkit.getScheduler().runTask(plugin, () -> buildWorld.load());
         }
     }
 }
