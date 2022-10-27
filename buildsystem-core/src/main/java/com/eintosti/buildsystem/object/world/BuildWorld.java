@@ -234,7 +234,7 @@ public class BuildWorld implements ConfigurationSerializable {
     /**
      * Gets whether the world has a creator
      *
-     * @return {@code true} if the world has a reator, {@code false} otherwise
+     * @return {@code true} if the world has a creator, {@code false} otherwise
      */
     public boolean hasCreator() {
         return getCreator() != null;

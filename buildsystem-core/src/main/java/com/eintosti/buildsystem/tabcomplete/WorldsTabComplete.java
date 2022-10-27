@@ -19,8 +19,10 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -146,11 +148,12 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
         return arrayList;
     }
 
-    private enum Argument {
+    public enum Argument {
         ADD_BUILDER("addBuilder", "buildsystem.addbuilder"),
         BUILDERS("builders", "buildsystem.builders"),
         DELETE("delete", "buildsystem.delete"),
         EDIT("edit", "buildsystem.edit"),
+        HELP("help", null),
         IMPORT("import", "buildsystem.import"),
         IMPORT_ALL("importAll", "buildsystem.import.all"),
         INFO("info", "buildsystem.info"),
@@ -175,10 +178,28 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
             this.permission = permission;
         }
 
+        @Nullable
+        public static Argument matchArgument(String input) {
+            return Arrays.stream(values())
+                    .filter(argument -> argument.getCommand().equalsIgnoreCase(input))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        /**
+         * The name of the command argument.
+         *
+         * @return The command argument name
+         */
         public String getCommand() {
             return command;
         }
 
+        /**
+         * The permission required to run the command.
+         *
+         * @return The permission required to run the command
+         */
         public String getPermission() {
             return permission;
         }

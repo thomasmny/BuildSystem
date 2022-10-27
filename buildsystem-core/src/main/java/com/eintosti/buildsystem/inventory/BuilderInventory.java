@@ -11,6 +11,7 @@ package com.eintosti.buildsystem.inventory;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.Builder;
@@ -166,7 +167,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
                 break;
             case 22:
                 XSound.ENTITY_CHICKEN_EGG.play(player);
-                plugin.getWorldsCommand().getAddBuilderInput(player, false);
+                new AddBuilderSubCommand(plugin, buildWorld.getName()).getAddBuilderInput(player, buildWorld, false);
                 return;
             case 26:
                 incrementInv(player);
