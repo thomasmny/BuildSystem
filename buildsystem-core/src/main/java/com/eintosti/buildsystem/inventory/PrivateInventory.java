@@ -45,7 +45,7 @@ public class PrivateInventory extends FilteredWorldsInventory {
 
     private void addWorldCreateItem(Inventory inventory, Player player) {
         if (player.hasPermission("buildsystem.create.private")) {
-            inventoryManager.addUrlSkull(inventory, 49, plugin.getString("private_create_world"), "https://textures.minecraft.net/texture/3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
+            inventoryManager.addUrlSkull(inventory, 49, plugin.getString("private_create_world"), "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
         } else {
             inventoryManager.addGlassPane(plugin, player, inventory, 49);
         }

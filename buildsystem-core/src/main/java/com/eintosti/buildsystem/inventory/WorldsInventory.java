@@ -48,6 +48,6 @@ public class WorldsInventory extends FilteredWorldsInventory {
             inventoryManager.addGlassPane(plugin, player, inventory, 49);
             return;
         }
-        inventoryManager.addUrlSkull(inventory, 49, plugin.getString("world_navigator_create_world"), "https://textures.minecraft.net/texture/3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
+        inventoryManager.addUrlSkull(inventory, 49, plugin.getString("world_navigator_create_world"), "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
     }
 }

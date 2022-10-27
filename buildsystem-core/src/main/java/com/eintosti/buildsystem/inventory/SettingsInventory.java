@@ -133,35 +133,35 @@ public class SettingsInventory implements Listener {
         List<String> lore;
         switch (settings.getWorldSort()) {
             default: //NAME_A_TO_Z
-                url = "https://textures.minecraft.net/texture/a67d813ae7ffe5be951a4f41f2aa619a5e3894e85ea5d4986f84949c63d7672e";
+                url = "a67d813ae7ffe5be951a4f41f2aa619a5e3894e85ea5d4986f84949c63d7672e";
                 lore = plugin.getStringList("settings_worldsort_lore_alphabetically_name_az");
                 break;
             case NAME_Z_TO_A:
-                url = "https://textures.minecraft.net/texture/90582b9b5d97974b11461d63eced85f438a3eef5dc3279f9c47e1e38ea54ae8d";
+                url = "90582b9b5d97974b11461d63eced85f438a3eef5dc3279f9c47e1e38ea54ae8d";
                 lore = plugin.getStringList("settings_worldsort_lore_alphabetically_name_za");
                 break;
             case PROJECT_A_TO_Z:
-                url = "https://textures.minecraft.net/texture/2ac58b1a3b53b9481e317a1ea4fc5eed6bafca7a25e741a32e4e3c2841278c";
+                url = "2ac58b1a3b53b9481e317a1ea4fc5eed6bafca7a25e741a32e4e3c2841278c";
                 lore = plugin.getStringList("settings_worldsort_lore_alphabetically_project_az");
                 break;
             case PROJECT_Z_TO_A:
-                url = "https://textures.minecraft.net/texture/4e91200df1cae51acc071f85c7f7f5b8449d39bb32f363b0aa51dbc85d133e";
+                url = "4e91200df1cae51acc071f85c7f7f5b8449d39bb32f363b0aa51dbc85d133e";
                 lore = plugin.getStringList("settings_worldsort_lore_alphabetically_project_za");
                 break;
             case STATUS_NOT_STARTED:
-                url = "https://textures.minecraft.net/texture/ed339d52393d5183a3664015c0b2c6c1012ea1b525ed952073311ca180a0e6";
+                url = "ed339d52393d5183a3664015c0b2c6c1012ea1b525ed952073311ca180a0e6";
                 lore = plugin.getStringList("settings_worldsort_lore_status_not_started");
                 break;
             case STATUS_FINISHED:
-                url = "https://textures.minecraft.net/texture/400b9fb7aab4e3b69a5474b1a05d0a4b1449f4080a6c0f6977d0e33271c9b029";
+                url = "400b9fb7aab4e3b69a5474b1a05d0a4b1449f4080a6c0f6977d0e33271c9b029";
                 lore = plugin.getStringList("settings_worldsort_lore_status_finished");
                 break;
             case NEWEST_FIRST:
-                url = "https://textures.minecraft.net/texture/71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530";
+                url = "71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530";
                 lore = plugin.getStringList("settings_worldsort_lore_date_newest");
                 break;
             case OLDEST_FIRST:
-                url = "https://textures.minecraft.net/texture/e67caf7591b38e125a8017d58cfc6433bfaf84cd499d794f41d10bff2e5b840";
+                url = "e67caf7591b38e125a8017d58cfc6433bfaf84cd499d794f41d10bff2e5b840";
                 lore = plugin.getStringList("settings_worldsort_lore_date_oldest");
                 break;
         }

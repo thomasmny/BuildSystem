@@ -12,8 +12,6 @@ import com.google.common.collect.Sets;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -42,7 +40,7 @@ public class FileUtils {
 
             if (source.isDirectory()) {
                 if (!target.exists() && !target.mkdirs()) {
-                    throw new IOException("Couldn't create world directory!");
+                    throw new IOException("Couldn't create directory: " + target.getName());
                 }
 
                 for (String fileName : source.list()) {
@@ -55,8 +53,8 @@ public class FileUtils {
                     copy(sourceFile, targetFile);
                 }
             } else {
-                InputStream inputStream = new FileInputStream(source);
-                OutputStream outputStream = new FileOutputStream(target);
+                InputStream inputStream = Files.newInputStream(source.toPath());
+                OutputStream outputStream = Files.newOutputStream(target.toPath());
                 byte[] buffer = new byte[1024];
                 int length;
                 while ((length = inputStream.read(buffer)) > 0) {

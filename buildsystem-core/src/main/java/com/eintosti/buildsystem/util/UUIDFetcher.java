@@ -24,6 +24,7 @@ import java.util.UUID;
 /**
  * @author einTosti
  */
+@SuppressWarnings("deprecation")
 public class UUIDFetcher {
 
     private static final String UUID_URL = "https://api.mojang.com/users/profiles/minecraft/%s";
@@ -50,6 +51,7 @@ public class UUIDFetcher {
 
             JsonObject jsonObject;
             try {
+                // Support older versions of JSON used by Minecraft versions <1.18
                 jsonObject = new JsonParser().parse(new BufferedReader(new InputStreamReader(connection.getInputStream()))).getAsJsonObject();
             } catch (IllegalStateException ignored) {
                 return null;
@@ -83,6 +85,7 @@ public class UUIDFetcher {
             connection.setReadTimeout(5000);
             JsonArray nameHistory;
             try {
+                // Support older versions of JSON used by Minecraft versions <1.18
                 nameHistory = new JsonParser().parse(new BufferedReader(new InputStreamReader(connection.getInputStream()))).getAsJsonArray();
             } catch (IllegalStateException ignored) {
                 return null;

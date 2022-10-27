@@ -71,7 +71,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         UUID creatorId = buildWorld.getCreatorId();
         if ((creatorId != null && creatorId.equals(player.getUniqueId())) || player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
             inventoryManager.addUrlSkull(inventory, 22, plugin.getString("worldeditor_builders_add_builder_item"),
-                    "https://textures.minecraft.net/texture/3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
+                    "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
         } else {
             inventoryManager.addGlassPane(plugin, player, inventory, 22);
         }
@@ -120,13 +120,13 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         int invIndex = getInvIndex(player);
 
         if (numOfPages > 1 && invIndex > 0) {
-            inventoryManager.addUrlSkull(inventory, 18, plugin.getString("gui_previous_page"), "https://textures.minecraft.net/texture/f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
+            inventoryManager.addUrlSkull(inventory, 18, plugin.getString("gui_previous_page"), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
         } else {
             inventoryManager.addGlassPane(plugin, player, inventory, 18);
         }
 
         if (numOfPages > 1 && invIndex < (numOfPages - 1)) {
-            inventoryManager.addUrlSkull(inventory, 26, plugin.getString("gui_next_page"), "https://textures.minecraft.net/texture/d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
+            inventoryManager.addUrlSkull(inventory, 26, plugin.getString("gui_next_page"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
         } else {
             inventoryManager.addGlassPane(plugin, player, inventory, 26);
         }

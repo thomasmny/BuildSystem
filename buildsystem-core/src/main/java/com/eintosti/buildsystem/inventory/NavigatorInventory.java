@@ -36,11 +36,11 @@ public class NavigatorInventory implements Listener {
         Inventory inventory = Bukkit.createInventory(null, 27, plugin.getString("old_navigator_title"));
         fillGuiWithGlass(player, inventory);
 
-        inventoryManager.addUrlSkull(inventory, 11, plugin.getString("old_navigator_world_navigator"), "https://textures.minecraft.net/texture/d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622");
-        inventoryManager.addUrlSkull(inventory, 12, plugin.getString("old_navigator_world_archive"), "https://textures.minecraft.net/texture/7f6bf958abd78295eed6ffc293b1aa59526e80f54976829ea068337c2f5e8");
+        inventoryManager.addUrlSkull(inventory, 11, plugin.getString("old_navigator_world_navigator"), "d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622");
+        inventoryManager.addUrlSkull(inventory, 12, plugin.getString("old_navigator_world_archive"), "7f6bf958abd78295eed6ffc293b1aa59526e80f54976829ea068337c2f5e8");
         inventoryManager.addSkull(inventory, 13, plugin.getString("old_navigator_private_worlds"), player.getName());
 
-        inventoryManager.addUrlSkull(inventory, 15, plugin.getString("old_navigator_settings"), "https://textures.minecraft.net/texture/1cba7277fc895bf3b673694159864b83351a4d14717e476ebda1c3bf38fcf37");
+        inventoryManager.addUrlSkull(inventory, 15, plugin.getString("old_navigator_settings"), "1cba7277fc895bf3b673694159864b83351a4d14717e476ebda1c3bf38fcf37");
 
         return inventory;
     }

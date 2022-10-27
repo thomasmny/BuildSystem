@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 
 /**
  * @author einTosti
+ * @since TODO
  */
 public class CachedValues {
 

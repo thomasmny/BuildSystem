@@ -52,7 +52,7 @@ public class SkullCommand implements CommandExecutor {
             case 1:
                 String skullName = args[0];
                 if (skullName.length() > 16) {
-                    ItemStack customSkull = inventoryManager.getUrlSkull(plugin.getString("custom_skull_item"), "https://textures.minecraft.net/texture/" + skullName);
+                    ItemStack customSkull = inventoryManager.getUrlSkull(plugin.getString("custom_skull_item"), "" + skullName);
                     player.getInventory().addItem(customSkull);
                     player.sendMessage(plugin.getString("skull_custom_received"));
                 } else {

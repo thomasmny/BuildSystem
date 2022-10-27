@@ -40,9 +40,9 @@ public class SetupInventory implements Listener {
         Inventory inventory = Bukkit.createInventory(null, 45, plugin.getString("setup_title"));
         fillGuiWithGlass(player, inventory);
 
-        inventoryManager.addUrlSkull(inventory, 10, plugin.getString("setup_create_item_name"), "https://textures.minecraft.net/texture/d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158", plugin.getStringList("setup_create_item_lore"));
-        inventoryManager.addUrlSkull(inventory, 19, plugin.getString("setup_default_item_name"), "https://textures.minecraft.net/texture/d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158", plugin.getStringList("setup_default_item_lore"));
-        inventoryManager.addUrlSkull(inventory, 28, plugin.getString("setup_status_item_name"), "https://textures.minecraft.net/texture/d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158", plugin.getStringList("setup_status_item_name_lore"));
+        inventoryManager.addUrlSkull(inventory, 10, plugin.getString("setup_create_item_name"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158", plugin.getStringList("setup_create_item_lore"));
+        inventoryManager.addUrlSkull(inventory, 19, plugin.getString("setup_default_item_name"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158", plugin.getStringList("setup_default_item_lore"));
+        inventoryManager.addUrlSkull(inventory, 28, plugin.getString("setup_status_item_name"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158", plugin.getStringList("setup_status_item_name_lore"));
 
         inventoryManager.addItemStack(inventory, 11, inventoryManager.getCreateItem(WorldType.NORMAL), plugin.getString("setup_normal_world"));
         inventoryManager.addItemStack(inventory, 12, inventoryManager.getCreateItem(WorldType.FLAT), plugin.getString("setup_flat_world"));
