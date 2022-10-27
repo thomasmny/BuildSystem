@@ -13,7 +13,7 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.command.subcommand.worlds.*;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
-import com.eintosti.buildsystem.util.Messages;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

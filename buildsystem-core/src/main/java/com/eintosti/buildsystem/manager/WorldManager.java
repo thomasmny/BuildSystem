@@ -23,7 +23,7 @@ import com.eintosti.buildsystem.object.world.data.WorldType;
 import com.eintosti.buildsystem.object.world.generator.CustomGenerator;
 import com.eintosti.buildsystem.object.world.generator.Generator;
 import com.eintosti.buildsystem.util.FileUtils;
-import com.eintosti.buildsystem.util.Messages;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.util.UUIDFetcher;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
 import io.papermc.lib.PaperLib;

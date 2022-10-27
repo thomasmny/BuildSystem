@@ -15,7 +15,7 @@ import com.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.Builder;
-import com.eintosti.buildsystem.util.Messages;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.util.UUIDFetcher;
 import com.eintosti.buildsystem.util.external.StringUtils;
 import org.bukkit.Bukkit;

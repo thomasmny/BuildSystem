@@ -19,7 +19,7 @@ import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.eintosti.buildsystem.object.world.data.WorldType;
-import com.eintosti.buildsystem.util.Messages;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;

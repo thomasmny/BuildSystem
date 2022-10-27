@@ -13,7 +13,7 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.eintosti.buildsystem.object.world.data.WorldType;
-import com.eintosti.buildsystem.util.Messages;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;

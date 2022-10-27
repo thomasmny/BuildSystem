@@ -64,8 +64,6 @@ import com.eintosti.buildsystem.tabcomplete.SpawnTabComplete;
 import com.eintosti.buildsystem.tabcomplete.SpeedTabComplete;
 import com.eintosti.buildsystem.tabcomplete.TimeTabComplete;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
-import com.eintosti.buildsystem.util.Messages;
-import com.eintosti.buildsystem.util.RGBUtils;
 import com.eintosti.buildsystem.util.SkullCache;
 import com.eintosti.buildsystem.util.external.UpdateChecker;
 import com.eintosti.buildsystem.version.customblocks.CustomBlocks;
@@ -80,11 +78,6 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 
 /**
  * @author einTosti

@@ -21,7 +21,7 @@ import com.eintosti.buildsystem.object.player.LogoutLocation;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
-import com.eintosti.buildsystem.util.Messages;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.util.external.UpdateChecker;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;

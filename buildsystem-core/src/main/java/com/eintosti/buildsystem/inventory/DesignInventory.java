@@ -14,7 +14,7 @@ import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.object.settings.Color;
 import com.eintosti.buildsystem.object.settings.Settings;
-import com.eintosti.buildsystem.util.Messages;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;

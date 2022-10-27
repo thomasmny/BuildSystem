@@ -15,7 +15,7 @@ import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
-import com.eintosti.buildsystem.util.Messages;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;

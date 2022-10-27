@@ -8,10 +8,8 @@
 
 package com.eintosti.buildsystem.object.world.data;
 
-import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.util.Messages;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.World.Environment;
-import org.bukkit.plugin.java.JavaPlugin;
 
 /**
  * @author einTosti

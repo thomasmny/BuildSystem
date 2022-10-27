@@ -13,7 +13,7 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.object.player.BuildPlayer;
 import com.eintosti.buildsystem.object.player.CachedValues;
-import com.eintosti.buildsystem.util.Messages;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;

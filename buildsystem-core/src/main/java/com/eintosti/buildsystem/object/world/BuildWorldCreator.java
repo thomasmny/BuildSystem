@@ -18,7 +18,7 @@ import com.eintosti.buildsystem.object.world.generator.CustomGenerator;
 import com.eintosti.buildsystem.object.world.generator.voidgenerator.DeprecatedVoidGenerator;
 import com.eintosti.buildsystem.object.world.generator.voidgenerator.ModernVoidGenerator;
 import com.eintosti.buildsystem.util.FileUtils;
-import com.eintosti.buildsystem.util.Messages;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

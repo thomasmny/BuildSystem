@@ -23,7 +23,7 @@ import com.eintosti.buildsystem.object.player.CachedValues;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
-import com.eintosti.buildsystem.util.Messages;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;

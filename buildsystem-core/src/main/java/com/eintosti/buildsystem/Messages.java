@@ -6,9 +6,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-package com.eintosti.buildsystem.util;
+package com.eintosti.buildsystem;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.util.RGBUtils;
 import com.google.common.collect.Lists;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

@@ -9,7 +9,7 @@
 package com.eintosti.buildsystem.object.internal;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.util.Messages;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import com.eintosti.buildsystem.version.gamerules.GameRules;
 import com.eintosti.buildsystem.version.v1_12_R1.CustomBlocks_1_12_R1;

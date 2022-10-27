@@ -19,7 +19,7 @@ import com.eintosti.buildsystem.manager.SpawnManager;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.eintosti.buildsystem.object.world.data.WorldType;
 import com.eintosti.buildsystem.object.world.generator.CustomGenerator;
-import com.eintosti.buildsystem.util.Messages;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.util.UUIDFetcher;
 import com.eintosti.buildsystem.util.exception.UnexpectedEnumValueException;
 import org.bukkit.Bukkit;

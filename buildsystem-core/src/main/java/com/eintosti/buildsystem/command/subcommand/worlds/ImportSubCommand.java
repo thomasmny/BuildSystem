@@ -14,7 +14,7 @@ import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.generator.Generator;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
-import com.eintosti.buildsystem.util.Messages;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 

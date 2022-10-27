@@ -9,7 +9,7 @@
 package com.eintosti.buildsystem.command;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.util.Messages;
+import com.eintosti.buildsystem.Messages;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;

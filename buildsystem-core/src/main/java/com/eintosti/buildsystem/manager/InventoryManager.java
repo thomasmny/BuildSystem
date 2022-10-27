@@ -19,7 +19,7 @@ import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.Builder;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.eintosti.buildsystem.object.world.data.WorldType;
-import com.eintosti.buildsystem.util.Messages;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.util.exception.UnexpectedEnumValueException;
 import com.eintosti.buildsystem.util.external.ItemSkulls;
 import com.eintosti.buildsystem.util.external.StringUtils;
