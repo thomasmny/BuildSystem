@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-package com.eintosti.buildsystem.object.world.generator;
+package com.eintosti.buildsystem.object.world.generator.voidgenerator;
 
 import org.bukkit.World;
 import org.bukkit.block.Biome;

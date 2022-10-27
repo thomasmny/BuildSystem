@@ -106,7 +106,7 @@ public class SpawnManager {
 
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
-            buildWorld = new BuildWorld(plugin, worldName, "", UUID.randomUUID(), WorldType.UNKNOWN, System.currentTimeMillis(), false);
+            buildWorld = new BuildWorld(plugin, worldName, "", UUID.randomUUID(), WorldType.UNKNOWN, System.currentTimeMillis(), false, null);
         }
         buildWorld.load();
 

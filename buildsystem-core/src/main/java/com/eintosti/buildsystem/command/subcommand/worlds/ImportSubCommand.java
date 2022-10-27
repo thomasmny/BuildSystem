@@ -59,7 +59,7 @@ public class ImportSubCommand implements SubCommand {
 
         switch (args.length) {
             case 2:
-                worldManager.importWorld(player, args[1], Generator.VOID);
+                worldManager.importWorld(player, args[1], Generator.VOID, null);
                 break;
             case 4:
                 if (!args[2].equalsIgnoreCase("-g")) {
