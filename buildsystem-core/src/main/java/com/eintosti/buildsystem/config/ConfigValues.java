@@ -53,6 +53,7 @@ public class ConfigValues {
     private boolean worldBlockBreaking;
     private boolean worldBlockPlacement;
     private boolean worldBlockInteractions;
+    private boolean[] worldBuildersEnabled;
 
     private int sunriseTime;
     private int noonTime;
@@ -119,6 +120,10 @@ public class ConfigValues {
         this.worldBlockBreaking = config.getBoolean("world.default.settings.block-breaking", true);
         this.worldBlockPlacement = config.getBoolean("world.default.settings.block-placement", true);
         this.worldBlockInteractions = config.getBoolean("world.default.settings.block-interactions", true);
+        this.worldBuildersEnabled = new boolean[]{
+                config.getBoolean("world.default.settings.builders-enabled.public", false),
+                config.getBoolean("world.default.settings.builders-enabled.private", true)
+        };
 
         this.unloadWorlds = config.getBoolean("world.unload.enabled", false);
         this.timeUntilUnload = config.getString("world.unload.time-until-unload", "01:00:00");
@@ -218,6 +223,11 @@ public class ConfigValues {
 
     public boolean isWorldBlockInteractions() {
         return worldBlockInteractions;
+    }
+
+    public boolean isWorldBuildersEnabled(boolean privateWorld) {
+        int i = privateWorld ? 1 : 0;
+        return worldBuildersEnabled[i];
     }
 
     public XMaterial getNavigatorItem() {

@@ -49,7 +49,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -158,33 +157,37 @@ public class WorldManager {
      * @param privateWorld Is world going to be a private world?
      */
     public void startWorldNameInput(Player player, WorldType worldType, @Nullable String template, boolean privateWorld) {
-        AtomicReference<String> nameReference = new AtomicReference<>();
         if (privateWorld && getBuildWorld(player.getName()) == null) {
-            nameReference.set(player.getName());
-        } else {
-            new PlayerChatInput(plugin, player, "enter_world_name", input -> {
-                for (String charString : input.split("")) {
-                    if (charString.matches("[^A-Za-z\\d/_-]")) {
-                        player.sendMessage(plugin.getString("worlds_world_creation_invalid_characters"));
-                        break;
-                    }
-                }
-                nameReference.set(input.replaceAll("[^A-Za-z\\d/_-]", "").replace(" ", "_").trim());
-            });
-        }
-
-        String worldName = nameReference.get();
-        if (worldName.isEmpty()) {
-            player.sendMessage(plugin.getString("worlds_world_creation_name_bank"));
+            player.closeInventory();
+            new BuildWorldCreator(plugin, player.getName())
+                    .setType(worldType)
+                    .setTemplate(template)
+                    .setPrivate(true)
+                    .createWorld(player);
             return;
         }
 
-        player.closeInventory();
-        new BuildWorldCreator(plugin, worldName)
-                .setType(worldType)
-                .setTemplate(template)
-                .setPrivate(privateWorld)
-                .createWorld(player);
+        new PlayerChatInput(plugin, player, "enter_world_name", input -> {
+            for (String charString : input.split("")) {
+                if (charString.matches("[^A-Za-z\\d/_-]")) {
+                    player.sendMessage(plugin.getString("worlds_world_creation_invalid_characters"));
+                    break;
+                }
+            }
+
+            String worldName = input.replaceAll("[^A-Za-z\\d/_-]", "").replace(" ", "_").trim();
+            if (worldName.isEmpty()) {
+                player.sendMessage(plugin.getString("worlds_world_creation_name_bank"));
+                return;
+            }
+
+            player.closeInventory();
+            new BuildWorldCreator(plugin, worldName)
+                    .setType(worldType)
+                    .setTemplate(template)
+                    .setPrivate(privateWorld)
+                    .createWorld(player);
+        });
     }
 
     /**

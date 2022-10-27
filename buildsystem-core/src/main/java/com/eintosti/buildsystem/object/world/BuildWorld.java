@@ -106,7 +106,7 @@ public class BuildWorld implements ConfigurationSerializable {
         this.blockBreaking = configValues.isWorldBlockBreaking();
         this.blockPlacement = configValues.isWorldBlockPlacement();
         this.blockInteractions = configValues.isWorldBlockInteractions();
-        this.buildersEnabled = isPrivate();
+        this.buildersEnabled = configValues.isWorldBuildersEnabled(privateWorld);
         this.difficulty = configValues.getWorldDifficulty();
         this.chunkGeneratorName = (chunkGeneratorName != null && chunkGeneratorName.length > 0) ? chunkGeneratorName[0] : null;
 
