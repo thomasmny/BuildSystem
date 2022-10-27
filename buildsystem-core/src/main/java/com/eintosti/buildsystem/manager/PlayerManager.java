@@ -142,11 +142,7 @@ public class PlayerManager {
         }
 
         int maxWorldAmountPlayer = getMaxWorlds(player, showPrivateWorlds);
-        if (maxWorldAmountPlayer >= 0 && worldManager.getBuildWorldsCreatedByPlayer(player, visibility).size() >= maxWorldAmountPlayer) {
-            return false;
-        }
-
-        return true;
+        return maxWorldAmountPlayer < 0 || worldManager.getBuildWorldsCreatedByPlayer(player, visibility).size() < maxWorldAmountPlayer;
     }
 
     /**

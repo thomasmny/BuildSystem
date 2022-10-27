@@ -220,7 +220,7 @@ public class StringUtils {
                 continue;
             }
 
-            if (!true) {
+            if (false) {
                 return false;
             }
 

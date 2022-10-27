@@ -18,6 +18,7 @@ import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.SpawnManager;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.eintosti.buildsystem.object.world.data.WorldType;
+import com.eintosti.buildsystem.object.world.generator.CustomGenerator;
 import com.eintosti.buildsystem.util.UUIDFetcher;
 import com.eintosti.buildsystem.util.exception.UnexpectedEnumValueException;
 import org.bukkit.Bukkit;
@@ -27,7 +28,6 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
-import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -51,7 +51,8 @@ public class BuildWorld implements ConfigurationSerializable {
     private final WorldType worldType;
     private final List<Builder> builders;
     private final long creationDate;
-    private final String chunkGeneratorName;
+    private final CustomGenerator customGenerator;
+
     private String name;
     private String creator;
     private UUID creatorId;
@@ -61,7 +62,6 @@ public class BuildWorld implements ConfigurationSerializable {
     private String project;
     private String permission;
     private String customSpawn;
-    private ChunkGenerator chunkGenerator;
     private boolean physics;
     private boolean explosions;
     private boolean mobAI;
@@ -83,7 +83,7 @@ public class BuildWorld implements ConfigurationSerializable {
             WorldType worldType,
             long creationDate,
             boolean privateWorld,
-            String... chunkGeneratorName
+            CustomGenerator customGenerator
     ) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
@@ -106,9 +106,9 @@ public class BuildWorld implements ConfigurationSerializable {
         this.blockBreaking = configValues.isWorldBlockBreaking();
         this.blockPlacement = configValues.isWorldBlockPlacement();
         this.blockInteractions = configValues.isWorldBlockInteractions();
-        this.buildersEnabled = isPrivate();
+        this.buildersEnabled = configValues.isWorldBuildersEnabled(privateWorld);
         this.difficulty = configValues.getWorldDifficulty();
-        this.chunkGeneratorName = (chunkGeneratorName != null && chunkGeneratorName.length > 0) ? chunkGeneratorName[0] : null;
+        this.customGenerator = customGenerator;
 
         InventoryManager inventoryManager = plugin.getInventoryManager();
         switch (worldType) {
@@ -172,8 +172,7 @@ public class BuildWorld implements ConfigurationSerializable {
             boolean buildersEnabled,
             Difficulty difficulty,
             List<Builder> builders,
-            ChunkGenerator chunkGenerator,
-            String chunkGeneratorName
+            CustomGenerator customGenerator
     ) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
@@ -198,8 +197,7 @@ public class BuildWorld implements ConfigurationSerializable {
         this.buildersEnabled = buildersEnabled;
         this.difficulty = difficulty;
         this.builders = builders;
-        this.chunkGenerator = chunkGenerator;
-        this.chunkGeneratorName = chunkGeneratorName;
+        this.customGenerator = customGenerator;
 
         manageUnload();
     }
@@ -234,7 +232,7 @@ public class BuildWorld implements ConfigurationSerializable {
     /**
      * Gets whether the world has a creator
      *
-     * @return {@code true} if the world has a reator, {@code false} otherwise
+     * @return {@code true} if the world has a creator, {@code false} otherwise
      */
     public boolean hasCreator() {
         return getCreator() != null;
@@ -432,22 +430,13 @@ public class BuildWorld implements ConfigurationSerializable {
     }
 
     /**
-     * Get the chunk generator used to generate the world.
+     * Get the custom chunk generator used to generate the world.
      *
-     * @return The chunk generator used to generate the world.
+     * @return The custom chunk generator used to generate the world.
      */
-    public ChunkGenerator getChunkGenerator() {
-        return chunkGenerator;
-    }
-
-    /**
-     * Get the name of the {@link ChunkGenerator} which is used to generate the world.
-     *
-     * @return The generator name
-     * @see BuildWorld#getChunkGenerator()
-     */
-    public String getChunkGeneratorName() {
-        return chunkGeneratorName;
+    @Nullable
+    public CustomGenerator getCustomGenerator() {
+        return customGenerator;
     }
 
     /**
@@ -925,8 +914,8 @@ public class BuildWorld implements ConfigurationSerializable {
         if (customSpawn != null) {
             world.put("spawn", getCustomSpawn());
         }
-        if (chunkGeneratorName != null) {
-            world.put("chunk-generator", getChunkGeneratorName());
+        if (customGenerator != null) {
+            world.put("chunk-generator", customGenerator.getName());
         }
 
         return world;

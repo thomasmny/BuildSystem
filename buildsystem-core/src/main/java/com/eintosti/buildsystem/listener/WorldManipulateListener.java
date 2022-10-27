@@ -161,11 +161,7 @@ public class WorldManipulateListener implements Listener {
         if (checkWorldSettings(player, event, worldSetting)) {
             return true;
         }
-        if (checkBuilders(buildWorld, player, event)) {
-            return true;
-        }
-
-        return false;
+        return checkBuilders(buildWorld, player, event);
     }
 
     private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, Event event) {

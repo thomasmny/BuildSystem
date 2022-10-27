@@ -22,6 +22,7 @@ import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.eintosti.buildsystem.util.external.UpdateChecker;
+import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -94,7 +95,7 @@ public class PlayerJoinListener implements Listener {
         } else {
             LogoutLocation logoutLocation = buildPlayer.getLogoutLocation();
             if (logoutLocation != null) {
-                player.teleport(logoutLocation.getLocation());
+                PaperLib.teleportAsync(player, logoutLocation.getLocation());
             }
         }
 

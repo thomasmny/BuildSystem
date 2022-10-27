@@ -14,18 +14,22 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.data.WorldType;
-import com.eintosti.buildsystem.object.world.generator.DeprecatedVoidGenerator;
-import com.eintosti.buildsystem.object.world.generator.ModernVoidGenerator;
+import com.eintosti.buildsystem.object.world.generator.CustomGenerator;
+import com.eintosti.buildsystem.object.world.generator.voidgenerator.DeprecatedVoidGenerator;
+import com.eintosti.buildsystem.object.world.generator.voidgenerator.ModernVoidGenerator;
 import com.eintosti.buildsystem.util.FileUtils;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Difficulty;
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.WorldCreator;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * @author Trichtern
@@ -39,7 +43,7 @@ public class BuildWorldCreator {
     private String worldName;
     private String template = null;
     private WorldType worldType = WorldType.NORMAL;
-    private ChunkGenerator generator = null;
+    private CustomGenerator customGenerator = null;
     private boolean privateWorld = false;
     private Difficulty difficulty;
 
@@ -57,7 +61,7 @@ public class BuildWorldCreator {
 
         setName(buildWorld.getName());
         setType(buildWorld.getType());
-        setChunkGenerator(buildWorld.getChunkGenerator());
+        setCustomGenerator(buildWorld.getCustomGenerator());
         setPrivate(buildWorld.isPrivate());
         setDifficulty(buildWorld.getDifficulty());
     }
@@ -77,8 +81,8 @@ public class BuildWorldCreator {
         return this;
     }
 
-    public BuildWorldCreator setChunkGenerator(ChunkGenerator generator) {
-        this.generator = generator;
+    public BuildWorldCreator setCustomGenerator(CustomGenerator customGenerator) {
+        this.customGenerator = customGenerator;
         return this;
     }
 
@@ -116,15 +120,6 @@ public class BuildWorldCreator {
                 }
                 break;
         }
-
-        if (plugin.getConfigValues().isTeleportAfterCreation()) {
-            BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
-            if (buildWorld == null) {
-                return;
-            }
-            buildWorld.manageUnload();
-            worldManager.teleport(player, buildWorld);
-        }
     }
 
     /**
@@ -145,7 +140,8 @@ public class BuildWorldCreator {
                 player.getUniqueId(),
                 worldType,
                 System.currentTimeMillis(),
-                privateWorld
+                privateWorld,
+                null
         );
         worldManager.getBuildWorlds().add(buildWorld);
 
@@ -154,6 +150,7 @@ public class BuildWorldCreator {
                 .replace("%type%", worldType.getName())
         );
         finishPreparationsAndGenerate(buildWorld);
+        teleportAfterCreation(player);
         player.sendMessage(plugin.getString("worlds_creation_finished"));
         return true;
     }
@@ -171,23 +168,22 @@ public class BuildWorldCreator {
         }
 
         new PlayerChatInput(plugin, player, "enter_generator_name", input -> {
-            List<String> genArray;
-            if (input.contains(":")) {
-                genArray = Arrays.asList(input.split(":"));
-            } else {
-                genArray = Arrays.asList(input, input);
+            String[] generatorInfo = input.split(":");
+            if (generatorInfo.length == 1) {
+                generatorInfo = new String[]{generatorInfo[0], generatorInfo[0]};
             }
 
-            ChunkGenerator chunkGenerator = worldManager.getChunkGenerator(genArray.get(0), genArray.get(1), worldName);
+            ChunkGenerator chunkGenerator = worldManager.getChunkGenerator(generatorInfo[0], generatorInfo[1], worldName);
             if (chunkGenerator == null) {
                 player.sendMessage(plugin.getString("worlds_import_unknown_generator"));
                 XSound.ENTITY_ITEM_BREAK.play(player);
                 return;
-            } else {
-                plugin.getLogger().info("Using custom world generator: " + input);
             }
 
-            BuildWorld buildWorld = new BuildWorld(
+            this.customGenerator = new CustomGenerator(generatorInfo[0], chunkGenerator);
+            plugin.getLogger().info("Using custom world generator: " + customGenerator.getName());
+
+            worldManager.getBuildWorlds().add(new BuildWorld(
                     plugin,
                     worldName,
                     player.getName(),
@@ -195,14 +191,14 @@ public class BuildWorldCreator {
                     WorldType.CUSTOM,
                     System.currentTimeMillis(),
                     privateWorld,
-                    input
-            );
-            worldManager.getBuildWorlds().add(buildWorld);
+                    customGenerator
+            ));
 
             player.sendMessage(plugin.getString("worlds_world_creation_started")
                     .replace("%world%", worldName)
                     .replace("%type%", worldType.getName()));
             generateBukkitWorld();
+            teleportAfterCreation(player);
             player.sendMessage(plugin.getString("worlds_creation_finished"));
         });
         return true;
@@ -235,7 +231,8 @@ public class BuildWorldCreator {
                 player.getUniqueId(),
                 WorldType.TEMPLATE,
                 System.currentTimeMillis(),
-                privateWorld
+                privateWorld,
+                null
         );
         worldManager.getBuildWorlds().add(buildWorld);
 
@@ -246,6 +243,7 @@ public class BuildWorldCreator {
         Bukkit.createWorld(WorldCreator.name(worldName)
                 .type(org.bukkit.WorldType.FLAT)
                 .generateStructures(false));
+        teleportAfterCreation(player);
         player.sendMessage(plugin.getString("worlds_creation_finished"));
         return true;
     }
@@ -316,9 +314,10 @@ public class BuildWorldCreator {
                 break;
 
             case CUSTOM:
-                if (generator != null) {
-                    worldCreator.generator(generator);
+                if (customGenerator != null) {
+                    worldCreator.generator(customGenerator.getChunkGenerator());
                 }
+                // Drop through
 
             default:
                 worldCreator.generateStructures(true);
@@ -339,5 +338,19 @@ public class BuildWorldCreator {
         }
 
         return bukkitWorld;
+    }
+
+    private void teleportAfterCreation(Player player) {
+        if (!plugin.getConfigValues().isTeleportAfterCreation()) {
+            return;
+        }
+
+        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        if (buildWorld == null) {
+            return;
+        }
+
+        buildWorld.manageUnload();
+        worldManager.teleport(player, buildWorld);
     }
 }

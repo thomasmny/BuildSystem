@@ -211,7 +211,6 @@ public class Messages {
         setMessage(sb, config, "worlds_addbuilder_error", "%prefix% &cError: Please try again!");
         setMessage(sb, config, "worlds_addbuilder_unknown_world", "%prefix% &cUnknown world.");
         setMessage(sb, config, "worlds_addbuilder_player_not_found", "%prefix% &cThat player was not found.");
-        setMessage(sb, config, "worlds_addbuilder_not_creator", "%prefix% &cYou are not the creator of this world.");
         setMessage(sb, config, "worlds_addbuilder_already_creator", "%prefix% &cYou are already the creator.");
         setMessage(sb, config, "worlds_addbuilder_already_added", "%prefix% &cThis player is already a builder.");
         setMessage(sb, config, "worlds_addbuilder_added", "%prefix% &b%builder% &7was &aadded &7as a builder.");
@@ -234,7 +233,6 @@ public class Messages {
         setMessage(sb, config, "worlds_delete_usage", "%prefix% &7Usage: &b/worlds delete <world>");
         setMessage(sb, config, "worlds_delete_unknown_world", "%prefix% &cUnknown world.");
         setMessage(sb, config, "worlds_delete_unknown_directory", "%prefix% &cError while deleting world: Directory not found!");
-        setMessage(sb, config, "worlds_delete_not_creator", "%prefix% &cYou are not the creator of this world.");
         setMessage(sb, config, "worlds_delete_error", "%prefix% &cError while deleting world: Please try again!");
         setMessage(sb, config, "worlds_delete_canceled", "%prefix% &7The deletion of &b%world% &7was canceled.");
         setMessage(sb, config, "worlds_delete_started", "%prefix% &7The deletion of &b%world% &7has started...");
@@ -319,7 +317,6 @@ public class Messages {
         setMessage(sb, config, "worlds_removebuilder_error", "%prefix% &cError: Please try again!");
         setMessage(sb, config, "worlds_removebuilder_unknown_world", "%prefix% &cUnknown world.");
         setMessage(sb, config, "worlds_removebuilder_player_not_found", "%prefix% &cThat player was not found.");
-        setMessage(sb, config, "worlds_removebuilder_not_creator", "%prefix% &cYou are not the creator of this world.");
         setMessage(sb, config, "worlds_removebuilder_not_yourself", "%prefix% &cYou cannot remove yourself as creator.");
         setMessage(sb, config, "worlds_removebuilder_not_builder", "%prefix% &cThis player is not a builder.");
         setMessage(sb, config, "worlds_removebuilder_removed", "%prefix% &b%builder% &7was &cremoved &7as a builder.");
@@ -557,7 +554,7 @@ public class Messages {
         setList(sb, config, "worldeditor_visibility_lore_private", Arrays.asList("&7&oChange the world's visibility", "", "&7&nCurrently&7: &bPrivate"));
         addLine(sb, "");
         setMessage(sb, config, "worldeditor_mobai_item", "&bMob AI");
-        setList(sb, config, "worldeditor_mobai_lore", Arrays.asList("&7&oToggle whether mobs have an AI."));
+        setList(sb, config, "worldeditor_mobai_lore", Collections.singletonList("&7&oToggle whether mobs have an AI."));
         addLine(sb, "");
         setMessage(sb, config, "worldeditor_blockinteractions_item", "&bBlock Interactions");
         setList(sb, config, "worldeditor_blockinteractions_lore", Arrays.asList("&7&oToggle whether interactions", "&7&owith blocks are cancelled."));

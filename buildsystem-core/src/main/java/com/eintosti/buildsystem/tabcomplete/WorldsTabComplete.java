@@ -9,6 +9,7 @@
 package com.eintosti.buildsystem.tabcomplete;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.command.subcommand.Argument;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.generator.Generator;
@@ -19,8 +20,10 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -48,8 +51,8 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
 
         switch (args.length) {
             case 1: {
-                for (Argument argument : Argument.values()) {
-                    String command = argument.getCommand();
+                for (WorldsArgument argument : WorldsArgument.values()) {
+                    String command = argument.getName();
                     String permission = argument.getPermission();
 
                     if (permission == null || player.hasPermission(permission)) {
@@ -74,6 +77,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                     case "unimport":
                         worldManager.getBuildWorlds().stream()
                                 .filter(world -> player.hasPermission(world.getPermission()) || world.getPermission().equalsIgnoreCase("-"))
+                                .filter(world -> worldManager.isPermitted(player, "buildsystem." + args[0].toLowerCase(), world.getName()))
                                 .forEach(world -> addArgument(args[1], world.getName(), arrayList));
                         break;
 
@@ -81,7 +85,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                     case "delete":
                     case "removebuilder":
                         worldManager.getBuildWorlds().stream()
-                                .filter(world -> world.isCreator(player) || player.hasPermission(BuildSystem.ADMIN_PERMISSION))
+                                .filter(world -> worldManager.isPermitted(player, "buildsystem." + args[0].toLowerCase(), world.getName()))
                                 .forEach(world -> addArgument(args[1], world.getName(), arrayList));
                         break;
 
@@ -145,11 +149,12 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
         return arrayList;
     }
 
-    private enum Argument {
+    public enum WorldsArgument implements Argument {
         ADD_BUILDER("addBuilder", "buildsystem.addbuilder"),
         BUILDERS("builders", "buildsystem.builders"),
         DELETE("delete", "buildsystem.delete"),
         EDIT("edit", "buildsystem.edit"),
+        HELP("help", null),
         IMPORT("import", "buildsystem.import"),
         IMPORT_ALL("importAll", "buildsystem.import.all"),
         INFO("info", "buildsystem.info"),
@@ -169,15 +174,25 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
         private final String command;
         private final String permission;
 
-        Argument(String command, String permission) {
+        WorldsArgument(String command, String permission) {
             this.command = command;
             this.permission = permission;
         }
 
-        public String getCommand() {
+        @Nullable
+        public static WorldsArgument matchArgument(String input) {
+            return Arrays.stream(values())
+                    .filter(argument -> argument.getName().equalsIgnoreCase(input))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        @Override
+        public String getName() {
             return command;
         }
 
+        @Override
         public String getPermission() {
             return permission;
         }

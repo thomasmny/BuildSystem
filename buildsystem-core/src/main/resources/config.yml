@@ -37,6 +37,9 @@ world:
       block-breaking: true
       block-placement: true
       block-interactions: true
+      builders-enabled:
+        public: false
+        private: true
   lock-weather: true
   import-all:
     delay: 30

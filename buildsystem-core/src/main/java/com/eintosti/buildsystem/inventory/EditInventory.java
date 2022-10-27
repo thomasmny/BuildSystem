@@ -11,6 +11,8 @@ package com.eintosti.buildsystem.inventory;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.command.subcommand.worlds.SetPermissionSubCommand;
+import com.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
 import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.inventory.FilteredWorldsInventory.Visibility;
 import com.eintosti.buildsystem.manager.InventoryManager;
@@ -364,13 +366,13 @@ public class EditInventory implements Listener {
             case 41:
                 if (hasPermission(player, "buildsystem.edit.project")) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
-                    plugin.getWorldsCommand().getProjectInput(player, false);
+                    new SetProjectSubCommand(plugin, buildWorld.getName()).getProjectInput(player, buildWorld, false);
                 }
                 return;
             case 42:
                 if (hasPermission(player, "buildsystem.edit.permission")) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
-                    plugin.getWorldsCommand().getPermissionInput(player, false);
+                    new SetPermissionSubCommand(plugin, buildWorld.getName()).getPermissionInput(player, buildWorld, false);
                 }
                 return;
 
