@@ -13,6 +13,7 @@ import com.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.object.settings.Settings;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -45,7 +46,7 @@ public class PlayerInventoryClearListener implements Listener {
         }
 
         PlayerInventory playerInventory = player.getInventory();
-        ItemStack navigatorItem = inventoryManager.getItemStack(plugin.getConfigValues().getNavigatorItem(), plugin.getString("navigator_item"));
+        ItemStack navigatorItem = inventoryManager.getItemStack(plugin.getConfigValues().getNavigatorItem(), Messages.getString("navigator_item"));
 
         event.getNavigatorSlots().forEach(slot -> playerInventory.setItem(slot, navigatorItem));
     }

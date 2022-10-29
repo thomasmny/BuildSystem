@@ -44,8 +44,7 @@ public class GamemodeTabComplete extends ArgumentSorter implements TabCompleter 
 
         if (args.length == 1) {
             for (GameMode gameMode : GameMode.values()) {
-                String gameModeName = gameMode.name();
-                addArgument(args[0], gameModeName, arrayList);
+                addArgument(args[0], gameMode.name().toLowerCase(), arrayList);
             }
         } else if (args.length == 2) {
             if (!player.hasPermission("buildsystem.gamemode.others")) {

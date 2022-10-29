@@ -12,6 +12,7 @@ import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -57,30 +58,30 @@ public class BlockPlaceListener implements Listener {
         }
 
         plugin.getCustomBlocks().setBlock(event,
-                plugin.getString("blocks_full_oak_barch"),
-                plugin.getString("blocks_full_spruce_barch"),
-                plugin.getString("blocks_full_birch_barch"),
-                plugin.getString("blocks_full_jungle_barch"),
-                plugin.getString("blocks_full_acacia_barch"),
-                plugin.getString("blocks_full_dark_oak_barch"),
-                plugin.getString("blocks_red_mushroom"),
-                plugin.getString("blocks_brown_mushroom"),
-                plugin.getString("blocks_full_mushroom_stem"),
-                plugin.getString("blocks_mushroom_stem"),
-                plugin.getString("blocks_mushroom_block"),
-                plugin.getString("blocks_smooth_stone"),
-                plugin.getString("blocks_double_stone_slab"),
-                plugin.getString("blocks_smooth_sandstone"),
-                plugin.getString("blocks_smooth_red_sandstone"),
-                plugin.getString("blocks_powered_redstone_lamp"),
-                plugin.getString("blocks_burning_furnace"),
-                plugin.getString("blocks_piston_head"),
-                plugin.getString("blocks_command_block"),
-                plugin.getString("blocks_barrier"),
-                plugin.getString("blocks_mob_spawner"),
-                plugin.getString("blocks_nether_portal"),
-                plugin.getString("blocks_end_portal"),
-                plugin.getString("blocks_dragon_egg")
+                Messages.getString("blocks_full_oak_barch"),
+                Messages.getString("blocks_full_spruce_barch"),
+                Messages.getString("blocks_full_birch_barch"),
+                Messages.getString("blocks_full_jungle_barch"),
+                Messages.getString("blocks_full_acacia_barch"),
+                Messages.getString("blocks_full_dark_oak_barch"),
+                Messages.getString("blocks_red_mushroom"),
+                Messages.getString("blocks_brown_mushroom"),
+                Messages.getString("blocks_full_mushroom_stem"),
+                Messages.getString("blocks_mushroom_stem"),
+                Messages.getString("blocks_mushroom_block"),
+                Messages.getString("blocks_smooth_stone"),
+                Messages.getString("blocks_double_stone_slab"),
+                Messages.getString("blocks_smooth_sandstone"),
+                Messages.getString("blocks_smooth_red_sandstone"),
+                Messages.getString("blocks_powered_redstone_lamp"),
+                Messages.getString("blocks_burning_furnace"),
+                Messages.getString("blocks_piston_head"),
+                Messages.getString("blocks_command_block"),
+                Messages.getString("blocks_barrier"),
+                Messages.getString("blocks_mob_spawner"),
+                Messages.getString("blocks_nether_portal"),
+                Messages.getString("blocks_end_portal"),
+                Messages.getString("blocks_dragon_egg")
         );
 
         if (isBuildWorld && hadToDisablePhysics) {

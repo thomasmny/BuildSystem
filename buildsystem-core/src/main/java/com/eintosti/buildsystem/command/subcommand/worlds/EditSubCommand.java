@@ -15,6 +15,7 @@ import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.entity.Player;
 
 /**
@@ -41,13 +42,13 @@ public class EditSubCommand extends SubCommand {
         }
 
         if (args.length > 2) {
-            player.sendMessage(plugin.getString("worlds_edit_usage"));
+            Messages.sendMessage(player, "worlds_edit_usage");
             return;
         }
 
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
-            player.sendMessage(plugin.getString("worlds_edit_unknown_world"));
+            Messages.sendMessage(player, "worlds_edit_unknown_world");
             return;
         }
 
@@ -56,7 +57,7 @@ public class EditSubCommand extends SubCommand {
             plugin.getEditInventory().openInventory(player, buildWorld);
         } else {
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-            Titles.sendTitle(player, 5, 70, 20, " ", plugin.getString("world_not_loaded"));
+            Titles.sendTitle(player, 5, 70, 20, " ", Messages.getString("world_not_loaded"));
         }
     }
 }

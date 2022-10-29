@@ -13,6 +13,7 @@ import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -38,27 +39,27 @@ public class TeleportSubCommand extends SubCommand {
         }
 
         if (args.length != 2) {
-            player.sendMessage(plugin.getString("worlds_tp_usage"));
+            Messages.sendMessage(player, "worlds_tp_usage");
             return;
         }
 
         WorldManager worldManager = plugin.getWorldManager();
         BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
         if (buildWorld == null) {
-            player.sendMessage(plugin.getString("worlds_tp_unknown_world"));
+            Messages.sendMessage(player, "worlds_tp_unknown_world");
             return;
         }
 
         World bukkitWorld = Bukkit.getServer().getWorld(args[1]);
         if (buildWorld.isLoaded() && bukkitWorld == null) {
-            player.sendMessage(plugin.getString("worlds_tp_unknown_world"));
+            Messages.sendMessage(player, "worlds_tp_unknown_world");
             return;
         }
 
         if (player.hasPermission(buildWorld.getPermission()) || buildWorld.getPermission().equalsIgnoreCase("-")) {
             worldManager.teleport(player, buildWorld);
         } else {
-            player.sendMessage(plugin.getString("worlds_tp_entry_forbidden"));
+            Messages.sendMessage(player, "worlds_tp_entry_forbidden");
         }
     }
 }

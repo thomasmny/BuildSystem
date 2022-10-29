@@ -11,6 +11,7 @@ package com.eintosti.buildsystem.command;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.manager.WorldManager;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -18,6 +19,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.AbstractMap;
 
 /**
  * @author einTosti
@@ -39,7 +42,7 @@ public class TimeCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(plugin.getString("sender_not_player"));
+            plugin.getLogger().warning(Messages.getString("sender_not_player"));
             return true;
         }
 
@@ -57,20 +60,20 @@ public class TimeCommand implements CommandExecutor {
                 switch (args.length) {
                     case 0: {
                         world.setTime(configValues.getNoonTime());
-                        player.sendMessage(plugin.getString("day_set").replace("%world%", world.getName()));
+                        Messages.sendMessage(player, "day_set", new AbstractMap.SimpleEntry<>("%world%", world.getName()));
                         break;
                     }
                     case 1: {
                         if (world == null) {
-                            player.sendMessage(plugin.getString("day_unknown_world"));
+                            Messages.sendMessage(player, "day_unknown_world");
                             return true;
                         }
                         world.setTime(configValues.getNoonTime());
-                        player.sendMessage(plugin.getString("day_set").replace("%world%", world.getName()));
+                        Messages.sendMessage(player, "day_set", new AbstractMap.SimpleEntry<>("%world%", world.getName()));
                         break;
                     }
                     default:
-                        player.sendMessage(plugin.getString("day_usage"));
+                        Messages.sendMessage(player, "day_usage");
                         break;
                 }
                 break;
@@ -85,20 +88,20 @@ public class TimeCommand implements CommandExecutor {
                 switch (args.length) {
                     case 0: {
                         world.setTime(configValues.getNightTime());
-                        player.sendMessage(plugin.getString("night_set").replace("%world%", world.getName()));
+                        Messages.sendMessage(player, "night_set", new AbstractMap.SimpleEntry<>("%world%", world.getName()));
                         break;
                     }
                     case 1: {
                         if (world == null) {
-                            player.sendMessage(plugin.getString("night_unknown_world"));
+                            Messages.sendMessage(player, "night_unknown_world");
                             return true;
                         }
                         world.setTime(configValues.getNightTime());
-                        player.sendMessage(plugin.getString("night_set").replace("%world%", world.getName()));
+                        Messages.sendMessage(player, "night_set", new AbstractMap.SimpleEntry<>("%world%", world.getName()));
                         break;
                     }
                     default:
-                        player.sendMessage(plugin.getString("night_usage"));
+                        Messages.sendMessage(player, "night_usage");
                         break;
                 }
                 break;

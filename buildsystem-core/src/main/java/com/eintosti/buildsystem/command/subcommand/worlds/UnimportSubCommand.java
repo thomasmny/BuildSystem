@@ -13,7 +13,10 @@ import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.entity.Player;
+
+import java.util.AbstractMap;
 
 /**
  * @author einTosti
@@ -39,17 +42,17 @@ public class UnimportSubCommand extends SubCommand {
         }
 
         if (args.length > 2) {
-            player.sendMessage(plugin.getString("worlds_unimport_usage"));
+            Messages.sendMessage(player, "worlds_unimport_usage");
             return;
         }
 
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
-            player.sendMessage(plugin.getString("worlds_unimport_unknown_world"));
+            Messages.sendMessage(player, "worlds_unimport_unknown_world");
             return;
         }
 
         worldManager.unimportWorld(buildWorld, true);
-        player.sendMessage(plugin.getString("worlds_unimport_finished").replace("%world%", buildWorld.getName()));
+        Messages.sendMessage(player, "worlds_unimport_finished", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
     }
 }

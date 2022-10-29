@@ -12,6 +12,7 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.eintosti.buildsystem.object.world.data.WorldType;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -37,32 +38,32 @@ public class SetupInventory implements Listener {
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 45, plugin.getString("setup_title"));
+        Inventory inventory = Bukkit.createInventory(null, 45, Messages.getString("setup_title"));
         fillGuiWithGlass(player, inventory);
 
-        inventoryManager.addUrlSkull(inventory, 10, plugin.getString("setup_create_item_name"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158", plugin.getStringList("setup_create_item_lore"));
-        inventoryManager.addUrlSkull(inventory, 19, plugin.getString("setup_default_item_name"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158", plugin.getStringList("setup_default_item_lore"));
-        inventoryManager.addUrlSkull(inventory, 28, plugin.getString("setup_status_item_name"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158", plugin.getStringList("setup_status_item_name_lore"));
+        inventoryManager.addUrlSkull(inventory, 10, Messages.getString("setup_create_item_name"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158", Messages.getStringList("setup_create_item_lore"));
+        inventoryManager.addUrlSkull(inventory, 19, Messages.getString("setup_default_item_name"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158", Messages.getStringList("setup_default_item_lore"));
+        inventoryManager.addUrlSkull(inventory, 28, Messages.getString("setup_status_item_name"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158", Messages.getStringList("setup_status_item_name_lore"));
 
-        inventoryManager.addItemStack(inventory, 11, inventoryManager.getCreateItem(WorldType.NORMAL), plugin.getString("setup_normal_world"));
-        inventoryManager.addItemStack(inventory, 12, inventoryManager.getCreateItem(WorldType.FLAT), plugin.getString("setup_flat_world"));
-        inventoryManager.addItemStack(inventory, 13, inventoryManager.getCreateItem(WorldType.NETHER), plugin.getString("setup_nether_world"));
-        inventoryManager.addItemStack(inventory, 14, inventoryManager.getCreateItem(WorldType.END), plugin.getString("setup_end_world"));
-        inventoryManager.addItemStack(inventory, 15, inventoryManager.getCreateItem(WorldType.VOID), plugin.getString("setup_void_world"));
+        inventoryManager.addItemStack(inventory, 11, inventoryManager.getCreateItem(WorldType.NORMAL), Messages.getString("setup_normal_world"));
+        inventoryManager.addItemStack(inventory, 12, inventoryManager.getCreateItem(WorldType.FLAT), Messages.getString("setup_flat_world"));
+        inventoryManager.addItemStack(inventory, 13, inventoryManager.getCreateItem(WorldType.NETHER), Messages.getString("setup_nether_world"));
+        inventoryManager.addItemStack(inventory, 14, inventoryManager.getCreateItem(WorldType.END), Messages.getString("setup_end_world"));
+        inventoryManager.addItemStack(inventory, 15, inventoryManager.getCreateItem(WorldType.VOID), Messages.getString("setup_void_world"));
 
-        inventoryManager.addItemStack(inventory, 20, inventoryManager.getDefaultItem(WorldType.NORMAL), plugin.getString("setup_normal_world"));
-        inventoryManager.addItemStack(inventory, 21, inventoryManager.getDefaultItem(WorldType.FLAT), plugin.getString("setup_flat_world"));
-        inventoryManager.addItemStack(inventory, 22, inventoryManager.getDefaultItem(WorldType.NETHER), plugin.getString("setup_nether_world"));
-        inventoryManager.addItemStack(inventory, 23, inventoryManager.getDefaultItem(WorldType.END), plugin.getString("setup_end_world"));
-        inventoryManager.addItemStack(inventory, 24, inventoryManager.getDefaultItem(WorldType.VOID), plugin.getString("setup_void_world"));
-        inventoryManager.addItemStack(inventory, 25, inventoryManager.getDefaultItem(WorldType.IMPORTED), plugin.getString("setup_imported_world"));
+        inventoryManager.addItemStack(inventory, 20, inventoryManager.getDefaultItem(WorldType.NORMAL), Messages.getString("setup_normal_world"));
+        inventoryManager.addItemStack(inventory, 21, inventoryManager.getDefaultItem(WorldType.FLAT), Messages.getString("setup_flat_world"));
+        inventoryManager.addItemStack(inventory, 22, inventoryManager.getDefaultItem(WorldType.NETHER), Messages.getString("setup_nether_world"));
+        inventoryManager.addItemStack(inventory, 23, inventoryManager.getDefaultItem(WorldType.END), Messages.getString("setup_end_world"));
+        inventoryManager.addItemStack(inventory, 24, inventoryManager.getDefaultItem(WorldType.VOID), Messages.getString("setup_void_world"));
+        inventoryManager.addItemStack(inventory, 25, inventoryManager.getDefaultItem(WorldType.IMPORTED), Messages.getString("setup_imported_world"));
 
-        inventoryManager.addItemStack(inventory, 29, inventoryManager.getStatusItem(WorldStatus.NOT_STARTED), plugin.getString("status_not_started"));
-        inventoryManager.addItemStack(inventory, 30, inventoryManager.getStatusItem(WorldStatus.IN_PROGRESS), plugin.getString("status_in_progress"));
-        inventoryManager.addItemStack(inventory, 31, inventoryManager.getStatusItem(WorldStatus.ALMOST_FINISHED), plugin.getString("status_almost_finished"));
-        inventoryManager.addItemStack(inventory, 32, inventoryManager.getStatusItem(WorldStatus.FINISHED), plugin.getString("status_finished"));
-        inventoryManager.addItemStack(inventory, 33, inventoryManager.getStatusItem(WorldStatus.ARCHIVE), plugin.getString("status_archive"));
-        inventoryManager.addItemStack(inventory, 34, inventoryManager.getStatusItem(WorldStatus.HIDDEN), plugin.getString("status_hidden"));
+        inventoryManager.addItemStack(inventory, 29, inventoryManager.getStatusItem(WorldStatus.NOT_STARTED), Messages.getString("status_not_started"));
+        inventoryManager.addItemStack(inventory, 30, inventoryManager.getStatusItem(WorldStatus.IN_PROGRESS), Messages.getString("status_in_progress"));
+        inventoryManager.addItemStack(inventory, 31, inventoryManager.getStatusItem(WorldStatus.ALMOST_FINISHED), Messages.getString("status_almost_finished"));
+        inventoryManager.addItemStack(inventory, 32, inventoryManager.getStatusItem(WorldStatus.FINISHED), Messages.getString("status_finished"));
+        inventoryManager.addItemStack(inventory, 33, inventoryManager.getStatusItem(WorldStatus.ARCHIVE), Messages.getString("status_archive"));
+        inventoryManager.addItemStack(inventory, 34, inventoryManager.getStatusItem(WorldStatus.HIDDEN), Messages.getString("status_hidden"));
 
         return inventory;
     }

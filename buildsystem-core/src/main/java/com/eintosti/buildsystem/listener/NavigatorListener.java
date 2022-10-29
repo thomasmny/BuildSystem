@@ -23,6 +23,7 @@ import com.eintosti.buildsystem.object.player.CachedValues;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
@@ -102,7 +103,7 @@ public class NavigatorListener implements Listener {
         }
 
         XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-        if (xMaterial != configValues.getNavigatorItem() || !itemMeta.getDisplayName().equals(plugin.getString("navigator_item"))) {
+        if (xMaterial != configValues.getNavigatorItem() || !itemMeta.getDisplayName().equals(Messages.getString("navigator_item"))) {
             return;
         }
 
@@ -123,14 +124,14 @@ public class NavigatorListener implements Listener {
             XSound.BLOCK_CHEST_OPEN.play(player);
         } else { // NEW
             if (playerManager.getOpenNavigator().contains(player)) {
-                player.sendMessage(plugin.getString("worlds_navigator_open"));
+                Messages.sendMessage(player, "worlds_navigator_open");
                 return;
             }
 
             summonNewNavigator(player);
 
-            String findItemName = plugin.getString("navigator_item");
-            ItemStack replaceItem = inventoryManager.getItemStack(XMaterial.BARRIER, plugin.getString("barrier_item"));
+            String findItemName = Messages.getString("navigator_item");
+            ItemStack replaceItem = inventoryManager.getItemStack(XMaterial.BARRIER, Messages.getString("barrier_item"));
             inventoryManager.replaceItem(player, findItemName, configValues.getNavigatorItem(), replaceItem);
         }
     }
@@ -257,7 +258,7 @@ public class NavigatorListener implements Listener {
             return false;
         }
 
-        return itemMeta.getDisplayName().equals(plugin.getString("barrier_item"));
+        return itemMeta.getDisplayName().equals(Messages.getString("barrier_item"));
     }
 
     /**

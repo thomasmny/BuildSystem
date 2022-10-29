@@ -19,6 +19,7 @@ import com.eintosti.buildsystem.manager.SpawnManager;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.eintosti.buildsystem.object.world.data.WorldType;
 import com.eintosti.buildsystem.object.world.generator.CustomGenerator;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.util.UUIDFetcher;
 import com.eintosti.buildsystem.util.exception.UnexpectedEnumValueException;
 import org.bukkit.Bukkit;
@@ -33,6 +34,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.SimpleDateFormat;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -592,13 +594,13 @@ public class BuildWorld implements ConfigurationSerializable {
     public String getDifficultyName() {
         switch (difficulty) {
             case PEACEFUL:
-                return plugin.getString("difficulty_peaceful");
+                return Messages.getString("difficulty_peaceful");
             case EASY:
-                return plugin.getString("difficulty_easy");
+                return Messages.getString("difficulty_easy");
             case NORMAL:
-                return plugin.getString("difficulty_normal");
+                return Messages.getString("difficulty_normal");
             case HARD:
-                return plugin.getString("difficulty_hard");
+                return Messages.getString("difficulty_hard");
             default:
                 return "-";
         }
@@ -657,7 +659,7 @@ public class BuildWorld implements ConfigurationSerializable {
      * @return The list of builders which have been added to the given world as a string
      */
     public String getBuildersInfo() {
-        String template = plugin.getString("world_item_builders_builder_template");
+        String template = Messages.getString("world_item_builders_builder_template");
         List<String> builderNames = new ArrayList<>();
 
         if (configValues.isCreatorIsBuilder()) {
@@ -870,7 +872,7 @@ public class BuildWorld implements ConfigurationSerializable {
         }
 
         player.closeInventory();
-        Titles.sendTitle(player, 5, 70, 20, " ", plugin.getString("loading_world").replace("%world%", name));
+        Titles.sendTitle(player, 5, 70, 20, " ", Messages.getString("loading_world", new AbstractMap.SimpleEntry<>("%world%", name)));
 
         load();
     }

@@ -12,6 +12,7 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.SpawnManager;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -19,6 +20,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.AbstractMap;
 
 /**
  * @author einTosti
@@ -39,7 +42,7 @@ public class SpawnCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(plugin.getString("sender_not_player"));
+            plugin.getLogger().warning(Messages.getString("sender_not_player"));
             return true;
         }
 
@@ -48,15 +51,15 @@ public class SpawnCommand implements CommandExecutor {
         switch (args.length) {
             case 0:
                 if (!spawnManager.teleport(player)) {
-                    player.sendMessage(plugin.getString("spawn_unavailable"));
+                    Messages.sendMessage(player, "spawn_unavailable");
                 } else if (plugin.getConfigValues().isSpawnTeleportMessage()) {
-                    player.sendMessage(plugin.getString("spawn_teleported"));
+                    Messages.sendMessage(player, "spawn_teleported");
                 }
                 break;
 
             case 1:
                 if (!player.hasPermission("buildsystem.spawn")) {
-                    player.sendMessage(plugin.getString("spawn_usage"));
+                    Messages.sendMessage(player, "spawn_usage");
                     return true;
                 }
 
@@ -67,33 +70,31 @@ public class SpawnCommand implements CommandExecutor {
                         BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
 
                         if (buildWorld == null) {
-                            player.sendMessage(plugin.getString("spawn_world_not_imported"));
+                            Messages.sendMessage(player, "spawn_world_not_imported");
                             return true;
                         }
 
                         spawnManager.set(playerLocation, buildWorld.getName());
-                        player.sendMessage(plugin.getString("spawn_set")
-                                .replace("%x%", round(playerLocation.getX()))
-                                .replace("%y%", round(playerLocation.getY()))
-                                .replace("%z%", round(playerLocation.getZ()))
-                                .replace("%world%", playerLocation.getWorld().getName()));
+                        Messages.sendMessage(player, "spawn_set",
+                                new AbstractMap.SimpleEntry<>("%x%", round(playerLocation.getX())),
+                                new AbstractMap.SimpleEntry<>("%y%", round(playerLocation.getY())),
+                                new AbstractMap.SimpleEntry<>("%z%", round(playerLocation.getZ())),
+                                new AbstractMap.SimpleEntry<>("%world%", playerLocation.getWorld().getName())
+                        );
                         break;
                     case "remove":
                         spawnManager.remove();
-                        player.sendMessage(plugin.getString("spawn_remove"));
+                        Messages.sendMessage(player, "spawn_remove");
                         break;
                     default:
-                        player.sendMessage(plugin.getString("spawn_admin"));
+                        Messages.sendMessage(player, "spawn_admin");
                         break;
                 }
                 break;
 
             default:
-                if (player.hasPermission("buildsystem.spawn")) {
-                    player.sendMessage(plugin.getString("spawn_admin"));
-                } else {
-                    player.sendMessage(plugin.getString("spawn_usage"));
-                }
+                String key = player.hasPermission("buildsystem.spawn") ? "spawn_admin" : "spawn_usage";
+                Messages.sendMessage(player, key);
                 break;
         }
         return true;

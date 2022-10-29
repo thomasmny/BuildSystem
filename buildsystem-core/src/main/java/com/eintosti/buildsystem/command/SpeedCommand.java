@@ -10,11 +10,14 @@ package com.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.AbstractMap;
 
 /**
  * @author einTosti
@@ -31,7 +34,7 @@ public class SpeedCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(plugin.getString("sender_not_player"));
+            plugin.getLogger().warning(Messages.getString("sender_not_player"));
             return true;
         }
 
@@ -65,12 +68,12 @@ public class SpeedCommand implements CommandExecutor {
                         setSpeed(player, 1.0f, speedString);
                         break;
                     default:
-                        player.sendMessage(plugin.getString("speed_usage"));
+                        Messages.sendMessage(player, "speed_usage");
                         break;
                 }
                 break;
             default:
-                player.sendMessage(plugin.getString("speed_usage"));
+                Messages.sendMessage(player, "speed_usage");
                 break;
         }
 
@@ -80,10 +83,10 @@ public class SpeedCommand implements CommandExecutor {
     private void setSpeed(Player player, float speed, String speedString) {
         if (player.isFlying()) {
             player.setFlySpeed(speed - 0.1f);
-            player.sendMessage(plugin.getString("speed_set_flying").replace("%speed%", speedString));
+            Messages.sendMessage(player, "speed_set_flying", new AbstractMap.SimpleEntry<>("%speed%", speedString));
         } else {
             player.setWalkSpeed(speed);
-            player.sendMessage(plugin.getString("speed_set_walking").replace("%speed%", speedString));
+            Messages.sendMessage(player, "speed_set_walking", new AbstractMap.SimpleEntry<>("%speed%", speedString));
         }
     }
 }

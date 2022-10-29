@@ -14,6 +14,7 @@ import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
 import org.bukkit.entity.Player;
 
@@ -41,13 +42,13 @@ public class RenameSubCommand extends SubCommand {
         }
 
         if (args.length > 2) {
-            player.sendMessage(plugin.getString("worlds_rename_usage"));
+            Messages.sendMessage(player, "worlds_rename_usage");
             return;
         }
 
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
-            player.sendMessage(plugin.getString("worlds_rename_unknown_world"));
+            Messages.sendMessage(player, "worlds_rename_unknown_world");
             return;
         }
 

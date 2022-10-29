@@ -18,6 +18,7 @@ import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.object.navigator.NavigatorType;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.settings.WorldSort;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -54,25 +55,25 @@ public class SettingsInventory implements Listener {
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 45, plugin.getString("settings_title"));
+        Inventory inventory = Bukkit.createInventory(null, 45, Messages.getString("settings_title"));
         fillGuiWithGlass(player, inventory);
 
         Settings settings = settingsManager.getSettings(player);
         addDesignItem(inventory, player);
         addClearInventoryItem(inventory, player);
-        addSettingsItem(inventory, 13, XMaterial.DIAMOND_AXE, settings.isDisableInteract(), plugin.getString("settings_disableinteract_item"), plugin.getStringList("settings_disableinteract_lore"));
-        addSettingsItem(inventory, 14, XMaterial.ENDER_EYE, settings.isHidePlayers(), plugin.getString("settings_hideplayers_item"), plugin.getStringList("settings_hideplayers_lore"));
-        addSettingsItem(inventory, 15, XMaterial.OAK_SIGN, settings.isInstantPlaceSigns(), plugin.getString("settings_instantplacesigns_item"), plugin.getStringList("settings_instantplacesigns_lore"));
-        addSettingsItem(inventory, 20, XMaterial.SLIME_BLOCK, settings.isKeepNavigator(), plugin.getString("settings_keep_navigator_item"), plugin.getStringList("settings_keep_navigator_lore"));
-        addSettingsItem(inventory, 21, configValues.getNavigatorItem(), settings.getNavigatorType().equals(NavigatorType.NEW), plugin.getString("settings_new_navigator_item"), plugin.getStringList("settings_new_navigator_lore"));
-        addSettingsItem(inventory, 22, XMaterial.GOLDEN_CARROT, settings.isNightVision(), plugin.getString("settings_nightvision_item"), plugin.getStringList("settings_nightvision_lore"));
-        addSettingsItem(inventory, 23, XMaterial.BRICKS, settings.isNoClip(), plugin.getString("settings_no_clip_item"), plugin.getStringList("settings_no_clip_lore"));
-        addSettingsItem(inventory, 24, XMaterial.IRON_TRAPDOOR, settings.isTrapDoor(), plugin.getString("settings_open_trapdoors_item"), plugin.getStringList("settings_open_trapdoors_lore"));
-        addSettingsItem(inventory, 29, XMaterial.FERN, settings.isPlacePlants(), plugin.getString("settings_placeplants_item"), plugin.getStringList("settings_placeplants_lore"));
-        addSettingsItem(inventory, 30, XMaterial.PAPER, settings.isScoreboard(), configValues.isScoreboard() ? plugin.getString("settings_scoreboard_item") : plugin.getString("settings_scoreboard_disabled_item"),
-                configValues.isScoreboard() ? plugin.getStringList("settings_scoreboard_lore") : plugin.getStringList("settings_scoreboard_disabled_lore"));
-        addSettingsItem(inventory, 31, getSlabBreakingMaterial(), settings.isSlabBreaking(), plugin.getString("settings_slab_breaking_item"), plugin.getStringList("settings_slab_breaking_lore"));
-        addSettingsItem(inventory, 32, XMaterial.MAGMA_CREAM, settings.isSpawnTeleport(), plugin.getString("settings_spawnteleport_item"), plugin.getStringList("settings_spawnteleport_lore"));
+        addSettingsItem(inventory, 13, XMaterial.DIAMOND_AXE, settings.isDisableInteract(), Messages.getString("settings_disableinteract_item"), Messages.getStringList("settings_disableinteract_lore"));
+        addSettingsItem(inventory, 14, XMaterial.ENDER_EYE, settings.isHidePlayers(), Messages.getString("settings_hideplayers_item"), Messages.getStringList("settings_hideplayers_lore"));
+        addSettingsItem(inventory, 15, XMaterial.OAK_SIGN, settings.isInstantPlaceSigns(), Messages.getString("settings_instantplacesigns_item"), Messages.getStringList("settings_instantplacesigns_lore"));
+        addSettingsItem(inventory, 20, XMaterial.SLIME_BLOCK, settings.isKeepNavigator(), Messages.getString("settings_keep_navigator_item"), Messages.getStringList("settings_keep_navigator_lore"));
+        addSettingsItem(inventory, 21, configValues.getNavigatorItem(), settings.getNavigatorType().equals(NavigatorType.NEW), Messages.getString("settings_new_navigator_item"), Messages.getStringList("settings_new_navigator_lore"));
+        addSettingsItem(inventory, 22, XMaterial.GOLDEN_CARROT, settings.isNightVision(), Messages.getString("settings_nightvision_item"), Messages.getStringList("settings_nightvision_lore"));
+        addSettingsItem(inventory, 23, XMaterial.BRICKS, settings.isNoClip(), Messages.getString("settings_no_clip_item"), Messages.getStringList("settings_no_clip_lore"));
+        addSettingsItem(inventory, 24, XMaterial.IRON_TRAPDOOR, settings.isTrapDoor(), Messages.getString("settings_open_trapdoors_item"), Messages.getStringList("settings_open_trapdoors_lore"));
+        addSettingsItem(inventory, 29, XMaterial.FERN, settings.isPlacePlants(), Messages.getString("settings_placeplants_item"), Messages.getStringList("settings_placeplants_lore"));
+        addSettingsItem(inventory, 30, XMaterial.PAPER, settings.isScoreboard(), configValues.isScoreboard() ? Messages.getString("settings_scoreboard_item") : Messages.getString("settings_scoreboard_disabled_item"),
+                configValues.isScoreboard() ? Messages.getStringList("settings_scoreboard_lore") : Messages.getStringList("settings_scoreboard_disabled_lore"));
+        addSettingsItem(inventory, 31, getSlabBreakingMaterial(), settings.isSlabBreaking(), Messages.getString("settings_slab_breaking_item"), Messages.getStringList("settings_slab_breaking_lore"));
+        addSettingsItem(inventory, 32, XMaterial.MAGMA_CREAM, settings.isSpawnTeleport(), Messages.getString("settings_spawnteleport_item"), Messages.getStringList("settings_spawnteleport_lore"));
         addWorldSortItem(inventory, player);
 
         return inventory;
@@ -111,15 +112,15 @@ public class SettingsInventory implements Listener {
     private void addClearInventoryItem(Inventory inventory, Player player) {
         Settings settings = settingsManager.getSettings(player);
         XMaterial xMaterial = settings.isClearInventory() ? XMaterial.MINECART : XMaterial.CHEST_MINECART;
-        addSettingsItem(inventory, 12, xMaterial, settings.isClearInventory(), plugin.getString("settings_clear_inventory_item"), plugin.getStringList("settings_clear_inventory_lore"));
+        addSettingsItem(inventory, 12, xMaterial, settings.isClearInventory(), Messages.getString("settings_clear_inventory_item"), Messages.getStringList("settings_clear_inventory_lore"));
     }
 
     private void addDesignItem(Inventory inventory, Player player) {
-        ItemStack itemStack = inventoryManager.getItemStack(inventoryManager.getColouredGlass(plugin, player), plugin.getString("settings_change_design_item"));
+        ItemStack itemStack = inventoryManager.getItemStack(inventoryManager.getColouredGlass(plugin, player), Messages.getString("settings_change_design_item"));
         ItemMeta itemMeta = itemStack.getItemMeta();
 
         itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        itemMeta.setLore(plugin.getStringList("settings_change_design_lore"));
+        itemMeta.setLore(Messages.getStringList("settings_change_design_lore"));
         itemStack.setItemMeta(itemMeta);
         itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
 
@@ -134,39 +135,39 @@ public class SettingsInventory implements Listener {
         switch (settings.getWorldSort()) {
             default: //NAME_A_TO_Z
                 url = "a67d813ae7ffe5be951a4f41f2aa619a5e3894e85ea5d4986f84949c63d7672e";
-                lore = plugin.getStringList("settings_worldsort_lore_alphabetically_name_az");
+                lore = Messages.getStringList("settings_worldsort_lore_alphabetically_name_az");
                 break;
             case NAME_Z_TO_A:
                 url = "90582b9b5d97974b11461d63eced85f438a3eef5dc3279f9c47e1e38ea54ae8d";
-                lore = plugin.getStringList("settings_worldsort_lore_alphabetically_name_za");
+                lore = Messages.getStringList("settings_worldsort_lore_alphabetically_name_za");
                 break;
             case PROJECT_A_TO_Z:
                 url = "2ac58b1a3b53b9481e317a1ea4fc5eed6bafca7a25e741a32e4e3c2841278c";
-                lore = plugin.getStringList("settings_worldsort_lore_alphabetically_project_az");
+                lore = Messages.getStringList("settings_worldsort_lore_alphabetically_project_az");
                 break;
             case PROJECT_Z_TO_A:
                 url = "4e91200df1cae51acc071f85c7f7f5b8449d39bb32f363b0aa51dbc85d133e";
-                lore = plugin.getStringList("settings_worldsort_lore_alphabetically_project_za");
+                lore = Messages.getStringList("settings_worldsort_lore_alphabetically_project_za");
                 break;
             case STATUS_NOT_STARTED:
                 url = "ed339d52393d5183a3664015c0b2c6c1012ea1b525ed952073311ca180a0e6";
-                lore = plugin.getStringList("settings_worldsort_lore_status_not_started");
+                lore = Messages.getStringList("settings_worldsort_lore_status_not_started");
                 break;
             case STATUS_FINISHED:
                 url = "400b9fb7aab4e3b69a5474b1a05d0a4b1449f4080a6c0f6977d0e33271c9b029";
-                lore = plugin.getStringList("settings_worldsort_lore_status_finished");
+                lore = Messages.getStringList("settings_worldsort_lore_status_finished");
                 break;
             case NEWEST_FIRST:
                 url = "71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530";
-                lore = plugin.getStringList("settings_worldsort_lore_date_newest");
+                lore = Messages.getStringList("settings_worldsort_lore_date_newest");
                 break;
             case OLDEST_FIRST:
                 url = "e67caf7591b38e125a8017d58cfc6433bfaf84cd499d794f41d10bff2e5b840";
-                lore = plugin.getStringList("settings_worldsort_lore_date_oldest");
+                lore = Messages.getStringList("settings_worldsort_lore_date_oldest");
                 break;
         }
 
-        ItemStack itemStack = inventoryManager.getUrlSkull(plugin.getString("settings_worldsort_item"), url);
+        ItemStack itemStack = inventoryManager.getUrlSkull(Messages.getString("settings_worldsort_item"), url);
         ItemMeta itemMeta = itemStack.getItemMeta();
 
         if (itemMeta != null) {

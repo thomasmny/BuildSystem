@@ -11,6 +11,7 @@ package com.eintosti.buildsystem.util.external;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -38,8 +39,8 @@ public class PlayerChatInput implements Listener {
     public PlayerChatInput(BuildSystem plugin, Player player, String titleKey, InputRunnable runWhenComplete) {
         this.plugin = plugin;
 
-        String title = plugin.getString(titleKey);
-        String subtitle = plugin.getString("cancel_subtitle");
+        String title = Messages.getString(titleKey);
+        String subtitle = Messages.getString("cancel_subtitle");
 
         this.taskId = new BukkitRunnable() {
             public void run() {
@@ -80,7 +81,7 @@ public class PlayerChatInput implements Listener {
 
             XSound.ENTITY_ITEM_BREAK.play(player);
             Titles.clearTitle(player);
-            player.sendMessage(plugin.getString("input_cancelled"));
+            Messages.sendMessage(player, "input_cancelled");
             return;
         }
 

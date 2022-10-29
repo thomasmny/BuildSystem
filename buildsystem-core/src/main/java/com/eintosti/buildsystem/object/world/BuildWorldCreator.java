@@ -18,6 +18,7 @@ import com.eintosti.buildsystem.object.world.generator.CustomGenerator;
 import com.eintosti.buildsystem.object.world.generator.voidgenerator.DeprecatedVoidGenerator;
 import com.eintosti.buildsystem.object.world.generator.voidgenerator.ModernVoidGenerator;
 import com.eintosti.buildsystem.util.FileUtils;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -30,6 +31,7 @@ import org.bukkit.generator.ChunkGenerator;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.AbstractMap;
 
 /**
  * @author Trichtern
@@ -145,13 +147,13 @@ public class BuildWorldCreator {
         );
         worldManager.getBuildWorlds().add(buildWorld);
 
-        player.sendMessage(plugin.getString("worlds_world_creation_started")
-                .replace("%world%", worldName)
-                .replace("%type%", worldType.getName())
+        Messages.sendMessage(player, "worlds_world_creation_started",
+                new AbstractMap.SimpleEntry<>("%world%", worldName),
+                new AbstractMap.SimpleEntry<>("%type%", worldType.getName())
         );
         finishPreparationsAndGenerate(buildWorld);
         teleportAfterCreation(player);
-        player.sendMessage(plugin.getString("worlds_creation_finished"));
+        Messages.sendMessage(player, "worlds_creation_finished");
         return true;
     }
 
@@ -175,7 +177,7 @@ public class BuildWorldCreator {
 
             ChunkGenerator chunkGenerator = worldManager.getChunkGenerator(generatorInfo[0], generatorInfo[1], worldName);
             if (chunkGenerator == null) {
-                player.sendMessage(plugin.getString("worlds_import_unknown_generator"));
+                Messages.sendMessage(player, "worlds_import_unknown_generator");
                 XSound.ENTITY_ITEM_BREAK.play(player);
                 return;
             }
@@ -194,12 +196,13 @@ public class BuildWorldCreator {
                     customGenerator
             ));
 
-            player.sendMessage(plugin.getString("worlds_world_creation_started")
-                    .replace("%world%", worldName)
-                    .replace("%type%", worldType.getName()));
+            Messages.sendMessage(player, "worlds_world_creation_started",
+                    new AbstractMap.SimpleEntry<>("%world%", worldName),
+                    new AbstractMap.SimpleEntry<>("%type%", worldType.getName())
+            );
             generateBukkitWorld();
             teleportAfterCreation(player);
-            player.sendMessage(plugin.getString("worlds_creation_finished"));
+            Messages.sendMessage(player, "worlds_creation_finished");
         });
         return true;
     }
@@ -214,13 +217,13 @@ public class BuildWorldCreator {
         boolean worldExists = worldManager.getBuildWorld(worldName) != null;
         File worldFile = new File(Bukkit.getWorldContainer(), worldName);
         if (worldExists || worldFile.exists()) {
-            player.sendMessage(plugin.getString("worlds_world_exists"));
+            Messages.sendMessage(player, "worlds_world_exists");
             return false;
         }
 
         File templateFile = new File(plugin.getDataFolder() + File.separator + "templates" + File.separator + template);
         if (!templateFile.exists()) {
-            player.sendMessage(plugin.getString("worlds_template_does_not_exist"));
+            Messages.sendMessage(player, "worlds_template_does_not_exist");
             return false;
         }
 
@@ -236,15 +239,16 @@ public class BuildWorldCreator {
         );
         worldManager.getBuildWorlds().add(buildWorld);
 
-        player.sendMessage(plugin.getString("worlds_template_creation_started")
-                .replace("%world%", worldName)
-                .replace("%template%", template));
+        Messages.sendMessage(player, "worlds_template_creation_started",
+                new AbstractMap.SimpleEntry<>("%world%", worldName),
+                new AbstractMap.SimpleEntry<>("%template%", template)
+        );
         FileUtils.copy(templateFile, worldFile);
         Bukkit.createWorld(WorldCreator.name(worldName)
                 .type(org.bukkit.WorldType.FLAT)
                 .generateStructures(false));
         teleportAfterCreation(player);
-        player.sendMessage(plugin.getString("worlds_creation_finished"));
+        Messages.sendMessage(player, "worlds_creation_finished");
         return true;
     }
 

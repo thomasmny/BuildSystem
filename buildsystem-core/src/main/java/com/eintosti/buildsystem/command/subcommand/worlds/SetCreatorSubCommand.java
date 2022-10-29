@@ -14,9 +14,12 @@ import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.util.UUIDFetcher;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
 import org.bukkit.entity.Player;
+
+import java.util.AbstractMap;
 
 /**
  * @author einTosti
@@ -42,13 +45,13 @@ public class SetCreatorSubCommand extends SubCommand {
         }
 
         if (args.length > 2) {
-            player.sendMessage(plugin.getString("worlds_setcreator_usage"));
+            Messages.sendMessage(player, "worlds_setcreator_usage");
             return;
         }
 
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
-            player.sendMessage(plugin.getString("worlds_setcreator_unknown_world"));
+            Messages.sendMessage(player, "worlds_setcreator_unknown_world");
             return;
         }
 
@@ -63,7 +66,7 @@ public class SetCreatorSubCommand extends SubCommand {
 
             plugin.getPlayerManager().forceUpdateSidebar(buildWorld);
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
-            player.sendMessage(plugin.getString("worlds_setcreator_set").replace("%world%", buildWorld.getName()));
+            Messages.sendMessage(player, "worlds_setcreator_set", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
             player.closeInventory();
         });
     }

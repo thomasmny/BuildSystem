@@ -21,6 +21,7 @@ import com.eintosti.buildsystem.object.player.LogoutLocation;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.util.external.UpdateChecker;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
@@ -33,6 +34,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+
+import java.util.AbstractMap;
 
 /**
  * @author einTosti
@@ -64,7 +67,7 @@ public class PlayerJoinListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void sendPlayerJoinMessage(PlayerJoinEvent event) {
         boolean isJoinMessage = plugin.getConfigValues().isJoinQuitMessages();
-        String message = isJoinMessage ? plugin.getString("player_join").replace("%player%", event.getPlayer().getName()) : null;
+        String message = isJoinMessage ? Messages.getString("player_join", new AbstractMap.SimpleEntry<>("%player%", event.getPlayer().getName())) : null;
         event.setJoinMessage(message);
     }
 
@@ -103,7 +106,7 @@ public class PlayerJoinListener implements Listener {
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld != null) {
             if (!buildWorld.isPhysics() && player.hasPermission("buildsystem.physics.message")) {
-                player.sendMessage(plugin.getString("physics_deactivated_in_world").replace("%world%", buildWorld.getName()));
+                Messages.sendMessage(player, "physics_deactivated_in_world", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
             }
 
             if (configValues.isArchiveVanish() && buildWorld.getStatus() == WorldStatus.ARCHIVE) {
@@ -131,7 +134,7 @@ public class PlayerJoinListener implements Listener {
             return;
         }
 
-        ItemStack itemStack = inventoryManager.getItemStack(configValues.getNavigatorItem(), plugin.getString("navigator_item"));
+        ItemStack itemStack = inventoryManager.getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item"));
         ItemStack slot8 = playerInventory.getItem(8);
         if (slot8 == null || slot8.getType() == XMaterial.AIR.parseMaterial()) {
             playerInventory.setItem(8, itemStack);
@@ -164,7 +167,7 @@ public class PlayerJoinListener implements Listener {
                 .whenComplete((result, e) -> {
                     if (result.requiresUpdate()) {
                         StringBuilder stringBuilder = new StringBuilder();
-                        plugin.getStringList("update_available").forEach(line ->
+                        Messages.getStringList("update_available").forEach(line ->
                                 stringBuilder.append(line
                                                 .replace("%new_version%", result.getNewestVersion())
                                                 .replace("%current_version%", plugin.getDescription().getVersion()))

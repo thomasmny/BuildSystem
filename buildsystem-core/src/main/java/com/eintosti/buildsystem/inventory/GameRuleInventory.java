@@ -13,6 +13,7 @@ import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.version.gamerules.GameRules;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -61,13 +62,13 @@ public class GameRuleInventory implements Listener {
         int invIndex = gameRules.getInvIndex(playerUUID);
 
         if (numGameRules > 1 && invIndex > 0) {
-            inventoryManager.addUrlSkull(inventory, 36, plugin.getString("gui_previous_page"), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
+            inventoryManager.addUrlSkull(inventory, 36, Messages.getString("gui_previous_page"), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
         } else {
             inventoryManager.addGlassPane(plugin, player, inventory, 36);
         }
 
         if (numGameRules > 1 && invIndex < (numGameRules - 1)) {
-            inventoryManager.addUrlSkull(inventory, 44, plugin.getString("gui_next_page"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
+            inventoryManager.addUrlSkull(inventory, 44, Messages.getString("gui_next_page"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
         } else {
             inventoryManager.addGlassPane(plugin, player, inventory, 44);
         }
@@ -87,7 +88,7 @@ public class GameRuleInventory implements Listener {
         BuildWorld buildWorld = plugin.getPlayerManager().getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();
-            player.sendMessage(plugin.getString("worlds_edit_error"));
+            Messages.sendMessage(player, "worlds_edit_error");
             return;
         }
 

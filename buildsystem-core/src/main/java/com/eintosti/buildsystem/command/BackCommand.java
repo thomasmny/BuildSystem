@@ -11,6 +11,7 @@ package com.eintosti.buildsystem.command;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.object.player.BuildPlayer;
+import com.eintosti.buildsystem.Messages;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -38,7 +39,7 @@ public class BackCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(plugin.getString("sender_not_player"));
+            plugin.getLogger().warning(Messages.getString("sender_not_player"));
             return true;
         }
 
@@ -51,7 +52,7 @@ public class BackCommand implements CommandExecutor {
         if (args.length == 0) {
             teleportBack(player);
         } else {
-            player.sendMessage(plugin.getString("back_usage"));
+            Messages.sendMessage(player, "back_usage");
         }
 
         return true;
@@ -63,12 +64,12 @@ public class BackCommand implements CommandExecutor {
         Location previousLocation = buildPlayer.getPreviousLocation();
 
         if (previousLocation == null) {
-            player.sendMessage(plugin.getString("back_failed"));
+            Messages.sendMessage(player, "back_failed");
             return;
         }
 
         PaperLib.teleportAsync(player, previousLocation);
-        player.sendMessage(plugin.getString("back_teleported"));
+        Messages.sendMessage(player, "back_teleported");
         buildPlayer.setPreviousLocation(null);
     }
 }

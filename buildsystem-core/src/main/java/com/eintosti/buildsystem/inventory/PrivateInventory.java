@@ -12,6 +12,7 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
+import com.eintosti.buildsystem.Messages;
 import com.google.common.collect.Sets;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -27,7 +28,8 @@ public class PrivateInventory extends FilteredWorldsInventory {
 
     public PrivateInventory(BuildSystem plugin) {
         super(plugin, "private_title", "private_no_worlds", Visibility.PRIVATE,
-                Sets.newHashSet(WorldStatus.NOT_STARTED, WorldStatus.IN_PROGRESS, WorldStatus.ALMOST_FINISHED, WorldStatus.FINISHED));
+                Sets.newHashSet(WorldStatus.NOT_STARTED, WorldStatus.IN_PROGRESS, WorldStatus.ALMOST_FINISHED, WorldStatus.FINISHED)
+        );
 
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
@@ -45,7 +47,7 @@ public class PrivateInventory extends FilteredWorldsInventory {
 
     private void addWorldCreateItem(Inventory inventory, Player player) {
         if (player.hasPermission("buildsystem.create.private")) {
-            inventoryManager.addUrlSkull(inventory, 49, plugin.getString("private_create_world"), "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
+            inventoryManager.addUrlSkull(inventory, 49, Messages.getString("private_create_world"), "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
         } else {
             inventoryManager.addGlassPane(plugin, player, inventory, 49);
         }

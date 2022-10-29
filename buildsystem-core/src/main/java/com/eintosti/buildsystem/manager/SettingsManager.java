@@ -16,6 +16,7 @@ import com.eintosti.buildsystem.object.settings.Color;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.settings.WorldSort;
 import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.Messages;
 import fr.mrmicky.fastboard.FastBoard;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -54,8 +55,8 @@ public class SettingsManager {
 
         this.boards = new HashMap<>();
 
-        this.scoreboardTitle = plugin.getString("title");
-        this.scoreboardBody = plugin.getStringList("body");
+        this.scoreboardTitle = Messages.getString("title");
+        this.scoreboardBody = Messages.getStringList("body");
     }
 
     public Settings getSettings(UUID uuid) {

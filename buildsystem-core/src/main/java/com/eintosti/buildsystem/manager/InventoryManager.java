@@ -19,6 +19,7 @@ import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.Builder;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.eintosti.buildsystem.object.world.data.WorldType;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.util.exception.UnexpectedEnumValueException;
 import com.eintosti.buildsystem.util.external.ItemSkulls;
 import com.eintosti.buildsystem.util.external.StringUtils;
@@ -35,6 +36,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -76,7 +78,7 @@ public class InventoryManager {
             return false;
         }
 
-        return itemMeta.getDisplayName().equals(plugin.getString("navigator_item"));
+        return itemMeta.getDisplayName().equals(Messages.getString("navigator_item"));
     }
 
     public boolean inventoryContainsNavigator(PlayerInventory playerInventory) {
@@ -213,7 +215,7 @@ public class InventoryManager {
     }
 
     public boolean checkIfValidClick(InventoryClickEvent event, String titleKey) {
-        if (!event.getView().getTitle().equals(plugin.getString(titleKey))) {
+        if (!event.getView().getTitle().equals(Messages.getString(titleKey))) {
             return false;
         }
 
@@ -228,7 +230,7 @@ public class InventoryManager {
 
     public void addWorldItem(Player player, Inventory inventory, int position, BuildWorld buildWorld) {
         String worldName = buildWorld.getName();
-        String displayName = plugin.getString("world_item_title").replace("%world%", worldName);
+        String displayName = Messages.getString("world_item_title", new AbstractMap.SimpleEntry<>("%world%", worldName));
 
         if (buildWorld.getMaterial() == XMaterial.PLAYER_HEAD) {
             addSkull(inventory, position, displayName, worldName, getLore(player, buildWorld));
@@ -257,9 +259,9 @@ public class InventoryManager {
         String displayName = itemMeta.getDisplayName();
 
         if (slot == 22 &&
-                displayName.equals(plugin.getString("world_navigator_no_worlds"))
-                || displayName.equals(plugin.getString("archive_no_worlds"))
-                || displayName.equals(plugin.getString("private_no_worlds"))) {
+                displayName.equals(Messages.getString("world_navigator_no_worlds"))
+                || displayName.equals(Messages.getString("archive_no_worlds"))
+                || displayName.equals(Messages.getString("private_no_worlds"))) {
             return;
         }
 
@@ -302,7 +304,7 @@ public class InventoryManager {
         } else {
             player.closeInventory();
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-            Titles.sendTitle(player, 5, 70, 20, " ", plugin.getString("world_not_loaded"));
+            Titles.sendTitle(player, 5, 70, 20, " ", Messages.getString("world_not_loaded"));
         }
     }
 
@@ -333,7 +335,7 @@ public class InventoryManager {
      * @return The name of the world
      */
     private String getWorldName(String input) {
-        String template = plugin.getString("world_item_title").replace("%world%", "");
+        String template = Messages.getString("world_item_title", new AbstractMap.SimpleEntry<>("%world%", ""));
         return StringUtils.difference(template, input);
     }
 
@@ -385,7 +387,7 @@ public class InventoryManager {
      * @return The formatted lore
      */
     private List<String> getLore(Player player, BuildWorld buildWorld) {
-        List<String> messageList = player.hasPermission("buildsystem.edit") ? plugin.getStringList("world_item_lore_edit") : plugin.getStringList("world_item_lore_normal");
+        List<String> messageList = player.hasPermission("buildsystem.edit") ? Messages.getStringList("world_item_lore_edit") : Messages.getStringList("world_item_lore_normal");
         List<String> lore = new ArrayList<>();
 
         for (String line : messageList) {
@@ -430,7 +432,7 @@ public class InventoryManager {
      * @see BuildWorld#getBuildersInfo()
      */
     private List<String> formatBuilders(BuildWorld buildWorld) {
-        String template = plugin.getString("world_item_builders_builder_template");
+        String template = Messages.getString("world_item_builders_builder_template");
         List<Builder> builders = new ArrayList<>();
 
         if (configValues.isCreatorIsBuilder()) {
@@ -470,7 +472,7 @@ public class InventoryManager {
         }
 
         if (numOfPages > 1 && currentPage > 0) {
-            addUrlSkull(inventory, 45, plugin.getString("gui_previous_page"), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
+            addUrlSkull(inventory, 45, Messages.getString("gui_previous_page"), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
         } else {
             addGlassPane(plugin, player, inventory, 45);
         }
@@ -480,7 +482,7 @@ public class InventoryManager {
         }
 
         if (numOfPages > 1 && currentPage < (numOfPages - 1)) {
-            addUrlSkull(inventory, 53, plugin.getString("gui_next_page"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
+            addUrlSkull(inventory, 53, Messages.getString("gui_next_page"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
         } else {
             addGlassPane(plugin, player, inventory, 53);
         }

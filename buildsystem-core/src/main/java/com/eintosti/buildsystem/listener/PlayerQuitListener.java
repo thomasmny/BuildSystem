@@ -13,12 +13,15 @@ import com.eintosti.buildsystem.manager.PlayerManager;
 import com.eintosti.buildsystem.manager.SettingsManager;
 import com.eintosti.buildsystem.object.player.LogoutLocation;
 import com.eintosti.buildsystem.object.settings.Settings;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
+
+import java.util.AbstractMap;
 
 /**
  * @author einTosti
@@ -39,7 +42,7 @@ public class PlayerQuitListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void sendPlayerQuitMessage(PlayerQuitEvent event) {
         boolean isQuitMessage = plugin.getConfigValues().isJoinQuitMessages();
-        String message = isQuitMessage ? plugin.getString("player_quit").replace("%player%", event.getPlayer().getName()) : null;
+        String message = isQuitMessage ? Messages.getString("player_quit", new AbstractMap.SimpleEntry<>("%player%", event.getPlayer().getName())) : null;
         event.setQuitMessage(message);
     }
 

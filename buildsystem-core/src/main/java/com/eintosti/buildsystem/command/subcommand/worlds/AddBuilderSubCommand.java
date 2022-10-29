@@ -15,11 +15,13 @@ import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.Builder;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.util.UUIDFetcher;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import java.util.AbstractMap;
 import java.util.UUID;
 
 /**
@@ -46,13 +48,13 @@ public class AddBuilderSubCommand extends SubCommand {
         }
 
         if (args.length > 2) {
-            player.sendMessage(plugin.getString("worlds_addbuilder_usage"));
+            Messages.sendMessage(player, "worlds_addbuilder_usage");
             return;
         }
 
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
-            player.sendMessage(plugin.getString("worlds_addbuilder_unknown_world"));
+            Messages.sendMessage(player, "worlds_addbuilder_unknown_world");
             return;
         }
 
@@ -69,7 +71,7 @@ public class AddBuilderSubCommand extends SubCommand {
             if (builderPlayer == null) {
                 builderId = UUIDFetcher.getUUID(builderName);
                 if (builderId == null) {
-                    player.sendMessage(plugin.getString("worlds_addbuilder_player_not_found"));
+                    Messages.sendMessage(player, "worlds_addbuilder_player_not_found");
                     player.closeInventory();
                     return;
                 }
@@ -80,20 +82,20 @@ public class AddBuilderSubCommand extends SubCommand {
             }
 
             if (builderId.equals(player.getUniqueId()) && buildWorld.isCreator(player)) {
-                player.sendMessage(plugin.getString("worlds_addbuilder_already_creator"));
+                Messages.sendMessage(player, "worlds_addbuilder_already_creator");
                 player.closeInventory();
                 return;
             }
 
             if (buildWorld.isBuilder(builderId)) {
-                player.sendMessage(plugin.getString("worlds_addbuilder_already_added"));
+                Messages.sendMessage(player, "worlds_addbuilder_already_added");
                 player.closeInventory();
                 return;
             }
 
             buildWorld.addBuilder(builder);
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
-            player.sendMessage(plugin.getString("worlds_addbuilder_added").replace("%builder%", builderName));
+            Messages.sendMessage(player, "worlds_addbuilder_added", new AbstractMap.SimpleEntry<>("%builder%", builderName));
 
             if (closeInventory) {
                 player.closeInventory();

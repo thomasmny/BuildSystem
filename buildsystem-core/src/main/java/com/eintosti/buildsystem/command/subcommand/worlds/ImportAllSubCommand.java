@@ -13,6 +13,7 @@ import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -39,7 +40,7 @@ public class ImportAllSubCommand extends SubCommand {
         }
 
         if (args.length != 1) {
-            player.sendMessage(plugin.getString("worlds_importall_usage"));
+            Messages.sendMessage(player, "worlds_importall_usage");
             return;
         }
 
@@ -61,7 +62,7 @@ public class ImportAllSubCommand extends SubCommand {
         });
 
         if (directories == null || directories.length == 0) {
-            player.sendMessage(plugin.getString("worlds_importall_no_worlds"));
+            Messages.sendMessage(player, "worlds_importall_no_worlds");
             return;
         }
 

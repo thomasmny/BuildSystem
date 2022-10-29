@@ -13,12 +13,15 @@ import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
+
+import java.util.AbstractMap;
 
 /**
  * @author einTosti
@@ -35,12 +38,12 @@ public class DeleteInventory implements Listener {
     }
 
     private Inventory getInventory(BuildWorld buildWorld) {
-        Inventory inventory = Bukkit.createInventory(null, 27, plugin.getString("delete_title"));
+        Inventory inventory = Bukkit.createInventory(null, 27, Messages.getString("delete_title"));
         fillGuiWithGlass(inventory);
 
-        inventoryManager.addItemStack(inventory, 11, XMaterial.LIME_DYE, plugin.getString("delete_world_confirm"));
-        inventoryManager.addItemStack(inventory, 13, XMaterial.FILLED_MAP, plugin.getString("delete_world_name").replace("%world%", buildWorld.getName()), plugin.getStringList("delete_world_name_lore"));
-        inventoryManager.addItemStack(inventory, 15, XMaterial.RED_DYE, plugin.getString("delete_world_cancel"));
+        inventoryManager.addItemStack(inventory, 11, XMaterial.LIME_DYE, Messages.getString("delete_world_confirm"));
+        inventoryManager.addItemStack(inventory, 13, XMaterial.FILLED_MAP, Messages.getString("delete_world_name", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName())), Messages.getStringList("delete_world_name_lore"));
+        inventoryManager.addItemStack(inventory, 15, XMaterial.RED_DYE, Messages.getString("delete_world_cancel"));
 
         return inventory;
     }
@@ -74,7 +77,7 @@ public class DeleteInventory implements Listener {
         Player player = (Player) event.getWhoClicked();
         BuildWorld buildWorld = plugin.getPlayerManager().getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
-            player.sendMessage(plugin.getString("worlds_delete_error"));
+            Messages.sendMessage(player, "worlds_delete_error");
             player.closeInventory();
             return;
         }
@@ -87,7 +90,7 @@ public class DeleteInventory implements Listener {
         } else if (slot == 15) {
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
             player.closeInventory();
-            player.sendMessage(plugin.getString("worlds_delete_canceled").replace("%world%", buildWorld.getName()));
+            Messages.sendMessage(player, "worlds_delete_canceled", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
 
         }
     }
