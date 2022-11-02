@@ -12,15 +12,16 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.config.SetupConfig;
+import com.eintosti.buildsystem.inventory.EditInventory;
 import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.object.world.Builder;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.eintosti.buildsystem.object.world.data.WorldType;
-import com.eintosti.buildsystem.Messages;
-import com.eintosti.buildsystem.util.exception.UnexpectedEnumValueException;
+import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import com.eintosti.buildsystem.util.external.ItemSkulls;
 import com.eintosti.buildsystem.util.external.StringUtils;
 import org.bukkit.Material;
@@ -42,6 +43,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -283,7 +285,9 @@ public class InventoryManager {
      * If the click is a...
      * <ul>
      *   <l>...left click, the world is loaded (if previously unloaded) and the player is teleported to said world.</li>
-     *   <li>...right click and the player has the permission {@code buildsystem.edit}, the {@link com.eintosti.buildsystem.inventory.EditInventory} for the world is opened for said player. If the player does not the the required permission the click is handeled as a normal left click.</li>
+     *   <li>...right click and the player is permitted to edit the world {@link WorldManager#isPermitted(Player, String, String)},
+     *       the {@link EditInventory} for the world is opened for said player.
+     *       If the player does not the the required permission the click is handled as a normal left click.</li>
      * </ul>
      *
      * @param event      The click event to modify
@@ -292,7 +296,7 @@ public class InventoryManager {
      * @param buildWorld The world represents by the clicked item
      */
     private void manageWorldItemClick(InventoryClickEvent event, Player player, ItemMeta itemMeta, BuildWorld buildWorld) {
-        if (event.isLeftClick() || !player.hasPermission("buildsystem.edit")) {
+        if (event.isLeftClick() || !plugin.getWorldManager().isPermitted(player, WorldsTabComplete.WorldsArgument.EDIT.getPermission(), buildWorld.getName())) {
             performNonEditClick(player, itemMeta);
             return;
         }
@@ -387,18 +391,19 @@ public class InventoryManager {
      * @return The formatted lore
      */
     private List<String> getLore(Player player, BuildWorld buildWorld) {
-        List<String> messageList = player.hasPermission("buildsystem.edit") ? Messages.getStringList("world_item_lore_edit") : Messages.getStringList("world_item_lore_normal");
-        List<String> lore = new ArrayList<>();
+        Map.Entry<String, Object>[] placeholders = new Map.Entry[]{
+                new AbstractMap.SimpleEntry("%project%", buildWorld.getProject()),
+                new AbstractMap.SimpleEntry("%permission%", buildWorld.getPermission()),
+                new AbstractMap.SimpleEntry("%creator%", buildWorld.hasCreator() ? buildWorld.getCreator() : "-"),
+                new AbstractMap.SimpleEntry("%creation%", buildWorld.getFormattedCreationDate()),
+        };
+        List<String> messageList = plugin.getWorldManager().isPermitted(player, WorldsTabComplete.WorldsArgument.EDIT.getPermission(), buildWorld.getName()) ?
+                Messages.getStringList("world_item_lore_edit", placeholders) : Messages.getStringList("world_item_lore_normal", placeholders);
 
+        // Replace %builders% placeholder
+        List<String> lore = new ArrayList<>();
         for (String line : messageList) {
             if (!line.contains("%builders%")) {
-                lore.add(line
-                        .replace("%project%", buildWorld.getProject())
-                        .replace("%permission%", buildWorld.getPermission())
-                        .replace("%status%", buildWorld.getStatus().getName())
-                        .replace("%creator%", buildWorld.hasCreator() ? buildWorld.getCreator() : "-")
-                        .replace("%creation%", buildWorld.getFormattedCreationDate())
-                );
                 continue;
             }
 
@@ -544,12 +549,7 @@ public class InventoryManager {
                 }
                 break;
             default:
-                try {
-                    throw new UnexpectedEnumValueException(worldType.name());
-                } catch (UnexpectedEnumValueException e) {
-                    e.printStackTrace();
-                    return null;
-                }
+                throw new IllegalArgumentException("Unsupported world type: " + worldType.name());
         }
         return material;
     }
@@ -575,12 +575,7 @@ public class InventoryManager {
                 this.customCreateItem = material;
                 break;
             default:
-                try {
-                    throw new UnexpectedEnumValueException(worldType.name());
-                } catch (UnexpectedEnumValueException e) {
-                    e.printStackTrace();
-                }
-                break;
+                throw new IllegalArgumentException("Unsupported world type: " + worldType.name());
         }
     }
 
@@ -625,12 +620,7 @@ public class InventoryManager {
                 }
                 break;
             default:
-                try {
-                    throw new UnexpectedEnumValueException(worldType.name());
-                } catch (UnexpectedEnumValueException e) {
-                    e.printStackTrace();
-                    return null;
-                }
+                throw new IllegalArgumentException("Unsupported world type: " + worldType.name());
         }
         return material;
     }
@@ -656,12 +646,7 @@ public class InventoryManager {
                 this.importedDefaultItem = material;
                 break;
             default:
-                try {
-                    throw new UnexpectedEnumValueException(worldType.name());
-                } catch (UnexpectedEnumValueException e) {
-                    e.printStackTrace();
-                }
-                break;
+                throw new IllegalArgumentException("Unsupported world type: " + worldType.name());
         }
     }
 
@@ -705,12 +690,7 @@ public class InventoryManager {
                 }
                 break;
             default:
-                try {
-                    throw new UnexpectedEnumValueException(worldStatus.name());
-                } catch (UnexpectedEnumValueException e) {
-                    e.printStackTrace();
-                    return null;
-                }
+                throw new IllegalArgumentException("Unsupported world status: " + worldStatus.name());
         }
         return material;
     }
@@ -736,12 +716,7 @@ public class InventoryManager {
                 this.hiddenItem = material;
                 break;
             default:
-                try {
-                    throw new UnexpectedEnumValueException(worldStatus.name());
-                } catch (UnexpectedEnumValueException e) {
-                    e.printStackTrace();
-                }
-                break;
+                throw new IllegalArgumentException("Unsupported world status: " + worldStatus.name());
         }
     }
 

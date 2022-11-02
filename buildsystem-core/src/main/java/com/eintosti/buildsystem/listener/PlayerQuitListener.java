@@ -74,11 +74,13 @@ public class PlayerQuitListener implements Listener {
 
     @SuppressWarnings("deprecation")
     private void manageHidePlayer(Player player) {
-        if (settingsManager.getSettings(player).isHidePlayers()) { // Show all hidden players to player
+        // Show all hidden players to player
+        if (settingsManager.getSettings(player).isHidePlayers()) {
             Bukkit.getOnlinePlayers().forEach(player::showPlayer);
         }
 
-        for (Player pl : Bukkit.getOnlinePlayers()) { // Show player to all players who had him/her hidden
+        // Show player to all players who had him/her hidden
+        for (Player pl : Bukkit.getOnlinePlayers()) {
             if (!settingsManager.getSettings(pl).isHidePlayers()) {
                 continue;
             }

@@ -11,6 +11,7 @@ package com.eintosti.buildsystem.object.world;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.event.world.BuildWorldLoadEvent;
 import com.eintosti.buildsystem.event.world.BuildWorldUnloadEvent;
@@ -19,9 +20,7 @@ import com.eintosti.buildsystem.manager.SpawnManager;
 import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.eintosti.buildsystem.object.world.data.WorldType;
 import com.eintosti.buildsystem.object.world.generator.CustomGenerator;
-import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.util.UUIDFetcher;
-import com.eintosti.buildsystem.util.exception.UnexpectedEnumValueException;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Difficulty;
@@ -137,12 +136,7 @@ public class BuildWorld implements ConfigurationSerializable {
                 this.material = inventoryManager.getDefaultItem(WorldType.IMPORTED);
                 break;
             default:
-                try {
-                    throw new UnexpectedEnumValueException(worldType.name());
-                } catch (UnexpectedEnumValueException e) {
-                    e.printStackTrace();
-                }
-                break;
+                throw new IllegalArgumentException("Unsupported world type: " + worldType.name());
         }
 
         if (privateWorld) {

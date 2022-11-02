@@ -145,11 +145,13 @@ public class PlayerJoinListener implements Listener {
 
     @SuppressWarnings("deprecation")
     private void manageHidePlayer(Player player, BuildPlayer buildPlayer) {
-        if (buildPlayer.getSettings().isHidePlayers()) { // Hide all players to player
+        // Hide all players to player
+        if (buildPlayer.getSettings().isHidePlayers()) {
             Bukkit.getOnlinePlayers().forEach(player::hidePlayer);
         }
 
-        for (Player pl : Bukkit.getOnlinePlayers()) { // Hide player to all players who have hidePlayers enabled
+        // Hide player from all players who have hidePlayers enabled
+        for (Player pl : Bukkit.getOnlinePlayers()) {
             if (!settingsManager.getSettings(pl).isHidePlayers()) {
                 continue;
             }
