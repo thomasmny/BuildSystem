@@ -13,10 +13,6 @@ repositories {
         url = uri("https://libraries.minecraft.net/")
     }
     maven {
-        name = "PaperMC"
-        url = uri("https://papermc.io/repo/repository/maven-public/")
-    }
-    maven {
         name = "EngineHub"
         url = uri("https://maven.enginehub.org/repo/")
     }

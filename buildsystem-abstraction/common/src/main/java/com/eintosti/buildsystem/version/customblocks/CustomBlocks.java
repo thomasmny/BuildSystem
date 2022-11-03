@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface CustomBlocks {
 
-    void setBlock(BlockPlaceEvent event, String... blockName);
+    void setBlock(BlockPlaceEvent event, String key);
 
     void setPlant(PlayerInteractEvent event);
 

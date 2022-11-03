@@ -16,6 +16,10 @@ fun Project.applyCommonConfiguration() {
             url = uri("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
         }
         maven {
+            name = "PaperMC"
+            url = uri("https://papermc.io/repo/repository/maven-public/")
+        }
+        maven {
             name = "OSS Sonatype Snapshots"
             url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
         }

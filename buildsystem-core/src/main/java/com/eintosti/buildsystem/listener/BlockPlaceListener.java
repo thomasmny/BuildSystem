@@ -10,14 +10,19 @@ package com.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.version.customblocks.CustomBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author einTosti
@@ -27,10 +32,21 @@ public class BlockPlaceListener implements Listener {
     private final BuildSystem plugin;
     private final WorldManager worldManager;
 
+    private final Map<String, String> blockLookup;
+
     public BlockPlaceListener(BuildSystem plugin) {
         this.plugin = plugin;
         this.worldManager = plugin.getWorldManager();
+        this.blockLookup = initBlockLookup();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    }
+
+    private Map<String, String> initBlockLookup() {
+        Map<String, String> lookup = new HashMap<>();
+        for (CustomBlock customBlock : CustomBlock.values()) {
+            lookup.put(Messages.getString(customBlock.getKey()), customBlock.getKey());
+        }
+        return lookup;
     }
 
     @EventHandler
@@ -46,6 +62,7 @@ public class BlockPlaceListener implements Listener {
         boolean isBuildWorld = buildWorld != null;
 
         ItemStack itemStack = player.getItemInHand();
+        ItemMeta itemMeta = itemStack.getItemMeta();
         XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
         if (xMaterial != XMaterial.PLAYER_HEAD) {
             return;
@@ -57,32 +74,7 @@ public class BlockPlaceListener implements Listener {
             buildWorld.setPhysics(true);
         }
 
-        plugin.getCustomBlocks().setBlock(event,
-                Messages.getString("blocks_full_oak_barch"),
-                Messages.getString("blocks_full_spruce_barch"),
-                Messages.getString("blocks_full_birch_barch"),
-                Messages.getString("blocks_full_jungle_barch"),
-                Messages.getString("blocks_full_acacia_barch"),
-                Messages.getString("blocks_full_dark_oak_barch"),
-                Messages.getString("blocks_red_mushroom"),
-                Messages.getString("blocks_brown_mushroom"),
-                Messages.getString("blocks_full_mushroom_stem"),
-                Messages.getString("blocks_mushroom_stem"),
-                Messages.getString("blocks_mushroom_block"),
-                Messages.getString("blocks_smooth_stone"),
-                Messages.getString("blocks_double_stone_slab"),
-                Messages.getString("blocks_smooth_sandstone"),
-                Messages.getString("blocks_smooth_red_sandstone"),
-                Messages.getString("blocks_powered_redstone_lamp"),
-                Messages.getString("blocks_burning_furnace"),
-                Messages.getString("blocks_piston_head"),
-                Messages.getString("blocks_command_block"),
-                Messages.getString("blocks_barrier"),
-                Messages.getString("blocks_mob_spawner"),
-                Messages.getString("blocks_nether_portal"),
-                Messages.getString("blocks_end_portal"),
-                Messages.getString("blocks_dragon_egg")
-        );
+        plugin.getCustomBlocks().setBlock(event, blockLookup.get(itemMeta.getDisplayName()));
 
         if (isBuildWorld && hadToDisablePhysics) {
             buildWorld.setPhysics(false);

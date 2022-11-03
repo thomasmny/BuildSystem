@@ -10,15 +10,19 @@ package com.eintosti.buildsystem.inventory;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.manager.InventoryManager;
+import com.eintosti.buildsystem.version.util.MinecraftVersion;
 import org.bukkit.Bukkit;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 
 /**
  * @author einTosti
@@ -61,6 +65,9 @@ public class BlocksInventory implements Listener {
         inventoryManager.addUrlSkull(inventory, 30, Messages.getString("blocks_piston_head"), "aa868ce917c09af8e4c350a5807041f6509bf2b89aca45e591fbbd7d4b117d");
         inventoryManager.addUrlSkull(inventory, 31, Messages.getString("blocks_command_block"), "8514d225b262d847c7e557b474327dcef758c2c5882e41ee6d8c5e9cd3bc914");
         inventoryManager.addUrlSkull(inventory, 32, Messages.getString("blocks_barrier"), "3ed1aba73f639f4bc42bd48196c715197be2712c3b962c97ebf9e9ed8efa025");
+        if (MinecraftVersion.getCurrent().isEqualOrHigherThan(MinecraftVersion.CAVES_17)) {
+            inventoryManager.addUrlSkull(inventory, 33, Messages.getString("blocks_invisible_item_frame"), "8122a503d7a6f57802b03af7624194a4c4f5077a99ae21dd276ce7db88bc38ae");
+        }
 
         inventoryManager.addUrlSkull(inventory, 37, Messages.getString("blocks_mob_spawner"), "db6bd9727abb55d5415265789d4f2984781a343c68dcaf57f554a5e9aa1cd");
         inventoryManager.addUrlSkull(inventory, 38, Messages.getString("blocks_nether_portal"), "b0bfc2577f6e26c6c6f7365c2c4076bccee653124989382ce93bca4fc9e39b");
@@ -152,6 +159,18 @@ public class BlocksInventory implements Listener {
                 break;
             case 32:
                 playerInventory.addItem(inventoryManager.getItemStack(XMaterial.BARRIER, "§bBarrier"));
+                break;
+            case 33:
+                if (MinecraftVersion.getCurrent().isLowerThan(MinecraftVersion.CAVES_17)) {
+                    return;
+                }
+                ItemStack itemStack = inventoryManager.getItemStack(XMaterial.ITEM_FRAME, "§bInvisible Item Frame");
+                ItemMeta itemMeta = itemStack.getItemMeta();
+                itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
+                // Inline imports to allow backwards compatibility
+                itemMeta.getPersistentDataContainer().set(new org.bukkit.NamespacedKey(plugin, "invisible-itemframe"), org.bukkit.persistence.PersistentDataType.BYTE, (byte) 1);
+                itemStack.setItemMeta(itemMeta);
+                playerInventory.addItem(itemStack);
                 break;
 
             case 37:
