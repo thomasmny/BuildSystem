@@ -145,8 +145,10 @@ public class CustomBlocks_1_12_R1 extends DirectionUtils implements CustomBlocks
                     block.setType(Material.MOB_SPAWNER);
                     break;
                 case NETHER_PORTAL:
+                    BlockFace direction = getBlockDirection(player, false);
+                    int orientation = (direction == BlockFace.NORTH || direction == BlockFace.SOUTH) ? 0 : 2;
                     block.setType(Material.PORTAL);
-                    rotateBlock(block, player, getBlockDirection(player, false));
+                    block.setData((byte) orientation, false);
                     break;
                 case END_PORTAL:
                     block.setType(Material.ENDER_PORTAL);
