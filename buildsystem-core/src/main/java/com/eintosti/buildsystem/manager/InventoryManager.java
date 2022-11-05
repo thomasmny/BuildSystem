@@ -392,6 +392,7 @@ public class InventoryManager {
      */
     private List<String> getLore(Player player, BuildWorld buildWorld) {
         Map.Entry<String, Object>[] placeholders = new Map.Entry[]{
+                new AbstractMap.SimpleEntry("%status%", buildWorld.getStatus().getName()),
                 new AbstractMap.SimpleEntry("%project%", buildWorld.getProject()),
                 new AbstractMap.SimpleEntry("%permission%", buildWorld.getPermission()),
                 new AbstractMap.SimpleEntry("%creator%", buildWorld.hasCreator() ? buildWorld.getCreator() : "-"),
@@ -404,6 +405,7 @@ public class InventoryManager {
         List<String> lore = new ArrayList<>();
         for (String line : messageList) {
             if (!line.contains("%builders%")) {
+                lore.add(line);
                 continue;
             }
 

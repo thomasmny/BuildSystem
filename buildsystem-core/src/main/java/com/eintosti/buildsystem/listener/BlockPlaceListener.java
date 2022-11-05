@@ -14,6 +14,7 @@ import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
 import com.eintosti.buildsystem.version.customblocks.CustomBlock;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -61,7 +62,7 @@ public class BlockPlaceListener implements Listener {
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         boolean isBuildWorld = buildWorld != null;
 
-        ItemStack itemStack = player.getItemInHand();
+        ItemStack itemStack = event.getItemInHand();
         ItemMeta itemMeta = itemStack.getItemMeta();
         XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
         if (xMaterial != XMaterial.PLAYER_HEAD) {
