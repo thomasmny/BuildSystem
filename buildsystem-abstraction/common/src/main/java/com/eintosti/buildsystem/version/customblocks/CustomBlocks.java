@@ -13,7 +13,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * @author einTosti
@@ -30,5 +29,5 @@ public interface CustomBlocks {
 
     void toggleIronDoor(PlayerInteractEvent event);
 
-    void rotate(Block block, Player player, @Nullable BlockFace blockFace);
+    void rotateBlock(Block block, Player player, BlockFace direction);
 }

@@ -93,11 +93,11 @@ public class CustomBlocks_1_12_R1 extends DirectionUtils implements CustomBlocks
                     break;
                 case MUSHROOM_STEM:
                     block.setType(Material.HUGE_MUSHROOM_1);
-                    block.setData((byte) 15, true);
+                    block.setData((byte) 10, true);
                     break;
                 case FULL_MUSHROOM_STEM:
                     block.setType(Material.HUGE_MUSHROOM_1);
-                    block.setData((byte) 10, true);
+                    block.setData((byte) 15, true);
                     break;
                 case MUSHROOM_BLOCK:
                     block.setType(Material.HUGE_MUSHROOM_1);
@@ -119,18 +119,18 @@ public class CustomBlocks_1_12_R1 extends DirectionUtils implements CustomBlocks
                     block.setTypeId(181, true);
                     block.setData((byte) 8, true);
                     break;
-                case REDSTONE_LAMP:
+                case POWERED_REDSTONE_LAMP:
                     block.setType(Material.REDSTONE_LAMP_ON);
                     powerLamp(block);
                     break;
                 case BURNING_FURNACE:
                     block.setType(Material.FURNACE);
                     powerFurnace(block);
-                    rotate(block, player, null);
+                    rotateBlock(block, player, getBlockDirection(player, false));
                     break;
                 case PISTON_HEAD:
                     block.setType(Material.PISTON_EXTENSION);
-                    rotate(block, player, getPistonBlockFace(player));
+                    rotateBlock(block, player, getBlockDirection(player, true));
                     break;
                 case COMMAND_BLOCK:
                     block.setType(Material.COMMAND);
@@ -146,6 +146,7 @@ public class CustomBlocks_1_12_R1 extends DirectionUtils implements CustomBlocks
                     break;
                 case NETHER_PORTAL:
                     block.setType(Material.PORTAL);
+                    rotateBlock(block, player, getBlockDirection(player, false));
                     break;
                 case END_PORTAL:
                     block.setType(Material.ENDER_PORTAL);
@@ -258,11 +259,11 @@ public class CustomBlocks_1_12_R1 extends DirectionUtils implements CustomBlocks
     }
 
     @Override
-    public void rotate(Block block, Player player, BlockFace blockFace) {
+    public void rotateBlock(Block block, Player player, BlockFace direction) {
         BlockState state = block.getState();
         MaterialData data = state.getData();
         if (data instanceof Directional) {
-            ((Directional) data).setFacingDirection(blockFace != null ? blockFace : getDirection(player));
+            ((Directional) data).setFacingDirection(direction);
             state.update(true);
         }
     }

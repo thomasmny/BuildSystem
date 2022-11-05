@@ -11,6 +11,7 @@ package com.eintosti.buildsystem.version.v1_17_R1;
 import com.eintosti.buildsystem.version.customblocks.CustomBlock;
 import com.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import com.eintosti.buildsystem.version.util.DirectionUtils;
+import org.bukkit.Axis;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -22,6 +23,7 @@ import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.Lightable;
 import org.bukkit.block.data.MultipleFacing;
 import org.bukkit.block.data.Openable;
+import org.bukkit.block.data.Orientable;
 import org.bukkit.block.data.type.Sign;
 import org.bukkit.block.data.type.Slab;
 import org.bukkit.entity.EntityType;
@@ -87,10 +89,10 @@ public class CustomBlocks_1_17_R1 extends DirectionUtils implements CustomBlocks
                 case BROWN_MUSHROOM:
                     block.setType(Material.BROWN_MUSHROOM_BLOCK);
                     break;
-                case MUSHROOM_STEM:
+                case FULL_MUSHROOM_STEM:
                     block.setType(Material.MUSHROOM_STEM);
                     break;
-                case FULL_MUSHROOM_STEM:
+                case MUSHROOM_STEM:
                     block.setType(Material.MUSHROOM_STEM);
                     MultipleFacing block9Data = (MultipleFacing) block.getBlockData();
                     block9Data.setFace(BlockFace.UP, false);
@@ -118,21 +120,22 @@ public class CustomBlocks_1_17_R1 extends DirectionUtils implements CustomBlocks
                 case SMOOTH_RED_SANDSTONE:
                     block.setType(Material.SMOOTH_RED_SANDSTONE);
                     break;
-                case REDSTONE_LAMP:
+                case POWERED_REDSTONE_LAMP:
                     block.setType(Material.REDSTONE_LAMP);
                     powerLamp(block);
                     break;
                 case BURNING_FURNACE:
                     block.setType(Material.FURNACE);
                     powerFurnace(block);
-                    rotate(block, player, null);
+                    rotateBlock(block, player, getBlockDirection(player, false));
                     break;
                 case PISTON_HEAD:
                     block.setType(Material.PISTON_HEAD);
-                    rotate(block, player, getPistonBlockFace(player));
+                    rotateBlock(block, player, getBlockDirection(player, true));
                     break;
                 case COMMAND_BLOCK:
                     block.setType(Material.COMMAND_BLOCK);
+                    rotateBlock(block, player, getBlockDirection(player, true));
                     break;
                 case BARRIER:
                     block.setType(Material.BARRIER);
@@ -145,6 +148,7 @@ public class CustomBlocks_1_17_R1 extends DirectionUtils implements CustomBlocks
                     break;
                 case NETHER_PORTAL:
                     block.setType(Material.NETHER_PORTAL);
+                    rotateBlock(block, player, getBlockDirection(player, false));
                     break;
                 case END_PORTAL:
                     block.setType(Material.END_PORTAL);
@@ -230,14 +234,18 @@ public class CustomBlocks_1_17_R1 extends DirectionUtils implements CustomBlocks
     }
 
     @Override
-    public void rotate(Block block, Player player, BlockFace blockFace) {
-        BlockFace direction = blockFace != null ? blockFace : getDirection(player);
+    public void rotateBlock(Block block, Player player, BlockFace direction) {
         BlockData blockData = block.getBlockData();
 
         if (blockData instanceof Directional) {
             Directional directional = (Directional) blockData;
             directional.setFacing(direction);
             block.setBlockData(directional);
+        } else if (blockData instanceof Orientable) {
+            Orientable orientable = (Orientable) blockData;
+            Axis axis = (direction == BlockFace.NORTH || direction == BlockFace.SOUTH) ? Axis.X : Axis.Z;
+            orientable.setAxis(axis);
+            block.setBlockData(orientable);
         } else if (blockData instanceof Sign) {
             Sign sign = (Sign) blockData;
             sign.setRotation(direction);

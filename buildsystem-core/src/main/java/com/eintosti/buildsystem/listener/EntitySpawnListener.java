@@ -11,7 +11,7 @@ package com.eintosti.buildsystem.listener;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.util.ManageEntityAI;
+import com.eintosti.buildsystem.util.EntityAIManager;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -45,7 +45,7 @@ public class EntitySpawnListener implements Listener {
 
         Entity entity = event.getEntity();
         if (entity instanceof LivingEntity) {
-            ManageEntityAI.setAIEnabled(entity, false);
+            EntityAIManager.setAIEnabled(entity, false);
         }
     }
 }

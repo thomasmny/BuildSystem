@@ -197,7 +197,7 @@ public class SettingsInteractListener implements Listener {
                     material = Material.getMaterial("SIGN_POST") != null ? Material.valueOf("SIGN_POST") : material;
                 }
                 adjacent.setType(material);
-                plugin.getCustomBlocks().rotate(adjacent, player, getDirection(player).getOppositeFace());
+                plugin.getCustomBlocks().rotateBlock(adjacent, player, getDirection(player).getOppositeFace());
                 break;
             case NORTH:
             case EAST:
@@ -205,7 +205,7 @@ public class SettingsInteractListener implements Listener {
             case WEST:
                 String type = xMaterial.name().replace("_SIGN", "");
                 XMaterial.matchXMaterial(type + "_WALL_SIGN").ifPresent(value -> adjacent.setType(value.parseMaterial()));
-                plugin.getCustomBlocks().rotate(adjacent, player, blockFace);
+                plugin.getCustomBlocks().rotateBlock(adjacent, player, blockFace);
                 break;
             default:
                 break;
@@ -266,7 +266,7 @@ public class SettingsInteractListener implements Listener {
         adjacent.setType(material);
         XBlock.setColor(adjacent, getItemColor(itemStack));
 
-        plugin.getCustomBlocks().rotate(adjacent, player, null);
+        plugin.getCustomBlocks().rotateBlock(adjacent, player, null);
     }
 
     /**

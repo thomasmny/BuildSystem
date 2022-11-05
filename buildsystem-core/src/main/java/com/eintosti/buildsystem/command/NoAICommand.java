@@ -11,7 +11,7 @@ package com.eintosti.buildsystem.command;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.util.ManageEntityAI;
+import com.eintosti.buildsystem.util.EntityAIManager;
 import com.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -91,7 +91,7 @@ public class NoAICommand implements CommandExecutor {
         boolean mobAI = buildWorld.isMobAI();
         for (Entity entity : bukkitWorld.getEntities()) {
             if (entity instanceof LivingEntity) {
-                ManageEntityAI.setAIEnabled(entity, mobAI);
+                EntityAIManager.setAIEnabled(entity, mobAI);
             }
         }
     }
