@@ -8,6 +8,7 @@
 
 package com.eintosti.buildsystem.version.v1_12_R1;
 
+import com.eintosti.buildsystem.version.customblocks.CustomBlock;
 import com.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import com.eintosti.buildsystem.version.util.DirectionUtils;
 import com.google.common.collect.Sets;
@@ -21,7 +22,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.Directional;
 import org.bukkit.material.Door;
 import org.bukkit.material.MaterialData;
@@ -29,7 +29,6 @@ import org.bukkit.material.TrapDoor;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Arrays;
 import java.util.Set;
 
 /**
@@ -50,106 +49,111 @@ public class CustomBlocks_1_12_R1 extends DirectionUtils implements CustomBlocks
 
     @Override
     @SuppressWarnings("deprecation")
-    public void setBlock(BlockPlaceEvent event, String... blockName) {
-        Block block = event.getBlockPlaced();
-        ItemStack itemStack = event.getItemInHand();
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null || !itemMeta.hasDisplayName()) {
+    public void setBlock(BlockPlaceEvent event, String key) {
+        CustomBlock customBlock = CustomBlock.getCustomBlock(key);
+        if (customBlock == null) {
+            plugin.getLogger().warning("Could not find custom block with key: " + key);
             return;
         }
 
-        String displayName = itemMeta.getDisplayName();
         Player player = event.getPlayer();
+        Block block = event.getBlockPlaced();
 
         Bukkit.getScheduler().runTask(plugin, () -> {
-            switch (Arrays.asList(blockName).indexOf(displayName)) {
-                case 0:
+            switch (customBlock) {
+                case FULL_OAK_BARCH:
                     block.setType(Material.LOG);
                     block.setData((byte) 12, true);
                     break;
-                case 1:
+                case FULL_SPRUCE_BARCH:
                     block.setType(Material.LOG);
                     block.setData((byte) 13, true);
                     break;
-                case 2:
+                case FULL_BIRCH_BARCH:
                     block.setType(Material.LOG);
                     block.setData((byte) 14, true);
                     break;
-                case 3:
+                case FULL_JUNGLE_BARCH:
                     block.setType(Material.LOG);
                     block.setData((byte) 15, true);
                     break;
-                case 4:
+                case FULL_ACACIA_BARCH:
                     block.setType(Material.LOG_2);
                     block.setData((byte) 12, true);
                     break;
-                case 5:
+                case FULL_DARK_OAK_BARCH:
                     block.setType(Material.LOG_2);
                     block.setData((byte) 13, true);
                     break;
-                case 6:
+                case RED_MUSHROOM:
                     block.setType(Material.HUGE_MUSHROOM_2);
                     break;
-                case 7:
+                case BROWN_MUSHROOM:
                     block.setType(Material.HUGE_MUSHROOM_1);
                     break;
-                case 8:
-                    block.setType(Material.HUGE_MUSHROOM_1);
-                    block.setData((byte) 15, true);
-                    break;
-                case 9:
+                case MUSHROOM_STEM:
                     block.setType(Material.HUGE_MUSHROOM_1);
                     block.setData((byte) 10, true);
                     break;
-                case 10:
+                case FULL_MUSHROOM_STEM:
+                    block.setType(Material.HUGE_MUSHROOM_1);
+                    block.setData((byte) 15, true);
+                    break;
+                case MUSHROOM_BLOCK:
                     block.setType(Material.HUGE_MUSHROOM_1);
                     block.setData((byte) 0, true);
                     break;
-                case 11:
+                case SMOOTH_STONE:
                     block.setType(Material.DOUBLE_STEP);
                     block.setData((byte) 8, true);
                     break;
-                case 12:
+                case DOUBLE_STONE_SLAB:
                     block.setType(Material.DOUBLE_STEP);
                     block.setData((byte) 0, true);
                     break;
-                case 13:
+                case SMOOTH_SANDSTONE:
                     block.setType(Material.DOUBLE_STEP);
                     block.setData((byte) 9, true);
                     break;
-                case 14:
+                case SMOOTH_RED_SANDSTONE:
                     block.setTypeId(181, true);
                     block.setData((byte) 8, true);
                     break;
-                case 15:
+                case POWERED_REDSTONE_LAMP:
                     block.setType(Material.REDSTONE_LAMP_ON);
                     powerLamp(block);
                     break;
-                case 16:
-                    block.setType(Material.BURNING_FURNACE);
+                case BURNING_FURNACE:
+                    block.setType(Material.FURNACE);
                     powerFurnace(block);
-                    rotate(block, player, null);
+                    rotateBlock(block, player, getBlockDirection(player, false));
                     break;
-                case 17:
+                case PISTON_HEAD:
                     block.setType(Material.PISTON_EXTENSION);
-                    rotate(block, player, getPistonBlockFace(player));
+                    rotateBlock(block, player, getBlockDirection(player, true));
                     break;
-                case 18:
+                case COMMAND_BLOCK:
                     block.setType(Material.COMMAND);
                     break;
-                case 19:
+                case BARRIER:
                     block.setType(Material.BARRIER);
                     break;
-                case 20:
+                case INVISIBLE_ITEM_FRAME:
+                    // Invalid server version
+                    break;
+                case MOB_SPAWNER:
                     block.setType(Material.MOB_SPAWNER);
                     break;
-                case 21:
+                case NETHER_PORTAL:
+                    BlockFace direction = getBlockDirection(player, false);
+                    int orientation = (direction == BlockFace.NORTH || direction == BlockFace.SOUTH) ? 0 : 2;
                     block.setType(Material.PORTAL);
+                    block.setData((byte) orientation, false);
                     break;
-                case 22:
+                case END_PORTAL:
                     block.setType(Material.ENDER_PORTAL);
                     break;
-                case 23:
+                case DRAGON_EGG:
                     block.setType(Material.DRAGON_EGG);
                     break;
                 default:
@@ -257,11 +261,11 @@ public class CustomBlocks_1_12_R1 extends DirectionUtils implements CustomBlocks
     }
 
     @Override
-    public void rotate(Block block, Player player, BlockFace blockFace) {
+    public void rotateBlock(Block block, Player player, BlockFace direction) {
         BlockState state = block.getState();
         MaterialData data = state.getData();
         if (data instanceof Directional) {
-            ((Directional) data).setFacingDirection(blockFace != null ? blockFace : getDirection(player));
+            ((Directional) data).setFacingDirection(direction);
             state.update(true);
         }
     }

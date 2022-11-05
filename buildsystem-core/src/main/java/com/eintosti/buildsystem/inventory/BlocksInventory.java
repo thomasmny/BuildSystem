@@ -10,15 +10,20 @@ package com.eintosti.buildsystem.inventory;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.manager.InventoryManager;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.manager.InventoryManager;
+import com.eintosti.buildsystem.version.customblocks.CustomBlock;
+import com.eintosti.buildsystem.version.util.MinecraftVersion;
 import org.bukkit.Bukkit;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 
 /**
  * @author einTosti
@@ -38,36 +43,43 @@ public class BlocksInventory implements Listener {
         Inventory inventory = Bukkit.createInventory(null, 45, Messages.getString("blocks_title"));
         fillGuiWithGlass(player, inventory);
 
-        inventoryManager.addUrlSkull(inventory, 1, Messages.getString("blocks_full_oak_barch"), "22e4bb979efefd2ddb3f8b1545e59cd360492e12671ec371efc1f88af21ab83");
-        inventoryManager.addUrlSkull(inventory, 2, Messages.getString("blocks_full_spruce_barch"), "966cbdef8efb914d43a213be66b5396f75e5c1b9124f76f67d7cd32525748");
-        inventoryManager.addUrlSkull(inventory, 3, Messages.getString("blocks_full_birch_barch"), "a221f813dacee0fef8c59f76894dbb26415478d9ddfc44c2e708a6d3b7549b");
-        inventoryManager.addUrlSkull(inventory, 4, Messages.getString("blocks_full_jungle_barch"), "1cefc19380683015e47c666e5926b15ee57ab33192f6a7e429244cdffcc262");
-        inventoryManager.addUrlSkull(inventory, 5, Messages.getString("blocks_full_acacia_barch"), "96a3bba2b7a2b4fa46945b1471777abe4599695545229e782259aed41d6");
-        inventoryManager.addUrlSkull(inventory, 6, Messages.getString("blocks_full_dark_oak_barch"), "cde9d4e4c343afdb3ed68038450fc6a67cd208b2efc99fb622c718d24aac");
+        setCustomBlock(inventory, 1, CustomBlock.FULL_OAK_BARCH);
+        setCustomBlock(inventory, 2, CustomBlock.FULL_SPRUCE_BARCH);
+        setCustomBlock(inventory, 3, CustomBlock.FULL_BIRCH_BARCH);
+        setCustomBlock(inventory, 4, CustomBlock.FULL_JUNGLE_BARCH);
+        setCustomBlock(inventory, 5, CustomBlock.FULL_ACACIA_BARCH);
+        setCustomBlock(inventory, 6, CustomBlock.FULL_DARK_OAK_BARCH);
 
-        inventoryManager.addUrlSkull(inventory, 10, Messages.getString("blocks_red_mushroom"), "732dbd6612e9d3f42947b5ca8785bfb334258f3ceb83ad69a5cdeebea4cd65");
-        inventoryManager.addUrlSkull(inventory, 11, Messages.getString("blocks_brown_mushroom"), "fa49eca0369d1e158e539d78149acb1572949b88ba921d9ee694fea4c726b3");
-        inventoryManager.addUrlSkull(inventory, 12, Messages.getString("blocks_full_mushroom_stem"), "f55fa642d5ebcba2c5246fe6499b1c4f6803c10f14f5299c8e59819d5dc");
-        inventoryManager.addUrlSkull(inventory, 13, Messages.getString("blocks_mushroom_stem"), "84d541275c7f924bcb9eb2dbbf4b866b7649c330a6a013b53d584fd4ddf186ca");
-        inventoryManager.addUrlSkull(inventory, 14, Messages.getString("blocks_mushroom_block"), "3fa39ccf4788d9179a8795e6b72382d49297b39217146eda68ae78384355b13");
+        setCustomBlock(inventory, 10, CustomBlock.RED_MUSHROOM);
+        setCustomBlock(inventory, 11, CustomBlock.BROWN_MUSHROOM);
+        setCustomBlock(inventory, 12, CustomBlock.FULL_MUSHROOM_STEM);
+        setCustomBlock(inventory, 13, CustomBlock.MUSHROOM_STEM);
+        setCustomBlock(inventory, 14, CustomBlock.MUSHROOM_BLOCK);
 
-        inventoryManager.addUrlSkull(inventory, 19, Messages.getString("blocks_smooth_stone"), "8dd0cd158c2bb6618650e3954b2d29237f5b4c0ddc7d258e17380ab6979f071");
-        inventoryManager.addUrlSkull(inventory, 20, Messages.getString("blocks_double_stone_slab"), "151e70169ea00f04a9439221cf33770844159dd775fc8830e311fd9b5ccd2969");
-        inventoryManager.addUrlSkull(inventory, 21, Messages.getString("blocks_smooth_sandstone"), "38fffbb0b8fdec6f62b17c451ab214fb86e4e355b116be961a9ae93eb49a43");
-        inventoryManager.addUrlSkull(inventory, 22, Messages.getString("blocks_smooth_red_sandstone"), "a2da7aa1ae6cc9d6c36c18a460d2398162edc2207fdfc9e28a7bf84d7441b8a2");
+        setCustomBlock(inventory, 19, CustomBlock.SMOOTH_STONE);
+        setCustomBlock(inventory, 20, CustomBlock.DOUBLE_STONE_SLAB);
+        setCustomBlock(inventory, 21, CustomBlock.SMOOTH_SANDSTONE);
+        setCustomBlock(inventory, 22, CustomBlock.SMOOTH_RED_SANDSTONE);
 
-        inventoryManager.addUrlSkull(inventory, 28, Messages.getString("blocks_powered_redstone_lamp"), "7eb4b34519fe15847dbea7229179feeb6ea57712d165dcc8ff6b785bb58911b0");
-        inventoryManager.addUrlSkull(inventory, 29, Messages.getString("blocks_burning_furnace"), "d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c");
-        inventoryManager.addUrlSkull(inventory, 30, Messages.getString("blocks_piston_head"), "aa868ce917c09af8e4c350a5807041f6509bf2b89aca45e591fbbd7d4b117d");
-        inventoryManager.addUrlSkull(inventory, 31, Messages.getString("blocks_command_block"), "8514d225b262d847c7e557b474327dcef758c2c5882e41ee6d8c5e9cd3bc914");
-        inventoryManager.addUrlSkull(inventory, 32, Messages.getString("blocks_barrier"), "3ed1aba73f639f4bc42bd48196c715197be2712c3b962c97ebf9e9ed8efa025");
+        setCustomBlock(inventory, 28, CustomBlock.POWERED_REDSTONE_LAMP);
+        setCustomBlock(inventory, 29, CustomBlock.BURNING_FURNACE);
+        setCustomBlock(inventory, 30, CustomBlock.PISTON_HEAD);
+        setCustomBlock(inventory, 31, CustomBlock.COMMAND_BLOCK);
+        setCustomBlock(inventory, 32, CustomBlock.BARRIER);
+        setCustomBlock(inventory, 33, CustomBlock.INVISIBLE_ITEM_FRAME);
 
-        inventoryManager.addUrlSkull(inventory, 37, Messages.getString("blocks_mob_spawner"), "db6bd9727abb55d5415265789d4f2984781a343c68dcaf57f554a5e9aa1cd");
-        inventoryManager.addUrlSkull(inventory, 38, Messages.getString("blocks_nether_portal"), "b0bfc2577f6e26c6c6f7365c2c4076bccee653124989382ce93bca4fc9e39b");
-        inventoryManager.addUrlSkull(inventory, 39, Messages.getString("blocks_end_portal"), "7840b87d52271d2a755dedc82877e0ed3df67dcc42ea479ec146176b02779a5");
-        inventoryManager.addUrlSkull(inventory, 40, Messages.getString("blocks_dragon_egg"), "3c151fb54b21fe5769ffb4825b5bc92da73657f214380e5d0301e45b6c13f7d");
+        setCustomBlock(inventory, 37, CustomBlock.MOB_SPAWNER);
+        setCustomBlock(inventory, 38, CustomBlock.NETHER_PORTAL);
+        setCustomBlock(inventory, 39, CustomBlock.END_PORTAL);
+        setCustomBlock(inventory, 40, CustomBlock.DRAGON_EGG);
 
         return inventory;
+    }
+
+    private void setCustomBlock(Inventory inventory, int position, CustomBlock customBlock) {
+        if (MinecraftVersion.getCurrent().isEqualOrHigherThan(customBlock.getVersion())) {
+            inventoryManager.addUrlSkull(inventory, position, Messages.getString(customBlock.getKey()), customBlock.getSkullUrl());
+        }
     }
 
     public void openInventory(Player player) {
@@ -91,81 +103,100 @@ public class BlocksInventory implements Listener {
         PlayerInventory playerInventory = player.getInventory();
         switch (event.getSlot()) {
             case 1:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_full_oak_barch"), "22e4bb979efefd2ddb3f8b1545e59cd360492e12671ec371efc1f88af21ab83"));
+                giveCustomBlock(CustomBlock.FULL_OAK_BARCH, playerInventory);
                 break;
             case 2:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_full_spruce_barch"), "966cbdef8efb914d43a213be66b5396f75e5c1b9124f76f67d7cd32525748"));
+                giveCustomBlock(CustomBlock.FULL_SPRUCE_BARCH, playerInventory);
                 break;
             case 3:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_full_birch_barch"), "a221f813dacee0fef8c59f76894dbb26415478d9ddfc44c2e708a6d3b7549b"));
+                giveCustomBlock(CustomBlock.FULL_BIRCH_BARCH, playerInventory);
                 break;
             case 4:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_full_jungle_barch"), "1cefc19380683015e47c666e5926b15ee57ab33192f6a7e429244cdffcc262"));
+                giveCustomBlock(CustomBlock.FULL_JUNGLE_BARCH, playerInventory);
                 break;
             case 5:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_full_acacia_barch"), "96a3bba2b7a2b4fa46945b1471777abe4599695545229e782259aed41d6"));
+                giveCustomBlock(CustomBlock.FULL_ACACIA_BARCH, playerInventory);
                 break;
             case 6:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_full_dark_oak_barch"), "cde9d4e4c343afdb3ed68038450fc6a67cd208b2efc99fb622c718d24aac"));
+                giveCustomBlock(CustomBlock.FULL_DARK_OAK_BARCH, playerInventory);
                 break;
 
             case 10:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_red_mushroom"), "732dbd6612e9d3f42947b5ca8785bfb334258f3ceb83ad69a5cdeebea4cd65"));
+                giveCustomBlock(CustomBlock.RED_MUSHROOM, playerInventory);
                 break;
             case 11:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_brown_mushroom"), "fa49eca0369d1e158e539d78149acb1572949b88ba921d9ee694fea4c726b3"));
+                giveCustomBlock(CustomBlock.BROWN_MUSHROOM, playerInventory);
                 break;
             case 12:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_full_mushroom_stem"), "f55fa642d5ebcba2c5246fe6499b1c4f6803c10f14f5299c8e59819d5dc"));
+                giveCustomBlock(CustomBlock.FULL_MUSHROOM_STEM, playerInventory);
                 break;
             case 13:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_mushroom_stem"), "84d541275c7f924bcb9eb2dbbf4b866b7649c330a6a013b53d584fd4ddf186ca"));
+                giveCustomBlock(CustomBlock.MUSHROOM_STEM, playerInventory);
                 break;
             case 14:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_mushroom_block"), "3fa39ccf4788d9179a8795e6b72382d49297b39217146eda68ae78384355b13"));
+                giveCustomBlock(CustomBlock.MUSHROOM_BLOCK, playerInventory);
                 break;
 
             case 19:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_smooth_stone"), "8dd0cd158c2bb6618650e3954b2d29237f5b4c0ddc7d258e17380ab6979f071"));
+                giveCustomBlock(CustomBlock.SMOOTH_STONE, playerInventory);
                 break;
             case 20:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_double_stone_slab"), "151e70169ea00f04a9439221cf33770844159dd775fc8830e311fd9b5ccd2969"));
+                giveCustomBlock(CustomBlock.DOUBLE_STONE_SLAB, playerInventory);
                 break;
             case 21:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_smooth_sandstone"), "38fffbb0b8fdec6f62b17c451ab214fb86e4e355b116be961a9ae93eb49a43"));
+                giveCustomBlock(CustomBlock.SMOOTH_SANDSTONE, playerInventory);
                 break;
             case 22:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_smooth_red_sandstone"), "a2da7aa1ae6cc9d6c36c18a460d2398162edc2207fdfc9e28a7bf84d7441b8a2"));
+                giveCustomBlock(CustomBlock.SMOOTH_RED_SANDSTONE, playerInventory);
                 break;
 
             case 28:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_powered_redstone_lamp"), "7eb4b34519fe15847dbea7229179feeb6ea57712d165dcc8ff6b785bb58911b0"));
+                giveCustomBlock(CustomBlock.POWERED_REDSTONE_LAMP, playerInventory);
                 break;
             case 29:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_burning_furnace"), "d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c"));
+                giveCustomBlock(CustomBlock.BURNING_FURNACE, playerInventory);
                 break;
             case 30:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_piston_head"), "aa868ce917c09af8e4c350a5807041f6509bf2b89aca45e591fbbd7d4b117d"));
+                giveCustomBlock(CustomBlock.PISTON_HEAD, playerInventory);
                 break;
             case 31:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_command_block"), "8514d225b262d847c7e557b474327dcef758c2c5882e41ee6d8c5e9cd3bc914"));
+                giveCustomBlock(CustomBlock.COMMAND_BLOCK, playerInventory);
                 break;
             case 32:
-                playerInventory.addItem(inventoryManager.getItemStack(XMaterial.BARRIER, "§bBarrier"));
+                giveCustomBlock(CustomBlock.BARRIER, playerInventory, inventoryManager.getItemStack(XMaterial.BARRIER, Messages.getString(CustomBlock.BARRIER.getKey())));
+                break;
+            case 33:
+                ItemStack itemStack = inventoryManager.getItemStack(XMaterial.ITEM_FRAME, Messages.getString(CustomBlock.INVISIBLE_ITEM_FRAME.getKey()));
+                ItemMeta itemMeta = itemStack.getItemMeta();
+                itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
+                // Inline imports to allow backwards compatibility
+                itemMeta.getPersistentDataContainer().set(new org.bukkit.NamespacedKey(plugin, "invisible-itemframe"), org.bukkit.persistence.PersistentDataType.BYTE, (byte) 1);
+                itemStack.setItemMeta(itemMeta);
+                giveCustomBlock(CustomBlock.INVISIBLE_ITEM_FRAME, playerInventory, itemStack);
                 break;
 
             case 37:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_mob_spawner"), "db6bd9727abb55d5415265789d4f2984781a343c68dcaf57f554a5e9aa1cd"));
+                giveCustomBlock(CustomBlock.MOB_SPAWNER, playerInventory);
                 break;
             case 38:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_nether_portal"), "b0bfc2577f6e26c6c6f7365c2c4076bccee653124989382ce93bca4fc9e39b"));
+                giveCustomBlock(CustomBlock.NETHER_PORTAL, playerInventory);
                 break;
             case 39:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_end_portal"), "7840b87d52271d2a755dedc82877e0ed3df67dcc42ea479ec146176b02779a5"));
+                giveCustomBlock(CustomBlock.END_PORTAL, playerInventory);
                 break;
             case 40:
-                playerInventory.addItem(inventoryManager.getUrlSkull(Messages.getString("blocks_dragon_egg"), "3c151fb54b21fe5769ffb4825b5bc92da73657f214380e5d0301e45b6c13f7d"));
+                giveCustomBlock(CustomBlock.DRAGON_EGG, playerInventory);
                 break;
         }
+    }
+
+    private void giveCustomBlock(CustomBlock customBlock, Inventory inventory, ItemStack itemStack) {
+        if (MinecraftVersion.getCurrent().isEqualOrHigherThan(customBlock.getVersion())) {
+            inventory.addItem(itemStack);
+        }
+    }
+
+    private void giveCustomBlock(CustomBlock customBlock, Inventory inventory) {
+        giveCustomBlock(customBlock, inventory, inventoryManager.getUrlSkull(Messages.getString(customBlock.getKey()), customBlock.getSkullUrl()));
     }
 }

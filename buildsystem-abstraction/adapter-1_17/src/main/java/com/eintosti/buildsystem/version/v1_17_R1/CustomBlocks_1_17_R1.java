@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-package com.eintosti.buildsystem.version.v1_14_R1;
+package com.eintosti.buildsystem.version.v1_17_R1;
 
 import com.eintosti.buildsystem.version.customblocks.CustomBlock;
 import com.eintosti.buildsystem.version.customblocks.CustomBlocks;
@@ -14,6 +14,7 @@ import com.eintosti.buildsystem.version.util.DirectionUtils;
 import org.bukkit.Axis;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Furnace;
@@ -25,20 +26,30 @@ import org.bukkit.block.data.Openable;
 import org.bukkit.block.data.Orientable;
 import org.bukkit.block.data.type.Sign;
 import org.bukkit.block.data.type.Slab;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
  * @author einTosti
  */
-public class CustomBlocks_1_14_R1 extends DirectionUtils implements CustomBlocks {
+public class CustomBlocks_1_17_R1 extends DirectionUtils implements CustomBlocks, Listener {
 
     private final JavaPlugin plugin;
 
-    public CustomBlocks_1_14_R1(JavaPlugin plugin) {
+    public CustomBlocks_1_17_R1(JavaPlugin plugin) {
         this.plugin = plugin;
+
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @Override
@@ -130,8 +141,8 @@ public class CustomBlocks_1_14_R1 extends DirectionUtils implements CustomBlocks
                     block.setType(Material.BARRIER);
                     break;
                 case INVISIBLE_ITEM_FRAME:
-                    // Invalid server version
-                    break;
+                    // Handled below
+                    return;
                 case MOB_SPAWNER:
                     block.setType(Material.SPAWNER);
                     break;
@@ -151,6 +162,22 @@ public class CustomBlocks_1_14_R1 extends DirectionUtils implements CustomBlocks
 
             event.setCancelled(true);
         });
+    }
+
+    @EventHandler
+    public void onInvisibleItemFramePlacement(HangingPlaceEvent event) {
+        if (event.getEntity().getType() != EntityType.ITEM_FRAME) {
+            return;
+        }
+
+        ItemStack itemStack = event.getItemStack();
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if (!itemMeta.getPersistentDataContainer().has(new NamespacedKey(plugin, "invisible-itemframe"), PersistentDataType.BYTE)) {
+            return;
+        }
+
+        ItemFrame itemFrame = (ItemFrame) event.getEntity();
+        itemFrame.setVisible(false);
     }
 
     @Override

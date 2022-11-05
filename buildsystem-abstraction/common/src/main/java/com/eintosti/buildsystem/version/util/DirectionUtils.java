@@ -52,7 +52,18 @@ public abstract class DirectionUtils {
         return BlockFace.NORTH;
     }
 
-    public BlockFace getPistonBlockFace(Player player) {
+    /**
+     * Gets the direction the block should be facing.
+     *
+     * @param player The player placing the block
+     * @param allowNonCardinal Should the block be allowed to face {@link BlockFace#UP} and {@link BlockFace#DOWN}
+     * @return The direction the block should be facing
+     */
+    public BlockFace getBlockDirection(Player player, boolean allowNonCardinal) {
+        if (!allowNonCardinal) {
+            return getDirection(player);
+        }
+
         float pitch = player.getLocation().getPitch();
         if (pitch <= -45) {
             return BlockFace.DOWN;

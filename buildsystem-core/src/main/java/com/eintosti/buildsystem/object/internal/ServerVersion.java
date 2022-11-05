@@ -17,6 +17,7 @@ import com.eintosti.buildsystem.version.v1_12_R1.GameRules_1_12_R1;
 import com.eintosti.buildsystem.version.v1_13_R1.CustomBlocks_1_13_R1;
 import com.eintosti.buildsystem.version.v1_13_R1.GameRules_1_13_R1;
 import com.eintosti.buildsystem.version.v1_14_R1.CustomBlocks_1_14_R1;
+import com.eintosti.buildsystem.version.v1_17_R1.CustomBlocks_1_17_R1;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Constructor;
@@ -41,10 +42,10 @@ public enum ServerVersion {
     v1_16_R1(CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
     v1_16_R2(CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
     v1_16_R3(CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
-    v1_17_R1(CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
-    v1_18_R1(CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
-    v1_18_R2(CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
-    v1_19_R1(CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
+    v1_17_R1(CustomBlocks_1_17_R1.class, GameRules_1_13_R1.class),
+    v1_18_R1(CustomBlocks_1_17_R1.class, GameRules_1_13_R1.class),
+    v1_18_R2(CustomBlocks_1_17_R1.class, GameRules_1_13_R1.class),
+    v1_19_R1(CustomBlocks_1_17_R1.class, GameRules_1_13_R1.class),
     UNKNOWN;
 
     private final Class<? extends CustomBlocks> customBlocks;

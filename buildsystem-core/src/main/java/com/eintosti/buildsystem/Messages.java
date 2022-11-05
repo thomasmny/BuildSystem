@@ -844,6 +844,7 @@ public class Messages {
         setMessage(sb, "blocks_piston_head", "&bPiston Head");
         setMessage(sb, "blocks_command_block", "&bCommand Block");
         setMessage(sb, "blocks_barrier", "&bBarrier");
+        setMessage(sb, "blocks_invisible_item_frame", "&bInvisible Item Frame");
         setMessage(sb, "blocks_mob_spawner", "&bMob Spawner");
         setMessage(sb, "blocks_nether_portal", "&bNether Portal");
         setMessage(sb, "blocks_end_portal", "&bEnd Portal");

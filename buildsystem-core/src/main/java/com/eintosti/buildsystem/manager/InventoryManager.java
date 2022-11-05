@@ -222,7 +222,7 @@ public class InventoryManager {
         }
 
         ItemStack itemStack = event.getCurrentItem();
-        if ((itemStack == null) || (itemStack.getType() == Material.AIR) || (!itemStack.hasItemMeta())) {
+        if (itemStack == null || itemStack.getType() == Material.AIR || !itemStack.hasItemMeta()) {
             return false;
         }
 
