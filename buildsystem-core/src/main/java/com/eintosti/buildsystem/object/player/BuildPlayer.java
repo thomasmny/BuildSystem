@@ -22,7 +22,7 @@ import java.util.UUID;
 
 /**
  * @author einTosti
- * @since TODO
+ * @since 2.21.0
  */
 public class BuildPlayer implements ConfigurationSerializable {
 
