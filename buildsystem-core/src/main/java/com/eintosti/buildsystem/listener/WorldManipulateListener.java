@@ -10,10 +10,10 @@ package com.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.object.world.Builder;
-import com.eintosti.buildsystem.object.world.data.WorldStatus;
+import com.eintosti.buildsystem.world.WorldManager;
+import com.eintosti.buildsystem.world.BuildWorld;
+import com.eintosti.buildsystem.world.Builder;
+import com.eintosti.buildsystem.world.data.WorldStatus;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;

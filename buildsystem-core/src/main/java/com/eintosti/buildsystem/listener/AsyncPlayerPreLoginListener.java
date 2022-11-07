@@ -9,13 +9,13 @@
 package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.manager.PlayerManager;
-import com.eintosti.buildsystem.manager.SpawnManager;
-import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.player.BuildPlayer;
-import com.eintosti.buildsystem.object.player.LogoutLocation;
-import com.eintosti.buildsystem.object.settings.Settings;
-import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.player.BuildPlayerManager;
+import com.eintosti.buildsystem.world.SpawnManager;
+import com.eintosti.buildsystem.world.WorldManager;
+import com.eintosti.buildsystem.player.BuildPlayer;
+import com.eintosti.buildsystem.player.LogoutLocation;
+import com.eintosti.buildsystem.settings.Settings;
+import com.eintosti.buildsystem.world.BuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -29,7 +29,7 @@ import java.util.UUID;
 public class AsyncPlayerPreLoginListener implements Listener {
 
     private final BuildSystem plugin;
-    private final PlayerManager playerManager;
+    private final BuildPlayerManager playerManager;
     private final SpawnManager spawnManager;
     private final WorldManager worldManager;
 

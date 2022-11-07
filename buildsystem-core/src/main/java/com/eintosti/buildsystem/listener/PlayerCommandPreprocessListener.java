@@ -11,11 +11,11 @@ package com.eintosti.buildsystem.listener;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
-import com.eintosti.buildsystem.manager.InventoryManager;
-import com.eintosti.buildsystem.manager.SettingsManager;
-import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.object.world.data.WorldStatus;
+import com.eintosti.buildsystem.util.InventoryUtil;
+import com.eintosti.buildsystem.settings.SettingsManager;
+import com.eintosti.buildsystem.world.WorldManager;
+import com.eintosti.buildsystem.world.BuildWorld;
+import com.eintosti.buildsystem.world.data.WorldStatus;
 import com.eintosti.buildsystem.Messages;
 import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
@@ -212,7 +212,7 @@ public class PlayerCommandPreprocessListener implements Listener {
 
     private final BuildSystem plugin;
     private final ConfigValues configValues;
-    private final InventoryManager inventoryManager;
+    private final InventoryUtil inventoryManager;
     private final SettingsManager settingsManager;
     private final WorldManager worldManager;
 

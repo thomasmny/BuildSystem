@@ -9,8 +9,8 @@
 package com.eintosti.buildsystem.command;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.world.WorldManager;
+import com.eintosti.buildsystem.world.BuildWorld;
 import com.eintosti.buildsystem.util.EntityAIManager;
 import com.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;

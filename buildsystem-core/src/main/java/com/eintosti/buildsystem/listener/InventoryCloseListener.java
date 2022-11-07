@@ -10,9 +10,9 @@ package com.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.manager.InventoryManager;
-import com.eintosti.buildsystem.object.world.data.WorldStatus;
-import com.eintosti.buildsystem.object.world.data.WorldType;
+import com.eintosti.buildsystem.util.InventoryUtil;
+import com.eintosti.buildsystem.world.data.WorldStatus;
+import com.eintosti.buildsystem.world.data.WorldType;
 import com.eintosti.buildsystem.Messages;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -25,7 +25,7 @@ import org.bukkit.inventory.ItemStack;
  */
 public class InventoryCloseListener implements Listener {
 
-    private final InventoryManager inventoryManager;
+    private final InventoryUtil inventoryManager;
 
     public InventoryCloseListener(BuildSystem plugin) {
         this.inventoryManager = plugin.getInventoryManager();

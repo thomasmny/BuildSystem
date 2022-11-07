@@ -10,9 +10,9 @@ package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
-import com.eintosti.buildsystem.manager.InventoryManager;
-import com.eintosti.buildsystem.manager.SettingsManager;
-import com.eintosti.buildsystem.object.settings.Settings;
+import com.eintosti.buildsystem.util.InventoryUtil;
+import com.eintosti.buildsystem.settings.SettingsManager;
+import com.eintosti.buildsystem.settings.Settings;
 import com.eintosti.buildsystem.Messages;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -26,7 +26,7 @@ import org.bukkit.inventory.PlayerInventory;
 public class PlayerInventoryClearListener implements Listener {
 
     private final BuildSystem plugin;
-    private final InventoryManager inventoryManager;
+    private final InventoryUtil inventoryManager;
     private final SettingsManager settingsManager;
 
     public PlayerInventoryClearListener(BuildSystem plugin) {

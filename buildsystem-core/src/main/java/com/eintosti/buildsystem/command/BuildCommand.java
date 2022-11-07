@@ -10,9 +10,9 @@ package com.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.manager.PlayerManager;
-import com.eintosti.buildsystem.object.player.BuildPlayer;
-import com.eintosti.buildsystem.object.player.CachedValues;
+import com.eintosti.buildsystem.player.BuildPlayerManager;
+import com.eintosti.buildsystem.player.BuildPlayer;
+import com.eintosti.buildsystem.player.CachedValues;
 import com.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -31,7 +31,7 @@ import java.util.UUID;
 public class BuildCommand implements CommandExecutor {
 
     private final BuildSystem plugin;
-    private final PlayerManager playerManager;
+    private final BuildPlayerManager playerManager;
 
     public BuildCommand(BuildSystem plugin) {
         this.plugin = plugin;

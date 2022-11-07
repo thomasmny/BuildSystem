@@ -9,9 +9,9 @@
 package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.manager.PlayerManager;
-import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.player.BuildPlayerManager;
+import com.eintosti.buildsystem.world.WorldManager;
+import com.eintosti.buildsystem.world.BuildWorld;
 import com.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -26,7 +26,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
  */
 public class PlayerTeleportListener implements Listener {
 
-    private final PlayerManager playerManager;
+    private final BuildPlayerManager playerManager;
     private final WorldManager worldManager;
 
     public PlayerTeleportListener(BuildSystem plugin) {

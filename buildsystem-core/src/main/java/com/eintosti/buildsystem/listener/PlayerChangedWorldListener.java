@@ -11,14 +11,14 @@ package com.eintosti.buildsystem.listener;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.config.ConfigValues;
-import com.eintosti.buildsystem.manager.ArmorStandManager;
-import com.eintosti.buildsystem.manager.InventoryManager;
-import com.eintosti.buildsystem.manager.PlayerManager;
-import com.eintosti.buildsystem.manager.SettingsManager;
-import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.object.world.data.WorldStatus;
-import com.eintosti.buildsystem.object.world.data.WorldType;
+import com.eintosti.buildsystem.navigator.ArmorStandManager;
+import com.eintosti.buildsystem.util.InventoryUtil;
+import com.eintosti.buildsystem.player.BuildPlayerManager;
+import com.eintosti.buildsystem.settings.SettingsManager;
+import com.eintosti.buildsystem.world.WorldManager;
+import com.eintosti.buildsystem.world.BuildWorld;
+import com.eintosti.buildsystem.world.data.WorldStatus;
+import com.eintosti.buildsystem.world.data.WorldType;
 import com.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -46,8 +46,8 @@ public class PlayerChangedWorldListener implements Listener {
     private final ConfigValues configValues;
 
     private final ArmorStandManager armorStandManager;
-    private final InventoryManager inventoryManager;
-    private final PlayerManager playerManager;
+    private final InventoryUtil inventoryManager;
+    private final BuildPlayerManager playerManager;
     private final SettingsManager settingsManager;
     private final WorldManager worldManager;
 

@@ -9,7 +9,7 @@
 package com.eintosti.buildsystem.config;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.object.player.BuildPlayer;
+import com.eintosti.buildsystem.player.BuildPlayer;
 
 import java.util.UUID;
 

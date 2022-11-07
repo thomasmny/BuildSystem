@@ -9,7 +9,7 @@
 package com.eintosti.buildsystem.tabcomplete;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.manager.WorldManager;
+import com.eintosti.buildsystem.world.WorldManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;

@@ -9,7 +9,7 @@
 package com.eintosti.buildsystem.config;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.object.settings.Settings;
+import com.eintosti.buildsystem.settings.Settings;
 
 import java.util.UUID;
 

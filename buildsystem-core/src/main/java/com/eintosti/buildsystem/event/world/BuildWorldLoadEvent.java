@@ -1,6 +1,6 @@
 package com.eintosti.buildsystem.event.world;
 
-import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.world.BuildWorld;
 
 /**
  * @author einTosti
