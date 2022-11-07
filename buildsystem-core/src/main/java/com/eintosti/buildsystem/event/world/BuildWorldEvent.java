@@ -1,6 +1,6 @@
 package com.eintosti.buildsystem.event.world;
 
-import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.world.BuildWorld;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;

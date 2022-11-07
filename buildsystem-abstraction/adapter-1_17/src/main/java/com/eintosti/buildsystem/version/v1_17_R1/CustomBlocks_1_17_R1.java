@@ -48,7 +48,6 @@ public class CustomBlocks_1_17_R1 extends DirectionUtils implements CustomBlocks
 
     public CustomBlocks_1_17_R1(JavaPlugin plugin) {
         this.plugin = plugin;
-
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 

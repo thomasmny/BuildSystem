@@ -11,19 +11,19 @@ package com.eintosti.buildsystem.listener;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.config.ConfigValues;
-import com.eintosti.buildsystem.manager.ArmorStandManager;
-import com.eintosti.buildsystem.manager.InventoryManager;
-import com.eintosti.buildsystem.manager.PlayerManager;
-import com.eintosti.buildsystem.manager.SettingsManager;
-import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.navigator.NavigatorInventoryType;
-import com.eintosti.buildsystem.object.navigator.NavigatorType;
-import com.eintosti.buildsystem.object.player.CachedValues;
-import com.eintosti.buildsystem.object.settings.Settings;
-import com.eintosti.buildsystem.object.world.BuildWorld;
-import com.eintosti.buildsystem.object.world.data.WorldStatus;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.config.ConfigValues;
+import com.eintosti.buildsystem.navigator.ArmorStandManager;
+import com.eintosti.buildsystem.navigator.NavigatorInventoryType;
+import com.eintosti.buildsystem.navigator.NavigatorType;
+import com.eintosti.buildsystem.player.CachedValues;
+import com.eintosti.buildsystem.player.PlayerManager;
+import com.eintosti.buildsystem.settings.Settings;
+import com.eintosti.buildsystem.settings.SettingsManager;
+import com.eintosti.buildsystem.util.InventoryUtil;
+import com.eintosti.buildsystem.world.BuildWorld;
+import com.eintosti.buildsystem.world.WorldManager;
+import com.eintosti.buildsystem.world.data.WorldStatus;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
@@ -56,7 +56,7 @@ public class NavigatorListener implements Listener {
     private final ConfigValues configValues;
 
     private final ArmorStandManager armorStandManager;
-    private final InventoryManager inventoryManager;
+    private final InventoryUtil inventoryUtil;
     private final PlayerManager playerManager;
     private final SettingsManager settingsManager;
     private final WorldManager worldManager;
@@ -66,7 +66,7 @@ public class NavigatorListener implements Listener {
         this.configValues = plugin.getConfigValues();
 
         this.armorStandManager = plugin.getArmorStandManager();
-        this.inventoryManager = plugin.getInventoryManager();
+        this.inventoryUtil = plugin.getInventoryUtil();
         this.playerManager = plugin.getPlayerManager();
         this.settingsManager = plugin.getSettingsManager();
         this.worldManager = plugin.getWorldManager();
@@ -131,8 +131,8 @@ public class NavigatorListener implements Listener {
             summonNewNavigator(player);
 
             String findItemName = Messages.getString("navigator_item");
-            ItemStack replaceItem = inventoryManager.getItemStack(XMaterial.BARRIER, Messages.getString("barrier_item"));
-            inventoryManager.replaceItem(player, findItemName, configValues.getNavigatorItem(), replaceItem);
+            ItemStack replaceItem = inventoryUtil.getItemStack(XMaterial.BARRIER, Messages.getString("barrier_item"));
+            inventoryUtil.replaceItem(player, findItemName, configValues.getNavigatorItem(), replaceItem);
         }
     }
 

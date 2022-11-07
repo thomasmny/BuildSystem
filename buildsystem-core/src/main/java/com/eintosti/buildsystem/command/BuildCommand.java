@@ -10,10 +10,10 @@ package com.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.manager.PlayerManager;
-import com.eintosti.buildsystem.object.player.BuildPlayer;
-import com.eintosti.buildsystem.object.player.CachedValues;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.player.BuildPlayer;
+import com.eintosti.buildsystem.player.CachedValues;
+import com.eintosti.buildsystem.player.PlayerManager;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
@@ -83,7 +83,7 @@ public class BuildCommand implements CommandExecutor {
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
             if (self) {
-                Messages.sendMessage(target,"build_deactivated_self");
+                Messages.sendMessage(target, "build_deactivated_self");
             } else {
                 XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(sender);
                 Messages.sendMessage(sender, "build_deactivated_other_sender", new AbstractMap.SimpleEntry<>("%target%", target.getName()));
@@ -96,11 +96,11 @@ public class BuildCommand implements CommandExecutor {
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
             if (self) {
-                Messages.sendMessage(target,"build_activated_self");
+                Messages.sendMessage(target, "build_activated_self");
             } else {
                 XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(sender);
-                Messages.sendMessage(sender,"build_activated_other_sender", new AbstractMap.SimpleEntry<>("%target%", target.getName()));
-                Messages.sendMessage(target,"build_activated_other_target", new AbstractMap.SimpleEntry<>("%sender%", sender.getName()));
+                Messages.sendMessage(sender, "build_activated_other_sender", new AbstractMap.SimpleEntry<>("%target%", target.getName()));
+                Messages.sendMessage(target, "build_activated_other_target", new AbstractMap.SimpleEntry<>("%sender%", sender.getName()));
             }
         }
     }

@@ -9,9 +9,9 @@
 package com.eintosti.buildsystem.command;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.config.ConfigValues;
-import com.eintosti.buildsystem.manager.WorldManager;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.config.ConfigValues;
+import com.eintosti.buildsystem.world.WorldManager;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;

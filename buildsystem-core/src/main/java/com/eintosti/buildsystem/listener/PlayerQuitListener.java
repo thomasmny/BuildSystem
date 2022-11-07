@@ -9,11 +9,11 @@
 package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.manager.PlayerManager;
-import com.eintosti.buildsystem.manager.SettingsManager;
-import com.eintosti.buildsystem.object.player.LogoutLocation;
-import com.eintosti.buildsystem.object.settings.Settings;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.player.LogoutLocation;
+import com.eintosti.buildsystem.player.PlayerManager;
+import com.eintosti.buildsystem.settings.Settings;
+import com.eintosti.buildsystem.settings.SettingsManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

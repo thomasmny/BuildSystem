@@ -9,10 +9,10 @@
 package com.eintosti.buildsystem.expansion.placeholderapi;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.manager.SettingsManager;
-import com.eintosti.buildsystem.manager.WorldManager;
-import com.eintosti.buildsystem.object.settings.Settings;
-import com.eintosti.buildsystem.object.world.BuildWorld;
+import com.eintosti.buildsystem.settings.Settings;
+import com.eintosti.buildsystem.settings.SettingsManager;
+import com.eintosti.buildsystem.world.BuildWorld;
+import com.eintosti.buildsystem.world.WorldManager;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -135,7 +135,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "navigatortype":
                 return settings.getNavigatorType().toString();
             case "glasscolor":
-                return settings.getGlassColor().toString();
+                return settings.getDesignColor().toString();
             case "worldsort":
                 return settings.getWorldSort().toString();
             case "clearinventory":
