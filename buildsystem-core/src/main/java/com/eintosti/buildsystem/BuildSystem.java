@@ -45,6 +45,7 @@ import com.eintosti.buildsystem.settings.Settings;
 import com.eintosti.buildsystem.settings.SettingsInventory;
 import com.eintosti.buildsystem.settings.SettingsManager;
 import com.eintosti.buildsystem.settings.SpeedInventory;
+import com.eintosti.buildsystem.tabcomplete.BuildTabComplete;
 import com.eintosti.buildsystem.tabcomplete.ConfigTabComplete;
 import com.eintosti.buildsystem.tabcomplete.EmptyTabComplete;
 import com.eintosti.buildsystem.tabcomplete.GamemodeTabComplete;
@@ -266,6 +267,7 @@ public class BuildSystem extends JavaPlugin {
     }
 
     private void registerTabCompleter() {
+        new BuildTabComplete(this);
         new ConfigTabComplete(this);
         new EmptyTabComplete(this);
         new GamemodeTabComplete(this);
