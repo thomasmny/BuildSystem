@@ -80,6 +80,7 @@ public class BuildCommand implements CommandExecutor {
         if (playerManager.getBuildModePlayers().contains(targetUuid)) {
             playerManager.getBuildModePlayers().remove(targetUuid);
             cachedValues.resetGameModeIfPresent(target);
+            cachedValues.resetInventoryIfPresent(target);
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
             if (self) {
@@ -91,7 +92,8 @@ public class BuildCommand implements CommandExecutor {
             }
         } else {
             playerManager.getBuildModePlayers().add(targetUuid);
-            cachedValues.setGameMode(target.getGameMode());
+            cachedValues.saveGameMode(target.getGameMode());
+            cachedValues.saveInventory(target.getInventory().getContents());
             target.setGameMode(GameMode.CREATIVE);
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
