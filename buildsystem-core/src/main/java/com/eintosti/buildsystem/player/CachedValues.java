@@ -72,4 +72,11 @@ public class CachedValues {
         player.setFlySpeed(flySpeed);
         this.flySpeed = null;
     }
+
+    public void resetCachedValues(Player player) {
+        resetGameModeIfPresent(player);
+        resetInventoryIfPresent(player);
+        resetWalkSpeedIfPresent(player);
+        resetFlySpeedIfPresent(player);
+    }
 }

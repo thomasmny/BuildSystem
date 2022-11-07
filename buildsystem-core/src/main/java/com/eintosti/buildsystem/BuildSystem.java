@@ -37,7 +37,6 @@ import com.eintosti.buildsystem.navigator.world.PrivateInventory;
 import com.eintosti.buildsystem.navigator.world.WorldsInventory;
 import com.eintosti.buildsystem.player.BlocksInventory;
 import com.eintosti.buildsystem.player.BuildPlayer;
-import com.eintosti.buildsystem.player.CachedValues;
 import com.eintosti.buildsystem.player.LogoutLocation;
 import com.eintosti.buildsystem.player.PlayerManager;
 import com.eintosti.buildsystem.settings.DesignInventory;
@@ -173,13 +172,8 @@ public class BuildSystem extends JavaPlugin {
     public void onDisable() {
         Bukkit.getOnlinePlayers().forEach(pl -> {
             BuildPlayer buildPlayer = playerManager.getBuildPlayer(pl);
+            buildPlayer.getCachedValues().resetCachedValues(pl);
             buildPlayer.setLogoutLocation(new LogoutLocation(pl.getWorld().getName(), pl.getLocation()));
-
-            CachedValues cachedValues = buildPlayer.getCachedValues();
-            cachedValues.resetGameModeIfPresent(pl);
-            cachedValues.resetInventoryIfPresent(pl);
-            cachedValues.resetFlySpeedIfPresent(pl);
-            cachedValues.resetWalkSpeedIfPresent(pl);
 
             settingsManager.stopScoreboard(pl);
             noClipManager.stopNoClip(pl.getUniqueId());
