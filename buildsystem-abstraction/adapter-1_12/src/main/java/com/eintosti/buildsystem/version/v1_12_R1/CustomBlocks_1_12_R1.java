@@ -10,7 +10,7 @@ package com.eintosti.buildsystem.version.v1_12_R1;
 
 import com.eintosti.buildsystem.version.customblocks.CustomBlock;
 import com.eintosti.buildsystem.version.customblocks.CustomBlocks;
-import com.eintosti.buildsystem.version.util.DirectionUtils;
+import com.eintosti.buildsystem.version.util.DirectionUtil;
 import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -34,7 +34,7 @@ import java.util.Set;
 /**
  * @author einTosti
  */
-public class CustomBlocks_1_12_R1 extends DirectionUtils implements CustomBlocks {
+public class CustomBlocks_1_12_R1 implements CustomBlocks {
 
     private final JavaPlugin plugin;
 
@@ -126,11 +126,11 @@ public class CustomBlocks_1_12_R1 extends DirectionUtils implements CustomBlocks
                 case BURNING_FURNACE:
                     block.setType(Material.FURNACE);
                     powerFurnace(block);
-                    rotateBlock(block, player, getBlockDirection(player, false));
+                    rotateBlock(block, player, DirectionUtil.getBlockDirection(player, false));
                     break;
                 case PISTON_HEAD:
                     block.setType(Material.PISTON_EXTENSION);
-                    rotateBlock(block, player, getBlockDirection(player, true));
+                    rotateBlock(block, player, DirectionUtil.getBlockDirection(player, true));
                     break;
                 case COMMAND_BLOCK:
                     block.setType(Material.COMMAND);
@@ -145,7 +145,7 @@ public class CustomBlocks_1_12_R1 extends DirectionUtils implements CustomBlocks
                     block.setType(Material.MOB_SPAWNER);
                     break;
                 case NETHER_PORTAL:
-                    BlockFace direction = getBlockDirection(player, false);
+                    BlockFace direction = DirectionUtil.getBlockDirection(player, false);
                     int orientation = (direction == BlockFace.NORTH || direction == BlockFace.SOUTH) ? 0 : 2;
                     block.setType(Material.PORTAL);
                     block.setData((byte) orientation, false);
@@ -224,7 +224,7 @@ public class CustomBlocks_1_12_R1 extends DirectionUtils implements CustomBlocks
             event.setCancelled(true);
 
             byte data = block.getData();
-            if (isTop(player, block)) {
+            if (DirectionUtil.isTop(player, block)) {
                 block.setType(changedMaterial);
                 block.setData(data);
             } else {

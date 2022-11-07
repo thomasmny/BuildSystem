@@ -10,7 +10,7 @@ package com.eintosti.buildsystem.version.v1_17_R1;
 
 import com.eintosti.buildsystem.version.customblocks.CustomBlock;
 import com.eintosti.buildsystem.version.customblocks.CustomBlocks;
-import com.eintosti.buildsystem.version.util.DirectionUtils;
+import com.eintosti.buildsystem.version.util.DirectionUtil;
 import org.bukkit.Axis;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -42,7 +42,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  * @author einTosti
  */
-public class CustomBlocks_1_17_R1 extends DirectionUtils implements CustomBlocks, Listener {
+public class CustomBlocks_1_17_R1 implements CustomBlocks, Listener {
 
     private final JavaPlugin plugin;
 
@@ -126,15 +126,15 @@ public class CustomBlocks_1_17_R1 extends DirectionUtils implements CustomBlocks
                 case BURNING_FURNACE:
                     block.setType(Material.FURNACE);
                     powerFurnace(block);
-                    rotateBlock(block, player, getBlockDirection(player, false));
+                    rotateBlock(block, player, DirectionUtil.getBlockDirection(player, false));
                     break;
                 case PISTON_HEAD:
                     block.setType(Material.PISTON_HEAD);
-                    rotateBlock(block, player, getBlockDirection(player, true));
+                    rotateBlock(block, player, DirectionUtil.getBlockDirection(player, true));
                     break;
                 case COMMAND_BLOCK:
                     block.setType(Material.COMMAND_BLOCK);
-                    rotateBlock(block, player, getBlockDirection(player, true));
+                    rotateBlock(block, player, DirectionUtil.getBlockDirection(player, true));
                     break;
                 case BARRIER:
                     block.setType(Material.BARRIER);
@@ -147,7 +147,7 @@ public class CustomBlocks_1_17_R1 extends DirectionUtils implements CustomBlocks
                     break;
                 case NETHER_PORTAL:
                     block.setType(Material.NETHER_PORTAL);
-                    rotateBlock(block, player, getBlockDirection(player, false));
+                    rotateBlock(block, player, DirectionUtil.getBlockDirection(player, false));
                     break;
                 case END_PORTAL:
                     block.setType(Material.END_PORTAL);
@@ -205,7 +205,7 @@ public class CustomBlocks_1_17_R1 extends DirectionUtils implements CustomBlocks
         event.setCancelled(true);
         Player player = event.getPlayer();
 
-        if (isTop(player, block)) {
+        if (DirectionUtil.isTop(player, block)) {
             slab.setType(Slab.Type.BOTTOM);
         } else {
             slab.setType(Slab.Type.TOP);
