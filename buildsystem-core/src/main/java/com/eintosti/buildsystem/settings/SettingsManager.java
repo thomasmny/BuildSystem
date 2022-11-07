@@ -14,10 +14,12 @@ import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.config.SettingsConfig;
 import com.eintosti.buildsystem.navigator.NavigatorType;
 import com.eintosti.buildsystem.navigator.WorldSort;
+import com.eintosti.buildsystem.player.PlayerManager;
 import com.eintosti.buildsystem.world.BuildWorld;
 import com.eintosti.buildsystem.world.WorldManager;
 import fr.mrmicky.fastboard.FastBoard;
 import org.bukkit.Bukkit;
+import org.bukkit.Server;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -193,6 +195,12 @@ public class SettingsManager {
         Bukkit.getOnlinePlayers().forEach(this::stopScoreboard);
     }
 
+    /**
+     * Loads all per-player settings.
+     *
+     * @deprecated Player settings are now loading in {@link PlayerManager#load()}
+     */
+    @Deprecated
     public void load() {
         FileConfiguration configuration = settingsConfig.getFile();
         ConfigurationSection configurationSection = configuration.getConfigurationSection("settings");

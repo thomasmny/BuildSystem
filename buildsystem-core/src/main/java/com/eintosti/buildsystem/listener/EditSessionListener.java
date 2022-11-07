@@ -27,13 +27,10 @@ import org.bukkit.event.Listener;
  */
 public class EditSessionListener implements Listener {
 
-    private final BuildSystem plugin;
     private final WorldManager worldManager;
 
     public EditSessionListener(BuildSystem plugin) {
-        this.plugin = plugin;
         this.worldManager = plugin.getWorldManager();
-
         WorldEdit.getInstance().getEventBus().register(this);
     }
 

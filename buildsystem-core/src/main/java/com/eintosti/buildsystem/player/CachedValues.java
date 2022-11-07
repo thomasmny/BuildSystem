@@ -10,6 +10,7 @@ package com.eintosti.buildsystem.player;
 
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 /**
  * @author einTosti
@@ -18,10 +19,12 @@ import org.bukkit.entity.Player;
 public class CachedValues {
 
     private GameMode gameMode;
+    private ItemStack[] inventory;
+
     private Float walkSpeed;
     private Float flySpeed;
 
-    public void setGameMode(GameMode gameMode) {
+    public void saveGameMode(GameMode gameMode) {
         this.gameMode = gameMode;
     }
 
@@ -33,7 +36,20 @@ public class CachedValues {
         this.gameMode = null;
     }
 
-    public void setWalkSpeed(float walkSpeed) {
+    public void saveInventory(ItemStack[] inventory) {
+        this.inventory = inventory;
+    }
+
+    public void resetInventoryIfPresent(Player player) {
+        if (this.inventory == null) {
+            return;
+        }
+        player.getInventory().clear();
+        player.getInventory().setContents(this.inventory);
+        this.inventory = null;
+    }
+
+    public void saveWalkSpeed(float walkSpeed) {
         this.walkSpeed = walkSpeed;
     }
 
@@ -45,7 +61,7 @@ public class CachedValues {
         this.walkSpeed = null;
     }
 
-    public void setFlySpeed(float flySpeed) {
+    public void saveFlySpeed(float flySpeed) {
         this.flySpeed = flySpeed;
     }
 
@@ -55,5 +71,12 @@ public class CachedValues {
         }
         player.setFlySpeed(flySpeed);
         this.flySpeed = null;
+    }
+
+    public void resetCachedValues(Player player) {
+        resetGameModeIfPresent(player);
+        resetInventoryIfPresent(player);
+        resetWalkSpeedIfPresent(player);
+        resetFlySpeedIfPresent(player);
     }
 }

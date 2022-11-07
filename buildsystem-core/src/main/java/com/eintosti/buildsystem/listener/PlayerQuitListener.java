@@ -10,6 +10,8 @@ package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.player.BuildPlayer;
+import com.eintosti.buildsystem.player.CachedValues;
 import com.eintosti.buildsystem.player.LogoutLocation;
 import com.eintosti.buildsystem.player.PlayerManager;
 import com.eintosti.buildsystem.settings.Settings;
@@ -64,10 +66,16 @@ public class PlayerQuitListener implements Listener {
             player.getInventory().clear();
         }
 
-        playerManager.getBuildPlayer(player).setLogoutLocation(new LogoutLocation(
+        BuildPlayer buildPlayer = playerManager.getBuildPlayer(player);
+        buildPlayer.setLogoutLocation(new LogoutLocation(
                 player.getWorld().getName(),
                 player.getLocation()
         ));
+
+        CachedValues cachedValues = buildPlayer.getCachedValues();
+        cachedValues.resetGameModeIfPresent(player);
+        cachedValues.resetInventoryIfPresent(player);
+        playerManager.getBuildModePlayers().remove(player.getUniqueId());
 
         manageHidePlayer(player);
     }

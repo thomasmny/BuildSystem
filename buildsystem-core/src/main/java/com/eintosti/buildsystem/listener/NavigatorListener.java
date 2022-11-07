@@ -138,8 +138,8 @@ public class NavigatorListener implements Listener {
 
     private void summonNewNavigator(Player player) {
         CachedValues cachedValues = playerManager.getBuildPlayer(player).getCachedValues();
-        cachedValues.setWalkSpeed(player.getWalkSpeed());
-        cachedValues.setFlySpeed(player.getFlySpeed());
+        cachedValues.saveWalkSpeed(player.getWalkSpeed());
+        cachedValues.saveFlySpeed(player.getFlySpeed());
 
         player.setWalkSpeed(0);
         player.setFlySpeed(0);

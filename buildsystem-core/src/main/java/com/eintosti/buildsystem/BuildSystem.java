@@ -171,10 +171,13 @@ public class BuildSystem extends JavaPlugin {
     @Override
     public void onDisable() {
         Bukkit.getOnlinePlayers().forEach(pl -> {
+            BuildPlayer buildPlayer = playerManager.getBuildPlayer(pl);
+            buildPlayer.getCachedValues().resetCachedValues(pl);
+            buildPlayer.setLogoutLocation(new LogoutLocation(pl.getWorld().getName(), pl.getLocation()));
+
             settingsManager.stopScoreboard(pl);
             noClipManager.stopNoClip(pl.getUniqueId());
             playerManager.closeNavigator(pl);
-            playerManager.getBuildPlayer(pl).setLogoutLocation(new LogoutLocation(pl.getWorld().getName(), pl.getLocation()));
         });
 
         reloadConfig();
