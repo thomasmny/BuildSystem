@@ -8,7 +8,6 @@
 
 package com.eintosti.buildsystem;
 
-import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.util.RGBUtils;
 import com.google.common.collect.Lists;
 import org.bukkit.Bukkit;

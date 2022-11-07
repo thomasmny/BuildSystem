@@ -11,11 +11,11 @@ package com.eintosti.buildsystem.world;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.navigator.world.FilteredWorldsInventory.Visibility;
 import com.eintosti.buildsystem.util.InventoryUtil;
 import com.eintosti.buildsystem.util.PaginatedInventory;
 import com.eintosti.buildsystem.world.data.WorldType;
-import com.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.enchantments.Enchantment;
@@ -37,8 +37,8 @@ import java.util.UUID;
 public class CreateInventory extends PaginatedInventory implements Listener {
 
     private final BuildSystem plugin;
-    private final InventoryUtil inventoryManager;
     private final WorldManager worldManager;
+    private final InventoryUtil inventoryUtil;
 
     private int numTemplates = 0;
     private Visibility visibility;
@@ -46,7 +46,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
 
     public CreateInventory(BuildSystem plugin) {
         this.plugin = plugin;
-        this.inventoryManager = plugin.getInventoryManager();
+        this.inventoryUtil = plugin.getInventoryUtil();
         this.worldManager = plugin.getWorldManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -55,9 +55,9 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         Inventory inventory = Bukkit.createInventory(null, 45, Messages.getString("create_title"));
         fillGuiWithGlass(player, inventory, page);
 
-        addPageItem(inventory, page, Page.PREDEFINED, inventoryManager.getUrlSkull(Messages.getString("create_predefined_worlds"), "2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78"));
-        addPageItem(inventory, page, Page.GENERATOR, inventoryManager.getUrlSkull(Messages.getString("create_generators"), "b2f79016cad84d1ae21609c4813782598e387961be13c15682752f126dce7a"));
-        addPageItem(inventory, page, Page.TEMPLATES, inventoryManager.getUrlSkull(Messages.getString("create_templates"), "d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c"));
+        addPageItem(inventory, page, Page.PREDEFINED, inventoryUtil.getUrlSkull(Messages.getString("create_predefined_worlds"), "2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78"));
+        addPageItem(inventory, page, Page.GENERATOR, inventoryUtil.getUrlSkull(Messages.getString("create_generators"), "b2f79016cad84d1ae21609c4813782598e387961be13c15682752f126dce7a"));
+        addPageItem(inventory, page, Page.TEMPLATES, inventoryUtil.getUrlSkull(Messages.getString("create_templates"), "d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c"));
 
         switch (page) {
             case PREDEFINED:
@@ -68,7 +68,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
                 addPredefinedWorldItem(player, inventory, 33, WorldType.VOID, Messages.getString("create_void_world"));
                 break;
             case GENERATOR:
-                inventoryManager.addUrlSkull(inventory, 31, Messages.getString("create_generators_create_world"), "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
+                inventoryUtil.addUrlSkull(inventory, 31, Messages.getString("create_generators_create_world"), "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
                 break;
             case TEMPLATES:
                 // Template stuff is done during inventory open
@@ -98,14 +98,14 @@ public class CreateInventory extends PaginatedInventory implements Listener {
     }
 
     private void addPredefinedWorldItem(Player player, Inventory inventory, int position, WorldType worldType, String displayName) {
-        XMaterial material = inventoryManager.getCreateItem(worldType);
+        XMaterial material = inventoryUtil.getCreateItem(worldType);
 
         if (!player.hasPermission("buildsystem.create.type." + worldType.name().toLowerCase())) {
             material = XMaterial.BARRIER;
             displayName = "§c§m" + ChatColor.stripColor(displayName);
         }
 
-        inventoryManager.addItemStack(inventory, position, material, displayName);
+        inventoryUtil.addItemStack(inventory, position, material, displayName);
     }
 
     private void addTemplates(Player player, Page page) {
@@ -124,7 +124,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         inventories[index] = inventory;
         if (numTemplates == 0) {
             for (int i = 29; i <= 33; i++) {
-                inventoryManager.addItemStack(inventory, i, XMaterial.BARRIER, Messages.getString("create_no_templates"));
+                inventoryUtil.addItemStack(inventory, i, XMaterial.BARRIER, Messages.getString("create_no_templates"));
             }
             return;
         }
@@ -134,7 +134,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         }
 
         for (File templateFile : templateFiles) {
-            inventoryManager.addItemStack(inventory, columnTemplate++, XMaterial.FILLED_MAP, Messages.getString("create_template", new AbstractMap.SimpleEntry<>("%template%", templateFile.getName())));
+            inventoryUtil.addItemStack(inventory, columnTemplate++, XMaterial.FILLED_MAP, Messages.getString("create_template", new AbstractMap.SimpleEntry<>("%template%", templateFile.getName())));
             if (columnTemplate > maxColumnTemplate) {
                 columnTemplate = 29;
                 inventory = getInventory(player, page);
@@ -145,31 +145,31 @@ public class CreateInventory extends PaginatedInventory implements Listener {
 
     private void fillGuiWithGlass(Player player, Inventory inventory, Page page) {
         for (int i = 0; i <= 28; i++) {
-            inventoryManager.addGlassPane(plugin, player, inventory, i);
+            inventoryUtil.addGlassPane(plugin, player, inventory, i);
         }
         for (int i = 34; i <= 44; i++) {
-            inventoryManager.addGlassPane(plugin, player, inventory, i);
+            inventoryUtil.addGlassPane(plugin, player, inventory, i);
         }
 
         switch (page) {
             case GENERATOR:
-                inventoryManager.addGlassPane(plugin, player, inventory, 29);
-                inventoryManager.addGlassPane(plugin, player, inventory, 30);
-                inventoryManager.addGlassPane(plugin, player, inventory, 32);
-                inventoryManager.addGlassPane(plugin, player, inventory, 33);
+                inventoryUtil.addGlassPane(plugin, player, inventory, 29);
+                inventoryUtil.addGlassPane(plugin, player, inventory, 30);
+                inventoryUtil.addGlassPane(plugin, player, inventory, 32);
+                inventoryUtil.addGlassPane(plugin, player, inventory, 33);
                 break;
             case TEMPLATES:
                 UUID playerUUID = player.getUniqueId();
                 if (numTemplates > 1 && invIndex.get(playerUUID) > 0) {
-                    inventoryManager.addUrlSkull(inventory, 38, Messages.getString("gui_previous_page"), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
+                    inventoryUtil.addUrlSkull(inventory, 38, Messages.getString("gui_previous_page"), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
                 } else {
-                    inventoryManager.addGlassPane(plugin, player, inventory, 38);
+                    inventoryUtil.addGlassPane(plugin, player, inventory, 38);
                 }
 
                 if (numTemplates > 1 && invIndex.get(playerUUID) < (numTemplates - 1)) {
-                    inventoryManager.addUrlSkull(inventory, 42, Messages.getString("gui_next_page"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
+                    inventoryUtil.addUrlSkull(inventory, 42, Messages.getString("gui_next_page"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
                 } else {
-                    inventoryManager.addGlassPane(plugin, player, inventory, 42);
+                    inventoryUtil.addGlassPane(plugin, player, inventory, 42);
                 }
                 break;
         }
@@ -177,7 +177,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!inventoryManager.checkIfValidClick(event, "create_title")) {
+        if (!inventoryUtil.checkIfValidClick(event, "create_title")) {
             return;
         }
 

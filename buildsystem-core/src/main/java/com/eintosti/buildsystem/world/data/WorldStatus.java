@@ -8,8 +8,8 @@
 
 package com.eintosti.buildsystem.world.data;
 
-import com.eintosti.buildsystem.world.BuildWorld;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.world.BuildWorld;
 
 /**
  * @author einTosti

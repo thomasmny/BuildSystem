@@ -11,10 +11,10 @@ package com.eintosti.buildsystem.world.data;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.util.InventoryUtil;
-import com.eintosti.buildsystem.world.BuildWorld;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.util.InventoryUtil;
 import com.eintosti.buildsystem.version.gamerules.GameRules;
+import com.eintosti.buildsystem.world.BuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -32,11 +32,11 @@ import java.util.UUID;
 public class GameRuleInventory implements Listener {
 
     private final BuildSystem plugin;
-    private final InventoryUtil inventoryManager;
+    private final InventoryUtil inventoryUtil;
 
     public GameRuleInventory(BuildSystem plugin) {
         this.plugin = plugin;
-        this.inventoryManager = plugin.getInventoryManager();
+        this.inventoryUtil = plugin.getInventoryUtil();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -52,7 +52,7 @@ public class GameRuleInventory implements Listener {
     private void fillGuiWithGlass(Player player, Inventory inventory) {
         for (int i = 0; i < inventory.getSize(); i++) {
             if (!isValidSlot(i)) {
-                inventoryManager.addGlassPane(plugin, player, inventory, i);
+                inventoryUtil.addGlassPane(plugin, player, inventory, i);
             }
         }
 
@@ -62,15 +62,15 @@ public class GameRuleInventory implements Listener {
         int invIndex = gameRules.getInvIndex(playerUUID);
 
         if (numGameRules > 1 && invIndex > 0) {
-            inventoryManager.addUrlSkull(inventory, 36, Messages.getString("gui_previous_page"), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
+            inventoryUtil.addUrlSkull(inventory, 36, Messages.getString("gui_previous_page"), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
         } else {
-            inventoryManager.addGlassPane(plugin, player, inventory, 36);
+            inventoryUtil.addGlassPane(plugin, player, inventory, 36);
         }
 
         if (numGameRules > 1 && invIndex < (numGameRules - 1)) {
-            inventoryManager.addUrlSkull(inventory, 44, Messages.getString("gui_next_page"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
+            inventoryUtil.addUrlSkull(inventory, 44, Messages.getString("gui_next_page"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
         } else {
-            inventoryManager.addGlassPane(plugin, player, inventory, 44);
+            inventoryUtil.addGlassPane(plugin, player, inventory, 44);
         }
     }
 
@@ -80,7 +80,7 @@ public class GameRuleInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!inventoryManager.checkIfValidClick(event, "worldeditor_gamerules_title")) {
+        if (!inventoryUtil.checkIfValidClick(event, "worldeditor_gamerules_title")) {
             return;
         }
 

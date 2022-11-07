@@ -10,19 +10,19 @@ package com.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.config.ConfigValues;
-import com.eintosti.buildsystem.util.InventoryUtil;
-import com.eintosti.buildsystem.player.BuildPlayerManager;
-import com.eintosti.buildsystem.settings.SettingsManager;
-import com.eintosti.buildsystem.world.SpawnManager;
-import com.eintosti.buildsystem.world.WorldManager;
 import com.eintosti.buildsystem.player.BuildPlayer;
 import com.eintosti.buildsystem.player.LogoutLocation;
+import com.eintosti.buildsystem.player.PlayerManager;
 import com.eintosti.buildsystem.settings.Settings;
-import com.eintosti.buildsystem.world.BuildWorld;
-import com.eintosti.buildsystem.world.data.WorldStatus;
-import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.settings.SettingsManager;
+import com.eintosti.buildsystem.util.InventoryUtil;
 import com.eintosti.buildsystem.util.external.UpdateChecker;
+import com.eintosti.buildsystem.world.BuildWorld;
+import com.eintosti.buildsystem.world.SpawnManager;
+import com.eintosti.buildsystem.world.WorldManager;
+import com.eintosti.buildsystem.world.data.WorldStatus;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -45,8 +45,8 @@ public class PlayerJoinListener implements Listener {
     private final BuildSystem plugin;
     private final ConfigValues configValues;
 
-    private final InventoryUtil inventoryManager;
-    private final BuildPlayerManager playerManager;
+    private final InventoryUtil inventoryUtil;
+    private final PlayerManager playerManager;
     private final SettingsManager settingsManager;
     private final SpawnManager spawnManager;
     private final WorldManager worldManager;
@@ -55,7 +55,7 @@ public class PlayerJoinListener implements Listener {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
 
-        this.inventoryManager = plugin.getInventoryManager();
+        this.inventoryUtil = plugin.getInventoryUtil();
         this.playerManager = plugin.getPlayerManager();
         this.settingsManager = plugin.getSettingsManager();
         this.spawnManager = plugin.getSpawnManager();
@@ -130,11 +130,11 @@ public class PlayerJoinListener implements Listener {
         }
 
         PlayerInventory playerInventory = player.getInventory();
-        if (inventoryManager.inventoryContainsNavigator(playerInventory)) {
+        if (inventoryUtil.inventoryContainsNavigator(playerInventory)) {
             return;
         }
 
-        ItemStack itemStack = inventoryManager.getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item"));
+        ItemStack itemStack = inventoryUtil.getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item"));
         ItemStack slot8 = playerInventory.getItem(8);
         if (slot8 == null || slot8.getType() == XMaterial.AIR.parseMaterial()) {
             playerInventory.setItem(8, itemStack);

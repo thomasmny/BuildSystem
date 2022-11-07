@@ -10,16 +10,16 @@ package com.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.navigator.ArmorStandManager;
-import com.eintosti.buildsystem.util.InventoryUtil;
-import com.eintosti.buildsystem.player.BuildPlayerManager;
+import com.eintosti.buildsystem.player.PlayerManager;
 import com.eintosti.buildsystem.settings.SettingsManager;
-import com.eintosti.buildsystem.world.WorldManager;
+import com.eintosti.buildsystem.util.InventoryUtil;
 import com.eintosti.buildsystem.world.BuildWorld;
+import com.eintosti.buildsystem.world.WorldManager;
 import com.eintosti.buildsystem.world.data.WorldStatus;
 import com.eintosti.buildsystem.world.data.WorldType;
-import com.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -46,8 +46,8 @@ public class PlayerChangedWorldListener implements Listener {
     private final ConfigValues configValues;
 
     private final ArmorStandManager armorStandManager;
-    private final InventoryUtil inventoryManager;
-    private final BuildPlayerManager playerManager;
+    private final InventoryUtil inventoryUtil;
+    private final PlayerManager playerManager;
     private final SettingsManager settingsManager;
     private final WorldManager worldManager;
 
@@ -59,7 +59,7 @@ public class PlayerChangedWorldListener implements Listener {
         this.configValues = plugin.getConfigValues();
 
         this.armorStandManager = plugin.getArmorStandManager();
-        this.inventoryManager = plugin.getInventoryManager();
+        this.inventoryUtil = plugin.getInventoryUtil();
         this.playerManager = plugin.getPlayerManager();
         this.settingsManager = plugin.getSettingsManager();
         this.worldManager = plugin.getWorldManager();
@@ -168,7 +168,7 @@ public class PlayerChangedWorldListener implements Listener {
 
             removeArmorContent(player);
             playerInventory.clear();
-            playerInventory.setItem(8, inventoryManager.getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item")));
+            playerInventory.setItem(8, inventoryUtil.getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item")));
             setSpectatorMode(player);
 
             if (configValues.isArchiveVanish()) {
@@ -176,7 +176,7 @@ public class PlayerChangedWorldListener implements Listener {
                 Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
             }
         } else {
-            playerInventory.setItem(8, inventoryManager.getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item")));
+            playerInventory.setItem(8, inventoryUtil.getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item")));
             if (player.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
                 player.removePotionEffect(PotionEffectType.INVISIBILITY);
             }

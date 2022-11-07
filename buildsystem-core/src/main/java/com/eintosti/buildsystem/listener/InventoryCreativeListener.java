@@ -28,11 +28,11 @@ import java.util.List;
 public class InventoryCreativeListener implements Listener {
 
     private final BuildSystem plugin;
-    private final InventoryUtil inventoryManager;
+    private final InventoryUtil inventoryUtil;
 
     public InventoryCreativeListener(BuildSystem plugin) {
         this.plugin = plugin;
-        this.inventoryManager = plugin.getInventoryManager();
+        this.inventoryUtil = plugin.getInventoryUtil();
 
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -44,7 +44,7 @@ public class InventoryCreativeListener implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        List<Integer> navigatorSlots = inventoryManager.getNavigatorSlots(player);
+        List<Integer> navigatorSlots = inventoryUtil.getNavigatorSlots(player);
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             PlayerInventoryClearEvent playerInventoryClearEvent = new PlayerInventoryClearEvent(player, navigatorSlots);

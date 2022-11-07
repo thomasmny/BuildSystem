@@ -11,13 +11,13 @@ package com.eintosti.buildsystem.navigator.world;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.util.InventoryUtil;
 import com.eintosti.buildsystem.util.PaginatedInventory;
+import com.eintosti.buildsystem.world.BuildWorld;
 import com.eintosti.buildsystem.world.CreateInventory;
 import com.eintosti.buildsystem.world.WorldManager;
-import com.eintosti.buildsystem.world.BuildWorld;
 import com.eintosti.buildsystem.world.data.WorldStatus;
-import com.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -37,7 +37,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
     private static final int MAX_WORLDS = 36;
 
     private final BuildSystem plugin;
-    private final InventoryUtil inventoryManager;
+    private final InventoryUtil inventoryUtil;
     private final WorldManager worldManager;
 
     private final String inventoryName;
@@ -47,7 +47,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
 
     public FilteredWorldsInventory(BuildSystem plugin, String inventoryName, String noWorldsText, Visibility visibility, Set<WorldStatus> validStatus) {
         this.plugin = plugin;
-        this.inventoryManager = plugin.getInventoryManager();
+        this.inventoryUtil = plugin.getInventoryUtil();
         this.worldManager = plugin.getWorldManager();
 
         this.inventoryName = inventoryName;
@@ -62,7 +62,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         Inventory inventory = Bukkit.createInventory(null, 54, Messages.getString(inventoryName));
 
         int numOfPages = (numOfWorlds(player) / MAX_WORLDS) + (numOfWorlds(player) % MAX_WORLDS == 0 ? 0 : 1);
-        inventoryManager.fillMultiInvWithGlass(plugin, inventory, player, getInvIndex(player), numOfPages);
+        inventoryUtil.fillMultiInvWithGlass(plugin, inventory, player, getInvIndex(player), numOfPages);
 
         return inventory;
     }
@@ -107,14 +107,14 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         int index = 0;
         inventories[index] = inventory;
         if (numWorlds == 0) {
-            inventoryManager.addUrlSkull(inventory, 22, Messages.getString(noWorldsText), "2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6");
+            inventoryUtil.addUrlSkull(inventory, 22, Messages.getString(noWorldsText), "2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6");
             return;
         }
 
         int columnWorld = 9, maxColumnWorld = 44;
-        for (BuildWorld buildWorld : inventoryManager.sortWorlds(worldManager, plugin.getSettingsManager().getSettings(player))) {
+        for (BuildWorld buildWorld : inventoryUtil.sortWorlds(worldManager, plugin.getSettingsManager().getSettings(player))) {
             if (isValidWorld(player, buildWorld)) {
-                inventoryManager.addWorldItem(player, inventory, columnWorld++, buildWorld);
+                inventoryUtil.addWorldItem(player, inventory, columnWorld++, buildWorld);
             }
 
             if (columnWorld > maxColumnWorld) {
@@ -167,7 +167,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!inventoryManager.checkIfValidClick(event, inventoryName)) {
+        if (!inventoryUtil.checkIfValidClick(event, inventoryName)) {
             return;
         }
 
@@ -198,7 +198,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
             }
         }
 
-        inventoryManager.manageInventoryClick(event, player, itemStack);
+        inventoryUtil.manageInventoryClick(event, player, itemStack);
     }
 
     public enum Visibility {

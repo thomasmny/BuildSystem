@@ -9,11 +9,11 @@
 package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.player.BuildPlayerManager;
-import com.eintosti.buildsystem.settings.SettingsManager;
-import com.eintosti.buildsystem.player.LogoutLocation;
-import com.eintosti.buildsystem.settings.Settings;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.player.LogoutLocation;
+import com.eintosti.buildsystem.player.PlayerManager;
+import com.eintosti.buildsystem.settings.Settings;
+import com.eintosti.buildsystem.settings.SettingsManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -29,7 +29,7 @@ import java.util.AbstractMap;
 public class PlayerQuitListener implements Listener {
 
     private final BuildSystem plugin;
-    private final BuildPlayerManager playerManager;
+    private final PlayerManager playerManager;
     private final SettingsManager settingsManager;
 
     public PlayerQuitListener(BuildSystem plugin) {

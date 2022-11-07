@@ -9,14 +9,14 @@
 package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
-import com.eintosti.buildsystem.util.InventoryUtil;
 import com.eintosti.buildsystem.settings.SettingsManager;
-import com.eintosti.buildsystem.world.WorldManager;
+import com.eintosti.buildsystem.util.InventoryUtil;
 import com.eintosti.buildsystem.world.BuildWorld;
+import com.eintosti.buildsystem.world.WorldManager;
 import com.eintosti.buildsystem.world.data.WorldStatus;
-import com.eintosti.buildsystem.Messages;
 import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -212,7 +212,7 @@ public class PlayerCommandPreprocessListener implements Listener {
 
     private final BuildSystem plugin;
     private final ConfigValues configValues;
-    private final InventoryUtil inventoryManager;
+    private final InventoryUtil inventoryUtil;
     private final SettingsManager settingsManager;
     private final WorldManager worldManager;
 
@@ -220,7 +220,7 @@ public class PlayerCommandPreprocessListener implements Listener {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
 
-        this.inventoryManager = plugin.getInventoryManager();
+        this.inventoryUtil = plugin.getInventoryUtil();
         this.settingsManager = plugin.getSettingsManager();
         this.worldManager = plugin.getWorldManager();
 
@@ -237,13 +237,13 @@ public class PlayerCommandPreprocessListener implements Listener {
         Player player = event.getPlayer();
 
         if (command.equalsIgnoreCase("/clear")) {
-            ItemStack navigatorItem = inventoryManager.getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item"));
+            ItemStack navigatorItem = inventoryUtil.getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item"));
             if (!player.getInventory().contains(navigatorItem)) {
                 return;
             }
 
             if (settingsManager.getSettings(player).isKeepNavigator()) {
-                List<Integer> navigatorSlots = inventoryManager.getNavigatorSlots(player);
+                List<Integer> navigatorSlots = inventoryUtil.getNavigatorSlots(player);
                 Bukkit.getScheduler().runTaskLater(plugin, () -> {
                     PlayerInventoryClearEvent playerInventoryClearEvent = new PlayerInventoryClearEvent(player, navigatorSlots);
                     Bukkit.getServer().getPluginManager().callEvent(playerInventoryClearEvent);

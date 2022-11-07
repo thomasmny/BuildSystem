@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-package com.eintosti.buildsystem.util;
+package com.eintosti.buildsystem.player;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.BuildSystem;
@@ -31,11 +31,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class BlocksInventory implements Listener {
 
     private final BuildSystem plugin;
-    private final InventoryUtil inventoryManager;
+    private final InventoryUtil inventoryUtil;
 
     public BlocksInventory(BuildSystem plugin) {
         this.plugin = plugin;
-        this.inventoryManager = plugin.getInventoryManager();
+        this.inventoryUtil = plugin.getInventoryUtil();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -78,7 +78,7 @@ public class BlocksInventory implements Listener {
 
     private void setCustomBlock(Inventory inventory, int position, CustomBlock customBlock) {
         if (MinecraftVersion.getCurrent().isEqualOrHigherThan(customBlock.getVersion())) {
-            inventoryManager.addUrlSkull(inventory, position, Messages.getString(customBlock.getKey()), customBlock.getSkullUrl());
+            inventoryUtil.addUrlSkull(inventory, position, Messages.getString(customBlock.getKey()), customBlock.getSkullUrl());
         }
     }
 
@@ -89,13 +89,13 @@ public class BlocksInventory implements Listener {
     private void fillGuiWithGlass(Player player, Inventory inventory) {
         int[] glassSlots = {0, 8, 9, 17, 18, 26, 27, 35, 36, 44};
         for (int i : glassSlots) {
-            inventoryManager.addGlassPane(plugin, player, inventory, i);
+            inventoryUtil.addGlassPane(plugin, player, inventory, i);
         }
     }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!inventoryManager.checkIfValidClick(event, "blocks_title")) {
+        if (!inventoryUtil.checkIfValidClick(event, "blocks_title")) {
             return;
         }
 
@@ -163,10 +163,10 @@ public class BlocksInventory implements Listener {
                 giveCustomBlock(CustomBlock.COMMAND_BLOCK, playerInventory);
                 break;
             case 32:
-                giveCustomBlock(CustomBlock.BARRIER, playerInventory, inventoryManager.getItemStack(XMaterial.BARRIER, Messages.getString(CustomBlock.BARRIER.getKey())));
+                giveCustomBlock(CustomBlock.BARRIER, playerInventory, inventoryUtil.getItemStack(XMaterial.BARRIER, Messages.getString(CustomBlock.BARRIER.getKey())));
                 break;
             case 33:
-                ItemStack itemStack = inventoryManager.getItemStack(XMaterial.ITEM_FRAME, Messages.getString(CustomBlock.INVISIBLE_ITEM_FRAME.getKey()));
+                ItemStack itemStack = inventoryUtil.getItemStack(XMaterial.ITEM_FRAME, Messages.getString(CustomBlock.INVISIBLE_ITEM_FRAME.getKey()));
                 ItemMeta itemMeta = itemStack.getItemMeta();
                 itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
                 // Inline imports to allow backwards compatibility
@@ -197,6 +197,6 @@ public class BlocksInventory implements Listener {
     }
 
     private void giveCustomBlock(CustomBlock customBlock, Inventory inventory) {
-        giveCustomBlock(customBlock, inventory, inventoryManager.getUrlSkull(Messages.getString(customBlock.getKey()), customBlock.getSkullUrl()));
+        giveCustomBlock(customBlock, inventory, inventoryUtil.getUrlSkull(Messages.getString(customBlock.getKey()), customBlock.getSkullUrl()));
     }
 }

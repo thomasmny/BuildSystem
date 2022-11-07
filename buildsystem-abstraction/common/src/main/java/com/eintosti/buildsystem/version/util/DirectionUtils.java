@@ -55,7 +55,7 @@ public abstract class DirectionUtils {
     /**
      * Gets the direction the block should be facing.
      *
-     * @param player The player placing the block
+     * @param player           The player placing the block
      * @param allowNonCardinal Should the block be allowed to face {@link BlockFace#UP} and {@link BlockFace#DOWN}
      * @return The direction the block should be facing
      */

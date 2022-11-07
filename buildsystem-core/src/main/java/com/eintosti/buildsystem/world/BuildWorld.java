@@ -16,10 +16,10 @@ import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.event.world.BuildWorldLoadEvent;
 import com.eintosti.buildsystem.event.world.BuildWorldUnloadEvent;
 import com.eintosti.buildsystem.util.InventoryUtil;
+import com.eintosti.buildsystem.util.UUIDFetcher;
 import com.eintosti.buildsystem.world.data.WorldStatus;
 import com.eintosti.buildsystem.world.data.WorldType;
 import com.eintosti.buildsystem.world.generator.CustomGenerator;
-import com.eintosti.buildsystem.util.UUIDFetcher;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Difficulty;
@@ -110,29 +110,29 @@ public class BuildWorld implements ConfigurationSerializable {
         this.difficulty = configValues.getWorldDifficulty();
         this.customGenerator = customGenerator;
 
-        InventoryUtil inventoryManager = plugin.getInventoryManager();
+        InventoryUtil inventoryUtil = plugin.getInventoryUtil();
         switch (worldType) {
             case NORMAL:
-                this.material = inventoryManager.getDefaultItem(WorldType.NORMAL);
+                this.material = inventoryUtil.getDefaultItem(WorldType.NORMAL);
                 break;
             case FLAT:
-                this.material = inventoryManager.getDefaultItem(WorldType.FLAT);
+                this.material = inventoryUtil.getDefaultItem(WorldType.FLAT);
                 break;
             case NETHER:
-                this.material = inventoryManager.getDefaultItem(WorldType.NETHER);
+                this.material = inventoryUtil.getDefaultItem(WorldType.NETHER);
                 break;
             case END:
-                this.material = inventoryManager.getDefaultItem(WorldType.END);
+                this.material = inventoryUtil.getDefaultItem(WorldType.END);
                 break;
             case VOID:
-                this.material = inventoryManager.getDefaultItem(WorldType.VOID);
+                this.material = inventoryUtil.getDefaultItem(WorldType.VOID);
                 break;
             case CUSTOM:
             case TEMPLATE:
                 this.material = XMaterial.FILLED_MAP;
                 break;
             case IMPORTED:
-                this.material = inventoryManager.getDefaultItem(WorldType.IMPORTED);
+                this.material = inventoryUtil.getDefaultItem(WorldType.IMPORTED);
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported world type: " + worldType.name());

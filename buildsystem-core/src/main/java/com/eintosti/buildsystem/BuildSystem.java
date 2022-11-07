@@ -28,34 +28,23 @@ import com.eintosti.buildsystem.command.WorldsCommand;
 import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.expansion.luckperms.LuckPermsExpansion;
 import com.eintosti.buildsystem.expansion.placeholderapi.PlaceholderApiExpansion;
-import com.eintosti.buildsystem.navigator.world.ArchiveInventory;
-import com.eintosti.buildsystem.util.BlocksInventory;
-import com.eintosti.buildsystem.world.data.BuilderInventory;
-import com.eintosti.buildsystem.world.CreateInventory;
-import com.eintosti.buildsystem.world.DeleteInventory;
-import com.eintosti.buildsystem.settings.DesignInventory;
-import com.eintosti.buildsystem.world.EditInventory;
-import com.eintosti.buildsystem.world.data.GameRuleInventory;
-import com.eintosti.buildsystem.navigator.NavigatorInventory;
-import com.eintosti.buildsystem.navigator.world.PrivateInventory;
-import com.eintosti.buildsystem.settings.SettingsInventory;
-import com.eintosti.buildsystem.world.SetupInventory;
-import com.eintosti.buildsystem.settings.SpeedInventory;
-import com.eintosti.buildsystem.world.data.StatusInventory;
-import com.eintosti.buildsystem.navigator.world.WorldsInventory;
+import com.eintosti.buildsystem.internal.ServerVersion;
 import com.eintosti.buildsystem.listener.*;
 import com.eintosti.buildsystem.navigator.ArmorStandManager;
-import com.eintosti.buildsystem.util.InventoryUtil;
-import com.eintosti.buildsystem.settings.NoClipManager;
-import com.eintosti.buildsystem.player.BuildPlayerManager;
-import com.eintosti.buildsystem.settings.SettingsManager;
-import com.eintosti.buildsystem.world.SpawnManager;
-import com.eintosti.buildsystem.world.WorldManager;
-import com.eintosti.buildsystem.internal.ServerVersion;
+import com.eintosti.buildsystem.navigator.NavigatorInventory;
+import com.eintosti.buildsystem.navigator.world.ArchiveInventory;
+import com.eintosti.buildsystem.navigator.world.PrivateInventory;
+import com.eintosti.buildsystem.navigator.world.WorldsInventory;
+import com.eintosti.buildsystem.player.BlocksInventory;
 import com.eintosti.buildsystem.player.BuildPlayer;
 import com.eintosti.buildsystem.player.LogoutLocation;
+import com.eintosti.buildsystem.player.PlayerManager;
+import com.eintosti.buildsystem.settings.DesignInventory;
+import com.eintosti.buildsystem.settings.NoClipManager;
 import com.eintosti.buildsystem.settings.Settings;
-import com.eintosti.buildsystem.world.BuildWorld;
+import com.eintosti.buildsystem.settings.SettingsInventory;
+import com.eintosti.buildsystem.settings.SettingsManager;
+import com.eintosti.buildsystem.settings.SpeedInventory;
 import com.eintosti.buildsystem.tabcomplete.ConfigTabComplete;
 import com.eintosti.buildsystem.tabcomplete.EmptyTabComplete;
 import com.eintosti.buildsystem.tabcomplete.GamemodeTabComplete;
@@ -64,10 +53,21 @@ import com.eintosti.buildsystem.tabcomplete.SpawnTabComplete;
 import com.eintosti.buildsystem.tabcomplete.SpeedTabComplete;
 import com.eintosti.buildsystem.tabcomplete.TimeTabComplete;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import com.eintosti.buildsystem.util.InventoryUtil;
 import com.eintosti.buildsystem.util.SkullCache;
 import com.eintosti.buildsystem.util.external.UpdateChecker;
 import com.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import com.eintosti.buildsystem.version.gamerules.GameRules;
+import com.eintosti.buildsystem.world.BuildWorld;
+import com.eintosti.buildsystem.world.CreateInventory;
+import com.eintosti.buildsystem.world.DeleteInventory;
+import com.eintosti.buildsystem.world.EditInventory;
+import com.eintosti.buildsystem.world.SetupInventory;
+import com.eintosti.buildsystem.world.SpawnManager;
+import com.eintosti.buildsystem.world.WorldManager;
+import com.eintosti.buildsystem.world.data.BuilderInventory;
+import com.eintosti.buildsystem.world.data.GameRuleInventory;
+import com.eintosti.buildsystem.world.data.StatusInventory;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
@@ -90,12 +90,10 @@ public class BuildSystem extends JavaPlugin {
 
     private String version;
 
-    private WorldsCommand worldsCommand;
-
     private ArmorStandManager armorStandManager;
-    private InventoryUtil inventoryManager;
+    private InventoryUtil inventoryUtil;
     private NoClipManager noClipManager;
-    private BuildPlayerManager playerManager;
+    private PlayerManager playerManager;
     private SettingsManager settingsManager;
     private SpawnManager spawnManager;
     private WorldManager worldManager;
@@ -186,7 +184,7 @@ public class BuildSystem extends JavaPlugin {
         worldManager.save();
         playerManager.save();
         spawnManager.save();
-        inventoryManager.save();
+        inventoryUtil.save();
 
         unregisterExpansions();
 
@@ -207,10 +205,10 @@ public class BuildSystem extends JavaPlugin {
 
     private void initClasses() {
         this.armorStandManager = new ArmorStandManager();
-        this.playerManager = new BuildPlayerManager(this);
-        this.inventoryManager = new InventoryUtil(this);
-        this.inventoryManager.loadTypes();
-        this.inventoryManager.loadStatus();
+        this.playerManager = new PlayerManager(this);
+        this.inventoryUtil = new InventoryUtil(this);
+        this.inventoryUtil.loadTypes();
+        this.inventoryUtil.loadStatus();
         this.noClipManager = new NoClipManager(this);
         this.worldManager = new WorldManager(this);
         this.settingsManager = new SettingsManager(this);
@@ -261,7 +259,7 @@ public class BuildSystem extends JavaPlugin {
         new SpeedCommand(this);
         new TimeCommand(this);
         new TopCommand(this);
-        this.worldsCommand = new WorldsCommand(this);
+        new WorldsCommand(this);
     }
 
     private void registerTabCompleter() {
@@ -396,19 +394,15 @@ public class BuildSystem extends JavaPlugin {
         }
     }
 
-    public WorldsCommand getWorldsCommand() {
-        return worldsCommand;
-    }
-
     public ArmorStandManager getArmorStandManager() {
         return armorStandManager;
     }
 
-    public InventoryUtil getInventoryManager() {
-        return inventoryManager;
+    public InventoryUtil getInventoryUtil() {
+        return inventoryUtil;
     }
 
-    public BuildPlayerManager getPlayerManager() {
+    public PlayerManager getPlayerManager() {
         return playerManager;
     }
 

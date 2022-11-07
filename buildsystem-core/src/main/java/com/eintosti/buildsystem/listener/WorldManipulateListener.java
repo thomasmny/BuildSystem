@@ -10,9 +10,9 @@ package com.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.world.WorldManager;
 import com.eintosti.buildsystem.world.BuildWorld;
 import com.eintosti.buildsystem.world.Builder;
+import com.eintosti.buildsystem.world.WorldManager;
 import com.eintosti.buildsystem.world.data.WorldStatus;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;

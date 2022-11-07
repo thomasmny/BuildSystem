@@ -13,12 +13,12 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XTag;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.config.ConfigValues;
-import com.eintosti.buildsystem.player.BuildPlayerManager;
-import com.eintosti.buildsystem.settings.SettingsManager;
-import com.eintosti.buildsystem.world.WorldManager;
+import com.eintosti.buildsystem.player.PlayerManager;
 import com.eintosti.buildsystem.settings.Settings;
+import com.eintosti.buildsystem.settings.SettingsManager;
 import com.eintosti.buildsystem.world.BuildWorld;
 import com.eintosti.buildsystem.world.Builder;
+import com.eintosti.buildsystem.world.WorldManager;
 import com.eintosti.buildsystem.world.data.WorldStatus;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
@@ -47,7 +47,7 @@ public class SettingsInteractListener implements Listener {
     private final BuildSystem plugin;
     private final ConfigValues configValues;
 
-    private final BuildPlayerManager playerManager;
+    private final PlayerManager playerManager;
     private final SettingsManager settingsManager;
     private final WorldManager worldManager;
 

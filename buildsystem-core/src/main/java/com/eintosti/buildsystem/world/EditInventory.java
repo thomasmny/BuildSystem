@@ -11,13 +11,13 @@ package com.eintosti.buildsystem.world;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.command.subcommand.worlds.SetPermissionSubCommand;
 import com.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
 import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.navigator.world.FilteredWorldsInventory.Visibility;
-import com.eintosti.buildsystem.player.BuildPlayerManager;
+import com.eintosti.buildsystem.player.PlayerManager;
 import com.eintosti.buildsystem.util.InventoryUtil;
-import com.eintosti.buildsystem.Messages;
 import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -47,13 +47,13 @@ public class EditInventory implements Listener {
 
     private final BuildSystem plugin;
     private final ConfigValues configValues;
-    private final InventoryUtil inventoryManager;
-    private final BuildPlayerManager playerManager;
+    private final InventoryUtil inventoryUtil;
+    private final PlayerManager playerManager;
 
     public EditInventory(BuildSystem plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
-        this.inventoryManager = plugin.getInventoryManager();
+        this.inventoryUtil = plugin.getInventoryUtil();
         this.playerManager = plugin.getPlayerManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -69,16 +69,16 @@ public class EditInventory implements Listener {
         addSettingsItem(inventory, 22, XMaterial.SAND, buildWorld.isPhysics(), Messages.getString("worldeditor_physics_item"), Messages.getStringList("worldeditor_physics_lore"));
         addTimeItem(inventory, buildWorld);
         addSettingsItem(inventory, 24, XMaterial.TNT, buildWorld.isExplosions(), Messages.getString("worldeditor_explosions_item"), Messages.getStringList("worldeditor_explosions_lore"));
-        inventoryManager.addItemStack(inventory, 29, XMaterial.DIAMOND_SWORD, Messages.getString("worldeditor_butcher_item"), Messages.getStringList("worldeditor_butcher_lore"));
+        inventoryUtil.addItemStack(inventory, 29, XMaterial.DIAMOND_SWORD, Messages.getString("worldeditor_butcher_item"), Messages.getStringList("worldeditor_butcher_lore"));
         addBuildersItem(inventory, buildWorld, player);
         addSettingsItem(inventory, 31, XMaterial.ARMOR_STAND, buildWorld.isMobAI(), Messages.getString("worldeditor_mobai_item"), Messages.getStringList("worldeditor_mobai_lore"));
         addVisibilityItem(inventory, buildWorld, player);
         addSettingsItem(inventory, 33, XMaterial.TRIPWIRE_HOOK, buildWorld.isBlockInteractions(), Messages.getString("worldeditor_blockinteractions_item"), Messages.getStringList("worldeditor_blockinteractions_lore"));
-        inventoryManager.addItemStack(inventory, 38, XMaterial.FILLED_MAP, Messages.getString("worldeditor_gamerules_item"), Messages.getStringList("worldeditor_gamerules_lore"));
+        inventoryUtil.addItemStack(inventory, 38, XMaterial.FILLED_MAP, Messages.getString("worldeditor_gamerules_item"), Messages.getStringList("worldeditor_gamerules_lore"));
         addDifficultyItem(inventory, buildWorld);
-        inventoryManager.addItemStack(inventory, 40, inventoryManager.getStatusItem(buildWorld.getStatus()), Messages.getString("worldeditor_status_item"), getStatusLore(buildWorld));
-        inventoryManager.addItemStack(inventory, 41, XMaterial.ANVIL, Messages.getString("worldeditor_project_item"), getProjectLore(buildWorld));
-        inventoryManager.addItemStack(inventory, 42, XMaterial.PAPER, Messages.getString("worldeditor_permission_item"), getPermissionLore(buildWorld));
+        inventoryUtil.addItemStack(inventory, 40, inventoryUtil.getStatusItem(buildWorld.getStatus()), Messages.getString("worldeditor_status_item"), getStatusLore(buildWorld));
+        inventoryUtil.addItemStack(inventory, 41, XMaterial.ANVIL, Messages.getString("worldeditor_project_item"), getProjectLore(buildWorld));
+        inventoryUtil.addItemStack(inventory, 42, XMaterial.PAPER, Messages.getString("worldeditor_permission_item"), getPermissionLore(buildWorld));
 
         return inventory;
     }
@@ -89,7 +89,7 @@ public class EditInventory implements Listener {
 
     private void fillGuiWithGlass(Player player, Inventory inventory) {
         for (int i = 0; i < inventory.getSize(); i++) {
-            inventoryManager.addGlassPane(plugin, player, inventory, i);
+            inventoryUtil.addGlassPane(plugin, player, inventory, i);
         }
     }
 
@@ -97,9 +97,9 @@ public class EditInventory implements Listener {
         String displayName = Messages.getString("worldeditor_world_item", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
 
         if (buildWorld.getMaterial() == XMaterial.PLAYER_HEAD) {
-            inventoryManager.addSkull(inventory, 4, displayName, buildWorld.getName());
+            inventoryUtil.addSkull(inventory, 4, displayName, buildWorld.getName());
         } else {
-            inventoryManager.addItemStack(inventory, 4, buildWorld.getMaterial(), displayName);
+            inventoryUtil.addItemStack(inventory, 4, buildWorld.getMaterial(), displayName);
         }
     }
 
@@ -142,7 +142,7 @@ public class EditInventory implements Listener {
                 break;
         }
 
-        inventoryManager.addItemStack(inventory, 23, xMaterial, Messages.getString("worldeditor_time_item"),
+        inventoryUtil.addItemStack(inventory, 23, xMaterial, Messages.getString("worldeditor_time_item"),
                 Messages.getStringList("worldeditor_time_lore", new AbstractMap.SimpleEntry<>("%time%", value))
         );
     }
@@ -169,7 +169,7 @@ public class EditInventory implements Listener {
         if ((creatorId != null && creatorId.equals(player.getUniqueId())) || player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
             addSettingsItem(inventory, 30, XMaterial.IRON_PICKAXE, buildWorld.isBuilders(), Messages.getString("worldeditor_builders_item"), Messages.getStringList("worldeditor_builders_lore"));
         } else {
-            inventoryManager.addItemStack(inventory, 30, XMaterial.BARRIER, Messages.getString("worldeditor_builders_not_creator_item"), Messages.getStringList("worldeditor_builders_not_creator_lore"));
+            inventoryUtil.addItemStack(inventory, 30, XMaterial.BARRIER, Messages.getString("worldeditor_builders_not_creator_item"), Messages.getStringList("worldeditor_builders_not_creator_lore"));
         }
     }
 
@@ -178,7 +178,7 @@ public class EditInventory implements Listener {
         String displayName = Messages.getString("worldeditor_visibility_item");
 
         if (!playerManager.canCreateWorld(player, Visibility.matchVisibility(buildWorld.isPrivate()))) {
-            inventoryManager.addItemStack(inventory, slot, XMaterial.BARRIER, "§c§m" + ChatColor.stripColor(displayName));
+            inventoryUtil.addItemStack(inventory, slot, XMaterial.BARRIER, "§c§m" + ChatColor.stripColor(displayName));
             return;
         }
 
@@ -190,7 +190,7 @@ public class EditInventory implements Listener {
             lore = Messages.getStringList("worldeditor_visibility_lore_private");
         }
 
-        inventoryManager.addItemStack(inventory, slot, xMaterial, displayName, lore);
+        inventoryUtil.addItemStack(inventory, slot, xMaterial, displayName, lore);
     }
 
     private void addDifficultyItem(Inventory inventory, BuildWorld buildWorld) {
@@ -214,7 +214,7 @@ public class EditInventory implements Listener {
         ArrayList<String> lore = new ArrayList<>();
         Messages.getStringList("worldeditor_difficulty_lore").forEach(line -> lore.add(line.replace("%difficulty%", buildWorld.getDifficultyName())));
 
-        inventoryManager.addItemStack(inventory, 39, xMaterial, Messages.getString("worldeditor_difficulty_item"), lore);
+        inventoryUtil.addItemStack(inventory, 39, xMaterial, Messages.getString("worldeditor_difficulty_item"), lore);
     }
 
     private List<String> getStatusLore(BuildWorld buildWorld) {
@@ -243,7 +243,7 @@ public class EditInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!inventoryManager.checkIfValidClick(event, "worldeditor_title")) {
+        if (!inventoryUtil.checkIfValidClick(event, "worldeditor_title")) {
             return;
         }
 

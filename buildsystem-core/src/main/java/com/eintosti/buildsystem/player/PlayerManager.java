@@ -12,19 +12,19 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.ActionBar;
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.config.PlayersConfig;
-import com.eintosti.buildsystem.navigator.world.FilteredWorldsInventory.Visibility;
-import com.eintosti.buildsystem.util.InventoryUtil;
-import com.eintosti.buildsystem.world.WorldManager;
 import com.eintosti.buildsystem.navigator.NavigatorInventoryType;
 import com.eintosti.buildsystem.navigator.NavigatorType;
+import com.eintosti.buildsystem.navigator.world.FilteredWorldsInventory.Visibility;
 import com.eintosti.buildsystem.settings.DesignColor;
 import com.eintosti.buildsystem.settings.Settings;
 import com.eintosti.buildsystem.settings.SettingsManager;
 import com.eintosti.buildsystem.settings.WorldSort;
+import com.eintosti.buildsystem.util.InventoryUtil;
 import com.eintosti.buildsystem.world.BuildWorld;
-import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.world.WorldManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -50,7 +50,7 @@ import java.util.UUID;
 /**
  * @author einTosti
  */
-public class BuildPlayerManager {
+public class PlayerManager {
 
     private static final double MIN_HEIGHT = -0.16453003708696978;
     private static final double MAX_HEIGHT = 0.16481381407766063;
@@ -64,7 +64,7 @@ public class BuildPlayerManager {
     private final Set<Player> openNavigator;
     private final Set<UUID> buildModePlayers;
 
-    public BuildPlayerManager(BuildSystem plugin) {
+    public PlayerManager(BuildSystem plugin) {
         this.plugin = plugin;
         this.playersConfig = new PlayersConfig(plugin);
         this.configValues = plugin.getConfigValues();
@@ -248,11 +248,11 @@ public class BuildPlayerManager {
             return;
         }
 
-        InventoryUtil inventoryManager = plugin.getInventoryManager();
+        InventoryUtil inventoryUtil = plugin.getInventoryUtil();
         String findItemName = Messages.getString("barrier_item");
-        ItemStack replaceItem = inventoryManager.getItemStack(plugin.getConfigValues().getNavigatorItem(), Messages.getString("navigator_item"));
+        ItemStack replaceItem = inventoryUtil.getItemStack(plugin.getConfigValues().getNavigatorItem(), Messages.getString("navigator_item"));
 
-        inventoryManager.replaceItem(player, findItemName, XMaterial.BARRIER, replaceItem);
+        inventoryUtil.replaceItem(player, findItemName, XMaterial.BARRIER, replaceItem);
     }
 
     private void initEntityChecker() {

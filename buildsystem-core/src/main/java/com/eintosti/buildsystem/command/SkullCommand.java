@@ -9,8 +9,8 @@
 package com.eintosti.buildsystem.command;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.util.InventoryUtil;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.util.InventoryUtil;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -26,11 +26,11 @@ import java.util.AbstractMap;
 public class SkullCommand implements CommandExecutor {
 
     private final BuildSystem plugin;
-    private final InventoryUtil inventoryManager;
+    private final InventoryUtil inventoryUtil;
 
     public SkullCommand(BuildSystem plugin) {
         this.plugin = plugin;
-        this.inventoryManager = plugin.getInventoryManager();
+        this.inventoryUtil = plugin.getInventoryUtil();
         plugin.getCommand("skull").setExecutor(this);
     }
 
@@ -49,17 +49,17 @@ public class SkullCommand implements CommandExecutor {
 
         switch (args.length) {
             case 0:
-                player.getInventory().addItem(inventoryManager.getSkull("§b" + player.getName(), player.getName()));
+                player.getInventory().addItem(inventoryUtil.getSkull("§b" + player.getName(), player.getName()));
                 Messages.sendMessage(player, "skull_player_received", new AbstractMap.SimpleEntry<>("%player%", player.getName()));
                 break;
             case 1:
                 String skullName = args[0];
                 if (skullName.length() > 16) {
-                    ItemStack customSkull = inventoryManager.getUrlSkull(Messages.getString("custom_skull_item"), skullName);
+                    ItemStack customSkull = inventoryUtil.getUrlSkull(Messages.getString("custom_skull_item"), skullName);
                     player.getInventory().addItem(customSkull);
                     Messages.sendMessage(player, "skull_custom_received");
                 } else {
-                    player.getInventory().addItem(inventoryManager.getSkull("§b" + skullName, skullName));
+                    player.getInventory().addItem(inventoryUtil.getSkull("§b" + skullName, skullName));
                     Messages.sendMessage(player, "skull_player_received", new AbstractMap.SimpleEntry<>("%player%", skullName));
                 }
                 break;

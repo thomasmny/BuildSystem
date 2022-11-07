@@ -9,10 +9,10 @@
 package com.eintosti.buildsystem.expansion.placeholderapi;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.settings.SettingsManager;
-import com.eintosti.buildsystem.world.WorldManager;
 import com.eintosti.buildsystem.settings.Settings;
+import com.eintosti.buildsystem.settings.SettingsManager;
 import com.eintosti.buildsystem.world.BuildWorld;
+import com.eintosti.buildsystem.world.WorldManager;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;

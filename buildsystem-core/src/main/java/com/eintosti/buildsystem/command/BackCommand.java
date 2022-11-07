@@ -9,9 +9,9 @@
 package com.eintosti.buildsystem.command;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.player.BuildPlayerManager;
-import com.eintosti.buildsystem.player.BuildPlayer;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.player.BuildPlayer;
+import com.eintosti.buildsystem.player.PlayerManager;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -28,7 +28,7 @@ import java.util.UUID;
 public class BackCommand implements CommandExecutor {
 
     private final BuildSystem plugin;
-    private final BuildPlayerManager playerManager;
+    private final PlayerManager playerManager;
 
     public BackCommand(BuildSystem plugin) {
         this.plugin = plugin;

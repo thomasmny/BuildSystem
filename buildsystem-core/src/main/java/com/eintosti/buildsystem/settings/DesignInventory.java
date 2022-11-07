@@ -29,11 +29,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class DesignInventory implements Listener {
 
     private final BuildSystem plugin;
-    private final InventoryUtil inventoryManager;
+    private final InventoryUtil inventoryUtil;
 
     public DesignInventory(BuildSystem plugin) {
         this.plugin = plugin;
-        this.inventoryManager = plugin.getInventoryManager();
+        this.inventoryUtil = plugin.getInventoryUtil();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -68,10 +68,10 @@ public class DesignInventory implements Listener {
 
     private void fillGuiWithGlass(Inventory inventory, Player player) {
         for (int i = 0; i <= 8; i++) {
-            inventoryManager.addGlassPane(plugin, player, inventory, i);
+            inventoryUtil.addGlassPane(plugin, player, inventory, i);
         }
         for (int i = 27; i <= 35; i++) {
-            inventoryManager.addGlassPane(plugin, player, inventory, i);
+            inventoryUtil.addGlassPane(plugin, player, inventory, i);
         }
     }
 
@@ -79,7 +79,7 @@ public class DesignInventory implements Listener {
         SettingsManager settingsManager = plugin.getSettingsManager();
         Settings settings = settingsManager.getSettings(player);
 
-        ItemStack itemStack = inventoryManager.getItemStack(material, settings.getDesignColor() == color ? "§a" + displayName : "§7" + displayName);
+        ItemStack itemStack = inventoryUtil.getItemStack(material, settings.getDesignColor() == color ? "§a" + displayName : "§7" + displayName);
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta != null) {
             itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
@@ -95,7 +95,7 @@ public class DesignInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!inventoryManager.checkIfValidClick(event, "design_title")) {
+        if (!inventoryUtil.checkIfValidClick(event, "design_title")) {
             return;
         }
 

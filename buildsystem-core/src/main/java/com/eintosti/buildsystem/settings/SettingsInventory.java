@@ -11,14 +11,10 @@ package com.eintosti.buildsystem.settings;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.config.ConfigValues;
-import com.eintosti.buildsystem.settings.NoClipManager;
-import com.eintosti.buildsystem.settings.SettingsManager;
-import com.eintosti.buildsystem.util.InventoryUtil;
-import com.eintosti.buildsystem.navigator.NavigatorType;
-import com.eintosti.buildsystem.settings.Settings;
-import com.eintosti.buildsystem.settings.WorldSort;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.config.ConfigValues;
+import com.eintosti.buildsystem.navigator.NavigatorType;
+import com.eintosti.buildsystem.util.InventoryUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -42,14 +38,14 @@ public class SettingsInventory implements Listener {
     private final BuildSystem plugin;
     private final ConfigValues configValues;
 
-    private final InventoryUtil inventoryManager;
+    private final InventoryUtil inventoryUtil;
     private final SettingsManager settingsManager;
 
     public SettingsInventory(BuildSystem plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
 
-        this.inventoryManager = plugin.getInventoryManager();
+        this.inventoryUtil = plugin.getInventoryUtil();
         this.settingsManager = plugin.getSettingsManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -89,7 +85,7 @@ public class SettingsInventory implements Listener {
 
     private void fillGuiWithGlass(Player player, Inventory inventory) {
         for (int i = 0; i <= 44; i++) {
-            inventoryManager.addGlassPane(plugin, player, inventory, i);
+            inventoryUtil.addGlassPane(plugin, player, inventory, i);
         }
     }
 
@@ -116,7 +112,7 @@ public class SettingsInventory implements Listener {
     }
 
     private void addDesignItem(Inventory inventory, Player player) {
-        ItemStack itemStack = inventoryManager.getItemStack(inventoryManager.getColouredGlass(plugin, player), Messages.getString("settings_change_design_item"));
+        ItemStack itemStack = inventoryUtil.getItemStack(inventoryUtil.getColouredGlass(plugin, player), Messages.getString("settings_change_design_item"));
         ItemMeta itemMeta = itemStack.getItemMeta();
 
         itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
@@ -167,7 +163,7 @@ public class SettingsInventory implements Listener {
                 break;
         }
 
-        ItemStack itemStack = inventoryManager.getUrlSkull(Messages.getString("settings_worldsort_item"), url);
+        ItemStack itemStack = inventoryUtil.getUrlSkull(Messages.getString("settings_worldsort_item"), url);
         ItemMeta itemMeta = itemStack.getItemMeta();
 
         if (itemMeta != null) {
@@ -180,7 +176,7 @@ public class SettingsInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!inventoryManager.checkIfValidClick(event, "settings_title")) {
+        if (!inventoryUtil.checkIfValidClick(event, "settings_title")) {
             return;
         }
 

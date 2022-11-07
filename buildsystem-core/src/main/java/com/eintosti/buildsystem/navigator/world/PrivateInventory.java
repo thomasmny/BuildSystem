@@ -9,10 +9,10 @@
 package com.eintosti.buildsystem.navigator.world;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.player.BuildPlayerManager;
+import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.player.PlayerManager;
 import com.eintosti.buildsystem.util.InventoryUtil;
 import com.eintosti.buildsystem.world.data.WorldStatus;
-import com.eintosti.buildsystem.Messages;
 import com.google.common.collect.Sets;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -23,8 +23,8 @@ import org.bukkit.inventory.Inventory;
 public class PrivateInventory extends FilteredWorldsInventory {
 
     private final BuildSystem plugin;
-    private final InventoryUtil inventoryManager;
-    private final BuildPlayerManager playerManager;
+    private final InventoryUtil inventoryUtil;
+    private final PlayerManager playerManager;
 
     public PrivateInventory(BuildSystem plugin) {
         super(plugin, "private_title", "private_no_worlds", Visibility.PRIVATE,
@@ -32,7 +32,7 @@ public class PrivateInventory extends FilteredWorldsInventory {
         );
 
         this.plugin = plugin;
-        this.inventoryManager = plugin.getInventoryManager();
+        this.inventoryUtil = plugin.getInventoryUtil();
         this.playerManager = plugin.getPlayerManager();
     }
 
@@ -47,9 +47,9 @@ public class PrivateInventory extends FilteredWorldsInventory {
 
     private void addWorldCreateItem(Inventory inventory, Player player) {
         if (player.hasPermission("buildsystem.create.private")) {
-            inventoryManager.addUrlSkull(inventory, 49, Messages.getString("private_create_world"), "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
+            inventoryUtil.addUrlSkull(inventory, 49, Messages.getString("private_create_world"), "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
         } else {
-            inventoryManager.addGlassPane(plugin, player, inventory, 49);
+            inventoryUtil.addGlassPane(plugin, player, inventory, 49);
         }
     }
 }

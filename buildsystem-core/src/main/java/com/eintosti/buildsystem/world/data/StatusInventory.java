@@ -11,10 +11,10 @@ package com.eintosti.buildsystem.world.data;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.player.BuildPlayerManager;
+import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.player.PlayerManager;
 import com.eintosti.buildsystem.util.InventoryUtil;
 import com.eintosti.buildsystem.world.BuildWorld;
-import com.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -35,12 +35,12 @@ import java.util.AbstractMap;
 public class StatusInventory implements Listener {
 
     private final BuildSystem plugin;
-    private final InventoryUtil inventoryManager;
-    private final BuildPlayerManager playerManager;
+    private final InventoryUtil inventoryUtil;
+    private final PlayerManager playerManager;
 
     public StatusInventory(BuildSystem plugin) {
         this.plugin = plugin;
-        this.inventoryManager = plugin.getInventoryManager();
+        this.inventoryUtil = plugin.getInventoryUtil();
         this.playerManager = plugin.getPlayerManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -55,12 +55,12 @@ public class StatusInventory implements Listener {
         Inventory inventory = Bukkit.createInventory(null, 27, title);
         fillGuiWithGlass(player, inventory);
 
-        addItem(player, inventory, 10, inventoryManager.getStatusItem(WorldStatus.NOT_STARTED), Messages.getString("status_not_started"), WorldStatus.NOT_STARTED);
-        addItem(player, inventory, 11, inventoryManager.getStatusItem(WorldStatus.IN_PROGRESS), Messages.getString("status_in_progress"), WorldStatus.IN_PROGRESS);
-        addItem(player, inventory, 12, inventoryManager.getStatusItem(WorldStatus.ALMOST_FINISHED), Messages.getString("status_almost_finished"), WorldStatus.ALMOST_FINISHED);
-        addItem(player, inventory, 13, inventoryManager.getStatusItem(WorldStatus.FINISHED), Messages.getString("status_finished"), WorldStatus.FINISHED);
-        addItem(player, inventory, 14, inventoryManager.getStatusItem(WorldStatus.ARCHIVE), Messages.getString("status_archive"), WorldStatus.ARCHIVE);
-        addItem(player, inventory, 16, inventoryManager.getStatusItem(WorldStatus.HIDDEN), Messages.getString("status_hidden"), WorldStatus.HIDDEN);
+        addItem(player, inventory, 10, inventoryUtil.getStatusItem(WorldStatus.NOT_STARTED), Messages.getString("status_not_started"), WorldStatus.NOT_STARTED);
+        addItem(player, inventory, 11, inventoryUtil.getStatusItem(WorldStatus.IN_PROGRESS), Messages.getString("status_in_progress"), WorldStatus.IN_PROGRESS);
+        addItem(player, inventory, 12, inventoryUtil.getStatusItem(WorldStatus.ALMOST_FINISHED), Messages.getString("status_almost_finished"), WorldStatus.ALMOST_FINISHED);
+        addItem(player, inventory, 13, inventoryUtil.getStatusItem(WorldStatus.FINISHED), Messages.getString("status_finished"), WorldStatus.FINISHED);
+        addItem(player, inventory, 14, inventoryUtil.getStatusItem(WorldStatus.ARCHIVE), Messages.getString("status_archive"), WorldStatus.ARCHIVE);
+        addItem(player, inventory, 16, inventoryUtil.getStatusItem(WorldStatus.HIDDEN), Messages.getString("status_hidden"), WorldStatus.HIDDEN);
 
         return inventory;
     }
@@ -71,10 +71,10 @@ public class StatusInventory implements Listener {
 
     private void fillGuiWithGlass(Player player, Inventory inventory) {
         for (int i = 0; i <= 9; i++) {
-            inventoryManager.addGlassPane(plugin, player, inventory, i);
+            inventoryUtil.addGlassPane(plugin, player, inventory, i);
         }
         for (int i = 17; i <= 26; i++) {
-            inventoryManager.addGlassPane(plugin, player, inventory, i);
+            inventoryUtil.addGlassPane(plugin, player, inventory, i);
         }
     }
 

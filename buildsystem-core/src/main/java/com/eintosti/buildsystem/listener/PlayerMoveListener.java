@@ -9,10 +9,10 @@
 package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.player.BuildPlayerManager;
-import com.eintosti.buildsystem.settings.SettingsManager;
 import com.eintosti.buildsystem.navigator.NavigatorType;
+import com.eintosti.buildsystem.player.PlayerManager;
 import com.eintosti.buildsystem.settings.Settings;
+import com.eintosti.buildsystem.settings.SettingsManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -26,7 +26,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 public class PlayerMoveListener implements Listener {
 
     private final BuildSystem plugin;
-    private final BuildPlayerManager playerManager;
+    private final PlayerManager playerManager;
     private final SettingsManager settingsManager;
 
     public PlayerMoveListener(BuildSystem plugin) {

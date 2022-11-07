@@ -21,19 +21,19 @@ import org.bukkit.inventory.Inventory;
 public class ArchiveInventory extends FilteredWorldsInventory {
 
     private final BuildSystem plugin;
-    private final InventoryUtil inventoryManager;
+    private final InventoryUtil inventoryUtil;
 
     public ArchiveInventory(BuildSystem plugin) {
         super(plugin, "archive_title", "archive_no_worlds", Visibility.IGNORE, Sets.newHashSet(WorldStatus.ARCHIVE));
 
         this.plugin = plugin;
-        this.inventoryManager = plugin.getInventoryManager();
+        this.inventoryUtil = plugin.getInventoryUtil();
     }
 
     @Override
     protected Inventory createInventory(Player player) {
         Inventory inventory = super.createInventory(player);
-        inventoryManager.addGlassPane(plugin, player, inventory, 49);
+        inventoryUtil.addGlassPane(plugin, player, inventory, 49);
         return inventory;
     }
 }

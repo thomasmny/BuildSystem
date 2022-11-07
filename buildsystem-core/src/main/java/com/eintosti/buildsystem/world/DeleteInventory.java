@@ -11,9 +11,8 @@ package com.eintosti.buildsystem.world;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.util.InventoryUtil;
-import com.eintosti.buildsystem.world.BuildWorld;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.util.InventoryUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -29,11 +28,11 @@ import java.util.AbstractMap;
 public class DeleteInventory implements Listener {
 
     private final BuildSystem plugin;
-    private final InventoryUtil inventoryManager;
+    private final InventoryUtil inventoryUtil;
 
     public DeleteInventory(BuildSystem plugin) {
         this.plugin = plugin;
-        this.inventoryManager = plugin.getInventoryManager();
+        this.inventoryUtil = plugin.getInventoryUtil();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -41,9 +40,9 @@ public class DeleteInventory implements Listener {
         Inventory inventory = Bukkit.createInventory(null, 27, Messages.getString("delete_title"));
         fillGuiWithGlass(inventory);
 
-        inventoryManager.addItemStack(inventory, 11, XMaterial.LIME_DYE, Messages.getString("delete_world_confirm"));
-        inventoryManager.addItemStack(inventory, 13, XMaterial.FILLED_MAP, Messages.getString("delete_world_name", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName())), Messages.getStringList("delete_world_name_lore"));
-        inventoryManager.addItemStack(inventory, 15, XMaterial.RED_DYE, Messages.getString("delete_world_cancel"));
+        inventoryUtil.addItemStack(inventory, 11, XMaterial.LIME_DYE, Messages.getString("delete_world_confirm"));
+        inventoryUtil.addItemStack(inventory, 13, XMaterial.FILLED_MAP, Messages.getString("delete_world_name", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName())), Messages.getStringList("delete_world_name_lore"));
+        inventoryUtil.addItemStack(inventory, 15, XMaterial.RED_DYE, Messages.getString("delete_world_cancel"));
 
         return inventory;
     }
@@ -58,19 +57,19 @@ public class DeleteInventory implements Listener {
         final int[] redSlots = new int[]{5, 6, 7, 8, 14, 16, 17, 23, 24, 25, 26};
 
         for (int slot : greenSlots) {
-            inventoryManager.addItemStack(inventory, slot, XMaterial.LIME_STAINED_GLASS_PANE, "§f");
+            inventoryUtil.addItemStack(inventory, slot, XMaterial.LIME_STAINED_GLASS_PANE, "§f");
         }
         for (int slot : blackSlots) {
-            inventoryManager.addItemStack(inventory, slot, XMaterial.BLACK_STAINED_GLASS_PANE, "§f");
+            inventoryUtil.addItemStack(inventory, slot, XMaterial.BLACK_STAINED_GLASS_PANE, "§f");
         }
         for (int slot : redSlots) {
-            inventoryManager.addItemStack(inventory, slot, XMaterial.RED_STAINED_GLASS_PANE, "§f");
+            inventoryUtil.addItemStack(inventory, slot, XMaterial.RED_STAINED_GLASS_PANE, "§f");
         }
     }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!inventoryManager.checkIfValidClick(event, "delete_title")) {
+        if (!inventoryUtil.checkIfValidClick(event, "delete_title")) {
             return;
         }
 

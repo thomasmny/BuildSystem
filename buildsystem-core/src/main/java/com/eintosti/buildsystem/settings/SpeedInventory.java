@@ -27,11 +27,11 @@ import java.util.AbstractMap;
 public class SpeedInventory implements Listener {
 
     private final BuildSystem plugin;
-    private final InventoryUtil inventoryManager;
+    private final InventoryUtil inventoryUtil;
 
     public SpeedInventory(BuildSystem plugin) {
         this.plugin = plugin;
-        this.inventoryManager = plugin.getInventoryManager();
+        this.inventoryUtil = plugin.getInventoryUtil();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -39,11 +39,11 @@ public class SpeedInventory implements Listener {
         Inventory inventory = Bukkit.createInventory(null, 27, Messages.getString("speed_title"));
         fillGuiWithGlass(player, inventory);
 
-        inventoryManager.addUrlSkull(inventory, 11, Messages.getString("speed_1"), "71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530");
-        inventoryManager.addUrlSkull(inventory, 12, Messages.getString("speed_2"), "4cd9eeee883468881d83848a46bf3012485c23f75753b8fbe8487341419847");
-        inventoryManager.addUrlSkull(inventory, 13, Messages.getString("speed_3"), "1d4eae13933860a6df5e8e955693b95a8c3b15c36b8b587532ac0996bc37e5");
-        inventoryManager.addUrlSkull(inventory, 14, Messages.getString("speed_4"), "d2e78fb22424232dc27b81fbcb47fd24c1acf76098753f2d9c28598287db5");
-        inventoryManager.addUrlSkull(inventory, 15, Messages.getString("speed_5"), "6d57e3bc88a65730e31a14e3f41e038a5ecf0891a6c243643b8e5476ae2");
+        inventoryUtil.addUrlSkull(inventory, 11, Messages.getString("speed_1"), "71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530");
+        inventoryUtil.addUrlSkull(inventory, 12, Messages.getString("speed_2"), "4cd9eeee883468881d83848a46bf3012485c23f75753b8fbe8487341419847");
+        inventoryUtil.addUrlSkull(inventory, 13, Messages.getString("speed_3"), "1d4eae13933860a6df5e8e955693b95a8c3b15c36b8b587532ac0996bc37e5");
+        inventoryUtil.addUrlSkull(inventory, 14, Messages.getString("speed_4"), "d2e78fb22424232dc27b81fbcb47fd24c1acf76098753f2d9c28598287db5");
+        inventoryUtil.addUrlSkull(inventory, 15, Messages.getString("speed_5"), "6d57e3bc88a65730e31a14e3f41e038a5ecf0891a6c243643b8e5476ae2");
 
         return inventory;
     }
@@ -54,13 +54,13 @@ public class SpeedInventory implements Listener {
 
     private void fillGuiWithGlass(Player player, Inventory inventory) {
         for (int i = 0; i <= 26; i++) {
-            inventoryManager.addGlassPane(plugin, player, inventory, i);
+            inventoryUtil.addGlassPane(plugin, player, inventory, i);
         }
     }
 
     @EventHandler
     public void oInventoryClick(InventoryClickEvent event) {
-        if (!inventoryManager.checkIfValidClick(event, "speed_title")) {
+        if (!inventoryUtil.checkIfValidClick(event, "speed_title")) {
             return;
         }
 

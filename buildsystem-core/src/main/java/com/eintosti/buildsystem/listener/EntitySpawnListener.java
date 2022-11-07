@@ -9,9 +9,9 @@
 package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.world.WorldManager;
-import com.eintosti.buildsystem.world.BuildWorld;
 import com.eintosti.buildsystem.util.EntityAIManager;
+import com.eintosti.buildsystem.world.BuildWorld;
+import com.eintosti.buildsystem.world.WorldManager;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
