@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-package com.eintosti.buildsystem.world;
+package com.eintosti.buildsystem.world.modification;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
@@ -15,6 +15,7 @@ import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.navigator.world.FilteredWorldsInventory.Visibility;
 import com.eintosti.buildsystem.util.InventoryUtil;
 import com.eintosti.buildsystem.util.PaginatedInventory;
+import com.eintosti.buildsystem.world.WorldManager;
 import com.eintosti.buildsystem.world.data.WorldType;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

@@ -6,13 +6,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-package com.eintosti.buildsystem.world;
+package com.eintosti.buildsystem.world.modification;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.util.InventoryUtil;
+import com.eintosti.buildsystem.world.BuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

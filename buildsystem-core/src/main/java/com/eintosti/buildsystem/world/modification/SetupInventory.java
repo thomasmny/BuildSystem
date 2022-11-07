@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-package com.eintosti.buildsystem.world;
+package com.eintosti.buildsystem.world.modification;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;

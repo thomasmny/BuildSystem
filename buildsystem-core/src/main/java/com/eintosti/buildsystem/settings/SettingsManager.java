@@ -13,6 +13,7 @@ import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.config.SettingsConfig;
 import com.eintosti.buildsystem.navigator.NavigatorType;
+import com.eintosti.buildsystem.navigator.WorldSort;
 import com.eintosti.buildsystem.world.BuildWorld;
 import com.eintosti.buildsystem.world.WorldManager;
 import fr.mrmicky.fastboard.FastBoard;

@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-package com.eintosti.buildsystem.settings;
+package com.eintosti.buildsystem.navigator;
 
 /**
  * @author einTosti

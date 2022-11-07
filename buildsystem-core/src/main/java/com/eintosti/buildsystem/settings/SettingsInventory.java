@@ -14,6 +14,7 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.navigator.NavigatorType;
+import com.eintosti.buildsystem.navigator.WorldSort;
 import com.eintosti.buildsystem.util.InventoryUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.enchantments.Enchantment;

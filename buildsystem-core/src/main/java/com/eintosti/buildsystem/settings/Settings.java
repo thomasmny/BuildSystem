@@ -9,6 +9,7 @@
 package com.eintosti.buildsystem.settings;
 
 import com.eintosti.buildsystem.navigator.NavigatorType;
+import com.eintosti.buildsystem.navigator.WorldSort;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
