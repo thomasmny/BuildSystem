@@ -33,7 +33,6 @@ public class InventoryCreativeListener implements Listener {
     public InventoryCreativeListener(BuildSystem plugin) {
         this.plugin = plugin;
         this.inventoryUtil = plugin.getInventoryUtil();
-
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 

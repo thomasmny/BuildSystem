@@ -27,13 +27,14 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author einTosti
  */
 public class PlayerCommandPreprocessListener implements Listener {
 
-    private static final HashSet<String> DISABLED_COMMANDS = Sets.newHashSet(
+    private static final Set<String> DISABLED_COMMANDS = Sets.newHashSet(
             "/worldedit",
             "/we",
 

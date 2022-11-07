@@ -18,7 +18,6 @@ public class BuildWorldResetUnloadListener implements Listener {
 
     public BuildWorldResetUnloadListener(BuildSystem plugin) {
         this.worldManager = plugin.getWorldManager();
-
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
