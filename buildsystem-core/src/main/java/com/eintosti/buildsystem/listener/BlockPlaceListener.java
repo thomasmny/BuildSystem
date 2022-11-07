@@ -52,7 +52,7 @@ public class BlockPlaceListener implements Listener {
     }
 
     @EventHandler
-    public void onBlockPlace(BlockPlaceEvent event) {
+    public void onCustomBlockPlace(BlockPlaceEvent event) {
         if (event.isCancelled()) {
             return;
         }
