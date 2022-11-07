@@ -43,7 +43,7 @@ public class GameRules_1_13_R1 extends AbstractGameRulesInventory {
         ItemStack itemStack = new ItemStack(isEnabled(world, gameRule) ? Material.FILLED_MAP : Material.MAP);
         ItemMeta itemMeta = itemStack.getItemMeta();
 
-        itemMeta.setDisplayName("§e" + gameRule);
+        itemMeta.setDisplayName(ChatColor.YELLOW + gameRule);
         itemMeta.setLore(getLore(world, gameRule));
         itemMeta.addItemFlags(ItemFlag.values());
         itemStack.setItemMeta(itemMeta);

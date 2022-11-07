@@ -16,9 +16,9 @@ import org.bukkit.entity.Player;
 /**
  * @author einTosti
  */
-public abstract class DirectionUtils {
+public final class DirectionUtil {
 
-    public BlockFace getDirection(Player player) {
+    public static BlockFace getDirection(Player player) {
         float yaw = player.getLocation().getYaw();
         if (yaw < 0) {
             yaw += 360;
@@ -59,7 +59,7 @@ public abstract class DirectionUtils {
      * @param allowNonCardinal Should the block be allowed to face {@link BlockFace#UP} and {@link BlockFace#DOWN}
      * @return The direction the block should be facing
      */
-    public BlockFace getBlockDirection(Player player, boolean allowNonCardinal) {
+    public static BlockFace getBlockDirection(Player player, boolean allowNonCardinal) {
         if (!allowNonCardinal) {
             return getDirection(player);
         }
@@ -74,7 +74,7 @@ public abstract class DirectionUtils {
         }
     }
 
-    public boolean isTop(Player player, Block block) {
+    public static boolean isTop(Player player, Block block) {
         Location location = player.getEyeLocation().clone();
         while ((!location.getBlock().equals(block)) && location.distance(player.getEyeLocation()) < 6) {
             location.add(player.getLocation().getDirection().multiply(0.06));

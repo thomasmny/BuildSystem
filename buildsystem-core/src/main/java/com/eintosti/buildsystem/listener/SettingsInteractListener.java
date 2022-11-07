@@ -16,10 +16,12 @@ import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.player.PlayerManager;
 import com.eintosti.buildsystem.settings.Settings;
 import com.eintosti.buildsystem.settings.SettingsManager;
+import com.eintosti.buildsystem.version.util.DirectionUtil;
 import com.eintosti.buildsystem.world.BuildWorld;
 import com.eintosti.buildsystem.world.Builder;
 import com.eintosti.buildsystem.world.WorldManager;
 import com.eintosti.buildsystem.world.data.WorldStatus;
+import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -29,6 +31,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -266,7 +269,10 @@ public class SettingsInteractListener implements Listener {
         adjacent.setType(material);
         XBlock.setColor(adjacent, getItemColor(itemStack));
 
-        plugin.getCustomBlocks().rotateBlock(adjacent, player, null);
+        plugin.getCustomBlocks().rotateBlock(adjacent, player, DirectionUtil.getBlockDirection(player, false));
+
+        BlockPlaceEvent blockPlaceEvent = new BlockPlaceEvent(adjacent, adjacent.getState(), block, itemStack, player, true);
+        Bukkit.getServer().getPluginManager().callEvent(blockPlaceEvent);
     }
 
     /**
