@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-package com.eintosti.buildsystem.expansion.luckperms;
+package com.eintosti.buildsystem.expansion.luckperms.calculators;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.world.BuildWorld;

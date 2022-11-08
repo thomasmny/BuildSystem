@@ -13,6 +13,7 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.navigator.ArmorStandManager;
+import com.eintosti.buildsystem.player.CachedValues;
 import com.eintosti.buildsystem.player.PlayerManager;
 import com.eintosti.buildsystem.settings.SettingsManager;
 import com.eintosti.buildsystem.util.InventoryUtil;
@@ -113,7 +114,9 @@ public class PlayerChangedWorldListener implements Listener {
             return;
         }
 
-        playerManager.getBuildPlayer(playerUuid).getCachedValues().resetGameModeIfPresent(player);
+        CachedValues cachedValues = playerManager.getBuildPlayer(playerUuid).getCachedValues();
+        cachedValues.resetGameModeIfPresent(player);
+        cachedValues.resetInventoryIfPresent(player);
         XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
         Messages.sendMessage(player, "build_deactivated_self");
     }

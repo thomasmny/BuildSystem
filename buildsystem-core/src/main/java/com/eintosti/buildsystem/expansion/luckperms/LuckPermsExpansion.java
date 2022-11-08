@@ -9,6 +9,8 @@
 package com.eintosti.buildsystem.expansion.luckperms;
 
 import com.eintosti.buildsystem.BuildSystem;
+import com.eintosti.buildsystem.expansion.luckperms.calculators.BuildModeCalculator;
+import com.eintosti.buildsystem.expansion.luckperms.calculators.RoleCalculator;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.context.ContextCalculator;
 import net.luckperms.api.context.ContextManager;
@@ -39,6 +41,7 @@ public class LuckPermsExpansion {
     }
 
     public void registerAll() {
+        register("build-mode", () -> new BuildModeCalculator(plugin));
         register("role", () -> new RoleCalculator(plugin));
     }
 

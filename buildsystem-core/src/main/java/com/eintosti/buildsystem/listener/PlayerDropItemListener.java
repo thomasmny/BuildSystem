@@ -31,7 +31,7 @@ public class PlayerDropItemListener implements Listener {
 
     @EventHandler
     public void onPlayerDropItem(PlayerDropItemEvent event) {
-        if (!configValues.isBuildModeDropItems()) {
+        if (configValues.isBuildModeDropItems()) {
             return;
         }
 
