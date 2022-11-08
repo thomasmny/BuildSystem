@@ -111,6 +111,7 @@ public class Messages {
         addSpacer(sb, "");
         addSpacer(sb, "# /build");
         setMessage(sb, "build_usage", "%prefix% &7Usage: &b/build [player]");
+        setMessage(sb, "build_world_not_allowed", "%prefix% &7You are &cnot &7allowed to enter build mode in this world.");
         setMessage(sb, "build_player_not_found", "%prefix% &cThat player was not found.");
         setMessage(sb, "build_activated_self", "%prefix% &7Build mode was &aactivated&7.");
         setMessage(sb, "build_activated_other_sender", "%prefix% &7Build mode &8[&7for %target%&8] &7was &aactivated&7.");

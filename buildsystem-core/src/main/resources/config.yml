@@ -7,6 +7,12 @@ settings:
   scoreboard: true
   archive-vanish: true
   teleport-after-creation: true
+  build-mode:
+    drop-items: false
+    blacklisted-worlds:
+      - world
+      - world_nether
+      - worth_the_end
   builder:
     block-worldedit-non-builder: true
     world-edit-wand: "WOODEN_AXE"

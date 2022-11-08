@@ -291,6 +291,7 @@ public class BuildSystem extends JavaPlugin {
         new NavigatorListener(this);
         new PlayerChangedWorldListener(this);
         new PlayerCommandPreprocessListener(this);
+        new PlayerDropItemListener(this);
         new PlayerInventoryClearListener(this);
         new PlayerJoinListener(this);
         new PlayerMoveListener(this);

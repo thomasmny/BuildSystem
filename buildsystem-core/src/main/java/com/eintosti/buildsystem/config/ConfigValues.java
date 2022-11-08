@@ -40,6 +40,7 @@ public class ConfigValues {
     private boolean spawnTeleportMessage;
     private boolean joinQuitMessages;
     private boolean teleportAfterCreation;
+    private boolean buildModeDropItems;
     private boolean lockWeather;
     private boolean unloadWorlds;
     private boolean voidBlock;
@@ -64,6 +65,7 @@ public class ConfigValues {
     private int maxPrivateWorldAmount;
 
     private Map<String, String> defaultGameRules;
+    private Set<String> blackListedWorldsBuildMode;
     private Set<String> blackListedWorldsToUnload;
 
     public ConfigValues(BuildSystem plugin) {
@@ -84,6 +86,8 @@ public class ConfigValues {
         this.scoreboard = config.getBoolean("settings.scoreboard", true);
         this.archiveVanish = config.getBoolean("settings.archive-vanish", true);
         this.teleportAfterCreation = config.getBoolean("settings.teleport-after-creation", true);
+        this.buildModeDropItems = config.getBoolean("settings.build-mode.drop-items", false);
+        this.blackListedWorldsBuildMode = new HashSet<>(config.getStringList("settings.build-mode.blacklisted-worlds"));
 
         this.blockWorldEditNonBuilder = config.getBoolean("settings.builder.block-worldedit-non-builder", true);
         this.worldEditWand = XMaterial.valueOf(config.getString("settings.builder.world-edit-wand", "WOODEN_AXE"));
@@ -159,6 +163,10 @@ public class ConfigValues {
 
     public boolean isTeleportAfterCreation() {
         return teleportAfterCreation;
+    }
+
+    public boolean isBuildModeDropItems() {
+        return buildModeDropItems;
     }
 
     public boolean isScoreboard() {
@@ -264,6 +272,10 @@ public class ConfigValues {
 
     public Map<String, String> getDefaultGameRules() {
         return defaultGameRules;
+    }
+
+    public Set<String> getBlackListedWorldsBuildMode() {
+        return blackListedWorldsBuildMode;
     }
 
     public Set<String> getBlackListedWorldsToUnload() {

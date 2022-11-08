@@ -11,6 +11,7 @@ package com.eintosti.buildsystem.command;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.player.BuildPlayer;
 import com.eintosti.buildsystem.player.CachedValues;
 import com.eintosti.buildsystem.player.PlayerManager;
@@ -31,10 +32,12 @@ import java.util.UUID;
 public class BuildCommand implements CommandExecutor {
 
     private final BuildSystem plugin;
+    private final ConfigValues configValues;
     private final PlayerManager playerManager;
 
     public BuildCommand(BuildSystem plugin) {
         this.plugin = plugin;
+        this.configValues = plugin.getConfigValues();
         this.playerManager = plugin.getPlayerManager();
         plugin.getCommand("build").setExecutor(this);
     }
@@ -49,6 +52,11 @@ public class BuildCommand implements CommandExecutor {
         Player player = (Player) sender;
         if (!player.hasPermission("buildsystem.build")) {
             plugin.sendPermissionMessage(player);
+            return true;
+        }
+
+        if (configValues.getBlackListedWorldsBuildMode().contains(player.getWorld().getName())) {
+            Messages.sendMessage(player, "build_world_not_allowed");
             return true;
         }
 
