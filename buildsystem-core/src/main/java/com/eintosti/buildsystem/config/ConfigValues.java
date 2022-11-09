@@ -40,6 +40,7 @@ public class ConfigValues {
     private boolean joinQuitMessages;
     private boolean teleportAfterCreation;
     private boolean buildModeDropItems;
+    private boolean buildModeMoveItems;
     private boolean lockWeather;
     private boolean unloadWorlds;
     private boolean voidBlock;
@@ -84,7 +85,8 @@ public class ConfigValues {
         this.scoreboard = config.getBoolean("settings.scoreboard", true);
         this.archiveVanish = config.getBoolean("settings.archive-vanish", true);
         this.teleportAfterCreation = config.getBoolean("settings.teleport-after-creation", true);
-        this.buildModeDropItems = config.getBoolean("settings.build-mode.drop-items", false);
+        this.buildModeDropItems = config.getBoolean("settings.build-mode.drop-items", true);
+        this.buildModeMoveItems = config.getBoolean("settings.build-mode.move-items", true);
 
         this.blockWorldEditNonBuilder = config.getBoolean("settings.builder.block-worldedit-non-builder", true);
         this.worldEditWand = XMaterial.valueOf(config.getString("settings.builder.world-edit-wand", "WOODEN_AXE"));
@@ -164,6 +166,10 @@ public class ConfigValues {
 
     public boolean isBuildModeDropItems() {
         return buildModeDropItems;
+    }
+
+    public boolean isBuildModeMoveItems() {
+        return buildModeMoveItems;
     }
 
     public boolean isScoreboard() {

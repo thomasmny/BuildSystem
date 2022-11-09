@@ -273,7 +273,7 @@ public class NavigatorListener implements Listener {
             return;
         }
 
-        if (!playerManager.getBuildModePlayers().contains(player.getUniqueId())) {
+        if (playerManager.isInBuildMode(player)) {
             cancellable.setCancelled(true);
         }
     }

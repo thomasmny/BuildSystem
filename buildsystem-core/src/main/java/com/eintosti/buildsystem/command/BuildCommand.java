@@ -87,8 +87,7 @@ public class BuildCommand implements CommandExecutor {
         BuildPlayer buildPlayer = playerManager.getBuildPlayer(targetUuid);
         CachedValues cachedValues = buildPlayer.getCachedValues();
 
-        if (playerManager.getBuildModePlayers().contains(targetUuid)) {
-            playerManager.getBuildModePlayers().remove(targetUuid);
+        if (playerManager.getBuildModePlayers().remove(targetUuid)) {
             cachedValues.resetGameModeIfPresent(target);
             cachedValues.resetInventoryIfPresent(target);
 

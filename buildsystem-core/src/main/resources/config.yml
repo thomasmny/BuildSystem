@@ -8,7 +8,8 @@ settings:
   archive-vanish: true
   teleport-after-creation: true
   build-mode:
-    drop-items: false
+    drop-items: true
+    move-items: true
   builder:
     block-worldedit-non-builder: true
     world-edit-wand: "WOODEN_AXE"

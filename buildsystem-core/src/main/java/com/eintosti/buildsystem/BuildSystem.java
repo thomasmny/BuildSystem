@@ -282,6 +282,7 @@ public class BuildSystem extends JavaPlugin {
         new AsyncPlayerPreLoginListener(this);
         new BlockPhysicsListener(this);
         new BlockPlaceListener(this);
+        new BuildModePreventationListener(this);
         new BuildWorldResetUnloadListener(this);
         new EntitySpawnListener(this);
         new FoodLevelChangeListener(this);
@@ -290,7 +291,6 @@ public class BuildSystem extends JavaPlugin {
         new NavigatorListener(this);
         new PlayerChangedWorldListener(this);
         new PlayerCommandPreprocessListener(this);
-        new PlayerDropItemListener(this);
         new PlayerInventoryClearListener(this);
         new PlayerJoinListener(this);
         new PlayerMoveListener(this);

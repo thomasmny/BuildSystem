@@ -120,6 +120,10 @@ public class PlayerManager {
         return buildModePlayers;
     }
 
+    public boolean isInBuildMode(Player player) {
+        return buildModePlayers.contains(player.getUniqueId());
+    }
+
     /**
      * Gets whether the given player is allowed to create a new {@link BuildWorld}.<br>
      * This depends on the following factors:

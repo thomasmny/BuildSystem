@@ -598,7 +598,7 @@ public class WorldManager {
     public boolean canBypassBuildRestriction(Player player) {
         return player.hasPermission(BuildSystem.ADMIN_PERMISSION)
                 || player.hasPermission("buildsystem.bypass.archive")
-                || plugin.getPlayerManager().getBuildModePlayers().contains(player.getUniqueId());
+                || plugin.getPlayerManager().isInBuildMode(player);
     }
 
     /**

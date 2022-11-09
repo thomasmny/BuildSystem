@@ -32,7 +32,7 @@ public class BuildModeCalculator implements ContextCalculator<Player> {
 
     @Override
     public void calculate(@NonNull Player player, @NonNull ContextConsumer contextConsumer) {
-        boolean isInBuildMode = playerManager.getBuildModePlayers().contains(player.getUniqueId());
+        boolean isInBuildMode = playerManager.isInBuildMode(player);
         contextConsumer.accept(KEY, String.valueOf(isInBuildMode));
     }
 
