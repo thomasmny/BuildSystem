@@ -155,8 +155,8 @@ public class PlayerManager {
      * Otherwise, there are two different permissions to set said amount:<br>
      * To set the maximum of...
      * <ul>
-     *  <li>...public worlds, use {@code buildsystem.create.public.<amount>}</li>
-     *  <li>...private worlds, use {@code buildsystem.create.private.<amount>}</li>
+     *  <li>...public worlds, use {@literal buildsystem.create.public.<amount>}</li>
+     *  <li>...private worlds, use {@literal buildsystem.create.private.<amount>}</li>
      * <ul>
      *
      * @param player The player object

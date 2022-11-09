@@ -134,7 +134,6 @@ public class BuildWorldCreator {
         }
 
         BuildWorld buildWorld = new BuildWorld(
-                plugin,
                 worldName,
                 player.getName(),
                 player.getUniqueId(),
@@ -184,7 +183,6 @@ public class BuildWorldCreator {
             plugin.getLogger().info("Using custom world generator: " + customGenerator.getName());
 
             worldManager.getBuildWorlds().add(new BuildWorld(
-                    plugin,
                     worldName,
                     player.getName(),
                     player.getUniqueId(),
@@ -226,7 +224,6 @@ public class BuildWorldCreator {
         }
 
         BuildWorld buildWorld = new BuildWorld(
-                plugin,
                 worldName,
                 player.getName(),
                 player.getUniqueId(),

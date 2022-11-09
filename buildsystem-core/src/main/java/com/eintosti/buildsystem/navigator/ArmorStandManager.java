@@ -34,13 +34,14 @@ public class ArmorStandManager {
     }
 
     private Location calculatePosition(Player player, float angle) {
-        float centerX = (float) player.getLocation().getX();
-        float centerZ = (float) player.getLocation().getZ();
-        float yaw = player.getLocation().getYaw() + 180 + angle;
+        Location playerLocation = player.getLocation();
+        float centerX = (float) playerLocation.getX();
+        float centerZ = (float) playerLocation.getZ();
+        float yaw = playerLocation.getYaw() + 180 + angle;
         float xPos = RADIUS * (float) Math.cos(Math.toRadians(yaw - 90)) + centerX;
         float zPos = RADIUS * (float) Math.sin(Math.toRadians(yaw - 90)) + centerZ;
 
-        Location location = new Location(player.getWorld(), xPos, player.getLocation().getY(), zPos);
+        Location location = new Location(player.getWorld(), xPos, playerLocation.getY(), zPos);
         location.setYaw(yaw);
         return location;
     }

@@ -252,7 +252,6 @@ public class WorldManager {
 
         Messages.sendMessage(player, "worlds_import_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
         BuildWorld buildWorld = new BuildWorld(
-                plugin,
                 worldName,
                 "-",
                 null,
@@ -328,7 +327,7 @@ public class WorldManager {
                 }
 
                 long creation = FileUtils.getDirectoryCreation(new File(Bukkit.getWorldContainer(), worldName));
-                BuildWorld buildWorld = new BuildWorld(plugin, worldName, "-", null, WorldType.IMPORTED, creation, false, null);
+                BuildWorld buildWorld = new BuildWorld(worldName, "-", null, WorldType.IMPORTED, creation, false, null);
                 buildWorlds.add(buildWorld);
                 new BuildWorldCreator(plugin, buildWorld).setType(WorldType.VOID).generateBukkitWorld();
                 Messages.sendMessage(player, "worlds_importall_world_imported", new AbstractMap.SimpleEntry<>("%world%", worldName));
@@ -686,7 +685,6 @@ public class WorldManager {
         CustomGenerator customGenerator = new CustomGenerator(generatorName, parseChunkGenerator(worldName, generatorName));
 
         BuildWorld buildWorld = new BuildWorld(
-                plugin,
                 worldName,
                 creator,
                 creatorId,
