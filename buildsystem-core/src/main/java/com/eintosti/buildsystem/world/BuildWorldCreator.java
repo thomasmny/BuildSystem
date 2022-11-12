@@ -289,8 +289,8 @@ public class BuildWorldCreator {
     @Nullable
     public World generateBukkitWorld(boolean checkVersion) {
         if (checkVersion && !Boolean.getBoolean("Paper.ignoreWorldDataVersion")) {
-            int worldVersion = parseWorldDataVersion();
-            int serverVersion = plugin.getServerVersion().getWorldVersion();
+            int worldVersion = parseDataVersion();
+            int serverVersion = plugin.getServerVersion().getDataVersion();
             if (worldVersion > serverVersion) {
                 plugin.getLogger().warning(String.format("\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping...", worldName, worldVersion, serverVersion));
                 return null;
@@ -355,11 +355,17 @@ public class BuildWorldCreator {
             configValues.getDefaultGameRules().forEach(bukkitWorld::setGameRuleValue);
         }
 
-        updateWorldDataVersion();
+        updateDataVersion();
         return bukkitWorld;
     }
 
-    private int parseWorldDataVersion() {
+    /**
+     * Parses the world's data version, as stored in {@code level.dat}.
+     *
+     * @return The world's data version
+     * @see <a href="https://minecraft.fandom.com/wiki/Data_version">Data version</a>
+     */
+    private int parseDataVersion() {
         File levelFile = new File(Bukkit.getWorldContainer() + File.separator + worldName, "level.dat");
         if (!levelFile.exists()) {
             return -1;
@@ -376,7 +382,11 @@ public class BuildWorldCreator {
         return -1;
     }
 
-    private void updateWorldDataVersion() {
+    /**
+     * The {@code level.dat} file is not updated when a newer Minecraft version loads chunks, making the world not loadable.
+     * Therefore, manually sets the world's {@code DataVersion} to the current server version, if lower.
+     */
+    private void updateDataVersion() {
         File levelFile = new File(Bukkit.getWorldContainer() + File.separator + worldName, "level.dat");
         if (!levelFile.exists()) {
             return;
@@ -388,7 +398,7 @@ public class BuildWorldCreator {
             CompoundTag data = level.get("Data");
             IntTag dataVersion = data.getInt("DataVersion");
 
-            int serverVersion = plugin.getServerVersion().getWorldVersion();
+            int serverVersion = plugin.getServerVersion().getDataVersion();
             if (dataVersion.getValue() < serverVersion) {
                 dataVersion.setValue(serverVersion);
                 nbt.toFile(level, levelFile);

@@ -47,20 +47,20 @@ public enum ServerVersion {
     v1_19_R1(3120, CustomBlocks_1_17_R1.class, GameRules_1_13_R1.class),
     UNKNOWN;
 
-    private final int worldVersion;
+    private final int dataVersion;
     private final Class<? extends CustomBlocks> customBlocks;
     private final Class<? extends GameRules> gameRules;
 
     private final BuildSystem plugin = JavaPlugin.getPlugin(BuildSystem.class);
 
-    ServerVersion(int worldVersion, Class<? extends CustomBlocks> customBlocks, Class<? extends GameRules> gameRules) {
-        this.worldVersion = worldVersion;
+    ServerVersion(int dataVersion, Class<? extends CustomBlocks> customBlocks, Class<? extends GameRules> gameRules) {
+        this.dataVersion = dataVersion;
         this.customBlocks = customBlocks;
         this.gameRules = gameRules;
     }
 
     ServerVersion() {
-        this.worldVersion = -1;
+        this.dataVersion = -1;
         this.customBlocks = null;
         this.gameRules = null;
     }
@@ -73,8 +73,8 @@ public enum ServerVersion {
         }
     }
 
-    public int getWorldVersion() {
-        return worldVersion;
+    public int getDataVersion() {
+        return dataVersion;
     }
 
     public CustomBlocks initCustomBlocks() {
