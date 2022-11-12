@@ -88,7 +88,8 @@ public class BuildSystem extends JavaPlugin {
     public static final int METRICS_ID = 7427;
     public static final String ADMIN_PERMISSION = "buildsystem.admin";
 
-    private String version;
+    private String versionString;
+    private ServerVersion serverVersion;
 
     private ArmorStandManager armorStandManager;
     private InventoryUtil inventoryUtil;
@@ -137,7 +138,7 @@ public class BuildSystem extends JavaPlugin {
 
         initClasses();
         if (!initVersionedClasses()) {
-            getLogger().severe("BuildSystem does not support your server version: " + version);
+            getLogger().severe("BuildSystem does not support your server version: " + versionString);
             getLogger().severe("Disabling plugin...");
             this.setEnabled(false);
             return;
@@ -195,7 +196,7 @@ public class BuildSystem extends JavaPlugin {
     }
 
     private boolean initVersionedClasses() {
-        ServerVersion serverVersion = ServerVersion.matchServerVersion(version);
+        this.serverVersion = ServerVersion.matchServerVersion(versionString);
         if (serverVersion == ServerVersion.UNKNOWN) {
             return false;
         }
@@ -233,13 +234,13 @@ public class BuildSystem extends JavaPlugin {
         this.statusInventory = new StatusInventory(this);
         this.worldsInventory = new WorldsInventory(this);
 
-        this.skullCache = new SkullCache(version);
+        this.skullCache = new SkullCache(versionString);
     }
 
     private void parseServerVersion() {
         try {
-            this.version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-            getLogger().info("Detected server version: " + version);
+            this.versionString = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+            getLogger().info("Detected server version: " + versionString);
         } catch (ArrayIndexOutOfBoundsException e) {
             getLogger().severe("Unknown server version");
         }
@@ -397,6 +398,10 @@ public class BuildSystem extends JavaPlugin {
                 getSettingsManager().stopScoreboard();
             }
         }
+    }
+
+    public ServerVersion getServerVersion() {
+        return serverVersion;
     }
 
     public ArmorStandManager getArmorStandManager() {

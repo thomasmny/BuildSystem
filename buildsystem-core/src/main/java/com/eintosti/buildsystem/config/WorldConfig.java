@@ -12,7 +12,9 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.world.BuildWorld;
 import com.eintosti.buildsystem.world.BuildWorldCreator;
 import com.eintosti.buildsystem.world.WorldManager;
+import org.bukkit.World;
 
+import java.util.Iterator;
 import java.util.logging.Logger;
 
 /**
@@ -40,16 +42,22 @@ public class WorldConfig extends ConfigurationFile {
         }
 
         logger.info("*** All worlds will be loaded now ***");
-        worldManager.getBuildWorlds().forEach(world -> {
-            String worldName = world.getName();
-            new BuildWorldCreator(plugin, world).generateBukkitWorld();
+        Iterator<BuildWorld> iterator = worldManager.getBuildWorlds().iterator();
+        while (iterator.hasNext()) {
+            BuildWorld buildWorld = iterator.next();
+            String worldName = buildWorld.getName();
+            World world = new BuildWorldCreator(plugin, buildWorld).generateBukkitWorld();
+            if (world == null) {
+                iterator.remove();
+                continue;
+            }
 
-            if (world.getMaterial() == XMaterial.PLAYER_HEAD) {
+            if (buildWorld.getMaterial() == XMaterial.PLAYER_HEAD) {
                 plugin.getSkullCache().cacheSkull(worldName);
             }
 
             logger.info("✔ World loaded: " + worldName);
-        });
+        }
         logger.info("*** All worlds have been loaded ***");
     }
 }

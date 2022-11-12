@@ -26,38 +26,41 @@ import java.util.List;
  * @author einTosti
  */
 public enum ServerVersion {
-    v1_8_R1(CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
-    v1_8_R2(CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
-    v1_8_R3(CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
-    v1_9_R1(CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
-    v1_9_R2(CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
-    v1_10_R1(CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
-    v1_11_R1(CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
-    v1_12_R1(CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
-    v1_13_R1(CustomBlocks_1_13_R1.class, GameRules_1_13_R1.class),
-    v1_13_R2(CustomBlocks_1_13_R1.class, GameRules_1_13_R1.class),
-    v1_14_R1(CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
-    v1_15_R1(CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
-    v1_16_R1(CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
-    v1_16_R2(CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
-    v1_16_R3(CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
-    v1_17_R1(CustomBlocks_1_17_R1.class, GameRules_1_13_R1.class),
-    v1_18_R1(CustomBlocks_1_17_R1.class, GameRules_1_13_R1.class),
-    v1_18_R2(CustomBlocks_1_17_R1.class, GameRules_1_13_R1.class),
-    v1_19_R1(CustomBlocks_1_17_R1.class, GameRules_1_13_R1.class),
+    v1_8_R1(47, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
+    v1_8_R2(47, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
+    v1_8_R3(47, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
+    v1_9_R1(107, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
+    v1_9_R2(109, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
+    v1_10_R1(210, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
+    v1_11_R1(316, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
+    v1_12_R1(340, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
+    v1_13_R1(393, CustomBlocks_1_13_R1.class, GameRules_1_13_R1.class),
+    v1_13_R2(404, CustomBlocks_1_13_R1.class, GameRules_1_13_R1.class),
+    v1_14_R1(498, CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
+    v1_15_R1(578, CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
+    v1_16_R1(736, CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
+    v1_16_R2(753, CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
+    v1_16_R3(754, CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
+    v1_17_R1(756, CustomBlocks_1_17_R1.class, GameRules_1_13_R1.class),
+    v1_18_R1(757, CustomBlocks_1_17_R1.class, GameRules_1_13_R1.class),
+    v1_18_R2(2975, CustomBlocks_1_17_R1.class, GameRules_1_13_R1.class),
+    v1_19_R1(3120, CustomBlocks_1_17_R1.class, GameRules_1_13_R1.class),
     UNKNOWN;
 
+    private final int worldVersion;
     private final Class<? extends CustomBlocks> customBlocks;
     private final Class<? extends GameRules> gameRules;
 
     private final BuildSystem plugin = JavaPlugin.getPlugin(BuildSystem.class);
 
-    ServerVersion(Class<? extends CustomBlocks> customBlocks, Class<? extends GameRules> gameRules) {
+    ServerVersion(int worldVersion, Class<? extends CustomBlocks> customBlocks, Class<? extends GameRules> gameRules) {
+        this.worldVersion = worldVersion;
         this.customBlocks = customBlocks;
         this.gameRules = gameRules;
     }
 
     ServerVersion() {
+        this.worldVersion = -1;
         this.customBlocks = null;
         this.gameRules = null;
     }
@@ -68,6 +71,10 @@ public enum ServerVersion {
         } catch (IllegalArgumentException e) {
             return UNKNOWN;
         }
+    }
+
+    public int getWorldVersion() {
+        return worldVersion;
     }
 
     public CustomBlocks initCustomBlocks() {

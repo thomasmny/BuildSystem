@@ -10,7 +10,6 @@ package com.eintosti.buildsystem.world;
 import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.config.SpawnConfig;
-import com.eintosti.buildsystem.world.data.WorldType;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -18,13 +17,12 @@ import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
-import java.util.UUID;
-
 /**
  * @author einTosti
  */
 public class SpawnManager {
 
+    private final BuildSystem plugin;
     private final WorldManager worldManager;
     private final SpawnConfig spawnConfig;
 
@@ -32,6 +30,7 @@ public class SpawnManager {
     private Location spawn;
 
     public SpawnManager(BuildSystem plugin) {
+        this.plugin = plugin;
         this.worldManager = plugin.getWorldManager();
         this.spawnConfig = new SpawnConfig(plugin);
     }
@@ -102,10 +101,11 @@ public class SpawnManager {
 
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
-            buildWorld = new BuildWorld(worldName, "", UUID.randomUUID(), WorldType.UNKNOWN, System.currentTimeMillis(), false, null);
+            plugin.getLogger().warning("Could load spawn world \"" + worldName + "\". Please check logs for possible errors.");
+            return;
         }
-        buildWorld.load();
 
+        buildWorld.load();
         this.spawnName = worldName;
         this.spawn = new Location(Bukkit.getWorld(worldName), x, y, z, yaw, pitch);
     }

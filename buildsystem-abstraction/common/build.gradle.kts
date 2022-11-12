@@ -1,7 +1,7 @@
 applyCommonConfiguration()
 
 plugins {
-    java
+    `java-library`
 }
 
 dependencies {

@@ -483,7 +483,7 @@ public class WorldManager {
             FileUtils.deleteDirectory(oldWorldFile);
 
             buildWorld.setName(parsedNewName);
-            World newWorld = new BuildWorldCreator(plugin, buildWorld).generateBukkitWorld();
+            World newWorld = new BuildWorldCreator(plugin, buildWorld).generateBukkitWorld(false);
             Location spawnLocation = oldWorld.getSpawnLocation();
             spawnLocation.setWorld(newWorld);
 
@@ -656,10 +656,10 @@ public class WorldManager {
         worldConfig.loadWorlds(this);
     }
 
-    public BuildWorld loadWorld(String worldName) {
+    public void loadWorld(String worldName) {
         FileConfiguration configuration = worldConfig.getFile();
         if (configuration == null) {
-            return null;
+            return;
         }
 
         String creator = configuration.isString("worlds." + worldName + ".creator") ? configuration.getString("worlds." + worldName + ".creator") : "-";
@@ -684,7 +684,7 @@ public class WorldManager {
         String generatorName = configuration.getString("worlds." + worldName + ".chunk-generator");
         CustomGenerator customGenerator = new CustomGenerator(generatorName, parseChunkGenerator(worldName, generatorName));
 
-        BuildWorld buildWorld = new BuildWorld(
+        this.buildWorlds.add(new BuildWorld(
                 worldName,
                 creator,
                 creatorId,
@@ -706,10 +706,7 @@ public class WorldManager {
                 difficulty,
                 builders,
                 customGenerator
-        );
-
-        buildWorlds.add(buildWorld);
-        return buildWorld;
+        ));
     }
 
     private XMaterial parseMaterial(FileConfiguration configuration, String worldName) {

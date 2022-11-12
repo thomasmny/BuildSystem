@@ -18,17 +18,17 @@ import com.eintosti.buildsystem.world.data.WorldType;
 import com.eintosti.buildsystem.world.generator.CustomGenerator;
 import com.eintosti.buildsystem.world.generator.voidgenerator.DeprecatedVoidGenerator;
 import com.eintosti.buildsystem.world.generator.voidgenerator.ModernVoidGenerator;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Difficulty;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.WorldCreator;
+import dev.dewy.nbt.Nbt;
+import dev.dewy.nbt.tags.collection.CompoundTag;
+import dev.dewy.nbt.tags.primitive.IntTag;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.AbstractMap;
 
 /**
@@ -255,6 +255,9 @@ public class BuildWorldCreator {
     private void finishPreparationsAndGenerate(BuildWorld buildWorld) {
         WorldType worldType = buildWorld.getType();
         World bukkitWorld = generateBukkitWorld();
+        if (bukkitWorld == null) {
+            return;
+        }
 
         switch (worldType) {
             case VOID:
@@ -272,12 +275,28 @@ public class BuildWorldCreator {
         }
     }
 
+    @Nullable
+    public World generateBukkitWorld() {
+        return generateBukkitWorld(true);
+    }
+
     /**
      * Generate the {@link World} linked to a {@link BuildWorld}.
      *
+     * @param checkVersion Should the world version be checked
      * @return The world object
      */
-    public World generateBukkitWorld() {
+    @Nullable
+    public World generateBukkitWorld(boolean checkVersion) {
+        if (checkVersion && !Boolean.getBoolean("Paper.ignoreWorldDataVersion")) {
+            int worldVersion = parseWorldDataVersion();
+            int serverVersion = plugin.getServerVersion().getWorldVersion();
+            if (worldVersion > serverVersion) {
+                plugin.getLogger().warning(String.format("\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping...", worldName, worldVersion, serverVersion));
+                return null;
+            }
+        }
+
         WorldCreator worldCreator = new WorldCreator(worldName);
         org.bukkit.WorldType bukkitWorldType;
 
@@ -336,7 +355,47 @@ public class BuildWorldCreator {
             configValues.getDefaultGameRules().forEach(bukkitWorld::setGameRuleValue);
         }
 
+        updateWorldDataVersion();
         return bukkitWorld;
+    }
+
+    private int parseWorldDataVersion() {
+        File levelFile = new File(Bukkit.getWorldContainer() + File.separator + worldName, "level.dat");
+        if (!levelFile.exists()) {
+            return -1;
+        }
+
+        try {
+            CompoundTag level = new Nbt().fromFile(levelFile);
+            CompoundTag data = level.get("Data");
+            return data.getInt("DataVersion").getValue();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return -1;
+    }
+
+    private void updateWorldDataVersion() {
+        File levelFile = new File(Bukkit.getWorldContainer() + File.separator + worldName, "level.dat");
+        if (!levelFile.exists()) {
+            return;
+        }
+
+        try {
+            Nbt nbt = new Nbt();
+            CompoundTag level = nbt.fromFile(levelFile);
+            CompoundTag data = level.get("Data");
+            IntTag dataVersion = data.getInt("DataVersion");
+
+            int serverVersion = plugin.getServerVersion().getWorldVersion();
+            if (dataVersion.getValue() < serverVersion) {
+                dataVersion.setValue(serverVersion);
+                nbt.toFile(level, levelFile);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void teleportAfterCreation(Player player) {
