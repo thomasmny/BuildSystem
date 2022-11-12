@@ -362,10 +362,10 @@ public class BuildWorldCreator {
     /**
      * Parses the world's data version, as stored in {@code level.dat}.
      *
-     * @return The world's data version
+     * @return The world's data version if found, otherwise -1 if unable to parse
      * @see <a href="https://minecraft.fandom.com/wiki/Data_version">Data version</a>
      */
-    private int parseDataVersion() {
+    public int parseDataVersion() {
         File levelFile = new File(Bukkit.getWorldContainer() + File.separator + worldName, "level.dat");
         if (!levelFile.exists()) {
             return -1;
@@ -374,7 +374,9 @@ public class BuildWorldCreator {
         try {
             CompoundTag level = new Nbt().fromFile(levelFile);
             CompoundTag data = level.get("Data");
-            return data.getInt("DataVersion").getValue();
+            IntTag dataVersion = data.getInt("DataVersion");
+
+            return dataVersion != null ? dataVersion.getValue() : -1;
         } catch (IOException e) {
             e.printStackTrace();
         }

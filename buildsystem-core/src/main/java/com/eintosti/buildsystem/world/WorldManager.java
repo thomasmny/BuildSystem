@@ -250,7 +250,6 @@ public class WorldManager {
             }
         }
 
-        Messages.sendMessage(player, "worlds_import_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
         BuildWorld buildWorld = new BuildWorld(
                 worldName,
                 "-",
@@ -260,10 +259,16 @@ public class WorldManager {
                 false,
                 null
         );
+
+        BuildWorldCreator worldCreator = new BuildWorldCreator(plugin, buildWorld).setCustomGenerator(new CustomGenerator(generatorName, chunkGenerator));
+        if (worldCreator.parseDataVersion() > plugin.getServerVersion().getDataVersion()) {
+            Messages.sendMessage(player, "worlds_import_newer_version", new AbstractMap.SimpleEntry<>("%world%", worldName));
+            return;
+        }
+
+        Messages.sendMessage(player, "worlds_import_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
         buildWorlds.add(buildWorld);
-        new BuildWorldCreator(plugin, buildWorld)
-                .setCustomGenerator(new CustomGenerator(generatorName, chunkGenerator))
-                .createWorld(player);
+        worldCreator.createWorld(player);
         Messages.sendMessage(player, "worlds_import_finished");
 
         if (configValues.isTeleportAfterCreation()) {
@@ -328,8 +333,14 @@ public class WorldManager {
 
                 long creation = FileUtils.getDirectoryCreation(new File(Bukkit.getWorldContainer(), worldName));
                 BuildWorld buildWorld = new BuildWorld(worldName, "-", null, WorldType.IMPORTED, creation, false, null);
+                BuildWorldCreator worldCreator = new BuildWorldCreator(plugin, buildWorld);
+                if (worldCreator.parseDataVersion() > plugin.getServerVersion().getDataVersion()) {
+                    Messages.sendMessage(player, "worlds_importall_newer_version", new AbstractMap.SimpleEntry<>("%world%", worldName));
+                    return;
+                }
+
                 buildWorlds.add(buildWorld);
-                new BuildWorldCreator(plugin, buildWorld).setType(WorldType.VOID).generateBukkitWorld();
+                worldCreator.generateBukkitWorld();
                 Messages.sendMessage(player, "worlds_importall_world_imported", new AbstractMap.SimpleEntry<>("%world%", worldName));
 
                 if (worldsImported.get() >= worlds) {
