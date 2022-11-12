@@ -340,7 +340,7 @@ public class WorldManager {
                 }
 
                 buildWorlds.add(buildWorld);
-                worldCreator.generateBukkitWorld();
+                worldCreator.setType(WorldType.VOID).generateBukkitWorld();
                 Messages.sendMessage(player, "worlds_importall_world_imported", new AbstractMap.SimpleEntry<>("%world%", worldName));
 
                 if (worldsImported.get() >= worlds) {

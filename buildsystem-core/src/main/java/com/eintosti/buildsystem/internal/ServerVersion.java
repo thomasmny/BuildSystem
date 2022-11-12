@@ -26,23 +26,23 @@ import java.util.List;
  * @author einTosti
  */
 public enum ServerVersion {
-    v1_8_R1(47, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
-    v1_8_R2(47, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
-    v1_8_R3(47, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
-    v1_9_R1(107, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
-    v1_9_R2(109, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
-    v1_10_R1(210, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
-    v1_11_R1(316, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
-    v1_12_R1(340, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
-    v1_13_R1(393, CustomBlocks_1_13_R1.class, GameRules_1_13_R1.class),
-    v1_13_R2(404, CustomBlocks_1_13_R1.class, GameRules_1_13_R1.class),
-    v1_14_R1(498, CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
-    v1_15_R1(578, CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
-    v1_16_R1(736, CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
-    v1_16_R2(753, CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
-    v1_16_R3(754, CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
-    v1_17_R1(756, CustomBlocks_1_17_R1.class, GameRules_1_13_R1.class),
-    v1_18_R1(757, CustomBlocks_1_17_R1.class, GameRules_1_13_R1.class),
+    v1_8_R1(-1, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
+    v1_8_R2(-1, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
+    v1_8_R3(-1, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
+    v1_9_R1(169, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
+    v1_9_R2(184, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
+    v1_10_R1(512, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
+    v1_11_R1(922, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
+    v1_12_R1(1343, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
+    v1_13_R1(1519, CustomBlocks_1_13_R1.class, GameRules_1_13_R1.class),
+    v1_13_R2(1631, CustomBlocks_1_13_R1.class, GameRules_1_13_R1.class),
+    v1_14_R1(1976, CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
+    v1_15_R1(2230, CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
+    v1_16_R1(2567, CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
+    v1_16_R2(2580, CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
+    v1_16_R3(2586, CustomBlocks_1_14_R1.class, GameRules_1_13_R1.class),
+    v1_17_R1(2730, CustomBlocks_1_17_R1.class, GameRules_1_13_R1.class),
+    v1_18_R1(2865, CustomBlocks_1_17_R1.class, GameRules_1_13_R1.class),
     v1_18_R2(2975, CustomBlocks_1_17_R1.class, GameRules_1_13_R1.class),
     v1_19_R1(3120, CustomBlocks_1_17_R1.class, GameRules_1_13_R1.class),
     UNKNOWN;
@@ -73,6 +73,15 @@ public enum ServerVersion {
         }
     }
 
+    /**
+     * Gets the server's data version.
+     * <p>
+     * "The data version is a positive integer used in a world saved data to denote a specific version, and determines
+     * whether the player should be warned about opening that world due to client version incompatibilities."
+     *
+     * @return The server's data version
+     * @see <a href="https://minecraft.fandom.com/wiki/Data_version">Data version</a>
+     */
     public int getDataVersion() {
         return dataVersion;
     }
