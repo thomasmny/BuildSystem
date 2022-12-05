@@ -250,7 +250,6 @@ public class WorldManager {
             }
         }
 
-        Messages.sendMessage(player, "worlds_import_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
         BuildWorld buildWorld = new BuildWorld(
                 worldName,
                 "-",
@@ -260,10 +259,16 @@ public class WorldManager {
                 false,
                 null
         );
+
+        BuildWorldCreator worldCreator = new BuildWorldCreator(plugin, buildWorld).setCustomGenerator(new CustomGenerator(generatorName, chunkGenerator));
+        if (worldCreator.parseDataVersion() > plugin.getServerVersion().getDataVersion()) {
+            Messages.sendMessage(player, "worlds_import_newer_version", new AbstractMap.SimpleEntry<>("%world%", worldName));
+            return;
+        }
+
+        Messages.sendMessage(player, "worlds_import_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
         buildWorlds.add(buildWorld);
-        new BuildWorldCreator(plugin, buildWorld)
-                .setCustomGenerator(new CustomGenerator(generatorName, chunkGenerator))
-                .createWorld(player);
+        worldCreator.createWorld(player);
         Messages.sendMessage(player, "worlds_import_finished");
 
         if (configValues.isTeleportAfterCreation()) {
@@ -328,8 +333,14 @@ public class WorldManager {
 
                 long creation = FileUtils.getDirectoryCreation(new File(Bukkit.getWorldContainer(), worldName));
                 BuildWorld buildWorld = new BuildWorld(worldName, "-", null, WorldType.IMPORTED, creation, false, null);
+                BuildWorldCreator worldCreator = new BuildWorldCreator(plugin, buildWorld);
+                if (worldCreator.parseDataVersion() > plugin.getServerVersion().getDataVersion()) {
+                    Messages.sendMessage(player, "worlds_importall_newer_version", new AbstractMap.SimpleEntry<>("%world%", worldName));
+                    return;
+                }
+
                 buildWorlds.add(buildWorld);
-                new BuildWorldCreator(plugin, buildWorld).setType(WorldType.VOID).generateBukkitWorld();
+                worldCreator.setType(WorldType.VOID).generateBukkitWorld();
                 Messages.sendMessage(player, "worlds_importall_world_imported", new AbstractMap.SimpleEntry<>("%world%", worldName));
 
                 if (worldsImported.get() >= worlds) {
@@ -483,7 +494,7 @@ public class WorldManager {
             FileUtils.deleteDirectory(oldWorldFile);
 
             buildWorld.setName(parsedNewName);
-            World newWorld = new BuildWorldCreator(plugin, buildWorld).generateBukkitWorld();
+            World newWorld = new BuildWorldCreator(plugin, buildWorld).generateBukkitWorld(false);
             Location spawnLocation = oldWorld.getSpawnLocation();
             spawnLocation.setWorld(newWorld);
 
@@ -656,10 +667,10 @@ public class WorldManager {
         worldConfig.loadWorlds(this);
     }
 
-    public BuildWorld loadWorld(String worldName) {
+    public void loadWorld(String worldName) {
         FileConfiguration configuration = worldConfig.getFile();
         if (configuration == null) {
-            return null;
+            return;
         }
 
         String creator = configuration.isString("worlds." + worldName + ".creator") ? configuration.getString("worlds." + worldName + ".creator") : "-";
@@ -684,7 +695,7 @@ public class WorldManager {
         String generatorName = configuration.getString("worlds." + worldName + ".chunk-generator");
         CustomGenerator customGenerator = new CustomGenerator(generatorName, parseChunkGenerator(worldName, generatorName));
 
-        BuildWorld buildWorld = new BuildWorld(
+        this.buildWorlds.add(new BuildWorld(
                 worldName,
                 creator,
                 creatorId,
@@ -706,10 +717,7 @@ public class WorldManager {
                 difficulty,
                 builders,
                 customGenerator
-        );
-
-        buildWorlds.add(buildWorld);
-        return buildWorld;
+        ));
     }
 
     private XMaterial parseMaterial(FileConfiguration configuration, String worldName) {

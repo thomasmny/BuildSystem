@@ -1,7 +1,7 @@
 applyAdapterConfiguration()
 
 plugins {
-    java
+    `java-library`
 }
 
 dependencies {

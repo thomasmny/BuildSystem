@@ -13,6 +13,7 @@ annotations = "23.0.0"
 authlib = "1.5.25"
 bstats = "3.0.0"
 fastboard = "1.2.1"
+nbt = "1.5.1"
 xseries = "9.1.0"
 
 [libraries]
@@ -30,4 +31,5 @@ annotations = { group = "org.jetbrains", name = "annotations", version.ref = "an
 authlib = { group = "com.mojang", name = "authlib", version.ref = "authlib" }
 bstats = { group = "org.bstats", name = "bstats-bukkit", version.ref = "bstats" }
 fastboard = { group = "fr.mrmicky", name = "fastboard", version.ref = "fastboard" }
+nbt = { group = "dev.dewy", name = "nbt", version.ref = "nbt" }
 xseries = { group = "com.github.cryptomorin", name = "XSeries", version.ref = "xseries" }

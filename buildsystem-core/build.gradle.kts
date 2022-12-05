@@ -38,6 +38,7 @@ dependencies {
     implementation(libs.paperlib)
     implementation(libs.xseries)
     implementation(libs.fastboard)
+    implementation(libs.nbt) { isTransitive = false }
     implementation(libs.bstats)
 }
 
@@ -49,24 +50,20 @@ tasks {
     compileJava {
         options.encoding = Charsets.UTF_8.name()
     }
-    javadoc {
-        options.encoding = Charsets.UTF_8.name()
-    }
-    processResources {
-        filteringCharset = Charsets.UTF_8.name()
-    }
 
     shadowJar {
         dependsOn(project.project(":buildsystem-abstraction").subprojects.map {
             it.tasks.named("assemble")
         })
 
+        minimize()
         archiveFileName.set("${rootProject.name}-${project.version}.jar")
 
         val shadePath = "com.eintosti.buildsystem.util.external"
         relocate("io.papermc.lib", "$shadePath.paperlib")
         relocate("com.cryptomorin.xseries", "$shadePath.xseries")
         relocate("fr.mrmicky.fastboard", "$shadePath.fastboard")
+        relocate("dev.dewy.nbt", "$shadePath.nbt")
         relocate("org.bstats", "$shadePath.bstats")
     }
 
