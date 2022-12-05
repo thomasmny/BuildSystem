@@ -134,7 +134,7 @@ public class BuildWorld implements ConfigurationSerializable {
                 this.material = inventoryUtil.getDefaultItem(WorldType.IMPORTED);
                 break;
             default:
-                throw new IllegalArgumentException("Unsupported world type: " + worldType.name());
+                throw new IllegalArgumentException("Unsupported world type '" + worldType.name() + "' for world " + name);
         }
 
         if (privateWorld) {

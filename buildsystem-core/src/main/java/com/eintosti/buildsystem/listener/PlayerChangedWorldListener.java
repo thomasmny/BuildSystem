@@ -46,7 +46,6 @@ public class PlayerChangedWorldListener implements Listener {
     private final ConfigValues configValues;
 
     private final ArmorStandManager armorStandManager;
-    private final InventoryUtil inventoryUtil;
     private final PlayerManager playerManager;
     private final SettingsManager settingsManager;
     private final WorldManager worldManager;
@@ -59,7 +58,6 @@ public class PlayerChangedWorldListener implements Listener {
         this.configValues = plugin.getConfigValues();
 
         this.armorStandManager = plugin.getArmorStandManager();
-        this.inventoryUtil = plugin.getInventoryUtil();
         this.playerManager = plugin.getPlayerManager();
         this.settingsManager = plugin.getSettingsManager();
         this.worldManager = plugin.getWorldManager();
@@ -170,7 +168,6 @@ public class PlayerChangedWorldListener implements Listener {
 
             removeArmorContent(player);
             playerInventory.clear();
-            playerInventory.setItem(8, inventoryUtil.getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item")));
             setSpectatorMode(player);
 
             if (configValues.isArchiveVanish()) {
@@ -178,12 +175,13 @@ public class PlayerChangedWorldListener implements Listener {
                 Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
             }
         } else {
-            playerInventory.setItem(8, inventoryUtil.getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item")));
             if (player.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
                 player.removePotionEffect(PotionEffectType.INVISIBILITY);
             }
             Bukkit.getOnlinePlayers().forEach(pl -> pl.showPlayer(player));
         }
+
+        playerManager.giveNavigator(player);
     }
 
     private void setSpectatorMode(Player player) {

@@ -90,7 +90,7 @@ public class PlayerJoinListener implements Listener {
         if (settings.isClearInventory()) {
             player.getInventory().clear();
         }
-        addJoinItem(player);
+        playerManager.giveNavigator(player);
 
         if (settings.isSpawnTeleport() && spawnManager.spawnExists()) {
             spawnManager.teleport(player);
@@ -116,29 +116,6 @@ public class PlayerJoinListener implements Listener {
 
         if (player.hasPermission("buildsystem.updates")) {
             performUpdateCheck(player);
-        }
-    }
-
-    private void addJoinItem(Player player) {
-        if (!configValues.isGiveNavigatorOnJoin()) {
-            return;
-        }
-
-        if (!player.hasPermission("buildsystem.navigator.item")) {
-            return;
-        }
-
-        PlayerInventory playerInventory = player.getInventory();
-        if (inventoryUtil.inventoryContainsNavigator(playerInventory)) {
-            return;
-        }
-
-        ItemStack itemStack = inventoryUtil.getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item"));
-        ItemStack slot8 = playerInventory.getItem(8);
-        if (slot8 == null || slot8.getType() == XMaterial.AIR.parseMaterial()) {
-            playerInventory.setItem(8, itemStack);
-        } else {
-            playerInventory.addItem(itemStack);
         }
     }
 

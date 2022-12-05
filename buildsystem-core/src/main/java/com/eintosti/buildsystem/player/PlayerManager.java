@@ -33,6 +33,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
@@ -223,6 +224,30 @@ public class PlayerManager {
         }
         settingsManager.updateScoreboard(player);
     }
+
+    public void giveNavigator(Player player) {
+        if (!configValues.isGiveNavigatorOnJoin()) {
+            return;
+        }
+
+        if (!player.hasPermission("buildsystem.navigator.item")) {
+            return;
+        }
+
+        PlayerInventory playerInventory = player.getInventory();
+        if (plugin.getInventoryUtil().inventoryContainsNavigator(playerInventory)) {
+            return;
+        }
+
+        ItemStack itemStack = plugin.getInventoryUtil().getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item"));
+        ItemStack slot8 = playerInventory.getItem(8);
+        if (slot8 == null || slot8.getType() == XMaterial.AIR.parseMaterial()) {
+            playerInventory.setItem(8, itemStack);
+        } else {
+            playerInventory.addItem(itemStack);
+        }
+    }
+
 
     public void closeNavigator(Player player) {
         if (!openNavigator.contains(player)) {
