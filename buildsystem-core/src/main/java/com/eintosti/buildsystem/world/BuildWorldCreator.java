@@ -399,6 +399,9 @@ public class BuildWorldCreator {
             CompoundTag level = nbt.fromFile(levelFile);
             CompoundTag data = level.get("Data");
             IntTag dataVersion = data.getInt("DataVersion");
+            if (dataVersion == null) {
+                return;
+            }
 
             int serverVersion = plugin.getServerVersion().getDataVersion();
             if (dataVersion.getValue() < serverVersion) {
