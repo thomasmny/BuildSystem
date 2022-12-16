@@ -267,8 +267,8 @@ public class WorldManager {
         }
 
         Messages.sendMessage(player, "worlds_import_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
-        buildWorlds.add(buildWorld);
         worldCreator.createWorld(player);
+        buildWorlds.add(buildWorld);
         Messages.sendMessage(player, "worlds_import_finished");
 
         if (configValues.isTeleportAfterCreation()) {
