@@ -36,7 +36,7 @@ dependencies {
     compileOnly(libs.annotations)
 
     implementation(libs.paperlib)
-    implementation(libs.xseries)
+    implementation(libs.xseries) { isTransitive = false }
     implementation(libs.fastboard)
     implementation(libs.nbt) { isTransitive = false }
     implementation(libs.bstats)

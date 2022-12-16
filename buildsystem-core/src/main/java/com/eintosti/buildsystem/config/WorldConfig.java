@@ -48,7 +48,6 @@ public class WorldConfig extends ConfigurationFile {
             String worldName = buildWorld.getName();
             World world = new BuildWorldCreator(plugin, buildWorld).generateBukkitWorld();
             if (world == null) {
-                logger.info("✗ Unable to load world: " + worldName);
                 iterator.remove();
                 continue;
             }
