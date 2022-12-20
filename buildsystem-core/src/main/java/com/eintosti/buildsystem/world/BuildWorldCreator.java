@@ -19,6 +19,7 @@ import com.eintosti.buildsystem.world.generator.CustomGenerator;
 import com.eintosti.buildsystem.world.generator.voidgenerator.DeprecatedVoidGenerator;
 import com.eintosti.buildsystem.world.generator.voidgenerator.ModernVoidGenerator;
 import dev.dewy.nbt.Nbt;
+import dev.dewy.nbt.io.CompressionType;
 import dev.dewy.nbt.tags.collection.CompoundTag;
 import dev.dewy.nbt.tags.primitive.IntTag;
 import org.bukkit.*;
@@ -406,7 +407,7 @@ public class BuildWorldCreator {
             int serverVersion = plugin.getServerVersion().getDataVersion();
             if (dataVersion.getValue() < serverVersion) {
                 dataVersion.setValue(serverVersion);
-                nbt.toFile(level, levelFile);
+                nbt.toFile(level, levelFile, CompressionType.GZIP);
             }
         } catch (IOException e) {
             e.printStackTrace();
