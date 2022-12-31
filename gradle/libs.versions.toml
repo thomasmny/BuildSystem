@@ -1,7 +1,7 @@
 [versions]
 # Platform expectations
 spigot = "1.19.3-R0.1-SNAPSHOT"
-paperlib = "1.0.7"
+paperlib = "1.0.8"
 
 # Plugins
 luckperms = "5.4"
