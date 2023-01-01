@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, Thomas Meaney
+ * Copyright (c) 2023, Thomas Meaney
  * All rights reserved.
  *
  * This source code is licensed under the BSD-style license found in the
@@ -118,7 +118,7 @@ public class Messages {
         setMessage(sb, "build_deactivated_other_sender", "%prefix% &7Build mode &8[&7for %target%&8] &7was &cdeactivated&7.");
         setMessage(sb, "build_deactivated_other_target", "%prefix% &7Build mode was &cdeactivated &8[&7by %sender%&8]&7.");
         addSpacer(sb, "");
-        addSpacer(sb, "# /buildSystem");
+        addSpacer(sb, "# /buildsystem");
         setMessage(sb, "buildsystem_title", "%prefix% &7&nBuildSystem Help:");
         setMessage(sb, "buildsystem_back", "&7Teleport to your previous location.");
         setMessage(sb, "buildsystem_blocks", "&7Opens a menu with secret blocks.");
@@ -169,7 +169,7 @@ public class Messages {
         setMessage(sb, "physics_deactivated", "%prefix% &7Physics in &b%world% &7were &cdeactivated&7.");
         setMessage(sb, "physics_deactivated_in_world", "%prefix% &7Physics in &b%world% &7are currently &cdeactivated&7.");
         addSpacer(sb, "");
-        addSpacer(sb, "# /noAI");
+        addSpacer(sb, "# /noai");
         setMessage(sb, "noai_usage", "%prefix% &7Usage: &b/noai <world>");
         setMessage(sb, "noai_unknown_world", "%prefix% &cUnknown world.");
         setMessage(sb, "noai_world_not_imported", "%prefix% &cWorld must be imported » /worlds import <world>");
