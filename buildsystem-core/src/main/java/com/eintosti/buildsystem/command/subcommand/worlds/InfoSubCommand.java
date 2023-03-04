@@ -15,7 +15,6 @@ import com.eintosti.buildsystem.world.BuildWorld;
 import com.eintosti.buildsystem.world.WorldManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.util.AbstractMap;
@@ -38,43 +37,37 @@ public class InfoSubCommand extends SubCommand {
     @Override
     public void execute(Player player, String[] args) {
         WorldManager worldManager = plugin.getWorldManager();
-        World playerWorld = player.getWorld();
-        if (args.length != 2) {
-            // When running /worlds info, use the player's world when checking for permission
-            worldName = playerWorld.getName();
-        }
-
         if (!worldManager.isPermitted(player, getArgument().getPermission(), worldName)) {
             plugin.sendPermissionMessage(player);
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(playerWorld.getName());
-        if (args.length != 2) {
+        if (args.length > 2) {
             Messages.sendMessage(player, "worlds_info_usage");
             return;
         }
 
+        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
             Messages.sendMessage(player, "worlds_info_unknown_world");
             return;
         }
-        buildWorld = worldManager.getBuildWorld(args[1]);
 
         //TODO: Print information about the custom generator?
         Messages.sendMessage(player, "world_info",
                 new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()),
-                new AbstractMap.SimpleEntry<>("%creator%", buildWorld.getCreatorId()),
+                new AbstractMap.SimpleEntry<>("%creator%", buildWorld.getCreator()),
+                new AbstractMap.SimpleEntry<>("%item%", buildWorld.getMaterial().name()),
                 new AbstractMap.SimpleEntry<>("%type%", buildWorld.getType().getName()),
                 new AbstractMap.SimpleEntry<>("%private%", buildWorld.isPrivate()),
                 new AbstractMap.SimpleEntry<>("%builders_enabled%", buildWorld.isBuilders()),
                 new AbstractMap.SimpleEntry<>("%builders%", buildWorld.getBuildersInfo()),
-                new AbstractMap.SimpleEntry<>("%block_breaking%", buildWorld.isBlockPlacement()),
-                new AbstractMap.SimpleEntry<>("%block_placement%", buildWorld.getMaterial().name()),
+                new AbstractMap.SimpleEntry<>("%block_breaking%", buildWorld.isBlockBreaking()),
+                new AbstractMap.SimpleEntry<>("%block_placement%", buildWorld.isBlockPlacement()),
                 new AbstractMap.SimpleEntry<>("%status%", buildWorld.getStatus().getName()),
                 new AbstractMap.SimpleEntry<>("%project%", buildWorld.getProject()),
                 new AbstractMap.SimpleEntry<>("%permission%", buildWorld.getPermission()),
-                new AbstractMap.SimpleEntry<>("%time%", buildWorld.getWorld()),
+                new AbstractMap.SimpleEntry<>("%time%", buildWorld.getWorldTime()),
                 new AbstractMap.SimpleEntry<>("%creation%", buildWorld.getFormattedCreationDate()),
                 new AbstractMap.SimpleEntry<>("%date%", buildWorld.getFormattedCreationDate()),
                 new AbstractMap.SimpleEntry<>("%physics%", buildWorld.isPhysics()),

@@ -906,10 +906,9 @@ public class Messages {
 
     @SafeVarargs
     public static void sendMessage(CommandSender sender, String key, Map.Entry<String, Object>... placeholders) {
-        if (config.isList(key)) {
-            sender.sendMessage(getStringList(key, placeholders).toArray(new String[0]));
-        } else {
-            sender.sendMessage(getString(key, placeholders));
+        String message = getString(key, placeholders);
+        if (!message.isEmpty()) {
+            sender.sendMessage(message);
         }
     }
 
