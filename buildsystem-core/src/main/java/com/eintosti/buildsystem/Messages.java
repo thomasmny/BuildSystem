@@ -8,7 +8,6 @@
 package com.eintosti.buildsystem;
 
 import com.eintosti.buildsystem.util.RGBUtils;
-import com.google.common.collect.Lists;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -26,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author einTosti
@@ -145,7 +143,7 @@ public class Messages {
         addSpacer(sb, "# /explosions");
         setMessage(sb, "explosions_usage", "%prefix% &7Usage: &b/explosions <world>");
         setMessage(sb, "explosions_unknown_world", "%prefix% &cUnknown world.");
-        setMessage(sb, "explosions_world_not_imported", "%prefix% &cWorld must be imported » /worlds import <world>");
+        setMessage(sb, "explosions_world_not_imported", "%prefix% &cWorld must be imported: /worlds import <world>");
         setMessage(sb, "explosions_activated", "%prefix% &7Explosions in &b%world% &7were &aactivated&7.");
         setMessage(sb, "explosions_deactivated", "%prefix% &7Explosions in &b%world% &7were &cdeactivated&7.");
         setMessage(sb, "explosions_deactivated_in_world", "%prefix% &7Explosions in &b%world% &7are currently &cdeactivated&7.");
@@ -163,7 +161,7 @@ public class Messages {
         addSpacer(sb, "# /physics");
         setMessage(sb, "physics_usage", "%prefix% &7Usage: &b/physics <world>");
         setMessage(sb, "physics_unknown_world", "%prefix% &cUnknown world.");
-        setMessage(sb, "physics_world_not_imported", "%prefix% &cWorld must be imported » /worlds import <world>");
+        setMessage(sb, "physics_world_not_imported", "%prefix% &cWorld must be imported: /worlds import <world>");
         setMessage(sb, "physics_activated", "%prefix% &7Physics in &b%world% &7were &aactivated&7.");
         setMessage(sb, "physics_activated_all", "%prefix% &7Physics in &ball worlds &7were &aactivated&7.");
         setMessage(sb, "physics_deactivated", "%prefix% &7Physics in &b%world% &7were &cdeactivated&7.");
@@ -172,7 +170,7 @@ public class Messages {
         addSpacer(sb, "# /noai");
         setMessage(sb, "noai_usage", "%prefix% &7Usage: &b/noai <world>");
         setMessage(sb, "noai_unknown_world", "%prefix% &cUnknown world.");
-        setMessage(sb, "noai_world_not_imported", "%prefix% &cWorld must be imported » /worlds import <world>");
+        setMessage(sb, "noai_world_not_imported", "%prefix% &cWorld must be imported: /worlds import <world>");
         setMessage(sb, "noai_deactivated", "%prefix% &7Entity AIs in &b%world% &7were &aactivated&7.");
         setMessage(sb, "noai_activated", "%prefix% &7Entity AIs in &b%world% &7were &cdeactivated&7.");
         setMessage(sb, "noai_activated_in_world", "%prefix% &7Entity AIs in &b%world% &7are currently &cdeactivated&7.");
@@ -187,7 +185,7 @@ public class Messages {
         setMessage(sb, "spawn_admin", "%prefix% &7Usage: &b/spawn [set/remove]");
         setMessage(sb, "spawn_teleported", "%prefix% &7You were teleported to the &bspawn&7.");
         setMessage(sb, "spawn_unavailable", "%prefix% &cThere isn't a spawn to teleport to.");
-        setMessage(sb, "spawn_world_not_imported", "%prefix% &cWorld must be imported » /worlds import <world>");
+        setMessage(sb, "spawn_world_not_imported", "%prefix% &cWorld must be imported: /worlds import <world>");
         setMessage(sb, "spawn_set", "%prefix% &7Spawn set to &b%x% %y% %z% &7in &b%world%&7.");
         setMessage(sb, "spawn_remove", "%prefix% &7The spawn was removed.");
         addSpacer(sb, "");
@@ -360,7 +358,7 @@ public class Messages {
         setMessage(sb, "worlds_setpermission_error", "%prefix% &cPlease try again.");
         setMessage(sb, "worlds_setpermission_set", "%prefix% &b%world%&7's permission was successfully changed.");
         addSpacer(sb, "");
-        setMessage(sb, "worlds_setspawn_world_not_imported", "%prefix% &cWorld must be imported » /worlds import <world>");
+        setMessage(sb, "worlds_setspawn_world_not_imported", "%prefix% &cWorld must be imported: /worlds import <world>");
         setMessage(sb, "worlds_setspawn_world_spawn_set", "%prefix% &b%world%&7's spawnpoint was set.");
         addSpacer(sb, "");
         setMessage(sb, "worlds_removespawn_world_not_imported", "%prefix% &cWorld must be imported » /worlds import <world>");
@@ -368,7 +366,7 @@ public class Messages {
         addSpacer(sb, "");
         setMessage(sb, "worlds_tp_usage", "%prefix% &7Usage: &b/worlds tp <world>");
         setMessage(sb, "worlds_tp_unknown_world", "%prefix% &cUnknown world.");
-        setMessage(sb, "worlds_tp_world_not_imported", "%prefix% &cWorld must be imported » /worlds import <world>");
+        setMessage(sb, "worlds_tp_world_not_imported", "%prefix% &cWorld must be imported: /worlds import <world>");
         setMessage(sb, "worlds_tp_entry_forbidden", "%prefix% &cYou are not allowed to enter this world!");
         addSpacer(sb, "");
         setMessage(sb, "worlds_unimport_usage", "%prefix% &7Usage: &b/worlds import <world> [-g <generator>]");
@@ -671,31 +669,31 @@ public class Messages {
         addSpacer(sb, "");
         setMessage(sb, "settings_clear_inventory_item", "&bClear Inventory");
         setMessage(sb, "settings_clear_inventory_lore", Arrays.asList(
-                "&7&oWhen enabled a player's",
+                "&7&oWhen enabled, a player's",
                 "&7&oinventory is cleared on join."
         ));
         addSpacer(sb, "");
         setMessage(sb, "settings_disableinteract_item", "&bDisable Block Interactions");
         setMessage(sb, "settings_disableinteract_lore", Arrays.asList(
-                "&7&oWhen enabled interactions with",
+                "&7&oWhen enabled, interactions with",
                 "&7&ocertain blocks are disabled."
         ));
         addSpacer(sb, "");
         setMessage(sb, "settings_hideplayers_item", "&bHide Players");
         setMessage(sb, "settings_hideplayers_lore", Arrays.asList(
-                "&7&oWhen enabled all players",
-                "&7&oonline will be hidden."
+                "&7&oWhen enabled, all online",
+                "&7&oplayers will be hidden."
         ));
         addSpacer(sb, "");
         setMessage(sb, "settings_instantplacesigns_item", "&bInstant Place Signs");
         setMessage(sb, "settings_instantplacesigns_lore", Arrays.asList(
-                "&7&oWhen enabled signs are placed",
+                "&7&oWhen enabled, signs are placed",
                 "&7&owithout opening the text input."
         ));
         addSpacer(sb, "");
         setMessage(sb, "settings_keep_navigator_item", "&bKeep Navigator");
         setMessage(sb, "settings_keep_navigator_lore", Arrays.asList(
-                "&7&oWhen enabled the navigator",
+                "&7&oWhen enabled, the navigator",
                 "&7&owill remain in your inventory",
                 "&7&oeven when you clear it."
         ));
@@ -708,25 +706,25 @@ public class Messages {
         addSpacer(sb, "");
         setMessage(sb, "settings_nightvision_item", "&bNightvision");
         setMessage(sb, "settings_nightvision_lore", Arrays.asList(
-                "&7&oWhen enabled you will",
+                "&7&oWhen enabled, you will",
                 "&7&oreceive permanent night vision."
         ));
         addSpacer(sb, "");
         setMessage(sb, "settings_no_clip_item", "&bNoClip");
         setMessage(sb, "settings_no_clip_lore", Arrays.asList(
-                "&7&oWhen flying against a wall you",
+                "&7&oWhen flying against a wall, you",
                 "&7&owill be put into spectator mode."
         ));
         addSpacer(sb, "");
         setMessage(sb, "settings_open_trapdoors_item", "&bOpen Trapdoors");
         setMessage(sb, "settings_open_trapdoors_lore", Arrays.asList(
-                "&7&oWhen right clicking iron (trap-)doors",
+                "&7&oWhen right clicking iron (trap-)doors,",
                 "&7&othey will be opened/closed."
         ));
         addSpacer(sb, "");
         setMessage(sb, "settings_placeplants_item", "&bPlace Plants");
         setMessage(sb, "settings_placeplants_lore", Arrays.asList(
-                "&7&oWhen enabled you can place",
+                "&7&oWhen enabled, you can place",
                 "&7&oplants on every kind of block."
         ));
         addSpacer(sb, "");
@@ -743,13 +741,13 @@ public class Messages {
         addSpacer(sb, "");
         setMessage(sb, "settings_slab_breaking_item", "&bSlab breaking");
         setMessage(sb, "settings_slab_breaking_lore", Arrays.asList(
-                "&7&oWhen breaking double slabs",
+                "&7&oWhen breaking double slabs,",
                 "&7&oonly one half will be broken."
         ));
         addSpacer(sb, "");
         setMessage(sb, "settings_spawnteleport_item", "&bSpawn Teleport");
         setMessage(sb, "settings_spawnteleport_lore", Arrays.asList(
-                "&7&oWhen enabled you will be",
+                "&7&oWhen enabled, you will be",
                 "&7&oteleported to the spawn",
                 "&7&oif it has been set."
         ));
@@ -850,11 +848,11 @@ public class Messages {
         setMessage(sb, "blocks_end_portal", "&bEnd Portal");
         setMessage(sb, "blocks_dragon_egg", "&bDragon Egg");
 
-        try {
-            FileOutputStream fileStream = new FileOutputStream(file);
-            OutputStreamWriter writer = new OutputStreamWriter(fileStream, StandardCharsets.UTF_8);
+        try (
+                FileOutputStream fileStream = new FileOutputStream(file);
+                OutputStreamWriter writer = new OutputStreamWriter(fileStream, StandardCharsets.UTF_8)
+        ) {
             writer.write(sb.toString());
-            writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -886,7 +884,13 @@ public class Messages {
     private static void loadMessages() {
         config.getConfigurationSection("")
                 .getKeys(false)
-                .forEach(message -> MESSAGES.put(message, config.getString(message)));
+                .forEach(message -> {
+                    if (config.isList(message)) {
+                        MESSAGES.put(message, String.join("\n", config.getStringList(message)));
+                    } else {
+                        MESSAGES.put(message, config.getString(message));
+                    }
+                });
     }
 
     private static void checkIfKeyPresent(String key) {
@@ -920,16 +924,7 @@ public class Messages {
 
     @SafeVarargs
     public static List<String> getStringList(String key, Map.Entry<String, Object>... placeholders) {
-        checkIfKeyPresent(key);
-
-        String string = MESSAGES.get(key).replace("%prefix%", getPrefix());
-        String[] splitString = string.substring(1, string.length() - 1).split(", ");
-
-        return Lists.newArrayList(splitString)
-                .stream()
-                .map(query -> replacePlaceHolders(query, placeholders))
-                .map(query -> ChatColor.translateAlternateColorCodes('&', RGBUtils.color(query)))
-                .collect(Collectors.toList());
+        return Arrays.asList(getString(key, placeholders).split("\n"));
     }
 
     @SafeVarargs
