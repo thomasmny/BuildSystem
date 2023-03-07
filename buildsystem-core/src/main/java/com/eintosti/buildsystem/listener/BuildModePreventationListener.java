@@ -63,7 +63,7 @@ public class BuildModePreventationListener implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        if (playerManager.isInBuildMode(player)) {
+        if (!playerManager.isInBuildMode(player)) {
             return;
         }
 
