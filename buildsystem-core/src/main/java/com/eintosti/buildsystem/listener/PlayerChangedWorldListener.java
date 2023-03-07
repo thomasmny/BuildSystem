@@ -15,7 +15,6 @@ import com.eintosti.buildsystem.navigator.ArmorStandManager;
 import com.eintosti.buildsystem.player.CachedValues;
 import com.eintosti.buildsystem.player.PlayerManager;
 import com.eintosti.buildsystem.settings.SettingsManager;
-import com.eintosti.buildsystem.util.InventoryUtil;
 import com.eintosti.buildsystem.world.BuildWorld;
 import com.eintosti.buildsystem.world.WorldManager;
 import com.eintosti.buildsystem.world.data.WorldStatus;
