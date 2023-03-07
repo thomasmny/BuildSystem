@@ -9,6 +9,7 @@ package com.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.command.subcommand.Argument;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import com.eintosti.buildsystem.world.BuildWorld;
@@ -20,13 +21,11 @@ import org.bukkit.entity.Player;
 /**
  * @author einTosti
  */
-public class TeleportSubCommand extends SubCommand {
+public class TeleportSubCommand implements SubCommand {
 
     private final BuildSystem plugin;
 
     public TeleportSubCommand(BuildSystem plugin) {
-        super(WorldsTabComplete.WorldsArgument.TP);
-
         this.plugin = plugin;
     }
 
@@ -60,5 +59,10 @@ public class TeleportSubCommand extends SubCommand {
         } else {
             Messages.sendMessage(player, "worlds_tp_entry_forbidden");
         }
+    }
+
+    @Override
+    public Argument getArgument() {
+        return WorldsTabComplete.WorldsArgument.TP;
     }
 }

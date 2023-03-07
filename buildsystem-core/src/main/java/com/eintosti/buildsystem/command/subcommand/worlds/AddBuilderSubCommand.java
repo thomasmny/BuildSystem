@@ -10,6 +10,7 @@ package com.eintosti.buildsystem.command.subcommand.worlds;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.command.subcommand.Argument;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import com.eintosti.buildsystem.util.UUIDFetcher;
@@ -26,14 +27,12 @@ import java.util.UUID;
 /**
  * @author einTosti
  */
-public class AddBuilderSubCommand extends SubCommand {
+public class AddBuilderSubCommand implements SubCommand {
 
     private final BuildSystem plugin;
     private final String worldName;
 
     public AddBuilderSubCommand(BuildSystem plugin, String worldName) {
-        super(WorldsTabComplete.WorldsArgument.ADD_BUILDER);
-
         this.plugin = plugin;
         this.worldName = worldName;
     }
@@ -58,6 +57,11 @@ public class AddBuilderSubCommand extends SubCommand {
         }
 
         getAddBuilderInput(player, buildWorld, true);
+    }
+
+    @Override
+    public Argument getArgument() {
+        return WorldsTabComplete.WorldsArgument.ADD_BUILDER;
     }
 
     public void getAddBuilderInput(Player player, BuildWorld buildWorld, boolean closeInventory) {

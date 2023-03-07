@@ -9,6 +9,7 @@ package com.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.command.subcommand.Argument;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import com.eintosti.buildsystem.world.BuildWorld;
@@ -20,13 +21,11 @@ import java.util.AbstractMap;
 /**
  * @author einTosti
  */
-public class SetSpawnSubCommand extends SubCommand {
+public class SetSpawnSubCommand implements SubCommand {
 
     private final BuildSystem plugin;
 
     public SetSpawnSubCommand(BuildSystem plugin) {
-        super(WorldsTabComplete.WorldsArgument.SET_SPAWN);
-
         this.plugin = plugin;
     }
 
@@ -47,5 +46,10 @@ public class SetSpawnSubCommand extends SubCommand {
 
         buildWorld.setCustomSpawn(player.getLocation());
         Messages.sendMessage(player, "worlds_setspawn_world_spawn_set", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+    }
+
+    @Override
+    public Argument getArgument() {
+        return WorldsTabComplete.WorldsArgument.SET_SPAWN;
     }
 }

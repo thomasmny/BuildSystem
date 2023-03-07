@@ -29,6 +29,7 @@ import com.eintosti.buildsystem.world.WorldManager;
 import com.eintosti.buildsystem.world.data.WorldStatus;
 import com.eintosti.buildsystem.world.data.WorldType;
 import com.eintosti.buildsystem.world.modification.EditInventory;
+import com.google.common.collect.Lists;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -402,7 +403,7 @@ public class InventoryUtil {
                 new AbstractMap.SimpleEntry<>("%project%", buildWorld.getProject()),
                 new AbstractMap.SimpleEntry<>("%permission%", buildWorld.getPermission()),
                 new AbstractMap.SimpleEntry<>("%creator%", buildWorld.hasCreator() ? buildWorld.getCreator() : "-"),
-                new AbstractMap.SimpleEntry<>("%creation%", buildWorld.getFormattedCreationDate()),
+                new AbstractMap.SimpleEntry<>("%creation%", buildWorld.getFormattedCreationDate())
         };
         List<String> messageList = plugin.getWorldManager().isPermitted(player, WorldsTabComplete.WorldsArgument.EDIT.getPermission(),
                 buildWorld.getName()) ? Messages.getStringList("world_item_lore_edit", placeholders) : Messages.getStringList("world_item_lore_normal", placeholders);
@@ -587,7 +588,6 @@ public class InventoryUtil {
         }
     }
 
-    @Nullable
     public XMaterial getDefaultItem(WorldType worldType) {
         XMaterial material;
         switch (worldType) {

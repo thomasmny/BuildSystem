@@ -9,6 +9,7 @@ package com.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.command.subcommand.Argument;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import com.eintosti.buildsystem.world.BuildWorld;
@@ -22,14 +23,12 @@ import java.util.AbstractMap;
 /**
  * @author einTosti
  */
-public class InfoSubCommand extends SubCommand {
+public class InfoSubCommand implements SubCommand {
 
     private final BuildSystem plugin;
-    private String worldName;
+    private final String worldName;
 
     public InfoSubCommand(BuildSystem plugin, String worldName) {
-        super(WorldsTabComplete.WorldsArgument.INFO);
-
         this.plugin = plugin;
         this.worldName = worldName;
     }
@@ -98,5 +97,10 @@ public class InfoSubCommand extends SubCommand {
     private double round(double value) {
         int scale = (int) Math.pow(10, 2);
         return (double) Math.round(value * scale) / scale;
+    }
+
+    @Override
+    public Argument getArgument() {
+        return WorldsTabComplete.WorldsArgument.INFO;
     }
 }

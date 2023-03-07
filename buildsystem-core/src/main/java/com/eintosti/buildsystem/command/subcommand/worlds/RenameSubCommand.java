@@ -10,6 +10,7 @@ package com.eintosti.buildsystem.command.subcommand.worlds;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.command.subcommand.Argument;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
@@ -20,14 +21,12 @@ import org.bukkit.entity.Player;
 /**
  * @author einTosti
  */
-public class RenameSubCommand extends SubCommand {
+public class RenameSubCommand implements SubCommand {
 
     private final BuildSystem plugin;
     private final String worldName;
 
     public RenameSubCommand(BuildSystem plugin, String worldName) {
-        super(WorldsTabComplete.WorldsArgument.RENAME);
-
         this.plugin = plugin;
         this.worldName = worldName;
     }
@@ -57,5 +56,10 @@ public class RenameSubCommand extends SubCommand {
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
             player.closeInventory();
         });
+    }
+
+    @Override
+    public Argument getArgument() {
+        return WorldsTabComplete.WorldsArgument.RENAME;
     }
 }

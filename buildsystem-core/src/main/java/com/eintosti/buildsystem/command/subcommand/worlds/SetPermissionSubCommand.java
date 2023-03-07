@@ -10,6 +10,7 @@ package com.eintosti.buildsystem.command.subcommand.worlds;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.command.subcommand.Argument;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;
@@ -22,14 +23,12 @@ import java.util.AbstractMap;
 /**
  * @author einTosti
  */
-public class SetPermissionSubCommand extends SubCommand {
+public class SetPermissionSubCommand implements SubCommand {
 
     private final BuildSystem plugin;
     private final String worldName;
 
     public SetPermissionSubCommand(BuildSystem plugin, String worldName) {
-        super(WorldsTabComplete.WorldsArgument.SET_PERMISSION);
-
         this.plugin = plugin;
         this.worldName = worldName;
     }
@@ -70,5 +69,10 @@ public class SetPermissionSubCommand extends SubCommand {
                 player.openInventory(plugin.getEditInventory().getInventory(player, buildWorld));
             }
         });
+    }
+
+    @Override
+    public Argument getArgument() {
+        return WorldsTabComplete.WorldsArgument.SET_PERMISSION;
     }
 }

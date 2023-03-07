@@ -12,24 +12,16 @@ import org.bukkit.entity.Player;
 /**
  * @author einTosti
  */
-public abstract class SubCommand {
+public interface SubCommand {
 
-    private final Argument argument;
+    void execute(Player player, String[] args);
 
-    public SubCommand(Argument argument) {
-        this.argument = argument;
-    }
+    Argument getArgument();
 
-    public abstract void execute(Player player, String[] args);
-
-    public Argument getArgument() {
-        return argument;
-    }
-
-    public boolean hasPermission(Player player) {
-        if (argument.getPermission() == null) {
+    default boolean hasPermission(Player player) {
+        if (getArgument().getPermission() == null) {
             return true;
         }
-        return player.hasPermission(argument.getPermission());
+        return player.hasPermission(getArgument().getPermission());
     }
 }

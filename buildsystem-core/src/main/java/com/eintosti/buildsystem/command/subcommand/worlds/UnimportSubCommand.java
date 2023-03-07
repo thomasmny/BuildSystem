@@ -9,6 +9,7 @@ package com.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.command.subcommand.Argument;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import com.eintosti.buildsystem.world.BuildWorld;
@@ -20,14 +21,12 @@ import java.util.AbstractMap;
 /**
  * @author einTosti
  */
-public class UnimportSubCommand extends SubCommand {
+public class UnimportSubCommand implements SubCommand {
 
     private final BuildSystem plugin;
     private final String worldName;
 
     public UnimportSubCommand(BuildSystem plugin, String worldName) {
-        super(WorldsTabComplete.WorldsArgument.UNIMPORT);
-
         this.plugin = plugin;
         this.worldName = worldName;
     }
@@ -53,5 +52,10 @@ public class UnimportSubCommand extends SubCommand {
 
         worldManager.unimportWorld(buildWorld, true);
         Messages.sendMessage(player, "worlds_unimport_finished", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+    }
+
+    @Override
+    public Argument getArgument() {
+        return WorldsTabComplete.WorldsArgument.UNIMPORT;
     }
 }

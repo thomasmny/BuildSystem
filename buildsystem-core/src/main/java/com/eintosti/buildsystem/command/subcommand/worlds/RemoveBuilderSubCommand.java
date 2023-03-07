@@ -10,6 +10,7 @@ package com.eintosti.buildsystem.command.subcommand.worlds;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.command.subcommand.Argument;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import com.eintosti.buildsystem.util.UUIDFetcher;
@@ -25,14 +26,12 @@ import java.util.UUID;
 /**
  * @author einTosti
  */
-public class RemoveBuilderSubCommand extends SubCommand {
+public class RemoveBuilderSubCommand implements SubCommand {
 
     private final BuildSystem plugin;
     private final String worldName;
 
     public RemoveBuilderSubCommand(BuildSystem plugin, String worldName) {
-        super(WorldsTabComplete.WorldsArgument.REMOVE_BUILDER);
-
         this.plugin = plugin;
         this.worldName = worldName;
     }
@@ -94,5 +93,10 @@ public class RemoveBuilderSubCommand extends SubCommand {
 
             player.closeInventory();
         });
+    }
+
+    @Override
+    public Argument getArgument() {
+        return WorldsTabComplete.WorldsArgument.REMOVE_BUILDER;
     }
 }
