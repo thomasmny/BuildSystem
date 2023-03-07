@@ -396,15 +396,16 @@ public class InventoryUtil {
      * @return The formatted lore
      */
     private List<String> getLore(Player player, BuildWorld buildWorld) {
+        @SuppressWarnings("unchecked")
         Map.Entry<String, Object>[] placeholders = new Map.Entry[]{
-                new AbstractMap.SimpleEntry("%status%", buildWorld.getStatus().getName()),
-                new AbstractMap.SimpleEntry("%project%", buildWorld.getProject()),
-                new AbstractMap.SimpleEntry("%permission%", buildWorld.getPermission()),
-                new AbstractMap.SimpleEntry("%creator%", buildWorld.hasCreator() ? buildWorld.getCreator() : "-"),
-                new AbstractMap.SimpleEntry("%creation%", buildWorld.getFormattedCreationDate()),
+                new AbstractMap.SimpleEntry<>("%status%", buildWorld.getStatus().getName()),
+                new AbstractMap.SimpleEntry<>("%project%", buildWorld.getProject()),
+                new AbstractMap.SimpleEntry<>("%permission%", buildWorld.getPermission()),
+                new AbstractMap.SimpleEntry<>("%creator%", buildWorld.hasCreator() ? buildWorld.getCreator() : "-"),
+                new AbstractMap.SimpleEntry<>("%creation%", buildWorld.getFormattedCreationDate()),
         };
-        List<String> messageList = plugin.getWorldManager().isPermitted(player, WorldsTabComplete.WorldsArgument.EDIT.getPermission(), buildWorld.getName()) ?
-                Messages.getStringList("world_item_lore_edit", placeholders) : Messages.getStringList("world_item_lore_normal", placeholders);
+        List<String> messageList = plugin.getWorldManager().isPermitted(player, WorldsTabComplete.WorldsArgument.EDIT.getPermission(),
+                buildWorld.getName()) ? Messages.getStringList("world_item_lore_edit", placeholders) : Messages.getStringList("world_item_lore_normal", placeholders);
 
         // Replace %builders% placeholder
         List<String> lore = new ArrayList<>();
