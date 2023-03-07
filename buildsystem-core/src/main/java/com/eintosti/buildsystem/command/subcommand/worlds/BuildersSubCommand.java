@@ -9,6 +9,7 @@ package com.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.command.subcommand.Argument;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import com.eintosti.buildsystem.world.BuildWorld;
@@ -18,14 +19,12 @@ import org.bukkit.entity.Player;
 /**
  * @author einTosti
  */
-public class BuildersSubCommand extends SubCommand {
+public class BuildersSubCommand implements SubCommand {
 
     private final BuildSystem plugin;
     private final String worldName;
 
     public BuildersSubCommand(BuildSystem plugin, String worldName) {
-        super(WorldsTabComplete.WorldsArgument.BUILDERS);
-
         this.plugin = plugin;
         this.worldName = worldName;
     }
@@ -51,5 +50,10 @@ public class BuildersSubCommand extends SubCommand {
 
         plugin.getPlayerManager().getBuildPlayer(player).setCachedWorld(buildWorld);
         player.openInventory(plugin.getBuilderInventory().getInventory(buildWorld, player));
+    }
+
+    @Override
+    public Argument getArgument() {
+        return WorldsTabComplete.WorldsArgument.BUILDERS;
     }
 }

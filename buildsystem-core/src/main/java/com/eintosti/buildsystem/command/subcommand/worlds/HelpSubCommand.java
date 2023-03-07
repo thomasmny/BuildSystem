@@ -8,40 +8,34 @@
 package com.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.command.subcommand.Argument;
+import com.eintosti.buildsystem.command.PagedCommand;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import com.google.common.collect.Lists;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
 
 /**
  * @author einTosti
  */
-public class HelpSubCommand extends SubCommand {
-
-    private static final int MAX_COMMANDS_PER_PAGE = 7;
+public class HelpSubCommand extends PagedCommand implements SubCommand {
 
     public HelpSubCommand() {
-        super(WorldsTabComplete.WorldsArgument.HELP);
+        super("worlds_help_permission", "worlds_help_title_with_page");
     }
 
     @Override
     public void execute(Player player, String[] args) {
         if (args.length == 1) {
-            sendHelpMessage(player, 1);
+            sendMessage(player, 1);
         } else if (args.length == 2) {
             try {
                 int page = Integer.parseInt(args[1]);
-                sendHelpMessage(player, page);
+                sendMessage(player, page);
             } catch (NumberFormatException e) {
                 Messages.sendMessage(player, "worlds_help_invalid_page");
             }
@@ -50,41 +44,8 @@ public class HelpSubCommand extends SubCommand {
         }
     }
 
-    private void sendHelpMessage(Player player, int pageNum) {
-        List<TextComponent> commands = getCommands();
-        int numPages = (int) Math.ceil((double) commands.size() / MAX_COMMANDS_PER_PAGE);
-
-        List<TextComponent> page = createPage(commands, numPages, pageNum);
-        page.add(0, new TextComponent("§7§m----------------------------------------------------"));
-        page.add(1, new TextComponent(Messages.getString("worlds_help_title_with_page")
-                .replace("%page%", String.valueOf(pageNum))
-                .replace("%max%", String.valueOf(numPages))
-                .concat("\n"))
-        );
-        page.add(new TextComponent("§7§m----------------------------------------------------"));
-        page.forEach(line -> player.spigot().sendMessage(line));
-    }
-
-    private List<TextComponent> createPage(List<TextComponent> commands, int numPages, int page) {
-        List<List<TextComponent>> pages = new ArrayList<>(numPages);
-        IntStream.range(0, numPages).forEach(i -> pages.add(new ArrayList<>()));
-
-        int currentPage = 0;
-        int commandsInPage = 0;
-        for (TextComponent command : commands) {
-            pages.get(currentPage).add(command);
-            commandsInPage++;
-
-            if (commandsInPage >= MAX_COMMANDS_PER_PAGE) {
-                currentPage++;
-                commandsInPage = 0;
-            }
-        }
-
-        return pages.get(page - 1);
-    }
-
-    private List<TextComponent> getCommands() {
+    @Override
+    protected List<TextComponent> getCommands() {
         List<TextComponent> commands = Lists.newArrayList(
                 createComponent("/worlds help <page>", Messages.getString("worlds_help_help"), "/worlds help", "-"),
                 createComponent("/worlds info", Messages.getString("worlds_help_info"), "/worlds info", "buildsystem.info"),
@@ -111,19 +72,8 @@ public class HelpSubCommand extends SubCommand {
         return commands;
     }
 
-    private TextComponent createComponent(String command, String text, String suggest, String permission) {
-        if (text.isEmpty()) {
-            return new TextComponent();
-        }
-
-        TextComponent commandComponent = new TextComponent("§b" + command);
-        TextComponent textComponent = new TextComponent(" §8» " + text);
-
-        commandComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, suggest));
-        commandComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new ComponentBuilder(Messages.getString("worlds_help_permission", new AbstractMap.SimpleEntry<>("%permission%", permission))).create()
-        ));
-        commandComponent.addExtra(textComponent);
-        return commandComponent;
+    @Override
+    public Argument getArgument() {
+        return WorldsTabComplete.WorldsArgument.HELP;
     }
 }

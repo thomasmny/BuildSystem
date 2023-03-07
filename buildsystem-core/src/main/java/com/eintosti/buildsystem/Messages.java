@@ -117,7 +117,10 @@ public class Messages {
         setMessage(sb, "build_deactivated_other_target", "%prefix% &7Build mode was &cdeactivated &8[&7by %sender%&8]&7.");
         addSpacer(sb, "");
         addSpacer(sb, "# /buildsystem");
-        setMessage(sb, "buildsystem_title", "%prefix% &7&nBuildSystem Help:");
+        setMessage(sb, "buildsystem_usage", "%prefix% &7Usage: &b/buildsystem [page]");
+        setMessage(sb, "buildsystem_invalid_page", "%prefix% &cInvalid page.");
+        setMessage(sb, "buildsystem_title_with_page", "%prefix% &7&nBuildSystem Help:&8 (&7%page%/%max%&8)");
+        setMessage(sb, "buildsystem_permission", "&7&nPermission&8: &b%permission%");
         setMessage(sb, "buildsystem_back", "&7Teleport to your previous location.");
         setMessage(sb, "buildsystem_blocks", "&7Opens a menu with secret blocks.");
         setMessage(sb, "buildsystem_build", "&7Puts you into 'build mode'.");

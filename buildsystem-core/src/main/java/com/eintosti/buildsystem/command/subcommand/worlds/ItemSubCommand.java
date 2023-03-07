@@ -9,6 +9,7 @@ package com.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.command.subcommand.Argument;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import org.bukkit.entity.Player;
@@ -16,13 +17,11 @@ import org.bukkit.entity.Player;
 /**
  * @author einTosti
  */
-public class ItemSubCommand extends SubCommand {
+public class ItemSubCommand implements SubCommand {
 
     private final BuildSystem plugin;
 
     public ItemSubCommand(BuildSystem plugin) {
-        super(WorldsTabComplete.WorldsArgument.ITEM);
-
         this.plugin = plugin;
     }
 
@@ -35,5 +34,10 @@ public class ItemSubCommand extends SubCommand {
 
         player.getInventory().addItem(plugin.getInventoryUtil().getItemStack(plugin.getConfigValues().getNavigatorItem(), Messages.getString("navigator_item")));
         Messages.sendMessage(player, "worlds_item_receive");
+    }
+
+    @Override
+    public Argument getArgument() {
+        return WorldsTabComplete.WorldsArgument.ITEM;
     }
 }

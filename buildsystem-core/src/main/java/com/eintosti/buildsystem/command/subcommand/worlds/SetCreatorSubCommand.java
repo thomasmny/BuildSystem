@@ -10,6 +10,7 @@ package com.eintosti.buildsystem.command.subcommand.worlds;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.command.subcommand.Argument;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import com.eintosti.buildsystem.util.UUIDFetcher;
@@ -23,14 +24,12 @@ import java.util.AbstractMap;
 /**
  * @author einTosti
  */
-public class SetCreatorSubCommand extends SubCommand {
+public class SetCreatorSubCommand implements SubCommand {
 
     private final BuildSystem plugin;
     private final String worldName;
 
     public SetCreatorSubCommand(BuildSystem plugin, String worldName) {
-        super(WorldsTabComplete.WorldsArgument.SET_CREATOR);
-
         this.plugin = plugin;
         this.worldName = worldName;
     }
@@ -68,5 +67,10 @@ public class SetCreatorSubCommand extends SubCommand {
             Messages.sendMessage(player, "worlds_setcreator_set", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
             player.closeInventory();
         });
+    }
+
+    @Override
+    public Argument getArgument() {
+        return WorldsTabComplete.WorldsArgument.SET_CREATOR;
     }
 }

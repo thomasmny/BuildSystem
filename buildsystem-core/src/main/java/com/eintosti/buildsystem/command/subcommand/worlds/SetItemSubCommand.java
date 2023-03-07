@@ -10,6 +10,7 @@ package com.eintosti.buildsystem.command.subcommand.worlds;
 import com.cryptomorin.xseries.XMaterial;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.command.subcommand.Argument;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import com.eintosti.buildsystem.world.BuildWorld;
@@ -23,14 +24,12 @@ import java.util.AbstractMap;
 /**
  * @author einTosti
  */
-public class SetItemSubCommand extends SubCommand {
+public class SetItemSubCommand implements SubCommand {
 
     private final BuildSystem plugin;
     private final String worldName;
 
     public SetItemSubCommand(BuildSystem plugin, String worldName) {
-        super(WorldsTabComplete.WorldsArgument.SET_ITEM);
-
         this.plugin = plugin;
         this.worldName = worldName;
     }
@@ -62,5 +61,10 @@ public class SetItemSubCommand extends SubCommand {
 
         buildWorld.setMaterial(XMaterial.matchXMaterial(itemStack));
         Messages.sendMessage(player, "worlds_setitem_set", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+    }
+
+    @Override
+    public Argument getArgument() {
+        return WorldsTabComplete.WorldsArgument.SET_ITEM;
     }
 }

@@ -9,6 +9,7 @@ package com.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.command.subcommand.Argument;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import com.eintosti.buildsystem.world.BuildWorld;
@@ -22,14 +23,12 @@ import java.io.File;
 /**
  * @author einTosti
  */
-public class ImportSubCommand extends SubCommand {
+public class ImportSubCommand implements SubCommand {
 
     private final BuildSystem plugin;
     private final String worldName;
 
     public ImportSubCommand(BuildSystem plugin, String worldName) {
-        super(WorldsTabComplete.WorldsArgument.IMPORT);
-
         this.plugin = plugin;
         this.worldName = worldName;
     }
@@ -82,5 +81,10 @@ public class ImportSubCommand extends SubCommand {
                 Messages.sendMessage(player, "worlds_import_usage");
                 break;
         }
+    }
+
+    @Override
+    public Argument getArgument() {
+        return WorldsTabComplete.WorldsArgument.IMPORT;
     }
 }

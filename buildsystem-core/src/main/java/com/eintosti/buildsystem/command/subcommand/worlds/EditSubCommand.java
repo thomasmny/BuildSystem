@@ -11,6 +11,7 @@ import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.Titles;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.command.subcommand.Argument;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import com.eintosti.buildsystem.world.BuildWorld;
@@ -20,14 +21,12 @@ import org.bukkit.entity.Player;
 /**
  * @author einTosti
  */
-public class EditSubCommand extends SubCommand {
+public class EditSubCommand implements SubCommand {
 
     private final BuildSystem plugin;
     private final String worldName;
 
     public EditSubCommand(BuildSystem plugin, String worldName) {
-        super(WorldsTabComplete.WorldsArgument.EDIT);
-
         this.plugin = plugin;
         this.worldName = worldName;
     }
@@ -58,5 +57,10 @@ public class EditSubCommand extends SubCommand {
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
             Titles.sendTitle(player, 5, 70, 20, " ", Messages.getString("world_not_loaded"));
         }
+    }
+
+    @Override
+    public Argument getArgument() {
+        return WorldsTabComplete.WorldsArgument.EDIT;
     }
 }
