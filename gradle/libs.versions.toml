@@ -9,7 +9,7 @@ worldedit = "7.2.13"
 placeholderapi = "2.11.2"
 
 # Third Party
-annotations = "24.0.0"
+annotations = "24.0.1"
 authlib = "1.5.25"
 bstats = "3.0.0"
 fastboard = "1.2.1"
