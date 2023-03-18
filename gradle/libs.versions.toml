@@ -11,7 +11,7 @@ placeholderapi = "2.11.2"
 # Third Party
 annotations = "24.0.0"
 authlib = "1.5.25"
-bstats = "3.0.0"
+bstats = "3.0.1"
 fastboard = "1.2.1"
 nbt = "1.5.1"
 xseries = "9.2.0"
