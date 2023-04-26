@@ -128,6 +128,10 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
 
             default:
                 // Add arguments to /worlds import
+                if (!args[0].equalsIgnoreCase("import")) {
+                    return arrayList;
+                }
+                
                 Map<String, List<String>> arguments = new HashMap<String, List<String>>() {{
                     put("-g", Arrays.stream(Generator.values()).filter(generator -> generator != Generator.CUSTOM).map(Enum::name).collect(Collectors.toList()));
                     put("-c", Lists.newArrayList());
