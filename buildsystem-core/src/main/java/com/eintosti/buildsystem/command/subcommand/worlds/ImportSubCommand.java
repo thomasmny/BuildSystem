@@ -19,6 +19,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.io.File;
+import java.util.AbstractMap;
 
 /**
  * @author einTosti
@@ -59,9 +60,19 @@ public class ImportSubCommand implements SubCommand {
             return;
         }
 
+        for (String charString : worldName.split("")) {
+            if (charString.matches("[^A-Za-z\\d/_-]")) {
+                Messages.sendMessage(player, "worlds_import_invalid_character",
+                        new AbstractMap.SimpleEntry<>("%world%", worldName),
+                        new AbstractMap.SimpleEntry<>("%char%", charString)
+                );
+                return;
+            }
+        }
+
         switch (args.length) {
             case 2:
-                worldManager.importWorld(player, args[1], Generator.VOID, null);
+                worldManager.importWorld(player, args[1], Generator.VOID, null, true);
                 break;
             case 4:
                 if (!args[2].equalsIgnoreCase("-g")) {
@@ -75,7 +86,7 @@ public class ImportSubCommand implements SubCommand {
                 } catch (IllegalArgumentException e) {
                     generator = Generator.CUSTOM;
                 }
-                worldManager.importWorld(player, args[1], generator, args[3]);
+                worldManager.importWorld(player, args[1], generator, args[3], true);
                 break;
             default:
                 Messages.sendMessage(player, "worlds_import_usage");

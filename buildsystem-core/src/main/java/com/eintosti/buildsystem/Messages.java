@@ -276,7 +276,7 @@ public class Messages {
         addSpacer(sb, "");
         setMessage(sb, "worlds_import_usage", "%prefix% &7Usage: &b/worlds import <world> [-g <generator>]");
         setMessage(sb, "worlds_import_unknown_world", "%prefix% &cUnknown world.");
-        setMessage(sb, "worlds_import_world_is_imported", "%prefix% &7This world is already imported.");
+        setMessage(sb, "worlds_import_world_is_imported", "%prefix% &cThis world is already imported.");
         setMessage(sb, "worlds_import_unknown_generator", "%prefix% &cUnknown generator.");
         setMessage(sb, "worlds_import_newer_version", "%prefix% &b%world% &7was created in a &cnewer version &7of Minecraft. Unable to import.");
         setMessage(sb, "worlds_import_started", "%prefix% &7The import of &b%world% &7has started...");
