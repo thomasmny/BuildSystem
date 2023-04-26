@@ -85,7 +85,7 @@ public class PlayerChatInput implements Listener {
         }
 
         current.taskId.cancel();
-        Bukkit.getScheduler().scheduleSyncDelayedTask(current.plugin, () -> current.runWhenComplete.run(input), 3);
+        Bukkit.getScheduler().runTask(current.plugin, () -> current.runWhenComplete.run(input));
         Titles.clearTitle(player);
         current.unregister();
     }

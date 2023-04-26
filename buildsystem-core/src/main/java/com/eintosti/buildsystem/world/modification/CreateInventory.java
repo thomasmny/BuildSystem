@@ -236,14 +236,14 @@ public class CreateInventory extends PaginatedInventory implements Listener {
                     return;
                 }
 
-                worldManager.getPlayerInputAndCreate(player, worldType, null, createPrivateWorld);
+                worldManager.startWorldNameInput(player, worldType, null, createPrivateWorld);
                 XSound.ENTITY_CHICKEN_EGG.play(player);
                 break;
             }
 
             case GENERATOR: {
                 if (slot == 31) {
-                    worldManager.getPlayerInputAndCreate(player, WorldType.CUSTOM, null, createPrivateWorld);
+                    worldManager.startWorldNameInput(player, WorldType.CUSTOM, null, createPrivateWorld);
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                 }
                 break;
@@ -258,7 +258,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
                 XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
                 switch (xMaterial) {
                     case FILLED_MAP:
-                        worldManager.getPlayerInputAndCreate(player, WorldType.TEMPLATE, itemStack.getItemMeta().getDisplayName(), createPrivateWorld);
+                        worldManager.startWorldNameInput(player, WorldType.TEMPLATE, itemStack.getItemMeta().getDisplayName(), createPrivateWorld);
                         break;
                     case PLAYER_HEAD:
                         if (slot == 38) {

@@ -46,8 +46,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -156,28 +154,8 @@ public class WorldManager {
      * @param template     The name of the template world, if any, otherwise {@code null}
      * @param privateWorld Is world going to be a private world?
      */
-    public void getPlayerInputAndCreate(Player player, WorldType worldType, @Nullable String template, boolean privateWorld) {
+    public void startWorldNameInput(Player player, WorldType worldType, @Nullable String template, boolean privateWorld) {
         player.closeInventory();
-        try {
-            String worldName = getWorldNameInput(player, privateWorld);
-            new BuildWorldCreator(plugin, worldName)
-                    .setType(worldType)
-                    .setTemplate(template)
-                    .setPrivate(privateWorld && getBuildWorld(player.getName()) == null)
-                    .setCustomGenerator(worldType == WorldType.CUSTOM ? getCustomGeneratorInput(player, worldName) : null)
-                    .createWorld(player);
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private String getWorldNameInput(Player player, boolean privateWorld) throws ExecutionException, InterruptedException {
-        CompletableFuture<String> worldName = new CompletableFuture<>();
-        if (privateWorld && getBuildWorld(player.getName()) == null) {
-            worldName.complete(player.getName());
-            return worldName.get();
-        }
-
         new PlayerChatInput(plugin, player, "enter_world_name", input -> {
             for (String charString : input.split("")) {
                 if (charString.matches("[^A-Za-z\\d/_-]")) {
@@ -186,18 +164,22 @@ public class WorldManager {
                 }
             }
 
-            String formattedName = input.replaceAll("[^A-Za-z\\d/_-]", "").replace(" ", "_").trim();
-            if (formattedName.isEmpty()) {
+            String worldName = input.replaceAll("[^A-Za-z\\d/_-]", "").replace(" ", "_").trim();
+            if (worldName.isEmpty()) {
                 Messages.sendMessage(player, "worlds_world_creation_name_bank");
                 return;
             }
-            worldName.complete(formattedName);
+
+            if (worldType == WorldType.CUSTOM) {
+                startCustomGeneratorInput(player, worldName, template, privateWorld);
+            } else {
+                createWorld(player, worldName, worldType, null, template, privateWorld);
+            }
+
         });
-        return worldName.get();
     }
 
-    private CustomGenerator getCustomGeneratorInput(Player player, String worldName) throws ExecutionException, InterruptedException {
-        CompletableFuture<CustomGenerator> generator = new CompletableFuture<>();
+    private void startCustomGeneratorInput(Player player, String worldName, String template, boolean privateWorld) {
         new PlayerChatInput(plugin, player, "enter_generator_name", input -> {
             String[] generatorInfo = input.split(":");
             if (generatorInfo.length == 1) {
@@ -213,9 +195,17 @@ public class WorldManager {
 
             CustomGenerator customGenerator = new CustomGenerator(generatorInfo[0], chunkGenerator);
             plugin.getLogger().info("Using custom world generator: " + customGenerator.getName());
-            generator.complete(customGenerator);
+            createWorld(player, worldName, WorldType.CUSTOM, customGenerator, template, privateWorld);
         });
-        return generator.get();
+    }
+
+    private void createWorld(Player player, String worldName, WorldType worldType, CustomGenerator customGenerator, String template, boolean privateWorld) {
+        new BuildWorldCreator(plugin, worldName)
+                .setType(worldType)
+                .setTemplate(template)
+                .setPrivate(privateWorld && getBuildWorld(player.getName()) == null)
+                .setCustomGenerator(customGenerator)
+                .createWorld(player);
     }
 
     /**
@@ -241,12 +231,12 @@ public class WorldManager {
      *
      * @param player        The player who is creating the world
      * @param worldName     Name of the world that the chunk generator should be applied to.
+     * @param creator       The builder who should be set as the creator
      * @param generator     The generator type used by the world
      * @param generatorName The name of the custom generator if generator type is {@link Generator#CUSTOM}
      * @param single        Is only one world being imported? Used for message sent to the player
-     * @return {@code true} if the world was successfully imported, otherwise {@code false}
      */
-    public boolean importWorld(Player player, String worldName, Generator generator, String generatorName, boolean single) {
+    public void importWorld(Player player, String worldName, Builder creator, Generator generator, String generatorName, boolean single) {
         String key = single ? "import" : "importall";
         ChunkGenerator chunkGenerator = null;
         if (generator == Generator.CUSTOM) {
@@ -258,26 +248,25 @@ public class WorldManager {
             chunkGenerator = getChunkGenerator(generatorInfo[0], generatorInfo[1], worldName);
             if (chunkGenerator == null) {
                 Messages.sendMessage(player, "worlds_" + key + "_unknown_generator");
-                return false;
+                return;
             }
         }
 
         BuildWorldCreator worldCreator = new BuildWorldCreator(plugin, worldName)
                 .setType(WorldType.IMPORTED)
-                .setCreator(new Builder(null, "-"))
+                .setCreator(creator)
                 .setCustomGenerator(new CustomGenerator(generatorName, chunkGenerator))
                 .setPrivate(false)
                 .setCreationDate(FileUtils.getDirectoryCreation(new File(Bukkit.getWorldContainer(), worldName)));
 
         if (worldCreator.parseDataVersion() > plugin.getServerVersion().getDataVersion()) {
             Messages.sendMessage(player, "worlds_" + key + "_newer_version", new AbstractMap.SimpleEntry<>("%world%", worldName));
-            return false;
+            return;
         }
 
         Messages.sendMessage(player, "worlds_" + key + "_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
         worldCreator.importWorld(player);
         Messages.sendMessage(player, "worlds_" + key + "_finished");
-        return true;
     }
 
     /**
@@ -304,9 +293,10 @@ public class WorldManager {
      * Import all {@link BuildWorld} from a given list of world names.
      *
      * @param player    The player who is creating the world
+     * @param creator   The player who should be set as the creator of the world
      * @param worldList The list of world to be imported
      */
-    public void importWorlds(Player player, String[] worldList) {
+    public void importWorlds(Player player, String[] worldList, Generator generator, Builder creator) {
         int worlds = worldList.length;
         int delay = configValues.getImportDelay();
 
@@ -318,7 +308,7 @@ public class WorldManager {
             @Override
             public void run() {
                 int i = worldsImported.getAndIncrement();
-                importWorld(player, worldList[i], Generator.VOID, null, false);
+                importWorld(player, worldList[i], creator, generator, null, false);
                 if (worldsImported.get() >= worlds) {
                     this.cancel();
                     Messages.sendMessage(player, "worlds_importall_finished");

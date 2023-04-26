@@ -12,7 +12,10 @@ import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.command.subcommand.Argument;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import com.eintosti.buildsystem.util.ArgumentParser;
+import com.eintosti.buildsystem.util.UUIDFetcher;
 import com.eintosti.buildsystem.world.BuildWorld;
+import com.eintosti.buildsystem.world.Builder;
 import com.eintosti.buildsystem.world.WorldManager;
 import com.eintosti.buildsystem.world.generator.Generator;
 import org.bukkit.Bukkit;
@@ -20,6 +23,7 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.util.AbstractMap;
+import java.util.UUID;
 
 /**
  * @author einTosti
@@ -70,28 +74,43 @@ public class ImportSubCommand implements SubCommand {
             }
         }
 
-        switch (args.length) {
-            case 2:
-                worldManager.importWorld(player, args[1], Generator.VOID, null, true);
-                break;
-            case 4:
-                if (!args[2].equalsIgnoreCase("-g")) {
-                    Messages.sendMessage(player, "worlds_import_usage");
-                    return;
-                }
+        Generator generator = Generator.VOID;
+        Builder builder = new Builder(null, "-");
 
-                Generator generator;
-                try {
-                    generator = Generator.valueOf(args[3].toUpperCase());
-                } catch (IllegalArgumentException e) {
-                    generator = Generator.CUSTOM;
-                }
-                worldManager.importWorld(player, args[1], generator, args[3], true);
-                break;
-            default:
-                Messages.sendMessage(player, "worlds_import_usage");
-                break;
+        if (args.length == 2) {
+            worldManager.importWorld(player, args[1], builder, generator, null, true);
+            return;
         }
+
+        ArgumentParser parser = new ArgumentParser(args);
+
+        if (parser.isArgument("g")) {
+            String generatorArg = parser.getValue("g");
+            if (generatorArg == null) {
+                Messages.sendMessage(player, "worlds_import_usage");
+                return;
+            }
+            try {
+                generator = Generator.valueOf(generatorArg.toUpperCase());
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+
+        if (parser.isArgument("c")) {
+            String creatorArg = parser.getValue("c");
+            if (creatorArg == null) {
+                Messages.sendMessage(player, "worlds_import_usage");
+                return;
+            }
+            UUID creatorId = UUIDFetcher.getUUID(creatorArg);
+            if (creatorId == null) {
+                Messages.sendMessage(player, "worlds_import_player_not_found");
+                return;
+            }
+            builder = new Builder(creatorId, creatorArg);
+        }
+
+        worldManager.importWorld(player, args[1], builder, generator, args[3], true);
     }
 
     @Override
