@@ -60,6 +60,8 @@ public class WorldManager {
 
     private final List<BuildWorld> buildWorlds;
 
+    private static boolean importingAllWorlds = false;
+
     public WorldManager(BuildSystem plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
@@ -237,7 +239,6 @@ public class WorldManager {
      * @param single        Is only one world being imported? Used for message sent to the player
      */
     public void importWorld(Player player, String worldName, Builder creator, Generator generator, String generatorName, boolean single) {
-        String key = single ? "import" : "importall";
         ChunkGenerator chunkGenerator = null;
         if (generator == Generator.CUSTOM) {
             String[] generatorInfo = generatorName.split(":");
@@ -247,7 +248,7 @@ public class WorldManager {
 
             chunkGenerator = getChunkGenerator(generatorInfo[0], generatorInfo[1], worldName);
             if (chunkGenerator == null) {
-                Messages.sendMessage(player, "worlds_" + key + "_unknown_generator");
+                Messages.sendMessage(player, "worlds_import_unknown_generator");
                 return;
             }
         }
@@ -260,13 +261,12 @@ public class WorldManager {
                 .setCreationDate(FileUtils.getDirectoryCreation(new File(Bukkit.getWorldContainer(), worldName)));
 
         if (worldCreator.parseDataVersion() > plugin.getServerVersion().getDataVersion()) {
+            String key = single ? "import" : "importall";
             Messages.sendMessage(player, "worlds_" + key + "_newer_version", new AbstractMap.SimpleEntry<>("%world%", worldName));
             return;
         }
 
-        Messages.sendMessage(player, "worlds_" + key + "_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
         worldCreator.importWorld(player);
-        Messages.sendMessage(player, "worlds_" + key + "_finished");
     }
 
     /**
@@ -302,6 +302,7 @@ public class WorldManager {
 
         Messages.sendMessage(player, "worlds_importall_started", new AbstractMap.SimpleEntry<>("%amount%", String.valueOf(worlds)));
         Messages.sendMessage(player, "worlds_importall_delay", new AbstractMap.SimpleEntry<>("%delay%", String.valueOf(delay)));
+        importingAllWorlds = true;
 
         AtomicInteger worldsImported = new AtomicInteger(0);
         new BukkitRunnable() {
@@ -311,10 +312,15 @@ public class WorldManager {
                 importWorld(player, worldList[i], creator, generator, null, false);
                 if (worldsImported.get() >= worlds) {
                     this.cancel();
+                    importingAllWorlds = false;
                     Messages.sendMessage(player, "worlds_importall_finished");
                 }
             }
         }.runTaskTimer(plugin, 0, 20L * delay);
+    }
+
+    public boolean isImportingAllWorlds() {
+        return importingAllWorlds;
     }
 
     /**

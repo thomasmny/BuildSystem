@@ -77,40 +77,39 @@ public class ImportSubCommand implements SubCommand {
         Generator generator = Generator.VOID;
         Builder builder = new Builder(null, "-");
 
-        if (args.length == 2) {
-            worldManager.importWorld(player, args[1], builder, generator, null, true);
-            return;
+        if (args.length != 2) {
+            ArgumentParser parser = new ArgumentParser(args);
+
+            if (parser.isArgument("g")) {
+                String generatorArg = parser.getValue("g");
+                if (generatorArg == null) {
+                    Messages.sendMessage(player, "worlds_import_usage");
+                    return;
+                }
+                try {
+                    generator = Generator.valueOf(generatorArg.toUpperCase());
+                } catch (IllegalArgumentException ignored) {
+                }
+            }
+
+            if (parser.isArgument("c")) {
+                String creatorArg = parser.getValue("c");
+                if (creatorArg == null) {
+                    Messages.sendMessage(player, "worlds_import_usage");
+                    return;
+                }
+                UUID creatorId = UUIDFetcher.getUUID(creatorArg);
+                if (creatorId == null) {
+                    Messages.sendMessage(player, "worlds_import_player_not_found");
+                    return;
+                }
+                builder = new Builder(creatorId, creatorArg);
+            }
         }
 
-        ArgumentParser parser = new ArgumentParser(args);
-
-        if (parser.isArgument("g")) {
-            String generatorArg = parser.getValue("g");
-            if (generatorArg == null) {
-                Messages.sendMessage(player, "worlds_import_usage");
-                return;
-            }
-            try {
-                generator = Generator.valueOf(generatorArg.toUpperCase());
-            } catch (IllegalArgumentException ignored) {
-            }
-        }
-
-        if (parser.isArgument("c")) {
-            String creatorArg = parser.getValue("c");
-            if (creatorArg == null) {
-                Messages.sendMessage(player, "worlds_import_usage");
-                return;
-            }
-            UUID creatorId = UUIDFetcher.getUUID(creatorArg);
-            if (creatorId == null) {
-                Messages.sendMessage(player, "worlds_import_player_not_found");
-                return;
-            }
-            builder = new Builder(creatorId, creatorArg);
-        }
-
+        Messages.sendMessage(player, "worlds_import_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
         worldManager.importWorld(player, args[1], builder, generator, args[3], true);
+        Messages.sendMessage(player, "worlds_import_finished");
     }
 
     @Override

@@ -289,6 +289,7 @@ public class Messages {
         setMessage(sb, "worlds_importall_no_worlds", "%prefix% &cNo worlds were found.");
         setMessage(sb, "worlds_importall_started", "%prefix% &7Beginning import of &b%amount% &7worlds...");
         setMessage(sb, "worlds_importall_delay", "%prefix% &8➥ &7Delay between each world: &b%delay%s&7.");
+        setMessage(sb, "worlds_importall_already_started", "%prefix% &cAll worlds are already being imported.");
         setMessage(sb, "worlds_importall_player_not_found", "%prefix% &cThat player was not found.");
         setMessage(sb, "worlds_importall_invalid_character", "%prefix% &c✘ &7&o%world% &7contains invalid character &8(&c%char%&8)");
         setMessage(sb, "worlds_importall_world_already_imported", "%prefix% &c&l✗ &7World already imported: &b%world%");

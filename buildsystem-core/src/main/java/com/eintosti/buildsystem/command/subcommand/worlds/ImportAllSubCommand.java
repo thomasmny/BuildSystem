@@ -14,7 +14,6 @@ import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import com.eintosti.buildsystem.util.ArgumentParser;
 import com.eintosti.buildsystem.util.UUIDFetcher;
-import com.eintosti.buildsystem.world.BuildWorld;
 import com.eintosti.buildsystem.world.Builder;
 import com.eintosti.buildsystem.world.WorldManager;
 import com.eintosti.buildsystem.world.generator.Generator;
@@ -48,6 +47,11 @@ public class ImportAllSubCommand implements SubCommand {
         }
 
         WorldManager worldManager = plugin.getWorldManager();
+        if (worldManager.isImportingAllWorlds()) {
+            Messages.sendMessage(player, "worlds_importall_already_started");
+            return;
+        }
+
         File worldContainer = Bukkit.getWorldContainer();
         String[] directories = worldContainer.list((dir, name) -> {
             File worldFolder = new File(dir, name);
@@ -55,13 +59,11 @@ public class ImportAllSubCommand implements SubCommand {
                 return false;
             }
 
-            File levelFile = new File(dir + File.separator + name + File.separator + "level.dat");
-            if (!levelFile.exists()) {
+            if (!new File(worldFolder, "level.dat").exists()) {
                 return false;
             }
 
-            BuildWorld buildWorld = worldManager.getBuildWorld(name);
-            return buildWorld == null;
+            return worldManager.getBuildWorld(name) == null;
         });
 
         if (directories == null || directories.length == 0) {

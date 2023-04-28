@@ -99,7 +99,7 @@ public class SettingsManager {
             stopScoreboard(player, settings);
             return;
         }
-
+        
         board.updateTitle(this.scoreboardTitle);
         BukkitTask scoreboardTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> updateScoreboard(player, board), 0L, 20L);
         settings.setScoreboardTask(scoreboardTask);
