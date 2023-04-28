@@ -8,12 +8,10 @@
 package com.eintosti.buildsystem.world;
 
 import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.util.FileUtils;
-import com.eintosti.buildsystem.util.external.PlayerChatInput;
 import com.eintosti.buildsystem.world.data.WorldType;
 import com.eintosti.buildsystem.world.generator.CustomGenerator;
 import com.eintosti.buildsystem.world.generator.voidgenerator.DeprecatedVoidGenerator;
@@ -29,7 +27,6 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.entity.Player;
-import org.bukkit.generator.ChunkGenerator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -47,10 +44,12 @@ public class BuildWorldCreator {
     private final WorldManager worldManager;
 
     private String worldName;
-    private String template = null;
+    private Builder creator;
+    private boolean privateWorld = false;
     private WorldType worldType = WorldType.NORMAL;
     private CustomGenerator customGenerator = null;
-    private boolean privateWorld = false;
+    private long creationDate = System.currentTimeMillis();
+    private String template = null;
     private Difficulty difficulty;
 
     public BuildWorldCreator(BuildSystem plugin, @NotNull String name) {
@@ -62,18 +61,22 @@ public class BuildWorldCreator {
     }
 
     public BuildWorldCreator(BuildSystem plugin, BuildWorld buildWorld) {
-        this.plugin = plugin;
-        this.worldManager = plugin.getWorldManager();
+        this(plugin, buildWorld.getName());
 
-        setName(buildWorld.getName());
+        setDifficulty(buildWorld.getDifficulty());
+        setCreationDate(buildWorld.getCreationDate());
         setType(buildWorld.getType());
         setCustomGenerator(buildWorld.getCustomGenerator());
         setPrivate(buildWorld.isPrivate());
-        setDifficulty(buildWorld.getDifficulty());
     }
 
     public BuildWorldCreator setName(String name) {
         this.worldName = name;
+        return this;
+    }
+
+    public BuildWorldCreator setCreator(Builder creator) {
+        this.creator = creator;
         return this;
     }
 
@@ -102,6 +105,11 @@ public class BuildWorldCreator {
         return this;
     }
 
+    public BuildWorldCreator setCreationDate(long creationDate) {
+        this.creationDate = creationDate;
+        return this;
+    }
+
     /**
      * Depending on the {@link BuildWorld}'s {@link WorldType}, the corresponding {@link World} will be generated in a different way.
      * Then, if the creation of the world was successful and the config is set accordingly, the player is teleported to the world.
@@ -110,44 +118,38 @@ public class BuildWorldCreator {
      */
     public void createWorld(Player player) {
         switch (worldType) {
-            default:
-                if (!createPredefinedWorld(player)) {
-                    return;
-                }
-                break;
-            case CUSTOM:
-                if (!createCustomWorld(player)) {
-                    return;
-                }
-                break;
             case TEMPLATE:
-                if (!createTemplateWorld(player)) {
-                    return;
-                }
+                createTemplateWorld(player);
+                break;
+            default:
+                createPredefinedOrCustomWorld(player);
                 break;
         }
     }
 
+    private BuildWorld createBuildWorldObject(Player player) {
+        return new BuildWorld(
+                worldName,
+                creator == null ? player.getName() : creator.getName(),
+                creator == null ? player.getUniqueId() : creator.getUuid(),
+                worldType,
+                creationDate,
+                privateWorld,
+                customGenerator
+        );
+    }
+
     /**
-     * Generate a {@link BuildWorld} with a predefined generator.
+     * Generate a {@link BuildWorld} with a predefined or custom generator.
      *
      * @param player The player who is creating the world
-     * @return {@code true} if the world was successfully created, {@code false otherwise}
      */
-    private boolean createPredefinedWorld(Player player) {
+    private void createPredefinedOrCustomWorld(Player player) {
         if (worldManager.worldExists(player, worldName)) {
-            return false;
+            return;
         }
 
-        BuildWorld buildWorld = new BuildWorld(
-                worldName,
-                player.getName(),
-                player.getUniqueId(),
-                worldType,
-                System.currentTimeMillis(),
-                privateWorld,
-                null
-        );
+        BuildWorld buildWorld = createBuildWorldObject(player);
         worldManager.getBuildWorlds().add(buildWorld);
 
         Messages.sendMessage(player, "worlds_world_creation_started",
@@ -157,87 +159,43 @@ public class BuildWorldCreator {
         finishPreparationsAndGenerate(buildWorld);
         teleportAfterCreation(player);
         Messages.sendMessage(player, "worlds_creation_finished");
-        return true;
     }
 
     /**
-     * Generate a {@link BuildWorld} with a custom generator.
+     * Imports an existing world as a {@link BuildWorld}.
      *
-     * @param player The player who is creating the world
-     * @return {@code true} if the world was successfully created, {@code false otherwise}
-     * @author Ein_Jojo
+     * @param player   The player who is importing the world
+     * @param teleport Should the player be teleported to the world after importing is finished
      */
-    private boolean createCustomWorld(Player player) {
-        if (worldManager.worldExists(player, worldName)) {
-            return false;
-        }
-
-        new PlayerChatInput(plugin, player, "enter_generator_name", input -> {
-            String[] generatorInfo = input.split(":");
-            if (generatorInfo.length == 1) {
-                generatorInfo = new String[]{generatorInfo[0], generatorInfo[0]};
-            }
-
-            ChunkGenerator chunkGenerator = worldManager.getChunkGenerator(generatorInfo[0], generatorInfo[1], worldName);
-            if (chunkGenerator == null) {
-                Messages.sendMessage(player, "worlds_import_unknown_generator");
-                XSound.ENTITY_ITEM_BREAK.play(player);
-                return;
-            }
-
-            this.customGenerator = new CustomGenerator(generatorInfo[0], chunkGenerator);
-            plugin.getLogger().info("Using custom world generator: " + customGenerator.getName());
-
-            worldManager.getBuildWorlds().add(new BuildWorld(
-                    worldName,
-                    player.getName(),
-                    player.getUniqueId(),
-                    WorldType.CUSTOM,
-                    System.currentTimeMillis(),
-                    privateWorld,
-                    customGenerator
-            ));
-
-            Messages.sendMessage(player, "worlds_world_creation_started",
-                    new AbstractMap.SimpleEntry<>("%world%", worldName),
-                    new AbstractMap.SimpleEntry<>("%type%", worldType.getName())
-            );
-            generateBukkitWorld();
+    public void importWorld(Player player, boolean teleport) {
+        BuildWorld buildWorld = createBuildWorldObject(player);
+        worldManager.getBuildWorlds().add(buildWorld);
+        finishPreparationsAndGenerate(buildWorld);
+        if (teleport) {
             teleportAfterCreation(player);
-            Messages.sendMessage(player, "worlds_creation_finished");
-        });
-        return true;
+        }
     }
 
     /**
      * Generate a {@link BuildWorld} with a template.
      *
      * @param player The player who is creating the world
-     * @return {@code true} if the world was successfully created, {@code false otherwise}
      */
-    private boolean createTemplateWorld(Player player) {
+    private void createTemplateWorld(Player player) {
         boolean worldExists = worldManager.getBuildWorld(worldName) != null;
         File worldFile = new File(Bukkit.getWorldContainer(), worldName);
         if (worldExists || worldFile.exists()) {
             Messages.sendMessage(player, "worlds_world_exists");
-            return false;
+            return;
         }
 
         File templateFile = new File(plugin.getDataFolder() + File.separator + "templates" + File.separator + template);
         if (!templateFile.exists()) {
             Messages.sendMessage(player, "worlds_template_does_not_exist");
-            return false;
+            return;
         }
 
-        BuildWorld buildWorld = new BuildWorld(
-                worldName,
-                player.getName(),
-                player.getUniqueId(),
-                WorldType.TEMPLATE,
-                System.currentTimeMillis(),
-                privateWorld,
-                null
-        );
+        BuildWorld buildWorld = createBuildWorldObject(player);
         worldManager.getBuildWorlds().add(buildWorld);
 
         Messages.sendMessage(player, "worlds_template_creation_started",
@@ -250,7 +208,6 @@ public class BuildWorldCreator {
                 .generateStructures(false));
         teleportAfterCreation(player);
         Messages.sendMessage(player, "worlds_creation_finished");
-        return true;
     }
 
     /**

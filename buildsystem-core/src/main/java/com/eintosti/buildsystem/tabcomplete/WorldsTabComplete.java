@@ -9,9 +9,9 @@ package com.eintosti.buildsystem.tabcomplete;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.command.subcommand.Argument;
-import com.eintosti.buildsystem.world.BuildWorld;
 import com.eintosti.buildsystem.world.WorldManager;
 import com.eintosti.buildsystem.world.generator.Generator;
+import com.google.common.collect.Lists;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -23,7 +23,10 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author einTosti
@@ -101,13 +104,11 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                                 return false;
                             }
 
-                            File levelFile = new File(dir + File.separator + name + File.separator + "level.dat");
-                            if (!levelFile.exists()) {
+                            if (!new File(worldFolder, "level.dat").exists()) {
                                 return false;
                             }
 
-                            BuildWorld buildWorld = worldManager.getBuildWorld(name);
-                            return buildWorld == null;
+                            return worldManager.getBuildWorld(name) == null;
                         });
 
                         if (directories == null || directories.length == 0) {
@@ -122,30 +123,31 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                 return arrayList;
             }
 
-            case 3: {
-                if (args[0].equalsIgnoreCase("import")) {
-                    if (args[1].equalsIgnoreCase(" ")) {
-                        return arrayList;
+            default:
+                // Add arguments to /worlds import
+                if (!args[0].equalsIgnoreCase("import")) {
+                    return arrayList;
+                }
+
+                Map<String, List<String>> arguments = new HashMap<String, List<String>>() {{
+                    put("-g", Arrays.stream(Generator.values()).filter(generator -> generator != Generator.CUSTOM).map(Enum::name).collect(Collectors.toList()));
+                    put("-c", Lists.newArrayList());
+                }};
+
+                if (args.length % 2 == 1) {
+                    arguments.keySet().stream()
+                            .filter(key -> !Lists.newArrayList(args).contains(key))
+                            .forEach(argument -> addArgument(args[args.length - 1], argument, arrayList));
+                } else {
+                    List<String> values = arguments.get(args[args.length - 2]);
+                    if (values != null) {
+                        for (String argument : values) {
+                            addArgument(args[args.length - 1], argument, arrayList);
+                        }
                     }
-
-                    arrayList.add("-g");
-                    return arrayList;
-                }
-            }
-
-            case 4: {
-                if (!args[2].equalsIgnoreCase("-g")) {
-                    return arrayList;
-                }
-
-                for (Generator value : new Generator[]{Generator.NORMAL, Generator.FLAT, Generator.VOID}) {
-                    addArgument(args[3], value.name(), arrayList);
                 }
                 return arrayList;
-            }
         }
-
-        return arrayList;
     }
 
     public enum WorldsArgument implements Argument {

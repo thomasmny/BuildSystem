@@ -41,7 +41,11 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -58,14 +62,16 @@ public class WorldManager {
     private final ConfigValues configValues;
     private final WorldConfig worldConfig;
 
-    private final List<BuildWorld> buildWorlds;
+    private final Map<String, BuildWorld> buildWorlds;
+
+    private static boolean importingAllWorlds = false;
 
     public WorldManager(BuildSystem plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
         this.worldConfig = new WorldConfig(plugin);
 
-        this.buildWorlds = new ArrayList<>();
+        this.buildWorlds = new HashMap<>();
     }
 
     /**
@@ -75,10 +81,7 @@ public class WorldManager {
      * @return The world object if one was found, {@code null} otherwise
      */
     public BuildWorld getBuildWorld(String worldName) {
-        return this.buildWorlds.stream()
-                .filter(buildWorld -> buildWorld.getName().equalsIgnoreCase(worldName))
-                .findFirst()
-                .orElse(null);
+        return this.buildWorlds.get(worldName);
     }
 
     /**
@@ -96,8 +99,8 @@ public class WorldManager {
      *
      * @return A list of all worlds
      */
-    public List<BuildWorld> getBuildWorlds() {
-        return buildWorlds;
+    public Collection<BuildWorld> getBuildWorlds() {
+        return buildWorlds.values();
     }
 
     /**
@@ -155,37 +158,53 @@ public class WorldManager {
      * @param privateWorld Is world going to be a private world?
      */
     public void startWorldNameInput(Player player, WorldType worldType, @Nullable String template, boolean privateWorld) {
-        if (privateWorld && getBuildWorld(player.getName()) == null) {
-            player.closeInventory();
-            new BuildWorldCreator(plugin, player.getName())
-                    .setType(worldType)
-                    .setTemplate(template)
-                    .setPrivate(true)
-                    .createWorld(player);
-            return;
-        }
-
+        player.closeInventory();
         new PlayerChatInput(plugin, player, "enter_world_name", input -> {
-            for (String charString : input.split("")) {
-                if (charString.matches("[^A-Za-z\\d/_-]")) {
-                    Messages.sendMessage(player, "worlds_world_creation_invalid_characters");
-                    break;
-                }
+            if (Arrays.stream(input.split("")).anyMatch(c -> c.matches("[^A-Za-z\\d/_-]"))) {
+                Messages.sendMessage(player, "worlds_world_creation_invalid_characters");
             }
-
             String worldName = input.replaceAll("[^A-Za-z\\d/_-]", "").replace(" ", "_").trim();
             if (worldName.isEmpty()) {
                 Messages.sendMessage(player, "worlds_world_creation_name_bank");
                 return;
             }
 
-            player.closeInventory();
-            new BuildWorldCreator(plugin, worldName)
-                    .setType(worldType)
-                    .setTemplate(template)
-                    .setPrivate(privateWorld)
-                    .createWorld(player);
+            if (worldType == WorldType.CUSTOM) {
+                startCustomGeneratorInput(player, worldName, template, privateWorld);
+            } else {
+                createWorld(player, worldName, worldType, null, template, privateWorld);
+            }
+
         });
+    }
+
+    private void startCustomGeneratorInput(Player player, String worldName, String template, boolean privateWorld) {
+        new PlayerChatInput(plugin, player, "enter_generator_name", input -> {
+            String[] generatorInfo = input.split(":");
+            if (generatorInfo.length == 1) {
+                generatorInfo = new String[]{generatorInfo[0], generatorInfo[0]};
+            }
+
+            ChunkGenerator chunkGenerator = getChunkGenerator(generatorInfo[0], generatorInfo[1], worldName);
+            if (chunkGenerator == null) {
+                Messages.sendMessage(player, "worlds_import_unknown_generator");
+                XSound.ENTITY_ITEM_BREAK.play(player);
+                return;
+            }
+
+            CustomGenerator customGenerator = new CustomGenerator(generatorInfo[0], chunkGenerator);
+            plugin.getLogger().info("Using custom world generator: " + customGenerator.getName());
+            createWorld(player, worldName, WorldType.CUSTOM, customGenerator, template, privateWorld);
+        });
+    }
+
+    private void createWorld(Player player, String worldName, WorldType worldType, CustomGenerator customGenerator, String template, boolean privateWorld) {
+        new BuildWorldCreator(plugin, worldName)
+                .setType(worldType)
+                .setTemplate(template)
+                .setPrivate(privateWorld && getBuildWorld(player.getName()) == null)
+                .setCustomGenerator(customGenerator)
+                .createWorld(player);
     }
 
     /**
@@ -207,82 +226,13 @@ public class WorldManager {
     }
 
     /**
-     * Import a {@link BuildWorld} from a world directory.
-     *
-     * @param player        The player who is creating the world
-     * @param worldName     Name of the world that the chunk generator should be applied to.
-     * @param generator     The generator type used by the world
-     * @param generatorName The name of the custom generator if generator type is {@link Generator#CUSTOM}
-     */
-    public void importWorld(Player player, String worldName, Generator generator, String generatorName) {
-        for (String charString : worldName.split("")) {
-            if (charString.matches("[^A-Za-z\\d/_-]")) {
-                Messages.sendMessage(player, "worlds_import_invalid_character",
-                        new AbstractMap.SimpleEntry<>("%world%", worldName),
-                        new AbstractMap.SimpleEntry<>("%char%", charString)
-                );
-                return;
-            }
-        }
-
-        File file = new File(Bukkit.getWorldContainer(), worldName);
-        if (!file.exists() || !file.isDirectory()) {
-            Messages.sendMessage(player, "worlds_import_unknown_world");
-            return;
-        }
-
-        if (getBuildWorld(worldName) != null) {
-            Messages.sendMessage(player, "worlds_world_exists");
-            return;
-        }
-
-        ChunkGenerator chunkGenerator = null;
-        if (generator == Generator.CUSTOM) {
-            String[] generatorInfo = generatorName.split(":");
-            if (generatorInfo.length == 1) {
-                generatorInfo = new String[]{generatorInfo[0], generatorInfo[0]};
-            }
-
-            chunkGenerator = getChunkGenerator(generatorInfo[0], generatorInfo[1], worldName);
-            if (chunkGenerator == null) {
-                Messages.sendMessage(player, "worlds_import_unknown_generator");
-                return;
-            }
-        }
-
-        BuildWorld buildWorld = new BuildWorld(
-                worldName,
-                "-",
-                null,
-                WorldType.IMPORTED,
-                FileUtils.getDirectoryCreation(file),
-                false,
-                null
-        );
-
-        BuildWorldCreator worldCreator = new BuildWorldCreator(plugin, buildWorld).setCustomGenerator(new CustomGenerator(generatorName, chunkGenerator));
-        if (worldCreator.parseDataVersion() > plugin.getServerVersion().getDataVersion()) {
-            Messages.sendMessage(player, "worlds_import_newer_version", new AbstractMap.SimpleEntry<>("%world%", worldName));
-            return;
-        }
-
-        Messages.sendMessage(player, "worlds_import_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
-        worldCreator.createWorld(player);
-        buildWorlds.add(buildWorld);
-        Messages.sendMessage(player, "worlds_import_finished");
-
-        if (configValues.isTeleportAfterCreation()) {
-            teleport(player, buildWorld);
-        }
-    }
-
-    /**
-     * Parse the {@link ChunkGenerator} for the generation of a {@link BuildWorld} with {@link WorldType#CUSTOM}
+     * Gets the {@link ChunkGenerator} for the generation of a {@link BuildWorld} with {@link WorldType#CUSTOM}
      *
      * @param generator   The plugin's (generator) name
      * @param generatorId Unique ID, if any, that was specified to indicate which generator was requested
      * @param worldName   Name of the world that the chunk generator should be applied to.
      */
+    @Nullable
     public ChunkGenerator getChunkGenerator(String generator, String generatorId, String worldName) {
         if (generator == null) {
             return null;
@@ -297,58 +247,99 @@ public class WorldManager {
     }
 
     /**
+     * Import a {@link BuildWorld} from a world directory.
+     *
+     * @param player        The player who is creating the world
+     * @param worldName     Name of the world that the chunk generator should be applied to.
+     * @param creator       The builder who should be set as the creator
+     * @param generator     The generator type used by the world
+     * @param generatorName The name of the custom generator if generator type is {@link Generator#CUSTOM}
+     * @param single        Is only one world being imported? Used for message sent to the player
+     * @return {@code true} if the world was successfully imported, otherwise {@code false}
+     */
+    public boolean importWorld(Player player, String worldName, Builder creator, Generator generator, String generatorName, boolean single) {
+        ChunkGenerator chunkGenerator = null;
+        if (generator == Generator.CUSTOM) {
+            String[] generatorInfo = generatorName.split(":");
+            if (generatorInfo.length == 1) {
+                generatorInfo = new String[]{generatorInfo[0], generatorInfo[0]};
+            }
+
+            chunkGenerator = getChunkGenerator(generatorInfo[0], generatorInfo[1], worldName);
+            if (chunkGenerator == null) {
+                Messages.sendMessage(player, "worlds_import_unknown_generator");
+                return false;
+            }
+        }
+
+        BuildWorldCreator worldCreator = new BuildWorldCreator(plugin, worldName)
+                .setType(WorldType.IMPORTED)
+                .setCreator(creator)
+                .setCustomGenerator(new CustomGenerator(generatorName, chunkGenerator))
+                .setPrivate(false)
+                .setCreationDate(FileUtils.getDirectoryCreation(new File(Bukkit.getWorldContainer(), worldName)));
+
+        if (worldCreator.parseDataVersion() > plugin.getServerVersion().getDataVersion()) {
+            String key = single ? "import" : "importall";
+            Messages.sendMessage(player, "worlds_" + key + "_newer_version", new AbstractMap.SimpleEntry<>("%world%", worldName));
+            return false;
+        }
+
+        worldCreator.importWorld(player, single);
+        return true;
+    }
+
+    /**
      * Import all {@link BuildWorld} from a given list of world names.
      *
      * @param player    The player who is creating the world
+     * @param creator   The player who should be set as the creator of the world
      * @param worldList The list of world to be imported
      */
-    public void importWorlds(Player player, String[] worldList) {
+    public void importWorlds(Player player, String[] worldList, Generator generator, Builder creator) {
         int worlds = worldList.length;
         int delay = configValues.getImportDelay();
 
         Messages.sendMessage(player, "worlds_importall_started", new AbstractMap.SimpleEntry<>("%amount%", String.valueOf(worlds)));
         Messages.sendMessage(player, "worlds_importall_delay", new AbstractMap.SimpleEntry<>("%delay%", String.valueOf(delay)));
+        importingAllWorlds = true;
 
         AtomicInteger worldsImported = new AtomicInteger(0);
         new BukkitRunnable() {
             @Override
             public void run() {
                 int i = worldsImported.getAndIncrement();
-
-                String worldName = worldList[i];
-                for (String charString : worldName.split("")) {
-                    if (charString.matches("[^A-Za-z\\d/_-]")) {
-                        Messages.sendMessage(player, "worlds_importall_invalid_character",
-                                new AbstractMap.SimpleEntry<>("%world%", worldName),
-                                new AbstractMap.SimpleEntry<>("%char%", charString)
-                        );
-                        return;
-                    }
+                if (i >= worlds) {
+                    this.cancel();
+                    importingAllWorlds = false;
+                    Messages.sendMessage(player, "worlds_importall_finished");
+                    return;
                 }
 
+                String worldName = worldList[i];
                 if (getBuildWorld(worldName) != null) {
                     Messages.sendMessage(player, "worlds_importall_world_already_imported", new AbstractMap.SimpleEntry<>("%world%", worldName));
                     return;
                 }
 
-                long creation = FileUtils.getDirectoryCreation(new File(Bukkit.getWorldContainer(), worldName));
-                BuildWorld buildWorld = new BuildWorld(worldName, "-", null, WorldType.IMPORTED, creation, false, null);
-                BuildWorldCreator worldCreator = new BuildWorldCreator(plugin, buildWorld);
-                if (worldCreator.parseDataVersion() > plugin.getServerVersion().getDataVersion()) {
-                    Messages.sendMessage(player, "worlds_importall_newer_version", new AbstractMap.SimpleEntry<>("%world%", worldName));
+                String invalidChar = Arrays.stream(worldName.split("")).filter(c -> c.matches("[^A-Za-z\\d/_-]")).findFirst().orElse(null);
+                if (invalidChar != null) {
+                    Messages.sendMessage(player, "worlds_importall_invalid_character",
+                            new AbstractMap.SimpleEntry<>("%world%", worldName),
+                            new AbstractMap.SimpleEntry<>("%char%", invalidChar)
+                    );
                     return;
                 }
 
-                buildWorlds.add(buildWorld);
-                worldCreator.setType(WorldType.VOID).generateBukkitWorld();
-                Messages.sendMessage(player, "worlds_importall_world_imported", new AbstractMap.SimpleEntry<>("%world%", worldName));
-
-                if (worldsImported.get() >= worlds) {
-                    this.cancel();
-                    Messages.sendMessage(player, "worlds_importall_finished");
+                if (importWorld(player, worldName, creator, generator, null, false)) {
+                    Messages.sendMessage(player, "worlds_importall_world_imported", new AbstractMap.SimpleEntry<>("%world%", worldName));
                 }
             }
         }.runTaskTimer(plugin, 0, 20L * delay);
+    }
+
+    public boolean isImportingAllWorlds() {
+        return importingAllWorlds;
     }
 
     /**
@@ -359,7 +350,7 @@ public class WorldManager {
      * @param buildWorld The world to be deleted
      */
     public void deleteWorld(Player player, BuildWorld buildWorld) {
-        if (!buildWorlds.contains(buildWorld)) {
+        if (!buildWorlds.containsValue(buildWorld)) {
             Messages.sendMessage(player, "worlds_delete_unknown_world");
             return;
         }
@@ -448,20 +439,17 @@ public class WorldManager {
      * @param newName    The name the world should be renamed to
      */
     public void renameWorld(Player player, BuildWorld buildWorld, String newName) {
+        player.closeInventory();
+
         String oldName = buildWorld.getName();
         if (oldName.equalsIgnoreCase(newName)) {
             Messages.sendMessage(player, "worlds_rename_same_name");
             return;
         }
 
-        for (String charString : newName.split("")) {
-            if (charString.matches("[^A-Za-z\\d/_-]")) {
-                Messages.sendMessage(player, "worlds_world_creation_invalid_characters");
-                break;
-            }
+        if (Arrays.stream(newName.split("")).anyMatch(c -> c.matches("[^A-Za-z\\d/_-]"))) {
+            Messages.sendMessage(player, "worlds_world_creation_invalid_characters");
         }
-
-        player.closeInventory();
         String parsedNewName = newName.replaceAll("[^A-Za-z\\d/_-]", "").replace(" ", "_").trim();
         if (parsedNewName.isEmpty()) {
             Messages.sendMessage(player, "worlds_world_creation_name_bank");
@@ -644,7 +632,7 @@ public class WorldManager {
     }
 
     public void save() {
-        buildWorlds.forEach(worldConfig::saveWorld);
+        getBuildWorlds().forEach(worldConfig::saveWorld);
     }
 
     public void load() {
@@ -695,7 +683,7 @@ public class WorldManager {
         String generatorName = configuration.getString("worlds." + worldName + ".chunk-generator");
         CustomGenerator customGenerator = new CustomGenerator(generatorName, parseChunkGenerator(worldName, generatorName));
 
-        this.buildWorlds.add(new BuildWorld(
+        this.buildWorlds.put(worldName, new BuildWorld(
                 worldName,
                 creator,
                 creatorId,

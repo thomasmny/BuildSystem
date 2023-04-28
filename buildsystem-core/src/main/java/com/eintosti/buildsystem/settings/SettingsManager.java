@@ -14,6 +14,7 @@ import com.eintosti.buildsystem.config.SettingsConfig;
 import com.eintosti.buildsystem.navigator.NavigatorType;
 import com.eintosti.buildsystem.navigator.WorldSort;
 import com.eintosti.buildsystem.player.PlayerManager;
+import com.eintosti.buildsystem.version.util.MinecraftVersion;
 import com.eintosti.buildsystem.world.BuildWorld;
 import com.eintosti.buildsystem.world.WorldManager;
 import fr.mrmicky.fastboard.FastBoard;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author einTosti
@@ -54,8 +56,14 @@ public class SettingsManager {
 
         this.boards = new HashMap<>();
 
-        this.scoreboardTitle = Messages.getString("title");
-        this.scoreboardBody = Messages.getStringList("body");
+        String title = Messages.getString("title");
+        List<String> body = Messages.getStringList("body");
+        if (MinecraftVersion.getCurrent().isLowerThan(MinecraftVersion.AQUATIC_13)) {
+            title = title.substring(0, 30);
+            body = body.stream().map(line -> line.substring(0, 30)).collect(Collectors.toList());
+        }
+        this.scoreboardTitle = title;
+        this.scoreboardBody = body;
     }
 
     public Settings getSettings(UUID uuid) {

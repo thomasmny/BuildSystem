@@ -20,6 +20,7 @@ import javax.annotation.Nonnull;
 public class MinecraftVersion implements Comparable<MinecraftVersion> {
 
     public static final MinecraftVersion BOUNTIFUL_8 = new MinecraftVersion(1, 8);
+    public static final MinecraftVersion AQUATIC_13 = new MinecraftVersion(1, 13);
     public static final MinecraftVersion CAVES_17 = new MinecraftVersion(1, 17);
     private static MinecraftVersion current = null;
 

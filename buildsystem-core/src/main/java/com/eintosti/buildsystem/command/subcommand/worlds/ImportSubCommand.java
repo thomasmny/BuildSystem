@@ -12,13 +12,19 @@ import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.command.subcommand.Argument;
 import com.eintosti.buildsystem.command.subcommand.SubCommand;
 import com.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import com.eintosti.buildsystem.util.ArgumentParser;
+import com.eintosti.buildsystem.util.UUIDFetcher;
 import com.eintosti.buildsystem.world.BuildWorld;
+import com.eintosti.buildsystem.world.Builder;
 import com.eintosti.buildsystem.world.WorldManager;
 import com.eintosti.buildsystem.world.generator.Generator;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.io.File;
+import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.UUID;
 
 /**
  * @author einTosti
@@ -59,28 +65,58 @@ public class ImportSubCommand implements SubCommand {
             return;
         }
 
-        switch (args.length) {
-            case 2:
-                worldManager.importWorld(player, args[1], Generator.VOID, null);
-                break;
-            case 4:
-                if (!args[2].equalsIgnoreCase("-g")) {
+        if (Arrays.stream(worldName.split("")).anyMatch(c -> c.matches("[^A-Za-z\\d/_-]"))) {
+            Messages.sendMessage(player, "worlds_world_creation_invalid_characters");
+        }
+
+        String invalidChar = Arrays.stream(worldName.split("")).filter(c -> c.matches("[^A-Za-z\\d/_-]")).findFirst().orElse(null);
+        if (invalidChar != null) {
+            Messages.sendMessage(player, "worlds_import_invalid_character",
+                    new AbstractMap.SimpleEntry<>("%world%", worldName),
+                    new AbstractMap.SimpleEntry<>("%char%", invalidChar)
+            );
+            return;
+        }
+
+        Builder creator = new Builder(null, "-");
+        Generator generator = Generator.VOID;
+        String generatorName = null;
+
+        if (args.length != 2) {
+            ArgumentParser parser = new ArgumentParser(args);
+
+            if (parser.isArgument("g")) {
+                String generatorArg = parser.getValue("g");
+                if (generatorArg == null) {
                     Messages.sendMessage(player, "worlds_import_usage");
                     return;
                 }
-
-                Generator generator;
                 try {
-                    generator = Generator.valueOf(args[3].toUpperCase());
-                } catch (IllegalArgumentException e) {
+                    generator = Generator.valueOf(generatorArg.toUpperCase());
+                } catch (IllegalArgumentException ignored) {
                     generator = Generator.CUSTOM;
+                    generatorName = generatorArg;
                 }
-                worldManager.importWorld(player, args[1], generator, args[3]);
-                break;
-            default:
-                Messages.sendMessage(player, "worlds_import_usage");
-                break;
+            }
+
+            if (parser.isArgument("c")) {
+                String creatorArg = parser.getValue("c");
+                if (creatorArg == null) {
+                    Messages.sendMessage(player, "worlds_import_usage");
+                    return;
+                }
+                UUID creatorId = UUIDFetcher.getUUID(creatorArg);
+                if (creatorId == null) {
+                    Messages.sendMessage(player, "worlds_import_player_not_found");
+                    return;
+                }
+                creator = new Builder(creatorId, creatorArg);
+            }
         }
+
+        Messages.sendMessage(player, "worlds_import_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
+        worldManager.importWorld(player, worldName, creator, generator, generatorName, true);
+        Messages.sendMessage(player, "worlds_import_finished");
     }
 
     @Override
