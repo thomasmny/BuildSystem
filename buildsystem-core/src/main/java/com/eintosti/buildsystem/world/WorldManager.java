@@ -308,10 +308,12 @@ public class WorldManager {
             @Override
             public void run() {
                 int i = worldsImported.getAndIncrement();
+                Bukkit.broadcastMessage("i: " + i + ", worlds: " + worlds);
                 if (i >= worlds) {
                     this.cancel();
                     importingAllWorlds = false;
                     Messages.sendMessage(player, "worlds_importall_finished");
+                    return;
                 }
 
                 String worldName = worldList[i];
