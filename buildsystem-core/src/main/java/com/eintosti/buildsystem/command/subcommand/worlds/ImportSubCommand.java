@@ -23,6 +23,7 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -64,18 +65,22 @@ public class ImportSubCommand implements SubCommand {
             return;
         }
 
-        for (String charString : worldName.split("")) {
-            if (charString.matches("[^A-Za-z\\d/_-]")) {
-                Messages.sendMessage(player, "worlds_import_invalid_character",
-                        new AbstractMap.SimpleEntry<>("%world%", worldName),
-                        new AbstractMap.SimpleEntry<>("%char%", charString)
-                );
-                return;
-            }
+        if (Arrays.stream(worldName.split("")).anyMatch(c -> c.matches("[^A-Za-z\\d/_-]"))) {
+            Messages.sendMessage(player, "worlds_world_creation_invalid_characters");
         }
 
+        String invalidChar = Arrays.stream(worldName.split("")).filter(c -> c.matches("[^A-Za-z\\d/_-]")).findFirst().orElse(null);
+        if (invalidChar != null) {
+            Messages.sendMessage(player, "worlds_import_invalid_character",
+                    new AbstractMap.SimpleEntry<>("%world%", worldName),
+                    new AbstractMap.SimpleEntry<>("%char%", invalidChar)
+            );
+            return;
+        }
+
+        Builder creator = new Builder(null, "-");
         Generator generator = Generator.VOID;
-        Builder builder = new Builder(null, "-");
+        String generatorName = null;
 
         if (args.length != 2) {
             ArgumentParser parser = new ArgumentParser(args);
@@ -89,6 +94,8 @@ public class ImportSubCommand implements SubCommand {
                 try {
                     generator = Generator.valueOf(generatorArg.toUpperCase());
                 } catch (IllegalArgumentException ignored) {
+                    generator = Generator.CUSTOM;
+                    generatorName = generatorArg;
                 }
             }
 
@@ -103,12 +110,12 @@ public class ImportSubCommand implements SubCommand {
                     Messages.sendMessage(player, "worlds_import_player_not_found");
                     return;
                 }
-                builder = new Builder(creatorId, creatorArg);
+                creator = new Builder(creatorId, creatorArg);
             }
         }
 
         Messages.sendMessage(player, "worlds_import_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
-        worldManager.importWorld(player, args[1], builder, generator, args[3], true);
+        worldManager.importWorld(player, worldName, creator, generator, generatorName, true);
         Messages.sendMessage(player, "worlds_import_finished");
     }
 

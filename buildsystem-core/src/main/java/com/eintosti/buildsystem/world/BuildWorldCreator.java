@@ -164,13 +164,16 @@ public class BuildWorldCreator {
     /**
      * Imports an existing world as a {@link BuildWorld}.
      *
-     * @param player The player who is importing the world
+     * @param player   The player who is importing the world
+     * @param teleport Should the player be teleported to the world after importing is finished
      */
-    public void importWorld(Player player) {
+    public void importWorld(Player player, boolean teleport) {
         BuildWorld buildWorld = createBuildWorldObject(player);
         worldManager.getBuildWorlds().add(buildWorld);
         finishPreparationsAndGenerate(buildWorld);
-        teleportAfterCreation(player);
+        if (teleport) {
+            teleportAfterCreation(player);
+        }
     }
 
     /**

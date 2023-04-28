@@ -292,8 +292,8 @@ public class Messages {
         setMessage(sb, "worlds_importall_already_started", "%prefix% &cAll worlds are already being imported.");
         setMessage(sb, "worlds_importall_player_not_found", "%prefix% &cThat player was not found.");
         setMessage(sb, "worlds_importall_invalid_character", "%prefix% &c✘ &7&o%world% &7contains invalid character &8(&c%char%&8)");
-        setMessage(sb, "worlds_importall_world_already_imported", "%prefix% &c&l✗ &7World already imported: &b%world%");
-        setMessage(sb, "worlds_importall_newer_version", "%prefix% &c&l✗ &b%world% &7was created in a &cnewer version &7of Minecraft");
+        setMessage(sb, "worlds_importall_world_already_imported", "%prefix% &c✘ &7World already imported: &b%world%");
+        setMessage(sb, "worlds_importall_newer_version", "%prefix% &c✘ &b%world% &7was created in a &cnewer version &7of Minecraft");
         setMessage(sb, "worlds_importall_world_imported", "%prefix% &a✔ &7World imported: &b%world%");
         setMessage(sb, "worlds_importall_finished", "%prefix% &7All worlds have been &asuccessfully &7imported.");
         addSpacer(sb, "");
