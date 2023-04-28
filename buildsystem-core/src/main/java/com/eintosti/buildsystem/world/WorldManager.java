@@ -42,7 +42,10 @@ import java.io.File;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -59,7 +62,7 @@ public class WorldManager {
     private final ConfigValues configValues;
     private final WorldConfig worldConfig;
 
-    private final List<BuildWorld> buildWorlds;
+    private final Map<String, BuildWorld> buildWorlds;
 
     private static boolean importingAllWorlds = false;
 
@@ -68,7 +71,7 @@ public class WorldManager {
         this.configValues = plugin.getConfigValues();
         this.worldConfig = new WorldConfig(plugin);
 
-        this.buildWorlds = new ArrayList<>();
+        this.buildWorlds = new HashMap<>();
     }
 
     /**
@@ -78,10 +81,7 @@ public class WorldManager {
      * @return The world object if one was found, {@code null} otherwise
      */
     public BuildWorld getBuildWorld(String worldName) {
-        return this.buildWorlds.stream()
-                .filter(buildWorld -> buildWorld.getName().equalsIgnoreCase(worldName))
-                .findFirst()
-                .orElse(null);
+        return this.buildWorlds.get(worldName);
     }
 
     /**
@@ -99,8 +99,8 @@ public class WorldManager {
      *
      * @return A list of all worlds
      */
-    public List<BuildWorld> getBuildWorlds() {
-        return buildWorlds;
+    public Collection<BuildWorld> getBuildWorlds() {
+        return buildWorlds.values();
     }
 
     /**
@@ -226,12 +226,13 @@ public class WorldManager {
     }
 
     /**
-     * Parse the {@link ChunkGenerator} for the generation of a {@link BuildWorld} with {@link WorldType#CUSTOM}
+     * Gets the {@link ChunkGenerator} for the generation of a {@link BuildWorld} with {@link WorldType#CUSTOM}
      *
      * @param generator   The plugin's (generator) name
      * @param generatorId Unique ID, if any, that was specified to indicate which generator was requested
      * @param worldName   Name of the world that the chunk generator should be applied to.
      */
+    @Nullable
     public ChunkGenerator getChunkGenerator(String generator, String generatorId, String worldName) {
         if (generator == null) {
             return null;
@@ -349,7 +350,7 @@ public class WorldManager {
      * @param buildWorld The world to be deleted
      */
     public void deleteWorld(Player player, BuildWorld buildWorld) {
-        if (!buildWorlds.contains(buildWorld)) {
+        if (!buildWorlds.containsValue(buildWorld)) {
             Messages.sendMessage(player, "worlds_delete_unknown_world");
             return;
         }
@@ -631,7 +632,7 @@ public class WorldManager {
     }
 
     public void save() {
-        buildWorlds.forEach(worldConfig::saveWorld);
+        getBuildWorlds().forEach(worldConfig::saveWorld);
     }
 
     public void load() {
@@ -682,7 +683,7 @@ public class WorldManager {
         String generatorName = configuration.getString("worlds." + worldName + ".chunk-generator");
         CustomGenerator customGenerator = new CustomGenerator(generatorName, parseChunkGenerator(worldName, generatorName));
 
-        this.buildWorlds.add(new BuildWorld(
+        this.buildWorlds.put(worldName, new BuildWorld(
                 worldName,
                 creator,
                 creatorId,
