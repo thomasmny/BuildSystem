@@ -59,8 +59,8 @@ public class SettingsManager {
         String title = Messages.getString("title");
         List<String> body = Messages.getStringList("body");
         if (MinecraftVersion.getCurrent().isLowerThan(MinecraftVersion.AQUATIC_13)) {
-            title = title.substring(0, 30);
-            body = body.stream().map(line -> line.substring(0, 30)).collect(Collectors.toList());
+            title = title.substring(0, Math.min(title.length(), 30));
+            body = body.stream().map(line -> line.substring(0, Math.min(line.length(), 30))).collect(Collectors.toList());
         }
         this.scoreboardTitle = title;
         this.scoreboardBody = body;
