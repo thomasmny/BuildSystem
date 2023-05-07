@@ -12,7 +12,9 @@ import com.eintosti.buildsystem.BuildSystem;
 import org.bukkit.Difficulty;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -46,7 +48,6 @@ public class ConfigValues {
     private boolean voidBlock;
     private boolean updateChecker;
     private boolean blockWorldEditNonBuilder;
-    private boolean creatorIsBuilder;
     private boolean giveNavigatorOnJoin;
     private boolean worldPhysics;
     private boolean worldExplosions;
@@ -89,8 +90,7 @@ public class ConfigValues {
         this.buildModeMoveItems = config.getBoolean("settings.build-mode.move-items", true);
 
         this.blockWorldEditNonBuilder = config.getBoolean("settings.builder.block-worldedit-non-builder", true);
-        this.worldEditWand = XMaterial.valueOf(config.getString("settings.builder.world-edit-wand", "WOODEN_AXE"));
-        this.creatorIsBuilder = config.getBoolean("settings.builder.creator-is-builder", true);
+        this.worldEditWand = parseWorldEditWand();
 
         this.navigatorItem = XMaterial.valueOf(config.getString("settings.navigator.item", "CLOCK"));
         this.giveNavigatorOnJoin = config.getBoolean("settings.navigator.give-item-on-join", true);
@@ -138,6 +138,39 @@ public class ConfigValues {
         this.maxPrivateWorldAmount = config.getInt("world.max-amount.private", -1);
 
         this.voidBlock = config.getBoolean("world.void-block", true);
+    }
+
+    private XMaterial parseWorldEditWand() {
+        File pluginDir = plugin.getDataFolder().getParentFile();
+        File configFile = null;
+
+        File weConfig = new File(pluginDir + File.separator + "WorldEdit", "config.yml");
+        if (weConfig.exists()) {
+            configFile = weConfig;
+        }
+
+        File faweConfig = new File(pluginDir + File.separator + "FastAsyncWorldEdit", "worldedit-config.yml");
+        if (faweConfig.exists()) {
+            configFile = faweConfig;
+        }
+
+        XMaterial defaultWand = XMaterial.WOODEN_AXE;
+        if (configFile == null) {
+            return defaultWand;
+        }
+
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
+        String wand = config.getString("wand-item");
+        if (wand == null) {
+            return defaultWand;
+        }
+
+        String namespace = "minecraft:";
+        if (wand.toLowerCase().startsWith(namespace)) {
+            wand = wand.substring(namespace.length());
+        }
+
+        return XMaterial.matchXMaterial(wand).orElse(defaultWand);
     }
 
     public String getDateFormat() {
@@ -202,10 +235,6 @@ public class ConfigValues {
 
     public boolean isBlockWorldEditNonBuilder() {
         return blockWorldEditNonBuilder;
-    }
-
-    public boolean isCreatorIsBuilder() {
-        return creatorIsBuilder;
     }
 
     public boolean isGiveNavigatorOnJoin() {

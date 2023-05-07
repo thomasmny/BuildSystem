@@ -12,8 +12,6 @@ settings:
     move-items: true
   builder:
     block-worldedit-non-builder: true
-    world-edit-wand: "WOODEN_AXE"
-    creator-is-builder: false
   navigator:
     item: "CLOCK"
     give-item-on-join: true

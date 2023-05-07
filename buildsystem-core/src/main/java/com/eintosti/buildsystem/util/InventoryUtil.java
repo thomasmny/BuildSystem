@@ -445,15 +445,7 @@ public class InventoryUtil {
      */
     private List<String> formatBuilders(BuildWorld buildWorld) {
         String template = Messages.getString("world_item_builders_builder_template");
-        List<Builder> builders = new ArrayList<>();
-
-        if (configValues.isCreatorIsBuilder()) {
-            if (buildWorld.getCreator() != null && !buildWorld.getCreator().equals("-")) {
-                builders.add(new Builder(buildWorld.getCreatorId(), buildWorld.getCreator()));
-            }
-        }
-
-        builders.addAll(buildWorld.getBuilders());
+        List<Builder> builders = buildWorld.getBuilders();
 
         List<String> builderNames = new ArrayList<>();
         if (builders.isEmpty()) {

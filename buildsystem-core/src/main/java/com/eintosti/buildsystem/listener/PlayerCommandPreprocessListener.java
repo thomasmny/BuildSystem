@@ -282,7 +282,7 @@ public class PlayerCommandPreprocessListener implements Listener {
             return;
         }
 
-        if (configValues.isCreatorIsBuilder() && buildWorld.isCreator(player)) {
+        if (buildWorld.isCreator(player)) {
             return;
         }
 

@@ -651,15 +651,7 @@ public class BuildWorld implements ConfigurationSerializable {
      */
     public String getBuildersInfo() {
         String template = Messages.getString("world_item_builders_builder_template");
-        List<String> builderNames = new ArrayList<>();
-
-        if (configValues.isCreatorIsBuilder()) {
-            if (getCreator() != null && !getCreator().equals("-")) {
-                builderNames.add(getCreator());
-            }
-        }
-
-        builderNames.addAll(getBuilderNames());
+        List<String> builderNames = getBuilderNames();
 
         String string = "";
         if (builderNames.isEmpty()) {
