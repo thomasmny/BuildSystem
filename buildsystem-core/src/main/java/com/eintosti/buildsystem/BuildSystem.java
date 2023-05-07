@@ -31,6 +31,7 @@ import com.eintosti.buildsystem.internal.ServerVersion;
 import com.eintosti.buildsystem.listener.*;
 import com.eintosti.buildsystem.navigator.ArmorStandManager;
 import com.eintosti.buildsystem.navigator.NavigatorInventory;
+import com.eintosti.buildsystem.navigator.NavigatorType;
 import com.eintosti.buildsystem.navigator.world.ArchiveInventory;
 import com.eintosti.buildsystem.navigator.world.PrivateInventory;
 import com.eintosti.buildsystem.navigator.world.WorldsInventory;
@@ -69,6 +70,7 @@ import com.eintosti.buildsystem.world.modification.EditInventory;
 import com.eintosti.buildsystem.world.modification.GameRuleInventory;
 import com.eintosti.buildsystem.world.modification.SetupInventory;
 import org.bstats.bukkit.Metrics;
+import org.bstats.charts.AdvancedPie;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -78,6 +80,9 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Callable;
 
 /**
  * @author einTosti
@@ -147,7 +152,6 @@ public class BuildSystem extends JavaPlugin {
         registerCommands();
         registerTabCompleter();
         registerListeners();
-        registerStats();
         registerExpansions();
 
         performUpdateCheck();
@@ -165,6 +169,8 @@ public class BuildSystem extends JavaPlugin {
             settingsManager.startScoreboard(pl, settings);
             noClipManager.startNoClip(pl, settings);
         });
+
+        registerStats();
 
         Bukkit.getConsoleSender().sendMessage(ChatColor.RESET + "BuildSystem » Plugin " + ChatColor.GREEN + "enabled" + ChatColor.RESET + "!");
     }
@@ -315,6 +321,21 @@ public class BuildSystem extends JavaPlugin {
         metrics.addCustomChart(new SimplePie("update_checker", () -> String.valueOf(configValues.isUpdateChecker())));
         metrics.addCustomChart(new SimplePie("unload_worlds", () -> String.valueOf(configValues.isUnloadWorlds())));
         metrics.addCustomChart(new SimplePie("void_block", () -> String.valueOf(configValues.isVoidBlock())));
+        metrics.addCustomChart(new AdvancedPie("navigator_type", new Callable<Map<String, Integer>>() {
+            @Override
+            public Map<String, Integer> call() {
+                Map<String, Integer> valueMap = new HashMap<>();
+                valueMap.put("Old", getPlayersWithNavigator(NavigatorType.OLD));
+                valueMap.put("New", getPlayersWithNavigator(NavigatorType.NEW));
+                return valueMap;
+            }
+
+            private int getPlayersWithNavigator(NavigatorType navigatorType) {
+                return (int) playerManager.getBuildPlayers().stream()
+                        .filter(buildPlayer -> buildPlayer.getSettings().getNavigatorType() == navigatorType)
+                        .count();
+            }
+        }));
     }
 
     private void registerExpansions() {
