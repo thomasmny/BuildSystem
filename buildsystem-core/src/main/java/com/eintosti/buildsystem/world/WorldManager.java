@@ -186,7 +186,6 @@ public class WorldManager {
             } else {
                 createWorld(player, worldName, worldType, null, template, privateWorld);
             }
-
         });
     }
 
@@ -214,7 +213,7 @@ public class WorldManager {
         new BuildWorldCreator(plugin, worldName)
                 .setType(worldType)
                 .setTemplate(template)
-                .setPrivate(privateWorld && getBuildWorld(player.getName()) == null)
+                .setPrivate(privateWorld)
                 .setCustomGenerator(customGenerator)
                 .createWorld(player);
     }
