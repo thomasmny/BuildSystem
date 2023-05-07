@@ -18,6 +18,8 @@ import com.eintosti.buildsystem.navigator.inventory.FilteredWorldsInventory.Visi
 import com.eintosti.buildsystem.navigator.settings.NavigatorInventoryType;
 import com.eintosti.buildsystem.navigator.settings.NavigatorType;
 import com.eintosti.buildsystem.navigator.settings.WorldDisplay;
+import com.eintosti.buildsystem.navigator.settings.WorldFilter;
+import com.eintosti.buildsystem.navigator.settings.WorldSort;
 import com.eintosti.buildsystem.settings.DesignColor;
 import com.eintosti.buildsystem.settings.Settings;
 import com.eintosti.buildsystem.settings.SettingsManager;
@@ -423,7 +425,7 @@ public class PlayerManager {
     private Settings loadSettings(FileConfiguration configuration, String pathPrefix) {
         NavigatorType navigatorType = NavigatorType.valueOf(configuration.getString(pathPrefix + "type"));
         DesignColor glassColor = DesignColor.matchColor(configuration.getString(pathPrefix + "glass"));
-        WorldDisplay worldDisplay = loadWorldDisplay(configuration.getString(pathPrefix + "world-display"));
+        WorldDisplay worldDisplay = loadWorldDisplay(configuration, pathPrefix + "world-display.");
         boolean clearInventory = configuration.getBoolean(pathPrefix + "clear-inventory", false);
         boolean disableInteract = configuration.getBoolean(pathPrefix + "disable-interact", false);
         boolean hidePlayers = configuration.getBoolean(pathPrefix + "hide-players", false);
@@ -443,8 +445,10 @@ public class PlayerManager {
         );
     }
 
-    //TODO: Implement loading from file
-    private WorldDisplay loadWorldDisplay(String path) {
-        return new WorldDisplay();
+    private WorldDisplay loadWorldDisplay(FileConfiguration configuration, String pathPrefix) {
+        WorldSort worldSort = WorldSort.matchWorldSort(configuration.getString(pathPrefix + "sort", WorldSort.NAME_A_TO_Z.name()));
+        WorldFilter.Mode filterMode = WorldFilter.Mode.valueOf(configuration.getString(pathPrefix + "filter.mode", WorldFilter.Mode.ALL.name()));
+        String filterText = configuration.getString(pathPrefix + "filter.text", "");
+        return new WorldDisplay(worldSort, new WorldFilter(filterMode, filterText));
     }
 }
