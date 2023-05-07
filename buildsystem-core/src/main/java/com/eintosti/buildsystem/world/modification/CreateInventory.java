@@ -11,7 +11,7 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
-import com.eintosti.buildsystem.navigator.world.FilteredWorldsInventory.Visibility;
+import com.eintosti.buildsystem.navigator.inventory.FilteredWorldsInventory.Visibility;
 import com.eintosti.buildsystem.util.InventoryUtil;
 import com.eintosti.buildsystem.util.PaginatedInventory;
 import com.eintosti.buildsystem.world.WorldManager;
@@ -29,12 +29,13 @@ import org.bukkit.inventory.ItemStack;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.AbstractMap;
-import java.util.UUID;
 
 /**
  * @author einTosti
  */
 public class CreateInventory extends PaginatedInventory implements Listener {
+
+    private static final int MAX_TEMPLATES = 5;
 
     private final BuildSystem plugin;
     private final WorldManager worldManager;
@@ -109,13 +110,12 @@ public class CreateInventory extends PaginatedInventory implements Listener {
     }
 
     private void addTemplates(Player player, Page page) {
-        final int maxNumTemplates = 5;
         File[] templateFiles = new File(plugin.getDataFolder() + File.separator + "templates").listFiles(new TemplateFilter());
 
         int columnTemplate = 29, maxColumnTemplate = 33;
         int fileLength = templateFiles != null ? templateFiles.length : 0;
-        this.numTemplates = (fileLength / maxNumTemplates) + (fileLength % maxNumTemplates == 0 ? 0 : 1);
-        int numInventories = (numTemplates % maxNumTemplates == 0 ? numTemplates : numTemplates + 1) != 0 ? (numTemplates % maxNumTemplates == 0 ? numTemplates : numTemplates + 1) : 1;
+        this.numTemplates = (fileLength / MAX_TEMPLATES) + (fileLength % MAX_TEMPLATES == 0 ? 0 : 1);
+        int numInventories = (numTemplates % MAX_TEMPLATES == 0 ? numTemplates : numTemplates + 1) != 0 ? (numTemplates % MAX_TEMPLATES == 0 ? numTemplates : numTemplates + 1) : 1;
 
         inventories = new Inventory[numInventories];
         Inventory inventory = getInventory(player, page);
@@ -159,18 +159,8 @@ public class CreateInventory extends PaginatedInventory implements Listener {
                 inventoryUtil.addGlassPane(plugin, player, inventory, 33);
                 break;
             case TEMPLATES:
-                UUID playerUUID = player.getUniqueId();
-                if (numTemplates > 1 && invIndex.get(playerUUID) > 0) {
-                    inventoryUtil.addUrlSkull(inventory, 38, Messages.getString("gui_previous_page"), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
-                } else {
-                    inventoryUtil.addGlassPane(plugin, player, inventory, 38);
-                }
-
-                if (numTemplates > 1 && invIndex.get(playerUUID) < (numTemplates - 1)) {
-                    inventoryUtil.addUrlSkull(inventory, 42, Messages.getString("gui_next_page"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
-                } else {
-                    inventoryUtil.addGlassPane(plugin, player, inventory, 42);
-                }
+                inventoryUtil.addUrlSkull(inventory, 38, Messages.getString("gui_previous_page"), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
+                inventoryUtil.addUrlSkull(inventory, 42, Messages.getString("gui_next_page"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
                 break;
         }
     }
@@ -261,17 +251,16 @@ public class CreateInventory extends PaginatedInventory implements Listener {
                         worldManager.startWorldNameInput(player, WorldType.TEMPLATE, itemStack.getItemMeta().getDisplayName(), createPrivateWorld);
                         break;
                     case PLAYER_HEAD:
-                        if (slot == 38) {
-                            decrementInv(player);
-                        } else if (slot == 42) {
-                            incrementInv(player);
+                        if (slot == 38 && !decrementInv(player, numTemplates, MAX_TEMPLATES)) {
+                            return;
+                        } else if (slot == 42 && !incrementInv(player, numTemplates, MAX_TEMPLATES)) {
+                            return;
                         }
                         openInventory(player, CreateInventory.Page.TEMPLATES, visibility);
                         break;
                     default:
                         return;
                 }
-                XSound.ENTITY_CHICKEN_EGG.play(player);
                 break;
             }
         }

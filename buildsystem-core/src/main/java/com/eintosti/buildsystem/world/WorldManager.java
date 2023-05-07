@@ -14,7 +14,7 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.config.WorldConfig;
-import com.eintosti.buildsystem.navigator.world.FilteredWorldsInventory.Visibility;
+import com.eintosti.buildsystem.navigator.inventory.FilteredWorldsInventory.Visibility;
 import com.eintosti.buildsystem.util.FileUtils;
 import com.eintosti.buildsystem.util.UUIDFetcher;
 import com.eintosti.buildsystem.util.external.PlayerChatInput;

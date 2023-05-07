@@ -136,7 +136,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "glasscolor":
                 return settings.getDesignColor().toString();
             case "worldsort":
-                return settings.getWorldSort().toString();
+                return settings.getWorldDisplay().getWorldSort().toString();
             case "clearinventory":
                 return String.valueOf(settings.isClearInventory());
             case "disableinteract":

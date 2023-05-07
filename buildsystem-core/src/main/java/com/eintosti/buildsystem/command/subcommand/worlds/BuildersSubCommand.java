@@ -49,7 +49,7 @@ public class BuildersSubCommand implements SubCommand {
         }
 
         plugin.getPlayerManager().getBuildPlayer(player).setCachedWorld(buildWorld);
-        player.openInventory(plugin.getBuilderInventory().getInventory(buildWorld, player));
+        plugin.getBuilderInventory().openInventory(buildWorld, player);
     }
 
     @Override

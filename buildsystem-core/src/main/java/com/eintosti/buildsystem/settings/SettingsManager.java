@@ -11,25 +11,18 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.config.SettingsConfig;
-import com.eintosti.buildsystem.navigator.NavigatorType;
-import com.eintosti.buildsystem.navigator.WorldSort;
-import com.eintosti.buildsystem.player.PlayerManager;
 import com.eintosti.buildsystem.version.util.MinecraftVersion;
 import com.eintosti.buildsystem.world.BuildWorld;
 import com.eintosti.buildsystem.world.WorldManager;
 import fr.mrmicky.fastboard.FastBoard;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -198,61 +191,5 @@ public class SettingsManager {
 
     public void stopScoreboard() {
         Bukkit.getOnlinePlayers().forEach(this::stopScoreboard);
-    }
-
-    /**
-     * Loads all per-player settings.
-     *
-     * @deprecated Player settings are now loading in {@link PlayerManager#load()}
-     */
-    @Deprecated
-    public void load() {
-        FileConfiguration configuration = settingsConfig.getFile();
-        ConfigurationSection configurationSection = configuration.getConfigurationSection("settings");
-        if (configurationSection == null) {
-            return;
-        }
-
-        Set<String> uuids = configurationSection.getKeys(false);
-        uuids.forEach(uuid -> {
-            NavigatorType navigatorType = NavigatorType.valueOf(configuration.getString("settings." + uuid + ".type"));
-            DesignColor glassColor = configuration.getString("settings." + uuid + ".glass") != null ? DesignColor.matchColor(configuration.getString("settings." + uuid + ".glass")) : DesignColor.BLACK;
-            WorldSort worldSort = WorldSort.matchWorldSort(configuration.getString("settings." + uuid + ".world-sort"));
-            boolean clearInventory = configuration.isBoolean("settings." + uuid + ".clear-inventory") && configuration.getBoolean("settings." + uuid + ".clear-inventory");
-            boolean disableInteract = configuration.isBoolean("settings." + uuid + ".disable-interact") && configuration.getBoolean("settings." + uuid + ".disable-interact");
-            boolean hidePlayers = configuration.isBoolean("settings." + uuid + ".hide-players") && configuration.getBoolean("settings." + uuid + ".hide-players");
-            boolean instantPlaceSigns = configuration.isBoolean("settings." + uuid + ".instant-place-signs") && configuration.getBoolean("settings." + uuid + ".instant-place-signs");
-            boolean keepNavigator = configuration.isBoolean("settings." + uuid + ".keep-navigator") && configuration.getBoolean("settings." + uuid + ".keep-navigator");
-            boolean nightVision = configuration.getBoolean("settings." + uuid + ".nightvision");
-            boolean noClip = configuration.isBoolean("settings." + uuid + ".no-clip") && configuration.getBoolean("settings." + uuid + ".no-clip");
-            boolean placePlants = configuration.isBoolean("settings." + uuid + ".place-plants") && configuration.getBoolean("settings." + uuid + ".place-plants");
-            boolean scoreboard = !configuration.isBoolean("settings." + uuid + ".scoreboard") || configuration.getBoolean("settings." + uuid + ".scoreboard");
-            boolean slabBreaking = configuration.isBoolean("settings." + uuid + ".slab-breaking") && configuration.getBoolean("settings." + uuid + ".slab-breaking");
-            boolean spawnTeleport = !configuration.isBoolean("settings." + uuid + ".spawn-teleport") || configuration.getBoolean("settings." + uuid + ".spawn-teleport");
-            boolean trapDoor = configuration.getBoolean("settings." + uuid + ".trapdoor");
-
-            plugin.getPlayerManager().createBuildPlayer(UUID.fromString(uuid), new Settings(
-                    navigatorType,
-                    glassColor,
-                    worldSort,
-                    clearInventory,
-                    disableInteract,
-                    hidePlayers,
-                    instantPlaceSigns,
-                    keepNavigator,
-                    nightVision,
-                    noClip,
-                    placePlants,
-                    scoreboard,
-                    slabBreaking,
-                    spawnTeleport,
-                    trapDoor
-            ));
-        });
-
-        File settingsFile = new File(plugin.getDataFolder(), "settings.yml");
-        if (settingsFile.exists()) {
-            settingsFile.delete();
-        }
     }
 }

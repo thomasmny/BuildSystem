@@ -8,7 +8,7 @@
 package com.eintosti.buildsystem.listener;
 
 import com.eintosti.buildsystem.BuildSystem;
-import com.eintosti.buildsystem.navigator.NavigatorType;
+import com.eintosti.buildsystem.navigator.settings.NavigatorType;
 import com.eintosti.buildsystem.player.PlayerManager;
 import com.eintosti.buildsystem.settings.Settings;
 import com.eintosti.buildsystem.settings.SettingsManager;

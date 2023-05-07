@@ -103,7 +103,7 @@ public class AddBuilderSubCommand implements SubCommand {
             if (closeInventory) {
                 player.closeInventory();
             } else {
-                player.openInventory(plugin.getBuilderInventory().getInventory(buildWorld, player));
+                plugin.getBuilderInventory().openInventory(buildWorld, player);
             }
         });
     }

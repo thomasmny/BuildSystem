@@ -5,20 +5,34 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-package com.eintosti.buildsystem.navigator;
+package com.eintosti.buildsystem.navigator.settings;
+
+import com.eintosti.buildsystem.Messages;
+
+import java.util.List;
 
 /**
  * @author einTosti
  */
 public enum WorldSort {
-    NAME_A_TO_Z,
-    NAME_Z_TO_A,
-    PROJECT_A_TO_Z,
-    PROJECT_Z_TO_A,
-    STATUS_NOT_STARTED,
-    STATUS_FINISHED,
-    NEWEST_FIRST,
-    OLDEST_FIRST;
+    NAME_A_TO_Z("world_sort_name_az"),
+    NAME_Z_TO_A("world_sort_name_za"),
+    PROJECT_A_TO_Z("world_sort_project_az"),
+    PROJECT_Z_TO_A("world_sort_project_za"),
+    STATUS_NOT_STARTED("world_sort_status_not_started"),
+    STATUS_FINISHED("world_sort_status_finished"),
+    NEWEST_FIRST("world_sort_date_newest"),
+    OLDEST_FIRST("world_sort_date_oldest");
+
+    private final String loreKey;
+
+    WorldSort(String loreKey) {
+        this.loreKey = loreKey;
+    }
+
+    public List<String> getItemLore() {
+        return Messages.getStringList(loreKey);
+    }
 
     public static WorldSort matchWorldSort(String type) {
         if (type == null) {
