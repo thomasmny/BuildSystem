@@ -5,7 +5,7 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-package com.eintosti.buildsystem.navigator;
+package com.eintosti.buildsystem.navigator.settings;
 
 import com.eintosti.buildsystem.world.BuildWorld;
 import com.eintosti.buildsystem.world.Builder;

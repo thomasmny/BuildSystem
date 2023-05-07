@@ -7,8 +7,8 @@
  */
 package com.eintosti.buildsystem.settings;
 
-import com.eintosti.buildsystem.navigator.NavigatorType;
-import com.eintosti.buildsystem.navigator.WorldSort;
+import com.eintosti.buildsystem.navigator.settings.NavigatorType;
+import com.eintosti.buildsystem.navigator.settings.WorldDisplay;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +23,7 @@ public class Settings implements ConfigurationSerializable {
 
     private DesignColor designColor;
     private NavigatorType navigatorType;
-    private WorldSort worldSort;
+    private WorldDisplay worldDisplay;
     private boolean clearInventory;
     private boolean disableInteract;
     private boolean hidePlayers;
@@ -42,7 +42,7 @@ public class Settings implements ConfigurationSerializable {
     public Settings() {
         this.navigatorType = NavigatorType.OLD;
         this.designColor = DesignColor.BLACK;
-        this.worldSort = WorldSort.NAME_A_TO_Z;
+        this.worldDisplay = new WorldDisplay();
         this.clearInventory = false;
         this.disableInteract = false;
         this.hidePlayers = false;
@@ -60,7 +60,7 @@ public class Settings implements ConfigurationSerializable {
     public Settings(
             NavigatorType navigatorType,
             DesignColor designColor,
-            WorldSort worldSort,
+            WorldDisplay worldDisplay,
             boolean clearInventory,
             boolean disableInteract,
             boolean hidePlayers,
@@ -76,7 +76,7 @@ public class Settings implements ConfigurationSerializable {
     ) {
         this.navigatorType = navigatorType == null ? NavigatorType.OLD : navigatorType;
         this.designColor = designColor == null ? DesignColor.BLACK : designColor;
-        this.worldSort = worldSort;
+        this.worldDisplay = worldDisplay;
         this.clearInventory = clearInventory;
         this.disableInteract = disableInteract;
         this.hidePlayers = hidePlayers;
@@ -107,12 +107,12 @@ public class Settings implements ConfigurationSerializable {
         this.designColor = designColor;
     }
 
-    public WorldSort getWorldSort() {
-        return worldSort;
+    public WorldDisplay getWorldDisplay() {
+        return worldDisplay;
     }
 
-    public void setWorldSort(WorldSort worldSort) {
-        this.worldSort = worldSort;
+    public void setWorldDisplay(WorldDisplay worldDisplay) {
+        this.worldDisplay = worldDisplay;
     }
 
     public boolean isClearInventory() {
@@ -225,7 +225,7 @@ public class Settings implements ConfigurationSerializable {
 
         settings.put("type", getNavigatorType().toString());
         settings.put("glass", getDesignColor().toString());
-        settings.put("world-sort", getWorldSort().toString());
+        settings.put("world-display", getWorldDisplay().serialize());
         settings.put("slab-breaking", isSlabBreaking());
         settings.put("no-clip", isNoClip());
         settings.put("trapdoor", isTrapDoor());

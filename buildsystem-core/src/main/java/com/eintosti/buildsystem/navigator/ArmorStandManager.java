@@ -8,6 +8,7 @@
 package com.eintosti.buildsystem.navigator;
 
 import com.cryptomorin.xseries.XMaterial;
+import com.eintosti.buildsystem.navigator.settings.NavigatorInventoryType;
 import com.eintosti.buildsystem.util.external.ItemSkulls;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;

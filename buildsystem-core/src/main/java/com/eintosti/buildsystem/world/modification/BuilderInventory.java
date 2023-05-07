@@ -57,6 +57,9 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         addCreatorInfoItem(inventory, buildWorld);
         addBuilderAddItem(inventory, buildWorld, player);
 
+        inventoryUtil.addUrlSkull(inventory, 18, Messages.getString("gui_previous_page"), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
+        inventoryUtil.addUrlSkull(inventory, 26, Messages.getString("gui_next_page"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
+
         return inventory;
     }
 
@@ -106,7 +109,11 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         }
     }
 
-    public Inventory getInventory(BuildWorld buildWorld, Player player) {
+    public void openInventory(BuildWorld buildWorld, Player player) {
+        player.openInventory(getInventory(buildWorld, player));
+    }
+
+    private Inventory getInventory(BuildWorld buildWorld, Player player) {
         addItems(buildWorld, player);
         return inventories[getInvIndex(player)];
     }
@@ -115,23 +122,8 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         for (int i = 0; i <= 8; i++) {
             inventoryUtil.addGlassPane(plugin, player, inventory, i);
         }
-        for (int i = 19; i <= 25; i++) {
+        for (int i = 18; i <= 26; i++) {
             inventoryUtil.addGlassPane(plugin, player, inventory, i);
-        }
-
-        int numOfPages = (numBuilders / MAX_BUILDERS) + (numBuilders % MAX_BUILDERS == 0 ? 0 : 1);
-        int invIndex = getInvIndex(player);
-
-        if (numOfPages > 1 && invIndex > 0) {
-            inventoryUtil.addUrlSkull(inventory, 18, Messages.getString("gui_previous_page"), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
-        } else {
-            inventoryUtil.addGlassPane(plugin, player, inventory, 18);
-        }
-
-        if (numOfPages > 1 && invIndex < (numOfPages - 1)) {
-            inventoryUtil.addUrlSkull(inventory, 26, Messages.getString("gui_next_page"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
-        } else {
-            inventoryUtil.addGlassPane(plugin, player, inventory, 26);
         }
     }
 
@@ -165,14 +157,18 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         int slot = event.getSlot();
         switch (slot) {
             case 18:
-                decrementInv(player);
+                if (decrementInv(player, numBuilders, MAX_BUILDERS)) {
+                    openInventory(buildWorld, player);
+                }
                 break;
             case 22:
                 XSound.ENTITY_CHICKEN_EGG.play(player);
                 new AddBuilderSubCommand(plugin, buildWorld.getName()).getAddBuilderInput(player, buildWorld, false);
                 return;
             case 26:
-                incrementInv(player);
+                if (incrementInv(player, numBuilders, MAX_BUILDERS)) {
+                    openInventory(buildWorld, player);
+                }
                 break;
             default:
                 if (slot == 4) {

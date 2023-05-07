@@ -30,11 +30,10 @@ import com.eintosti.buildsystem.expansion.placeholderapi.PlaceholderApiExpansion
 import com.eintosti.buildsystem.internal.ServerVersion;
 import com.eintosti.buildsystem.listener.*;
 import com.eintosti.buildsystem.navigator.ArmorStandManager;
-import com.eintosti.buildsystem.navigator.NavigatorInventory;
-import com.eintosti.buildsystem.navigator.NavigatorType;
-import com.eintosti.buildsystem.navigator.world.ArchiveInventory;
-import com.eintosti.buildsystem.navigator.world.PrivateInventory;
-import com.eintosti.buildsystem.navigator.world.WorldsInventory;
+import com.eintosti.buildsystem.navigator.inventory.ArchiveInventory;
+import com.eintosti.buildsystem.navigator.inventory.NavigatorInventory;
+import com.eintosti.buildsystem.navigator.inventory.PrivateInventory;
+import com.eintosti.buildsystem.navigator.inventory.WorldsInventory;
 import com.eintosti.buildsystem.player.BlocksInventory;
 import com.eintosti.buildsystem.player.BuildPlayer;
 import com.eintosti.buildsystem.player.LogoutLocation;
@@ -157,7 +156,6 @@ public class BuildSystem extends JavaPlugin {
         performUpdateCheck();
 
         worldManager.load();
-        settingsManager.load(); //TODO: Remove in v3.0
         playerManager.load();
         spawnManager.load();
 
