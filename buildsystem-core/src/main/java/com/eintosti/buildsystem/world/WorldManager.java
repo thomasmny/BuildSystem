@@ -380,7 +380,7 @@ public class WorldManager {
      */
     public void unimportWorld(BuildWorld buildWorld, boolean save) {
         buildWorld.forceUnload(save);
-        this.buildWorlds.remove(buildWorld);
+        this.buildWorlds.remove(buildWorld.getName());
         removePlayersFromWorld(buildWorld.getName(), Messages.getString("worlds_unimport_players_world"));
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             this.worldConfig.getFile().set("worlds." + buildWorld.getName(), null);
