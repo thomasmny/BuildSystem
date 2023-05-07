@@ -150,7 +150,7 @@ public class BuildWorldCreator {
         }
 
         BuildWorld buildWorld = createBuildWorldObject(player);
-        worldManager.getBuildWorlds().add(buildWorld);
+        worldManager.addBuildWorld(buildWorld);
 
         Messages.sendMessage(player, "worlds_world_creation_started",
                 new AbstractMap.SimpleEntry<>("%world%", worldName),
@@ -169,7 +169,7 @@ public class BuildWorldCreator {
      */
     public void importWorld(Player player, boolean teleport) {
         BuildWorld buildWorld = createBuildWorldObject(player);
-        worldManager.getBuildWorlds().add(buildWorld);
+        worldManager.addBuildWorld(buildWorld);
         finishPreparationsAndGenerate(buildWorld);
         if (teleport) {
             teleportAfterCreation(player);
@@ -196,7 +196,7 @@ public class BuildWorldCreator {
         }
 
         BuildWorld buildWorld = createBuildWorldObject(player);
-        worldManager.getBuildWorlds().add(buildWorld);
+        worldManager.addBuildWorld(buildWorld);
 
         Messages.sendMessage(player, "worlds_template_creation_started",
                 new AbstractMap.SimpleEntry<>("%world%", worldName),
