@@ -32,6 +32,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -141,16 +143,18 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
     private void addWorldSortItem(Inventory inventory, Player player) {
         Settings settings = settingsManager.getSettings(player);
         WorldSort worldSort = settings.getWorldDisplay().getWorldSort();
-        inventoryUtil.addItemStack(inventory, 45, XMaterial.CHEST, Messages.getString("world_sort_title"), worldSort.getItemLore());
+        inventoryUtil.addItemStack(inventory, 45, XMaterial.BOOK, Messages.getString("world_sort_title"), worldSort.getItemLore());
     }
 
     private void addWorldFilterItem(Inventory inventory, Player player) {
         Settings settings = settingsManager.getSettings(player);
         WorldFilter worldFilter = settings.getWorldDisplay().getWorldFilter();
 
-        inventoryUtil.addItemStack(inventory, 46, XMaterial.HOPPER, Messages.getString("world_filter_title"),
-                Messages.getString(worldFilter.getMode().getLoreKey(), new AbstractMap.SimpleEntry<>("%text%", worldFilter.getText()))
-        );
+        List<String> lore = new ArrayList<>();
+        lore.add(Messages.getString(worldFilter.getMode().getLoreKey(), new AbstractMap.SimpleEntry<>("%text%", worldFilter.getText())));
+        lore.addAll(Messages.getStringList("world_filter_lore"));
+
+        inventoryUtil.addItemStack(inventory, 46, XMaterial.HOPPER, Messages.getString("world_filter_title"), lore);
     }
 
     /**
@@ -219,7 +223,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
                     WorldFilter filter = worldDisplay.getWorldFilter();
                     if (filter.getMode() != WorldFilter.Mode.ALL) {
                         new PlayerChatInput(plugin, player, "world_filter_title", input -> {
-                            filter.setText(input);
+                            filter.setText(input.replace("\"", ""));
                             openInventory(player);
                         });
                     }
