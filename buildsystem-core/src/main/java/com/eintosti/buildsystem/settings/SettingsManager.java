@@ -56,14 +56,8 @@ public class SettingsManager {
 
         this.boards = new HashMap<>();
 
-        String title = Messages.getString("title");
-        List<String> body = Messages.getStringList("body");
-        if (MinecraftVersion.getCurrent().isLowerThan(MinecraftVersion.AQUATIC_13)) {
-            title = title.substring(0, Math.min(title.length(), 30));
-            body = body.stream().map(line -> line.substring(0, Math.min(line.length(), 30))).collect(Collectors.toList());
-        }
-        this.scoreboardTitle = title;
-        this.scoreboardBody = body;
+        this.scoreboardTitle = Messages.getString("title");
+        this.scoreboardBody = Messages.getStringList("body");
     }
 
     public Settings getSettings(UUID uuid) {
@@ -132,10 +126,15 @@ public class SettingsManager {
     }
 
     private void updateScoreboard(Player player, FastBoard board) {
-        ArrayList<String> body = new ArrayList<>();
+        List<String> body = new ArrayList<>();
 
         for (String line : this.scoreboardBody) {
             body.add(injectPlaceholders(line, player));
+        }
+
+        // Scoreboard line cannot be longer than 30 chars in versions <1.13
+        if (MinecraftVersion.getCurrent().isLowerThan(MinecraftVersion.AQUATIC_13)) {
+            body = body.stream().map(line -> line.substring(0, Math.min(line.length(), 30))).collect(Collectors.toList());
         }
 
         board.updateLines(body);
