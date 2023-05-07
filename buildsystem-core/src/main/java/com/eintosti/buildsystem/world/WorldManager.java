@@ -291,7 +291,7 @@ public class WorldManager {
                 .setPrivate(false)
                 .setCreationDate(FileUtils.getDirectoryCreation(new File(Bukkit.getWorldContainer(), worldName)));
 
-        if (worldCreator.parseDataVersion() > plugin.getServerVersion().getDataVersion()) {
+        if (worldCreator.isHigherVersion()) {
             String key = single ? "import" : "importall";
             Messages.sendMessage(player, "worlds_" + key + "_newer_version", new AbstractMap.SimpleEntry<>("%world%", worldName));
             return false;

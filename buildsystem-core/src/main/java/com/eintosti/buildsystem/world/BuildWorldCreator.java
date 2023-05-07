@@ -251,13 +251,9 @@ public class BuildWorldCreator {
      */
     @Nullable
     public World generateBukkitWorld(boolean checkVersion) {
-        if (checkVersion && !Boolean.getBoolean("Paper.ignoreWorldDataVersion")) {
-            int worldVersion = parseDataVersion();
-            int serverVersion = plugin.getServerVersion().getDataVersion();
-            if (worldVersion > serverVersion) {
-                plugin.getLogger().warning(String.format("\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping...", worldName, worldVersion, serverVersion));
-                return null;
-            }
+        if (checkVersion && isHigherVersion()) {
+            plugin.getLogger().warning(String.format("\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping...", worldName, worldVersion, serverVersion));
+            return null;
         }
 
         WorldCreator worldCreator = new WorldCreator(worldName);
@@ -320,6 +316,19 @@ public class BuildWorldCreator {
 
         updateDataVersion();
         return bukkitWorld;
+    }
+
+    /**
+     * Once a chunk has been loaded in a newer version of Minecraft, then it cannot be loaded in an older version again.
+     * Paper allows the server admin to bypass this check with {@code }, so we do as well.
+     *
+     * @return {@code true} if the world was generated in a higher Minecraft version, otherwise {@code false}
+     */
+    public boolean isHigherVersion() {
+        if (!Boolean.getBoolean("Paper.ignoreWorldDataVersion")) {
+            return false;
+        }
+        return parseDataVersion() > plugin.getServerVersion().getDataVersion();
     }
 
     /**
