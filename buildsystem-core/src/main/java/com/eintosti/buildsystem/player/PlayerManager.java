@@ -447,7 +447,7 @@ public class PlayerManager {
 
     private WorldDisplay loadWorldDisplay(FileConfiguration configuration, String pathPrefix) {
         WorldSort worldSort = WorldSort.matchWorldSort(configuration.getString(pathPrefix + "sort", WorldSort.NAME_A_TO_Z.name()));
-        WorldFilter.Mode filterMode = WorldFilter.Mode.valueOf(configuration.getString(pathPrefix + "filter.mode", WorldFilter.Mode.ALL.name()));
+        WorldFilter.Mode filterMode = WorldFilter.Mode.valueOf(configuration.getString(pathPrefix + "filter.mode", WorldFilter.Mode.NONE.name()));
         String filterText = configuration.getString(pathPrefix + "filter.text", "");
         return new WorldDisplay(worldSort, new WorldFilter(filterMode, filterText));
     }
