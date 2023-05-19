@@ -34,6 +34,7 @@ import com.eintosti.buildsystem.navigator.inventory.ArchiveInventory;
 import com.eintosti.buildsystem.navigator.inventory.NavigatorInventory;
 import com.eintosti.buildsystem.navigator.inventory.PrivateInventory;
 import com.eintosti.buildsystem.navigator.inventory.WorldsInventory;
+import com.eintosti.buildsystem.navigator.settings.NavigatorType;
 import com.eintosti.buildsystem.player.BlocksInventory;
 import com.eintosti.buildsystem.player.BuildPlayer;
 import com.eintosti.buildsystem.player.LogoutLocation;
