@@ -437,6 +437,26 @@ public class Messages {
                 "&8- &7&oRight click&8: &7Edit"
         ));
         setMessage(sb, "world_item_builders_builder_template", "&b%builder%&7, ");
+        setMessage(sb, "world_sort_title", "&bSort");
+        setMessage(sb, "world_sort_name_az", "&8» &7&oName (A-Z)");
+        setMessage(sb, "world_sort_name_za", "&8» &7&oName (Z-A)");
+        setMessage(sb, "world_sort_project_az", "&8» &7&oProject (A-Z)");
+        setMessage(sb, "world_sort_project_za", "&8» &7&oProject (Z-A)");
+        setMessage(sb, "world_sort_status_not_started", "&8» &7&oNot Started &8&o➡ &7&oFinished");
+        setMessage(sb, "world_sort_status_finished", "&8» &7&oFinished &8&o➡ &7&oNot Started");
+        setMessage(sb, "world_sort_date_newest", "&8» &7&oCreation date (Newest)");
+        setMessage(sb, "world_sort_date_oldest", "&8» &7&oCreation date (Oldest)");
+        setMessage(sb, "world_filter_title", "&bFilter");
+        setMessage(sb, "world_filter_mode_none", "&8» &7&oNone");
+        setMessage(sb, "world_filter_mode_starts_with", "&8» &7&oStarts with: &b&o%text%");
+        setMessage(sb, "world_filter_mode_contains", "&8» &7&oContains: &b&o%text%");
+        setMessage(sb, "world_filter_mode_matches", "&8» &7&oMatches: &b&o%text%");
+        setMessage(sb, "world_filter_lore", Arrays.asList(
+                "",
+                "&8- &7&oLeft click&8: &7Change text",
+                "&8- &7&oRight click&8: &7Change mode",
+                "&8- &7&oShift click&8: &7Reset to default"
+        ));
         addSpacer(sb, "");
         addSpacer(sb, "# World Archive");
         setMessage(sb, "archive_title", "&3» &8World Archive");
@@ -757,47 +777,6 @@ public class Messages {
                 "&7&oteleported to the spawn",
                 "&7&oif it has been set."
         ));
-        addSpacer(sb, "");
-        setMessage(sb, "settings_worldsort_item", "&bWorld Sort");
-        setMessage(sb, "settings_worldsort_lore_alphabetically_name_az", Arrays.asList(
-                "&7&oChange the way worlds are",
-                "&7&osorted in the navigator.",
-                "",
-                "&7&nCurrently&7: &b&oName (A-Z)"
-        ));
-        setMessage(sb, "settings_worldsort_lore_alphabetically_name_za", Arrays.asList(
-                "&7&oChange the way worlds are",
-                "&7&osorted in the navigator.",
-                "",
-                "&7&nCurrently&7: &b&oName (Z-A)"));
-        setMessage(sb, "settings_worldsort_lore_alphabetically_project_az", Arrays.asList(
-                "&7&oChange the way worlds are",
-                "&7&osorted in the navigator.",
-                "",
-                "&7&nCurrently&7: &b&oProject (A-Z)"));
-        setMessage(sb, "settings_worldsort_lore_alphabetically_project_za", Arrays.asList(
-                "&7&oChange the way worlds are",
-                "&7&osorted in the navigator.",
-                "",
-                "&7&nCurrently&7: &b&oProject (Z-A)"));
-        setMessage(sb, "settings_worldsort_lore_status_not_started", Arrays.asList(
-                "&7&oChange the way worlds are",
-                "&7&osorted in the navigator.",
-                "",
-                "&7&nCurrently&7: &b&oStatus (Not Started ➡ Finished)"));
-        setMessage(sb, "settings_worldsort_lore_status_finished", Arrays.asList(
-                "&7&oChange the way worlds are",
-                "&7&osorted in the navigator.",
-                "",
-                "&7&nCurrently&7: &b&oStatus (Finished ➡ Not Started)"));
-        setMessage(sb, "settings_worldsort_lore_date_newest", Arrays.asList(
-                "&7&oChange the way worlds are",
-                "&7&osorted in the navigator.",
-                "",
-                "&7&nCurrently&7: &b&oCreation date (Newest)"));
-        setMessage(sb, "settings_worldsort_lore_date_oldest", Arrays.asList(
-                "&7&oChange the way worlds are",
-                "&7&osorted in the navigator.", "", "&7&nCurrently&7: &b&oCreation date (Oldest)"));
         addSpacer(sb, "");
         addSpacer(sb, "# Change Design");
         setMessage(sb, "design_title", "&3» &8Change Design");

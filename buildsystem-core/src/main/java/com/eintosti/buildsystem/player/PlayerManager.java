@@ -14,10 +14,12 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.config.PlayersConfig;
-import com.eintosti.buildsystem.navigator.NavigatorInventoryType;
-import com.eintosti.buildsystem.navigator.NavigatorType;
-import com.eintosti.buildsystem.navigator.WorldSort;
-import com.eintosti.buildsystem.navigator.world.FilteredWorldsInventory.Visibility;
+import com.eintosti.buildsystem.navigator.inventory.FilteredWorldsInventory.Visibility;
+import com.eintosti.buildsystem.navigator.settings.NavigatorInventoryType;
+import com.eintosti.buildsystem.navigator.settings.NavigatorType;
+import com.eintosti.buildsystem.navigator.settings.WorldDisplay;
+import com.eintosti.buildsystem.navigator.settings.WorldFilter;
+import com.eintosti.buildsystem.navigator.settings.WorldSort;
 import com.eintosti.buildsystem.settings.DesignColor;
 import com.eintosti.buildsystem.settings.Settings;
 import com.eintosti.buildsystem.settings.SettingsManager;
@@ -398,29 +400,6 @@ public class PlayerManager {
         });
     }
 
-    private Settings loadSettings(FileConfiguration configuration, String pathPrefix) {
-        NavigatorType navigatorType = NavigatorType.valueOf(configuration.getString(pathPrefix + "type"));
-        DesignColor glassColor = DesignColor.matchColor(configuration.getString(pathPrefix + "glass"));
-        WorldSort worldSort = WorldSort.matchWorldSort(configuration.getString(pathPrefix + "world-sort"));
-        boolean clearInventory = configuration.getBoolean(pathPrefix + "clear-inventory", false);
-        boolean disableInteract = configuration.getBoolean(pathPrefix + "disable-interact", false);
-        boolean hidePlayers = configuration.getBoolean(pathPrefix + "hide-players", false);
-        boolean instantPlaceSigns = configuration.getBoolean(pathPrefix + "instant-place-signs", false);
-        boolean keepNavigator = configuration.getBoolean(pathPrefix + "keep-navigator", false);
-        boolean nightVision = configuration.getBoolean(pathPrefix + "nightvision", false);
-        boolean noClip = configuration.getBoolean(pathPrefix + "no-clip", false);
-        boolean placePlants = configuration.getBoolean(pathPrefix + "place-plants", false);
-        boolean scoreboard = configuration.getBoolean(pathPrefix + "scoreboard", true);
-        boolean slabBreaking = configuration.getBoolean(pathPrefix + "slab-breaking", false);
-        boolean spawnTeleport = configuration.getBoolean(pathPrefix + "spawn-teleport", true);
-        boolean trapDoor = configuration.getBoolean(pathPrefix + "trapdoor", false);
-
-        return new Settings(
-                navigatorType, glassColor, worldSort, clearInventory, disableInteract, hidePlayers, instantPlaceSigns,
-                keepNavigator, nightVision, noClip, placePlants, scoreboard, slabBreaking, spawnTeleport, trapDoor
-        );
-    }
-
     @Nullable
     private LogoutLocation loadLogoutLocation(FileConfiguration configuration, String pathPrefix) {
         String location = configuration.getString(pathPrefix);
@@ -441,5 +420,35 @@ public class PlayerManager {
         float pitch = Float.parseFloat(parts[5]);
 
         return new LogoutLocation(worldName, x, y, z, yaw, pitch);
+    }
+
+    private Settings loadSettings(FileConfiguration configuration, String pathPrefix) {
+        NavigatorType navigatorType = NavigatorType.valueOf(configuration.getString(pathPrefix + "type"));
+        DesignColor glassColor = DesignColor.matchColor(configuration.getString(pathPrefix + "glass"));
+        WorldDisplay worldDisplay = loadWorldDisplay(configuration, pathPrefix + "world-display.");
+        boolean clearInventory = configuration.getBoolean(pathPrefix + "clear-inventory", false);
+        boolean disableInteract = configuration.getBoolean(pathPrefix + "disable-interact", false);
+        boolean hidePlayers = configuration.getBoolean(pathPrefix + "hide-players", false);
+        boolean instantPlaceSigns = configuration.getBoolean(pathPrefix + "instant-place-signs", false);
+        boolean keepNavigator = configuration.getBoolean(pathPrefix + "keep-navigator", false);
+        boolean nightVision = configuration.getBoolean(pathPrefix + "nightvision", false);
+        boolean noClip = configuration.getBoolean(pathPrefix + "no-clip", false);
+        boolean placePlants = configuration.getBoolean(pathPrefix + "place-plants", false);
+        boolean scoreboard = configuration.getBoolean(pathPrefix + "scoreboard", true);
+        boolean slabBreaking = configuration.getBoolean(pathPrefix + "slab-breaking", false);
+        boolean spawnTeleport = configuration.getBoolean(pathPrefix + "spawn-teleport", true);
+        boolean trapDoor = configuration.getBoolean(pathPrefix + "trapdoor", false);
+
+        return new Settings(
+                navigatorType, glassColor, worldDisplay, clearInventory, disableInteract, hidePlayers, instantPlaceSigns,
+                keepNavigator, nightVision, noClip, placePlants, scoreboard, slabBreaking, spawnTeleport, trapDoor
+        );
+    }
+
+    private WorldDisplay loadWorldDisplay(FileConfiguration configuration, String pathPrefix) {
+        WorldSort worldSort = WorldSort.matchWorldSort(configuration.getString(pathPrefix + "sort", WorldSort.NAME_A_TO_Z.name()));
+        WorldFilter.Mode filterMode = WorldFilter.Mode.valueOf(configuration.getString(pathPrefix + "filter.mode", WorldFilter.Mode.NONE.name()));
+        String filterText = configuration.getString(pathPrefix + "filter.text", "");
+        return new WorldDisplay(worldSort, new WorldFilter(filterMode, filterText));
     }
 }

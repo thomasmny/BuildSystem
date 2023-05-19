@@ -5,20 +5,25 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-package com.eintosti.buildsystem.navigator.world;
+package com.eintosti.buildsystem.navigator.inventory;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
+import com.eintosti.buildsystem.navigator.settings.WorldDisplay;
+import com.eintosti.buildsystem.navigator.settings.WorldFilter;
+import com.eintosti.buildsystem.navigator.settings.WorldSort;
+import com.eintosti.buildsystem.settings.Settings;
+import com.eintosti.buildsystem.settings.SettingsManager;
 import com.eintosti.buildsystem.util.InventoryUtil;
 import com.eintosti.buildsystem.util.PaginatedInventory;
+import com.eintosti.buildsystem.util.external.PlayerChatInput;
 import com.eintosti.buildsystem.world.BuildWorld;
 import com.eintosti.buildsystem.world.WorldManager;
 import com.eintosti.buildsystem.world.data.WorldStatus;
 import com.eintosti.buildsystem.world.modification.CreateInventory;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -26,6 +31,9 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -37,6 +45,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
 
     private final BuildSystem plugin;
     private final InventoryUtil inventoryUtil;
+    private final SettingsManager settingsManager;
     private final WorldManager worldManager;
 
     private final String inventoryName;
@@ -47,6 +56,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
     public FilteredWorldsInventory(BuildSystem plugin, String inventoryName, String noWorldsText, Visibility visibility, Set<WorldStatus> validStatus) {
         this.plugin = plugin;
         this.inventoryUtil = plugin.getInventoryUtil();
+        this.settingsManager = plugin.getSettingsManager();
         this.worldManager = plugin.getWorldManager();
 
         this.inventoryName = inventoryName;
@@ -62,6 +72,12 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
 
         int numOfPages = (numOfWorlds(player) / MAX_WORLDS) + (numOfWorlds(player) % MAX_WORLDS == 0 ? 0 : 1);
         inventoryUtil.fillMultiInvWithGlass(plugin, inventory, player, getInvIndex(player), numOfPages);
+
+        addWorldSortItem(inventory, player);
+        addWorldFilterItem(inventory, player);
+
+        inventoryUtil.addUrlSkull(inventory, 52, Messages.getString("gui_previous_page"), "https://textures.minecraft.net/texture/86971dd881dbaf4fd6bcaa93614493c612f869641ed59d1c9363a3666a5fa6");
+        inventoryUtil.addUrlSkull(inventory, 53, Messages.getString("gui_next_page"), "https://textures.minecraft.net/texture/f32ca66056b72863e98f7f32bd7d94c7a0d796af691c9ac3a9136331352288f9");
 
         return inventory;
     }
@@ -111,7 +127,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         }
 
         int columnWorld = 9, maxColumnWorld = 44;
-        for (BuildWorld buildWorld : inventoryUtil.sortWorlds(worldManager, plugin.getSettingsManager().getSettings(player))) {
+        for (BuildWorld buildWorld : inventoryUtil.getDisplayOrder(worldManager, plugin.getSettingsManager().getSettings(player))) {
             if (isValidWorld(player, buildWorld)) {
                 inventoryUtil.addWorldItem(player, inventory, columnWorld++, buildWorld);
             }
@@ -122,6 +138,23 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
                 inventories[++index] = inventory;
             }
         }
+    }
+
+    private void addWorldSortItem(Inventory inventory, Player player) {
+        Settings settings = settingsManager.getSettings(player);
+        WorldSort worldSort = settings.getWorldDisplay().getWorldSort();
+        inventoryUtil.addItemStack(inventory, 45, XMaterial.BOOK, Messages.getString("world_sort_title"), worldSort.getItemLore());
+    }
+
+    private void addWorldFilterItem(Inventory inventory, Player player) {
+        Settings settings = settingsManager.getSettings(player);
+        WorldFilter worldFilter = settings.getWorldDisplay().getWorldFilter();
+
+        List<String> lore = new ArrayList<>();
+        lore.add(Messages.getString(worldFilter.getMode().getLoreKey(), new AbstractMap.SimpleEntry<>("%text%", worldFilter.getText())));
+        lore.addAll(Messages.getStringList("world_filter_lore"));
+
+        inventoryUtil.addItemStack(inventory, 46, XMaterial.HOPPER, Messages.getString("world_filter_title"), lore);
     }
 
     /**
@@ -176,25 +209,46 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         }
 
         Player player = (Player) event.getWhoClicked();
-        Material itemType = itemStack.getType();
+        Settings settings = settingsManager.getSettings(player);
+        WorldDisplay worldDisplay = settings.getWorldDisplay();
 
-        if (itemType == XMaterial.PLAYER_HEAD.parseMaterial()) {
-            switch (event.getSlot()) {
-                case 45:
-                    decrementInv(player);
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
+        switch (event.getSlot()) {
+            case 45:
+                WorldSort newSort = event.isLeftClick() ? worldDisplay.getWorldSort().getNext() : worldDisplay.getWorldSort().getPrevious();
+                worldDisplay.setWorldSort(newSort);
+                openInventory(player);
+                return;
+            case 46:
+                WorldFilter worldFilter = worldDisplay.getWorldFilter();
+                WorldFilter.Mode currentMode = worldFilter.getMode();
+                if (event.isShiftClick()) {
+                    worldFilter.setMode(WorldFilter.Mode.NONE);
+                    worldFilter.setText("");
                     openInventory(player);
-                    return;
-                case 49:
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
-                    plugin.getCreateInventory().openInventory(player, CreateInventory.Page.PREDEFINED, visibility);
-                    return;
-                case 53:
-                    incrementInv(player);
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                } else if (event.isLeftClick()) {
+                    new PlayerChatInput(plugin, player, "world_filter_title", input -> {
+                        worldFilter.setText(input.replace("\"", ""));
+                        openInventory(player);
+                    });
+                } else if (event.isRightClick()) {
+                    worldFilter.setMode(currentMode.getNext());
                     openInventory(player);
-                    return;
-            }
+                }
+                return;
+            case 49:
+                XSound.ENTITY_CHICKEN_EGG.play(player);
+                plugin.getCreateInventory().openInventory(player, CreateInventory.Page.PREDEFINED, visibility);
+                return;
+            case 52:
+                if (decrementInv(player, numOfWorlds(player), MAX_WORLDS)) {
+                    openInventory(player);
+                }
+                return;
+            case 53:
+                if (incrementInv(player, numOfWorlds(player), MAX_WORLDS)) {
+                    openInventory(player);
+                }
+                return;
         }
 
         inventoryUtil.manageInventoryClick(event, player, itemStack);

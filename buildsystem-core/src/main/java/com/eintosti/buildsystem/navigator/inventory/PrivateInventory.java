@@ -5,7 +5,7 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-package com.eintosti.buildsystem.navigator.world;
+package com.eintosti.buildsystem.navigator.inventory;
 
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
@@ -19,14 +19,14 @@ import org.bukkit.inventory.Inventory;
 /**
  * @author einTosti
  */
-public class WorldsInventory extends FilteredWorldsInventory {
+public class PrivateInventory extends FilteredWorldsInventory {
 
     private final BuildSystem plugin;
-    private final PlayerManager playerManager;
     private final InventoryUtil inventoryUtil;
+    private final PlayerManager playerManager;
 
-    public WorldsInventory(BuildSystem plugin) {
-        super(plugin, "world_navigator_title", "world_navigator_no_worlds", Visibility.PUBLIC,
+    public PrivateInventory(BuildSystem plugin) {
+        super(plugin, "private_title", "private_no_worlds", Visibility.PRIVATE,
                 Sets.newHashSet(WorldStatus.NOT_STARTED, WorldStatus.IN_PROGRESS, WorldStatus.ALMOST_FINISHED, WorldStatus.FINISHED)
         );
 
@@ -45,10 +45,10 @@ public class WorldsInventory extends FilteredWorldsInventory {
     }
 
     private void addWorldCreateItem(Inventory inventory, Player player) {
-        if (!player.hasPermission("buildsystem.create.public")) {
+        if (player.hasPermission("buildsystem.create.private")) {
+            inventoryUtil.addUrlSkull(inventory, 49, Messages.getString("private_create_world"), "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
+        } else {
             inventoryUtil.addGlassPane(plugin, player, inventory, 49);
-            return;
         }
-        inventoryUtil.addUrlSkull(inventory, 49, Messages.getString("world_navigator_create_world"), "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
     }
 }

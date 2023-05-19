@@ -14,9 +14,11 @@ import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.config.ConfigValues;
 import com.eintosti.buildsystem.config.SetupConfig;
-import com.eintosti.buildsystem.navigator.NavigatorInventory;
-import com.eintosti.buildsystem.navigator.WorldSort;
-import com.eintosti.buildsystem.navigator.world.FilteredWorldsInventory;
+import com.eintosti.buildsystem.navigator.inventory.FilteredWorldsInventory;
+import com.eintosti.buildsystem.navigator.inventory.NavigatorInventory;
+import com.eintosti.buildsystem.navigator.settings.WorldDisplay;
+import com.eintosti.buildsystem.navigator.settings.WorldFilter;
+import com.eintosti.buildsystem.navigator.settings.WorldSort;
 import com.eintosti.buildsystem.player.PlayerManager;
 import com.eintosti.buildsystem.settings.Settings;
 import com.eintosti.buildsystem.settings.SettingsManager;
@@ -50,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author einTosti
@@ -348,15 +351,20 @@ public class InventoryUtil {
     }
 
     /**
-     * Sort the list of worlds to match the given {@link WorldSort}.
+     * Gets the worlds in the order they are to be displayed.
+     * First, the {@link WorldFilter} is applied. Then, the list of worlds is sorted using the {@link WorldSort}.
      *
      * @param worldManager The world manager object
      * @param settings     The settings that provide the sorting method
      * @return The list of sorted worlds
      */
-    public List<BuildWorld> sortWorlds(WorldManager worldManager, Settings settings) {
-        List<BuildWorld> buildWorlds = new ArrayList<>(worldManager.getBuildWorlds());
-        switch (settings.getWorldSort()) {
+    public List<BuildWorld> getDisplayOrder(WorldManager worldManager, Settings settings) {
+        WorldDisplay worldDisplay = settings.getWorldDisplay();
+        List<BuildWorld> buildWorlds = worldManager.getBuildWorlds().stream()
+                .filter(worldDisplay.getWorldFilter().apply())
+                .collect(Collectors.toList());
+
+        switch (worldDisplay.getWorldSort()) {
             default: // NAME_A_TO_Z
                 buildWorlds.sort(Comparator.comparing(worldA -> worldA.getName().toLowerCase()));
                 break;
@@ -475,20 +483,8 @@ public class InventoryUtil {
             addGlassPane(plugin, player, inventory, i);
         }
 
-        if (numOfPages > 1 && currentPage > 0) {
-            addUrlSkull(inventory, 45, Messages.getString("gui_previous_page"), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
-        } else {
-            addGlassPane(plugin, player, inventory, 45);
-        }
-
-        for (int i = 46; i <= 52; i++) {
+        for (int i = 45; i <= 53; i++) {
             addGlassPane(plugin, player, inventory, i);
-        }
-
-        if (numOfPages > 1 && currentPage < (numOfPages - 1)) {
-            addUrlSkull(inventory, 53, Messages.getString("gui_next_page"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
-        } else {
-            addGlassPane(plugin, player, inventory, 53);
         }
     }
 

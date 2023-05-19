@@ -14,7 +14,7 @@ import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.command.subcommand.worlds.SetPermissionSubCommand;
 import com.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
 import com.eintosti.buildsystem.config.ConfigValues;
-import com.eintosti.buildsystem.navigator.world.FilteredWorldsInventory.Visibility;
+import com.eintosti.buildsystem.navigator.inventory.FilteredWorldsInventory.Visibility;
 import com.eintosti.buildsystem.player.PlayerManager;
 import com.eintosti.buildsystem.util.InventoryUtil;
 import com.eintosti.buildsystem.world.BuildWorld;
@@ -302,7 +302,7 @@ public class EditInventory implements Listener {
                 }
                 if (event.isRightClick()) {
                     XSound.BLOCK_CHEST_OPEN.play(player);
-                    player.openInventory(plugin.getBuilderInventory().getInventory(buildWorld, player));
+                    plugin.getBuilderInventory().openInventory(buildWorld, player);
                     return;
                 }
                 buildWorld.setBuilders(!buildWorld.isBuilders());

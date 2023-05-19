@@ -7,7 +7,7 @@
  */
 package com.eintosti.buildsystem.player;
 
-import com.eintosti.buildsystem.navigator.NavigatorInventoryType;
+import com.eintosti.buildsystem.navigator.settings.NavigatorInventoryType;
 import com.eintosti.buildsystem.settings.Settings;
 import com.eintosti.buildsystem.world.BuildWorld;
 import org.bukkit.Location;

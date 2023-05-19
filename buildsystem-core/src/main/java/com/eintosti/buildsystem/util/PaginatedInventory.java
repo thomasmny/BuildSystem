@@ -7,6 +7,7 @@
  */
 package com.eintosti.buildsystem.util;
 
+import com.cryptomorin.xseries.XSound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
@@ -38,13 +39,49 @@ public abstract class PaginatedInventory {
         invIndex.put(player.getUniqueId(), index);
     }
 
-    public void incrementInv(Player player) {
+    /**
+     * Attempts to go to the previous page of an inventory.
+     *
+     * @param player        The player
+     * @param numObjects    The amount of objects to display on the page
+     * @param maxNumObjects The maximum amount of objects per page
+     * @return {@code true} if the index was decremented (i.e. the page was changed), otherwise {@code false}.
+     */
+    public boolean decrementInv(Player player, int numObjects, int maxNumObjects) {
+        int numOfPages = (numObjects / maxNumObjects) + (numObjects % maxNumObjects == 0 ? 0 : 1);
         UUID playerUUID = player.getUniqueId();
-        invIndex.put(playerUUID, invIndex.get(playerUUID) + 1);
+
+        int index = getInvIndex(player);
+        if (numOfPages > 1 && index > 0) {
+            invIndex.put(playerUUID, index - 1);
+            XSound.ENTITY_CHICKEN_EGG.play(player);
+            return true;
+        }
+
+        XSound.ENTITY_ITEM_BREAK.play(player);
+        return false;
     }
 
-    public void decrementInv(Player player) {
+    /**
+     * Attempts to go to the next page of an inventory.
+     *
+     * @param player        The player
+     * @param numObjects    The amount of objects to display on the page
+     * @param maxNumObjects The maximum amount of objects per page
+     * @return {@code true} if the index was incremented (i.e. the page was changed), otherwise {@code false}.
+     */
+    public boolean incrementInv(Player player, int numObjects, int maxNumObjects) {
+        int numOfPages = (numObjects / maxNumObjects) + (numObjects % maxNumObjects == 0 ? 0 : 1);
         UUID playerUUID = player.getUniqueId();
-        invIndex.put(playerUUID, invIndex.get(playerUUID) - 1);
+
+        int index = getInvIndex(player);
+        if (numOfPages > 1 && index < (numOfPages - 1)) {
+            invIndex.put(playerUUID, index + 1);
+            XSound.ENTITY_CHICKEN_EGG.play(player);
+            return true;
+        }
+
+        XSound.ENTITY_ITEM_BREAK.play(player);
+        return false;
     }
 }

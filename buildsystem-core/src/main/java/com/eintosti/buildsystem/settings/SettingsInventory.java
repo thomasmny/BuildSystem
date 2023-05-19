@@ -12,8 +12,7 @@ import com.cryptomorin.xseries.XSound;
 import com.eintosti.buildsystem.BuildSystem;
 import com.eintosti.buildsystem.Messages;
 import com.eintosti.buildsystem.config.ConfigValues;
-import com.eintosti.buildsystem.navigator.NavigatorType;
-import com.eintosti.buildsystem.navigator.WorldSort;
+import com.eintosti.buildsystem.navigator.settings.NavigatorType;
 import com.eintosti.buildsystem.util.InventoryUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.enchantments.Enchantment;
@@ -70,7 +69,6 @@ public class SettingsInventory implements Listener {
                 configValues.isScoreboard() ? Messages.getStringList("settings_scoreboard_lore") : Messages.getStringList("settings_scoreboard_disabled_lore"));
         addSettingsItem(inventory, 31, getSlabBreakingMaterial(), settings.isSlabBreaking(), Messages.getString("settings_slab_breaking_item"), Messages.getStringList("settings_slab_breaking_lore"));
         addSettingsItem(inventory, 32, XMaterial.MAGMA_CREAM, settings.isSpawnTeleport(), Messages.getString("settings_spawnteleport_item"), Messages.getStringList("settings_spawnteleport_lore"));
-        addWorldSortItem(inventory, player);
 
         return inventory;
     }
@@ -123,56 +121,6 @@ public class SettingsInventory implements Listener {
         inventory.setItem(11, itemStack);
     }
 
-    private void addWorldSortItem(Inventory inventory, Player player) {
-        Settings settings = settingsManager.getSettings(player);
-
-        String url;
-        List<String> lore;
-        switch (settings.getWorldSort()) {
-            default: //NAME_A_TO_Z
-                url = "a67d813ae7ffe5be951a4f41f2aa619a5e3894e85ea5d4986f84949c63d7672e";
-                lore = Messages.getStringList("settings_worldsort_lore_alphabetically_name_az");
-                break;
-            case NAME_Z_TO_A:
-                url = "90582b9b5d97974b11461d63eced85f438a3eef5dc3279f9c47e1e38ea54ae8d";
-                lore = Messages.getStringList("settings_worldsort_lore_alphabetically_name_za");
-                break;
-            case PROJECT_A_TO_Z:
-                url = "2ac58b1a3b53b9481e317a1ea4fc5eed6bafca7a25e741a32e4e3c2841278c";
-                lore = Messages.getStringList("settings_worldsort_lore_alphabetically_project_az");
-                break;
-            case PROJECT_Z_TO_A:
-                url = "4e91200df1cae51acc071f85c7f7f5b8449d39bb32f363b0aa51dbc85d133e";
-                lore = Messages.getStringList("settings_worldsort_lore_alphabetically_project_za");
-                break;
-            case STATUS_NOT_STARTED:
-                url = "ed339d52393d5183a3664015c0b2c6c1012ea1b525ed952073311ca180a0e6";
-                lore = Messages.getStringList("settings_worldsort_lore_status_not_started");
-                break;
-            case STATUS_FINISHED:
-                url = "400b9fb7aab4e3b69a5474b1a05d0a4b1449f4080a6c0f6977d0e33271c9b029";
-                lore = Messages.getStringList("settings_worldsort_lore_status_finished");
-                break;
-            case NEWEST_FIRST:
-                url = "71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530";
-                lore = Messages.getStringList("settings_worldsort_lore_date_newest");
-                break;
-            case OLDEST_FIRST:
-                url = "e67caf7591b38e125a8017d58cfc6433bfaf84cd499d794f41d10bff2e5b840";
-                lore = Messages.getStringList("settings_worldsort_lore_date_oldest");
-                break;
-        }
-
-        ItemStack itemStack = inventoryUtil.getUrlSkull(Messages.getString("settings_worldsort_item"), url);
-        ItemMeta itemMeta = itemStack.getItemMeta();
-
-        if (itemMeta != null) {
-            itemMeta.setLore(lore);
-        }
-
-        itemStack.setItemMeta(itemMeta);
-        inventory.setItem(33, itemStack);
-    }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
@@ -263,10 +211,6 @@ public class SettingsInventory implements Listener {
                 break;
             case 32:
                 settings.setSpawnTeleport(!settings.isSpawnTeleport());
-                break;
-            case 33:
-                WorldSort newSort = event.isLeftClick() ? settings.getWorldSort().getNext() : settings.getWorldSort().getPrevious();
-                settings.setWorldSort(newSort);
                 break;
             default:
                 return;
