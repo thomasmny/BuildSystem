@@ -182,13 +182,11 @@ public class BuildWorldCreator {
      * @param player The player who is creating the world
      */
     private void createTemplateWorld(Player player) {
-        boolean worldExists = worldManager.getBuildWorld(worldName) != null;
-        File worldFile = new File(Bukkit.getWorldContainer(), worldName);
-        if (worldExists || worldFile.exists()) {
-            Messages.sendMessage(player, "worlds_world_exists");
+        if (worldManager.worldExists(player, worldName)) {
             return;
         }
 
+        File worldFile = new File(Bukkit.getWorldContainer(), worldName);
         File templateFile = new File(plugin.getDataFolder() + File.separator + "templates" + File.separator + template);
         if (!templateFile.exists()) {
             Messages.sendMessage(player, "worlds_template_does_not_exist");
