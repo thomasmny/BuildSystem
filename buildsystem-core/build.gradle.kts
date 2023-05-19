@@ -59,7 +59,7 @@ tasks {
         minimize()
         archiveFileName.set("${rootProject.name}-${project.version}.jar")
 
-        val shadePath = "com.eintosti.buildsystem.util.external"
+        val shadePath = "de.eintosti.buildsystem.util.external"
         relocate("io.papermc.lib", "$shadePath.paperlib")
         relocate("com.cryptomorin.xseries", "$shadePath.xseries")
         relocate("fr.mrmicky.fastboard", "$shadePath.fastboard")
