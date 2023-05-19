@@ -219,18 +219,19 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
                 openInventory(player);
                 return;
             case 46:
-                if (event.isLeftClick()) {
-                    WorldFilter filter = worldDisplay.getWorldFilter();
-                    if (filter.getMode() != WorldFilter.Mode.ALL) {
-                        new PlayerChatInput(plugin, player, "world_filter_title", input -> {
-                            filter.setText(input.replace("\"", ""));
-                            openInventory(player);
-                        });
-                    }
+                WorldFilter worldFilter = worldDisplay.getWorldFilter();
+                WorldFilter.Mode currentMode = worldFilter.getMode();
+                if (event.isShiftClick()) {
+                    worldFilter.setMode(WorldFilter.Mode.NONE);
+                    worldFilter.setText("");
+                    openInventory(player);
+                } else if (event.isLeftClick()) {
+                    new PlayerChatInput(plugin, player, "world_filter_title", input -> {
+                        worldFilter.setText(input.replace("\"", ""));
+                        openInventory(player);
+                    });
                 } else if (event.isRightClick()) {
-                    WorldFilter.Mode currentMode = worldDisplay.getWorldFilter().getMode();
-                    WorldFilter.Mode newMode = event.isLeftClick() ? currentMode.getNext() : currentMode.getPrevious();
-                    worldDisplay.getWorldFilter().setMode(newMode);
+                    worldFilter.setMode(currentMode.getNext());
                     openInventory(player);
                 }
                 return;

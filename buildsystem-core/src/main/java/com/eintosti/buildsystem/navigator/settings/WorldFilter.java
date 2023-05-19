@@ -21,7 +21,7 @@ public class WorldFilter implements ConfigurationSerializable {
     private String text;
 
     public WorldFilter() {
-        this.mode = Mode.ALL;
+        this.mode = Mode.NONE;
         this.text = "";
     }
 
@@ -31,7 +31,7 @@ public class WorldFilter implements ConfigurationSerializable {
     }
 
     public enum Mode {
-        ALL("world_filter_mode_none"),
+        NONE("world_filter_mode_none"),
         STARTS_WITH("world_filter_mode_starts_with"),
         CONTAINS("world_filter_mode_contains"),
         MATCHES("world_filter_mode_matches");
@@ -48,27 +48,14 @@ public class WorldFilter implements ConfigurationSerializable {
 
         public Mode getNext() {
             switch (this) {
-                default: // ALL
+                default: // NONE
                     return STARTS_WITH;
                 case STARTS_WITH:
                     return CONTAINS;
                 case CONTAINS:
                     return MATCHES;
                 case MATCHES:
-                    return ALL;
-            }
-        }
-
-        public Mode getPrevious() {
-            switch (this) {
-                default: // ALL
-                    return MATCHES;
-                case STARTS_WITH:
-                    return ALL;
-                case CONTAINS:
-                    return STARTS_WITH;
-                case MATCHES:
-                    return CONTAINS;
+                    return NONE;
             }
         }
     }

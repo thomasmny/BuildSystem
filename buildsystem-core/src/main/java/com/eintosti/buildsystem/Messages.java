@@ -447,14 +447,15 @@ public class Messages {
         setMessage(sb, "world_sort_date_newest", "&8» &7&oCreation date (Newest)");
         setMessage(sb, "world_sort_date_oldest", "&8» &7&oCreation date (Oldest)");
         setMessage(sb, "world_filter_title", "&bFilter");
-        setMessage(sb, "world_filter_mode_none", "&8» &7-");
+        setMessage(sb, "world_filter_mode_none", "&8» &7&oNone");
         setMessage(sb, "world_filter_mode_starts_with", "&8» &7&oStarts with: &b&o%text%");
         setMessage(sb, "world_filter_mode_contains", "&8» &7&oContains: &b&o%text%");
         setMessage(sb, "world_filter_mode_matches", "&8» &7&oMatches: &b&o%text%");
         setMessage(sb, "world_filter_lore", Arrays.asList(
                 "",
                 "&8- &7&oLeft click&8: &7Change text",
-                "&8- &7&oRight click&8: &7Change mode"
+                "&8- &7&oRight click&8: &7Change mode",
+                "&8- &7&oShift click&8: &7Reset to default"
         ));
         addSpacer(sb, "");
         addSpacer(sb, "# World Archive");
