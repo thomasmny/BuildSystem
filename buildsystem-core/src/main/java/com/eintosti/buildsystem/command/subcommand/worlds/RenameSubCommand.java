@@ -52,7 +52,7 @@ public class RenameSubCommand implements SubCommand {
 
         new PlayerChatInput(plugin, player, "enter_world_name", input -> {
             player.closeInventory();
-            plugin.getWorldManager().renameWorld(player, buildWorld, input.trim());
+            worldManager.renameWorld(player, buildWorld, input.trim());
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
             player.closeInventory();
         });

@@ -24,6 +24,7 @@ import com.eintosti.buildsystem.world.generator.CustomGenerator;
 import com.eintosti.buildsystem.world.generator.Generator;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -478,42 +479,44 @@ public class WorldManager {
         }
 
         List<Player> removedPlayers = removePlayersFromWorld(oldName, Messages.getString("worlds_rename_players_world"));
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            oldWorld.save();
-            Bukkit.getServer().unloadWorld(oldWorld, true);
+        for (Chunk chunk : oldWorld.getLoadedChunks()) {
+            chunk.unload(true);
+        }
+        Bukkit.unloadWorld(oldWorld, true);
+        Bukkit.getWorlds().remove(oldWorld);
+        this.buildWorlds.remove(oldName);
 
-            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                worldConfig.getFile().set("worlds." + parsedNewName, worldConfig.getFile().getConfigurationSection("worlds." + buildWorld.getName()));
-                worldConfig.getFile().set("worlds." + oldName, null);
-            });
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            worldConfig.getFile().set("worlds." + parsedNewName, worldConfig.getFile().getConfigurationSection("worlds." + buildWorld.getName()));
+            worldConfig.getFile().set("worlds." + oldName, null);
+        });
 
-            File oldWorldFile = new File(Bukkit.getWorldContainer(), oldName);
-            File newWorldFile = new File(Bukkit.getWorldContainer(), parsedNewName);
-            FileUtils.copy(oldWorldFile, newWorldFile);
-            FileUtils.deleteDirectory(oldWorldFile);
+        File oldWorldFile = new File(Bukkit.getWorldContainer(), oldName);
+        File newWorldFile = new File(Bukkit.getWorldContainer(), parsedNewName);
+        FileUtils.copy(oldWorldFile, newWorldFile);
+        FileUtils.deleteDirectory(oldWorldFile);
 
-            buildWorld.setName(parsedNewName);
-            World newWorld = new BuildWorldCreator(plugin, buildWorld).generateBukkitWorld(false);
-            Location spawnLocation = oldWorld.getSpawnLocation();
-            spawnLocation.setWorld(newWorld);
+        buildWorld.setName(parsedNewName);
+        this.addBuildWorld(buildWorld);
+        World newWorld = new BuildWorldCreator(plugin, buildWorld).generateBukkitWorld(false);
+        Location spawnLocation = oldWorld.getSpawnLocation();
+        spawnLocation.setWorld(newWorld);
 
-            removedPlayers.stream()
-                    .filter(Objects::nonNull)
-                    .forEach(pl -> PaperLib.teleportAsync(pl, spawnLocation.add(0.5, 0, 0.5)));
-            removedPlayers.clear();
+        removedPlayers.stream()
+                .filter(Objects::nonNull)
+                .forEach(pl -> PaperLib.teleportAsync(pl, spawnLocation.add(0.5, 0, 0.5)));
 
-            SpawnManager spawnManager = plugin.getSpawnManager();
-            if (spawnManager.spawnExists() && Objects.equals(spawnManager.getSpawnWorld(), oldWorld)) {
-                Location oldSpawn = spawnManager.getSpawn();
-                Location newSpawn = new Location(spawnLocation.getWorld(), oldSpawn.getX(), oldSpawn.getY(), oldSpawn.getZ(), oldSpawn.getYaw(), oldSpawn.getPitch());
-                spawnManager.set(newSpawn, newSpawn.getWorld().getName());
-            }
+        SpawnManager spawnManager = plugin.getSpawnManager();
+        if (spawnManager.spawnExists() && Objects.equals(spawnManager.getSpawnWorld(), oldWorld)) {
+            Location oldSpawn = spawnManager.getSpawn();
+            Location newSpawn = new Location(spawnLocation.getWorld(), oldSpawn.getX(), oldSpawn.getY(), oldSpawn.getZ(), oldSpawn.getYaw(), oldSpawn.getPitch());
+            spawnManager.set(newSpawn, newSpawn.getWorld().getName());
+        }
 
-            Messages.sendMessage(player, "worlds_rename_set",
-                    new AbstractMap.SimpleEntry<>("%oldName%", oldName),
-                    new AbstractMap.SimpleEntry<>("%newName%", parsedNewName)
-            );
-        }, 20L);
+        Messages.sendMessage(player, "worlds_rename_set",
+                new AbstractMap.SimpleEntry<>("%oldName%", oldName),
+                new AbstractMap.SimpleEntry<>("%newName%", parsedNewName)
+        );
     }
 
     /**
