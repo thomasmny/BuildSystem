@@ -42,6 +42,7 @@ world:
         public: false
         private: true
   lock-weather: true
+  invalid-characters: ^\b$
   import-all:
     delay: 30
   max-amount:
