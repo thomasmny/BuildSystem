@@ -21,6 +21,7 @@ import de.eintosti.buildsystem.util.PaginatedInventory;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.data.WorldData;
 import de.eintosti.buildsystem.world.data.WorldStatus;
 import de.eintosti.buildsystem.world.modification.CreateInventory;
 import org.bukkit.Bukkit;
@@ -170,11 +171,12 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
      * @return {@code true} if the world should be shown to the player in the navigator, {@code false} otherwise
      */
     private boolean isValidWorld(Player player, BuildWorld buildWorld) {
-        if (!worldManager.isCorrectVisibility(buildWorld, visibility)) {
+        WorldData worldData = buildWorld.getData();
+        if (!worldManager.isCorrectVisibility(worldData.PRIVATE.get(), visibility)) {
             return false;
         }
 
-        if (!validStatus.contains(buildWorld.getStatus())) {
+        if (!validStatus.contains(worldData.STATUS.get())) {
             return false;
         }
 
@@ -186,7 +188,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
             return true;
         }
 
-        String worldPermission = buildWorld.getPermission();
+        String worldPermission = worldData.PERMISSION.get();
         if (!worldPermission.equalsIgnoreCase("-") && !player.hasPermission(worldPermission)) {
             return false;
         }

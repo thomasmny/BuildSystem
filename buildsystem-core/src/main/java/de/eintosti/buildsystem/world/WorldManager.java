@@ -16,8 +16,9 @@ import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.config.WorldConfig;
 import de.eintosti.buildsystem.navigator.inventory.FilteredWorldsInventory.Visibility;
 import de.eintosti.buildsystem.util.FileUtils;
-import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.util.PlayerChatInput;
+import de.eintosti.buildsystem.util.UUIDFetcher;
+import de.eintosti.buildsystem.world.data.WorldData;
 import de.eintosti.buildsystem.world.data.WorldStatus;
 import de.eintosti.buildsystem.world.data.WorldType;
 import de.eintosti.buildsystem.world.generator.CustomGenerator;
@@ -134,23 +135,23 @@ public class WorldManager {
      */
     public List<BuildWorld> getBuildWorldsCreatedByPlayer(Player player, Visibility visibility) {
         return getBuildWorldsCreatedByPlayer(player).stream()
-                .filter(buildWorld -> isCorrectVisibility(buildWorld, visibility))
+                .filter(buildWorld -> isCorrectVisibility(buildWorld.getData().PRIVATE.get(), visibility))
                 .collect(Collectors.toList());
     }
 
     /**
      * Gets if a {@link BuildWorld}'s visibility is equal to the given visibility.
      *
-     * @param buildWorld The world object
-     * @param visibility The visibility the world should have
+     * @param privateWorld Whether the world is private
+     * @param visibility   The visibility the world should have
      * @return {@code true} if the world's visibility is equal to the given visibility, otherwise {@code false}
      */
-    public boolean isCorrectVisibility(BuildWorld buildWorld, Visibility visibility) {
+    public boolean isCorrectVisibility(boolean privateWorld, Visibility visibility) {
         switch (visibility) {
             case PRIVATE:
-                return buildWorld.isPrivate();
+                return privateWorld;
             case PUBLIC:
-                return !buildWorld.isPrivate();
+                return !privateWorld;
             case IGNORE:
                 return true;
             default:
@@ -536,7 +537,8 @@ public class WorldManager {
         }
 
         Location location = bukkitWorld.getSpawnLocation().add(0.5, 0, 0.5);
-        if (buildWorld.getCustomSpawn() == null) {
+        String customSpawn = buildWorld.getData().CUSTOM_SPAWN.get();
+        if (customSpawn == null) {
             switch (buildWorld.getType()) {
                 case NETHER:
                 case END:
@@ -556,7 +558,7 @@ public class WorldManager {
                     break;
             }
         } else {
-            String[] spawnString = buildWorld.getCustomSpawn().split(";");
+            String[] spawnString = customSpawn.split(";");
             location = new Location(bukkitWorld, Double.parseDouble(spawnString[0]), Double.parseDouble(spawnString[1]), Double.parseDouble(spawnString[2]), Float.parseFloat(spawnString[3]), Float.parseFloat(spawnString[4]));
         }
 
@@ -593,7 +595,8 @@ public class WorldManager {
             return true;
         }
 
-        if (buildWorld.getPermission().equals("-")) {
+        String permission = buildWorld.getData().PERMISSION.get();
+        if (permission.equals("-")) {
             return true;
         }
 
@@ -601,7 +604,7 @@ public class WorldManager {
             return true;
         }
 
-        return player.hasPermission(buildWorld.getPermission());
+        return player.hasPermission(permission);
     }
 
     public boolean canBypassBuildRestriction(Player player) {
@@ -675,21 +678,8 @@ public class WorldManager {
         String creator = configuration.isString("worlds." + worldName + ".creator") ? configuration.getString("worlds." + worldName + ".creator") : "-";
         UUID creatorId = parseCreatorId(configuration, worldName, creator);
         WorldType worldType = configuration.isString("worlds." + worldName + ".type") ? WorldType.valueOf(configuration.getString("worlds." + worldName + ".type")) : WorldType.UNKNOWN;
-        boolean privateWorld = configuration.isBoolean("worlds." + worldName + ".private") && configuration.getBoolean("worlds." + worldName + ".private");
-        XMaterial material = parseMaterial(configuration, worldName);
-        WorldStatus worldStatus = WorldStatus.valueOf(configuration.getString("worlds." + worldName + ".status"));
-        String project = configuration.getString("worlds." + worldName + ".project");
-        String permission = configuration.getString("worlds." + worldName + ".permission");
-        long date = configuration.isLong("worlds." + worldName + ".date") ? configuration.getLong("worlds." + worldName + ".date") : -1;
-        boolean physics = configuration.getBoolean("worlds." + worldName + ".physics");
-        boolean explosions = !configuration.isBoolean("worlds." + worldName + ".explosions") || configuration.getBoolean("worlds." + worldName + ".explosions");
-        boolean mobAI = !configuration.isBoolean("worlds." + worldName + ".mobai") || configuration.getBoolean("worlds." + worldName + ".mobai");
-        String customSpawn = configuration.getString("worlds." + worldName + ".spawn");
-        boolean blockBreaking = !configuration.isBoolean("worlds." + worldName + ".block-breaking") || configuration.getBoolean("worlds." + worldName + ".block-breaking");
-        boolean blockPlacement = !configuration.isBoolean("worlds." + worldName + ".block-placement") || configuration.getBoolean("worlds." + worldName + ".block-placement");
-        boolean blockInteractions = !configuration.isBoolean("worlds." + worldName + ".block-interactions") || configuration.getBoolean("worlds." + worldName + ".block-interactions");
-        boolean buildersEnabled = configuration.isBoolean("worlds." + worldName + ".builders-enabled") && configuration.getBoolean("worlds." + worldName + ".builders-enabled");
-        Difficulty difficulty = Difficulty.valueOf(configuration.getString("worlds." + worldName + ".difficulty", "PEACEFUL").toUpperCase());
+        WorldData worldData = parseWorldData(configuration, worldName);
+        long creationDate = configuration.isLong("worlds." + worldName + ".date") ? configuration.getLong("worlds." + worldName + ".date") : -1;
         List<Builder> builders = parseBuilders(configuration, worldName);
         String generatorName = configuration.getString("worlds." + worldName + ".chunk-generator");
         CustomGenerator customGenerator = new CustomGenerator(generatorName, parseChunkGenerator(worldName, generatorName));
@@ -699,28 +689,69 @@ public class WorldManager {
                 creator,
                 creatorId,
                 worldType,
-                privateWorld,
-                material,
-                worldStatus,
-                project,
-                permission,
-                date,
-                physics,
-                explosions,
-                mobAI,
-                customSpawn,
-                blockBreaking,
-                blockPlacement,
-                blockInteractions,
-                buildersEnabled,
-                difficulty,
-                builders,
-                customGenerator
+                worldData,
+                creationDate,
+                customGenerator,
+                builders
         ));
     }
 
-    private XMaterial parseMaterial(FileConfiguration configuration, String worldName) {
-        String itemString = configuration.getString("worlds." + worldName + ".item");
+    private WorldData parseWorldData(FileConfiguration configuration, String worldName) {
+        final String path = "worlds." + worldName + ".data";
+        // Load legacy configurations
+        if (configuration.getString(path) == null) {
+            String customSpawn = configuration.getString("worlds." + worldName + ".spawn");
+            String permission = configuration.getString("worlds." + worldName + ".permission");
+            String project = configuration.getString("worlds." + worldName + ".project");
+
+            Difficulty difficulty = Difficulty.valueOf(configuration.getString("worlds." + worldName + ".difficulty", "PEACEFUL").toUpperCase());
+            XMaterial material = parseMaterial(configuration, "worlds." + worldName + ".material", worldName);
+            WorldStatus worldStatus = WorldStatus.valueOf(configuration.getString("worlds." + worldName + ".status"));
+
+            boolean blockBreaking = !configuration.isBoolean("worlds." + worldName + ".block-breaking") || configuration.getBoolean("worlds." + worldName + ".block-breaking");
+            boolean blockInteractions = !configuration.isBoolean("worlds." + worldName + ".block-interactions") || configuration.getBoolean("worlds." + worldName + ".block-interactions");
+            boolean blockPlacement = !configuration.isBoolean("worlds." + worldName + ".block-placement") || configuration.getBoolean("worlds." + worldName + ".block-placement");
+            boolean buildersEnabled = configuration.isBoolean("worlds." + worldName + ".builders-enabled") && configuration.getBoolean("worlds." + worldName + ".builders-enabled");
+            boolean explosions = !configuration.isBoolean("worlds." + worldName + ".explosions") || configuration.getBoolean("worlds." + worldName + ".explosions");
+            boolean mobAi = !configuration.isBoolean("worlds." + worldName + ".mobai") || configuration.getBoolean("worlds." + worldName + ".mobai");
+            boolean physics = configuration.getBoolean("worlds." + worldName + ".physics");
+            boolean privateWorld = configuration.isBoolean("worlds." + worldName + ".private") && configuration.getBoolean("worlds." + worldName + ".private");
+
+            return new WorldData(
+                    customSpawn, permission, project, difficulty, material, worldStatus, blockBreaking, blockInteractions,
+                    blockPlacement, buildersEnabled, explosions, mobAi, physics, privateWorld, -1, -1, -1
+            );
+        }
+
+        String customSpawn = configuration.getString("worlds." + worldName + ".spawn");
+        String permission = configuration.getString(path + ".permission");
+        String project = configuration.getString(path + ".project");
+
+        Difficulty difficulty = Difficulty.valueOf(configuration.getString("worlds." + worldName + ".difficulty").toUpperCase());
+        XMaterial material = parseMaterial(configuration, path + ".material", worldName);
+        WorldStatus worldStatus = WorldStatus.valueOf(configuration.getString(path + ".status"));
+
+        boolean blockBreaking = configuration.getBoolean(path + ".block-breaking");
+        boolean blockInteractions = configuration.getBoolean(path + ".block-interactions");
+        boolean blockPlacement = configuration.getBoolean(path + ".block-placement");
+        boolean buildersEnabled = configuration.getBoolean(path + ".builders-enabled");
+        boolean explosions = configuration.getBoolean(path + ".explosions");
+        boolean mobAi = configuration.getBoolean(path + ".mob-ai");
+        boolean physics = configuration.getBoolean(path + ".physics");
+        boolean privateWorld = configuration.getBoolean(path + ".private");
+
+        long lastEdited = configuration.getLong(path + ".last-edited");
+        long lastLoaded = configuration.getLong(path + ".last-loaded");
+        long lastUnloaded = configuration.getLong(path + ".last-unloaded");
+
+        return new WorldData(
+                customSpawn, permission, project, difficulty, material, worldStatus, blockBreaking, blockInteractions,
+                blockPlacement, buildersEnabled, explosions, mobAi, physics, privateWorld, lastEdited, lastLoaded, lastUnloaded
+        );
+    }
+
+    private XMaterial parseMaterial(FileConfiguration configuration, String path, String worldName) {
+        String itemString = configuration.getString(path);
         if (itemString == null) {
             itemString = XMaterial.BEDROCK.name();
             plugin.getLogger().warning("Unknown material found for \"" + worldName + "\" (" + itemString + ").");
@@ -738,8 +769,8 @@ public class WorldManager {
     }
 
     private UUID parseCreatorId(FileConfiguration configuration, String worldName, String creator) {
-        String path = "worlds." + worldName + ".creator-id";
-        String id = configuration.isString(path) ? configuration.getString(path) : null;
+        final String path = "worlds." + worldName + ".creator-id";
+        final String id = configuration.isString(path) ? configuration.getString(path) : null;
 
         if (id == null || id.equalsIgnoreCase("null")) {
             if (!creator.equals("-")) {

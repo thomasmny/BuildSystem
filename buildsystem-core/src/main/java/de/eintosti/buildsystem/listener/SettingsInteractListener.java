@@ -19,6 +19,7 @@ import de.eintosti.buildsystem.version.util.DirectionUtil;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.Builder;
 import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.data.WorldData;
 import de.eintosti.buildsystem.world.data.WorldStatus;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
@@ -302,16 +303,17 @@ public class SettingsInteractListener implements Listener {
             return true;
         }
 
+        WorldData worldData = buildWorld.getData();
         boolean isInBuildMode = playerManager.isInBuildMode(player);
-        if (buildWorld.getStatus() == WorldStatus.ARCHIVE && !isInBuildMode) {
+        if (worldData.STATUS.get() == WorldStatus.ARCHIVE && !isInBuildMode) {
             return false;
         }
 
-        if (!buildWorld.isBlockPlacement() && !isInBuildMode) {
+        if (!worldData.BLOCK_PLACEMENT.get() && !isInBuildMode) {
             return false;
         }
 
-        if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
+        if (buildWorld.getData().BUILDERS_ENABLED.get() && !buildWorld.isBuilder(player)) {
             return buildWorld.isCreator(player);
         }
 

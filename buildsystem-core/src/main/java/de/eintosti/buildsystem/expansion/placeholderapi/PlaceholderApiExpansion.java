@@ -12,10 +12,13 @@ import de.eintosti.buildsystem.settings.Settings;
 import de.eintosti.buildsystem.settings.SettingsManager;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.data.WorldData;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.text.SimpleDateFormat;
 
 public class PlaceholderApiExpansion extends PlaceholderExpansion {
 
@@ -189,15 +192,16 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             return "-";
         }
 
+        WorldData worldData = buildWorld.getData();
         switch (identifier.toLowerCase()) {
             case "blockbreaking":
-                return String.valueOf(buildWorld.isBlockBreaking());
+                return String.valueOf(worldData.BLOCK_BREAKING.get());
             case "blockplacement":
-                return String.valueOf(buildWorld.isBlockPlacement());
+                return String.valueOf(worldData.BLOCK_PLACEMENT.get());
             case "builders":
                 return buildWorld.getBuildersInfo();
             case "buildersenabled":
-                return String.valueOf(buildWorld.isBuilders());
+                return String.valueOf(worldData.BUILDERS_ENABLED.get());
             case "creation":
                 return buildWorld.getFormattedCreationDate();
             case "creator":
@@ -205,25 +209,31 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "creatorid":
                 return String.valueOf(buildWorld.getCreatorId());
             case "explosions":
-                return String.valueOf(buildWorld.isExplosions());
+                return String.valueOf(worldData.EXPLOSIONS.get());
+            case "lastedited":
+                return formatDate(worldData.LAST_EDITED.get());
+            case "lastloaded":
+                return formatDate(worldData.LAST_LOADED.get());
+            case "lastunloaded":
+                return formatDate(worldData.LAST_UNLOADED.get());
             case "loaded":
                 return String.valueOf(buildWorld.isLoaded());
             case "material":
-                return String.valueOf(buildWorld.getMaterial().parseMaterial());
+                return worldData.MATERIAL.get().name();
             case "mobai":
-                return String.valueOf(buildWorld.isMobAI());
+                return String.valueOf(worldData.MOB_AI.get());
             case "permission":
-                return buildWorld.getPermission();
+                return worldData.PERMISSION.get();
             case "private":
-                return String.valueOf(buildWorld.isPrivate());
+                return String.valueOf(worldData.PRIVATE.get());
             case "project":
-                return buildWorld.getProject();
+                return worldData.PROJECT.get();
             case "physics":
-                return String.valueOf(buildWorld.isPhysics());
+                return String.valueOf(worldData.PHYSICS.get());
             case "spawn":
-                return buildWorld.getCustomSpawn();
+                return worldData.CUSTOM_SPAWN.get();
             case "status":
-                return buildWorld.getStatus().getName();
+                return worldData.STATUS.get().getName();
             case "time":
                 return buildWorld.getWorldTime();
             case "type":
@@ -233,5 +243,9 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             default:
                 return null;
         }
+    }
+
+    private String formatDate(long millis) {
+        return millis > 0 ? new SimpleDateFormat(plugin.getConfigValues().getDateFormat()).format(millis) : "-";
     }
 }

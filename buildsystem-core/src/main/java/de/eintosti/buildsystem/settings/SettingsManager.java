@@ -14,6 +14,7 @@ import de.eintosti.buildsystem.config.SettingsConfig;
 import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.data.WorldData;
 import fr.mrmicky.fastboard.FastBoard;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -153,13 +154,14 @@ public class SettingsManager {
             return "§f-";
         }
 
+        WorldData worldData = buildWorld.getData();
         switch (input) {
             case "%status%":
-                return buildWorld.getStatus().getName();
+                return worldData.STATUS.get().getName();
             case "%permission%":
-                return buildWorld.getPermission();
+                return worldData.PERMISSION.get();
             case "%project%":
-                return buildWorld.getProject();
+                return worldData.PROJECT.get();
             case "%creator%":
                 return buildWorld.getCreator();
             case "%creation%":

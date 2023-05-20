@@ -49,7 +49,7 @@ public class BlockPhysicsListener implements Listener {
         World bukkitWorld = block.getWorld();
         BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
 
-        if (buildWorld == null || buildWorld.isPhysics()) {
+        if (buildWorld == null || buildWorld.getData().PHYSICS.get()) {
             return;
         }
 
@@ -93,7 +93,7 @@ public class BlockPhysicsListener implements Listener {
         Block block = event.getBlock();
         BuildWorld buildWorld = worldManager.getBuildWorld(block.getWorld().getName());
 
-        if (buildWorld != null && !buildWorld.isPhysics()) {
+        if (buildWorld != null && !buildWorld.getData().PHYSICS.get()) {
             event.setCancelled(true);
         }
     }
@@ -103,7 +103,7 @@ public class BlockPhysicsListener implements Listener {
         Block block = event.getBlock();
         BuildWorld buildWorld = worldManager.getBuildWorld(block.getWorld().getName());
 
-        if (buildWorld != null && !buildWorld.isPhysics()) {
+        if (buildWorld != null && !buildWorld.getData().PHYSICS.get()) {
             event.setCancelled(true);
         }
     }
@@ -113,7 +113,7 @@ public class BlockPhysicsListener implements Listener {
         Block block = event.getBlock();
         BuildWorld buildWorld = worldManager.getBuildWorld(block.getWorld().getName());
 
-        if (buildWorld != null && !buildWorld.isPhysics()) {
+        if (buildWorld != null && !buildWorld.getData().PHYSICS.get()) {
             event.setCancelled(true);
         }
     }
@@ -123,7 +123,7 @@ public class BlockPhysicsListener implements Listener {
         Block block = event.getBlock();
         BuildWorld buildWorld = worldManager.getBuildWorld(block.getWorld().getName());
 
-        if (buildWorld != null && !buildWorld.isPhysics()) {
+        if (buildWorld != null && !buildWorld.getData().PHYSICS.get()) {
             event.setCancelled(true);
         }
     }
@@ -133,7 +133,7 @@ public class BlockPhysicsListener implements Listener {
         Block block = event.getBlock();
         BuildWorld buildWorld = worldManager.getBuildWorld(block.getWorld().getName());
 
-        if (buildWorld != null && !buildWorld.isPhysics()) {
+        if (buildWorld != null && !buildWorld.getData().PHYSICS.get()) {
             event.setCancelled(true);
         }
     }
@@ -143,7 +143,7 @@ public class BlockPhysicsListener implements Listener {
         Block block = event.getBlock();
         BuildWorld buildWorld = worldManager.getBuildWorld(block.getWorld().getName());
 
-        if (buildWorld != null && !buildWorld.isPhysics()) {
+        if (buildWorld != null && !buildWorld.getData().PHYSICS.get()) {
             event.setCancelled(true);
         }
     }
@@ -153,7 +153,7 @@ public class BlockPhysicsListener implements Listener {
         Block block = event.getBlock();
         BuildWorld buildWorld = worldManager.getBuildWorld(block.getWorld().getName());
 
-        if (buildWorld == null || buildWorld.isPhysics()) {
+        if (buildWorld == null || buildWorld.getData().PHYSICS.get()) {
             return;
         }
 
@@ -189,7 +189,7 @@ public class BlockPhysicsListener implements Listener {
         World bukkitWorld = block.getWorld();
         BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
 
-        if (buildWorld != null && !buildWorld.isExplosions()) {
+        if (buildWorld != null && !buildWorld.getData().EXPLOSIONS.get()) {
             event.setCancelled(true);
         }
     }
@@ -200,7 +200,7 @@ public class BlockPhysicsListener implements Listener {
         World bukkitWorld = location.getWorld();
         BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
 
-        if (buildWorld != null && !buildWorld.isExplosions()) {
+        if (buildWorld != null && !buildWorld.getData().EXPLOSIONS.get()) {
             event.setCancelled(true);
         }
     }

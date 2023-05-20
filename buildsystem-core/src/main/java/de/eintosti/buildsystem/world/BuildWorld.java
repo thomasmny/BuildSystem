@@ -16,13 +16,12 @@ import de.eintosti.buildsystem.event.world.BuildWorldLoadEvent;
 import de.eintosti.buildsystem.event.world.BuildWorldUnloadEvent;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.UUIDFetcher;
-import de.eintosti.buildsystem.world.data.WorldStatus;
+import de.eintosti.buildsystem.world.data.WorldData;
 import de.eintosti.buildsystem.world.data.WorldType;
 import de.eintosti.buildsystem.world.generator.CustomGenerator;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Difficulty;
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
@@ -45,28 +44,16 @@ public class BuildWorld implements ConfigurationSerializable {
 
     private final BuildSystem plugin;
     private final ConfigValues configValues;
-    private final WorldType worldType;
-    private final List<Builder> builders;
-    private final long creationDate;
-    private final CustomGenerator customGenerator;
 
     private String name;
     private String creator;
     private UUID creatorId;
-    private XMaterial material;
-    private boolean privateWorld;
-    private WorldStatus worldStatus;
-    private String project;
-    private String permission;
-    private String customSpawn;
-    private boolean physics;
-    private boolean explosions;
-    private boolean mobAI;
-    private boolean blockBreaking;
-    private boolean blockPlacement;
-    private boolean blockInteractions;
-    private boolean buildersEnabled;
-    private Difficulty difficulty;
+
+    private final WorldType worldType;
+    private final WorldData worldData;
+    private final long creationDate;
+    private final CustomGenerator customGenerator;
+    private final List<Builder> builders;
 
     private long seconds;
     private boolean loaded;
@@ -88,55 +75,47 @@ public class BuildWorld implements ConfigurationSerializable {
         this.creator = creator;
         this.creatorId = creatorId;
         this.worldType = worldType;
-        this.privateWorld = privateWorld;
-        this.worldStatus = WorldStatus.NOT_STARTED;
-        this.project = "-";
-        this.permission = configValues.getDefaultPermission(privateWorld).replace("%world%", name);
-        this.customSpawn = null;
-        this.builders = new ArrayList<>();
-        this.creationDate = creationDate;
-
-        this.physics = configValues.isWorldPhysics();
-        this.explosions = configValues.isWorldExplosions();
-        this.mobAI = configValues.isWorldMobAi();
-        this.blockBreaking = configValues.isWorldBlockBreaking();
-        this.blockPlacement = configValues.isWorldBlockPlacement();
-        this.blockInteractions = configValues.isWorldBlockInteractions();
-        this.buildersEnabled = configValues.isWorldBuildersEnabled(privateWorld);
-        this.difficulty = configValues.getWorldDifficulty();
+        this.worldData = new WorldData(
+                name,
+                configValues,
+                privateWorld
+        );
         this.customGenerator = customGenerator;
+        this.creationDate = creationDate;
+        this.builders = new ArrayList<>();
 
         InventoryUtils inventoryUtils = plugin.getInventoryUtil();
+        XMaterial material;
         switch (worldType) {
             case NORMAL:
-                this.material = inventoryUtils.getDefaultItem(WorldType.NORMAL);
+                material = inventoryUtils.getDefaultItem(WorldType.NORMAL);
                 break;
             case FLAT:
-                this.material = inventoryUtils.getDefaultItem(WorldType.FLAT);
+                material = inventoryUtils.getDefaultItem(WorldType.FLAT);
                 break;
             case NETHER:
-                this.material = inventoryUtils.getDefaultItem(WorldType.NETHER);
+                material = inventoryUtils.getDefaultItem(WorldType.NETHER);
                 break;
             case END:
-                this.material = inventoryUtils.getDefaultItem(WorldType.END);
+                material = inventoryUtils.getDefaultItem(WorldType.END);
                 break;
             case VOID:
-                this.material = inventoryUtils.getDefaultItem(WorldType.VOID);
+                material = inventoryUtils.getDefaultItem(WorldType.VOID);
                 break;
             case CUSTOM:
             case TEMPLATE:
-                this.material = XMaterial.FILLED_MAP;
+                material = XMaterial.FILLED_MAP;
                 break;
             case IMPORTED:
-                this.material = inventoryUtils.getDefaultItem(WorldType.IMPORTED);
+                material = inventoryUtils.getDefaultItem(WorldType.IMPORTED);
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported world type '" + worldType.name() + "' for world " + name);
         }
-
         if (privateWorld) {
-            this.material = XMaterial.PLAYER_HEAD;
+            material = XMaterial.PLAYER_HEAD;
         }
+        worldData.MATERIAL.set(material);
 
         manageUnload();
     }
@@ -146,23 +125,10 @@ public class BuildWorld implements ConfigurationSerializable {
             String creator,
             UUID creatorId,
             WorldType worldType,
-            boolean privateWorld,
-            XMaterial material,
-            WorldStatus worldStatus,
-            String project,
-            String permission,
+            WorldData worldData,
             long creationDate,
-            boolean physics,
-            boolean explosions,
-            boolean mobAI,
-            String customSpawn,
-            boolean blockBreaking,
-            boolean blockPlacement,
-            boolean blockInteractions,
-            boolean buildersEnabled,
-            Difficulty difficulty,
-            List<Builder> builders,
-            CustomGenerator customGenerator
+            CustomGenerator customGenerator,
+            List<Builder> builders
     ) {
         this.plugin = JavaPlugin.getPlugin(BuildSystem.class);
         this.configValues = plugin.getConfigValues();
@@ -171,23 +137,10 @@ public class BuildWorld implements ConfigurationSerializable {
         this.creator = creator;
         this.creatorId = creatorId;
         this.worldType = worldType;
-        this.privateWorld = privateWorld;
-        this.material = material;
-        this.worldStatus = worldStatus;
-        this.project = project;
-        this.permission = permission;
+        this.worldData = worldData;
         this.creationDate = creationDate;
-        this.physics = physics;
-        this.explosions = explosions;
-        this.mobAI = mobAI;
-        this.customSpawn = customSpawn;
-        this.blockBreaking = blockBreaking;
-        this.blockPlacement = blockPlacement;
-        this.blockInteractions = blockInteractions;
-        this.buildersEnabled = buildersEnabled;
-        this.difficulty = difficulty;
-        this.builders = builders;
         this.customGenerator = customGenerator;
+        this.builders = builders;
 
         manageUnload();
     }
@@ -309,95 +262,12 @@ public class BuildWorld implements ConfigurationSerializable {
     }
 
     /**
-     * Get whether the world is a private world.
-     * <p>
-     * By default, private worlds cannot be modified by any player except for the creator.
+     * Gets the world's data.
      *
-     * @return {@code true} if the world's visibility is set to private, otherwise {@code false}
+     * @return The {@link WorldData} of the world
      */
-    public boolean isPrivate() {
-        return privateWorld;
-    }
-
-    /**
-     * Set the world's visibility.
-     *
-     * @param privateWorld {@code true} to make the world private, {@code false} to make the world public
-     */
-    public void setPrivate(boolean privateWorld) {
-        this.privateWorld = privateWorld;
-    }
-
-    /**
-     * Gets the material which represents the world in the navigator.
-     *
-     * @return The material which represents the world
-     */
-    public XMaterial getMaterial() {
-        return material;
-    }
-
-    /**
-     * Set the material which represents the world in the navigator.
-     *
-     * @param material The material
-     */
-    public void setMaterial(XMaterial material) {
-        this.material = material;
-    }
-
-    /**
-     * Get the world's current status.
-     *
-     * @return The world's status
-     */
-    public WorldStatus getStatus() {
-        return worldStatus;
-    }
-
-    /**
-     * Set the world's current status
-     *
-     * @param worldStatus The status to switch to
-     */
-    public void setStatus(WorldStatus worldStatus) {
-        this.worldStatus = worldStatus;
-    }
-
-    /**
-     * Get the short descriptive text which describes what the world is about.
-     *
-     * @return The world's current project
-     */
-    public String getProject() {
-        return project;
-    }
-
-    /**
-     * Set the world's short descriptive text which describes what the world is about.
-     *
-     * @param project The world's project
-     */
-    public void setProject(String project) {
-        this.project = project;
-    }
-
-    /**
-     * Get the permission which is required to view the world in the navigator and to enter it.
-     *
-     * @return The required permission
-     */
-    public String getPermission() {
-        return permission;
-    }
-
-    /**
-     * Set the permission which is required to view the world in the navigator and to enter it.
-     *
-     * @param permission The required permission
-     */
-    public void setPermission(String permission) {
-        this.permission = permission;
+    public WorldData getData() {
+        return worldData;
     }
 
     /**
@@ -430,157 +300,13 @@ public class BuildWorld implements ConfigurationSerializable {
     }
 
     /**
-     * Get whether block physics are activated in the world.
-     *
-     * @return {@code true} if world physics are currently enabled, otherwise {@code false}
-     */
-    public boolean isPhysics() {
-        return physics;
-    }
-
-    /**
-     * Set whether block physics are activated in the world.
-     *
-     * @param physics {@code true} to make activate block physics, {@code false} to disable
-     */
-    public void setPhysics(boolean physics) {
-        this.physics = physics;
-    }
-
-    /**
-     * Get whether explosions are enabled in the world.
-     *
-     * @return {@code true} if explosions are currently enabled, otherwise {@code false}
-     */
-    public boolean isExplosions() {
-        return explosions;
-    }
-
-    /**
-     * Set whether explosions are enabled in the world.
-     *
-     * @param explosions {@code true} to enable explosions, {@code false} to disable
-     */
-    public void setExplosions(boolean explosions) {
-        this.explosions = explosions;
-    }
-
-    /**
-     * Get whether mobs have their AI enabled in the world.
-     *
-     * @return {@code true} if all mob AIs are enabled, otherwise {@code false}
-     */
-    public boolean isMobAI() {
-        return mobAI;
-    }
-
-    /**
-     * Set whether mobs have their AI enabled in the world.
-     *
-     * @param mobAI {@code true} to enable mob AIs, {@code false} to disable
-     */
-    public void setMobAI(boolean mobAI) {
-        this.mobAI = mobAI;
-    }
-
-    /**
-     * Get the location where a player spawns in the world.
-     *
-     * @return The location as a string.
-     */
-    @Nullable
-    public String getCustomSpawn() {
-        return customSpawn;
-    }
-
-    /**
-     * Set the location where a player spawns in the world.
-     *
-     * @param customSpawn The location object
-     */
-    public void setCustomSpawn(Location customSpawn) {
-        this.customSpawn = customSpawn.getX() + ";" + customSpawn.getY() + ";" + customSpawn.getZ() + ";" +
-                customSpawn.getYaw() + ";" + customSpawn.getPitch();
-    }
-
-    /**
-     * Remove the world's custom spawn.
-     */
-    public void removeCustomSpawn() {
-        this.customSpawn = null;
-    }
-
-    /**
-     * Get whether blocks can be broken in the world.
-     *
-     * @return {@code true} if blocks can currently be broken, otherwise {@code false}
-     */
-    public boolean isBlockBreaking() {
-        return blockBreaking;
-    }
-
-    /**
-     * Set whether blocks can be broken in the world.
-     *
-     * @param blockBreaking {@code true} to enable block breaking, {@code false} to disable
-     */
-    public void setBlockBreaking(boolean blockBreaking) {
-        this.blockBreaking = blockBreaking;
-    }
-
-    /**
-     * Get whether blocks can be placed in the world.
-     *
-     * @return {@code true} if blocks can currently be placed, otherwise {@code false}
-     */
-    public boolean isBlockPlacement() {
-        return blockPlacement;
-    }
-
-    /**
-     * Set whether blocks can be placed in the world.
-     *
-     * @param blockPlacement {@code true} to enable block placement, {@code false} to disable
-     */
-    public void setBlockPlacement(boolean blockPlacement) {
-        this.blockPlacement = blockPlacement;
-    }
-
-    /**
-     * Get whether block can be interacted with in the world.
-     *
-     * @return {@code true} if blocks can be interacted with, otherwise {@code false}
-     */
-    public boolean isBlockInteractions() {
-        return blockInteractions;
-    }
-
-    /**
-     * Set whether blocks can be interacted with in the world.
-     *
-     * @param blockInteractions {@code true} to enable block interactions, {@code false} to disable
-     */
-    public void setBlockInteractions(boolean blockInteractions) {
-        this.blockInteractions = blockInteractions;
-    }
-
-    /**
-     * Gets the world's difficulty
-     *
-     * @return the difficulty
-     */
-    public Difficulty getDifficulty() {
-        return difficulty;
-    }
-
-    /**
      * Get the display name of a {@link Difficulty}.
      *
      * @return the difficulty's display name
-     * @see BuildWorld#getDifficulty()
+     * @see WorldData#DIFFICULTY
      */
     public String getDifficultyName() {
-        switch (difficulty) {
+        switch (worldData.DIFFICULTY.get()) {
             case PEACEFUL:
                 return Messages.getString("difficulty_peaceful");
             case EASY:
@@ -598,29 +324,20 @@ public class BuildWorld implements ConfigurationSerializable {
      * Cycles to the next {@link Difficulty}.
      */
     public void cycleDifficulty() {
-        switch (difficulty) {
+        switch (worldData.DIFFICULTY.get()) {
             case PEACEFUL:
-                this.difficulty = Difficulty.EASY;
+                worldData.DIFFICULTY.set(Difficulty.EASY);
                 break;
             case EASY:
-                this.difficulty = Difficulty.NORMAL;
+                worldData.DIFFICULTY.set(Difficulty.NORMAL);
                 break;
             case NORMAL:
-                this.difficulty = Difficulty.HARD;
+                worldData.DIFFICULTY.set(Difficulty.HARD);
                 break;
             case HARD:
-                this.difficulty = Difficulty.PEACEFUL;
+                worldData.DIFFICULTY.set(Difficulty.PEACEFUL);
                 break;
         }
-    }
-
-    /**
-     * If enabled, only {@link Builder}s can break and place blocks in the world.
-     *
-     * @return {@code true} if builders-mode is currently enabled, otherwise {@code false}
-     */
-    public boolean isBuilders() {
-        return buildersEnabled;
     }
 
     /**
@@ -630,15 +347,6 @@ public class BuildWorld implements ConfigurationSerializable {
      */
     public List<Builder> getBuilders() {
         return builders;
-    }
-
-    /**
-     * Set whether on {@link Builder}s can modify the world.
-     *
-     * @param buildersEnabled {@code true} to disable world modification for all players who are not builders, {@code false} to enable
-     */
-    public void setBuilders(boolean buildersEnabled) {
-        this.buildersEnabled = buildersEnabled;
     }
 
     /**
@@ -835,6 +543,7 @@ public class BuildWorld implements ConfigurationSerializable {
         Bukkit.unloadWorld(bukkitWorld, save);
         Bukkit.getWorlds().remove(bukkitWorld);
 
+        this.worldData.LAST_UNLOADED.set(System.currentTimeMillis());
         this.loaded = false;
         this.unloadTask = null;
 
@@ -874,6 +583,8 @@ public class BuildWorld implements ConfigurationSerializable {
 
         plugin.getLogger().info("*** Loading world \"" + name + "\" ***");
         new BuildWorldCreator(plugin, this).generateBukkitWorld();
+
+        this.worldData.LAST_LOADED.set(System.currentTimeMillis());
         this.loaded = true;
 
         resetUnloadTask();
@@ -886,24 +597,9 @@ public class BuildWorld implements ConfigurationSerializable {
         world.put("creator", getCreator());
         world.put("creator-id", saveCreatorId());
         world.put("type", getType().name());
-        world.put("private", isPrivate());
-        world.put("item", getMaterial().name());
-        world.put("status", getStatus().toString());
-        world.put("project", getProject());
-        world.put("permission", getPermission());
+        world.put("data", getData().serialize());
         world.put("date", getCreationDate());
-        world.put("physics", isPhysics());
-        world.put("explosions", isExplosions());
-        world.put("mobai", isMobAI());
-        world.put("block-breaking", isBlockBreaking());
-        world.put("block-placement", isBlockPlacement());
-        world.put("block-interactions", isBlockInteractions());
-        world.put("difficulty", getDifficulty().toString());
-        world.put("builders-enabled", isBuilders());
         world.put("builders", saveBuilders());
-        if (customSpawn != null) {
-            world.put("spawn", getCustomSpawn());
-        }
         if (customGenerator != null) {
             world.put("chunk-generator", customGenerator.getName());
         }

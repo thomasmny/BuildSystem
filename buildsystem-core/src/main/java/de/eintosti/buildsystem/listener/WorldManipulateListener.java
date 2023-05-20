@@ -12,6 +12,7 @@ import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.Builder;
 import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.data.WorldData;
 import de.eintosti.buildsystem.world.data.WorldStatus;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
@@ -51,8 +52,10 @@ public class WorldManipulateListener implements Listener {
             return;
         }
 
-        if (!manageWorldInteraction(player, event, buildWorld.isBlockBreaking())) {
-            setStatus(buildWorld, player);
+        WorldData worldData = buildWorld.getData();
+        if (!manageWorldInteraction(player, event, worldData.BLOCK_BREAKING.get())) {
+            worldData.LAST_EDITED.set(System.currentTimeMillis());
+            setStatus(worldData, player);
         }
     }
 
@@ -68,8 +71,10 @@ public class WorldManipulateListener implements Listener {
             return;
         }
 
-        if (!manageWorldInteraction(player, event, buildWorld.isBlockPlacement())) {
-            setStatus(buildWorld, player);
+        WorldData worldData = buildWorld.getData();
+        if (!manageWorldInteraction(player, event, worldData.BLOCK_PLACEMENT.get())) {
+            worldData.LAST_EDITED.set(System.currentTimeMillis());
+            setStatus(worldData, player);
         }
     }
 
@@ -86,7 +91,7 @@ public class WorldManipulateListener implements Listener {
         }
 
         if (event.getEntity() instanceof ArmorStand) {
-            manageWorldInteraction(player, event, buildWorld.isBlockInteractions());
+            manageWorldInteraction(player, event, buildWorld.getData().BLOCK_INTERACTIONS.get());
         }
     }
 
@@ -98,7 +103,7 @@ public class WorldManipulateListener implements Listener {
             return;
         }
 
-        manageWorldInteraction(player, event, buildWorld.isBlockInteractions());
+        manageWorldInteraction(player, event, buildWorld.getData().BLOCK_INTERACTIONS.get());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -114,9 +119,10 @@ public class WorldManipulateListener implements Listener {
             return;
         }
 
-        manageWorldInteraction(player, event, buildWorld.isBlockInteractions());
+        WorldData worldData = buildWorld.getData();
+        manageWorldInteraction(player, event, worldData.BLOCK_INTERACTIONS.get());
 
-        if (!buildWorld.isPhysics() && event.getClickedBlock() != null) {
+        if (!worldData.PHYSICS.get() && event.getClickedBlock() != null) {
             if (event.getAction() == Action.PHYSICAL && event.getClickedBlock().getType() == XMaterial.FARMLAND.parseMaterial()) {
                 event.setCancelled(true);
             }
@@ -165,7 +171,7 @@ public class WorldManipulateListener implements Listener {
             return false;
         }
 
-        if (buildWorld.getStatus() == WorldStatus.ARCHIVE) {
+        if (buildWorld.getData().STATUS.get() == WorldStatus.ARCHIVE) {
             ((Cancellable) event).setCancelled(true);
             denyPlayerInteraction(event);
             return true;
@@ -197,7 +203,7 @@ public class WorldManipulateListener implements Listener {
             return false;
         }
 
-        if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
+        if (buildWorld.getData().BUILDERS_ENABLED.get() && !buildWorld.isBuilder(player)) {
             ((Cancellable) event).setCancelled(true);
             denyPlayerInteraction(event);
             return true;
@@ -213,9 +219,9 @@ public class WorldManipulateListener implements Listener {
         }
     }
 
-    private void setStatus(BuildWorld buildWorld, Player player) {
-        if (buildWorld.getStatus() == WorldStatus.NOT_STARTED) {
-            buildWorld.setStatus(WorldStatus.IN_PROGRESS);
+    private void setStatus(WorldData worldData, Player player) {
+        if (worldData.STATUS.get() == WorldStatus.NOT_STARTED) {
+            worldData.STATUS.set(WorldStatus.IN_PROGRESS);
             plugin.getPlayerManager().forceUpdateSidebar(player);
         }
     }

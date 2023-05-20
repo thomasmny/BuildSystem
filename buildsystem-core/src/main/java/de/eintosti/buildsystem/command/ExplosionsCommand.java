@@ -11,6 +11,7 @@ import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.data.WorldData;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -73,11 +74,12 @@ public class ExplosionsCommand implements CommandExecutor {
             return;
         }
 
-        if (!buildWorld.isExplosions()) {
-            buildWorld.setExplosions(true);
+        WorldData worldData = buildWorld.getData();
+        if (!worldData.EXPLOSIONS.get()) {
+            worldData.EXPLOSIONS.set(true);
             Messages.sendMessage(player, "explosions_activated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
         } else {
-            buildWorld.setExplosions(false);
+            worldData.EXPLOSIONS.set(false);
             Messages.sendMessage(player, "explosions_deactivated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
         }
     }

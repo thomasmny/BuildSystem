@@ -12,6 +12,7 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.util.EntityAIManager;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.data.WorldData;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -76,15 +77,16 @@ public class NoAICommand implements CommandExecutor {
             return;
         }
 
-        if (buildWorld.isMobAI()) {
-            buildWorld.setMobAI(false);
+        WorldData worldData = buildWorld.getData();
+        if (worldData.MOB_AI.get()) {
+            worldData.MOB_AI.set(false);
             Messages.sendMessage(player, "noai_activated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
         } else {
-            buildWorld.setMobAI(true);
+            worldData.MOB_AI.set(true);
             Messages.sendMessage(player, "noai_deactivated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
         }
 
-        boolean mobAI = buildWorld.isMobAI();
+        boolean mobAI = worldData.MOB_AI.get();
         for (Entity entity : bukkitWorld.getEntities()) {
             if (entity instanceof LivingEntity) {
                 EntityAIManager.setAIEnabled(entity, mobAI);

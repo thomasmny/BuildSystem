@@ -11,6 +11,7 @@ import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.data.WorldData;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -53,7 +54,7 @@ public class PhysicsCommand implements CommandExecutor {
             case 1:
                 //TODO: Check each world for permission individually?
                 if (args[0].equalsIgnoreCase("all") && worldManager.getBuildWorld("all") == null) {
-                    worldManager.getBuildWorlds().forEach(buildWorld -> buildWorld.setPhysics(true));
+                    worldManager.getBuildWorlds().forEach(buildWorld -> buildWorld.getData().PHYSICS.set(true));
                     Messages.sendMessage(player, "physics_activated_all");
                 } else {
                     togglePhysics(player, Bukkit.getWorld(args[0]));
@@ -78,11 +79,12 @@ public class PhysicsCommand implements CommandExecutor {
             return;
         }
 
-        if (!buildWorld.isPhysics()) {
-            buildWorld.setPhysics(true);
+        WorldData worldData = buildWorld.getData();
+        if (!worldData.PHYSICS.get()) {
+            worldData.PHYSICS.set(true);
             Messages.sendMessage(player, "physics_activated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
         } else {
-            buildWorld.setPhysics(false);
+            worldData.PHYSICS.set(false);
             Messages.sendMessage(player, "physics_deactivated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
         }
     }

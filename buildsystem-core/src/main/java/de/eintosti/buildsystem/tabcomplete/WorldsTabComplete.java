@@ -75,7 +75,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                     case "tp":
                     case "unimport":
                         worldManager.getBuildWorlds().stream()
-                                .filter(world -> player.hasPermission(world.getPermission()) || world.getPermission().equalsIgnoreCase("-"))
+                                .filter(world -> player.hasPermission(world.getData().PERMISSION.get()) || world.getData().PERMISSION.get().equalsIgnoreCase("-"))
                                 .filter(world -> worldManager.isPermitted(player, "buildsystem." + args[0].toLowerCase(), world.getName()))
                                 .forEach(world -> addArgument(args[1], world.getName(), arrayList));
                         break;

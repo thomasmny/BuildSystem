@@ -266,7 +266,7 @@ public class NavigatorListener implements Listener {
     private void disableArchivedWorlds(Player player, Cancellable cancellable) {
         World bukkitWorld = player.getWorld();
         BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
-        if (buildWorld == null || buildWorld.getStatus() != WorldStatus.ARCHIVE) {
+        if (buildWorld == null || buildWorld.getData().STATUS.get() != WorldStatus.ARCHIVE) {
             return;
         }
 

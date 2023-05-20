@@ -47,33 +47,58 @@ public class EditSessionListener implements Listener {
             return;
         }
 
-        if (event.getStage() == EditSession.Stage.BEFORE_CHANGE) {
-            disableArchivedWorlds(buildWorld, player, event);
-            checkBuilders(buildWorld, player, event);
-        }
-    }
-
-    private void disableArchivedWorlds(BuildWorld buildWorld, Player player, EditSessionEvent event) {
-        if (worldManager.canBypassBuildRestriction(player)) {
+        if (event.getStage() != EditSession.Stage.BEFORE_CHANGE) {
             return;
         }
 
-        if (buildWorld.getStatus() == WorldStatus.ARCHIVE) {
+        if (!disableArchivedWorlds(buildWorld, player, event) && !disableNonBuilders(buildWorld, player, event)) {
+            buildWorld.getData().LAST_EDITED.set(System.currentTimeMillis());
+        }
+    }
+
+    /**
+     * Disable the editing of archived worlds for players without the necessary permission.
+     *
+     * @param buildWorld The build world
+     * @param player     The player
+     * @param event      The EditSessionEvent
+     * @return {@code true} if the edit was cancelled, otherwise {@code false}
+     */
+    private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, EditSessionEvent event) {
+        if (worldManager.canBypassBuildRestriction(player)) {
+            return false;
+        }
+
+        if (buildWorld.getData().STATUS.get() == WorldStatus.ARCHIVE) {
             event.setExtent(new NullExtent());
+            return true;
         }
+
+        return false;
     }
 
-    private void checkBuilders(BuildWorld buildWorld, Player player, EditSessionEvent event) {
+    /**
+     * Disable the editing of worlds in which a player is not a builder.
+     *
+     * @param buildWorld The build world
+     * @param player     The player
+     * @param event      The EditSessionEvent
+     * @return {@code true} if the edit was cancelled, otherwise {@code false}
+     */
+    private boolean disableNonBuilders(BuildWorld buildWorld, Player player, EditSessionEvent event) {
         if (worldManager.canBypassBuildRestriction(player)) {
-            return;
+            return false;
         }
 
         if (buildWorld.isCreator(player)) {
-            return;
+            return false;
         }
 
-        if (buildWorld.isBuilders() && !buildWorld.isBuilder(player)) {
+        if (buildWorld.getData().BUILDERS_ENABLED.get() && !buildWorld.isBuilder(player)) {
             event.setExtent(new NullExtent());
+            return true;
         }
+
+        return false;
     }
 }
