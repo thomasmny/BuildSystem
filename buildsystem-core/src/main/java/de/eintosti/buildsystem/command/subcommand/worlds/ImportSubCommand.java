@@ -62,11 +62,10 @@ public class ImportSubCommand implements SubCommand {
             return;
         }
 
-        if (Arrays.stream(worldName.split("")).anyMatch(c -> c.matches("[^A-Za-z\\d/_-]"))) {
-            Messages.sendMessage(player, "worlds_world_creation_invalid_characters");
-        }
-
-        String invalidChar = Arrays.stream(worldName.split("")).filter(c -> c.matches("[^A-Za-z\\d/_-]")).findFirst().orElse(null);
+        String invalidChar = Arrays.stream(worldName.split(""))
+                .filter(c -> c.matches("[^A-Za-z\\d/_-]") || c.matches(plugin.getConfigValues().getInvalidNameCharacters()))
+                .findFirst()
+                .orElse(null);
         if (invalidChar != null) {
             Messages.sendMessage(player, "worlds_import_invalid_character",
                     new AbstractMap.SimpleEntry<>("%world%", worldName),
