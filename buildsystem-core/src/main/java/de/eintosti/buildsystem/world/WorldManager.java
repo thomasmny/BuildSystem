@@ -135,7 +135,7 @@ public class WorldManager {
      */
     public List<BuildWorld> getBuildWorldsCreatedByPlayer(Player player, Visibility visibility) {
         return getBuildWorldsCreatedByPlayer(player).stream()
-                .filter(buildWorld -> isCorrectVisibility(buildWorld.getData().PRIVATE.get(), visibility))
+                .filter(buildWorld -> isCorrectVisibility(buildWorld.getData().privateWorld().get(), visibility))
                 .collect(Collectors.toList());
     }
 
@@ -537,7 +537,7 @@ public class WorldManager {
         }
 
         Location location = bukkitWorld.getSpawnLocation().add(0.5, 0, 0.5);
-        String customSpawn = buildWorld.getData().CUSTOM_SPAWN.get();
+        String customSpawn = buildWorld.getData().customSpawn().get();
         if (customSpawn == null) {
             switch (buildWorld.getType()) {
                 case NETHER:
@@ -595,7 +595,7 @@ public class WorldManager {
             return true;
         }
 
-        String permission = buildWorld.getData().PERMISSION.get();
+        String permission = buildWorld.getData().permission().get();
         if (permission.equals("-")) {
             return true;
         }

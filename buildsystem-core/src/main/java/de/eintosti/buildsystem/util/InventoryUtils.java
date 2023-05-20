@@ -236,7 +236,7 @@ public class InventoryUtils {
     public void addWorldItem(Player player, Inventory inventory, int position, BuildWorld buildWorld) {
         String worldName = buildWorld.getName();
         String displayName = Messages.getString("world_item_title", new AbstractMap.SimpleEntry<>("%world%", worldName));
-        XMaterial material = buildWorld.getData().MATERIAL.get();
+        XMaterial material = buildWorld.getData().material().get();
 
         if (material == XMaterial.PLAYER_HEAD) {
             addSkull(inventory, position, displayName, worldName, getLore(player, buildWorld));
@@ -370,10 +370,10 @@ public class InventoryUtils {
                 Collections.reverse(buildWorlds);
                 break;
             case PROJECT_A_TO_Z:
-                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getData().PROJECT.get().toLowerCase()));
+                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getData().project().get().toLowerCase()));
                 break;
             case PROJECT_Z_TO_A:
-                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getData().PROJECT.get().toLowerCase()));
+                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getData().project().get().toLowerCase()));
                 Collections.reverse(buildWorlds);
                 break;
             case STATUS_NOT_STARTED:
@@ -403,9 +403,9 @@ public class InventoryUtils {
         WorldData worldData = buildWorld.getData();
         @SuppressWarnings("unchecked")
         Map.Entry<String, Object>[] placeholders = new Map.Entry[]{
-                new AbstractMap.SimpleEntry<>("%status%", worldData.STATUS.get().getName()),
-                new AbstractMap.SimpleEntry<>("%project%", worldData.PROJECT.get()),
-                new AbstractMap.SimpleEntry<>("%permission%", worldData.PERMISSION.get()),
+                new AbstractMap.SimpleEntry<>("%status%", worldData.status().get().getName()),
+                new AbstractMap.SimpleEntry<>("%project%", worldData.project().get()),
+                new AbstractMap.SimpleEntry<>("%permission%", worldData.permission().get()),
                 new AbstractMap.SimpleEntry<>("%creator%", buildWorld.hasCreator() ? buildWorld.getCreator() : "-"),
                 new AbstractMap.SimpleEntry<>("%creation%", buildWorld.getFormattedCreationDate())
         };
@@ -802,7 +802,7 @@ public class InventoryUtils {
 
         @Override
         public int compare(BuildWorld buildWorld1, BuildWorld buildWorld2) {
-            return Integer.compare(buildWorld1.getData().STATUS.get().getStage(), buildWorld2.getData().STATUS.get().getStage());
+            return Integer.compare(buildWorld1.getData().status().get().getStage(), buildWorld2.getData().status().get().getStage());
         }
     }
 }

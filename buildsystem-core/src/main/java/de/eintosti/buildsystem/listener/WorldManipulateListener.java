@@ -53,8 +53,8 @@ public class WorldManipulateListener implements Listener {
         }
 
         WorldData worldData = buildWorld.getData();
-        if (!manageWorldInteraction(player, event, worldData.BLOCK_BREAKING.get())) {
-            worldData.LAST_EDITED.set(System.currentTimeMillis());
+        if (!manageWorldInteraction(player, event, worldData.blockBreaking().get())) {
+            worldData.lastEdited().set(System.currentTimeMillis());
             setStatus(worldData, player);
         }
     }
@@ -72,8 +72,8 @@ public class WorldManipulateListener implements Listener {
         }
 
         WorldData worldData = buildWorld.getData();
-        if (!manageWorldInteraction(player, event, worldData.BLOCK_PLACEMENT.get())) {
-            worldData.LAST_EDITED.set(System.currentTimeMillis());
+        if (!manageWorldInteraction(player, event, worldData.blockPlacement().get())) {
+            worldData.lastEdited().set(System.currentTimeMillis());
             setStatus(worldData, player);
         }
     }
@@ -91,7 +91,7 @@ public class WorldManipulateListener implements Listener {
         }
 
         if (event.getEntity() instanceof ArmorStand) {
-            manageWorldInteraction(player, event, buildWorld.getData().BLOCK_INTERACTIONS.get());
+            manageWorldInteraction(player, event, buildWorld.getData().blockInteractions().get());
         }
     }
 
@@ -103,7 +103,7 @@ public class WorldManipulateListener implements Listener {
             return;
         }
 
-        manageWorldInteraction(player, event, buildWorld.getData().BLOCK_INTERACTIONS.get());
+        manageWorldInteraction(player, event, buildWorld.getData().blockInteractions().get());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -120,9 +120,9 @@ public class WorldManipulateListener implements Listener {
         }
 
         WorldData worldData = buildWorld.getData();
-        manageWorldInteraction(player, event, worldData.BLOCK_INTERACTIONS.get());
+        manageWorldInteraction(player, event, worldData.blockInteractions().get());
 
-        if (!worldData.PHYSICS.get() && event.getClickedBlock() != null) {
+        if (!worldData.physics().get() && event.getClickedBlock() != null) {
             if (event.getAction() == Action.PHYSICAL && event.getClickedBlock().getType() == XMaterial.FARMLAND.parseMaterial()) {
                 event.setCancelled(true);
             }
@@ -171,7 +171,7 @@ public class WorldManipulateListener implements Listener {
             return false;
         }
 
-        if (buildWorld.getData().STATUS.get() == WorldStatus.ARCHIVE) {
+        if (buildWorld.getData().status().get() == WorldStatus.ARCHIVE) {
             ((Cancellable) event).setCancelled(true);
             denyPlayerInteraction(event);
             return true;
@@ -203,7 +203,7 @@ public class WorldManipulateListener implements Listener {
             return false;
         }
 
-        if (buildWorld.getData().BUILDERS_ENABLED.get() && !buildWorld.isBuilder(player)) {
+        if (buildWorld.getData().buildersEnabled().get() && !buildWorld.isBuilder(player)) {
             ((Cancellable) event).setCancelled(true);
             denyPlayerInteraction(event);
             return true;
@@ -220,8 +220,8 @@ public class WorldManipulateListener implements Listener {
     }
 
     private void setStatus(WorldData worldData, Player player) {
-        if (worldData.STATUS.get() == WorldStatus.NOT_STARTED) {
-            worldData.STATUS.set(WorldStatus.IN_PROGRESS);
+        if (worldData.status().get() == WorldStatus.NOT_STARTED) {
+            worldData.status().set(WorldStatus.IN_PROGRESS);
             plugin.getPlayerManager().forceUpdateSidebar(player);
         }
     }

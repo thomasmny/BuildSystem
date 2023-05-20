@@ -172,11 +172,11 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
      */
     private boolean isValidWorld(Player player, BuildWorld buildWorld) {
         WorldData worldData = buildWorld.getData();
-        if (!worldManager.isCorrectVisibility(worldData.PRIVATE.get(), visibility)) {
+        if (!worldManager.isCorrectVisibility(worldData.privateWorld().get(), visibility)) {
             return false;
         }
 
-        if (!validStatus.contains(worldData.STATUS.get())) {
+        if (!validStatus.contains(worldData.status().get())) {
             return false;
         }
 
@@ -188,7 +188,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
             return true;
         }
 
-        String worldPermission = worldData.PERMISSION.get();
+        String worldPermission = worldData.permission().get();
         if (!worldPermission.equalsIgnoreCase("-") && !player.hasPermission(worldPermission)) {
             return false;
         }

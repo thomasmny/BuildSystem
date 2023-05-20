@@ -100,11 +100,11 @@ public class PlayerJoinListener implements Listener {
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld != null) {
             WorldData worldData = buildWorld.getData();
-            if (!worldData.PHYSICS.get() && player.hasPermission("buildsystem.physics.message")) {
+            if (!worldData.physics().get() && player.hasPermission("buildsystem.physics.message")) {
                 Messages.sendMessage(player, "physics_deactivated_in_world", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
             }
 
-            if (configValues.isArchiveVanish() && worldData.STATUS.get() == WorldStatus.ARCHIVE) {
+            if (configValues.isArchiveVanish() && worldData.status().get() == WorldStatus.ARCHIVE) {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, false, false), false);
                 Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
             }

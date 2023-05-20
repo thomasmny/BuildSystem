@@ -85,7 +85,7 @@ public class StatusInventory implements Listener {
         itemStack.setItemMeta(itemMeta);
 
         BuildWorld cachedWorld = playerManager.getBuildPlayer(player).getCachedWorld();
-        if (cachedWorld != null && cachedWorld.getData().STATUS.get() == worldStatus) {
+        if (cachedWorld != null && cachedWorld.getData().status().get() == worldStatus) {
             itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
         }
 
@@ -126,22 +126,22 @@ public class StatusInventory implements Listener {
         WorldData worldData = buildWorld.getData();
         switch (event.getSlot()) {
             case 10:
-                worldData.STATUS.set(WorldStatus.NOT_STARTED);
+                worldData.status().set(WorldStatus.NOT_STARTED);
                 break;
             case 11:
-                worldData.STATUS.set(WorldStatus.IN_PROGRESS);
+                worldData.status().set(WorldStatus.IN_PROGRESS);
                 break;
             case 12:
-                worldData.STATUS.set(WorldStatus.ALMOST_FINISHED);
+                worldData.status().set(WorldStatus.ALMOST_FINISHED);
                 break;
             case 13:
-                worldData.STATUS.set(WorldStatus.FINISHED);
+                worldData.status().set(WorldStatus.FINISHED);
                 break;
             case 14:
-                worldData.STATUS.set(WorldStatus.ARCHIVE);
+                worldData.status().set(WorldStatus.ARCHIVE);
                 break;
             case 16:
-                worldData.STATUS.set(WorldStatus.HIDDEN);
+                worldData.status().set(WorldStatus.HIDDEN);
                 break;
             default:
                 XSound.BLOCK_CHEST_OPEN.play(player);
@@ -155,7 +155,7 @@ public class StatusInventory implements Listener {
         XSound.ENTITY_CHICKEN_EGG.play(player);
         Messages.sendMessage(player, "worlds_setstatus_set",
                 new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()),
-                new AbstractMap.SimpleEntry<>("%status%", buildWorld.getData().STATUS.get().getName())
+                new AbstractMap.SimpleEntry<>("%status%", buildWorld.getData().status().get().getName())
         );
         playerManager.getBuildPlayer(player).setCachedWorld(null);
     }

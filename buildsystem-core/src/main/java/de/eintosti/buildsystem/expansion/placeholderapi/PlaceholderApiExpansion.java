@@ -195,13 +195,13 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
         WorldData worldData = buildWorld.getData();
         switch (identifier.toLowerCase()) {
             case "blockbreaking":
-                return String.valueOf(worldData.BLOCK_BREAKING.get());
+                return String.valueOf(worldData.blockBreaking().get());
             case "blockplacement":
-                return String.valueOf(worldData.BLOCK_PLACEMENT.get());
+                return String.valueOf(worldData.blockPlacement().get());
             case "builders":
                 return buildWorld.getBuildersInfo();
             case "buildersenabled":
-                return String.valueOf(worldData.BUILDERS_ENABLED.get());
+                return String.valueOf(worldData.buildersEnabled().get());
             case "creation":
                 return buildWorld.getFormattedCreationDate();
             case "creator":
@@ -209,31 +209,31 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "creatorid":
                 return String.valueOf(buildWorld.getCreatorId());
             case "explosions":
-                return String.valueOf(worldData.EXPLOSIONS.get());
+                return String.valueOf(worldData.explosions().get());
             case "lastedited":
-                return formatDate(worldData.LAST_EDITED.get());
+                return formatDate(worldData.lastEdited().get());
             case "lastloaded":
-                return formatDate(worldData.LAST_LOADED.get());
+                return formatDate(worldData.lastLoaded().get());
             case "lastunloaded":
-                return formatDate(worldData.LAST_UNLOADED.get());
+                return formatDate(worldData.lastUnloaded().get());
             case "loaded":
                 return String.valueOf(buildWorld.isLoaded());
             case "material":
-                return worldData.MATERIAL.get().name();
+                return worldData.material().get().name();
             case "mobai":
-                return String.valueOf(worldData.MOB_AI.get());
+                return String.valueOf(worldData.mobAi().get());
             case "permission":
-                return worldData.PERMISSION.get();
+                return worldData.permission().get();
             case "private":
-                return String.valueOf(worldData.PRIVATE.get());
+                return String.valueOf(worldData.privateWorld().get());
             case "project":
-                return worldData.PROJECT.get();
+                return worldData.project().get();
             case "physics":
-                return String.valueOf(worldData.PHYSICS.get());
+                return String.valueOf(worldData.physics().get());
             case "spawn":
-                return worldData.CUSTOM_SPAWN.get();
+                return worldData.customSpawn().get();
             case "status":
-                return worldData.STATUS.get().getName();
+                return worldData.status().get().getName();
             case "time":
                 return buildWorld.getWorldTime();
             case "type":

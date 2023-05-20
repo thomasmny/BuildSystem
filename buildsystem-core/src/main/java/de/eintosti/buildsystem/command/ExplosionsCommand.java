@@ -75,11 +75,11 @@ public class ExplosionsCommand implements CommandExecutor {
         }
 
         WorldData worldData = buildWorld.getData();
-        if (!worldData.EXPLOSIONS.get()) {
-            worldData.EXPLOSIONS.set(true);
+        if (!worldData.explosions().get()) {
+            worldData.explosions().set(true);
             Messages.sendMessage(player, "explosions_activated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
         } else {
-            worldData.EXPLOSIONS.set(false);
+            worldData.explosions().set(false);
             Messages.sendMessage(player, "explosions_deactivated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
         }
     }

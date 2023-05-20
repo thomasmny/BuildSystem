@@ -54,7 +54,7 @@ public class PhysicsCommand implements CommandExecutor {
             case 1:
                 //TODO: Check each world for permission individually?
                 if (args[0].equalsIgnoreCase("all") && worldManager.getBuildWorld("all") == null) {
-                    worldManager.getBuildWorlds().forEach(buildWorld -> buildWorld.getData().PHYSICS.set(true));
+                    worldManager.getBuildWorlds().forEach(buildWorld -> buildWorld.getData().physics().set(true));
                     Messages.sendMessage(player, "physics_activated_all");
                 } else {
                     togglePhysics(player, Bukkit.getWorld(args[0]));
@@ -80,11 +80,11 @@ public class PhysicsCommand implements CommandExecutor {
         }
 
         WorldData worldData = buildWorld.getData();
-        if (!worldData.PHYSICS.get()) {
-            worldData.PHYSICS.set(true);
+        if (!worldData.physics().get()) {
+            worldData.physics().set(true);
             Messages.sendMessage(player, "physics_activated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
         } else {
-            worldData.PHYSICS.set(false);
+            worldData.physics().set(false);
             Messages.sendMessage(player, "physics_deactivated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
         }
     }

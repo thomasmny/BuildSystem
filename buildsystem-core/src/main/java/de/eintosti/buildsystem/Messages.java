@@ -403,7 +403,7 @@ public class Messages {
         addSpacer(sb, "# New Navigator");
         setMessage(sb, "new_navigator_world_navigator", "&a&lWORLD NAVIGATOR");
         setMessage(sb, "new_navigator_world_archive", "&6&lWORLD ARCHIVE");
-        setMessage(sb, "new_navigator_private_worlds", "&b&lPRIVATE WORLDS");
+        setMessage(sb, "new_navigator_private_worlds", "&b&lprivateWorld() WORLDS");
         addSpacer(sb, "");
         addSpacer(sb, "# World Navigator");
         setMessage(sb, "world_navigator_title", "&3» &8World Navigator");

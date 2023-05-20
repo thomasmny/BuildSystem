@@ -65,15 +65,15 @@ public class BlockPlaceListener implements Listener {
         }
 
         boolean hadToDisablePhysics = false;
-        if (isBuildWorld && !buildWorld.getData().PHYSICS.get()) {
+        if (isBuildWorld && !buildWorld.getData().physics().get()) {
             hadToDisablePhysics = true;
-            buildWorld.getData().PHYSICS.set(true);
+            buildWorld.getData().physics().set(true);
         }
 
         plugin.getCustomBlocks().setBlock(event, blockLookup.get(itemMeta.getDisplayName()));
 
         if (isBuildWorld && hadToDisablePhysics) {
-            buildWorld.getData().PHYSICS.set(false);
+            buildWorld.getData().physics().set(false);
         }
     }
 }

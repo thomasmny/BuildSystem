@@ -63,11 +63,11 @@ public class BuildWorldCreator {
     public BuildWorldCreator(BuildSystem plugin, BuildWorld buildWorld) {
         this(plugin, buildWorld.getName());
 
-        setDifficulty(buildWorld.getData().DIFFICULTY.get());
+        setDifficulty(buildWorld.getData().difficulty().get());
         setCreationDate(buildWorld.getCreationDate());
         setType(buildWorld.getType());
         setCustomGenerator(buildWorld.getCustomGenerator());
-        setPrivate(buildWorld.getData().PRIVATE.get());
+        setPrivate(buildWorld.getData().privateWorld().get());
     }
 
     public BuildWorldCreator setName(String name) {

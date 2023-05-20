@@ -267,7 +267,7 @@ public class PlayerCommandPreprocessListener implements Listener {
     }
 
     private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
-        if (!worldManager.canBypassBuildRestriction(player) && buildWorld.getData().STATUS.get() == WorldStatus.ARCHIVE) {
+        if (!worldManager.canBypassBuildRestriction(player) && buildWorld.getData().status().get() == WorldStatus.ARCHIVE) {
             event.setCancelled(true);
             Messages.sendMessage(player, "command_archive_world");
             return true;
@@ -284,7 +284,7 @@ public class PlayerCommandPreprocessListener implements Listener {
             return;
         }
 
-        if (buildWorld.getData().BUILDERS_ENABLED.get() && !buildWorld.isBuilder(player)) {
+        if (buildWorld.getData().buildersEnabled().get() && !buildWorld.isBuilder(player)) {
             event.setCancelled(true);
             Messages.sendMessage(player, "command_not_builder");
         }

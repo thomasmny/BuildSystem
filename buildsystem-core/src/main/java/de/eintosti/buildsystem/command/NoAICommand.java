@@ -78,15 +78,15 @@ public class NoAICommand implements CommandExecutor {
         }
 
         WorldData worldData = buildWorld.getData();
-        if (worldData.MOB_AI.get()) {
-            worldData.MOB_AI.set(false);
+        if (worldData.mobAi().get()) {
+            worldData.mobAi().set(false);
             Messages.sendMessage(player, "noai_activated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
         } else {
-            worldData.MOB_AI.set(true);
+            worldData.mobAi().set(true);
             Messages.sendMessage(player, "noai_deactivated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
         }
 
-        boolean mobAI = worldData.MOB_AI.get();
+        boolean mobAI = worldData.mobAi().get();
         for (Entity entity : bukkitWorld.getEntities()) {
             if (entity instanceof LivingEntity) {
                 EntityAIManager.setAIEnabled(entity, mobAI);

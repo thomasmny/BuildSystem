@@ -157,11 +157,11 @@ public class SettingsManager {
         WorldData worldData = buildWorld.getData();
         switch (input) {
             case "%status%":
-                return worldData.STATUS.get().getName();
+                return worldData.status().get().getName();
             case "%permission%":
-                return worldData.PERMISSION.get();
+                return worldData.permission().get();
             case "%project%":
-                return worldData.PROJECT.get();
+                return worldData.project().get();
             case "%creator%":
                 return buildWorld.getCreator();
             case "%creation%":

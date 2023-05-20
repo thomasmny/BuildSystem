@@ -115,7 +115,7 @@ public class BuildWorld implements ConfigurationSerializable {
         if (privateWorld) {
             material = XMaterial.PLAYER_HEAD;
         }
-        worldData.MATERIAL.set(material);
+        worldData.material().set(material);
 
         manageUnload();
     }
@@ -306,7 +306,7 @@ public class BuildWorld implements ConfigurationSerializable {
      * @see WorldData#DIFFICULTY
      */
     public String getDifficultyName() {
-        switch (worldData.DIFFICULTY.get()) {
+        switch (worldData.difficulty().get()) {
             case PEACEFUL:
                 return Messages.getString("difficulty_peaceful");
             case EASY:
@@ -324,18 +324,18 @@ public class BuildWorld implements ConfigurationSerializable {
      * Cycles to the next {@link Difficulty}.
      */
     public void cycleDifficulty() {
-        switch (worldData.DIFFICULTY.get()) {
+        switch (worldData.difficulty().get()) {
             case PEACEFUL:
-                worldData.DIFFICULTY.set(Difficulty.EASY);
+                worldData.difficulty().set(Difficulty.EASY);
                 break;
             case EASY:
-                worldData.DIFFICULTY.set(Difficulty.NORMAL);
+                worldData.difficulty().set(Difficulty.NORMAL);
                 break;
             case NORMAL:
-                worldData.DIFFICULTY.set(Difficulty.HARD);
+                worldData.difficulty().set(Difficulty.HARD);
                 break;
             case HARD:
-                worldData.DIFFICULTY.set(Difficulty.PEACEFUL);
+                worldData.difficulty().set(Difficulty.PEACEFUL);
                 break;
         }
     }
@@ -543,7 +543,7 @@ public class BuildWorld implements ConfigurationSerializable {
         Bukkit.unloadWorld(bukkitWorld, save);
         Bukkit.getWorlds().remove(bukkitWorld);
 
-        this.worldData.LAST_UNLOADED.set(System.currentTimeMillis());
+        this.worldData.lastUnloaded().set(System.currentTimeMillis());
         this.loaded = false;
         this.unloadTask = null;
 
@@ -584,7 +584,7 @@ public class BuildWorld implements ConfigurationSerializable {
         plugin.getLogger().info("*** Loading world \"" + name + "\" ***");
         new BuildWorldCreator(plugin, this).generateBukkitWorld();
 
-        this.worldData.LAST_LOADED.set(System.currentTimeMillis());
+        this.worldData.lastLoaded().set(System.currentTimeMillis());
         this.loaded = true;
 
         resetUnloadTask();

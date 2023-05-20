@@ -55,29 +55,29 @@ public class InfoSubCommand implements SubCommand {
         Messages.sendMessage(player, "world_info",
                 new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()),
                 new AbstractMap.SimpleEntry<>("%creator%", buildWorld.getCreator()),
-                new AbstractMap.SimpleEntry<>("%item%", worldData.MATERIAL.get().name()),
+                new AbstractMap.SimpleEntry<>("%item%", worldData.material().get().name()),
                 new AbstractMap.SimpleEntry<>("%type%", buildWorld.getType().getName()),
-                new AbstractMap.SimpleEntry<>("%private%", worldData.PRIVATE.get()),
-                new AbstractMap.SimpleEntry<>("%builders_enabled%", worldData.BUILDERS_ENABLED.get()),
+                new AbstractMap.SimpleEntry<>("%private%", worldData.privateWorld().get()),
+                new AbstractMap.SimpleEntry<>("%builders_enabled%", worldData.buildersEnabled().get()),
                 new AbstractMap.SimpleEntry<>("%builders%", buildWorld.getBuildersInfo()),
-                new AbstractMap.SimpleEntry<>("%block_breaking%", worldData.BLOCK_BREAKING.get()),
-                new AbstractMap.SimpleEntry<>("%block_placement%", worldData.BLOCK_PLACEMENT.get()),
-                new AbstractMap.SimpleEntry<>("%status%", worldData.STATUS.get().getName()),
-                new AbstractMap.SimpleEntry<>("%project%", worldData.PROJECT.get()),
-                new AbstractMap.SimpleEntry<>("%permission%", worldData.PERMISSION.get()),
+                new AbstractMap.SimpleEntry<>("%block_breaking%", worldData.blockBreaking().get()),
+                new AbstractMap.SimpleEntry<>("%block_placement%", worldData.blockPlacement().get()),
+                new AbstractMap.SimpleEntry<>("%status%", worldData.status().get().getName()),
+                new AbstractMap.SimpleEntry<>("%project%", worldData.project().get()),
+                new AbstractMap.SimpleEntry<>("%permission%", worldData.permission().get()),
                 new AbstractMap.SimpleEntry<>("%time%", buildWorld.getWorldTime()),
                 new AbstractMap.SimpleEntry<>("%creation%", buildWorld.getFormattedCreationDate()),
                 new AbstractMap.SimpleEntry<>("%date%", buildWorld.getFormattedCreationDate()),
-                new AbstractMap.SimpleEntry<>("%physics%", worldData.PHYSICS.get()),
-                new AbstractMap.SimpleEntry<>("%explosions%", worldData.EXPLOSIONS.get()),
-                new AbstractMap.SimpleEntry<>("%mobai%", worldData.MOB_AI.get()),
+                new AbstractMap.SimpleEntry<>("%physics%", worldData.physics().get()),
+                new AbstractMap.SimpleEntry<>("%explosions%", worldData.explosions().get()),
+                new AbstractMap.SimpleEntry<>("%mobai%", worldData.mobAi().get()),
                 new AbstractMap.SimpleEntry<>("%custom_spawn%", getCustomSpawn(buildWorld))
         );
     }
 
     private String getCustomSpawn(BuildWorld buildWorld) {
         WorldData worldData = buildWorld.getData();
-        String spawn = worldData.CUSTOM_SPAWN.get();
+        String spawn = worldData.customSpawn().get();
         if (spawn == null) {
             return "-";
         }

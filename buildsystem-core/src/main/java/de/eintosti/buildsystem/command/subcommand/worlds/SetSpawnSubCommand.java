@@ -44,7 +44,7 @@ public class SetSpawnSubCommand implements SubCommand {
 
         Location loc = player.getLocation();
         String locString = loc.getX() + ";" + loc.getY() + ";" + loc.getZ() + ";" + loc.getYaw() + ";" + loc.getPitch();
-        buildWorld.getData().CUSTOM_SPAWN.set(locString);
+        buildWorld.getData().customSpawn().set(locString);
         Messages.sendMessage(player, "worlds_setspawn_world_spawn_set", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
     }
 

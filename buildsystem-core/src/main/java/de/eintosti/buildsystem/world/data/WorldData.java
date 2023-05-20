@@ -19,28 +19,28 @@ import java.util.stream.Collectors;
 
 public class WorldData implements ConfigurationSerializable {
 
-    public final Type<String> CUSTOM_SPAWN = register("spawn");
-    public final Type<String> PERMISSION = register("permission");
-    public final Type<String> PROJECT = register("project");
-
-    public final Type<Difficulty> DIFFICULTY = register("difficulty");
-    public final Type<XMaterial> MATERIAL = register("material");
-    public final Type<WorldStatus> STATUS = register("status");
-
-    public final Type<Boolean> BLOCK_BREAKING = register("block-breaking");
-    public final Type<Boolean> BLOCK_INTERACTIONS = register("block-interactions");
-    public final Type<Boolean> BLOCK_PLACEMENT = register("block-placement");
-    public final Type<Boolean> BUILDERS_ENABLED = register("builders-enabled");
-    public final Type<Boolean> EXPLOSIONS = register("explosions");
-    public final Type<Boolean> MOB_AI = register("mob-ai");
-    public final Type<Boolean> PHYSICS = register("physics");
-    public final Type<Boolean> PRIVATE = register("private");
-
-    public final Type<Long> LAST_EDITED = register("last-edited");
-    public final Type<Long> LAST_LOADED = register("last-loaded");
-    public final Type<Long> LAST_UNLOADED = register("last-unloaded");
-
     private final Map<String, Type<?>> data = new HashMap<>();
+
+    private final Type<String> customSpawn = register("spawn");
+    private final Type<String> permission = register("permission");
+    private final Type<String> project = register("project");
+
+    private final Type<Difficulty> difficulty = register("difficulty");
+    private final Type<XMaterial> material = register("material");
+    private final Type<WorldStatus> status = register("status");
+
+    private final Type<Boolean> blockBreaking = register("block-breaking");
+    private final Type<Boolean> blockInteractions = register("block-interactions");
+    private final Type<Boolean> blockPlacement = register("block-placement");
+    private final Type<Boolean> buildersEnabled = register("builders-enabled");
+    private final Type<Boolean> explosions = register("explosions");
+    private final Type<Boolean> mobAi = register("mob-ai");
+    private final Type<Boolean> physics = register("physics");
+    private final Type<Boolean> privateWorld = register("private");
+
+    private final Type<Long> lastEdited = register("last-edited");
+    private final Type<Long> lastLoaded = register("last-loaded");
+    private final Type<Long> lastUnloaded = register("last-unloaded");
 
     public <T> Type<T> register(@NotNull String key) {
         Type<T> type = new Type<>();
@@ -49,24 +49,24 @@ public class WorldData implements ConfigurationSerializable {
     }
 
     public WorldData(String name, ConfigValues configValues, boolean privateWorld) {
-        this.CUSTOM_SPAWN.set(null);
-        this.PERMISSION.set(configValues.getDefaultPermission(privateWorld).replace("%world%", name));
-        this.PROJECT.set("-");
+        this.customSpawn.set(null);
+        this.permission.set(configValues.getDefaultPermission(privateWorld).replace("%world%", name));
+        this.project.set("-");
 
-        this.DIFFICULTY.set(configValues.getWorldDifficulty());
-        this.STATUS.set(WorldStatus.NOT_STARTED);
+        this.difficulty.set(configValues.getWorldDifficulty());
+        this.status.set(WorldStatus.NOT_STARTED);
 
-        this.BLOCK_BREAKING.set(configValues.isWorldBlockBreaking());
-        this.BLOCK_INTERACTIONS.set(configValues.isWorldBlockInteractions());
-        this.BLOCK_PLACEMENT.set(configValues.isWorldBlockPlacement());
-        this.BUILDERS_ENABLED.set(configValues.isWorldBuildersEnabled(privateWorld));
-        this.EXPLOSIONS.set(configValues.isWorldExplosions());
-        this.MOB_AI.set(configValues.isWorldMobAi());
-        this.PHYSICS.set(configValues.isWorldPhysics());
+        this.blockBreaking.set(configValues.isWorldBlockBreaking());
+        this.blockInteractions.set(configValues.isWorldBlockInteractions());
+        this.blockPlacement.set(configValues.isWorldBlockPlacement());
+        this.buildersEnabled.set(configValues.isWorldBuildersEnabled(privateWorld));
+        this.explosions.set(configValues.isWorldExplosions());
+        this.mobAi.set(configValues.isWorldMobAi());
+        this.physics.set(configValues.isWorldPhysics());
 
-        this.LAST_EDITED.set((long) -1);
-        this.LAST_LOADED.set((long) -1);
-        this.LAST_UNLOADED.set((long) -1);
+        this.lastEdited.set((long) -1);
+        this.lastLoaded.set((long) -1);
+        this.lastUnloaded.set((long) -1);
     }
 
     public WorldData(
@@ -88,26 +88,94 @@ public class WorldData implements ConfigurationSerializable {
             long lastUnloaded,
             long lastEdited
     ) {
-        this.CUSTOM_SPAWN.set(customSpawn);
-        this.PERMISSION.set(permission);
-        this.PROJECT.set(project);
+        this.customSpawn.set(customSpawn);
+        this.permission.set(permission);
+        this.project.set(project);
 
-        this.DIFFICULTY.set(difficulty);
-        this.MATERIAL.set(material);
-        this.STATUS.set(worldStatus);
+        this.difficulty.set(difficulty);
+        this.material.set(material);
+        this.status.set(worldStatus);
 
-        this.BLOCK_BREAKING.set(blockBreaking);
-        this.BLOCK_INTERACTIONS.set(blockInteractions);
-        this.BLOCK_PLACEMENT.set(blockPlacement);
-        this.BUILDERS_ENABLED.set(buildersEnabled);
-        this.EXPLOSIONS.set(explosions);
-        this.MOB_AI.set(mobAi);
-        this.PHYSICS.set(physics);
-        this.PRIVATE.set(privateWorld);
+        this.blockBreaking.set(blockBreaking);
+        this.blockInteractions.set(blockInteractions);
+        this.blockPlacement.set(blockPlacement);
+        this.buildersEnabled.set(buildersEnabled);
+        this.explosions.set(explosions);
+        this.mobAi.set(mobAi);
+        this.physics.set(physics);
+        this.privateWorld.set(privateWorld);
 
-        this.LAST_EDITED.set(lastEdited);
-        this.LAST_LOADED.set(lastLoaded);
-        this.LAST_UNLOADED.set(lastUnloaded);
+        this.lastEdited.set(lastEdited);
+        this.lastLoaded.set(lastLoaded);
+        this.lastUnloaded.set(lastUnloaded);
+    }
+
+    public Type<String> customSpawn() {
+        return customSpawn;
+    }
+
+    public Type<String> permission() {
+        return permission;
+    }
+
+    public Type<String> project() {
+        return project;
+    }
+
+    public Type<Difficulty> difficulty() {
+        return difficulty;
+    }
+
+    public Type<XMaterial> material() {
+        return material;
+    }
+
+    public Type<WorldStatus> status() {
+        return status;
+    }
+
+    public Type<Boolean> blockBreaking() {
+        return blockBreaking;
+    }
+
+    public Type<Boolean> blockInteractions() {
+        return blockInteractions;
+    }
+
+    public Type<Boolean> blockPlacement() {
+        return blockPlacement;
+    }
+
+    public Type<Boolean> buildersEnabled() {
+        return buildersEnabled;
+    }
+
+    public Type<Boolean> explosions() {
+        return explosions;
+    }
+
+    public Type<Boolean> mobAi() {
+        return mobAi;
+    }
+
+    public Type<Boolean> physics() {
+        return physics;
+    }
+
+    public Type<Boolean> privateWorld() {
+        return privateWorld;
+    }
+
+    public Type<Long> lastEdited() {
+        return lastEdited;
+    }
+
+    public Type<Long> lastLoaded() {
+        return lastLoaded;
+    }
+
+    public Type<Long> lastUnloaded() {
+        return lastUnloaded;
     }
 
     public static class Type<T> {

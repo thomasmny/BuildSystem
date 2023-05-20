@@ -49,7 +49,7 @@ public class WorldConfig extends ConfigurationFile {
                 continue;
             }
 
-            if (buildWorld.getData().MATERIAL.get() == XMaterial.PLAYER_HEAD) {
+            if (buildWorld.getData().material().get() == XMaterial.PLAYER_HEAD) {
                 plugin.getSkullCache().cacheSkull(worldName);
             }
 

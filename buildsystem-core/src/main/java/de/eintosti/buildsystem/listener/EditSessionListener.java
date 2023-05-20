@@ -52,7 +52,7 @@ public class EditSessionListener implements Listener {
         }
 
         if (!disableArchivedWorlds(buildWorld, player, event) && !disableNonBuilders(buildWorld, player, event)) {
-            buildWorld.getData().LAST_EDITED.set(System.currentTimeMillis());
+            buildWorld.getData().lastEdited().set(System.currentTimeMillis());
         }
     }
 
@@ -69,7 +69,7 @@ public class EditSessionListener implements Listener {
             return false;
         }
 
-        if (buildWorld.getData().STATUS.get() == WorldStatus.ARCHIVE) {
+        if (buildWorld.getData().status().get() == WorldStatus.ARCHIVE) {
             event.setExtent(new NullExtent());
             return true;
         }
@@ -94,7 +94,7 @@ public class EditSessionListener implements Listener {
             return false;
         }
 
-        if (buildWorld.getData().BUILDERS_ENABLED.get() && !buildWorld.isBuilder(player)) {
+        if (buildWorld.getData().buildersEnabled().get() && !buildWorld.isBuilder(player)) {
             event.setExtent(new NullExtent());
             return true;
         }
