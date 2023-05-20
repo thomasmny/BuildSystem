@@ -16,8 +16,8 @@ import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.config.WorldConfig;
 import de.eintosti.buildsystem.navigator.inventory.FilteredWorldsInventory.Visibility;
 import de.eintosti.buildsystem.util.FileUtils;
-import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.util.PlayerChatInput;
+import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.data.WorldStatus;
 import de.eintosti.buildsystem.world.data.WorldType;
 import de.eintosti.buildsystem.world.generator.CustomGenerator;
@@ -170,10 +170,14 @@ public class WorldManager {
     public void startWorldNameInput(Player player, WorldType worldType, @Nullable String template, boolean privateWorld) {
         player.closeInventory();
         new PlayerChatInput(plugin, player, "enter_world_name", input -> {
-            if (Arrays.stream(input.split("")).anyMatch(c -> c.matches("[^A-Za-z\\d/_-]"))) {
+            if (Arrays.stream(input.split("")).anyMatch(c -> c.matches("[^A-Za-z\\d/_-]") || c.matches(configValues.getInvalidNameCharacters()))) {
                 Messages.sendMessage(player, "worlds_world_creation_invalid_characters");
             }
-            String worldName = input.replaceAll("[^A-Za-z\\d/_-]", "").replace(" ", "_").trim();
+            String worldName = input
+                    .replaceAll("[^A-Za-z\\d/_-]", "")
+                    .replaceAll(configValues.getInvalidNameCharacters(), "")
+                    .replace(" ", "_")
+                    .trim();
             if (worldName.isEmpty()) {
                 Messages.sendMessage(player, "worlds_world_creation_name_bank");
                 return;
@@ -331,7 +335,10 @@ public class WorldManager {
                     return;
                 }
 
-                String invalidChar = Arrays.stream(worldName.split("")).filter(c -> c.matches("[^A-Za-z\\d/_-]")).findFirst().orElse(null);
+                String invalidChar = Arrays.stream(worldName.split(""))
+                        .filter(c -> c.matches("[^A-Za-z\\d/_-]") || c.matches(plugin.getConfigValues().getInvalidNameCharacters()))
+                        .findFirst()
+                        .orElse(null);
                 if (invalidChar != null) {
                     Messages.sendMessage(player, "worlds_importall_invalid_character",
                             new AbstractMap.SimpleEntry<>("%world%", worldName),
@@ -456,10 +463,14 @@ public class WorldManager {
             return;
         }
 
-        if (Arrays.stream(newName.split("")).anyMatch(c -> c.matches("[^A-Za-z\\d/_-]"))) {
+        if (Arrays.stream(newName.split("")).anyMatch(c -> c.matches("[^A-Za-z\\d/_-]") || c.matches(configValues.getInvalidNameCharacters()))) {
             Messages.sendMessage(player, "worlds_world_creation_invalid_characters");
         }
-        String parsedNewName = newName.replaceAll("[^A-Za-z\\d/_-]", "").replace(" ", "_").trim();
+        String parsedNewName = newName
+                .replaceAll("[^A-Za-z\\d/_-]", "")
+                .replaceAll(configValues.getInvalidNameCharacters(), "")
+                .replace(" ", "_")
+                .trim();
         if (parsedNewName.isEmpty()) {
             Messages.sendMessage(player, "worlds_world_creation_name_bank");
             return;
