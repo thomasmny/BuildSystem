@@ -705,7 +705,7 @@ public class WorldManager {
             String project = configuration.getString("worlds." + worldName + ".project");
 
             Difficulty difficulty = Difficulty.valueOf(configuration.getString("worlds." + worldName + ".difficulty", "PEACEFUL").toUpperCase());
-            XMaterial material = parseMaterial(configuration, "worlds." + worldName + ".material", worldName);
+            XMaterial material = parseMaterial(configuration, "worlds." + worldName + ".item", worldName);
             WorldStatus worldStatus = WorldStatus.valueOf(configuration.getString("worlds." + worldName + ".status"));
 
             boolean blockBreaking = !configuration.isBoolean("worlds." + worldName + ".block-breaking") || configuration.getBoolean("worlds." + worldName + ".block-breaking");
@@ -727,7 +727,7 @@ public class WorldManager {
         String permission = configuration.getString(path + ".permission");
         String project = configuration.getString(path + ".project");
 
-        Difficulty difficulty = Difficulty.valueOf(configuration.getString("worlds." + worldName + ".difficulty").toUpperCase());
+        Difficulty difficulty = Difficulty.valueOf(configuration.getString(path + ".difficulty").toUpperCase());
         XMaterial material = parseMaterial(configuration, path + ".material", worldName);
         WorldStatus worldStatus = WorldStatus.valueOf(configuration.getString(path + ".status"));
 
@@ -754,8 +754,7 @@ public class WorldManager {
         String itemString = configuration.getString(path);
         if (itemString == null) {
             itemString = XMaterial.BEDROCK.name();
-            plugin.getLogger().warning("Unknown material found for \"" + worldName + "\" (" + itemString + ").");
-            plugin.getLogger().warning("Defaulting back to BEDROCK.");
+            plugin.getLogger().warning("Could not find material for \"" + worldName + "\". Defaulting to BEDROCK.");
         }
 
         Optional<XMaterial> xMaterial = XMaterial.matchXMaterial(itemString);

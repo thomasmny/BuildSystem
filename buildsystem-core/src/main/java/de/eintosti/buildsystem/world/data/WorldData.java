@@ -25,9 +25,9 @@ public class WorldData implements ConfigurationSerializable {
     private final Type<String> permission = register("permission");
     private final Type<String> project = register("project");
 
-    private final Type<Difficulty> difficulty = register("difficulty");
-    private final Type<XMaterial> material = register("material");
-    private final Type<WorldStatus> status = register("status");
+    private final Type<Difficulty> difficulty = register("difficulty", new DifficultyType());
+    private final Type<XMaterial> material = register("material", new MaterialType());
+    private final Type<WorldStatus> status = register("status", new StatusType());
 
     private final Type<Boolean> blockBreaking = register("block-breaking");
     private final Type<Boolean> blockInteractions = register("block-interactions");
@@ -43,7 +43,10 @@ public class WorldData implements ConfigurationSerializable {
     private final Type<Long> lastUnloaded = register("last-unloaded");
 
     public <T> Type<T> register(@NotNull String key) {
-        Type<T> type = new Type<>();
+        return register(key, new Type<>());
+    }
+
+    public <T> Type<T> register(@NotNull String key, Type<T> type) {
         this.data.put(key, type);
         return type;
     }
@@ -69,25 +72,7 @@ public class WorldData implements ConfigurationSerializable {
         this.lastUnloaded.set((long) -1);
     }
 
-    public WorldData(
-            String customSpawn,
-            String permission,
-            String project,
-            Difficulty difficulty,
-            XMaterial material,
-            WorldStatus worldStatus,
-            boolean blockBreaking,
-            boolean blockInteractions,
-            boolean blockPlacement,
-            boolean buildersEnabled,
-            boolean explosions,
-            boolean mobAi,
-            boolean physics,
-            boolean privateWorld,
-            long lastLoaded,
-            long lastUnloaded,
-            long lastEdited
-    ) {
+    public WorldData(String customSpawn, String permission, String project, Difficulty difficulty, XMaterial material, WorldStatus worldStatus, boolean blockBreaking, boolean blockInteractions, boolean blockPlacement, boolean buildersEnabled, boolean explosions, boolean mobAi, boolean physics, boolean privateWorld, long lastLoaded, long lastUnloaded, long lastEdited) {
         this.customSpawn.set(customSpawn);
         this.permission.set(permission);
         this.project.set(project);
@@ -178,8 +163,14 @@ public class WorldData implements ConfigurationSerializable {
         return lastUnloaded;
     }
 
-    public static class Type<T> {
+    @Override
+    public @NotNull Map<String, Object> serialize() {
+        return data.entrySet().stream()
+                .filter(entry -> entry.getValue().get() != null)
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getConfigFormat()));
+    }
 
+    public static class Type<T> {
         private T value;
 
         public T get() {
@@ -189,13 +180,30 @@ public class WorldData implements ConfigurationSerializable {
         public void set(T value) {
             this.value = value;
         }
+
+        protected Object getConfigFormat() {
+            return value;
+        }
     }
 
-    @Override
-    public @NotNull Map<String, Object> serialize() {
-        return data.entrySet()
-                .stream()
-                .filter(entry -> entry.getValue() != null)
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    public static class DifficultyType extends Type<Difficulty> {
+        @Override
+        protected Object getConfigFormat() {
+            return super.get().name();
+        }
+    }
+
+    public static class MaterialType extends Type<XMaterial> {
+        @Override
+        protected Object getConfigFormat() {
+            return super.get().name();
+        }
+    }
+
+    public static class StatusType extends Type<WorldStatus> {
+        @Override
+        protected Object getConfigFormat() {
+            return super.get().name();
+        }
     }
 }
