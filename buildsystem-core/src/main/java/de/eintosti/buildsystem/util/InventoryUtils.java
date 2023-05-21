@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.Builder;
 import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.data.WorldData;
 import de.eintosti.buildsystem.world.data.WorldStatus;
 import de.eintosti.buildsystem.world.data.WorldType;
 import de.eintosti.buildsystem.world.modification.EditInventory;
@@ -235,11 +236,12 @@ public class InventoryUtils {
     public void addWorldItem(Player player, Inventory inventory, int position, BuildWorld buildWorld) {
         String worldName = buildWorld.getName();
         String displayName = Messages.getString("world_item_title", new AbstractMap.SimpleEntry<>("%world%", worldName));
+        XMaterial material = buildWorld.getData().material().get();
 
-        if (buildWorld.getMaterial() == XMaterial.PLAYER_HEAD) {
+        if (material == XMaterial.PLAYER_HEAD) {
             addSkull(inventory, position, displayName, worldName, getLore(player, buildWorld));
         } else {
-            addItemStack(inventory, position, buildWorld.getMaterial(), displayName, getLore(player, buildWorld));
+            addItemStack(inventory, position, material, displayName, getLore(player, buildWorld));
         }
     }
 
@@ -368,10 +370,10 @@ public class InventoryUtils {
                 Collections.reverse(buildWorlds);
                 break;
             case PROJECT_A_TO_Z:
-                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getProject().toLowerCase()));
+                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getData().project().get().toLowerCase()));
                 break;
             case PROJECT_Z_TO_A:
-                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getProject().toLowerCase()));
+                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getData().project().get().toLowerCase()));
                 Collections.reverse(buildWorlds);
                 break;
             case STATUS_NOT_STARTED:
@@ -398,11 +400,12 @@ public class InventoryUtils {
      * @return The formatted lore
      */
     private List<String> getLore(Player player, BuildWorld buildWorld) {
+        WorldData worldData = buildWorld.getData();
         @SuppressWarnings("unchecked")
         Map.Entry<String, Object>[] placeholders = new Map.Entry[]{
-                new AbstractMap.SimpleEntry<>("%status%", buildWorld.getStatus().getName()),
-                new AbstractMap.SimpleEntry<>("%project%", buildWorld.getProject()),
-                new AbstractMap.SimpleEntry<>("%permission%", buildWorld.getPermission()),
+                new AbstractMap.SimpleEntry<>("%status%", worldData.status().get().getName()),
+                new AbstractMap.SimpleEntry<>("%project%", worldData.project().get()),
+                new AbstractMap.SimpleEntry<>("%permission%", worldData.permission().get()),
                 new AbstractMap.SimpleEntry<>("%creator%", buildWorld.hasCreator() ? buildWorld.getCreator() : "-"),
                 new AbstractMap.SimpleEntry<>("%creation%", buildWorld.getFormattedCreationDate())
         };
@@ -799,7 +802,7 @@ public class InventoryUtils {
 
         @Override
         public int compare(BuildWorld buildWorld1, BuildWorld buildWorld2) {
-            return Integer.compare(buildWorld1.getStatus().getStage(), buildWorld2.getStatus().getStage());
+            return Integer.compare(buildWorld1.getData().status().get().getStage(), buildWorld2.getData().status().get().getStage());
         }
     }
 }

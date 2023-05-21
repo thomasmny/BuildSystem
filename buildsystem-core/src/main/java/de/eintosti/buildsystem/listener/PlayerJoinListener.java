@@ -20,6 +20,7 @@ import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.SpawnManager;
 import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.data.WorldData;
 import de.eintosti.buildsystem.world.data.WorldStatus;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
@@ -98,11 +99,12 @@ public class PlayerJoinListener implements Listener {
         String worldName = player.getWorld().getName();
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld != null) {
-            if (!buildWorld.isPhysics() && player.hasPermission("buildsystem.physics.message")) {
+            WorldData worldData = buildWorld.getData();
+            if (!worldData.physics().get() && player.hasPermission("buildsystem.physics.message")) {
                 Messages.sendMessage(player, "physics_deactivated_in_world", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
             }
 
-            if (configValues.isArchiveVanish() && buildWorld.getStatus() == WorldStatus.ARCHIVE) {
+            if (configValues.isArchiveVanish() && worldData.status().get() == WorldStatus.ARCHIVE) {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, false, false), false);
                 Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
             }

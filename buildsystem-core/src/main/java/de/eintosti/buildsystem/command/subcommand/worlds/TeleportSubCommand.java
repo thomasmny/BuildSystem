@@ -51,7 +51,8 @@ public class TeleportSubCommand implements SubCommand {
             return;
         }
 
-        if (player.hasPermission(buildWorld.getPermission()) || buildWorld.getPermission().equalsIgnoreCase("-")) {
+        String permission = buildWorld.getData().permission().get();
+        if (player.hasPermission(permission) || permission.equalsIgnoreCase("-")) {
             worldManager.teleport(player, buildWorld);
         } else {
             Messages.sendMessage(player, "worlds_tp_entry_forbidden");

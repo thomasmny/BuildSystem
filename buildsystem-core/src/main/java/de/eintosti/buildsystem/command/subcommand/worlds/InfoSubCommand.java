@@ -14,6 +14,7 @@ import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.data.WorldData;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -50,35 +51,38 @@ public class InfoSubCommand implements SubCommand {
         }
 
         //TODO: Print information about the custom generator?
+        WorldData worldData = buildWorld.getData();
         Messages.sendMessage(player, "world_info",
                 new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()),
                 new AbstractMap.SimpleEntry<>("%creator%", buildWorld.getCreator()),
-                new AbstractMap.SimpleEntry<>("%item%", buildWorld.getMaterial().name()),
+                new AbstractMap.SimpleEntry<>("%item%", worldData.material().get().name()),
                 new AbstractMap.SimpleEntry<>("%type%", buildWorld.getType().getName()),
-                new AbstractMap.SimpleEntry<>("%private%", buildWorld.isPrivate()),
-                new AbstractMap.SimpleEntry<>("%builders_enabled%", buildWorld.isBuilders()),
+                new AbstractMap.SimpleEntry<>("%private%", worldData.privateWorld().get()),
+                new AbstractMap.SimpleEntry<>("%builders_enabled%", worldData.buildersEnabled().get()),
                 new AbstractMap.SimpleEntry<>("%builders%", buildWorld.getBuildersInfo()),
-                new AbstractMap.SimpleEntry<>("%block_breaking%", buildWorld.isBlockBreaking()),
-                new AbstractMap.SimpleEntry<>("%block_placement%", buildWorld.isBlockPlacement()),
-                new AbstractMap.SimpleEntry<>("%status%", buildWorld.getStatus().getName()),
-                new AbstractMap.SimpleEntry<>("%project%", buildWorld.getProject()),
-                new AbstractMap.SimpleEntry<>("%permission%", buildWorld.getPermission()),
+                new AbstractMap.SimpleEntry<>("%block_breaking%", worldData.blockBreaking().get()),
+                new AbstractMap.SimpleEntry<>("%block_placement%", worldData.blockPlacement().get()),
+                new AbstractMap.SimpleEntry<>("%status%", worldData.status().get().getName()),
+                new AbstractMap.SimpleEntry<>("%project%", worldData.project().get()),
+                new AbstractMap.SimpleEntry<>("%permission%", worldData.permission().get()),
                 new AbstractMap.SimpleEntry<>("%time%", buildWorld.getWorldTime()),
                 new AbstractMap.SimpleEntry<>("%creation%", buildWorld.getFormattedCreationDate()),
                 new AbstractMap.SimpleEntry<>("%date%", buildWorld.getFormattedCreationDate()),
-                new AbstractMap.SimpleEntry<>("%physics%", buildWorld.isPhysics()),
-                new AbstractMap.SimpleEntry<>("%explosions%", buildWorld.isExplosions()),
-                new AbstractMap.SimpleEntry<>("%mobai%", buildWorld.isMobAI()),
+                new AbstractMap.SimpleEntry<>("%physics%", worldData.physics().get()),
+                new AbstractMap.SimpleEntry<>("%explosions%", worldData.explosions().get()),
+                new AbstractMap.SimpleEntry<>("%mobai%", worldData.mobAi().get()),
                 new AbstractMap.SimpleEntry<>("%custom_spawn%", getCustomSpawn(buildWorld))
         );
     }
 
     private String getCustomSpawn(BuildWorld buildWorld) {
-        if (buildWorld.getCustomSpawn() == null) {
+        WorldData worldData = buildWorld.getData();
+        String spawn = worldData.customSpawn().get();
+        if (spawn == null) {
             return "-";
         }
 
-        String[] spawnString = buildWorld.getCustomSpawn().split(";");
+        String[] spawnString = spawn.split(";");
         Location location = new Location(
                 Bukkit.getWorld(buildWorld.getName()),
                 Double.parseDouble(spawnString[0]),

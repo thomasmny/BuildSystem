@@ -76,12 +76,8 @@ public class PlayerChangedWorldListener implements Listener {
         }
 
         BuildWorld newWorld = worldManager.getBuildWorld(worldName);
-        if (newWorld != null) {
-            if (!newWorld.isPhysics()) {
-                if (player.hasPermission("buildsystem.physics.message")) {
-                    Messages.sendMessage(player, "physics_deactivated_in_world", new AbstractMap.SimpleEntry<>("%world%", newWorld.getName()));
-                }
-            }
+        if (newWorld != null && !newWorld.getData().physics().get() && player.hasPermission("buildsystem.physics.message")) {
+            Messages.sendMessage(player, "physics_deactivated_in_world", new AbstractMap.SimpleEntry<>("%world%", newWorld.getName()));
         }
 
         removeOldNavigator(player);
@@ -115,7 +111,7 @@ public class PlayerChangedWorldListener implements Listener {
     }
 
     private void setGoldBlock(BuildWorld buildWorld) {
-        if (buildWorld == null || buildWorld.getType() != WorldType.VOID || buildWorld.getStatus() != WorldStatus.NOT_STARTED) {
+        if (buildWorld == null || buildWorld.getType() != WorldType.VOID || buildWorld.getData().status().get() != WorldStatus.NOT_STARTED) {
             return;
         }
 
@@ -157,7 +153,7 @@ public class PlayerChangedWorldListener implements Listener {
             this.playerArmor.remove(playerUUID);
         }
 
-        if (buildWorld.getStatus() == WorldStatus.ARCHIVE) {
+        if (buildWorld.getData().status().get() == WorldStatus.ARCHIVE) {
             this.playerGamemode.put(playerUUID, player.getGameMode());
             this.playerInventory.put(playerUUID, playerInventory.getContents());
             this.playerArmor.put(playerUUID, playerInventory.getArmorContents());
