@@ -9,6 +9,6 @@
   "commitMessagePrefix": "chore: ",
   "rebaseWhen": "conflicted",
   "schedule": [
-    "on the first day of the month"
+    "on the first day of the week"
   ]
 }
