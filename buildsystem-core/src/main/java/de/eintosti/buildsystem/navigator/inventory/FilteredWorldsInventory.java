@@ -235,9 +235,12 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
                 }
                 return;
             case 49:
-                XSound.ENTITY_CHICKEN_EGG.play(player);
-                plugin.getCreateInventory().openInventory(player, CreateInventory.Page.PREDEFINED, visibility);
-                return;
+                if (itemStack.getType() == XMaterial.PLAYER_HEAD.parseMaterial()) {
+                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    plugin.getCreateInventory().openInventory(player, CreateInventory.Page.PREDEFINED, visibility);
+                    return;
+                }
+                break;
             case 52:
                 if (decrementInv(player, numOfWorlds(player), MAX_WORLDS)) {
                     openInventory(player);
