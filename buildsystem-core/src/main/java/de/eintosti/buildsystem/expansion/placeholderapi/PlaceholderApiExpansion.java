@@ -8,6 +8,7 @@
 package de.eintosti.buildsystem.expansion.placeholderapi;
 
 import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.settings.Settings;
 import de.eintosti.buildsystem.settings.SettingsManager;
 import de.eintosti.buildsystem.world.BuildWorld;
@@ -17,8 +18,6 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.text.SimpleDateFormat;
 
 public class PlaceholderApiExpansion extends PlaceholderExpansion {
 
@@ -203,7 +202,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "buildersenabled":
                 return String.valueOf(worldData.buildersEnabled().get());
             case "creation":
-                return buildWorld.getFormattedCreationDate();
+                return Messages.formatDate(buildWorld.getCreationDate());
             case "creator":
                 return buildWorld.getCreator();
             case "creatorid":
@@ -211,11 +210,11 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "explosions":
                 return String.valueOf(worldData.explosions().get());
             case "lastedited":
-                return formatDate(worldData.lastEdited().get());
+                return Messages.formatDate(worldData.lastEdited().get());
             case "lastloaded":
-                return formatDate(worldData.lastLoaded().get());
+                return Messages.formatDate(worldData.lastLoaded().get());
             case "lastunloaded":
-                return formatDate(worldData.lastUnloaded().get());
+                return Messages.formatDate(worldData.lastUnloaded().get());
             case "loaded":
                 return String.valueOf(buildWorld.isLoaded());
             case "material":
@@ -243,9 +242,5 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             default:
                 return null;
         }
-    }
-
-    private String formatDate(long millis) {
-        return millis > 0 ? new SimpleDateFormat(plugin.getConfigValues().getDateFormat()).format(millis) : "-";
     }
 }

@@ -128,7 +128,7 @@ public class BuildWorldCreator {
     }
 
     private BuildWorld createBuildWorldObject(Player player) {
-        return new BuildWorld(
+        BuildWorld buildWorld = new BuildWorld(
                 worldName,
                 creator == null ? player.getName() : creator.getName(),
                 creator == null ? player.getUniqueId() : creator.getUuid(),
@@ -137,6 +137,8 @@ public class BuildWorldCreator {
                 privateWorld,
                 customGenerator
         );
+        buildWorld.getData().lastLoaded().set(System.currentTimeMillis());
+        return buildWorld;
     }
 
     /**

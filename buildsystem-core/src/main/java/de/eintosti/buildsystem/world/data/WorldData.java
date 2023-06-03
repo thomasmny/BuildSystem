@@ -66,6 +66,7 @@ public class WorldData implements ConfigurationSerializable {
         this.explosions.set(configValues.isWorldExplosions());
         this.mobAi.set(configValues.isWorldMobAi());
         this.physics.set(configValues.isWorldPhysics());
+        this.privateWorld.set(privateWorld);
 
         this.lastEdited.set((long) -1);
         this.lastLoaded.set((long) -1);

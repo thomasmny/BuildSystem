@@ -407,7 +407,10 @@ public class InventoryUtils {
                 new AbstractMap.SimpleEntry<>("%project%", worldData.project().get()),
                 new AbstractMap.SimpleEntry<>("%permission%", worldData.permission().get()),
                 new AbstractMap.SimpleEntry<>("%creator%", buildWorld.hasCreator() ? buildWorld.getCreator() : "-"),
-                new AbstractMap.SimpleEntry<>("%creation%", buildWorld.getFormattedCreationDate())
+                new AbstractMap.SimpleEntry<>("%creation%", Messages.formatDate(buildWorld.getCreationDate())),
+                new AbstractMap.SimpleEntry<>("%lastedited%", Messages.formatDate(worldData.lastEdited().get())),
+                new AbstractMap.SimpleEntry<>("%lastloaded%", Messages.formatDate(worldData.lastLoaded().get())),
+                new AbstractMap.SimpleEntry<>("%lastunloaded%", Messages.formatDate(worldData.lastUnloaded().get()))
         };
         List<String> messageList = plugin.getWorldManager().isPermitted(player, WorldsTabComplete.WorldsArgument.EDIT.getPermission(),
                 buildWorld.getName()) ? Messages.getStringList("world_item_lore_edit", placeholders) : Messages.getStringList("world_item_lore_normal", placeholders);

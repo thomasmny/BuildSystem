@@ -10,9 +10,7 @@ package de.eintosti.buildsystem.config;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.BuildWorldCreator;
 import de.eintosti.buildsystem.world.WorldManager;
-import org.bukkit.World;
 
 import java.util.Iterator;
 import java.util.logging.Logger;
@@ -43,8 +41,8 @@ public class WorldConfig extends ConfigurationFile {
         while (iterator.hasNext()) {
             BuildWorld buildWorld = iterator.next();
             String worldName = buildWorld.getName();
-            World world = new BuildWorldCreator(plugin, buildWorld).generateBukkitWorld();
-            if (world == null) {
+
+            if (!buildWorld.load()) {
                 iterator.remove();
                 continue;
             }

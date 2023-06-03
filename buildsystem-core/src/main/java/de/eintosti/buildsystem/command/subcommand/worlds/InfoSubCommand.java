@@ -66,12 +66,14 @@ public class InfoSubCommand implements SubCommand {
                 new AbstractMap.SimpleEntry<>("%project%", worldData.project().get()),
                 new AbstractMap.SimpleEntry<>("%permission%", worldData.permission().get()),
                 new AbstractMap.SimpleEntry<>("%time%", buildWorld.getWorldTime()),
-                new AbstractMap.SimpleEntry<>("%creation%", buildWorld.getFormattedCreationDate()),
-                new AbstractMap.SimpleEntry<>("%date%", buildWorld.getFormattedCreationDate()),
+                new AbstractMap.SimpleEntry<>("%creation%", Messages.formatDate(buildWorld.getCreationDate())),
                 new AbstractMap.SimpleEntry<>("%physics%", worldData.physics().get()),
                 new AbstractMap.SimpleEntry<>("%explosions%", worldData.explosions().get()),
                 new AbstractMap.SimpleEntry<>("%mobai%", worldData.mobAi().get()),
-                new AbstractMap.SimpleEntry<>("%custom_spawn%", getCustomSpawn(buildWorld))
+                new AbstractMap.SimpleEntry<>("%custom_spawn%", getCustomSpawn(buildWorld)),
+                new AbstractMap.SimpleEntry<>("%lastedited%", Messages.formatDate(worldData.lastEdited().get())),
+                new AbstractMap.SimpleEntry<>("%lastloaded%", Messages.formatDate(worldData.lastLoaded().get())),
+                new AbstractMap.SimpleEntry<>("%lastunloaded%", Messages.formatDate(worldData.lastUnloaded().get()))
         );
     }
 

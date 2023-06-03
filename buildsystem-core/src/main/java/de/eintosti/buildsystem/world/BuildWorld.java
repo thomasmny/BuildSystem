@@ -32,7 +32,6 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -282,16 +281,6 @@ public class BuildWorld implements ConfigurationSerializable {
     }
 
     /**
-     * Get the creation date in the format provided by the config.
-     *
-     * @return The formatted creation date
-     * @see BuildWorld#getCreationDate()
-     */
-    public String getFormattedCreationDate() {
-        return creationDate > 0 ? new SimpleDateFormat(configValues.getDateFormat()).format(creationDate) : "-";
-    }
-
-    /**
      * Get the custom chunk generator used to generate the world.
      *
      * @return The custom chunk generator used to generate the world.
@@ -305,7 +294,7 @@ public class BuildWorld implements ConfigurationSerializable {
      * Get the display name of a {@link Difficulty}.
      *
      * @return the difficulty's display name
-     * @see WorldData#DIFFICULTY
+     * @see WorldData#difficulty()
      */
     public String getDifficultyName() {
         switch (worldData.difficulty().get()) {
@@ -574,19 +563,27 @@ public class BuildWorld implements ConfigurationSerializable {
         load();
     }
 
-    public void load() {
+    /**
+     * Loads the world.
+     *
+     * @return {@code true} if the world was loaded, {@code false} otherwise
+     */
+    public boolean load() {
         if (isLoaded()) {
-            return;
+            return false;
         }
 
         BuildWorldLoadEvent loadEvent = new BuildWorldLoadEvent(this);
         Bukkit.getServer().getPluginManager().callEvent(loadEvent);
         if (loadEvent.isCancelled()) {
-            return;
+            return false;
         }
 
         plugin.getLogger().info("*** Loading world \"" + name + "\" ***");
-        new BuildWorldCreator(plugin, this).generateBukkitWorld();
+        World world = new BuildWorldCreator(plugin, this).generateBukkitWorld();
+        if (world == null) {
+            return false;
+        }
 
         this.worldData.lastLoaded().set(System.currentTimeMillis());
         this.loaded = true;
@@ -594,6 +591,7 @@ public class BuildWorld implements ConfigurationSerializable {
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldLoadedEvent(this));
 
         resetUnloadTask();
+        return true;
     }
 
     @Override

@@ -10,7 +10,6 @@ package de.eintosti.buildsystem.settings;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.config.ConfigValues;
-import de.eintosti.buildsystem.config.SettingsConfig;
 import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;
@@ -31,7 +30,6 @@ public class SettingsManager {
 
     private final BuildSystem plugin;
     private final ConfigValues configValues;
-    private final SettingsConfig settingsConfig;
     private final WorldManager worldManager;
 
     private final Map<UUID, FastBoard> boards;
@@ -42,7 +40,6 @@ public class SettingsManager {
     public SettingsManager(BuildSystem plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
-        this.settingsConfig = new SettingsConfig(plugin);
         this.worldManager = plugin.getWorldManager();
 
         this.boards = new HashMap<>();
@@ -145,7 +142,10 @@ public class SettingsManager {
                 .replace("%permission%", parseWorldInformation(buildWorld, "%permission%"))
                 .replace("%project%", parseWorldInformation(buildWorld, "%project%"))
                 .replace("%creator%", parseWorldInformation(buildWorld, "%creator%"))
-                .replace("%creation%", parseWorldInformation(buildWorld, "%creation%"));
+                .replace("%creation%", parseWorldInformation(buildWorld, "%creation%"))
+                .replace("%lastedited%", parseWorldInformation(buildWorld, "%lastedited%"))
+                .replace("%lastloaded%", parseWorldInformation(buildWorld, "%lastloaded%"))
+                .replace("%lastunloaded%", parseWorldInformation(buildWorld, "%lastunloaded%"));
     }
 
     // Is there an easier way of doing this?
@@ -165,7 +165,13 @@ public class SettingsManager {
             case "%creator%":
                 return buildWorld.getCreator();
             case "%creation%":
-                return buildWorld.getFormattedCreationDate();
+                return Messages.formatDate(buildWorld.getCreationDate());
+            case "%lastedited%":
+                return Messages.formatDate(worldData.lastEdited().get());
+            case "%lastloaded%":
+                return Messages.formatDate(worldData.lastLoaded().get());
+            case "%lastunloaded%":
+                return Messages.formatDate(worldData.lastUnloaded().get());
             default:
                 return "§f-";
         }
