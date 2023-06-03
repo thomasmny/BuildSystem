@@ -10,9 +10,13 @@ package de.eintosti.buildsystem.config;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.world.BuildWorld;
+import de.eintosti.buildsystem.world.BuildWorldCreator;
 import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.data.WorldData;
+import org.bukkit.World;
 
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class WorldConfig extends ConfigurationFile {
@@ -37,22 +41,26 @@ public class WorldConfig extends ConfigurationFile {
         }
 
         logger.info("*** All worlds will be loaded now ***");
-        Iterator<BuildWorld> iterator = worldManager.getBuildWorlds().iterator();
-        while (iterator.hasNext()) {
-            BuildWorld buildWorld = iterator.next();
-            String worldName = buildWorld.getName();
 
-            if (!buildWorld.load()) {
-                iterator.remove();
-                continue;
+        List<BuildWorld> notLoaded = new ArrayList<>();
+        worldManager.getBuildWorlds().forEach(buildWorld -> {
+            String worldName = buildWorld.getName();
+            World world = new BuildWorldCreator(plugin, buildWorld).generateBukkitWorld();
+            if (world == null) {
+                notLoaded.add(buildWorld);
+                return;
             }
 
-            if (buildWorld.getData().material().get() == XMaterial.PLAYER_HEAD) {
+            WorldData worldData = buildWorld.getData();
+            worldData.lastLoaded().set(System.currentTimeMillis());
+            if (worldData.material().get() == XMaterial.PLAYER_HEAD) {
                 plugin.getSkullCache().cacheSkull(worldName);
             }
 
             logger.info("✔ World loaded: " + worldName);
-        }
+        });
+        notLoaded.forEach(worldManager::removeBuildWorld);
+
         logger.info("*** All worlds have been loaded ***");
     }
 }

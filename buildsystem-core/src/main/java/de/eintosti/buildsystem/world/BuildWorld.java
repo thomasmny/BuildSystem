@@ -563,26 +563,21 @@ public class BuildWorld implements ConfigurationSerializable {
         load();
     }
 
-    /**
-     * Loads the world.
-     *
-     * @return {@code true} if the world was loaded, {@code false} otherwise
-     */
-    public boolean load() {
+    public void load() {
         if (isLoaded()) {
-            return false;
+            return;
         }
 
         BuildWorldLoadEvent loadEvent = new BuildWorldLoadEvent(this);
         Bukkit.getServer().getPluginManager().callEvent(loadEvent);
         if (loadEvent.isCancelled()) {
-            return false;
+            return;
         }
 
         plugin.getLogger().info("*** Loading world \"" + name + "\" ***");
         World world = new BuildWorldCreator(plugin, this).generateBukkitWorld();
         if (world == null) {
-            return false;
+            return;
         }
 
         this.worldData.lastLoaded().set(System.currentTimeMillis());
@@ -591,7 +586,6 @@ public class BuildWorld implements ConfigurationSerializable {
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldLoadedEvent(this));
 
         resetUnloadTask();
-        return true;
     }
 
     @Override

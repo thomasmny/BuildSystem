@@ -105,6 +105,15 @@ public class WorldManager {
     }
 
     /**
+     * Removes a {@link BuildWorld} from the list of all worlds.
+     *
+     * @param buildWorld The world to remove
+     */
+    public void removeBuildWorld(BuildWorld buildWorld) {
+        this.buildWorlds.remove(buildWorld.getName());
+    }
+
+    /**
      * Gets a list of all {@link BuildWorld}s.
      *
      * @return A list of all worlds

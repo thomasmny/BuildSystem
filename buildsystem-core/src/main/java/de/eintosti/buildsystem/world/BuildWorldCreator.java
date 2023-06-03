@@ -325,7 +325,7 @@ public class BuildWorldCreator {
      * @return {@code true} if the world was generated in a higher Minecraft version, otherwise {@code false}
      */
     public boolean isHigherVersion() {
-        if (!Boolean.getBoolean("Paper.ignoreWorldDataVersion")) {
+        if (Boolean.getBoolean("Paper.ignoreWorldDataVersion")) {
             return false;
         }
         return parseDataVersion() > plugin.getServerVersion().getDataVersion();
