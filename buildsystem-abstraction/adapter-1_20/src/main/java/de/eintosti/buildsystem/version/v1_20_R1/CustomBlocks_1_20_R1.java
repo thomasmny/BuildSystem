@@ -5,7 +5,7 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-package de.eintosti.buildsystem.version.v1_14_R1;
+package de.eintosti.buildsystem.version.v1_20_R1;
 
 import de.eintosti.buildsystem.version.customblocks.CustomBlock;
 import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
@@ -13,6 +13,7 @@ import de.eintosti.buildsystem.version.util.DirectionUtil;
 import org.bukkit.Axis;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Furnace;
@@ -22,19 +23,29 @@ import org.bukkit.block.data.Lightable;
 import org.bukkit.block.data.MultipleFacing;
 import org.bukkit.block.data.Openable;
 import org.bukkit.block.data.Orientable;
+import org.bukkit.block.data.type.HangingSign;
 import org.bukkit.block.data.type.Sign;
 import org.bukkit.block.data.type.Slab;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class CustomBlocks_1_14_R1 implements CustomBlocks {
+public class CustomBlocks_1_20_R1 implements CustomBlocks, Listener {
 
     private final JavaPlugin plugin;
 
-    public CustomBlocks_1_14_R1(JavaPlugin plugin) {
+    public CustomBlocks_1_20_R1(JavaPlugin plugin) {
         this.plugin = plugin;
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @Override
@@ -132,8 +143,8 @@ public class CustomBlocks_1_14_R1 implements CustomBlocks {
                     block.setType(Material.BARRIER);
                     break;
                 case INVISIBLE_ITEM_FRAME:
-                    // Invalid server version
-                    break;
+                    // Handled below
+                    return;
                 case MOB_SPAWNER:
                     block.setType(Material.SPAWNER);
                     break;
@@ -153,6 +164,22 @@ public class CustomBlocks_1_14_R1 implements CustomBlocks {
 
             event.setCancelled(true);
         });
+    }
+
+    @EventHandler
+    public void onInvisibleItemFramePlacement(HangingPlaceEvent event) {
+        if (event.getEntity().getType() != EntityType.ITEM_FRAME) {
+            return;
+        }
+
+        ItemStack itemStack = event.getItemStack();
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if (!itemMeta.getPersistentDataContainer().has(new NamespacedKey(plugin, "invisible-itemframe"), PersistentDataType.BYTE)) {
+            return;
+        }
+
+        ItemFrame itemFrame = (ItemFrame) event.getEntity();
+        itemFrame.setVisible(false);
     }
 
     @Override
@@ -229,6 +256,10 @@ public class CustomBlocks_1_14_R1 implements CustomBlocks {
             Sign sign = (Sign) blockData;
             sign.setRotation(direction);
             block.setBlockData(sign);
+        } else if (blockData instanceof HangingSign) {
+            HangingSign hangingSign = (HangingSign) blockData;
+            hangingSign.setRotation(direction);
+            block.setBlockData(hangingSign);
         }
     }
 }

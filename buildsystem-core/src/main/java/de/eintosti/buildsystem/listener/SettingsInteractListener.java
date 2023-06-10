@@ -15,6 +15,7 @@ import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.player.PlayerManager;
 import de.eintosti.buildsystem.settings.Settings;
 import de.eintosti.buildsystem.settings.SettingsManager;
+import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import de.eintosti.buildsystem.version.util.DirectionUtil;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.Builder;
@@ -44,8 +45,8 @@ import java.util.UUID;
 
 public class SettingsInteractListener implements Listener {
 
-    private final BuildSystem plugin;
     private final ConfigValues configValues;
+    private final CustomBlocks customBlocks;
 
     private final PlayerManager playerManager;
     private final SettingsManager settingsManager;
@@ -54,8 +55,8 @@ public class SettingsInteractListener implements Listener {
     private final Set<UUID> cachePlayers;
 
     public SettingsInteractListener(BuildSystem plugin) {
-        this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
+        this.customBlocks = plugin.getCustomBlocks();
 
         this.playerManager = plugin.getPlayerManager();
         this.settingsManager = plugin.getSettingsManager();
@@ -98,10 +99,10 @@ public class SettingsInteractListener implements Listener {
             event.setCancelled(true);
             switch (material) {
                 case IRON_TRAPDOOR:
-                    plugin.getCustomBlocks().toggleIronTrapdoor(event);
+                    customBlocks.toggleIronTrapdoor(event);
                     break;
                 case IRON_DOOR:
-                    plugin.getCustomBlocks().toggleIronDoor(event);
+                    customBlocks.toggleIronDoor(event);
                     break;
                 default:
                     break;
@@ -120,7 +121,7 @@ public class SettingsInteractListener implements Listener {
 
         Settings settings = settingsManager.getSettings(player);
         if (settings.isSlabBreaking() && action == Action.LEFT_CLICK_BLOCK) {
-            plugin.getCustomBlocks().modifySlab(event);
+            customBlocks.modifySlab(event);
         }
     }
 
@@ -151,7 +152,7 @@ public class SettingsInteractListener implements Listener {
         }
 
         event.setCancelled(true);
-        plugin.getCustomBlocks().setPlant(event);
+        customBlocks.setPlant(event);
     }
 
     @EventHandler
@@ -173,13 +174,13 @@ public class SettingsInteractListener implements Listener {
 
         Material material = itemStack.getType();
         XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-        if (!XTag.SIGNS.isTagged(xMaterial)) {
+        if (!XTag.SIGNS.isTagged(xMaterial) && !XTag.HANGING_SIGNS.isTagged(xMaterial)) {
             return;
         }
 
         Block clickedBlock = event.getClickedBlock();
         BlockFace blockFace = event.getBlockFace();
-        if (clickedBlock == null || blockFace == BlockFace.DOWN) {
+        if (clickedBlock == null) {
             return;
         }
 
@@ -191,25 +192,50 @@ public class SettingsInteractListener implements Listener {
         event.setUseItemInHand(Event.Result.DENY);
         event.setCancelled(true);
 
+        boolean isHangingSign = XTag.HANGING_SIGNS.isTagged(xMaterial);
+
         switch (blockFace) {
             case UP:
+                if (isHangingSign) {
+                    return;
+                }
                 if (!XMaterial.supports(13)) {
                     material = Material.getMaterial("SIGN_POST") != null ? Material.valueOf("SIGN_POST") : material;
                 }
                 adjacent.setType(material);
-                plugin.getCustomBlocks().rotateBlock(adjacent, player, getDirection(player).getOppositeFace());
+                customBlocks.rotateBlock(adjacent, player, DirectionUtil.getPlayerDirection(player).getOppositeFace());
+                break;
+            case DOWN:
+                if (!isHangingSign) {
+                    return;
+                }
+                adjacent.setType(material);
+                customBlocks.rotateBlock(adjacent, player, getHangingSignDirection(event));
                 break;
             case NORTH:
             case EAST:
             case SOUTH:
             case WEST:
-                String type = xMaterial.name().replace("_SIGN", "");
-                XMaterial.matchXMaterial(type + "_WALL_SIGN").ifPresent(value -> adjacent.setType(value.parseMaterial()));
-                plugin.getCustomBlocks().rotateBlock(adjacent, player, blockFace);
+                String woodType = xMaterial.name()
+                        .replace("_HANGING", "") // Replace hanging if present
+                        .replace("_SIGN", ""); // Get wood type
+                String block = isHangingSign ? "_WALL_HANGING_SIGN" : "_WALL_SIGN";
+                BlockFace facing = isHangingSign ? getHangingSignDirection(event) : blockFace;
+                XMaterial.matchXMaterial(woodType + block).ifPresent(value -> adjacent.setType(value.parseMaterial()));
+                customBlocks.rotateBlock(adjacent, player, facing);
                 break;
             default:
                 break;
         }
+    }
+
+    private BlockFace getHangingSignDirection(PlayerInteractEvent event) {
+        BlockFace clickedFace = event.getBlockFace();
+        BlockFace playerFacing = DirectionUtil.getCardinalDirection(event.getPlayer()).getOppositeFace();
+        if (clickedFace != playerFacing && clickedFace != playerFacing.getOppositeFace()) {
+            return playerFacing;
+        }
+        return (clickedFace == BlockFace.NORTH || clickedFace == BlockFace.SOUTH) ? BlockFace.EAST : BlockFace.SOUTH;
     }
 
     @EventHandler
@@ -264,9 +290,9 @@ public class SettingsInteractListener implements Listener {
 
         Block adjacent = block.getRelative(event.getBlockFace());
         adjacent.setType(material);
-        XBlock.setColor(adjacent, getItemColor(itemStack));
+        XBlock.setColor(adjacent, DyeColor.getByWoolData((byte) itemStack.getDurability()));
 
-        plugin.getCustomBlocks().rotateBlock(adjacent, player, DirectionUtil.getBlockDirection(player, false));
+        customBlocks.rotateBlock(adjacent, player, DirectionUtil.getBlockDirection(player, false));
 
         BlockPlaceEvent blockPlaceEvent = new BlockPlaceEvent(adjacent, adjacent.getState(), block, itemStack, player, true);
         Bukkit.getServer().getPluginManager().callEvent(blockPlaceEvent);
@@ -275,15 +301,19 @@ public class SettingsInteractListener implements Listener {
     /**
      * Not every player can always interact with the {@link BuildWorld} they are in.
      * <p>
-     * Reasons an interaction could be cancelled:<br>
-     * - The world has its {@link WorldStatus} set to archived<br>
-     * - The world has a setting enabled which disallows certain events<br>
-     * - The world only allows {@link Builder}s to build and the player is not such a builder<br>
+     * Reasons an interaction could be cancelled:
+     * <ul>
+     *   <li>The world has its {@link WorldStatus} set to archived</li>
+     *   <li>The world has a setting enabled which disallows certain events</li>
+     *   <li>The world only allows {@link Builder}s to build and the player is not such a builder</li>
+     * </ul>
      * <p>
-     * However, a player can override these reasons if:<br>
-     * - The player has the permission `buildsystem.admin`<br>
-     * - The player has the permission `buildsystem.bypass.archive`<br>
-     * - The player has used `/build` to enter build-mode<br>
+     * However, a player can override these reasons if:
+     * <ul>
+     *   <li>The player has the permission <b>buildsystem.admin</b></li>
+     *   <li>The player has the permission <b>buildsystem.bypass.archive</b></li>
+     *   <li>The player has used <b>/build</b> to enter build-mode</li>
+     * </ul>
      *
      * @param event the event which was called by the world manipulation
      * @return if the interaction with the world is valid
@@ -320,49 +350,6 @@ public class SettingsInteractListener implements Listener {
         return true;
     }
 
-    private BlockFace getDirection(Player player) {
-        float yaw = player.getLocation().getYaw();
-        if (yaw < 0) {
-            yaw += 360;
-        }
-        yaw %= 360;
-        int i = (int) ((yaw + 8) / 22.5);
-        switch (i) {
-            case 1:
-                return BlockFace.SOUTH_SOUTH_WEST;
-            case 2:
-                return BlockFace.SOUTH_WEST;
-            case 3:
-                return BlockFace.WEST_SOUTH_WEST;
-            case 4:
-                return BlockFace.WEST;
-            case 5:
-                return BlockFace.WEST_NORTH_WEST;
-            case 6:
-                return BlockFace.NORTH_WEST;
-            case 7:
-                return BlockFace.NORTH_NORTH_WEST;
-            case 8:
-                return BlockFace.NORTH;
-            case 9:
-                return BlockFace.NORTH_NORTH_EAST;
-            case 10:
-                return BlockFace.NORTH_EAST;
-            case 11:
-                return BlockFace.EAST_NORTH_EAST;
-            case 12:
-                return BlockFace.EAST;
-            case 13:
-                return BlockFace.EAST_SOUTH_EAST;
-            case 14:
-                return BlockFace.SOUTH_EAST;
-            case 15:
-                return BlockFace.SOUTH_SOUTH_EAST;
-            default:
-                return BlockFace.SOUTH;
-        }
-    }
-
     /**
      * Stop {@link Player} from opening {@link Inventory} because the event should be cancelled
      * as it was fired due to an interaction caused in {@link SettingsInteractListener#manageDisabledInteractSetting}
@@ -372,10 +359,5 @@ public class SettingsInteractListener implements Listener {
         if (cachePlayers.remove(event.getPlayer().getUniqueId())) {
             event.setCancelled(true);
         }
-    }
-
-    @SuppressWarnings("deprecation")
-    private DyeColor getItemColor(ItemStack itemStack) {
-        return DyeColor.getByWoolData((byte) itemStack.getDurability());
     }
 }

@@ -30,10 +30,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Set;
 
+@SuppressWarnings("deprecation")
 public class CustomBlocks_1_12_R1 implements CustomBlocks {
 
     private final JavaPlugin plugin;
-
     private final int mcVersion;
 
     public CustomBlocks_1_12_R1(JavaPlugin plugin) {
@@ -44,7 +44,6 @@ public class CustomBlocks_1_12_R1 implements CustomBlocks {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public void setBlock(BlockPlaceEvent event, String key) {
         CustomBlock customBlock = CustomBlock.getCustomBlock(key);
         if (customBlock == null) {
@@ -121,7 +120,9 @@ public class CustomBlocks_1_12_R1 implements CustomBlocks {
                     break;
                 case BURNING_FURNACE:
                     block.setType(Material.FURNACE);
-                    powerFurnace(block);
+                    Furnace furnace = (Furnace) block.getState();
+                    furnace.setBurnTime(Short.MAX_VALUE);
+                    furnace.update();
                     rotateBlock(block, player, DirectionUtil.getBlockDirection(player, false));
                     break;
                 case PISTON_HEAD:
@@ -160,8 +161,21 @@ public class CustomBlocks_1_12_R1 implements CustomBlocks {
         });
     }
 
+    private void powerLamp(Block block) {
+        Block redstoneBlock = block.getLocation().add(0, 1, 0).getBlock();
+        Material originalMaterial = redstoneBlock.getType();
+        BlockState originalState = redstoneBlock.getState();
+        MaterialData originalMaterialData = originalState.getData();
+
+        redstoneBlock.setType(Material.REDSTONE_BLOCK, true);
+        redstoneBlock.setType(originalMaterial, false);
+        originalState.setData(originalMaterialData);
+        originalState.update(true, false);
+
+        block.setMetadata("CustomRedstoneLamp", new FixedMetadataValue(plugin, true));
+    }
+
     @Override
-    @SuppressWarnings("deprecation")
     public void setPlant(PlayerInteractEvent event) {
         Block block = event.getClickedBlock();
         if (block == null) {
@@ -176,7 +190,6 @@ public class CustomBlocks_1_12_R1 implements CustomBlocks {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public void modifySlab(PlayerInteractEvent event) {
         Block block = event.getClickedBlock();
         if (block == null) {
@@ -264,25 +277,5 @@ public class CustomBlocks_1_12_R1 implements CustomBlocks {
             ((Directional) data).setFacingDirection(direction);
             state.update(true);
         }
-    }
-
-    private void powerLamp(Block block) {
-        Block redstoneBlock = block.getLocation().add(0, 1, 0).getBlock();
-        Material originalMaterial = redstoneBlock.getType();
-        BlockState originalState = redstoneBlock.getState();
-        MaterialData originalMaterialData = originalState.getData();
-
-        redstoneBlock.setType(Material.REDSTONE_BLOCK, true);
-        redstoneBlock.setType(originalMaterial, false);
-        originalState.setData(originalMaterialData);
-        originalState.update(true, false);
-
-        block.setMetadata("CustomRedstoneLamp", new FixedMetadataValue(plugin, true));
-    }
-
-    private void powerFurnace(Block block) {
-        Furnace furnace = (Furnace) block.getState();
-        furnace.setBurnTime(Short.MAX_VALUE);
-        furnace.update();
     }
 }

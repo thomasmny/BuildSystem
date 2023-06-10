@@ -79,25 +79,27 @@ public class CustomBlocks_1_13_R1 implements CustomBlocks {
                     break;
                 case MUSHROOM_STEM:
                     block.setType(Material.MUSHROOM_STEM);
-                    MultipleFacing block9Data = (MultipleFacing) block.getBlockData();
-                    block9Data.setFace(BlockFace.UP, false);
-                    block9Data.setFace(BlockFace.DOWN, false);
-                    block.setBlockData(block9Data);
+                    MultipleFacing mushroomStem = (MultipleFacing) block.getBlockData();
+                    mushroomStem.setFace(BlockFace.UP, false);
+                    mushroomStem.setFace(BlockFace.DOWN, false);
+                    block.setBlockData(mushroomStem);
                     break;
                 case MUSHROOM_BLOCK:
                     block.setType(Material.MUSHROOM_STEM);
-                    MultipleFacing block10Data = (MultipleFacing) block.getBlockData();
+                    MultipleFacing mushroomBlock = (MultipleFacing) block.getBlockData();
                     for (BlockFace blockFace : new BlockFace[]{BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST}) {
-                        block10Data.setFace(blockFace, false);
+                        mushroomBlock.setFace(blockFace, false);
                     }
-                    block.setBlockData(block10Data);
+                    block.setBlockData(mushroomBlock);
                     break;
                 case SMOOTH_STONE:
                     block.setType(Material.SMOOTH_STONE);
                     break;
                 case DOUBLE_STONE_SLAB:
                     block.setType(Material.STONE_SLAB);
-                    setDoubleSlab(block);
+                    Slab slab = (Slab) block.getBlockData();
+                    slab.setType(Slab.Type.DOUBLE);
+                    block.setBlockData(slab);
                     break;
                 case SMOOTH_SANDSTONE:
                     block.setType(Material.SMOOTH_SANDSTONE);
@@ -107,11 +109,15 @@ public class CustomBlocks_1_13_R1 implements CustomBlocks {
                     break;
                 case POWERED_REDSTONE_LAMP:
                     block.setType(Material.REDSTONE_LAMP);
-                    powerLamp(block);
+                    Lightable lightable = (Lightable) block.getBlockData();
+                    lightable.setLit(true);
+                    block.setBlockData(lightable);
                     break;
                 case BURNING_FURNACE:
                     block.setType(Material.FURNACE);
-                    powerFurnace(block);
+                    Furnace furnace = (Furnace) block.getState();
+                    furnace.setBurnTime(Short.MAX_VALUE);
+                    furnace.update();
                     rotateBlock(block, player, DirectionUtil.getBlockDirection(player, false));
                     break;
                 case PISTON_HEAD:
@@ -184,12 +190,6 @@ public class CustomBlocks_1_13_R1 implements CustomBlocks {
         block.setBlockData(slab);
     }
 
-    private void setDoubleSlab(Block block) {
-        Slab slab = (Slab) block.getBlockData();
-        slab.setType(Slab.Type.DOUBLE);
-        block.setBlockData(slab);
-    }
-
     @Override
     public void toggleIronTrapdoor(PlayerInteractEvent event) {
         event.setCancelled(true);
@@ -200,6 +200,16 @@ public class CustomBlocks_1_13_R1 implements CustomBlocks {
     public void toggleIronDoor(PlayerInteractEvent event) {
         event.setCancelled(true);
         open(event.getClickedBlock());
+    }
+
+    private void open(Block block) {
+        if (block == null) {
+            return;
+        }
+
+        Openable openable = (Openable) block.getBlockData();
+        openable.setOpen(!openable.isOpen());
+        block.setBlockData(openable);
     }
 
     @Override
@@ -220,27 +230,5 @@ public class CustomBlocks_1_13_R1 implements CustomBlocks {
             sign.setRotation(direction);
             block.setBlockData(sign);
         }
-    }
-
-    private void open(Block block) {
-        if (block == null) {
-            return;
-        }
-
-        Openable openable = (Openable) block.getBlockData();
-        openable.setOpen(!openable.isOpen());
-        block.setBlockData(openable);
-    }
-
-    private void powerLamp(Block block) {
-        Lightable lightable = (Lightable) block.getBlockData();
-        lightable.setLit(true);
-        block.setBlockData(lightable);
-    }
-
-    private void powerFurnace(Block block) {
-        Furnace furnace = (Furnace) block.getState();
-        furnace.setBurnTime(Short.MAX_VALUE);
-        furnace.update();
     }
 }

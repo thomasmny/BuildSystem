@@ -14,7 +14,72 @@ import org.bukkit.entity.Player;
 
 public final class DirectionUtil {
 
-    public static BlockFace getDirection(Player player) {
+    public static BlockFace getPlayerDirection(Player player) {
+        float yaw = player.getLocation().getYaw();
+        if (yaw < 0) {
+            yaw += 360;
+        }
+        yaw %= 360;
+        int i = (int) ((yaw + 8) / 22.5);
+        switch (i) {
+            case 1:
+                return BlockFace.SOUTH_SOUTH_WEST;
+            case 2:
+                return BlockFace.SOUTH_WEST;
+            case 3:
+                return BlockFace.WEST_SOUTH_WEST;
+            case 4:
+                return BlockFace.WEST;
+            case 5:
+                return BlockFace.WEST_NORTH_WEST;
+            case 6:
+                return BlockFace.NORTH_WEST;
+            case 7:
+                return BlockFace.NORTH_NORTH_WEST;
+            case 8:
+                return BlockFace.NORTH;
+            case 9:
+                return BlockFace.NORTH_NORTH_EAST;
+            case 10:
+                return BlockFace.NORTH_EAST;
+            case 11:
+                return BlockFace.EAST_NORTH_EAST;
+            case 12:
+                return BlockFace.EAST;
+            case 13:
+                return BlockFace.EAST_SOUTH_EAST;
+            case 14:
+                return BlockFace.SOUTH_EAST;
+            case 15:
+                return BlockFace.SOUTH_SOUTH_EAST;
+            default:
+                return BlockFace.SOUTH;
+        }
+    }
+
+    /**
+     * Gets the direction the block should be facing.
+     *
+     * @param player           The player placing the block
+     * @param allowNonCardinal Should the block be allowed to face {@link BlockFace#UP} and {@link BlockFace#DOWN}
+     * @return The direction the block should be facing
+     */
+    public static BlockFace getBlockDirection(Player player, boolean allowNonCardinal) {
+        if (!allowNonCardinal) {
+            return getCardinalDirection(player);
+        }
+
+        float pitch = player.getLocation().getPitch();
+        if (pitch <= -45) {
+            return BlockFace.DOWN;
+        } else if (pitch >= 45) {
+            return BlockFace.UP;
+        } else {
+            return getCardinalDirection(player);
+        }
+    }
+
+    public static BlockFace getCardinalDirection(Player player) {
         float yaw = player.getLocation().getYaw();
         if (yaw < 0) {
             yaw += 360;
@@ -46,28 +111,6 @@ public final class DirectionUtil {
         }
 
         return BlockFace.NORTH;
-    }
-
-    /**
-     * Gets the direction the block should be facing.
-     *
-     * @param player           The player placing the block
-     * @param allowNonCardinal Should the block be allowed to face {@link BlockFace#UP} and {@link BlockFace#DOWN}
-     * @return The direction the block should be facing
-     */
-    public static BlockFace getBlockDirection(Player player, boolean allowNonCardinal) {
-        if (!allowNonCardinal) {
-            return getDirection(player);
-        }
-
-        float pitch = player.getLocation().getPitch();
-        if (pitch <= -45) {
-            return BlockFace.DOWN;
-        } else if (pitch >= 45) {
-            return BlockFace.UP;
-        } else {
-            return getDirection(player);
-        }
     }
 
     public static boolean isTop(Player player, Block block) {
