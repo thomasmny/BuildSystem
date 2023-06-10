@@ -107,7 +107,9 @@ public class CustomBlocks_1_17_R1 implements CustomBlocks, Listener {
                     break;
                 case DOUBLE_STONE_SLAB:
                     block.setType(Material.SMOOTH_STONE_SLAB);
-                    setDoubleSlab(block);
+                    Slab slab = (Slab) block.getBlockData();
+                    slab.setType(Slab.Type.DOUBLE);
+                    block.setBlockData(slab);
                     break;
                 case SMOOTH_SANDSTONE:
                     block.setType(Material.SMOOTH_SANDSTONE);
@@ -211,12 +213,6 @@ public class CustomBlocks_1_17_R1 implements CustomBlocks, Listener {
             slab.setType(Slab.Type.TOP);
         }
 
-        block.setBlockData(slab);
-    }
-
-    private void setDoubleSlab(Block block) {
-        Slab slab = (Slab) block.getBlockData();
-        slab.setType(Slab.Type.DOUBLE);
         block.setBlockData(slab);
     }
 
