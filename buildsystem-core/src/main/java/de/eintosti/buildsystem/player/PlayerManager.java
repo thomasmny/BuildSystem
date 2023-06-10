@@ -377,7 +377,7 @@ public class PlayerManager {
     }
 
     public void save() {
-        getBuildPlayers().forEach(buildPlayer -> playersConfig.savePlayer(buildPlayer.getUniqueId(), buildPlayer));
+        playersConfig.savePlayers(getBuildPlayers());
     }
 
     public void load() {

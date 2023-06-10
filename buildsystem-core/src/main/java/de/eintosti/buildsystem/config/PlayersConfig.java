@@ -10,7 +10,7 @@ package de.eintosti.buildsystem.config;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.player.BuildPlayer;
 
-import java.util.UUID;
+import java.util.Collection;
 
 public class PlayersConfig extends ConfigurationFile {
 
@@ -18,8 +18,8 @@ public class PlayersConfig extends ConfigurationFile {
         super(plugin, "players.yml");
     }
 
-    public void savePlayer(UUID uuid, BuildPlayer buildPlayer) {
-        getFile().set("players." + uuid.toString(), buildPlayer.serialize());
+    public void savePlayers(Collection<BuildPlayer> buildPlayers) {
+        buildPlayers.forEach(buildPlayer -> getFile().set("players." + buildPlayer.getUniqueId().toString(), buildPlayer.serialize()));
         saveFile();
     }
 }

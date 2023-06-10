@@ -16,6 +16,7 @@ import de.eintosti.buildsystem.world.data.WorldData;
 import org.bukkit.World;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -28,8 +29,8 @@ public class WorldConfig extends ConfigurationFile {
         this.plugin = plugin;
     }
 
-    public void saveWorld(BuildWorld buildWorld) {
-        getFile().set("worlds." + buildWorld.getName(), buildWorld.serialize());
+    public void saveWorlds(Collection<BuildWorld> buildWorlds) {
+        buildWorlds.forEach(buildWorld -> getFile().set("worlds." + buildWorld.getName(), buildWorld.serialize()));
         saveFile();
     }
 

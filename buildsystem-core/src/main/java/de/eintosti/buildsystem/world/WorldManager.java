@@ -666,7 +666,7 @@ public class WorldManager {
     }
 
     public void save() {
-        getBuildWorlds().forEach(worldConfig::saveWorld);
+        worldConfig.saveWorlds(getBuildWorlds());
     }
 
     public void load() {
