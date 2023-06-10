@@ -15,6 +15,7 @@ import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.player.PlayerManager;
 import de.eintosti.buildsystem.settings.Settings;
 import de.eintosti.buildsystem.settings.SettingsManager;
+import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import de.eintosti.buildsystem.version.util.DirectionUtil;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.Builder;
@@ -44,8 +45,8 @@ import java.util.UUID;
 
 public class SettingsInteractListener implements Listener {
 
-    private final BuildSystem plugin;
     private final ConfigValues configValues;
+    private final CustomBlocks customBlocks;
 
     private final PlayerManager playerManager;
     private final SettingsManager settingsManager;
@@ -54,8 +55,8 @@ public class SettingsInteractListener implements Listener {
     private final Set<UUID> cachePlayers;
 
     public SettingsInteractListener(BuildSystem plugin) {
-        this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
+        this.customBlocks = plugin.getCustomBlocks();
 
         this.playerManager = plugin.getPlayerManager();
         this.settingsManager = plugin.getSettingsManager();
@@ -98,10 +99,10 @@ public class SettingsInteractListener implements Listener {
             event.setCancelled(true);
             switch (material) {
                 case IRON_TRAPDOOR:
-                    plugin.getCustomBlocks().toggleIronTrapdoor(event);
+                    customBlocks.toggleIronTrapdoor(event);
                     break;
                 case IRON_DOOR:
-                    plugin.getCustomBlocks().toggleIronDoor(event);
+                    customBlocks.toggleIronDoor(event);
                     break;
                 default:
                     break;
@@ -120,7 +121,7 @@ public class SettingsInteractListener implements Listener {
 
         Settings settings = settingsManager.getSettings(player);
         if (settings.isSlabBreaking() && action == Action.LEFT_CLICK_BLOCK) {
-            plugin.getCustomBlocks().modifySlab(event);
+            customBlocks.modifySlab(event);
         }
     }
 
@@ -151,7 +152,7 @@ public class SettingsInteractListener implements Listener {
         }
 
         event.setCancelled(true);
-        plugin.getCustomBlocks().setPlant(event);
+        customBlocks.setPlant(event);
     }
 
     @EventHandler
@@ -202,14 +203,14 @@ public class SettingsInteractListener implements Listener {
                     material = Material.getMaterial("SIGN_POST") != null ? Material.valueOf("SIGN_POST") : material;
                 }
                 adjacent.setType(material);
-                plugin.getCustomBlocks().rotateBlock(adjacent, player, DirectionUtil.getPlayerDirection(player).getOppositeFace());
+                customBlocks.rotateBlock(adjacent, player, DirectionUtil.getPlayerDirection(player).getOppositeFace());
                 break;
             case DOWN:
                 if (!isHangingSign) {
                     return;
                 }
                 adjacent.setType(material);
-                plugin.getCustomBlocks().rotateBlock(adjacent, player, getHangingSignDirection(event));
+                customBlocks.rotateBlock(adjacent, player, getHangingSignDirection(event));
                 break;
             case NORTH:
             case EAST:
@@ -221,7 +222,7 @@ public class SettingsInteractListener implements Listener {
                 String block = isHangingSign ? "_WALL_HANGING_SIGN" : "_WALL_SIGN";
                 BlockFace facing = isHangingSign ? getHangingSignDirection(event) : blockFace;
                 XMaterial.matchXMaterial(woodType + block).ifPresent(value -> adjacent.setType(value.parseMaterial()));
-                plugin.getCustomBlocks().rotateBlock(adjacent, player, facing);
+                customBlocks.rotateBlock(adjacent, player, facing);
                 break;
             default:
                 break;
@@ -289,9 +290,9 @@ public class SettingsInteractListener implements Listener {
 
         Block adjacent = block.getRelative(event.getBlockFace());
         adjacent.setType(material);
-        XBlock.setColor(adjacent, getItemColor(itemStack));
+        XBlock.setColor(adjacent, DyeColor.getByWoolData((byte) itemStack.getDurability()));
 
-        plugin.getCustomBlocks().rotateBlock(adjacent, player, DirectionUtil.getBlockDirection(player, false));
+        customBlocks.rotateBlock(adjacent, player, DirectionUtil.getBlockDirection(player, false));
 
         BlockPlaceEvent blockPlaceEvent = new BlockPlaceEvent(adjacent, adjacent.getState(), block, itemStack, player, true);
         Bukkit.getServer().getPluginManager().callEvent(blockPlaceEvent);
@@ -300,15 +301,19 @@ public class SettingsInteractListener implements Listener {
     /**
      * Not every player can always interact with the {@link BuildWorld} they are in.
      * <p>
-     * Reasons an interaction could be cancelled:<br>
-     * - The world has its {@link WorldStatus} set to archived<br>
-     * - The world has a setting enabled which disallows certain events<br>
-     * - The world only allows {@link Builder}s to build and the player is not such a builder<br>
+     * Reasons an interaction could be cancelled:
+     * <ul>
+     *   <li>The world has its {@link WorldStatus} set to archived</li>
+     *   <li>The world has a setting enabled which disallows certain events</li>
+     *   <li>The world only allows {@link Builder}s to build and the player is not such a builder</li>
+     * </ul>
      * <p>
-     * However, a player can override these reasons if:<br>
-     * - The player has the permission `buildsystem.admin`<br>
-     * - The player has the permission `buildsystem.bypass.archive`<br>
-     * - The player has used `/build` to enter build-mode<br>
+     * However, a player can override these reasons if:
+     * <ul>
+     *   <li>The player has the permission <b>buildsystem.admin</b></li>
+     *   <li>The player has the permission <b>buildsystem.bypass.archive</b></li>
+     *   <li>The player has used <b>/build</b> to enter build-mode</li>
+     * </ul>
      *
      * @param event the event which was called by the world manipulation
      * @return if the interaction with the world is valid
@@ -354,10 +359,5 @@ public class SettingsInteractListener implements Listener {
         if (cachePlayers.remove(event.getPlayer().getUniqueId())) {
             event.setCancelled(true);
         }
-    }
-
-    @SuppressWarnings("deprecation")
-    private DyeColor getItemColor(ItemStack itemStack) {
-        return DyeColor.getByWoolData((byte) itemStack.getDurability());
     }
 }
