@@ -5,9 +5,9 @@ import de.eintosti.buildsystem.world.BuildWorld;
 /**
  * Called after a {@link BuildWorld} has unloaded.
  */
-public class BuildWorldUnloadedEvent extends BuildWorldEvent {
+public class BuildWorldPostUnloadEvent extends BuildWorldEvent {
 
-    public BuildWorldUnloadedEvent(BuildWorld buildWorld) {
+    public BuildWorldPostUnloadEvent(BuildWorld buildWorld) {
         super(buildWorld);
     }
 }

@@ -13,9 +13,9 @@ import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.event.world.BuildWorldLoadEvent;
-import de.eintosti.buildsystem.event.world.BuildWorldLoadedEvent;
+import de.eintosti.buildsystem.event.world.BuildWorldPostLoadEvent;
+import de.eintosti.buildsystem.event.world.BuildWorldPostUnloadEvent;
 import de.eintosti.buildsystem.event.world.BuildWorldUnloadEvent;
-import de.eintosti.buildsystem.event.world.BuildWorldUnloadedEvent;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.data.WorldData;
@@ -538,7 +538,7 @@ public class BuildWorld implements ConfigurationSerializable {
         this.loaded = false;
         this.unloadTask = null;
 
-        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldUnloadedEvent(this));
+        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostUnloadEvent(this));
 
         plugin.getLogger().info("*** Unloaded world \"" + name + "\" ***");
     }
@@ -583,7 +583,7 @@ public class BuildWorld implements ConfigurationSerializable {
         this.worldData.lastLoaded().set(System.currentTimeMillis());
         this.loaded = true;
 
-        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldLoadedEvent(this));
+        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostLoadEvent(this));
 
         resetUnloadTask();
     }
