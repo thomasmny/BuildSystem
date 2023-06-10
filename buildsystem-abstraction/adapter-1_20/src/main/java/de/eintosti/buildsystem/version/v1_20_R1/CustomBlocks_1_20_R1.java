@@ -118,11 +118,15 @@ public class CustomBlocks_1_20_R1 implements CustomBlocks, Listener {
                     break;
                 case POWERED_REDSTONE_LAMP:
                     block.setType(Material.REDSTONE_LAMP);
-                    powerLamp(block);
+                    Lightable lightable = (Lightable) block.getBlockData();
+                    lightable.setLit(true);
+                    block.setBlockData(lightable);
                     break;
                 case BURNING_FURNACE:
                     block.setType(Material.FURNACE);
-                    powerFurnace(block);
+                    Furnace furnace = (Furnace) block.getState();
+                    furnace.setBurnTime(Short.MAX_VALUE);
+                    furnace.update();
                     rotateBlock(block, player, DirectionUtil.getBlockDirection(player, false));
                     break;
                 case PISTON_HEAD:
@@ -229,6 +233,16 @@ public class CustomBlocks_1_20_R1 implements CustomBlocks, Listener {
         open(event.getClickedBlock());
     }
 
+    private void open(Block block) {
+        if (block == null) {
+            return;
+        }
+
+        Openable openable = (Openable) block.getBlockData();
+        openable.setOpen(!openable.isOpen());
+        block.setBlockData(openable);
+    }
+
     @Override
     public void rotateBlock(Block block, Player player, BlockFace direction) {
         BlockData blockData = block.getBlockData();
@@ -251,27 +265,5 @@ public class CustomBlocks_1_20_R1 implements CustomBlocks, Listener {
             hangingSign.setRotation(direction);
             block.setBlockData(hangingSign);
         }
-    }
-
-    private void open(Block block) {
-        if (block == null) {
-            return;
-        }
-
-        Openable openable = (Openable) block.getBlockData();
-        openable.setOpen(!openable.isOpen());
-        block.setBlockData(openable);
-    }
-
-    private void powerLamp(Block block) {
-        Lightable lightable = (Lightable) block.getBlockData();
-        lightable.setLit(true);
-        block.setBlockData(lightable);
-    }
-
-    private void powerFurnace(Block block) {
-        Furnace furnace = (Furnace) block.getState();
-        furnace.setBurnTime(Short.MAX_VALUE);
-        furnace.update();
     }
 }
