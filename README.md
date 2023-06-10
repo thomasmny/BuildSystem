@@ -30,6 +30,7 @@ not to forget: let each player decide which settings whey think are best for the
     * [SpigotMC](https://spigotmc.org/resources/buildsystem-1-8-1-18.60441/)
     * [Chunkfactory](https://chunkfactory.com/product/buildsystem-1-8-1-15.1049/)
     * [MC-Market](https://www.mc-market.org/resources/12399/)
+    * Snapshots are available on [Jenkins](https://ci.eintosti.de/job/BuildSystem/).
 * **Support:**
     * [GitHub issue tracker](https://github.com/einTosti/BuildSystem/issues)
     * [Discord](https://discord.gg/rduPF3yk62)
