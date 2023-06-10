@@ -173,13 +173,13 @@ public class SettingsInteractListener implements Listener {
 
         Material material = itemStack.getType();
         XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-        if (!XTag.SIGNS.isTagged(xMaterial)) {
+        if (!XTag.SIGNS.isTagged(xMaterial) && !XTag.HANGING_SIGNS.isTagged(xMaterial)) {
             return;
         }
 
         Block clickedBlock = event.getClickedBlock();
         BlockFace blockFace = event.getBlockFace();
-        if (clickedBlock == null || blockFace == BlockFace.DOWN) {
+        if (clickedBlock == null) {
             return;
         }
 
@@ -191,25 +191,50 @@ public class SettingsInteractListener implements Listener {
         event.setUseItemInHand(Event.Result.DENY);
         event.setCancelled(true);
 
+        boolean isHangingSign = XTag.HANGING_SIGNS.isTagged(xMaterial);
+
         switch (blockFace) {
             case UP:
+                if (isHangingSign) {
+                    return;
+                }
                 if (!XMaterial.supports(13)) {
                     material = Material.getMaterial("SIGN_POST") != null ? Material.valueOf("SIGN_POST") : material;
                 }
                 adjacent.setType(material);
-                plugin.getCustomBlocks().rotateBlock(adjacent, player, getDirection(player).getOppositeFace());
+                plugin.getCustomBlocks().rotateBlock(adjacent, player, DirectionUtil.getPlayerDirection(player).getOppositeFace());
+                break;
+            case DOWN:
+                if (!isHangingSign) {
+                    return;
+                }
+                adjacent.setType(material);
+                plugin.getCustomBlocks().rotateBlock(adjacent, player, getHangingSignDirection(event));
                 break;
             case NORTH:
             case EAST:
             case SOUTH:
             case WEST:
-                String type = xMaterial.name().replace("_SIGN", "");
-                XMaterial.matchXMaterial(type + "_WALL_SIGN").ifPresent(value -> adjacent.setType(value.parseMaterial()));
-                plugin.getCustomBlocks().rotateBlock(adjacent, player, blockFace);
+                String woodType = xMaterial.name()
+                        .replace("_HANGING", "") // Replace hanging if present
+                        .replace("_SIGN", ""); // Get wood type
+                String block = isHangingSign ? "_WALL_HANGING_SIGN" : "_WALL_SIGN";
+                BlockFace facing = isHangingSign ? getHangingSignDirection(event) : blockFace;
+                XMaterial.matchXMaterial(woodType + block).ifPresent(value -> adjacent.setType(value.parseMaterial()));
+                plugin.getCustomBlocks().rotateBlock(adjacent, player, facing);
                 break;
             default:
                 break;
         }
+    }
+
+    private BlockFace getHangingSignDirection(PlayerInteractEvent event) {
+        BlockFace clickedFace = event.getBlockFace();
+        BlockFace playerFacing = DirectionUtil.getCardinalDirection(event.getPlayer()).getOppositeFace();
+        if (clickedFace != playerFacing && clickedFace != playerFacing.getOppositeFace()) {
+            return playerFacing;
+        }
+        return (clickedFace == BlockFace.NORTH || clickedFace == BlockFace.SOUTH) ? BlockFace.EAST : BlockFace.SOUTH;
     }
 
     @EventHandler
@@ -318,49 +343,6 @@ public class SettingsInteractListener implements Listener {
         }
 
         return true;
-    }
-
-    private BlockFace getDirection(Player player) {
-        float yaw = player.getLocation().getYaw();
-        if (yaw < 0) {
-            yaw += 360;
-        }
-        yaw %= 360;
-        int i = (int) ((yaw + 8) / 22.5);
-        switch (i) {
-            case 1:
-                return BlockFace.SOUTH_SOUTH_WEST;
-            case 2:
-                return BlockFace.SOUTH_WEST;
-            case 3:
-                return BlockFace.WEST_SOUTH_WEST;
-            case 4:
-                return BlockFace.WEST;
-            case 5:
-                return BlockFace.WEST_NORTH_WEST;
-            case 6:
-                return BlockFace.NORTH_WEST;
-            case 7:
-                return BlockFace.NORTH_NORTH_WEST;
-            case 8:
-                return BlockFace.NORTH;
-            case 9:
-                return BlockFace.NORTH_NORTH_EAST;
-            case 10:
-                return BlockFace.NORTH_EAST;
-            case 11:
-                return BlockFace.EAST_NORTH_EAST;
-            case 12:
-                return BlockFace.EAST;
-            case 13:
-                return BlockFace.EAST_SOUTH_EAST;
-            case 14:
-                return BlockFace.SOUTH_EAST;
-            case 15:
-                return BlockFace.SOUTH_SOUTH_EAST;
-            default:
-                return BlockFace.SOUTH;
-        }
     }
 
     /**
