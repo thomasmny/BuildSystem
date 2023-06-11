@@ -8,6 +8,7 @@
 package de.eintosti.buildsystem.version.customblocks;
 
 import de.eintosti.buildsystem.version.util.MinecraftVersion;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.Nullable;
 
 public enum CustomBlock {
@@ -55,12 +56,13 @@ public enum CustomBlock {
 
     @Nullable
     public static CustomBlock getCustomBlock(String key) {
-        for (CustomBlock customBlock : values()) {
-            if (customBlock.getKey().equals(key)) {
-                return customBlock;
-            }
+        String customBlock = key.substring("blocks_".length()).toUpperCase();
+        try {
+            return CustomBlock.valueOf(customBlock);
+        } catch (IllegalArgumentException e) {
+            Bukkit.getLogger().warning("[BuildSystem] Cannot find CustomBlock: " + customBlock);
+            return null;
         }
-        return null;
     }
 
     public String getKey() {
