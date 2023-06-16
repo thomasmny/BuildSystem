@@ -10,11 +10,10 @@ package de.eintosti.buildsystem.listener;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.Builder;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldStatus;
 import de.eintosti.buildsystem.world.BuildWorldManager;
-import de.eintosti.buildsystem.world.CraftBuildWorld;
-import de.eintosti.buildsystem.world.CraftBuilder;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -131,13 +130,13 @@ public class WorldManipulateListener implements Listener {
     }
 
     /**
-     * Not every player can always interact with the {@link CraftBuildWorld} they are in.
+     * Not every player can always interact with the {@link BuildWorld} they are in.
      * <p>
      * Reasons an interaction could be cancelled:
      * <ul>
      *     <li>The world has its {@link WorldStatus} set to archived;</li>
      *     <li>The world has a setting enabled which disallows certain events;</li>
-     *     <li>The world only allows {@link CraftBuilder}s to build and the player is not such a builder.</li>
+     *     <li>The world only allows {@link Builder}s to build and the player is not such a builder.</li>
      * </ul>
      * <p>
      * However, a player can override these reasons if:

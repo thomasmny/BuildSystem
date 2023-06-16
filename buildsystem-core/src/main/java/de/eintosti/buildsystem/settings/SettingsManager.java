@@ -9,6 +9,7 @@ package de.eintosti.buildsystem.settings;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.config.ConfigValues;
@@ -58,7 +59,7 @@ public class SettingsManager {
     }
 
     /**
-     * Only set a player's scoreboard if {@link CraftSettings#isScoreboard} is equal to {@code true}.
+     * Only set a player's scoreboard if {@link Settings#isScoreboard} is equal to {@code true}.
      *
      * @param player   The player object
      * @param settings The player's settings
@@ -73,7 +74,7 @@ public class SettingsManager {
     }
 
     /**
-     * Only set a player's scoreboard if {@link CraftSettings#isScoreboard} is equal to {@code true}.
+     * Only set a player's scoreboard if {@link Settings#isScoreboard} is equal to {@code true}.
      *
      * @param player The player object
      */
@@ -97,7 +98,7 @@ public class SettingsManager {
     }
 
     /**
-     * Set each player's scoreboard if they have {@link CraftSettings#isScoreboard} enabled.
+     * Set each player's scoreboard if they have {@link Settings#isScoreboard} enabled.
      */
     public void startScoreboard() {
         if (!configValues.isScoreboard()) {

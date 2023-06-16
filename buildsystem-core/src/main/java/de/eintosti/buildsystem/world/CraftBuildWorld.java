@@ -345,7 +345,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
     }
 
     /***
-     * Save the list of {@link CraftBuilder}s in a string which is suitable to be stored.
+     * Save the list of {@link Builder}s in a string which is suitable to be stored.
      *
      * @return The list of builders as a string
      */

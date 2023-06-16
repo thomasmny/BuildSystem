@@ -130,7 +130,7 @@ public class BuildWorldManager implements WorldManager {
     }
 
     /**
-     * Gets if a {@link CraftBuildWorld}'s visibility is equal to the given visibility.
+     * Gets if a {@link BuildWorld}'s visibility is equal to the given visibility.
      *
      * @param privateWorld Whether the world is private
      * @param visibility   The visibility the world should have
@@ -150,7 +150,7 @@ public class BuildWorldManager implements WorldManager {
     }
 
     /**
-     * Gets the name (and in doing so removes all illegal characters) of the {@link CraftBuildWorld} the player is trying to create.
+     * Gets the name (and in doing so removes all illegal characters) of the {@link BuildWorld} the player is trying to create.
      * If the world is going to be a private world, its name will be equal to the player's name.
      *
      * @param player       The player who is creating the world
@@ -290,7 +290,7 @@ public class BuildWorldManager implements WorldManager {
     }
 
     /**
-     * Import all {@link CraftBuildWorld} from a given list of world names.
+     * Import all {@link BuildWorld} from a given list of world names.
      *
      * @param player    The player who is creating the world
      * @param creator   The player who should be set as the creator of the world

@@ -249,7 +249,7 @@ public class InventoryUtils {
     /**
      * Manage clicking in a {@link FilteredWorldsInventory}.
      * <p>
-     * If the clicked item is the icon of a {@link CraftBuildWorld}, the click is managed by {@link InventoryUtils#manageWorldItemClick(InventoryClickEvent, Player, ItemMeta, CraftBuildWorld)}.
+     * If the clicked item is the icon of a {@link BuildWorld}, the click is managed by {@link InventoryUtils#manageWorldItemClick(InventoryClickEvent, Player, ItemMeta, CraftBuildWorld)}.
      * Otherwise, the {@link NavigatorInventory} is opened if the glass pane at the bottom of the inventory is clicked.
      *
      * @param event     The click event object to modify
@@ -285,7 +285,7 @@ public class InventoryUtils {
     }
 
     /**
-     * Manage the clicking of an {@link ItemStack} that represents a {@link CraftBuildWorld}.
+     * Manage the clicking of an {@link ItemStack} that represents a {@link BuildWorld}.
      * <p>
      * If the click is a...
      * <ul>

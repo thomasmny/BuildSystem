@@ -118,7 +118,7 @@ public class CraftBuildWorldCreator implements BuildWorldCreator {
     }
 
     /**
-     * Depending on the {@link CraftBuildWorld}'s {@link WorldType}, the corresponding {@link World} will be generated in a different way.
+     * Depending on the {@link BuildWorld}'s {@link WorldType}, the corresponding {@link World} will be generated in a different way.
      * Then, if the creation of the world was successful and the config is set accordingly, the player is teleported to the world.
      *
      * @param player The player who is creating the world
@@ -150,7 +150,7 @@ public class CraftBuildWorldCreator implements BuildWorldCreator {
     }
 
     /**
-     * Generate a {@link CraftBuildWorld} with a predefined or custom generator.
+     * Generate a {@link BuildWorld} with a predefined or custom generator.
      *
      * @param player The player who is creating the world
      */
@@ -172,7 +172,7 @@ public class CraftBuildWorldCreator implements BuildWorldCreator {
     }
 
     /**
-     * Imports an existing world as a {@link CraftBuildWorld}.
+     * Imports an existing world as a {@link BuildWorld}.
      *
      * @param player   The player who is importing the world
      * @param teleport Should the player be teleported to the world after importing is finished
@@ -187,7 +187,7 @@ public class CraftBuildWorldCreator implements BuildWorldCreator {
     }
 
     /**
-     * Generate a {@link CraftBuildWorld} with a template.
+     * Generate a {@link BuildWorld} with a template.
      *
      * @param player The player who is creating the world
      */
@@ -252,7 +252,7 @@ public class CraftBuildWorldCreator implements BuildWorldCreator {
     }
 
     /**
-     * Generate the {@link World} linked to a {@link CraftBuildWorld}.
+     * Generate the {@link World} linked to a {@link BuildWorld}.
      *
      * @param checkVersion Should the world version be checked
      * @return The world object

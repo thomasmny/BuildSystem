@@ -10,7 +10,6 @@ package de.eintosti.buildsystem.expansion.luckperms.calculators;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.world.BuildWorldManager;
-import de.eintosti.buildsystem.world.CraftBuildWorld;
 import net.luckperms.api.context.ContextCalculator;
 import net.luckperms.api.context.ContextConsumer;
 import net.luckperms.api.context.ContextSet;
@@ -47,17 +46,17 @@ public class RoleCalculator implements ContextCalculator<Player> {
 
     private enum Role {
         /**
-         * The creator of a {@link CraftBuildWorld}.
+         * The creator of a {@link BuildWorld}.
          */
         CREATOR,
 
         /**
-         * A player which has been added to the list of trusted players and is therefore allowed to build in a {@link CraftBuildWorld}.
+         * A player which has been added to the list of trusted players and is therefore allowed to build in a {@link BuildWorld}.
          */
         BUILDER,
 
         /**
-         * A player which is neither the {@link #CREATOR} nor a {@link #BUILDER} in a {@link CraftBuildWorld}.
+         * A player which is neither the {@link #CREATOR} nor a {@link #BUILDER} in a {@link BuildWorld}.
          */
         GUEST;
 
