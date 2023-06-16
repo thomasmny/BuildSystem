@@ -10,6 +10,7 @@ package de.eintosti.buildsystem.api.event.world;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -21,14 +22,16 @@ public class BuildWorldEvent extends Event {
 
     private final BuildWorld buildWorld;
 
+    @ApiStatus.Internal
     public BuildWorldEvent(BuildWorld buildWorld) {
         this.buildWorld = buildWorld;
     }
 
-    public static HandlerList getHandlerList() {
-        return HANDLER_LIST;
-    }
-
+    /**
+     * Gets the {@link BuildWorld} involved in this event
+     *
+     * @return The world involved in this event
+     */
     public BuildWorld getBuildWorld() {
         return buildWorld;
     }
@@ -36,6 +39,10 @@ public class BuildWorldEvent extends Event {
     @NotNull
     @Override
     public HandlerList getHandlers() {
+        return HANDLER_LIST;
+    }
+
+    public static HandlerList getHandlerList() {
         return HANDLER_LIST;
     }
 }

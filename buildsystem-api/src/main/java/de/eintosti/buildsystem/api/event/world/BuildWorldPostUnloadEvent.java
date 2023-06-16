@@ -8,12 +8,14 @@
 package de.eintosti.buildsystem.api.event.world;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import org.jetbrains.annotations.ApiStatus;
 
 /**
  * Called after a {@link BuildWorld} has unloaded.
  */
 public class BuildWorldPostUnloadEvent extends BuildWorldEvent {
 
+    @ApiStatus.Internal
     public BuildWorldPostUnloadEvent(BuildWorld buildWorld) {
         super(buildWorld);
     }

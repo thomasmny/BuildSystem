@@ -9,6 +9,7 @@ package de.eintosti.buildsystem.api.event.world;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import org.bukkit.event.Cancellable;
+import org.jetbrains.annotations.ApiStatus;
 
 /**
  * Called when a {@link BuildWorld} is loaded.
@@ -17,6 +18,7 @@ public class BuildWorldLoadEvent extends BuildWorldEvent implements Cancellable 
 
     private boolean cancelled = false;
 
+    @ApiStatus.Internal
     public BuildWorldLoadEvent(BuildWorld buildWorld) {
         super(buildWorld);
     }
