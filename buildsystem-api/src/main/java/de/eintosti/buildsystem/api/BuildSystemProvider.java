@@ -7,11 +7,12 @@
  */
 package de.eintosti.buildsystem.api;
 
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 public class BuildSystemProvider {
 
-    private static BuildSystem instance;
+    private static BuildSystem instance = null;
 
     @NotNull
     public static BuildSystem get() {
@@ -22,10 +23,17 @@ public class BuildSystemProvider {
         return instance;
     }
 
-    static void set(BuildSystem impl) {
-        BuildSystemProvider.instance = impl;
+    @ApiStatus.Internal
+    static void register(BuildSystem instance) {
+        BuildSystemProvider.instance = instance;
     }
 
+    @ApiStatus.Internal
+    static void unregister() {
+        BuildSystemProvider.instance = null;
+    }
+
+    @ApiStatus.Internal
     private BuildSystemProvider() {
         throw new AssertionError();
     }

@@ -30,10 +30,10 @@ public class BuildSystemApi implements BuildSystem {
     }
 
     public void register() {
-        BuildSystemProvider.set(this);
+        BuildSystemProvider.register(this);
     }
 
     public void unregister() {
-        BuildSystemProvider.set(null);
+        BuildSystemProvider.unregister();
     }
 }

@@ -140,15 +140,15 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        this.getConfig().options().copyDefaults(true);
-        this.saveConfig();
+        getConfig().options().copyDefaults(true);
+        saveConfig();
         this.configValues = new ConfigValues(this);
 
         initClasses();
         if (!initVersionedClasses()) {
             getLogger().severe("BuildSystem does not support your server version: " + versionString);
             getLogger().severe("Disabling plugin...");
-            this.setEnabled(false);
+            setEnabled(false);
             return;
         }
 
@@ -157,11 +157,13 @@ public class BuildSystemPlugin extends JavaPlugin {
         registerListeners();
         registerExpansions();
 
-        performUpdateCheck();
+        this.worldManager.load();
+        this.playerManager.load();
+        this.spawnManager.load();
 
-        worldManager.load();
-        playerManager.load();
-        spawnManager.load();
+        this.api = new BuildSystemApi(this);
+        this.api.register();
+        getServer().getServicesManager().register(BuildSystem.class, api, this, ServicePriority.Normal);
 
         Bukkit.getOnlinePlayers().forEach(pl -> {
             getSkullCache().cacheSkull(pl.getName());
@@ -173,10 +175,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         });
 
         registerStats();
-
-        this.api = new BuildSystemApi(this);
-        this.api.register();
-        getServer().getServicesManager().register(BuildSystem.class, api, this, ServicePriority.Normal);
+        performUpdateCheck();
 
         Bukkit.getConsoleSender().sendMessage(ChatColor.RESET + "BuildSystem » Plugin " + ChatColor.GREEN + "enabled" + ChatColor.RESET + "!");
     }
