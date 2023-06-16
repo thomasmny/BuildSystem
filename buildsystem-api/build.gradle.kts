@@ -12,8 +12,21 @@ dependencies {
 }
 
 publishing {
+    repositories {
+        maven {
+            name = "BuildSystem"
+            url = uri("https://repo.eintosti.de/releases")
+            credentials(PasswordCredentials::class)
+            authentication {
+                create<BasicAuthentication>("basic")
+            }
+        }
+    }
     publications {
-        create<MavenPublication>("buildsystem-api") {
+        create<MavenPublication>("maven") {
+            groupId = "de.eintosti"
+            artifactId = "buildsystem-api"
+            version = project.version.toString()
             from(components["java"])
         }
     }
