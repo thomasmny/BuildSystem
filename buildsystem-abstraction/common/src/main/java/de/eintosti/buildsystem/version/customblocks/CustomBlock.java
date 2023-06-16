@@ -9,6 +9,7 @@ package de.eintosti.buildsystem.version.customblocks;
 
 import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 public enum CustomBlock {
@@ -55,6 +56,7 @@ public enum CustomBlock {
     }
 
     @Nullable
+    @ApiStatus.Internal
     public static CustomBlock getCustomBlock(String key) {
         String customBlock = key.substring("blocks_".length()).toUpperCase();
         try {

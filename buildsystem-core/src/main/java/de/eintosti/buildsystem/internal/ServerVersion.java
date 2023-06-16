@@ -45,7 +45,7 @@ public enum ServerVersion {
     v1_19_R1(3120, CustomBlocks_1_17_R1.class, GameRules_1_13_R1.class),
     v1_19_R2(3218, CustomBlocks_1_17_R1.class, GameRules_1_13_R1.class),
     v1_19_R3(3337, CustomBlocks_1_17_R1.class, GameRules_1_13_R1.class),
-    v1_20_R1(3463, CustomBlocks_1_20_R1.class, GameRules_1_13_R1.class),
+    v1_20_R1(3465, CustomBlocks_1_20_R1.class, GameRules_1_13_R1.class),
     UNKNOWN;
 
     private final int dataVersion;
