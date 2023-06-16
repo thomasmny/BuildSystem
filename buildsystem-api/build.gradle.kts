@@ -11,6 +11,11 @@ dependencies {
     compileOnly(libs.xseries)
 }
 
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
 publishing {
     repositories {
         maven {

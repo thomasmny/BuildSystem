@@ -12,18 +12,51 @@ import de.eintosti.buildsystem.api.world.generator.CustomGenerator;
 import org.bukkit.Difficulty;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.generator.ChunkGenerator;
 import org.jetbrains.annotations.Nullable;
 
 public interface BuildWorldCreator {
 
+    /**
+     * Sets the name of the world.
+     *
+     * @param name The world name
+     * @return The world creator object
+     */
     BuildWorldCreator setName(String name);
 
-    BuildWorldCreator setCreator(Builder creator);
+    /**
+     * Sets the creator of the world.
+     *
+     * @param creator The creator, may be {@code null}
+     * @return The world creator object
+     */
+    BuildWorldCreator setCreator(@Nullable Builder creator);
 
+    /**
+     * Sets the template which the world should be copied from.
+     * <p>
+     * Only used if the world type is {@link WorldType#TEMPLATE}
+     *
+     * @param template The template name
+     * @return The creator object
+     */
     BuildWorldCreator setTemplate(String template);
 
+    /**
+     * Sets the type of the world.
+     *
+     * @param type The world type
+     * @return The world creator object
+     */
     BuildWorldCreator setType(WorldType type);
 
+    /**
+     * Sets the custom {@link ChunkGenerator} of the world.
+     *
+     * @param customGenerator The custom chunk generator
+     * @return The world creator object
+     */
     BuildWorldCreator setCustomGenerator(CustomGenerator customGenerator);
 
     BuildWorldCreator setPrivate(boolean privateWorld);

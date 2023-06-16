@@ -21,7 +21,7 @@ import java.util.UUID;
 public interface BuildWorld {
 
     /**
-     * Get the world linked to this object.
+     * Get the bukkit world linked to the build-world.
      *
      * @return The bukkit world
      */
@@ -193,9 +193,20 @@ public interface BuildWorld {
      */
     boolean isLoaded();
 
+    /**
+     * Unloads the world.
+     * <p>
+     * In order for the world to be unloaded, the following criteria must be met:
+     * <ul>
+     *   <li>There cannot be any players in the world</li>
+     *   <li>The world is not allowed to be the spawn world</li>
+     *   <li>The world is not allowed to be on the blacklist of worlds which cannot be unloaded</li>
+     * </ul>
+     */
     void unload();
 
-    void forceUnload(boolean save);
-
+    /**
+     * Loads the world.
+     */
     void load();
 }

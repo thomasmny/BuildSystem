@@ -889,7 +889,11 @@ public class Messages {
     }
 
     @SafeVarargs
-    public static void sendMessage(CommandSender sender, String key, Map.Entry<String, Object>... placeholders) {
+    public static void sendMessage(@Nullable CommandSender sender, String key, Map.Entry<String, Object>... placeholders) {
+        if (sender == null) {
+            return;
+        }
+
         String message = getString(key, placeholders);
         if (!message.isEmpty()) {
             sender.sendMessage(message);

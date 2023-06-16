@@ -19,7 +19,6 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.Builder;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldType;
-import de.eintosti.buildsystem.api.world.generator.CustomGenerator;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.UUIDFetcher;
@@ -57,7 +56,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
     private final WorldType worldType;
     private final BuildWorldData worldData;
     private final long creationDate;
-    private final CustomGenerator customGenerator;
+    private final de.eintosti.buildsystem.api.world.generator.CustomGenerator customGenerator;
     private final List<Builder> builders;
 
     private long seconds;
@@ -71,7 +70,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
             WorldType worldType,
             long creationDate,
             boolean privateWorld,
-            CustomGenerator customGenerator
+            de.eintosti.buildsystem.api.world.generator.CustomGenerator customGenerator
     ) {
         this.plugin = JavaPlugin.getPlugin(BuildSystemPlugin.class);
         this.configValues = plugin.getConfigValues();
@@ -233,7 +232,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
 
     @Override
     @Nullable
-    public CustomGenerator getCustomGenerator() {
+    public de.eintosti.buildsystem.api.world.generator.CustomGenerator getCustomGenerator() {
         return customGenerator;
     }
 
@@ -418,7 +417,6 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
         forceUnload(true);
     }
 
-    @Override
     public void forceUnload(boolean save) {
         World bukkitWorld = getWorld();
         if (bukkitWorld == null) {

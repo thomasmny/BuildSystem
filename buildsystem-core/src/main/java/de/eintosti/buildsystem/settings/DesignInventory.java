@@ -13,6 +13,7 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.settings.DesignColor;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -76,7 +77,7 @@ public class DesignInventory implements Listener {
         SettingsManager settingsManager = plugin.getSettingsManager();
         CraftSettings settings = settingsManager.getSettings(player);
 
-        ItemStack itemStack = inventoryUtils.getItemStack(material, settings.getDesignColor() == color ? "§a" + displayName : "§7" + displayName);
+        ItemStack itemStack = inventoryUtils.getItemStack(material, settings.getDesignColor() == color ? ChatColor.GREEN + displayName : ChatColor.GRAY + displayName);
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta != null) {
             itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);

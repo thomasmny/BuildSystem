@@ -11,7 +11,17 @@ import org.bukkit.generator.ChunkGenerator;
 
 public interface CustomGenerator {
 
+    /**
+     * Gets the name of the chunk generator.
+     *
+     * @return The name
+     */
     String getName();
 
+    /**
+     * Gets the chunk generator.
+     *
+     * @return The chunk generator
+     */
     ChunkGenerator getChunkGenerator();
 }

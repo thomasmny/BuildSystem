@@ -47,7 +47,7 @@ public interface WorldFilter {
 
     void setMode(Mode mode);
 
-    public String getText();
+    String getText();
 
     void setText(String text);
 

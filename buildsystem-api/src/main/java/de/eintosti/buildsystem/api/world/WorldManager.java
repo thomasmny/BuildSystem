@@ -7,9 +7,12 @@
  */
 package de.eintosti.buildsystem.api.world;
 
+import de.eintosti.buildsystem.api.world.data.WorldType;
 import de.eintosti.buildsystem.api.world.generator.Generator;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.generator.ChunkGenerator;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.Collection;
@@ -75,16 +78,26 @@ public interface WorldManager {
     void renameWorld(BuildWorld buildWorld, String newName);
 
     /**
+     * Gets the {@link ChunkGenerator} for the generation of a {@link BuildWorld} with {@link WorldType#CUSTOM}.
+     *
+     * @param plugin      The name of the plugin providing the generator
+     * @param generatorId Unique ID, if any, that was specified to indicate which generator was requested
+     * @param worldName   Name of the world that the chunk generator should be applied to.
+     * @return The chunk generator for use in the world generation
+     */
+    @Nullable
+    ChunkGenerator getChunkGenerator(String plugin, String generatorId, String worldName);
+
+    /**
      * Import a {@link BuildWorld} from a world directory.
      *
-     * @param player        The player who is creating the world
-     * @param worldName     Name of the world that the chunk generator should be applied to.
+     * @param worldName     The name of the world to import
      * @param creator       The builder who should be set as the creator
      * @param generator     The generator type used by the world
      * @param generatorName The name of the custom generator if generator type is {@link Generator#CUSTOM}
      * @return {@code true} if the world was successfully imported, otherwise {@code false}
      */
-    boolean importWorld(Player player, String worldName, Builder creator, Generator generator, String generatorName);
+    boolean importWorld(String worldName, Builder creator, Generator generator, String generatorName);
 
     /**
      * Delete an existing {@link BuildWorld}.
@@ -92,11 +105,11 @@ public interface WorldManager {
      *
      * @param buildWorld The world to be deleted
      */
-    void deleteWorld(Player player, BuildWorld buildWorld);
+    void deleteWorld(BuildWorld buildWorld);
 
     /**
      * Unimport an existing {@link BuildWorld}.
-     * In comparison to {@link #deleteWorld(Player, BuildWorld)}, unimporting a world does not delete the world's directory.
+     * In comparison to {@link #deleteWorld(BuildWorld)}, unimporting a world does not delete the world's directory.
      *
      * @param buildWorld The build world object
      * @param save       Should the world be saved before unimporting
@@ -111,5 +124,12 @@ public interface WorldManager {
      */
     void teleport(Player player, String worldName);
 
+    /**
+     * Checks if the provided player is allowed to enter the {@link BuildWorld}.
+     *
+     * @param player     The player
+     * @param buildWorld The world
+     * @return {@code true} if the player is allowed to enter, otherwise {@code false}
+     */
     boolean canEnter(Player player, BuildWorld buildWorld);
 }

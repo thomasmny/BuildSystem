@@ -7,21 +7,24 @@
  */
 package de.eintosti.buildsystem.api.world.generator;
 
-import de.eintosti.buildsystem.api.world.data.WorldType;
-
 public enum Generator {
-    NORMAL(WorldType.NORMAL),
-    FLAT(WorldType.FLAT),
-    VOID(WorldType.VOID),
-    CUSTOM(WorldType.IMPORTED);
+    /**
+     * A normal world
+     */
+    NORMAL,
 
-    private final WorldType worldType;
+    /**
+     * A flat world
+     */
+    FLAT,
 
-    Generator(WorldType worldType) {
-        this.worldType = worldType;
-    }
+    /**
+     * A void world
+     */
+    VOID,
 
-    public WorldType getWorldType() {
-        return worldType;
-    }
+    /**
+     * A custom world
+     */
+    CUSTOM;
 }

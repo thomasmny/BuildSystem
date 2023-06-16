@@ -134,20 +134,19 @@ public class BuildPlayerManager implements PlayerManager {
 
     @Override
     public boolean canCreateWorld(Player player, Visibility visibility) {
-        boolean showPrivateWorlds = visibility == Visibility.PRIVATE;
         BuildWorldManager worldManager = plugin.getWorldManager();
 
-        int maxWorldAmountConfig = configValues.getMaxWorldAmount(showPrivateWorlds);
+        int maxWorldAmountConfig = configValues.getMaxWorldAmount(visibility);
         if (maxWorldAmountConfig >= 0 && worldManager.getBuildWorlds().size() >= maxWorldAmountConfig) {
             return false;
         }
 
-        int maxWorldAmountPlayer = getMaxWorlds(player, showPrivateWorlds);
+        int maxWorldAmountPlayer = getMaxWorlds(player, visibility);
         return maxWorldAmountPlayer < 0 || worldManager.getBuildWorldsCreatedByPlayer(player, visibility).size() < maxWorldAmountPlayer;
     }
 
     @Override
-    public int getMaxWorlds(Player player, boolean privateWorld) {
+    public int getMaxWorlds(Player player, Visibility visibility) {
         int max = -1;
         if (player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)) {
             return max;
@@ -165,8 +164,7 @@ public class BuildPlayerManager implements PlayerManager {
                 continue;
             }
 
-            String worldVisibility = privateWorld ? "private" : "public";
-            if (!splitPermission[2].equalsIgnoreCase(worldVisibility)) {
+            if (!splitPermission[2].equalsIgnoreCase(visibility.name().toLowerCase())) {
                 continue;
             }
 

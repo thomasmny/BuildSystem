@@ -8,8 +8,19 @@
 package de.eintosti.buildsystem.api.world;
 
 public enum Visibility {
-    PRIVATE,
+    /**
+     * Public worlds are displayed in the world navigator.
+     */
     PUBLIC,
+
+    /**
+     * Private worlds are displayed in an extra menu - the private world navigator.
+     */
+    PRIVATE,
+
+    /**
+     * Used for when the visibility of a world can be ignored.
+     */
     IGNORE;
 
     public static Visibility matchVisibility(boolean isPrivateWorld) {

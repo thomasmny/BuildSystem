@@ -7,12 +7,24 @@
  */
 package de.eintosti.buildsystem.api;
 
+import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.PlayerManager;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.WorldManager;
 
 public interface BuildSystem {
 
+    /**
+     * Gets the {@link WorldManager}, responsible for managing {@link BuildWorld} instances.
+     *
+     * @return The world manager
+     */
     WorldManager getWorldManager();
 
+    /**
+     * Gets the {@link PlayerManager}, responsible for managing {@link BuildPlayer} instances.
+     *
+     * @return The player manager
+     */
     PlayerManager getPlayerManager();
 }

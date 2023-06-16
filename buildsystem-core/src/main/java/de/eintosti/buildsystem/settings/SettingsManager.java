@@ -16,6 +16,7 @@ import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import de.eintosti.buildsystem.world.BuildWorldManager;
 import fr.mrmicky.fastboard.FastBoard;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -151,7 +152,7 @@ public class SettingsManager {
     // Is there an easier way of doing this?
     private String parseWorldInformation(BuildWorld buildWorld, String input) {
         if (buildWorld == null) {
-            return "§f-";
+            return ChatColor.WHITE + "-";
         }
 
         WorldData worldData = buildWorld.getData();
@@ -173,7 +174,7 @@ public class SettingsManager {
             case "%lastunloaded%":
                 return Messages.formatDate(worldData.lastUnloaded().get());
             default:
-                return "§f-";
+                return ChatColor.WHITE + "-";
         }
     }
 

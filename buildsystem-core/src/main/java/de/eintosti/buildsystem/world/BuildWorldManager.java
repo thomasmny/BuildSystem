@@ -18,6 +18,7 @@ import de.eintosti.buildsystem.api.world.Visibility;
 import de.eintosti.buildsystem.api.world.WorldManager;
 import de.eintosti.buildsystem.api.world.data.WorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldType;
+import de.eintosti.buildsystem.api.world.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.generator.Generator;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.config.WorldConfig;
@@ -41,9 +42,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Unmodifiable;
 
 import java.io.File;
 import java.util.AbstractMap;
@@ -107,14 +106,11 @@ public class BuildWorldManager implements WorldManager {
         this.buildWorlds.remove(buildWorld.getName());
     }
 
-    @ApiStatus.Internal
-    @Unmodifiable
     public Collection<CraftBuildWorld> getCraftBuildWorlds() {
         return this.buildWorlds.values();
     }
 
     @Override
-    @Unmodifiable
     public Collection<BuildWorld> getBuildWorlds() {
         return Collections.unmodifiableCollection(buildWorlds.values());
     }
@@ -206,7 +202,7 @@ public class BuildWorldManager implements WorldManager {
         });
     }
 
-    private void createWorld(Player player, String worldName, WorldType worldType, CustomGeneratorImpl customGenerator, String template, boolean privateWorld) {
+    private void createWorld(Player player, String worldName, WorldType worldType, CustomGenerator customGenerator, String template, boolean privateWorld) {
         new CraftBuildWorldCreator(plugin, worldName)
                 .setType(worldType)
                 .setTemplate(template)
@@ -231,25 +227,23 @@ public class BuildWorldManager implements WorldManager {
         return false;
     }
 
-    /**
-     * Gets the {@link ChunkGenerator} for the generation of a {@link CraftBuildWorld} with {@link WorldType#CUSTOM}
-     *
-     * @param generator   The plugin's (generator) name
-     * @param generatorId Unique ID, if any, that was specified to indicate which generator was requested
-     * @param worldName   Name of the world that the chunk generator should be applied to.
-     */
-    @Nullable
-    public ChunkGenerator getChunkGenerator(String generator, String generatorId, String worldName) {
-        if (generator == null) {
+    @Override
+    public ChunkGenerator getChunkGenerator(String pluginName, String generatorId, String worldName) {
+        if (pluginName == null) {
             return null;
         }
 
-        Plugin plugin = Bukkit.getPluginManager().getPlugin(generator);
+        Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginName);
         if (plugin == null) {
             return null;
         }
 
         return plugin.getDefaultWorldGenerator(worldName, generatorId);
+    }
+
+    @Override
+    public boolean importWorld(String worldName, Builder creator, Generator generator, String generatorName) {
+        return importWorld(null, worldName, creator, generator, generatorName, true);
     }
 
     /**
@@ -293,11 +287,6 @@ public class BuildWorldManager implements WorldManager {
 
         worldCreator.importWorld(player, single);
         return true;
-    }
-
-    @Override
-    public boolean importWorld(Player player, String worldName, Builder creator, Generator generator, String generatorName) {
-        return importWorld(player, worldName, creator, generator, generatorName);
     }
 
     /**
@@ -357,6 +346,10 @@ public class BuildWorldManager implements WorldManager {
     }
 
     @Override
+    public void deleteWorld(BuildWorld buildWorld) {
+        deleteWorld(null, buildWorld);
+    }
+
     public void deleteWorld(Player player, BuildWorld buildWorld) {
         if (!buildWorlds.containsKey(buildWorld.getName())) {
             Messages.sendMessage(player, "worlds_delete_unknown_world");

@@ -14,6 +14,12 @@ public class BuildSystemProvider {
 
     private static BuildSystem instance = null;
 
+    /**
+     * Gets an instance of the {@link BuildSystem} API.
+     *
+     * @return An instance of the BuildSystem API
+     * @throws IllegalStateException if the API is not loaded yet
+     */
     @NotNull
     public static BuildSystem get() {
         BuildSystem instance = BuildSystemProvider.instance;

@@ -9,6 +9,7 @@ package de.eintosti.buildsystem.config;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.Visibility;
 import org.bukkit.Difficulty;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -297,8 +298,15 @@ public class ConfigValues {
         return importDelay;
     }
 
-    public int getMaxWorldAmount(boolean privateWorld) {
-        return privateWorld ? maxPrivateWorldAmount : maxPublicWorldAmount;
+    public int getMaxWorldAmount(Visibility visibility) {
+        switch (visibility) {
+            case PUBLIC:
+                return maxPublicWorldAmount;
+            case PRIVATE:
+                return maxPrivateWorldAmount;
+            default:
+                throw new IllegalArgumentException("Invalid visibility. Use PUBLIC or PRIVATE");
+        }
     }
 
     public Map<String, String> getDefaultGameRules() {
