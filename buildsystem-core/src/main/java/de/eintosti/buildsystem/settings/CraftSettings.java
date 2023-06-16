@@ -232,13 +232,13 @@ public class CraftSettings implements Settings, ConfigurationSerializable {
     }
 
     @Override
-    public boolean isTrapDoor() {
+    public boolean isOpenTrapDoors() {
         return trapDoor;
     }
 
     @Override
-    public void setTrapDoor(boolean trapDoor) {
-        this.trapDoor = trapDoor;
+    public void setOpenTrapDoors(boolean openTrapDoors) {
+        this.trapDoor = openTrapDoors;
     }
 
     public BukkitTask getScoreboardTask() {

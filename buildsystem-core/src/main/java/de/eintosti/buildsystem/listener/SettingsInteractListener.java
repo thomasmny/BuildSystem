@@ -85,7 +85,7 @@ public class SettingsInteractListener implements Listener {
 
         Player player = event.getPlayer();
         CraftSettings settings = settingsManager.getSettings(player);
-        if (!settings.isTrapDoor()) {
+        if (!settings.isOpenTrapDoors()) {
             return;
         }
 

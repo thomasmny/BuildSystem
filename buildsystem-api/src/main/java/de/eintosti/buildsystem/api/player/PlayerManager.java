@@ -8,7 +8,7 @@
 package de.eintosti.buildsystem.api.player;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.Visibility;
+import de.eintosti.buildsystem.api.world.data.Visibility;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Unmodifiable;
 

@@ -15,7 +15,7 @@ import de.eintosti.buildsystem.api.settings.WorldDisplay;
 import de.eintosti.buildsystem.api.settings.WorldFilter;
 import de.eintosti.buildsystem.api.settings.WorldSort;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.Visibility;
+import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldStatus;
 import de.eintosti.buildsystem.navigator.settings.BuildWorldFilter;

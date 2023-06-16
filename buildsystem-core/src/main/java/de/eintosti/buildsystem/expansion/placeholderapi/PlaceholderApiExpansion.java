@@ -159,7 +159,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "spawnteleport":
                 return String.valueOf(settings.isSpawnTeleport());
             case "opentrapdoors":
-                return String.valueOf(settings.isTrapDoor());
+                return String.valueOf(settings.isOpenTrapDoors());
             default:
                 return null;
         }

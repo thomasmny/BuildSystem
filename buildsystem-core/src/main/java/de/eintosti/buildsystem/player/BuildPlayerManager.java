@@ -18,7 +18,7 @@ import de.eintosti.buildsystem.api.settings.DesignColor;
 import de.eintosti.buildsystem.api.settings.NavigatorType;
 import de.eintosti.buildsystem.api.settings.WorldSort;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.Visibility;
+import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.config.PlayersConfig;
 import de.eintosti.buildsystem.navigator.settings.BuildWorldDisplay;

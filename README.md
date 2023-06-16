@@ -122,7 +122,7 @@ not to forget: let each player decide which settings whey think are best for the
 ```xml
 
 <repository>
-  <id>eintosti</id>
+  <id>eintosti-release</id>
   <url>https://repo.eintosti.de/release</url>
 </repository>
 ```

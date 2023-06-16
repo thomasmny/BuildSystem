@@ -43,13 +43,38 @@ public interface WorldFilter {
         }
     }
 
+    /**
+     * Gets the current mode.
+     *
+     * @return The mode
+     */
     Mode getMode();
 
+    /**
+     * Sets the current mode.
+     *
+     * @param mode The mode
+     */
     void setMode(Mode mode);
 
+    /**
+     * Gets the text which the filter is applied to.
+     *
+     * @return The text the filter is applied to
+     */
     String getText();
 
+    /**
+     * Sets the text which the filter is applied to.
+     *
+     * @param text The text
+     */
     void setText(String text);
 
+    /**
+     * Apply the filter to a {@link BuildWorld}.
+     *
+     * @return The filter predicate
+     */
     Predicate<BuildWorld> apply();
 }

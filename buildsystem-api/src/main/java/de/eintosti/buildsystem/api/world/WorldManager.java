@@ -7,6 +7,7 @@
  */
 package de.eintosti.buildsystem.api.world;
 
+import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldType;
 import de.eintosti.buildsystem.api.world.generator.Generator;
 import org.bukkit.World;

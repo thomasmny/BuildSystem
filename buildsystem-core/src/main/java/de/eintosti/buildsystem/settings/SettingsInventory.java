@@ -60,7 +60,7 @@ public class SettingsInventory implements Listener {
         addSettingsItem(inventory, 21, configValues.getNavigatorItem(), settings.getNavigatorType().equals(NavigatorType.NEW), Messages.getString("settings_new_navigator_item"), Messages.getStringList("settings_new_navigator_lore"));
         addSettingsItem(inventory, 22, XMaterial.GOLDEN_CARROT, settings.isNightVision(), Messages.getString("settings_nightvision_item"), Messages.getStringList("settings_nightvision_lore"));
         addSettingsItem(inventory, 23, XMaterial.BRICKS, settings.isNoClip(), Messages.getString("settings_no_clip_item"), Messages.getStringList("settings_no_clip_lore"));
-        addSettingsItem(inventory, 24, XMaterial.IRON_TRAPDOOR, settings.isTrapDoor(), Messages.getString("settings_open_trapdoors_item"), Messages.getStringList("settings_open_trapdoors_lore"));
+        addSettingsItem(inventory, 24, XMaterial.IRON_TRAPDOOR, settings.isOpenTrapDoors(), Messages.getString("settings_open_trapdoors_item"), Messages.getStringList("settings_open_trapdoors_lore"));
         addSettingsItem(inventory, 29, XMaterial.FERN, settings.isPlacePlants(), Messages.getString("settings_placeplants_item"), Messages.getStringList("settings_placeplants_lore"));
         addSettingsItem(inventory, 30, XMaterial.PAPER, settings.isScoreboard(), configValues.isScoreboard() ? Messages.getString("settings_scoreboard_item") : Messages.getString("settings_scoreboard_disabled_item"),
                 configValues.isScoreboard() ? Messages.getStringList("settings_scoreboard_lore") : Messages.getStringList("settings_scoreboard_disabled_lore"));
@@ -183,7 +183,7 @@ public class SettingsInventory implements Listener {
                 }
                 break;
             case 24:
-                settings.setTrapDoor(!settings.isTrapDoor());
+                settings.setOpenTrapDoors(!settings.isOpenTrapDoors());
                 break;
 
             case 29:
