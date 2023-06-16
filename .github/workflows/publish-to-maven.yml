@@ -1,9 +1,11 @@
-name: Build main
+name: Publish project to Maven repository
 
-on: [ push, pull_request ]
+on:
+  push:
+    branches: [ master ]
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Git Repository
@@ -14,10 +16,11 @@ jobs:
         with:
           java-version: 17
 
-      - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@v1
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - name: Build with Gradle
-        run: ./gradlew clean build
+
+      - name: Publish with Gradle
+        run: ./gradlew build publish
+        env:
+          MAVEN_NAME: ${{ secrets.MAVEN_NAME }}
+          MAVEN_SECRET: ${{ secrets.MAVEN_SECRET }}
