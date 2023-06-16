@@ -20,7 +20,7 @@ publishing {
     repositories {
         maven {
             name = "BuildSystem"
-            url = uri("https://repo.eintosti.de/releases")
+            url = uri("https://repo.eintosti.de/repository")
             credentials(PasswordCredentials::class)
             authentication {
                 create<BasicAuthentication>("basic")

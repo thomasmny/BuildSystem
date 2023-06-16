@@ -15,10 +15,6 @@ public class CustomGeneratorImpl implements CustomGenerator {
     private final String name;
     private final ChunkGenerator chunkGenerator;
 
-    /**
-     * @param name           The name of the chunk generator
-     * @param chunkGenerator The chunk generator object
-     */
     public CustomGeneratorImpl(String name, ChunkGenerator chunkGenerator) {
         this.name = name;
         this.chunkGenerator = chunkGenerator;
