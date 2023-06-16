@@ -63,7 +63,9 @@ public interface WorldData {
     Type<Boolean> blockBreaking();
 
     /**
-     * @return
+     * Gets whether blocks interaction are enabled in the {@link BuildWorld}.
+     *
+     * @return {@code true} if enabled, otherwise {@code false}
      */
     Type<Boolean> blockInteractions();
 

@@ -417,6 +417,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
         forceUnload(true);
     }
 
+    @Override
     public void forceUnload(boolean save) {
         World bukkitWorld = getWorld();
         if (bukkitWorld == null) {

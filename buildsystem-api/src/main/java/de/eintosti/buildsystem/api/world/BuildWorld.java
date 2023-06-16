@@ -206,6 +206,19 @@ public interface BuildWorld {
     void unload();
 
     /**
+     * Attempts to unload the world without checking if players are in the world.
+     * <p>
+     * As with {@link #unload()}, in order for the world to be unloaded, the following criteria must be met:
+     * <ul>
+     *   <li>The world is not allowed to be the spawn world</li>
+     *   <li>The world is not allowed to be on the blacklist of worlds which cannot be unloaded</li>
+     * </ul>
+     *
+     * @param save Should chunks be saved before unloading
+     */
+    void forceUnload(boolean save);
+
+    /**
      * Loads the world.
      */
     void load();
