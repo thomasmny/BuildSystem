@@ -13,19 +13,19 @@ import com.sk89q.worldedit.event.extent.EditSessionEvent;
 import com.sk89q.worldedit.extension.platform.Actor;
 import com.sk89q.worldedit.extent.NullExtent;
 import com.sk89q.worldedit.util.eventbus.Subscribe;
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldStatus;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldStatus;
+import de.eintosti.buildsystem.world.BuildWorldManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 
 public class EditSessionListener implements Listener {
 
-    private final WorldManager worldManager;
+    private final BuildWorldManager worldManager;
 
-    public EditSessionListener(BuildSystem plugin) {
+    public EditSessionListener(BuildSystemPlugin plugin) {
         this.worldManager = plugin.getWorldManager();
         WorldEdit.getInstance().getEventBus().register(this);
     }

@@ -23,6 +23,7 @@ repositories {
 }
 
 dependencies {
+    implementation(project(":buildsystem-api"))
     project.project(":buildsystem-abstraction").subprojects.forEach {
         implementation(project(it.path))
     }

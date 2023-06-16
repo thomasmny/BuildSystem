@@ -8,7 +8,7 @@
 package de.eintosti.buildsystem.settings;
 
 import com.google.common.collect.Sets;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -26,11 +26,11 @@ import java.util.UUID;
 
 public class NoClipManager {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final Map<UUID, GameMode> previousGameMode;
     private final Set<UUID> noClipPlayers;
 
-    public NoClipManager(BuildSystem plugin) {
+    public NoClipManager(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.noClipPlayers = new HashSet<>();
         this.previousGameMode = new HashMap<>();
@@ -110,12 +110,12 @@ public class NoClipManager {
     }
 
     /**
-     * Only add a player to the list of No-Clip players if {@link Settings#isNoClip} is equal to {@code true}.
+     * Only add a player to the list of No-Clip players if {@link CraftSettings#isNoClip} is equal to {@code true}.
      *
      * @param player   The player to add
      * @param settings The player's settings
      */
-    public void startNoClip(Player player, Settings settings) {
+    public void startNoClip(Player player, CraftSettings settings) {
         if (!settings.isNoClip()) {
             noClipPlayers.remove(player.getUniqueId());
             return;

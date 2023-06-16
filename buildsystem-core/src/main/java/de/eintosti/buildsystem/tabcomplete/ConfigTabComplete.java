@@ -7,7 +7,7 @@
  */
 package de.eintosti.buildsystem.tabcomplete;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -18,7 +18,7 @@ import java.util.List;
 
 public class ConfigTabComplete implements TabCompleter {
 
-    public ConfigTabComplete(BuildSystem plugin) {
+    public ConfigTabComplete(BuildSystemPlugin plugin) {
         plugin.getCommand("config").setTabCompleter(this);
     }
 

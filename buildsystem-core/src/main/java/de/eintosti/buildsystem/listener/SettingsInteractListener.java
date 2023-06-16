@@ -10,18 +10,19 @@ package de.eintosti.buildsystem.listener;
 import com.cryptomorin.xseries.XBlock;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XTag;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldStatus;
 import de.eintosti.buildsystem.config.ConfigValues;
-import de.eintosti.buildsystem.player.PlayerManager;
-import de.eintosti.buildsystem.settings.Settings;
+import de.eintosti.buildsystem.player.BuildPlayerManager;
+import de.eintosti.buildsystem.settings.CraftSettings;
 import de.eintosti.buildsystem.settings.SettingsManager;
 import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import de.eintosti.buildsystem.version.util.DirectionUtil;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.Builder;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldData;
-import de.eintosti.buildsystem.world.data.WorldStatus;
+import de.eintosti.buildsystem.world.BuildWorldManager;
+import de.eintosti.buildsystem.world.CraftBuildWorld;
+import de.eintosti.buildsystem.world.CraftBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
@@ -48,13 +49,13 @@ public class SettingsInteractListener implements Listener {
     private final ConfigValues configValues;
     private final CustomBlocks customBlocks;
 
-    private final PlayerManager playerManager;
+    private final BuildPlayerManager playerManager;
     private final SettingsManager settingsManager;
-    private final WorldManager worldManager;
+    private final BuildWorldManager worldManager;
 
     private final Set<UUID> cachePlayers;
 
-    public SettingsInteractListener(BuildSystem plugin) {
+    public SettingsInteractListener(BuildSystemPlugin plugin) {
         this.configValues = plugin.getConfigValues();
         this.customBlocks = plugin.getCustomBlocks();
 
@@ -84,7 +85,7 @@ public class SettingsInteractListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
         if (!settings.isTrapDoor()) {
             return;
         }
@@ -119,7 +120,7 @@ public class SettingsInteractListener implements Listener {
         Player player = event.getPlayer();
         Action action = event.getAction();
 
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
         if (settings.isSlabBreaking() && action == Action.LEFT_CLICK_BLOCK) {
             customBlocks.modifySlab(event);
         }
@@ -146,7 +147,7 @@ public class SettingsInteractListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
         if (!settings.isPlacePlants()) {
             return;
         }
@@ -162,7 +163,7 @@ public class SettingsInteractListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
         if (!settings.isInstantPlaceSigns()) {
             return;
         }
@@ -245,7 +246,7 @@ public class SettingsInteractListener implements Listener {
             return;
         }
 
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
         if (!settings.isDisableInteract()) {
             return;
         }
@@ -299,13 +300,13 @@ public class SettingsInteractListener implements Listener {
     }
 
     /**
-     * Not every player can always interact with the {@link BuildWorld} they are in.
+     * Not every player can always interact with the {@link CraftBuildWorld} they are in.
      * <p>
      * Reasons an interaction could be cancelled:
      * <ul>
      *   <li>The world has its {@link WorldStatus} set to archived</li>
      *   <li>The world has a setting enabled which disallows certain events</li>
-     *   <li>The world only allows {@link Builder}s to build and the player is not such a builder</li>
+     *   <li>The world only allows {@link CraftBuilder}s to build and the player is not such a builder</li>
      * </ul>
      * <p>
      * However, a player can override these reasons if:

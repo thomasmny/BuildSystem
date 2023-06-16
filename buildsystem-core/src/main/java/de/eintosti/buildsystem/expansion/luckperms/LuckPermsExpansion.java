@@ -7,7 +7,7 @@
  */
 package de.eintosti.buildsystem.expansion.luckperms;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.expansion.luckperms.calculators.BuildModeCalculator;
 import de.eintosti.buildsystem.expansion.luckperms.calculators.RoleCalculator;
 import net.luckperms.api.LuckPerms;
@@ -21,11 +21,11 @@ import java.util.function.Supplier;
 
 public class LuckPermsExpansion {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final ContextManager contextManager;
     private final List<ContextCalculator<Player>> registeredCalculators;
 
-    public LuckPermsExpansion(BuildSystem plugin) {
+    public LuckPermsExpansion(BuildSystemPlugin plugin) {
         LuckPerms luckPerms = plugin.getServer().getServicesManager().load(LuckPerms.class);
         if (luckPerms == null) {
             throw new IllegalStateException("LuckPerms API not loaded.");

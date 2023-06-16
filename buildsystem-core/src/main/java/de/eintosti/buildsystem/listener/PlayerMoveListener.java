@@ -7,10 +7,10 @@
  */
 package de.eintosti.buildsystem.listener;
 
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.navigator.settings.NavigatorType;
-import de.eintosti.buildsystem.player.PlayerManager;
-import de.eintosti.buildsystem.settings.Settings;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.settings.NavigatorType;
+import de.eintosti.buildsystem.api.settings.Settings;
+import de.eintosti.buildsystem.player.BuildPlayerManager;
 import de.eintosti.buildsystem.settings.SettingsManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -21,11 +21,11 @@ import org.bukkit.event.player.PlayerMoveEvent;
 
 public class PlayerMoveListener implements Listener {
 
-    private final BuildSystem plugin;
-    private final PlayerManager playerManager;
+    private final BuildSystemPlugin plugin;
+    private final BuildPlayerManager playerManager;
     private final SettingsManager settingsManager;
 
-    public PlayerMoveListener(BuildSystem plugin) {
+    public PlayerMoveListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.playerManager = plugin.getPlayerManager();
         this.settingsManager = plugin.getSettingsManager();
@@ -40,7 +40,7 @@ public class PlayerMoveListener implements Listener {
         }
 
         Settings settings = settingsManager.getSettings(player);
-        if (!settings.getNavigatorType().equals(NavigatorType.NEW)) {
+        if (settings.getNavigatorType() != NavigatorType.NEW) {
             return;
         }
 

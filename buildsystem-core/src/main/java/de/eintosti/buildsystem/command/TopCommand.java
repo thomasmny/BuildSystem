@@ -7,9 +7,9 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.BuildWorldManager;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -24,10 +24,10 @@ import java.util.Objects;
 
 public class TopCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
-    private final WorldManager worldManager;
+    private final BuildSystemPlugin plugin;
+    private final BuildWorldManager worldManager;
 
-    public TopCommand(BuildSystem plugin) {
+    public TopCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.worldManager = plugin.getWorldManager();
         plugin.getCommand("top").setExecutor(this);

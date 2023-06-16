@@ -9,10 +9,10 @@ package de.eintosti.buildsystem.world.modification;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.BuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -24,10 +24,10 @@ import java.util.AbstractMap;
 
 public class DeleteInventory implements Listener {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final InventoryUtils inventoryUtils;
 
-    public DeleteInventory(BuildSystem plugin) {
+    public DeleteInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.inventoryUtils = plugin.getInventoryUtil();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);

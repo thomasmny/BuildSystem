@@ -8,7 +8,7 @@
 package de.eintosti.buildsystem.navigator.inventory;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import org.bukkit.Bukkit;
@@ -20,10 +20,10 @@ import org.bukkit.inventory.Inventory;
 
 public class NavigatorInventory implements Listener {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final InventoryUtils inventoryUtils;
 
-    public NavigatorInventory(BuildSystem plugin) {
+    public NavigatorInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.inventoryUtils = plugin.getInventoryUtil();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);

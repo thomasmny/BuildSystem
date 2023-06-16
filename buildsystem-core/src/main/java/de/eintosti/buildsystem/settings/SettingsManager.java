@@ -7,13 +7,13 @@
  */
 package de.eintosti.buildsystem.settings;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.version.util.MinecraftVersion;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldData;
+import de.eintosti.buildsystem.world.BuildWorldManager;
 import fr.mrmicky.fastboard.FastBoard;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -28,16 +28,16 @@ import java.util.stream.Collectors;
 
 public class SettingsManager {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final ConfigValues configValues;
-    private final WorldManager worldManager;
+    private final BuildWorldManager worldManager;
 
     private final Map<UUID, FastBoard> boards;
 
     private final String scoreboardTitle;
     private final List<String> scoreboardBody;
 
-    public SettingsManager(BuildSystem plugin) {
+    public SettingsManager(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
         this.worldManager = plugin.getWorldManager();
@@ -48,21 +48,21 @@ public class SettingsManager {
         this.scoreboardBody = Messages.getStringList("body");
     }
 
-    public Settings getSettings(UUID uuid) {
+    public CraftSettings getSettings(UUID uuid) {
         return plugin.getPlayerManager().getBuildPlayer(uuid).getSettings();
     }
 
-    public Settings getSettings(Player player) {
+    public CraftSettings getSettings(Player player) {
         return getSettings(player.getUniqueId());
     }
 
     /**
-     * Only set a player's scoreboard if {@link Settings#isScoreboard} is equal to {@code true}.
+     * Only set a player's scoreboard if {@link CraftSettings#isScoreboard} is equal to {@code true}.
      *
      * @param player   The player object
      * @param settings The player's settings
      */
-    public void startScoreboard(Player player, Settings settings) {
+    public void startScoreboard(Player player, CraftSettings settings) {
         if (!settings.isScoreboard()) {
             stopScoreboard(player, settings);
             return;
@@ -72,7 +72,7 @@ public class SettingsManager {
     }
 
     /**
-     * Only set a player's scoreboard if {@link Settings#isScoreboard} is equal to {@code true}.
+     * Only set a player's scoreboard if {@link CraftSettings#isScoreboard} is equal to {@code true}.
      *
      * @param player The player object
      */
@@ -81,7 +81,7 @@ public class SettingsManager {
             return;
         }
 
-        Settings settings = getSettings(player);
+        CraftSettings settings = getSettings(player);
         FastBoard board = new FastBoard(player);
         this.boards.put(player.getUniqueId(), board);
 
@@ -96,7 +96,7 @@ public class SettingsManager {
     }
 
     /**
-     * Set each player's scoreboard if they have {@link Settings#isScoreboard} enabled.
+     * Set each player's scoreboard if they have {@link CraftSettings#isScoreboard} enabled.
      */
     public void startScoreboard() {
         if (!configValues.isScoreboard()) {
@@ -157,7 +157,7 @@ public class SettingsManager {
         WorldData worldData = buildWorld.getData();
         switch (input) {
             case "%status%":
-                return worldData.status().get().getName();
+                return Messages.getDataString(worldData.status().get().getKey());
             case "%permission%":
                 return worldData.permission().get();
             case "%project%":
@@ -177,7 +177,7 @@ public class SettingsManager {
         }
     }
 
-    private void stopScoreboard(Player player, Settings settings) {
+    private void stopScoreboard(Player player, CraftSettings settings) {
         BukkitTask scoreboardTask = settings.getScoreboardTask();
         if (scoreboardTask != null) {
             scoreboardTask.cancel();

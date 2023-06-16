@@ -7,10 +7,10 @@
  */
 package de.eintosti.buildsystem.listener;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.util.EntityAIManager;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.BuildWorldManager;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -20,9 +20,9 @@ import org.bukkit.event.entity.EntitySpawnEvent;
 
 public class EntitySpawnListener implements Listener {
 
-    private final WorldManager worldManager;
+    private final BuildWorldManager worldManager;
 
-    public EntitySpawnListener(BuildSystem plugin) {
+    public EntitySpawnListener(BuildSystemPlugin plugin) {
         this.worldManager = plugin.getWorldManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }

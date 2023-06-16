@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class PlayerInventoryClearEvent extends PlayerEvent {
 
-    private static final HandlerList HANDLERS = new HandlerList();
+    private static final HandlerList HANDLER_LIST = new HandlerList();
 
     private final List<Integer> navigatorSlots;
 
@@ -29,7 +29,7 @@ public class PlayerInventoryClearEvent extends PlayerEvent {
     }
 
     public static HandlerList getHandlerList() {
-        return HANDLERS;
+        return HANDLER_LIST;
     }
 
     public List<Integer> getNavigatorSlots() {
@@ -39,6 +39,6 @@ public class PlayerInventoryClearEvent extends PlayerEvent {
     @NotNull
     @Override
     public HandlerList getHandlers() {
-        return HANDLERS;
+        return HANDLER_LIST;
     }
 }

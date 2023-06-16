@@ -7,28 +7,28 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.BuildWorldManager;
 import org.bukkit.entity.Player;
 
 import java.util.AbstractMap;
 
 public class RemoveSpawnSubCommand implements SubCommand {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
-    public RemoveSpawnSubCommand(BuildSystem plugin) {
+    public RemoveSpawnSubCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
     }
 
     @Override
     public void execute(Player player, String[] args) {
-        WorldManager worldManager = plugin.getWorldManager();
+        BuildWorldManager worldManager = plugin.getWorldManager();
         String playerWorldName = player.getWorld().getName();
         if (!worldManager.isPermitted(player, getArgument().getPermission(), playerWorldName)) {
             plugin.sendPermissionMessage(player);

@@ -7,7 +7,7 @@
  */
 package de.eintosti.buildsystem.tabcomplete;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -18,7 +18,7 @@ import java.util.List;
 
 public class SpeedTabComplete implements TabCompleter {
 
-    public SpeedTabComplete(BuildSystem plugin) {
+    public SpeedTabComplete(BuildSystemPlugin plugin) {
         plugin.getCommand("speed").setTabCompleter(this);
     }
 

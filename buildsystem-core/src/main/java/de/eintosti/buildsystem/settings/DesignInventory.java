@@ -8,8 +8,9 @@
 package de.eintosti.buildsystem.settings;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.settings.DesignColor;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.enchantments.Enchantment;
@@ -24,10 +25,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class DesignInventory implements Listener {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final InventoryUtils inventoryUtils;
 
-    public DesignInventory(BuildSystem plugin) {
+    public DesignInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.inventoryUtils = plugin.getInventoryUtil();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -73,7 +74,7 @@ public class DesignInventory implements Listener {
 
     private void setItem(Player player, Inventory inventory, int position, XMaterial material, String displayName, DesignColor color) {
         SettingsManager settingsManager = plugin.getSettingsManager();
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
 
         ItemStack itemStack = inventoryUtils.getItemStack(material, settings.getDesignColor() == color ? "§a" + displayName : "§7" + displayName);
         ItemMeta itemMeta = itemStack.getItemMeta();
@@ -96,7 +97,7 @@ public class DesignInventory implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        Settings settings = plugin.getSettingsManager().getSettings(player);
+        CraftSettings settings = plugin.getSettingsManager().getSettings(player);
         ItemStack itemStack = event.getCurrentItem();
         if (itemStack.getType().toString().contains("STAINED_GLASS_PANE")) {
             plugin.getSettingsInventory().openInventory(player);

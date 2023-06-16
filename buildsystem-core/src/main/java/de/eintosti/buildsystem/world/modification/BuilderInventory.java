@@ -9,15 +9,16 @@ package de.eintosti.buildsystem.world.modification;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.Builder;
 import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.PaginatedInventory;
 import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.util.UUIDFetcher;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.Builder;
+import de.eintosti.buildsystem.world.CraftBuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -36,12 +37,12 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
 
     private static final int MAX_BUILDERS = 9;
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final InventoryUtils inventoryUtils;
 
     private int numBuilders = 0;
 
-    public BuilderInventory(BuildSystem plugin) {
+    public BuilderInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.inventoryUtils = plugin.getInventoryUtil();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -72,7 +73,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
 
     private void addBuilderAddItem(Inventory inventory, BuildWorld buildWorld, Player player) {
         UUID creatorId = buildWorld.getCreatorId();
-        if ((creatorId != null && creatorId.equals(player.getUniqueId())) || player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
+        if ((creatorId != null && creatorId.equals(player.getUniqueId())) || player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)) {
             inventoryUtils.addUrlSkull(inventory, 22, Messages.getString("worldeditor_builders_add_builder_item"),
                     "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
         } else {
@@ -131,7 +132,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        BuildWorld buildWorld = plugin.getPlayerManager().getBuildPlayer(player).getCachedWorld();
+        CraftBuildWorld buildWorld = plugin.getPlayerManager().getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();
             Messages.sendMessage(player, "worlds_addbuilder_error");

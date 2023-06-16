@@ -7,11 +7,11 @@
  */
 package de.eintosti.buildsystem.world.modification;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.data.WorldStatus;
+import de.eintosti.buildsystem.api.world.data.WorldType;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.data.WorldStatus;
-import de.eintosti.buildsystem.world.data.WorldType;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -24,10 +24,10 @@ import org.bukkit.inventory.ItemStack;
 
 public class SetupInventory implements Listener {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final InventoryUtils inventoryUtils;
 
-    public SetupInventory(BuildSystem plugin) {
+    public SetupInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.inventoryUtils = plugin.getInventoryUtil();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);

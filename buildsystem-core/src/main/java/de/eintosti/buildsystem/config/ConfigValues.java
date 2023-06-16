@@ -8,7 +8,7 @@
 package de.eintosti.buildsystem.config;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import org.bukkit.Difficulty;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -22,7 +22,7 @@ import java.util.Set;
 
 public class ConfigValues {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
     private String dateFormat;
     private String timeUntilUnload;
@@ -66,7 +66,7 @@ public class ConfigValues {
     private Map<String, String> defaultGameRules;
     private Set<String> blackListedWorldsToUnload;
 
-    public ConfigValues(BuildSystem plugin) {
+    public ConfigValues(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         setConfigValues();
     }

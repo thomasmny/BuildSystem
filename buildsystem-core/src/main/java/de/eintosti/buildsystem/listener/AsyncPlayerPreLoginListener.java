@@ -7,14 +7,14 @@
  */
 package de.eintosti.buildsystem.listener;
 
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.player.BuildPlayer;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.player.BuildPlayerManager;
+import de.eintosti.buildsystem.player.CraftBuildPlayer;
 import de.eintosti.buildsystem.player.LogoutLocation;
-import de.eintosti.buildsystem.player.PlayerManager;
-import de.eintosti.buildsystem.settings.Settings;
-import de.eintosti.buildsystem.world.BuildWorld;
+import de.eintosti.buildsystem.settings.CraftSettings;
+import de.eintosti.buildsystem.world.BuildWorldManager;
 import de.eintosti.buildsystem.world.SpawnManager;
-import de.eintosti.buildsystem.world.WorldManager;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -24,12 +24,12 @@ import java.util.UUID;
 
 public class AsyncPlayerPreLoginListener implements Listener {
 
-    private final BuildSystem plugin;
-    private final PlayerManager playerManager;
+    private final BuildSystemPlugin plugin;
+    private final BuildPlayerManager playerManager;
     private final SpawnManager spawnManager;
-    private final WorldManager worldManager;
+    private final BuildWorldManager worldManager;
 
-    public AsyncPlayerPreLoginListener(BuildSystem plugin) {
+    public AsyncPlayerPreLoginListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.playerManager = plugin.getPlayerManager();
         this.spawnManager = plugin.getSpawnManager();
@@ -40,12 +40,12 @@ public class AsyncPlayerPreLoginListener implements Listener {
     @EventHandler
     public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent event) {
         UUID uuid = event.getUniqueId();
-        BuildPlayer buildPlayer = playerManager.getBuildPlayer(uuid);
+        CraftBuildPlayer buildPlayer = playerManager.getBuildPlayer(uuid);
         if (buildPlayer == null) {
             return;
         }
 
-        Settings settings = buildPlayer.getSettings();
+        CraftSettings settings = buildPlayer.getSettings();
         if (settings.isSpawnTeleport() && spawnManager.spawnExists()) {
             return;
         }
@@ -59,7 +59,7 @@ public class AsyncPlayerPreLoginListener implements Listener {
         if (buildWorld == null) {
             buildPlayer.setLogoutLocation(null);
         } else {
-            Bukkit.getScheduler().runTask(plugin, () -> buildWorld.load());
+            Bukkit.getScheduler().runTask(plugin, buildWorld::load);
         }
     }
 }

@@ -7,10 +7,10 @@
  */
 package de.eintosti.buildsystem.listener;
 
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldStatus;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldStatus;
+import de.eintosti.buildsystem.world.BuildWorldManager;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -19,9 +19,9 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 
 public class FoodLevelChangeListener implements Listener {
 
-    private final WorldManager worldManager;
+    private final BuildWorldManager worldManager;
 
-    public FoodLevelChangeListener(BuildSystem plugin) {
+    public FoodLevelChangeListener(BuildSystemPlugin plugin) {
         this.worldManager = plugin.getWorldManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }

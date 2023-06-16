@@ -7,17 +7,17 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.generator.Generator;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.UUIDFetcher;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.Builder;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.generator.Generator;
+import de.eintosti.buildsystem.world.BuildWorldManager;
+import de.eintosti.buildsystem.world.CraftBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -28,10 +28,10 @@ import java.util.UUID;
 
 public class ImportSubCommand implements SubCommand {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final String worldName;
 
-    public ImportSubCommand(BuildSystem plugin, String worldName) {
+    public ImportSubCommand(BuildSystemPlugin plugin, String worldName) {
         this.plugin = plugin;
         this.worldName = worldName;
     }
@@ -48,7 +48,7 @@ public class ImportSubCommand implements SubCommand {
             return;
         }
 
-        WorldManager worldManager = plugin.getWorldManager();
+        BuildWorldManager worldManager = plugin.getWorldManager();
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld != null) {
             Messages.sendMessage(player, "worlds_import_world_is_imported");
@@ -74,7 +74,7 @@ public class ImportSubCommand implements SubCommand {
             return;
         }
 
-        Builder creator = new Builder(null, "-");
+        CraftBuilder creator = new CraftBuilder(null, "-");
         Generator generator = Generator.VOID;
         String generatorName = null;
 
@@ -106,7 +106,7 @@ public class ImportSubCommand implements SubCommand {
                     Messages.sendMessage(player, "worlds_import_player_not_found");
                     return;
                 }
-                creator = new Builder(creatorId, creatorArg);
+                creator = new CraftBuilder(creatorId, creatorArg);
             }
         }
 

@@ -7,21 +7,20 @@
  */
 package de.eintosti.buildsystem.listener;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldStatus;
 import de.eintosti.buildsystem.config.ConfigValues;
-import de.eintosti.buildsystem.player.BuildPlayer;
+import de.eintosti.buildsystem.player.BuildPlayerManager;
+import de.eintosti.buildsystem.player.CraftBuildPlayer;
 import de.eintosti.buildsystem.player.LogoutLocation;
-import de.eintosti.buildsystem.player.PlayerManager;
-import de.eintosti.buildsystem.settings.Settings;
+import de.eintosti.buildsystem.settings.CraftSettings;
 import de.eintosti.buildsystem.settings.SettingsManager;
-import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.UpdateChecker;
-import de.eintosti.buildsystem.world.BuildWorld;
+import de.eintosti.buildsystem.world.BuildWorldManager;
 import de.eintosti.buildsystem.world.SpawnManager;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldData;
-import de.eintosti.buildsystem.world.data.WorldStatus;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -36,20 +35,18 @@ import java.util.AbstractMap;
 
 public class PlayerJoinListener implements Listener {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final ConfigValues configValues;
 
-    private final InventoryUtils inventoryUtils;
-    private final PlayerManager playerManager;
+    private final BuildPlayerManager playerManager;
     private final SettingsManager settingsManager;
     private final SpawnManager spawnManager;
-    private final WorldManager worldManager;
+    private final BuildWorldManager worldManager;
 
-    public PlayerJoinListener(BuildSystem plugin) {
+    public PlayerJoinListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
 
-        this.inventoryUtils = plugin.getInventoryUtil();
         this.playerManager = plugin.getPlayerManager();
         this.settingsManager = plugin.getSettingsManager();
         this.spawnManager = plugin.getSpawnManager();
@@ -71,10 +68,10 @@ public class PlayerJoinListener implements Listener {
         Player player = event.getPlayer();
         plugin.getSkullCache().cacheSkull(player.getName());
 
-        BuildPlayer buildPlayer = playerManager.createBuildPlayer(player);
+        CraftBuildPlayer buildPlayer = playerManager.createBuildPlayer(player);
         manageHidePlayer(player, buildPlayer);
 
-        Settings settings = buildPlayer.getSettings();
+        CraftSettings settings = buildPlayer.getSettings();
         if (settings.isNoClip()) {
             plugin.getNoClipManager().startNoClip(player);
         }
@@ -116,7 +113,7 @@ public class PlayerJoinListener implements Listener {
     }
 
     @SuppressWarnings("deprecation")
-    private void manageHidePlayer(Player player, BuildPlayer buildPlayer) {
+    private void manageHidePlayer(Player player, CraftBuildPlayer buildPlayer) {
         // Hide all players to player
         if (buildPlayer.getSettings().isHidePlayers()) {
             Bukkit.getOnlinePlayers().forEach(player::hidePlayer);
@@ -136,7 +133,7 @@ public class PlayerJoinListener implements Listener {
             return;
         }
 
-        UpdateChecker.init(plugin, BuildSystem.SPIGOT_ID)
+        UpdateChecker.init(plugin, BuildSystemPlugin.SPIGOT_ID)
                 .requestUpdateCheck()
                 .whenComplete((result, e) -> {
                     if (result.requiresUpdate()) {

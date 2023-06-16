@@ -7,8 +7,8 @@
  */
 package de.eintosti.buildsystem.tabcomplete;
 
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.world.BuildWorldManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -20,9 +20,9 @@ import java.util.List;
 
 public class PhysicsTabComplete extends ArgumentSorter implements TabCompleter {
 
-    private final WorldManager worldManager;
+    private final BuildWorldManager worldManager;
 
-    public PhysicsTabComplete(BuildSystem plugin) {
+    public PhysicsTabComplete(BuildSystemPlugin plugin) {
         this.worldManager = plugin.getWorldManager();
         plugin.getCommand("physics").setTabCompleter(this);
     }

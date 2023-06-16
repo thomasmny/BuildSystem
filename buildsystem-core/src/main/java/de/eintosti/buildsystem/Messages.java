@@ -13,6 +13,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -33,7 +34,7 @@ public class Messages {
     private static YamlConfiguration config;
 
     public static void createMessageFile() {
-        JavaPlugin plugin = JavaPlugin.getPlugin(BuildSystem.class);
+        JavaPlugin plugin = JavaPlugin.getPlugin(BuildSystemPlugin.class);
         File file = new File(plugin.getDataFolder(), "messages.yml");
         try {
             if (file.createNewFile()) {
@@ -921,9 +922,16 @@ public class Messages {
                 .apply(query);
     }
 
+    public static String getDataString(@Nullable String key) {
+        if (key == null) {
+            return "-";
+        }
+        return getString(key);
+    }
+
     public static String formatDate(long millis) {
         return millis > 0
-                ? new SimpleDateFormat(JavaPlugin.getPlugin(BuildSystem.class).getConfigValues().getDateFormat()).format(millis)
+                ? new SimpleDateFormat(JavaPlugin.getPlugin(BuildSystemPlugin.class).getConfigValues().getDateFormat()).format(millis)
                 : "-";
     }
 }

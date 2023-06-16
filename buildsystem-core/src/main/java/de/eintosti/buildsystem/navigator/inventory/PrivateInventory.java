@@ -8,21 +8,22 @@
 package de.eintosti.buildsystem.navigator.inventory;
 
 import com.google.common.collect.Sets;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.player.PlayerManager;
+import de.eintosti.buildsystem.api.world.Visibility;
+import de.eintosti.buildsystem.api.world.data.WorldStatus;
+import de.eintosti.buildsystem.player.BuildPlayerManager;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.data.WorldStatus;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
 public class PrivateInventory extends FilteredWorldsInventory {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final InventoryUtils inventoryUtils;
-    private final PlayerManager playerManager;
+    private final BuildPlayerManager playerManager;
 
-    public PrivateInventory(BuildSystem plugin) {
+    public PrivateInventory(BuildSystemPlugin plugin) {
         super(plugin, "private_title", "private_no_worlds", Visibility.PRIVATE,
                 Sets.newHashSet(WorldStatus.NOT_STARTED, WorldStatus.IN_PROGRESS, WorldStatus.ALMOST_FINISHED, WorldStatus.FINISHED)
         );

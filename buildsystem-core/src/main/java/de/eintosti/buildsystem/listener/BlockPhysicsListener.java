@@ -8,9 +8,9 @@
 package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.world.BuildWorldManager;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -36,9 +36,9 @@ import java.util.List;
 
 public class BlockPhysicsListener implements Listener {
 
-    private final WorldManager worldManager;
+    private final BuildWorldManager worldManager;
 
-    public BlockPhysicsListener(BuildSystem plugin) {
+    public BlockPhysicsListener(BuildSystemPlugin plugin) {
         this.worldManager = plugin.getWorldManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }

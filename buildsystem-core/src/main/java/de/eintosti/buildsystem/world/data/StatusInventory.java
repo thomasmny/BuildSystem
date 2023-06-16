@@ -9,11 +9,13 @@ package de.eintosti.buildsystem.world.data;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.player.PlayerManager;
+import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldStatus;
+import de.eintosti.buildsystem.player.BuildPlayerManager;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.BuildWorld;
+import de.eintosti.buildsystem.world.CraftBuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -30,11 +32,11 @@ import java.util.AbstractMap;
 
 public class StatusInventory implements Listener {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final InventoryUtils inventoryUtils;
-    private final PlayerManager playerManager;
+    private final BuildPlayerManager playerManager;
 
-    public StatusInventory(BuildSystem plugin) {
+    public StatusInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.inventoryUtils = plugin.getInventoryUtil();
         this.playerManager = plugin.getPlayerManager();
@@ -84,7 +86,7 @@ public class StatusInventory implements Listener {
         }
         itemStack.setItemMeta(itemMeta);
 
-        BuildWorld cachedWorld = playerManager.getBuildPlayer(player).getCachedWorld();
+        CraftBuildWorld cachedWorld = playerManager.getBuildPlayer(player).getCachedWorld();
         if (cachedWorld != null && cachedWorld.getData().status().get() == worldStatus) {
             itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
         }
@@ -116,7 +118,7 @@ public class StatusInventory implements Listener {
             return;
         }
 
-        BuildWorld buildWorld = playerManager.getBuildPlayer(player).getCachedWorld();
+        CraftBuildWorld buildWorld = playerManager.getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();
             Messages.sendMessage(player, "worlds_setstatus_error");
@@ -155,7 +157,7 @@ public class StatusInventory implements Listener {
         XSound.ENTITY_CHICKEN_EGG.play(player);
         Messages.sendMessage(player, "worlds_setstatus_set",
                 new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()),
-                new AbstractMap.SimpleEntry<>("%status%", buildWorld.getData().status().get().getName())
+                new AbstractMap.SimpleEntry<>("%status%", Messages.getDataString(buildWorld.getData().status().get().getKey()))
         );
         playerManager.getBuildPlayer(player).setCachedWorld(null);
     }

@@ -7,22 +7,22 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.BuildWorldManager;
+import de.eintosti.buildsystem.world.CraftBuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 public class TeleportSubCommand implements SubCommand {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
-    public TeleportSubCommand(BuildSystem plugin) {
+    public TeleportSubCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -38,8 +38,8 @@ public class TeleportSubCommand implements SubCommand {
             return;
         }
 
-        WorldManager worldManager = plugin.getWorldManager();
-        BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
+        BuildWorldManager worldManager = plugin.getWorldManager();
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
         if (buildWorld == null) {
             Messages.sendMessage(player, "worlds_tp_unknown_world");
             return;

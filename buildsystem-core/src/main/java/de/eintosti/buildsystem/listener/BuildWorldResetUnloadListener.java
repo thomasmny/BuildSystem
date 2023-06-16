@@ -1,8 +1,8 @@
 package de.eintosti.buildsystem.listener;
 
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.world.BuildWorldManager;
+import de.eintosti.buildsystem.world.CraftBuildWorld;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,9 +11,9 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class BuildWorldResetUnloadListener implements Listener {
 
-    private final WorldManager worldManager;
+    private final BuildWorldManager worldManager;
 
-    public BuildWorldResetUnloadListener(BuildSystem plugin) {
+    public BuildWorldResetUnloadListener(BuildSystemPlugin plugin) {
         this.worldManager = plugin.getWorldManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -21,7 +21,7 @@ public class BuildWorldResetUnloadListener implements Listener {
     @EventHandler
     public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
         World from = event.getFrom();
-        BuildWorld buildWorld = worldManager.getBuildWorld(from.getName());
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(from.getName());
         if (buildWorld != null) {
             buildWorld.resetUnloadTask();
         }
@@ -30,7 +30,7 @@ public class BuildWorldResetUnloadListener implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         World from = event.getPlayer().getWorld();
-        BuildWorld buildWorld = worldManager.getBuildWorld(from.getName());
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(from.getName());
         if (buildWorld != null) {
             buildWorld.resetUnloadTask();
         }

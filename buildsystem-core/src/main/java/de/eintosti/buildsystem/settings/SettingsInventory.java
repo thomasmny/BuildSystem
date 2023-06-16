@@ -9,10 +9,10 @@ package de.eintosti.buildsystem.settings;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.settings.NavigatorType;
 import de.eintosti.buildsystem.config.ConfigValues;
-import de.eintosti.buildsystem.navigator.settings.NavigatorType;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.enchantments.Enchantment;
@@ -31,13 +31,13 @@ import java.util.List;
 
 public class SettingsInventory implements Listener {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final ConfigValues configValues;
 
     private final InventoryUtils inventoryUtils;
     private final SettingsManager settingsManager;
 
-    public SettingsInventory(BuildSystem plugin) {
+    public SettingsInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
 
@@ -50,7 +50,7 @@ public class SettingsInventory implements Listener {
         Inventory inventory = Bukkit.createInventory(null, 45, Messages.getString("settings_title"));
         fillGuiWithGlass(player, inventory);
 
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
         addDesignItem(inventory, player);
         addClearInventoryItem(inventory, player);
         addSettingsItem(inventory, 13, XMaterial.DIAMOND_AXE, settings.isDisableInteract(), Messages.getString("settings_disableinteract_item"), Messages.getStringList("settings_disableinteract_lore"));
@@ -101,7 +101,7 @@ public class SettingsInventory implements Listener {
     }
 
     private void addClearInventoryItem(Inventory inventory, Player player) {
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
         XMaterial xMaterial = settings.isClearInventory() ? XMaterial.MINECART : XMaterial.CHEST_MINECART;
         addSettingsItem(inventory, 12, xMaterial, settings.isClearInventory(), Messages.getString("settings_clear_inventory_item"), Messages.getStringList("settings_clear_inventory_lore"));
     }
@@ -126,7 +126,7 @@ public class SettingsInventory implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
 
         switch (event.getSlot()) {
             case 11:
@@ -218,7 +218,7 @@ public class SettingsInventory implements Listener {
     }
 
     @SuppressWarnings("deprecation")
-    private void toggleHidePlayers(Player player, Settings settings) {
+    private void toggleHidePlayers(Player player, CraftSettings settings) {
         if (settings.isHidePlayers()) {
             Bukkit.getOnlinePlayers().forEach(player::hidePlayer);
         } else {

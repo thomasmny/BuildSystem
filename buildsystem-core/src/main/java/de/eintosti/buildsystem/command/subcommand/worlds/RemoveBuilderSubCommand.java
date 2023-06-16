@@ -8,15 +8,15 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.UUIDFetcher;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.BuildWorldManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -25,17 +25,17 @@ import java.util.UUID;
 
 public class RemoveBuilderSubCommand implements SubCommand {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final String worldName;
 
-    public RemoveBuilderSubCommand(BuildSystem plugin, String worldName) {
+    public RemoveBuilderSubCommand(BuildSystemPlugin plugin, String worldName) {
         this.plugin = plugin;
         this.worldName = worldName;
     }
 
     @Override
     public void execute(Player player, String[] args) {
-        WorldManager worldManager = plugin.getWorldManager();
+        BuildWorldManager worldManager = plugin.getWorldManager();
         if (!worldManager.isPermitted(player, getArgument().getPermission(), worldName)) {
             plugin.sendPermissionMessage(player);
             return;

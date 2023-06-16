@@ -7,9 +7,10 @@
  */
 package de.eintosti.buildsystem.expansion.luckperms.calculators;
 
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.world.BuildWorldManager;
+import de.eintosti.buildsystem.world.CraftBuildWorld;
 import net.luckperms.api.context.ContextCalculator;
 import net.luckperms.api.context.ContextConsumer;
 import net.luckperms.api.context.ContextSet;
@@ -22,9 +23,9 @@ public class RoleCalculator implements ContextCalculator<Player> {
 
     private static final String KEY = "buildsystem:role";
 
-    private final WorldManager worldManager;
+    private final BuildWorldManager worldManager;
 
-    public RoleCalculator(BuildSystem plugin) {
+    public RoleCalculator(BuildSystemPlugin plugin) {
         this.worldManager = plugin.getWorldManager();
     }
 
@@ -46,17 +47,17 @@ public class RoleCalculator implements ContextCalculator<Player> {
 
     private enum Role {
         /**
-         * The creator of a {@link BuildWorld}.
+         * The creator of a {@link CraftBuildWorld}.
          */
         CREATOR,
 
         /**
-         * A player which has been added to the list of trusted players and is therefore allowed to build in a {@link BuildWorld}.
+         * A player which has been added to the list of trusted players and is therefore allowed to build in a {@link CraftBuildWorld}.
          */
         BUILDER,
 
         /**
-         * A player which is neither the {@link #CREATOR} nor a {@link #BUILDER} in a {@link BuildWorld}.
+         * A player which is neither the {@link #CREATOR} nor a {@link #BUILDER} in a {@link CraftBuildWorld}.
          */
         GUEST;
 

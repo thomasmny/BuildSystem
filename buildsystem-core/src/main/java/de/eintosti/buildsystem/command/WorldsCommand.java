@@ -8,7 +8,7 @@
 package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.*;
@@ -21,9 +21,9 @@ import org.jetbrains.annotations.NotNull;
 
 public class WorldsCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
-    public WorldsCommand(BuildSystem plugin) {
+    public WorldsCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         plugin.getCommand("worlds").setExecutor(this);
     }
