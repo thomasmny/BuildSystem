@@ -115,6 +115,41 @@ not to forget: let each player decide which settings whey think are best for the
 
 ![Graph](https://bstats.org/signatures/bukkit/BuildSystem.svg)
 
+## Developer API
+
+**Maven:**
+
+```xml
+
+<repository>
+  <id>eintosti</id>
+  <url>https://repo.eintosti.de/release</url>
+</repository>
+```
+
+```xml
+
+<dependency>
+  <groupId>de.eintosti</groupId>
+  <artifactId>buildsystem-api</artifactId>
+  <version>version</version>
+</dependency>
+ ```
+
+**Or alternatively, with Gradle:**
+
+```kotlin
+repositories {
+  maven {
+    url = uri("https://repo.eintosti.de/release")
+  }
+}
+
+dependencies {
+  compileOnly("de.eintosti:buildsystem-api:version")
+}
+```
+
 ## Contributing
 
 ### To compile...
