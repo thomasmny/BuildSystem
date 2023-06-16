@@ -122,8 +122,8 @@ not to forget: let each player decide which settings whey think are best for the
 ```xml
 
 <repository>
-  <id>eintosti-release</id>
-  <url>https://repo.eintosti.de/release</url>
+  <id>eintosti-releases</id>
+  <url>https://repo.eintosti.de/releases</url>
 </repository>
 ```
 
@@ -141,7 +141,7 @@ not to forget: let each player decide which settings whey think are best for the
 ```kotlin
 repositories {
   maven {
-    url = uri("https://repo.eintosti.de/release")
+    url = uri("https://repo.eintosti.de/releases")
   }
 }
 

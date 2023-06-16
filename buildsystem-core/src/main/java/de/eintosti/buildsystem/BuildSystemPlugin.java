@@ -168,10 +168,10 @@ public class BuildSystemPlugin extends JavaPlugin {
         Bukkit.getOnlinePlayers().forEach(pl -> {
             getSkullCache().cacheSkull(pl.getName());
 
-            CraftBuildPlayer buildPlayer = playerManager.createBuildPlayer(pl);
+            CraftBuildPlayer buildPlayer = this.playerManager.createBuildPlayer(pl);
             CraftSettings settings = buildPlayer.getSettings();
-            settingsManager.startScoreboard(pl, settings);
-            noClipManager.startNoClip(pl, settings);
+            this.settingsManager.startScoreboard(pl, settings);
+            this.noClipManager.startNoClip(pl, settings);
         });
 
         registerStats();
@@ -183,23 +183,23 @@ public class BuildSystemPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         Bukkit.getOnlinePlayers().forEach(pl -> {
-            CraftBuildPlayer buildPlayer = playerManager.getBuildPlayer(pl);
+            CraftBuildPlayer buildPlayer = this.playerManager.getBuildPlayer(pl);
             buildPlayer.getCachedValues().resetCachedValues(pl);
             buildPlayer.setLogoutLocation(new LogoutLocation(pl.getWorld().getName(), pl.getLocation()));
 
-            settingsManager.stopScoreboard(pl);
-            noClipManager.stopNoClip(pl.getUniqueId());
-            playerManager.closeNavigator(pl);
+            this.settingsManager.stopScoreboard(pl);
+            this.noClipManager.stopNoClip(pl.getUniqueId());
+            this.playerManager.closeNavigator(pl);
         });
 
         reloadConfig();
         reloadConfigData(false);
         saveConfig();
 
-        worldManager.save();
-        playerManager.save();
-        spawnManager.save();
-        inventoryUtils.save();
+        this.worldManager.save();
+        this.playerManager.save();
+        this.spawnManager.save();
+        this.inventoryUtils.save();
 
         unregisterExpansions();
 
@@ -253,7 +253,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     private void parseServerVersion() {
         try {
             this.versionString = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-            getLogger().info("Detected server version: " + versionString);
+            getLogger().info("Detected server version: " + this.versionString);
         } catch (ArrayIndexOutOfBoundsException e) {
             getLogger().severe("Unknown server version");
         }
@@ -415,12 +415,12 @@ public class BuildSystemPlugin extends JavaPlugin {
             getSettingsManager().stopScoreboard(pl);
         }
 
-        configValues.setConfigValues();
+        this.configValues.setConfigValues();
 
         if (init) {
             initVersionedClasses();
-            worldManager.getCraftBuildWorlds().forEach(CraftBuildWorld::manageUnload);
-            if (configValues.isScoreboard()) {
+            this.worldManager.getCraftBuildWorlds().forEach(CraftBuildWorld::manageUnload);
+            if (this.configValues.isScoreboard()) {
                 getSettingsManager().startScoreboard();
             } else {
                 getSettingsManager().stopScoreboard();

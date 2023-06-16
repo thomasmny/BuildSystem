@@ -23,7 +23,7 @@ publishing {
             url = if (project.version.toString().endsWith("-SNAPSHOT")) {
                 uri("https://repo.eintosti.de/snapshots")
             } else {
-                uri("https://repo.eintosti.de/release")
+                uri("https://repo.eintosti.de/releases")
             }
             credentials(PasswordCredentials::class)
             authentication {
