@@ -8,7 +8,7 @@
 package de.eintosti.buildsystem.command;
 
 import com.google.common.collect.Lists;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.command.Command;
@@ -21,9 +21,9 @@ import java.util.List;
 
 public class BuildSystemCommand extends PagedCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
-    public BuildSystemCommand(BuildSystem plugin) {
+    public BuildSystemCommand(BuildSystemPlugin plugin) {
         super("buildsystem_permission", "buildsystem_title_with_page");
 
         this.plugin = plugin;

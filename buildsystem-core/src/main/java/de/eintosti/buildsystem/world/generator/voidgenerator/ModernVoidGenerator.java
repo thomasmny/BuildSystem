@@ -18,9 +18,6 @@ import java.util.Random;
 
 /**
  * The {@link VoidGenerator} that is used for servers which run on Spigot 1.17+
- *
- * @author einTosti
- * @since 2.18.2
  */
 public class ModernVoidGenerator extends VoidGenerator {
 

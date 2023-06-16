@@ -9,13 +9,13 @@ package de.eintosti.buildsystem.world.modification;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.navigator.inventory.FilteredWorldsInventory.Visibility;
+import de.eintosti.buildsystem.api.world.Visibility;
+import de.eintosti.buildsystem.api.world.data.WorldType;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.PaginatedInventory;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldType;
+import de.eintosti.buildsystem.world.BuildWorldManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.enchantments.Enchantment;
@@ -34,15 +34,15 @@ public class CreateInventory extends PaginatedInventory implements Listener {
 
     private static final int MAX_TEMPLATES = 5;
 
-    private final BuildSystem plugin;
-    private final WorldManager worldManager;
+    private final BuildSystemPlugin plugin;
+    private final BuildWorldManager worldManager;
     private final InventoryUtils inventoryUtils;
 
     private int numTemplates = 0;
     private Visibility visibility;
     private boolean createPrivateWorld;
 
-    public CreateInventory(BuildSystem plugin) {
+    public CreateInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.inventoryUtils = plugin.getInventoryUtil();
         this.worldManager = plugin.getWorldManager();

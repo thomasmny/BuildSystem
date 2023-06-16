@@ -7,7 +7,7 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
@@ -16,9 +16,9 @@ import org.bukkit.entity.Player;
 
 public class ItemSubCommand implements SubCommand {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
-    public ItemSubCommand(BuildSystem plugin) {
+    public ItemSubCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
     }
 

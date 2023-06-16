@@ -7,10 +7,10 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.config.ConfigValues;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.BuildWorldManager;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -23,11 +23,11 @@ import java.util.AbstractMap;
 
 public class TimeCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final ConfigValues configValues;
-    private final WorldManager worldManager;
+    private final BuildWorldManager worldManager;
 
-    public TimeCommand(BuildSystem plugin) {
+    public TimeCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
         this.worldManager = plugin.getWorldManager();

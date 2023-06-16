@@ -7,7 +7,7 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -21,9 +21,9 @@ import java.util.AbstractMap;
 
 public class GamemodeCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
-    public GamemodeCommand(BuildSystem plugin) {
+    public GamemodeCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         plugin.getCommand("gamemode").setExecutor(this);
     }

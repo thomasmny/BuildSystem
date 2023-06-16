@@ -8,11 +8,11 @@
 package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.version.customblocks.CustomBlock;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.BuildWorldManager;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -25,12 +25,12 @@ import java.util.Map;
 
 public class BlockPlaceListener implements Listener {
 
-    private final BuildSystem plugin;
-    private final WorldManager worldManager;
+    private final BuildSystemPlugin plugin;
+    private final BuildWorldManager worldManager;
 
     private final Map<String, String> blockLookup;
 
-    public BlockPlaceListener(BuildSystem plugin) {
+    public BlockPlaceListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.worldManager = plugin.getWorldManager();
         this.blockLookup = initBlockLookup();

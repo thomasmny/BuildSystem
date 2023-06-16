@@ -8,10 +8,10 @@
 package de.eintosti.buildsystem.tabcomplete;
 
 import com.google.common.collect.Lists;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.generator.Generator;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.generator.Generator;
+import de.eintosti.buildsystem.world.BuildWorldManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -30,10 +30,10 @@ import java.util.stream.Collectors;
 
 public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
 
-    private final BuildSystem plugin;
-    private final WorldManager worldManager;
+    private final BuildSystemPlugin plugin;
+    private final BuildWorldManager worldManager;
 
-    public WorldsTabComplete(BuildSystem plugin) {
+    public WorldsTabComplete(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.worldManager = plugin.getWorldManager();
         plugin.getCommand("worlds").setTabCompleter(this);

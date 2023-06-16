@@ -8,31 +8,31 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.PlayerChatInput;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.BuildWorldManager;
+import de.eintosti.buildsystem.world.CraftBuildWorld;
 import org.bukkit.entity.Player;
 
 import java.util.AbstractMap;
 
 public class SetPermissionSubCommand implements SubCommand {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final String worldName;
 
-    public SetPermissionSubCommand(BuildSystem plugin, String worldName) {
+    public SetPermissionSubCommand(BuildSystemPlugin plugin, String worldName) {
         this.plugin = plugin;
         this.worldName = worldName;
     }
 
     @Override
     public void execute(Player player, String[] args) {
-        WorldManager worldManager = plugin.getWorldManager();
+        BuildWorldManager worldManager = plugin.getWorldManager();
         if (!worldManager.isPermitted(player, getArgument().getPermission(), worldName)) {
             plugin.sendPermissionMessage(player);
             return;
@@ -43,7 +43,7 @@ public class SetPermissionSubCommand implements SubCommand {
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
             Messages.sendMessage(player, "worlds_setpermission_unknown_world");
             return;
@@ -52,7 +52,7 @@ public class SetPermissionSubCommand implements SubCommand {
         getPermissionInput(player, buildWorld, true);
     }
 
-    public void getPermissionInput(Player player, BuildWorld buildWorld, boolean closeInventory) {
+    public void getPermissionInput(Player player, CraftBuildWorld buildWorld, boolean closeInventory) {
         new PlayerChatInput(plugin, player, "enter_world_permission", input -> {
             buildWorld.getData().permission().set(input.trim());
             plugin.getPlayerManager().forceUpdateSidebar(buildWorld);

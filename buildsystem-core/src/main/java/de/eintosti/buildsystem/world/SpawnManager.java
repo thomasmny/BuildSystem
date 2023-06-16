@@ -8,7 +8,8 @@
 package de.eintosti.buildsystem.world;
 
 import com.cryptomorin.xseries.messages.Titles;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.config.SpawnConfig;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
@@ -19,14 +20,14 @@ import org.bukkit.entity.Player;
 
 public class SpawnManager {
 
-    private final BuildSystem plugin;
-    private final WorldManager worldManager;
+    private final BuildSystemPlugin plugin;
+    private final BuildWorldManager worldManager;
     private final SpawnConfig spawnConfig;
 
     private String spawnName;
     private Location spawn;
 
-    public SpawnManager(BuildSystem plugin) {
+    public SpawnManager(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.worldManager = plugin.getWorldManager();
         this.spawnConfig = new SpawnConfig(plugin);
@@ -37,7 +38,7 @@ public class SpawnManager {
             return false;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(spawnName);
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(spawnName);
         if (buildWorld != null) {
             if (!buildWorld.isLoaded()) {
                 buildWorld.load(player);

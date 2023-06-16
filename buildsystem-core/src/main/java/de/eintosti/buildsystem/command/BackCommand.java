@@ -7,10 +7,10 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.player.BuildPlayer;
-import de.eintosti.buildsystem.player.PlayerManager;
+import de.eintosti.buildsystem.player.BuildPlayerManager;
+import de.eintosti.buildsystem.player.CraftBuildPlayer;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -23,10 +23,10 @@ import java.util.UUID;
 
 public class BackCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
-    private final PlayerManager playerManager;
+    private final BuildSystemPlugin plugin;
+    private final BuildPlayerManager playerManager;
 
-    public BackCommand(BuildSystem plugin) {
+    public BackCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.playerManager = plugin.getPlayerManager();
         plugin.getCommand("back").setExecutor(this);
@@ -56,7 +56,7 @@ public class BackCommand implements CommandExecutor {
 
     private void teleportBack(Player player) {
         UUID playerUuid = player.getUniqueId();
-        BuildPlayer buildPlayer = playerManager.getBuildPlayer(playerUuid);
+        CraftBuildPlayer buildPlayer = playerManager.getBuildPlayer(playerUuid);
         Location previousLocation = buildPlayer.getPreviousLocation();
 
         if (previousLocation == null) {

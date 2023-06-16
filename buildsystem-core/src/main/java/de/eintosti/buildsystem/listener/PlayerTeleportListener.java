@@ -7,11 +7,11 @@
  */
 package de.eintosti.buildsystem.listener;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.player.PlayerManager;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.player.BuildPlayerManager;
+import de.eintosti.buildsystem.world.BuildWorldManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -22,10 +22,10 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class PlayerTeleportListener implements Listener {
 
-    private final PlayerManager playerManager;
-    private final WorldManager worldManager;
+    private final BuildPlayerManager playerManager;
+    private final BuildWorldManager worldManager;
 
-    public PlayerTeleportListener(BuildSystem plugin) {
+    public PlayerTeleportListener(BuildSystemPlugin plugin) {
         this.playerManager = plugin.getPlayerManager();
         this.worldManager = plugin.getWorldManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);

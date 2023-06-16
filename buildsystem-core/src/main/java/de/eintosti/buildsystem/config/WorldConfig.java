@@ -8,11 +8,12 @@
 package de.eintosti.buildsystem.config;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.BuildWorldCreator;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldData;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.world.BuildWorldManager;
+import de.eintosti.buildsystem.world.CraftBuildWorld;
+import de.eintosti.buildsystem.world.CraftBuildWorldCreator;
 import org.bukkit.World;
 
 import java.util.ArrayList;
@@ -22,19 +23,19 @@ import java.util.logging.Logger;
 
 public class WorldConfig extends ConfigurationFile {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
-    public WorldConfig(BuildSystem plugin) {
+    public WorldConfig(BuildSystemPlugin plugin) {
         super(plugin, "worlds.yml");
         this.plugin = plugin;
     }
 
-    public void saveWorlds(Collection<BuildWorld> buildWorlds) {
+    public void saveWorlds(Collection<CraftBuildWorld> buildWorlds) {
         buildWorlds.forEach(buildWorld -> getFile().set("worlds." + buildWorld.getName(), buildWorld.serialize()));
         saveFile();
     }
 
-    public void loadWorlds(WorldManager worldManager) {
+    public void loadWorlds(BuildWorldManager worldManager) {
         Logger logger = plugin.getLogger();
         if (plugin.getConfigValues().isUnloadWorlds()) {
             logger.info("*** \"Unload worlds\" has been enabled in the config. Therefore worlds will not be pre-loaded ***");
@@ -46,7 +47,7 @@ public class WorldConfig extends ConfigurationFile {
         List<BuildWorld> notLoaded = new ArrayList<>();
         worldManager.getBuildWorlds().forEach(buildWorld -> {
             String worldName = buildWorld.getName();
-            World world = new BuildWorldCreator(plugin, buildWorld).generateBukkitWorld();
+            World world = new CraftBuildWorldCreator(plugin, buildWorld).generateBukkitWorld();
             if (world == null) {
                 notLoaded.add(buildWorld);
                 return;

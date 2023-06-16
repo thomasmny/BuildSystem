@@ -8,11 +8,11 @@
 package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.data.WorldStatus;
+import de.eintosti.buildsystem.api.world.data.WorldType;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.data.WorldStatus;
-import de.eintosti.buildsystem.world.data.WorldType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -23,7 +23,7 @@ public class InventoryCloseListener implements Listener {
 
     private final InventoryUtils inventoryUtils;
 
-    public InventoryCloseListener(BuildSystem plugin) {
+    public InventoryCloseListener(BuildSystemPlugin plugin) {
         this.inventoryUtils = plugin.getInventoryUtil();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }

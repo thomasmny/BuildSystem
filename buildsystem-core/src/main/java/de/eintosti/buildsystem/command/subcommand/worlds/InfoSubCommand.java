@@ -7,14 +7,15 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldData;
+import de.eintosti.buildsystem.world.BuildWorldManager;
+import de.eintosti.buildsystem.world.CraftBuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -23,17 +24,17 @@ import java.util.AbstractMap;
 
 public class InfoSubCommand implements SubCommand {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final String worldName;
 
-    public InfoSubCommand(BuildSystem plugin, String worldName) {
+    public InfoSubCommand(BuildSystemPlugin plugin, String worldName) {
         this.plugin = plugin;
         this.worldName = worldName;
     }
 
     @Override
     public void execute(Player player, String[] args) {
-        WorldManager worldManager = plugin.getWorldManager();
+        BuildWorldManager worldManager = plugin.getWorldManager();
         if (!worldManager.isPermitted(player, getArgument().getPermission(), worldName)) {
             plugin.sendPermissionMessage(player);
             return;
@@ -44,7 +45,7 @@ public class InfoSubCommand implements SubCommand {
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
             Messages.sendMessage(player, "worlds_info_unknown_world");
             return;
@@ -56,13 +57,13 @@ public class InfoSubCommand implements SubCommand {
                 new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()),
                 new AbstractMap.SimpleEntry<>("%creator%", buildWorld.getCreator()),
                 new AbstractMap.SimpleEntry<>("%item%", worldData.material().get().name()),
-                new AbstractMap.SimpleEntry<>("%type%", buildWorld.getType().getName()),
+                new AbstractMap.SimpleEntry<>("%type%", Messages.getDataString(buildWorld.getType().getKey())),
                 new AbstractMap.SimpleEntry<>("%private%", worldData.privateWorld().get()),
                 new AbstractMap.SimpleEntry<>("%builders_enabled%", worldData.buildersEnabled().get()),
                 new AbstractMap.SimpleEntry<>("%builders%", buildWorld.getBuildersInfo()),
                 new AbstractMap.SimpleEntry<>("%block_breaking%", worldData.blockBreaking().get()),
                 new AbstractMap.SimpleEntry<>("%block_placement%", worldData.blockPlacement().get()),
-                new AbstractMap.SimpleEntry<>("%status%", worldData.status().get().getName()),
+                new AbstractMap.SimpleEntry<>("%status%", Messages.getDataString(worldData.status().get().getKey())),
                 new AbstractMap.SimpleEntry<>("%project%", worldData.project().get()),
                 new AbstractMap.SimpleEntry<>("%permission%", worldData.permission().get()),
                 new AbstractMap.SimpleEntry<>("%time%", buildWorld.getWorldTime()),

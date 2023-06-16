@@ -7,13 +7,13 @@
  */
 package de.eintosti.buildsystem.expansion.placeholderapi;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.settings.Settings;
+import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.settings.CraftSettings;
 import de.eintosti.buildsystem.settings.SettingsManager;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldData;
+import de.eintosti.buildsystem.world.BuildWorldManager;
+import de.eintosti.buildsystem.world.CraftBuildWorld;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -23,11 +23,11 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
 
     private static final String SETTINGS_KEY = "settings";
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final SettingsManager settingsManager;
-    private final WorldManager worldManager;
+    private final BuildWorldManager worldManager;
 
-    public PlaceholderApiExpansion(BuildSystem plugin) {
+    public PlaceholderApiExpansion(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.settingsManager = plugin.getSettingsManager();
         this.worldManager = plugin.getWorldManager();
@@ -126,7 +126,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
      */
     @Nullable
     private String parseSettingsPlaceholder(Player player, String identifier) {
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
         String settingIdentifier = identifier.split("_")[1];
 
         switch (settingIdentifier.toLowerCase()) {
@@ -186,7 +186,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             identifier = splitString[0];
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        CraftBuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
             return "-";
         }
@@ -232,11 +232,11 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "spawn":
                 return worldData.customSpawn().get();
             case "status":
-                return worldData.status().get().getName();
+                return Messages.getDataString(worldData.status().get().getKey());
             case "time":
                 return buildWorld.getWorldTime();
             case "type":
-                return buildWorld.getType().getName();
+                return Messages.getDataString(buildWorld.getType().getKey());
             case "world":
                 return buildWorld.getName();
             default:

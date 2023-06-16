@@ -7,8 +7,8 @@
  */
 package de.eintosti.buildsystem.expansion.luckperms.calculators;
 
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.player.PlayerManager;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.player.BuildPlayerManager;
 import net.luckperms.api.context.ContextCalculator;
 import net.luckperms.api.context.ContextConsumer;
 import net.luckperms.api.context.ContextSet;
@@ -21,9 +21,9 @@ public class BuildModeCalculator implements ContextCalculator<Player> {
 
     private static final String KEY = "buildsystem:build-mode";
 
-    private final PlayerManager playerManager;
+    private final BuildPlayerManager playerManager;
 
-    public BuildModeCalculator(BuildSystem plugin) {
+    public BuildModeCalculator(BuildSystemPlugin plugin) {
         this.playerManager = plugin.getPlayerManager();
     }
 

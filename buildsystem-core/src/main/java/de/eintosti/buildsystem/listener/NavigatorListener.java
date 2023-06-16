@@ -9,20 +9,20 @@ package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.settings.NavigatorType;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldStatus;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.navigator.settings.NavigatorInventoryType;
-import de.eintosti.buildsystem.navigator.settings.NavigatorType;
+import de.eintosti.buildsystem.player.BuildPlayerManager;
 import de.eintosti.buildsystem.player.CachedValues;
-import de.eintosti.buildsystem.player.PlayerManager;
-import de.eintosti.buildsystem.settings.Settings;
+import de.eintosti.buildsystem.settings.CraftSettings;
 import de.eintosti.buildsystem.settings.SettingsManager;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldStatus;
+import de.eintosti.buildsystem.world.BuildWorldManager;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
@@ -48,16 +48,16 @@ public class NavigatorListener implements Listener {
     private static final double MAX_HEIGHT = 2.074631929397583;
     private static final double MIN_HEIGHT = 1.4409877061843872;
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final ConfigValues configValues;
 
     private final ArmorStandManager armorStandManager;
     private final InventoryUtils inventoryUtils;
-    private final PlayerManager playerManager;
+    private final BuildPlayerManager playerManager;
     private final SettingsManager settingsManager;
-    private final WorldManager worldManager;
+    private final BuildWorldManager worldManager;
 
-    public NavigatorListener(BuildSystem plugin) {
+    public NavigatorListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
 
@@ -113,7 +113,7 @@ public class NavigatorListener implements Listener {
     }
 
     private void openNavigator(Player player) {
-        Settings settings = settingsManager.getSettings(player);
+        CraftSettings settings = settingsManager.getSettings(player);
 
         if (settings.getNavigatorType() == NavigatorType.OLD) {
             plugin.getNavigatorInventory().openInventory(player);

@@ -8,7 +8,7 @@
 package de.eintosti.buildsystem.util;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -53,7 +53,7 @@ public class SkullCache {
     public void cacheSkull(String name) {
         try {
             skullCache.put(name, getNmsSkull(name));
-            JavaPlugin.getPlugin(BuildSystem.class).getLogger().info("Cached skull for: " + name);
+            JavaPlugin.getPlugin(BuildSystemPlugin.class).getLogger().info("Cached skull for: " + name);
         } catch (Exception e) {
             e.printStackTrace();
         }

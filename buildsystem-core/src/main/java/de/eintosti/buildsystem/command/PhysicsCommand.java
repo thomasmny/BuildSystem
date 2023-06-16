@@ -7,11 +7,11 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.world.BuildWorldManager;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -24,10 +24,10 @@ import java.util.AbstractMap;
 
 public class PhysicsCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
-    private final WorldManager worldManager;
+    private final BuildSystemPlugin plugin;
+    private final BuildWorldManager worldManager;
 
-    public PhysicsCommand(BuildSystem plugin) {
+    public PhysicsCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.worldManager = plugin.getWorldManager();
         plugin.getCommand("physics").setExecutor(this);

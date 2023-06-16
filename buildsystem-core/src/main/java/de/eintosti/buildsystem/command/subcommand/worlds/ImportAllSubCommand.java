@@ -7,16 +7,16 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.generator.Generator;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.UUIDFetcher;
-import de.eintosti.buildsystem.world.Builder;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.generator.Generator;
+import de.eintosti.buildsystem.world.BuildWorldManager;
+import de.eintosti.buildsystem.world.CraftBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -25,9 +25,9 @@ import java.util.UUID;
 
 public class ImportAllSubCommand implements SubCommand {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
-    public ImportAllSubCommand(BuildSystem plugin) {
+    public ImportAllSubCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -43,7 +43,7 @@ public class ImportAllSubCommand implements SubCommand {
             return;
         }
 
-        WorldManager worldManager = plugin.getWorldManager();
+        BuildWorldManager worldManager = plugin.getWorldManager();
         if (worldManager.isImportingAllWorlds()) {
             Messages.sendMessage(player, "worlds_importall_already_started");
             return;
@@ -70,7 +70,7 @@ public class ImportAllSubCommand implements SubCommand {
 
         ArgumentParser parser = new ArgumentParser(args);
         Generator generator = Generator.VOID;
-        Builder builder = new Builder(null, "-");
+        CraftBuilder builder = new CraftBuilder(null, "-");
 
         if (parser.isArgument("g")) {
             String generatorArg = parser.getValue("g");
@@ -95,7 +95,7 @@ public class ImportAllSubCommand implements SubCommand {
                 Messages.sendMessage(player, "worlds_importall_player_not_found");
                 return;
             }
-            builder = new Builder(creatorId, creatorArg);
+            builder = new CraftBuilder(creatorId, creatorArg);
         }
 
         worldManager.importWorlds(player, directories, generator, builder);

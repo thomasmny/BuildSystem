@@ -9,11 +9,12 @@ package de.eintosti.buildsystem.world.modification;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.version.gamerules.GameRules;
-import de.eintosti.buildsystem.world.BuildWorld;
+import de.eintosti.buildsystem.world.CraftBuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -27,10 +28,10 @@ import java.util.UUID;
 
 public class GameRuleInventory implements Listener {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final InventoryUtils inventoryUtils;
 
-    public GameRuleInventory(BuildSystem plugin) {
+    public GameRuleInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.inventoryUtils = plugin.getInventoryUtil();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -81,7 +82,7 @@ public class GameRuleInventory implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        BuildWorld buildWorld = plugin.getPlayerManager().getBuildPlayer(player).getCachedWorld();
+        CraftBuildWorld buildWorld = plugin.getPlayerManager().getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();
             Messages.sendMessage(player, "worlds_edit_error");

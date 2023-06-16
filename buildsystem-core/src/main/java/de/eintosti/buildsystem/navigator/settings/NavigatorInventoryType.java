@@ -7,10 +7,11 @@
  */
 package de.eintosti.buildsystem.navigator.settings;
 
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.Builder;
-import de.eintosti.buildsystem.world.data.WorldData;
-import de.eintosti.buildsystem.world.data.WorldStatus;
+import de.eintosti.buildsystem.api.settings.NavigatorType;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.Builder;
+import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldStatus;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 

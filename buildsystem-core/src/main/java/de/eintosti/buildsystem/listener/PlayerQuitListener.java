@@ -7,13 +7,13 @@
  */
 package de.eintosti.buildsystem.listener;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.player.BuildPlayer;
+import de.eintosti.buildsystem.api.settings.Settings;
+import de.eintosti.buildsystem.player.BuildPlayerManager;
 import de.eintosti.buildsystem.player.CachedValues;
+import de.eintosti.buildsystem.player.CraftBuildPlayer;
 import de.eintosti.buildsystem.player.LogoutLocation;
-import de.eintosti.buildsystem.player.PlayerManager;
-import de.eintosti.buildsystem.settings.Settings;
 import de.eintosti.buildsystem.settings.SettingsManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -26,11 +26,11 @@ import java.util.AbstractMap;
 
 public class PlayerQuitListener implements Listener {
 
-    private final BuildSystem plugin;
-    private final PlayerManager playerManager;
+    private final BuildSystemPlugin plugin;
+    private final BuildPlayerManager playerManager;
     private final SettingsManager settingsManager;
 
-    public PlayerQuitListener(BuildSystem plugin) {
+    public PlayerQuitListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.playerManager = plugin.getPlayerManager();
         this.settingsManager = plugin.getSettingsManager();
@@ -62,7 +62,7 @@ public class PlayerQuitListener implements Listener {
             player.getInventory().clear();
         }
 
-        BuildPlayer buildPlayer = playerManager.getBuildPlayer(player);
+        CraftBuildPlayer buildPlayer = playerManager.getBuildPlayer(player);
         buildPlayer.setLogoutLocation(new LogoutLocation(
                 player.getWorld().getName(),
                 player.getLocation()

@@ -8,13 +8,13 @@
 package de.eintosti.buildsystem.config;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.data.WorldStatus;
-import de.eintosti.buildsystem.world.data.WorldType;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.data.WorldStatus;
+import de.eintosti.buildsystem.api.world.data.WorldType;
 
 public class SetupConfig extends ConfigurationFile {
 
-    public SetupConfig(BuildSystem plugin) {
+    public SetupConfig(BuildSystemPlugin plugin) {
         super(plugin, "setup.yml");
     }
 

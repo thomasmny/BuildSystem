@@ -8,15 +8,15 @@
 package de.eintosti.buildsystem.listener;
 
 import com.google.common.collect.Sets;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldStatus;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
 import de.eintosti.buildsystem.settings.SettingsManager;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldStatus;
+import de.eintosti.buildsystem.world.BuildWorldManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -207,13 +207,13 @@ public class PlayerCommandPreprocessListener implements Listener {
             "/vr--"
     );
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final ConfigValues configValues;
     private final InventoryUtils inventoryUtils;
     private final SettingsManager settingsManager;
-    private final WorldManager worldManager;
+    private final BuildWorldManager worldManager;
 
-    public PlayerCommandPreprocessListener(BuildSystem plugin) {
+    public PlayerCommandPreprocessListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
 
@@ -255,10 +255,7 @@ public class PlayerCommandPreprocessListener implements Listener {
             }
 
             BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
-            if (buildWorld == null) {
-                return;
-            }
-            if (disableArchivedWorlds(buildWorld, player, event)) {
+            if (buildWorld == null || disableArchivedWorlds(buildWorld, player, event)) {
                 return;
             }
 

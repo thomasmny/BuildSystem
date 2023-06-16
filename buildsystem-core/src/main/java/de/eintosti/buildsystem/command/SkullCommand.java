@@ -7,7 +7,7 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import org.bukkit.command.Command;
@@ -21,10 +21,10 @@ import java.util.AbstractMap;
 
 public class SkullCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final InventoryUtils inventoryUtils;
 
-    public SkullCommand(BuildSystem plugin) {
+    public SkullCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.inventoryUtils = plugin.getInventoryUtil();
         plugin.getCommand("skull").setExecutor(this);

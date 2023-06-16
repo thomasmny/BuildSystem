@@ -8,11 +8,11 @@
 package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.player.BuildPlayer;
+import de.eintosti.buildsystem.player.BuildPlayerManager;
 import de.eintosti.buildsystem.player.CachedValues;
-import de.eintosti.buildsystem.player.PlayerManager;
+import de.eintosti.buildsystem.player.CraftBuildPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
@@ -26,10 +26,10 @@ import java.util.UUID;
 
 public class BuildCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
-    private final PlayerManager playerManager;
+    private final BuildSystemPlugin plugin;
+    private final BuildPlayerManager playerManager;
 
-    public BuildCommand(BuildSystem plugin) {
+    public BuildCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.playerManager = plugin.getPlayerManager();
         plugin.getCommand("build").setExecutor(this);
@@ -81,7 +81,7 @@ public class BuildCommand implements CommandExecutor {
 
     private void toggleBuildMode(Player target, Player sender, boolean self) {
         UUID targetUuid = target.getUniqueId();
-        BuildPlayer buildPlayer = playerManager.getBuildPlayer(targetUuid);
+        CraftBuildPlayer buildPlayer = playerManager.getBuildPlayer(targetUuid);
         CachedValues cachedValues = buildPlayer.getCachedValues();
 
         if (playerManager.getBuildModePlayers().remove(targetUuid)) {

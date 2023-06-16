@@ -7,7 +7,7 @@
  */
 package de.eintosti.buildsystem.tabcomplete;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
@@ -21,7 +21,7 @@ import java.util.List;
 
 public class GamemodeTabComplete extends ArgumentSorter implements TabCompleter {
 
-    public GamemodeTabComplete(BuildSystem plugin) {
+    public GamemodeTabComplete(BuildSystemPlugin plugin) {
         plugin.getCommand("gamemode").setTabCompleter(this);
     }
 

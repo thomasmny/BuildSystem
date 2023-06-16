@@ -8,7 +8,7 @@
 package de.eintosti.buildsystem.settings;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import org.bukkit.Bukkit;
@@ -22,10 +22,10 @@ import java.util.AbstractMap;
 
 public class SpeedInventory implements Listener {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final InventoryUtils inventoryUtils;
 
-    public SpeedInventory(BuildSystem plugin) {
+    public SpeedInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.inventoryUtils = plugin.getInventoryUtil();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);

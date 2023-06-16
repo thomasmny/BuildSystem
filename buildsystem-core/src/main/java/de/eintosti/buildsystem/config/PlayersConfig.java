@@ -7,18 +7,18 @@
  */
 package de.eintosti.buildsystem.config;
 
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.player.BuildPlayer;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.player.CraftBuildPlayer;
 
 import java.util.Collection;
 
 public class PlayersConfig extends ConfigurationFile {
 
-    public PlayersConfig(BuildSystem plugin) {
+    public PlayersConfig(BuildSystemPlugin plugin) {
         super(plugin, "players.yml");
     }
 
-    public void savePlayers(Collection<BuildPlayer> buildPlayers) {
+    public void savePlayers(Collection<CraftBuildPlayer> buildPlayers) {
         buildPlayers.forEach(buildPlayer -> getFile().set("players." + buildPlayer.getUniqueId().toString(), buildPlayer.serialize()));
         saveFile();
     }

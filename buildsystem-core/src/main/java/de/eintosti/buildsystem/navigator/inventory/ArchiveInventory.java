@@ -8,18 +8,19 @@
 package de.eintosti.buildsystem.navigator.inventory;
 
 import com.google.common.collect.Sets;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.Visibility;
+import de.eintosti.buildsystem.api.world.data.WorldStatus;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.data.WorldStatus;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
 public class ArchiveInventory extends FilteredWorldsInventory {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final InventoryUtils inventoryUtils;
 
-    public ArchiveInventory(BuildSystem plugin) {
+    public ArchiveInventory(BuildSystemPlugin plugin) {
         super(plugin, "archive_title", "archive_no_worlds", Visibility.IGNORE,
                 Sets.newHashSet(WorldStatus.ARCHIVE)
         );

@@ -7,7 +7,7 @@
  */
 package de.eintosti.buildsystem.tabcomplete;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -19,7 +19,7 @@ import java.util.List;
 
 public class SpawnTabComplete extends ArgumentSorter implements TabCompleter {
 
-    public SpawnTabComplete(BuildSystem plugin) {
+    public SpawnTabComplete(BuildSystemPlugin plugin) {
         plugin.getCommand("spawn").setTabCompleter(this);
     }
 

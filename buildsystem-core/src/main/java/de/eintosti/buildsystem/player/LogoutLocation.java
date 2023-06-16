@@ -10,10 +10,6 @@ package de.eintosti.buildsystem.player;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
-/**
- * @author einTosti
- * @since 2.21.0
- */
 public class LogoutLocation {
 
     private final String worldName;

@@ -8,7 +8,7 @@
 package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -20,9 +20,9 @@ import java.util.AbstractMap;
 
 public class SpeedCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
-    public SpeedCommand(BuildSystem plugin) {
+    public SpeedCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         plugin.getCommand("speed").setExecutor(this);
     }
