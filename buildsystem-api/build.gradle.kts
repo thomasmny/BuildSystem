@@ -2,12 +2,19 @@ applyCommonConfiguration()
 
 plugins {
     `java-library`
+    `maven-publish`
 }
-
-project.description = "API"
 
 dependencies {
     compileOnly(libs.spigot)
     compileOnly(libs.annotations)
     compileOnly(libs.xseries)
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("buildsystem-api") {
+            from(components["java"])
+        }
+    }
 }

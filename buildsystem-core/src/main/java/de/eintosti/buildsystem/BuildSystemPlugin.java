@@ -8,6 +8,7 @@
 package de.eintosti.buildsystem;
 
 import de.eintosti.buildsystem.api.BuildSystem;
+import de.eintosti.buildsystem.api.BuildSystemApi;
 import de.eintosti.buildsystem.api.settings.NavigatorType;
 import de.eintosti.buildsystem.command.BackCommand;
 import de.eintosti.buildsystem.command.BlocksCommand;
@@ -78,6 +79,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -86,7 +88,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 
-public class BuildSystemPlugin extends JavaPlugin implements BuildSystem {
+public class BuildSystemPlugin extends JavaPlugin {
 
     public static final int SPIGOT_ID = 60441;
     public static final int METRICS_ID = 7427;
@@ -126,6 +128,8 @@ public class BuildSystemPlugin extends JavaPlugin implements BuildSystem {
 
     private LuckPermsExpansion luckPermsExpansion;
     private PlaceholderApiExpansion placeholderApiExpansion;
+
+    private BuildSystemApi api;
 
     @Override
     public void onLoad() {
@@ -170,6 +174,10 @@ public class BuildSystemPlugin extends JavaPlugin implements BuildSystem {
 
         registerStats();
 
+        this.api = new BuildSystemApi(this);
+        this.api.register();
+        getServer().getServicesManager().register(BuildSystem.class, api, this, ServicePriority.Normal);
+
         Bukkit.getConsoleSender().sendMessage(ChatColor.RESET + "BuildSystem » Plugin " + ChatColor.GREEN + "enabled" + ChatColor.RESET + "!");
     }
 
@@ -195,6 +203,8 @@ public class BuildSystemPlugin extends JavaPlugin implements BuildSystem {
         inventoryUtils.save();
 
         unregisterExpansions();
+
+        this.api.unregister();
 
         Bukkit.getConsoleSender().sendMessage(ChatColor.RESET + "BuildSystem » Plugin " + ChatColor.RED + "disabled" + ChatColor.RESET + "!");
     }
@@ -431,7 +441,6 @@ public class BuildSystemPlugin extends JavaPlugin implements BuildSystem {
         return inventoryUtils;
     }
 
-    @Override
     public BuildPlayerManager getPlayerManager() {
         return playerManager;
     }
@@ -448,7 +457,6 @@ public class BuildSystemPlugin extends JavaPlugin implements BuildSystem {
         return spawnManager;
     }
 
-    @Override
     public BuildWorldManager getWorldManager() {
         return worldManager;
     }
