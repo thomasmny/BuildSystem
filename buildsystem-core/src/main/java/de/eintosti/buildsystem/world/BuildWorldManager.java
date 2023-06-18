@@ -13,6 +13,7 @@ import com.cryptomorin.xseries.messages.Titles;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.BuildWorldCreator;
 import de.eintosti.buildsystem.api.world.Builder;
 import de.eintosti.buildsystem.api.world.WorldManager;
 import de.eintosti.buildsystem.api.world.data.Visibility;
@@ -202,8 +203,13 @@ public class BuildWorldManager implements WorldManager {
         });
     }
 
+    @Override
+    public BuildWorldCreator newWorldCreator(String worldName) {
+        return new CraftBuildWorldCreator(plugin, worldName);
+    }
+
     private void createWorld(Player player, String worldName, WorldType worldType, CustomGenerator customGenerator, String template, boolean privateWorld) {
-        new CraftBuildWorldCreator(plugin, worldName)
+        newWorldCreator(worldName)
                 .setType(worldType)
                 .setTemplate(template)
                 .setPrivate(privateWorld)

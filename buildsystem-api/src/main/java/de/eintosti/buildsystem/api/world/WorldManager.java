@@ -90,6 +90,14 @@ public interface WorldManager {
     ChunkGenerator getChunkGenerator(String plugin, String generatorId, String worldName);
 
     /**
+     * Gets a builder for creating new {@link BuildWorld}s.
+     *
+     * @param worldName The name of the world to create
+     * @return The world creator
+     */
+    BuildWorldCreator newWorldCreator(String worldName);
+
+    /**
      * Import a {@link BuildWorld} from a world directory.
      *
      * @param worldName     The name of the world to import
