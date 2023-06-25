@@ -15,29 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.api;
-
-import de.eintosti.buildsystem.api.player.BuildPlayer;
-import de.eintosti.buildsystem.api.player.PlayerManager;
-import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.WorldManager;
 
 /**
- * The BuildSystem API.
+ * {@link de.eintosti.buildsystem.api.world.BuildWorld} functionality.
  */
-public interface BuildSystem {
-
-    /**
-     * Gets the {@link WorldManager}, responsible for managing {@link BuildWorld} instances.
-     *
-     * @return The world manager
-     */
-    WorldManager getWorldManager();
-
-    /**
-     * Gets the {@link PlayerManager}, responsible for managing {@link BuildPlayer} instances.
-     *
-     * @return The player manager
-     */
-    PlayerManager getPlayerManager();
-}
+package de.eintosti.buildsystem.api.world;
