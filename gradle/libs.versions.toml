@@ -17,7 +17,7 @@ nbt = "1.5.1"
 xseries = "9.4.0"
 
 [libraries]
-#Platform expectations
+# Platform expectations
 spigot = { group = "org.spigotmc", name = "spigot-api", version.ref = "spigot" }
 paperlib = { group = "io.papermc", name = "paperlib", version.ref = "paperlib" }
 
