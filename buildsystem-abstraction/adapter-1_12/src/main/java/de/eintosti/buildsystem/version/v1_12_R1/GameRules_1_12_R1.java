@@ -17,21 +17,20 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GameRules_1_12_R1 extends AbstractGameRulesInventory {
 
     private final List<String> booleanEnabledLore, booleanDisabledLore;
-    private final List<String> unknownLore;
     private final List<String> integerLore;
 
-    public GameRules_1_12_R1(String inventoryTitle, List<String> booleanEnabledLore, List<String> booleanDisabledLore, List<String> unknownLore, List<String> integerLore) {
+    public GameRules_1_12_R1(String inventoryTitle, List<String> booleanEnabledLore, List<String> booleanDisabledLore, List<String> integerLore) {
         super(inventoryTitle);
 
         this.booleanEnabledLore = booleanEnabledLore;
         this.booleanDisabledLore = booleanDisabledLore;
-        this.unknownLore = unknownLore;
         this.integerLore = integerLore;
     }
 
@@ -63,19 +62,15 @@ public class GameRules_1_12_R1 extends AbstractGameRulesInventory {
 
         if (isBoolean(gameRuleValue)) {
             boolean enabled = Boolean.parseBoolean(gameRuleValue);
-            if (enabled) {
-                lore = this.booleanEnabledLore;
-            } else {
-                lore = this.booleanDisabledLore;
-            }
+            lore = enabled ? this.booleanEnabledLore : this.booleanDisabledLore;
         } else if (gameRule.equals("gameLoopFunction")) {
-            List<String> unknownLore = new ArrayList<>();
-            this.unknownLore.forEach(line -> unknownLore.add(line.replace("%value%", gameRuleValue)));
-            lore = unknownLore;
+            lore = Collections.singletonList(ChatColor.translateAlternateColorCodes('&',
+                    String.format("&7&nCurrently&7: &e%s", gameRuleValue)
+            ));
         } else {
-            List<String> integerLore = new ArrayList<>();
-            this.integerLore.forEach(line -> integerLore.add(line.replace("%value%", gameRuleValue)));
-            lore = integerLore;
+            lore = this.integerLore.stream()
+                    .map(line -> line.replace("%value%", gameRuleValue))
+                    .collect(Collectors.toList());
         }
 
         return lore;

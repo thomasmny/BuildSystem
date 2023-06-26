@@ -109,12 +109,11 @@ public enum ServerVersion {
         }
 
         try {
-            Constructor<?> constructor = gameRules.getConstructor(String.class, List.class, List.class, List.class, List.class);
+            Constructor<?> constructor = gameRules.getConstructor(String.class, List.class, List.class, List.class);
             Object instance = constructor.newInstance(
                     Messages.getString("worldeditor_gamerules_title"),
                     Messages.getStringList("worldeditor_gamerules_boolean_enabled"),
                     Messages.getStringList("worldeditor_gamerules_boolean_disabled"),
-                    Messages.getStringList("worldeditor_gamerules_unknown"),
                     Messages.getStringList("worldeditor_gamerules_integer")
             );
             return (GameRules) instance;

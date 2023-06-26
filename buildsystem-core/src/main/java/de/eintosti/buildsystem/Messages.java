@@ -619,7 +619,6 @@ public class Messages {
         setMessage(sb, "worldeditor_gamerules_title", "&3» &8Gamerules");
         setMessage(sb, "worldeditor_gamerules_boolean_enabled", Collections.singletonList("&7&nCurrently&7: &atrue"));
         setMessage(sb, "worldeditor_gamerules_boolean_disabled", Collections.singletonList("&7&nCurrently&7: &cfalse"));
-        setMessage(sb, "worldeditor_gamerules_unknown", Collections.singletonList("&7&nCurrently&7: &e%value%"));
         setMessage(sb, "worldeditor_gamerules_integer", Arrays.asList(
                 "&7&nCurrently&7: &e%value%",
                 "",

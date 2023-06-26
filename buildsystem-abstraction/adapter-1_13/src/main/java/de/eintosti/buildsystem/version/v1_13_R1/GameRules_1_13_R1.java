@@ -20,13 +20,14 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GameRules_1_13_R1 extends AbstractGameRulesInventory {
 
     private final List<String> booleanEnabledLore, booleanDisabledLore;
     private final List<String> integerLore;
 
-    public GameRules_1_13_R1(String inventoryTitle, List<String> booleanEnabledLore, List<String> booleanDisabledLore, List<String> ignoredUnknownLore, List<String> integerLore) {
+    public GameRules_1_13_R1(String inventoryTitle, List<String> booleanEnabledLore, List<String> booleanDisabledLore, List<String> integerLore) {
         super(inventoryTitle);
 
         this.booleanEnabledLore = booleanEnabledLore;
@@ -72,9 +73,9 @@ public class GameRules_1_13_R1 extends AbstractGameRulesInventory {
             boolean enabled = (Boolean) world.getGameRuleValue(gameRule);
             lore = enabled ? this.booleanEnabledLore : this.booleanDisabledLore;
         } else {
-            List<String> integerLore = new ArrayList<>();
-            this.integerLore.forEach(line -> integerLore.add(line.replace("%value%", world.getGameRuleValue(gameRule).toString())));
-            lore = integerLore;
+            lore = this.integerLore.stream()
+                    .map(line -> line.replace("%value%", world.getGameRuleValue(gameRule).toString()))
+                    .collect(Collectors.toList());
         }
         return lore;
     }
