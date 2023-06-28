@@ -70,7 +70,10 @@ public class BlockPlaceListener implements Listener {
             buildWorld.getData().physics().set(true);
         }
 
-        plugin.getCustomBlocks().setBlock(event, blockLookup.get(itemMeta.getDisplayName()));
+        String customBlockKey = blockLookup.get(itemMeta.getDisplayName());
+        if (customBlockKey != null) {
+            plugin.getCustomBlocks().setBlock(event, customBlockKey);
+        }
 
         if (isBuildWorld && hadToDisablePhysics) {
             buildWorld.getData().physics().set(false);
