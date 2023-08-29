@@ -829,6 +829,7 @@ public class Messages {
         setMessage(sb, "blocks_nether_portal", "&bNether Portal");
         setMessage(sb, "blocks_end_portal", "&bEnd Portal");
         setMessage(sb, "blocks_dragon_egg", "&bDragon Egg");
+        setMessage(sb, "blocks_debug_stick", "&bDebug Stick");
 
         try (
                 FileOutputStream fileStream = new FileOutputStream(file);

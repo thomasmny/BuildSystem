@@ -222,7 +222,20 @@ public class CustomBlocks_1_14_R1 implements CustomBlocks {
             block.setBlockData(directional);
         } else if (blockData instanceof Orientable) {
             Orientable orientable = (Orientable) blockData;
-            Axis axis = (direction == BlockFace.NORTH || direction == BlockFace.SOUTH) ? Axis.X : Axis.Z;
+            Axis axis;
+            switch (direction) {
+                case UP:
+                case DOWN:
+                    axis = Axis.Y;
+                    break;
+                case EAST:
+                case WEST:
+                    axis = Axis.X;
+                    break;
+                default:
+                    axis = Axis.Z;
+                    break;
+            }
             orientable.setAxis(axis);
             block.setBlockData(orientable);
         } else if (blockData instanceof Sign) {

@@ -37,7 +37,8 @@ public enum CustomBlock {
     RED_MUSHROOM("blocks_red_mushroom", "732dbd6612e9d3f42947b5ca8785bfb334258f3ceb83ad69a5cdeebea4cd65"),
     SMOOTH_RED_SANDSTONE("blocks_smooth_red_sandstone", "a2da7aa1ae6cc9d6c36c18a460d2398162edc2207fdfc9e28a7bf84d7441b8a2"),
     SMOOTH_SANDSTONE("blocks_smooth_sandstone", "38fffbb0b8fdec6f62b17c451ab214fb86e4e355b116be961a9ae93eb49a43"),
-    SMOOTH_STONE("blocks_smooth_stone", "8dd0cd158c2bb6618650e3954b2d29237f5b4c0ddc7d258e17380ab6979f071");
+    SMOOTH_STONE("blocks_smooth_stone", "8dd0cd158c2bb6618650e3954b2d29237f5b4c0ddc7d258e17380ab6979f071"),
+    DEBUG_STICK("blocks_debug_stick", "badc048a7ce78f7dad72a07da27d85c0916881e5522eeed1e3daf217a38c1a", MinecraftVersion.AQUATIC_13);
 
     private final String key;
     private final String skullUrl;

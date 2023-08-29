@@ -68,6 +68,7 @@ public class BlocksInventory implements Listener {
         setCustomBlock(inventory, 38, CustomBlock.NETHER_PORTAL);
         setCustomBlock(inventory, 39, CustomBlock.END_PORTAL);
         setCustomBlock(inventory, 40, CustomBlock.DRAGON_EGG);
+        setCustomBlock(inventory, 41, CustomBlock.DEBUG_STICK);
 
         return inventory;
     }
@@ -182,6 +183,9 @@ public class BlocksInventory implements Listener {
                 break;
             case 40:
                 giveCustomBlock(CustomBlock.DRAGON_EGG, playerInventory);
+                break;
+            case 41:
+                giveCustomBlock(CustomBlock.DEBUG_STICK, playerInventory, inventoryUtils.getItemStack(XMaterial.DEBUG_STICK, Messages.getString(CustomBlock.DEBUG_STICK.getKey())));
                 break;
         }
     }

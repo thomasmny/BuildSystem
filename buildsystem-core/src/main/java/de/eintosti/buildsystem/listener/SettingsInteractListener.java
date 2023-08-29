@@ -275,7 +275,7 @@ public class SettingsInteractListener implements Listener {
             material = Material.valueOf(material.toString().replace("_ITEM", ""));
         }
 
-        if (XTag.SIGNS.isTagged(xMaterial)) {
+        if (XTag.SIGNS.isTagged(xMaterial) && event.getBlockFace() != BlockFace.UP) {
             if (!XMaterial.supports(13)) {
                 material = Material.valueOf("WALL_SIGN");
             } else {
