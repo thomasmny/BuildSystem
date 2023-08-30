@@ -15,7 +15,6 @@ import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.player.PlayerManager;
 import de.eintosti.buildsystem.settings.Settings;
 import de.eintosti.buildsystem.settings.SettingsManager;
-import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.SpawnManager;
@@ -39,7 +38,6 @@ public class PlayerJoinListener implements Listener {
     private final BuildSystem plugin;
     private final ConfigValues configValues;
 
-    private final InventoryUtils inventoryUtils;
     private final PlayerManager playerManager;
     private final SettingsManager settingsManager;
     private final SpawnManager spawnManager;
@@ -49,7 +47,6 @@ public class PlayerJoinListener implements Listener {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
 
-        this.inventoryUtils = plugin.getInventoryUtil();
         this.playerManager = plugin.getPlayerManager();
         this.settingsManager = plugin.getSettingsManager();
         this.spawnManager = plugin.getSpawnManager();
@@ -73,35 +70,16 @@ public class PlayerJoinListener implements Listener {
 
         BuildPlayer buildPlayer = playerManager.createBuildPlayer(player);
         manageHidePlayer(player, buildPlayer);
-
-        Settings settings = buildPlayer.getSettings();
-        if (settings.isNoClip()) {
-            plugin.getNoClipManager().startNoClip(player);
-        }
-        if (settings.isScoreboard()) {
-            settingsManager.startScoreboard(player);
-            plugin.getPlayerManager().forceUpdateSidebar(player);
-        }
-        if (settings.isClearInventory()) {
-            player.getInventory().clear();
-        }
+        manageSettings(player, buildPlayer.getSettings());
+        teleportToCorrectLocation(player, buildPlayer);
         playerManager.giveNavigator(player);
-
-        if (settings.isSpawnTeleport() && spawnManager.spawnExists()) {
-            spawnManager.teleport(player);
-        } else {
-            LogoutLocation logoutLocation = buildPlayer.getLogoutLocation();
-            if (logoutLocation != null) {
-                PaperLib.teleportAsync(player, logoutLocation.getLocation());
-            }
-        }
 
         String worldName = player.getWorld().getName();
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld != null) {
             WorldData worldData = buildWorld.getData();
             if (!worldData.physics().get() && player.hasPermission("buildsystem.physics.message")) {
-                Messages.sendMessage(player, "physics_deactivated_in_world", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+                Messages.sendMessage(player, "physics_deactivated_in_world", new AbstractMap.SimpleEntry<>("%world%", worldName));
             }
 
             if (configValues.isArchiveVanish() && worldData.status().get() == WorldStatus.ARCHIVE) {
@@ -113,6 +91,37 @@ public class PlayerJoinListener implements Listener {
         if (player.hasPermission("buildsystem.updates")) {
             performUpdateCheck(player);
         }
+    }
+
+    /**
+     * Teleports the player to the correct location.
+     * <ul>
+     *   <li>If the spawn exists and {@link Settings#isSpawnTeleport()} is enabled for the player, the player will be teleported to the spawn</li>
+     *   <li>If the player has a {@link LogoutLocation}, teleport to that location</li>
+     *   <li>Otherwise, do nothing</li>
+     * </ul>
+     *
+     * @param player      The player to teleport
+     * @param buildPlayer The build-player for the given player
+     */
+    private void teleportToCorrectLocation(Player player, BuildPlayer buildPlayer) {
+        if (buildPlayer.getSettings().isSpawnTeleport() && spawnManager.spawnExists()) {
+            spawnManager.teleport(player);
+            return;
+        }
+
+        LogoutLocation logoutLocation = buildPlayer.getLogoutLocation();
+        if (logoutLocation == null) {
+            return;
+        }
+
+        BuildWorld buildWorld = worldManager.getBuildWorld(logoutLocation.getWorldName());
+        if (buildWorld == null) {
+            return;
+        }
+
+        int delay = buildWorld.isLoaded() ? 0 : 20;
+        Bukkit.getScheduler().runTaskLater(plugin, () -> PaperLib.teleportAsync(player, logoutLocation.getLocation()), delay);
     }
 
     @SuppressWarnings("deprecation")
@@ -128,6 +137,27 @@ public class PlayerJoinListener implements Listener {
                 continue;
             }
             pl.hidePlayer(player);
+        }
+    }
+
+    /**
+     * Activates features for the player according to their {@link Settings}.
+     *
+     * @param player   The player to activate the features for
+     * @param settings The player's settings
+     */
+    private void manageSettings(Player player, Settings settings) {
+        if (settings.isNoClip()) {
+            plugin.getNoClipManager().startNoClip(player);
+        }
+
+        if (settings.isScoreboard()) {
+            settingsManager.startScoreboard(player);
+            plugin.getPlayerManager().forceUpdateSidebar(player);
+        }
+
+        if (settings.isClearInventory()) {
+            player.getInventory().clear();
         }
     }
 
