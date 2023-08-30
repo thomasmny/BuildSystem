@@ -15,6 +15,7 @@ import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.player.PlayerManager;
 import de.eintosti.buildsystem.settings.Settings;
 import de.eintosti.buildsystem.settings.SettingsManager;
+import de.eintosti.buildsystem.util.MaterialUtils;
 import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import de.eintosti.buildsystem.version.util.DirectionUtil;
 import de.eintosti.buildsystem.world.BuildWorld;
@@ -251,7 +252,7 @@ public class SettingsInteractListener implements Listener {
         }
 
         Block block = event.getClickedBlock();
-        if (block == null) {
+        if (block == null || !MaterialUtils.isInteractable(XMaterial.matchXMaterial(block.getType()))) {
             return;
         }
 
