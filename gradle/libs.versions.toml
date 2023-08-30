@@ -14,7 +14,7 @@ authlib = "1.5.25"
 bstats = "3.0.2"
 fastboard = "2.0.0"
 nbt = "1.5.1"
-xseries = "9.4.0"
+xseries = "9.5.0"
 
 [libraries]
 # Platform expectations
