@@ -28,6 +28,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.RayTraceResult;
 
 public class CustomBlocks_1_14_R1 implements CustomBlocks {
 
@@ -181,13 +182,21 @@ public class CustomBlocks_1_14_R1 implements CustomBlocks {
         event.setCancelled(true);
         Player player = event.getPlayer();
 
-        if (DirectionUtil.isTop(player, block)) {
+        if (isTopHalf(player)) {
             slab.setType(Slab.Type.BOTTOM);
         } else {
             slab.setType(Slab.Type.TOP);
         }
 
         block.setBlockData(slab);
+    }
+
+    private boolean isTopHalf(Player player) {
+        RayTraceResult result = player.rayTraceBlocks(6);
+        if (result == null) {
+            return false;
+        }
+        return Math.abs(result.getHitPosition().getY() % 1) < 0.5;
     }
 
     @Override

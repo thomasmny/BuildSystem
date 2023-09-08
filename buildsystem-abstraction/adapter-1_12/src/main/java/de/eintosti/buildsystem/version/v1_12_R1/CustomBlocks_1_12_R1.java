@@ -12,6 +12,7 @@ import de.eintosti.buildsystem.version.customblocks.CustomBlock;
 import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import de.eintosti.buildsystem.version.util.DirectionUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -233,7 +234,7 @@ public class CustomBlocks_1_12_R1 implements CustomBlocks {
             event.setCancelled(true);
 
             byte data = block.getData();
-            if (DirectionUtil.isTop(player, block)) {
+            if (isTopHalf(player, block)) {
                 block.setType(changedMaterial);
                 block.setData(data);
             } else {
@@ -241,6 +242,14 @@ public class CustomBlocks_1_12_R1 implements CustomBlocks {
                 block.setData((byte) (data + 8));
             }
         }
+    }
+
+    private boolean isTopHalf(Player player, Block block) {
+        Location location = player.getEyeLocation().clone();
+        while ((!location.getBlock().equals(block)) && location.distance(player.getEyeLocation()) < 6) {
+            location.add(player.getLocation().getDirection().multiply(0.06));
+        }
+        return location.getY() % 1 > 0.5;
     }
 
     @Override

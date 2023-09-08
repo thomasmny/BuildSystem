@@ -7,8 +7,6 @@
  */
 package de.eintosti.buildsystem.version.util;
 
-import org.bukkit.Location;
-import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 
@@ -111,13 +109,5 @@ public final class DirectionUtil {
         }
 
         return BlockFace.NORTH;
-    }
-
-    public static boolean isTop(Player player, Block block) {
-        Location location = player.getEyeLocation().clone();
-        while ((!location.getBlock().equals(block)) && location.distance(player.getEyeLocation()) < 6) {
-            location.add(player.getLocation().getDirection().multiply(0.06));
-        }
-        return location.getY() % 1 > 0.5;
     }
 }
