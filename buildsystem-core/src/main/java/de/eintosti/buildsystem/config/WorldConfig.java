@@ -7,12 +7,10 @@
  */
 package de.eintosti.buildsystem.config;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.BuildWorldCreator;
 import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldData;
 import org.bukkit.World;
 
 import java.util.ArrayList;
@@ -51,13 +49,7 @@ public class WorldConfig extends ConfigurationFile {
                 notLoaded.add(buildWorld);
                 return;
             }
-
-            WorldData worldData = buildWorld.getData();
-            worldData.lastLoaded().set(System.currentTimeMillis());
-            if (worldData.material().get() == XMaterial.PLAYER_HEAD) {
-                plugin.getSkullCache().cacheSkull(worldName);
-            }
-
+            buildWorld.getData().lastLoaded().set(System.currentTimeMillis());
             logger.info("✔ World loaded: " + worldName);
         });
         notLoaded.forEach(worldManager::removeBuildWorld);

@@ -252,7 +252,7 @@ public class BuildWorldCreator {
     @Nullable
     public World generateBukkitWorld(boolean checkVersion) {
         if (checkVersion && isHigherVersion()) {
-            plugin.getLogger().warning(String.format("\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping...", worldName, parseDataVersion(), plugin.getServerVersion().getDataVersion()));
+            plugin.getLogger().warning(String.format("\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping...", worldName, parseDataVersion(), plugin.getCraftBukkitVersion().getDataVersion()));
             return null;
         }
 
@@ -328,7 +328,7 @@ public class BuildWorldCreator {
         if (Boolean.getBoolean("Paper.ignoreWorldDataVersion")) {
             return false;
         }
-        return parseDataVersion() > plugin.getServerVersion().getDataVersion();
+        return parseDataVersion() > plugin.getCraftBukkitVersion().getDataVersion();
     }
 
     /**
@@ -375,7 +375,7 @@ public class BuildWorldCreator {
                 return;
             }
 
-            int serverVersion = plugin.getServerVersion().getDataVersion();
+            int serverVersion = plugin.getCraftBukkitVersion().getDataVersion();
             if (dataVersion.getValue() < serverVersion) {
                 dataVersion.setValue(serverVersion);
                 nbt.toFile(level, levelFile, CompressionType.GZIP);

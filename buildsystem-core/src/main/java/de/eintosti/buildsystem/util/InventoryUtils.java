@@ -7,6 +7,7 @@
  */
 package de.eintosti.buildsystem.util;
 
+import com.cryptomorin.xseries.SkullUtils;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.Titles;
@@ -172,8 +173,8 @@ public class InventoryUtils {
     }
 
     public ItemStack getSkull(String displayName, String skullOwner, List<String> lore) {
-        ItemStack skull = plugin.getSkullCache().getCachedSkull(skullOwner);
-        SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
+        ItemStack skull = XMaterial.PLAYER_HEAD.parseItem();
+        SkullMeta skullMeta = SkullUtils.applySkin(skull.getItemMeta(), skullOwner);
 
         skullMeta.setDisplayName(displayName);
         skullMeta.setLore(lore);

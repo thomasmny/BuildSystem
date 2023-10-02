@@ -73,9 +73,9 @@ public class MinecraftVersion implements Comparable<MinecraftVersion> {
             throw new IllegalStateException("Failed to determine minecraft version: " + Bukkit.getBukkitVersion());
         }
 
-        int major = Integer.parseInt(parts[0].substring(1));
+        int major = Integer.parseInt(parts[0]);
         int minor = Integer.parseInt(parts[1]);
-        int release = Integer.parseInt(parts[2].substring(1));
+        int release = Integer.parseInt(parts[2]);
 
         return new MinecraftVersion(major, minor, release);
     }

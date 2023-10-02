@@ -25,7 +25,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Constructor;
 import java.util.List;
 
-public enum ServerVersion {
+public enum CraftBukkitVersion {
 
     v1_8_R1(-1, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
     v1_8_R2(-1, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
@@ -58,19 +58,19 @@ public enum ServerVersion {
 
     private final BuildSystem plugin = JavaPlugin.getPlugin(BuildSystem.class);
 
-    ServerVersion(int dataVersion, Class<? extends CustomBlocks> customBlocks, Class<? extends GameRules> gameRules) {
+    CraftBukkitVersion(int dataVersion, Class<? extends CustomBlocks> customBlocks, Class<? extends GameRules> gameRules) {
         this.dataVersion = dataVersion;
         this.customBlocks = customBlocks;
         this.gameRules = gameRules;
     }
 
-    ServerVersion() {
+    CraftBukkitVersion() {
         this.dataVersion = -1;
         this.customBlocks = null;
         this.gameRules = null;
     }
 
-    public static ServerVersion matchServerVersion(MinecraftVersion version) {
+    public static CraftBukkitVersion matchCraftBukkitVersion(MinecraftVersion version) {
         int minor = version.getMinor();
         int patch = version.getPatch();
 
