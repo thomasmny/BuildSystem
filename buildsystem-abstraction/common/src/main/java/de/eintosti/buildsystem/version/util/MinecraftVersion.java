@@ -30,7 +30,7 @@ public class MinecraftVersion implements Comparable<MinecraftVersion> {
     private final int patch;
 
     /**
-     * Construct a new version with major, minor and release version.
+     * Construct a new version with major, minor and patch version.
      *
      * @param major Major part of the version, only {@code 1} would make sense.
      * @param minor Minor part, full updates, e.g. Nether &amp; Caves &amp; Cliffs
@@ -44,7 +44,7 @@ public class MinecraftVersion implements Comparable<MinecraftVersion> {
 
     /**
      * Construct a new version with major and minor version.
-     * The release version is set to 0, therefore ignored.
+     * The patch version is set to 0, therefore ignored.
      *
      * @see MinecraftVersion#MinecraftVersion(int, int, int)
      */
@@ -75,9 +75,9 @@ public class MinecraftVersion implements Comparable<MinecraftVersion> {
 
         int major = Integer.parseInt(parts[0]);
         int minor = Integer.parseInt(parts[1]);
-        int release = Integer.parseInt(parts[2]);
+        int patch = Integer.parseInt(parts[2]);
 
-        return new MinecraftVersion(major, minor, release);
+        return new MinecraftVersion(major, minor, patch);
     }
 
     /**
