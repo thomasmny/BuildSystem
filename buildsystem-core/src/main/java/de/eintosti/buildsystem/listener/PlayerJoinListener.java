@@ -66,8 +66,6 @@ public class PlayerJoinListener implements Listener {
     @SuppressWarnings("deprecation")
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        plugin.getSkullCache().cacheSkull(player.getName());
-
         BuildPlayer buildPlayer = playerManager.createBuildPlayer(player);
         manageHidePlayer(player, buildPlayer);
         manageSettings(player, buildPlayer.getSettings());

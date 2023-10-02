@@ -27,7 +27,7 @@ import de.eintosti.buildsystem.command.WorldsCommand;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.expansion.luckperms.LuckPermsExpansion;
 import de.eintosti.buildsystem.expansion.placeholderapi.PlaceholderApiExpansion;
-import de.eintosti.buildsystem.internal.ServerVersion;
+import de.eintosti.buildsystem.internal.CraftBukkitVersion;
 import de.eintosti.buildsystem.listener.*;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.navigator.inventory.ArchiveInventory;
@@ -55,10 +55,10 @@ import de.eintosti.buildsystem.tabcomplete.SpeedTabComplete;
 import de.eintosti.buildsystem.tabcomplete.TimeTabComplete;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.util.SkullCache;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import de.eintosti.buildsystem.version.gamerules.GameRules;
+import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.SpawnManager;
 import de.eintosti.buildsystem.world.WorldManager;
@@ -92,7 +92,7 @@ public class BuildSystem extends JavaPlugin {
     public static final String ADMIN_PERMISSION = "buildsystem.admin";
 
     private String versionString;
-    private ServerVersion serverVersion;
+    private CraftBukkitVersion craftBukkitVersion;
 
     private ArmorStandManager armorStandManager;
     private InventoryUtils inventoryUtils;
@@ -121,7 +121,6 @@ public class BuildSystem extends JavaPlugin {
     private ConfigValues configValues;
     private CustomBlocks customBlocks;
     private GameRules gameRules;
-    private SkullCache skullCache;
 
     private LuckPermsExpansion luckPermsExpansion;
     private PlaceholderApiExpansion placeholderApiExpansion;
@@ -141,8 +140,6 @@ public class BuildSystem extends JavaPlugin {
 
         initClasses();
         if (!initVersionedClasses()) {
-            getLogger().severe("BuildSystem does not support your server version: " + versionString);
-            getLogger().severe("Disabling plugin...");
             this.setEnabled(false);
             return;
         }
@@ -159,8 +156,6 @@ public class BuildSystem extends JavaPlugin {
         spawnManager.load();
 
         Bukkit.getOnlinePlayers().forEach(pl -> {
-            getSkullCache().cacheSkull(pl.getName());
-
             BuildPlayer buildPlayer = playerManager.createBuildPlayer(pl);
             Settings settings = buildPlayer.getSettings();
             settingsManager.startScoreboard(pl, settings);
@@ -199,14 +194,21 @@ public class BuildSystem extends JavaPlugin {
     }
 
     private boolean initVersionedClasses() {
-        this.serverVersion = ServerVersion.matchServerVersion(versionString);
-        if (serverVersion == ServerVersion.UNKNOWN) {
+        MinecraftVersion minecraftVersion = MinecraftVersion.getCurrent();
+        if (minecraftVersion == null) {
             return false;
         }
 
-        this.customBlocks = serverVersion.initCustomBlocks();
-        this.gameRules = serverVersion.initGameRules();
+        this.craftBukkitVersion = CraftBukkitVersion.matchCraftBukkitVersion(minecraftVersion);
+        if (craftBukkitVersion == CraftBukkitVersion.UNKNOWN) {
+            getLogger().severe("BuildSystem does not support your server version: " + versionString);
+            getLogger().severe("If you wish to enable the plugin anyway, start your server with the '-DPaper.ignoreWorldDataVersion=true' flag");
+            getLogger().severe("Disabling plugin...");
+            return false;
+        }
 
+        this.customBlocks = craftBukkitVersion.initCustomBlocks();
+        this.gameRules = craftBukkitVersion.initGameRules();
         return true;
     }
 
@@ -236,13 +238,12 @@ public class BuildSystem extends JavaPlugin {
         this.speedInventory = new SpeedInventory(this);
         this.statusInventory = new StatusInventory(this);
         this.worldsInventory = new WorldsInventory(this);
-
-        this.skullCache = new SkullCache(versionString);
     }
 
     private void parseServerVersion() {
         try {
-            this.versionString = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+            String bukkitVersion = Bukkit.getServer().getBukkitVersion();
+            this.versionString = bukkitVersion.substring(0, bukkitVersion.indexOf("-"));
             getLogger().info("Detected server version: " + versionString);
         } catch (ArrayIndexOutOfBoundsException e) {
             getLogger().severe("Unknown server version");
@@ -418,8 +419,8 @@ public class BuildSystem extends JavaPlugin {
         }
     }
 
-    public ServerVersion getServerVersion() {
-        return serverVersion;
+    public CraftBukkitVersion getCraftBukkitVersion() {
+        return craftBukkitVersion;
     }
 
     public ArmorStandManager getArmorStandManager() {
@@ -520,9 +521,5 @@ public class BuildSystem extends JavaPlugin {
 
     public GameRules getGameRules() {
         return gameRules;
-    }
-
-    public SkullCache getSkullCache() {
-        return skullCache;
     }
 }

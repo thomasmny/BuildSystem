@@ -252,7 +252,7 @@ public class BuildWorldCreator {
     @Nullable
     public World generateBukkitWorld(boolean checkVersion) {
         if (checkVersion && isHigherVersion()) {
-            plugin.getLogger().warning(String.format("\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping...", worldName, parseDataVersion(), plugin.getServerVersion().getDataVersion()));
+            plugin.getLogger().warning(String.format("\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping...", worldName, parseDataVersion(), plugin.getCraftBukkitVersion().getDataVersion()));
             return null;
         }
 
@@ -328,14 +328,14 @@ public class BuildWorldCreator {
         if (Boolean.getBoolean("Paper.ignoreWorldDataVersion")) {
             return false;
         }
-        return parseDataVersion() > plugin.getServerVersion().getDataVersion();
+        return parseDataVersion() > plugin.getCraftBukkitVersion().getDataVersion();
     }
 
     /**
      * Parses the world's data version, as stored in {@code level.dat}.
      *
      * @return The world's data version if found, otherwise -1 if unable to parse
-     * @see <a href="https://minecraft.fandom.com/wiki/Data_version">Data version</a>
+     * @see <a href="https://minecraft.wiki/wiki/Data_version">Data version</a>
      */
     public int parseDataVersion() {
         File levelFile = new File(Bukkit.getWorldContainer() + File.separator + worldName, "level.dat");
@@ -375,7 +375,7 @@ public class BuildWorldCreator {
                 return;
             }
 
-            int serverVersion = plugin.getServerVersion().getDataVersion();
+            int serverVersion = plugin.getCraftBukkitVersion().getDataVersion();
             if (dataVersion.getValue() < serverVersion) {
                 dataVersion.setValue(serverVersion);
                 nbt.toFile(level, levelFile, CompressionType.GZIP);
