@@ -140,8 +140,6 @@ public class BuildSystem extends JavaPlugin {
 
         initClasses();
         if (!initVersionedClasses()) {
-            getLogger().severe("BuildSystem does not support your server version: " + versionString);
-            getLogger().severe("Disabling plugin...");
             this.setEnabled(false);
             return;
         }
@@ -202,9 +200,15 @@ public class BuildSystem extends JavaPlugin {
         }
 
         this.craftBukkitVersion = CraftBukkitVersion.matchCraftBukkitVersion(minecraftVersion);
+        if (craftBukkitVersion == CraftBukkitVersion.UNKNOWN) {
+            getLogger().severe("BuildSystem does not support your server version: " + versionString);
+            getLogger().severe("If you wish to enable the plugin anyway, start your server with the '-DBuildSystem.ignoreServerVersion=true' flag");
+            getLogger().severe("Disabling plugin...");
+            return false;
+        }
+
         this.customBlocks = craftBukkitVersion.initCustomBlocks();
         this.gameRules = craftBukkitVersion.initGameRules();
-
         return true;
     }
 

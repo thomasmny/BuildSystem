@@ -7,6 +7,7 @@
  */
 package de.eintosti.buildsystem.internal;
 
+import com.google.common.collect.Lists;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
@@ -136,7 +137,16 @@ public enum CraftBukkitVersion {
                     return v1_20_R2;
                 }
             default:
-                return UNKNOWN;
+                if (Boolean.getBoolean("BuildSystem.ignoreServerVersion")) {
+                    // Get latest version if server version is to be ignored
+                    return Lists.newArrayList(values()).stream()
+                            .sorted()
+                            .filter(craftBukkitVersion -> craftBukkitVersion != UNKNOWN)
+                            .reduce((first, second) -> second)
+                            .orElse(UNKNOWN);
+                } else {
+                    return UNKNOWN;
+                }
         }
     }
 
