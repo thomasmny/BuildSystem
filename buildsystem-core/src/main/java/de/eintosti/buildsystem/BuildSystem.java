@@ -59,6 +59,7 @@ import de.eintosti.buildsystem.util.SkullCache;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import de.eintosti.buildsystem.version.gamerules.GameRules;
+import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.SpawnManager;
 import de.eintosti.buildsystem.world.WorldManager;
@@ -199,11 +200,12 @@ public class BuildSystem extends JavaPlugin {
     }
 
     private boolean initVersionedClasses() {
-        this.serverVersion = ServerVersion.matchServerVersion(versionString);
-        if (serverVersion == ServerVersion.UNKNOWN) {
+        MinecraftVersion minecraftVersion = MinecraftVersion.getCurrent();
+        if (minecraftVersion == null) {
             return false;
         }
 
+        this.serverVersion = ServerVersion.matchServerVersion(minecraftVersion);
         this.customBlocks = serverVersion.initCustomBlocks();
         this.gameRules = serverVersion.initGameRules();
 
@@ -242,7 +244,8 @@ public class BuildSystem extends JavaPlugin {
 
     private void parseServerVersion() {
         try {
-            this.versionString = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+            String bukkitVersion = Bukkit.getServer().getBukkitVersion();
+            this.versionString = bukkitVersion.substring(0, bukkitVersion.indexOf("-"));
             getLogger().info("Detected server version: " + versionString);
         } catch (ArrayIndexOutOfBoundsException e) {
             getLogger().severe("Unknown server version");

@@ -22,23 +22,24 @@ public class MinecraftVersion implements Comparable<MinecraftVersion> {
     public static final MinecraftVersion BOUNTIFUL_8 = new MinecraftVersion(1, 8);
     public static final MinecraftVersion AQUATIC_13 = new MinecraftVersion(1, 13);
     public static final MinecraftVersion CAVES_17 = new MinecraftVersion(1, 17);
+
     private static MinecraftVersion current = null;
 
     private final int major;
     private final int minor;
-    private final int release;
+    private final int patch;
 
     /**
      * Construct a new version with major, minor and release version.
      *
-     * @param major   Major part of the version, only {@code 1} would make sense.
-     * @param minor   Minor part, full updates, e.g. Nether &amp; Caves &amp; Cliffs
-     * @param release Release, changes for the server software during a minor update.
+     * @param major Major part of the version, only {@code 1} would make sense.
+     * @param minor Minor part, full updates, e.g. Nether &amp; Caves &amp; Cliffs
+     * @param patch Patch, changes for the server software during a minor update.
      */
-    public MinecraftVersion(int major, int minor, int release) {
+    public MinecraftVersion(int major, int minor, int patch) {
         this.major = major;
         this.minor = minor;
-        this.release = release;
+        this.patch = patch;
     }
 
     /**
@@ -62,9 +63,14 @@ public class MinecraftVersion implements Comparable<MinecraftVersion> {
     }
 
     private static MinecraftVersion detectMinecraftVersion() {
-        String[] parts = getPackageVersion().split("_");
+        String[] parts = {};
+        try {
+            parts = Bukkit.getBukkitVersion().split("-")[0].split("\\.");
+        } catch (ArrayIndexOutOfBoundsException ignored) {
+        }
+
         if (parts.length != 3) {
-            throw new IllegalStateException("Failed to determine minecraft version!");
+            throw new IllegalStateException("Failed to determine minecraft version: " + Bukkit.getBukkitVersion());
         }
 
         int major = Integer.parseInt(parts[0].substring(1));
@@ -72,17 +78,6 @@ public class MinecraftVersion implements Comparable<MinecraftVersion> {
         int release = Integer.parseInt(parts[2].substring(1));
 
         return new MinecraftVersion(major, minor, release);
-    }
-
-    /**
-     * Determines the server version based on the CraftBukkit package path, e.g. {@code org.bukkit.craftbukkit.v1_16_R3},
-     * where v1_16_R3 is the resolved version.
-     *
-     * @return The package version.
-     */
-    private static String getPackageVersion() {
-        String fullPackagePath = Bukkit.getServer().getClass().getPackage().getName();
-        return fullPackagePath.substring(fullPackagePath.lastIndexOf('.') + 1);
     }
 
     /**
@@ -133,8 +128,8 @@ public class MinecraftVersion implements Comparable<MinecraftVersion> {
         return minor;
     }
 
-    public int getRelease() {
-        return release;
+    public int getPatch() {
+        return patch;
     }
 
     @Override
@@ -145,7 +140,8 @@ public class MinecraftVersion implements Comparable<MinecraftVersion> {
         return ComparisonChain.start()
                 .compare(getMajor(), other.getMajor())
                 .compare(getMinor(), other.getMinor())
-                .compare(getRelease(), other.getRelease()).result();
+                .compare(getPatch(), other.getPatch())
+                .result();
     }
 
     @Override
@@ -158,18 +154,17 @@ public class MinecraftVersion implements Comparable<MinecraftVersion> {
         }
 
         MinecraftVersion that = (MinecraftVersion) o;
-
         if (getMajor() != that.getMajor()) {
             return false;
         }
         if (getMinor() != that.getMinor()) {
             return false;
         }
-        return getRelease() == that.getRelease();
+        return getPatch() == that.getPatch();
     }
 
     @Override
     public String toString() {
-        return major + "." + minor + "." + release;
+        return major + "." + minor + "." + patch;
     }
 }
