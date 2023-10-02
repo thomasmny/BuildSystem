@@ -335,7 +335,7 @@ public class BuildWorldCreator {
      * Parses the world's data version, as stored in {@code level.dat}.
      *
      * @return The world's data version if found, otherwise -1 if unable to parse
-     * @see <a href="https://minecraft.fandom.com/wiki/Data_version">Data version</a>
+     * @see <a href="https://minecraft.wiki/wiki/Data_version">Data version</a>
      */
     public int parseDataVersion() {
         File levelFile = new File(Bukkit.getWorldContainer() + File.separator + worldName, "level.dat");

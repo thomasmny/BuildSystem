@@ -137,7 +137,7 @@ public enum CraftBukkitVersion {
                     return v1_20_R2;
                 }
             default:
-                if (Boolean.getBoolean("BuildSystem.ignoreServerVersion")) {
+                if (Boolean.getBoolean("Paper.ignoreWorldDataVersion")) {
                     // Get latest version if server version is to be ignored
                     return Lists.newArrayList(values()).stream()
                             .sorted()
@@ -157,7 +157,7 @@ public enum CraftBukkitVersion {
      * whether the player should be warned about opening that world due to client version incompatibilities."
      *
      * @return The server's data version
-     * @see <a href="https://minecraft.fandom.com/wiki/Data_version">Data version</a>
+     * @see <a href="https://minecraft.wiki/wiki/Data_version">Data version</a>
      */
     public int getDataVersion() {
         return dataVersion;
