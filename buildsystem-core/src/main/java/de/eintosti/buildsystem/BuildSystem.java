@@ -91,7 +91,6 @@ public class BuildSystem extends JavaPlugin {
     public static final int METRICS_ID = 7427;
     public static final String ADMIN_PERMISSION = "buildsystem.admin";
 
-    private String versionString;
     private CraftBukkitVersion craftBukkitVersion;
 
     private ArmorStandManager armorStandManager;
@@ -128,7 +127,6 @@ public class BuildSystem extends JavaPlugin {
     @Override
     public void onLoad() {
         createTemplateFolder();
-        parseServerVersion();
         Messages.createMessageFile();
     }
 
@@ -201,12 +199,13 @@ public class BuildSystem extends JavaPlugin {
 
         this.craftBukkitVersion = CraftBukkitVersion.matchCraftBukkitVersion(minecraftVersion);
         if (craftBukkitVersion == CraftBukkitVersion.UNKNOWN) {
-            getLogger().severe("BuildSystem does not support your server version: " + versionString);
+            getLogger().severe("BuildSystem does not support your server version: " + minecraftVersion);
             getLogger().severe("If you wish to enable the plugin anyway, start your server with the '-DPaper.ignoreWorldDataVersion=true' flag");
             getLogger().severe("Disabling plugin...");
             return false;
         }
 
+        getLogger().info(String.format("Detected server version: %s (%s)", minecraftVersion, craftBukkitVersion.name()));
         this.customBlocks = craftBukkitVersion.initCustomBlocks();
         this.gameRules = craftBukkitVersion.initGameRules();
         return true;
@@ -238,16 +237,6 @@ public class BuildSystem extends JavaPlugin {
         this.speedInventory = new SpeedInventory(this);
         this.statusInventory = new StatusInventory(this);
         this.worldsInventory = new WorldsInventory(this);
-    }
-
-    private void parseServerVersion() {
-        try {
-            String bukkitVersion = Bukkit.getServer().getBukkitVersion();
-            this.versionString = bukkitVersion.substring(0, bukkitVersion.indexOf("-"));
-            getLogger().info("Detected server version: " + versionString);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            getLogger().severe("Unknown server version");
-        }
     }
 
     private void registerCommands() {

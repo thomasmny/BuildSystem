@@ -10,9 +10,13 @@ package de.eintosti.buildsystem.util;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.mojang.util.UUIDTypeAdapter;
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -49,7 +53,7 @@ public class UUIDFetcher {
             try {
                 // Support older versions of JSON used by Minecraft versions <1.18
                 jsonObject = new JsonParser().parse(new BufferedReader(new InputStreamReader(connection.getInputStream()))).getAsJsonObject();
-            } catch (IllegalStateException ignored) {
+            } catch (IllegalStateException | FileNotFoundException ignored) {
                 return null;
             }
 
@@ -98,5 +102,31 @@ public class UUIDFetcher {
         }
 
         return null;
+    }
+
+    public static void cacheUser(UUID uuid, String name) {
+        UUID_CACHE.put(name.toLowerCase(), uuid);
+        NAME_CACHE.put(uuid, name);
+    }
+
+    public static final class UUIDTypeAdapter extends TypeAdapter<UUID> {
+
+        public static String fromUUID(final UUID value) {
+            return value.toString().replace("-", "");
+        }
+
+        public static UUID fromString(final String input) {
+            return UUID.fromString(input.replaceFirst("(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})", "$1-$2-$3-$4-$5"));
+        }
+
+        @Override
+        public void write(JsonWriter out, final UUID value) throws IOException {
+            out.value(fromUUID(value));
+        }
+
+        @Override
+        public UUID read(JsonReader in) throws IOException {
+            return fromString(in.nextString());
+        }
     }
 }

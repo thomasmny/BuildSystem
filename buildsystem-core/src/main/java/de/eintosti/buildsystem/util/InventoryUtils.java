@@ -197,8 +197,8 @@ public class InventoryUtils {
     }
 
     public ItemStack getUrlSkull(String displayName, String url, List<String> lore) {
-        ItemStack skull = ItemSkulls.getSkull(url);
-        SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
+        ItemStack skull = XMaterial.PLAYER_HEAD.parseItem();
+        SkullMeta skullMeta = SkullUtils.applySkin(skull.getItemMeta(), url);
 
         skullMeta.setDisplayName(displayName);
         skullMeta.setLore(lore);

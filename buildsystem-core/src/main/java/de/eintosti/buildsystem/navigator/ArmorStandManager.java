@@ -7,9 +7,9 @@
  */
 package de.eintosti.buildsystem.navigator;
 
+import com.cryptomorin.xseries.SkullUtils;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.navigator.settings.NavigatorInventoryType;
-import de.eintosti.buildsystem.util.ItemSkulls;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
@@ -55,15 +55,9 @@ public class ArmorStandManager {
         armorStand.setGravity(false);
         armorStand.setCanPickupItems(false);
 
-        ItemStack skull;
-        if (customSkull) {
-            skull = ItemSkulls.getSkull(skullUrl);
-        } else {
-            skull = XMaterial.PLAYER_HEAD.parseItem();
-            SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
-            skullMeta.setOwner(player.getName());
-            skull.setItemMeta(skullMeta);
-        }
+        ItemStack skull = XMaterial.PLAYER_HEAD.parseItem();
+        SkullMeta skullMeta = SkullUtils.applySkin(skull.getItemMeta(), customSkull ? skullUrl : player.getName());
+        skull.setItemMeta(skullMeta);
         armorStand.setHelmet(skull);
 
         return armorStand;
