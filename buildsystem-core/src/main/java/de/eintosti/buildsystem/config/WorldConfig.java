@@ -21,10 +21,12 @@ import java.util.logging.Logger;
 public class WorldConfig extends ConfigurationFile {
 
     private final BuildSystem plugin;
+    private final Logger logger;
 
     public WorldConfig(BuildSystem plugin) {
         super(plugin, "worlds.yml");
         this.plugin = plugin;
+        this.logger = plugin.getLogger();
     }
 
     public void saveWorlds(Collection<BuildWorld> buildWorlds) {
@@ -33,27 +35,66 @@ public class WorldConfig extends ConfigurationFile {
     }
 
     public void loadWorlds(WorldManager worldManager) {
-        Logger logger = plugin.getLogger();
-        if (plugin.getConfigValues().isUnloadWorlds()) {
-            logger.info("*** \"Unload worlds\" has been enabled in the config. Therefore worlds will not be pre-loaded ***");
-            return;
+        boolean loadAllWorlds = !plugin.getConfigValues().isUnloadWorlds();
+        if (loadAllWorlds) {
+            logger.info("*** All worlds will be loaded now ***");
+        } else {
+            logger.info("*** 'Unload worlds' has been enabled in the config ***");
+            logger.info("*** Therefore, worlds will not be pre-loaded ***");
         }
-
-        logger.info("*** All worlds will be loaded now ***");
 
         List<BuildWorld> notLoaded = new ArrayList<>();
         worldManager.getBuildWorlds().forEach(buildWorld -> {
-            String worldName = buildWorld.getName();
-            World world = new BuildWorldCreator(plugin, buildWorld).generateBukkitWorld();
-            if (world == null) {
+            if (loadWorld(buildWorld, loadAllWorlds) == LoadResult.FAILED) {
                 notLoaded.add(buildWorld);
-                return;
             }
-            buildWorld.getData().lastLoaded().set(System.currentTimeMillis());
-            logger.info("✔ World loaded: " + worldName);
         });
         notLoaded.forEach(worldManager::removeBuildWorld);
 
-        logger.info("*** All worlds have been loaded ***");
+        if (loadAllWorlds) {
+            logger.info("*** All worlds have been loaded ***");
+        }
+    }
+
+    /**
+     * Loads the {@link BuildWorld} if {@link ConfigValues#isUnloadWorlds()} is not enabled.
+     * Otherwise, the world will only be loaded if it's on the unload blacklist.
+     *
+     * @param buildWorld The world to load
+     * @param alwaysLoad Should the world always be loaded
+     * @return The result of the load attempt
+     */
+    private LoadResult loadWorld(BuildWorld buildWorld, boolean alwaysLoad) {
+        String worldName = buildWorld.getName();
+        if (!alwaysLoad && !plugin.getConfigValues().getBlackListedWorldsToUnload().contains(worldName)) {
+            return LoadResult.NOT_BLACKLISTED;
+        }
+
+        World world = new BuildWorldCreator(plugin, buildWorld).generateBukkitWorld();
+        if (world == null) {
+            return LoadResult.FAILED;
+        }
+
+        buildWorld.getData().lastLoaded().set(System.currentTimeMillis());
+        logger.info("✔ World loaded: " + worldName);
+        return LoadResult.LOADED;
+    }
+
+    private enum LoadResult {
+
+        /**
+         * The world was loaded
+         */
+        LOADED,
+
+        /**
+         * The world was unable to be loaded
+         */
+        FAILED,
+
+        /**
+         * {@link ConfigValues#isUnloadWorlds()} is enabled and the world is not blacklisted to unload
+         */
+        NOT_BLACKLISTED
     }
 }
