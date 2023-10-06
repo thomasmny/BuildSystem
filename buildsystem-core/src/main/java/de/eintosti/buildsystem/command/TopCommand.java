@@ -63,7 +63,7 @@ public class TopCommand implements CommandExecutor {
             return;
         }
 
-        PaperLib.teleportAsync(player, blockLocation.add(0.5, 0, 0.5))
+        PaperLib.teleportAsync(player, blockLocation.add(0.5, 1, 0.5))
                 .whenComplete((completed, throwable) -> {
                     if (!completed) {
                         return;
