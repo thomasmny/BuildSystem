@@ -29,6 +29,7 @@ import org.bukkit.Chunk;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -584,9 +585,18 @@ public class WorldManager {
 
         Location finalLocation = location;
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            PaperLib.teleportAsync(player, finalLocation);
-            Titles.clearTitle(player);
-            XSound.ENTITY_ENDERMAN_TELEPORT.play(player);
+            PaperLib.teleportAsync(player, finalLocation).whenComplete((completed, throwable) -> {
+                if (!completed) {
+                    return;
+                }
+
+                Titles.clearTitle(player);
+                player.playSound(player, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
+
+                if (!finalLocation.clone().add(0, -1, 0).getBlock().getType().isSolid()) {
+                    player.setFlying(player.getAllowFlight());
+                }
+            });
         }, hadToLoad ? 20L : 0L);
     }
 
