@@ -56,7 +56,7 @@ public class ImportSubCommand implements SubCommand {
         }
 
         File worldFolder = new File(Bukkit.getWorldContainer(), args[1]);
-        File levelFile = new File(worldFolder.getAbsolutePath() + File.separator + "level.dat");
+        File levelFile = new File(worldFolder, "level.dat");
         if (!worldFolder.isDirectory() || !levelFile.exists()) {
             Messages.sendMessage(player, "worlds_import_unknown_world");
             return;
@@ -111,8 +111,9 @@ public class ImportSubCommand implements SubCommand {
         }
 
         Messages.sendMessage(player, "worlds_import_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
-        worldManager.importWorld(player, worldName, creator, generator, generatorName, true);
-        Messages.sendMessage(player, "worlds_import_finished");
+        if (worldManager.importWorld(player, worldName, creator, generator, generatorName, true)) {
+            Messages.sendMessage(player, "worlds_import_finished");
+        }
     }
 
     @Override
