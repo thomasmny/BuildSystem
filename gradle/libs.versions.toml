@@ -12,7 +12,7 @@ placeholderapi = "2.11.4"
 annotations = "24.0.1"
 authlib = "1.5.25"
 bstats = "3.0.2"
-fastboard = "2.0.0"
+fastboard = "2.0.1"
 nbt = "1.5.1"
 xseries = "9.7.0"
 
