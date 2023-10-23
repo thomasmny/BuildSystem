@@ -1,6 +1,6 @@
 [versions]
 # Platform expectations
-spigot = "1.20.2-R0.1-SNAPSHOT"
+spigot = "1.20.2-experimental-SNAPSHOT"
 paperlib = "1.0.8"
 
 # Plugins
