@@ -49,7 +49,7 @@ world:
     public: -1
     private: -1
   unload:
-    enabled: false
+    enabled: true
     time-until-unload: "01:00:00"
     blacklisted-worlds:
       - world
