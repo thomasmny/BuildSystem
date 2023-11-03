@@ -127,7 +127,7 @@ public class ConfigValues {
                 config.getBoolean("world.default.settings.builders-enabled.private", true)
         };
 
-        this.unloadWorlds = config.getBoolean("world.unload.enabled", false);
+        this.unloadWorlds = config.getBoolean("world.unload.enabled", true);
         this.timeUntilUnload = config.getString("world.unload.time-until-unload", "01:00:00");
         this.blackListedWorldsToUnload = new HashSet<>(config.getStringList("world.unload.blacklisted-worlds"));
 
