@@ -30,11 +30,9 @@ import java.util.stream.Collectors;
 
 public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
 
-    private final BuildSystem plugin;
     private final WorldManager worldManager;
 
     public WorldsTabComplete(BuildSystem plugin) {
-        this.plugin = plugin;
         this.worldManager = plugin.getWorldManager();
         plugin.getCommand("worlds").setTabCompleter(this);
     }

@@ -74,8 +74,8 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         addWorldSortItem(inventory, player);
         addWorldFilterItem(inventory, player);
 
-        inventoryUtils.addUrlSkull(inventory, 52, Messages.getString("gui_previous_page"), "https://textures.minecraft.net/texture/86971dd881dbaf4fd6bcaa93614493c612f869641ed59d1c9363a3666a5fa6");
-        inventoryUtils.addUrlSkull(inventory, 53, Messages.getString("gui_next_page"), "https://textures.minecraft.net/texture/f32ca66056b72863e98f7f32bd7d94c7a0d796af691c9ac3a9136331352288f9");
+        inventoryUtils.addUrlSkull(inventory, 52, Messages.getString("gui_previous_page"), "86971dd881dbaf4fd6bcaa93614493c612f869641ed59d1c9363a3666a5fa6");
+        inventoryUtils.addUrlSkull(inventory, 53, Messages.getString("gui_next_page"), "f32ca66056b72863e98f7f32bd7d94c7a0d796af691c9ac3a9136331352288f9");
 
         return inventory;
     }
