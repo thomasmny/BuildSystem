@@ -15,9 +15,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
+import java.util.Comparator;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public class FileUtils {
 
@@ -70,13 +73,13 @@ public class FileUtils {
      * @param directory Directory to delete
      */
     public static void deleteDirectory(File directory) {
-        File[] allContents = directory.listFiles();
-        if (allContents != null) {
-            for (File file : allContents) {
-                deleteDirectory(file);
-            }
+        try (Stream<Path> walk = Files.walk(directory.toPath())) {
+            walk.sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        directory.delete();
     }
 
     /**
