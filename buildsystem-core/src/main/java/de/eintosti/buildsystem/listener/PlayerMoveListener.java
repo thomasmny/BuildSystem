@@ -90,8 +90,8 @@ public class PlayerMoveListener implements Listener {
                 // Idk if this could be null but case handled :)
                 if (buildWorld == null) {
                     teleportLoc = extracted(player);
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
                     player.teleport(teleportLoc);
+                    XSound.ENTITY_CHICKEN_EGG.play(player);
                     return;
                 }
 
@@ -109,12 +109,12 @@ public class PlayerMoveListener implements Listener {
                     teleportLoc = extracted(player);
                 }
 
-                XSound.ENTITY_CHICKEN_EGG.play(player);
                 player.teleport(teleportLoc);
+                XSound.ENTITY_CHICKEN_EGG.play(player);
             } else {
                 teleportLoc = extracted(player);
-                XSound.ENTITY_CHICKEN_EGG.play(player);
                 player.teleport(teleportLoc);
+                XSound.ENTITY_CHICKEN_EGG.play(player);
             }
         }
     }
