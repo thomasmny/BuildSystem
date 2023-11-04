@@ -30,30 +30,32 @@ public class ConfigValues {
     private String defaultPrivatePermission;
     private String invalidNameCharacters;
 
-    private XMaterial navigatorItem;
-    private XMaterial worldEditWand;
+    private XMaterial  navigatorItem;
+    private XMaterial  worldEditWand;
     private Difficulty worldDifficulty;
 
-    private boolean archiveVanish;
-    private boolean scoreboard;
-    private boolean spawnTeleportMessage;
-    private boolean joinQuitMessages;
-    private boolean teleportAfterCreation;
-    private boolean buildModeDropItems;
-    private boolean buildModeMoveItems;
-    private boolean lockWeather;
-    private boolean unloadWorlds;
-    private boolean voidBlock;
-    private boolean updateChecker;
-    private boolean blockWorldEditNonBuilder;
-    private boolean giveNavigatorOnJoin;
-    private boolean worldPhysics;
-    private boolean worldExplosions;
-    private boolean worldMobAi;
-    private boolean worldBlockBreaking;
-    private boolean worldBlockPlacement;
-    private boolean worldBlockInteractions;
+    private boolean   archiveVanish;
+    private boolean   scoreboard;
+    private boolean   spawnTeleportMessage;
+    private boolean   joinQuitMessages;
+    private boolean   teleportAfterCreation;
+    private boolean   buildModeDropItems;
+    private boolean   buildModeMoveItems;
+    private boolean   lockWeather;
+    private boolean   unloadWorlds;
+    private boolean   voidBlock;
+    private boolean   updateChecker;
+    private boolean   blockWorldEditNonBuilder;
+    private boolean   giveNavigatorOnJoin;
+    private boolean   worldPhysics;
+    private boolean   worldExplosions;
+    private boolean   worldMobAi;
+    private boolean   worldBlockBreaking;
+    private boolean   worldBlockPlacement;
+    private boolean   worldBlockInteractions;
     private boolean[] worldBuildersEnabled;
+    private boolean   saveFromDeath;
+    private boolean   teleportToMapSpawn;
 
     private int sunriseTime;
     private int noonTime;
@@ -62,9 +64,10 @@ public class ConfigValues {
     private int importDelay;
     private int maxPublicWorldAmount;
     private int maxPrivateWorldAmount;
+    private int minYHeight;
 
     private Map<String, String> defaultGameRules;
-    private Set<String> blackListedWorldsToUnload;
+    private Set<String>         blackListedWorldsToUnload;
 
     public ConfigValues(BuildSystem plugin) {
         this.plugin = plugin;
@@ -78,6 +81,11 @@ public class ConfigValues {
         this.spawnTeleportMessage = config.getBoolean("messages.spawn-teleport-message", false);
         this.joinQuitMessages = config.getBoolean("messages.join-quit-messages", true);
         this.dateFormat = config.getString("messages.date-format", "dd/MM/yyyy");
+
+        // Save from death
+        this.saveFromDeath = config.getBoolean("settings.save-from-death.enable", true);
+        this.minYHeight = config.getInt("settings.save-from-death.min-y-height", 0);
+        this.teleportToMapSpawn = config.getBoolean("settings.save-from-death.teleport-to-map-spawn", true);
 
         // Settings
         this.updateChecker = config.getBoolean("settings.update-checker", true);
@@ -98,18 +106,19 @@ public class ConfigValues {
         this.defaultPrivatePermission = config.getString("world.default.permission.private", "-");
         this.lockWeather = config.getBoolean("world.lock-weather", true);
         this.invalidNameCharacters = config.getString("world.invalid-characters", "^\b$");
-        this.worldDifficulty = Difficulty.valueOf(config.getString("world.default.difficulty", "PEACEFUL").toUpperCase());
+        this.worldDifficulty = Difficulty.valueOf(
+            config.getString("world.default.difficulty", "PEACEFUL").toUpperCase());
         this.sunriseTime = config.getInt("world.default.time.sunrise", 0);
         this.noonTime = config.getInt("world.default.time.noon", 6000);
         this.nightTime = config.getInt("world.default.time.night", 18000);
 
         this.worldBorderSize = config.getInt("world.default.worldborder.size", 6000000);
 
-        Map<String, String> defaultGameRules = new HashMap<>();
+        Map<String, String>  defaultGameRules     = new HashMap<>();
         ConfigurationSection configurationSection = config.getConfigurationSection("world.default.gamerules");
         if (configurationSection != null) {
             for (Map.Entry<String, Object> entry : configurationSection.getValues(true).entrySet()) {
-                String name = entry.getKey();
+                String name  = entry.getKey();
                 String value = entry.getValue().toString();
                 defaultGameRules.put(name, value);
             }
@@ -123,8 +132,8 @@ public class ConfigValues {
         this.worldBlockPlacement = config.getBoolean("world.default.settings.block-placement", true);
         this.worldBlockInteractions = config.getBoolean("world.default.settings.block-interactions", true);
         this.worldBuildersEnabled = new boolean[]{
-                config.getBoolean("world.default.settings.builders-enabled.public", false),
-                config.getBoolean("world.default.settings.builders-enabled.private", true)
+            config.getBoolean("world.default.settings.builders-enabled.public", false),
+            config.getBoolean("world.default.settings.builders-enabled.private", true)
         };
 
         this.unloadWorlds = config.getBoolean("world.unload.enabled", true);
@@ -140,7 +149,7 @@ public class ConfigValues {
     }
 
     private XMaterial parseWorldEditWand() {
-        File pluginDir = plugin.getDataFolder().getParentFile();
+        File pluginDir  = plugin.getDataFolder().getParentFile();
         File configFile = null;
 
         File weConfig = new File(pluginDir + File.separator + "WorldEdit", "config.yml");
@@ -159,7 +168,7 @@ public class ConfigValues {
         }
 
         YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
-        String wand = config.getString("wand-item");
+        String            wand   = config.getString("wand-item");
         if (wand == null) {
             return defaultWand;
         }
@@ -182,9 +191,9 @@ public class ConfigValues {
 
     public long getTimeUntilUnload() {
         String[] timeArray = timeUntilUnload.split(":");
-        int hours = Integer.parseInt(timeArray[0]);
-        int minutes = Integer.parseInt(timeArray[1]);
-        int seconds = Integer.parseInt(timeArray[2]);
+        int      hours     = Integer.parseInt(timeArray[0]);
+        int      minutes   = Integer.parseInt(timeArray[1]);
+        int      seconds   = Integer.parseInt(timeArray[2]);
         return hours * 3600L + minutes * 60L + seconds;
     }
 
@@ -311,6 +320,18 @@ public class ConfigValues {
 
     public String getDefaultPermission(boolean privateWorld) {
         return (privateWorld ? defaultPrivatePermission : defaultPublicPermission);
+    }
+
+    public boolean isSaveFromDeath() {
+        return saveFromDeath;
+    }
+
+    public boolean isTeleportToMapSpawn() {
+        return teleportToMapSpawn;
+    }
+
+    public int getMinYHeight() {
+        return minYHeight;
     }
 
     public String getInvalidNameCharacters() {
