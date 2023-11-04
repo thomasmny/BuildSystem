@@ -53,12 +53,12 @@ public class StatusInventory implements Listener {
         Inventory inventory = Bukkit.createInventory(null, 27, title);
         fillGuiWithGlass(player, inventory);
 
-        addStatusItem(player, inventory, 10, WorldStatus.NOT_STARTED, Messages.getString("status_not_started"));
-        addStatusItem(player, inventory, 11, WorldStatus.IN_PROGRESS, Messages.getString("status_in_progress"));
-        addStatusItem(player, inventory, 12, WorldStatus.ALMOST_FINISHED, Messages.getString("status_almost_finished"));
-        addStatusItem(player, inventory, 13, WorldStatus.FINISHED, Messages.getString("status_finished"));
-        addStatusItem(player, inventory, 14, WorldStatus.ARCHIVE, Messages.getString("status_archive"));
-        addStatusItem(player, inventory, 16, WorldStatus.HIDDEN, Messages.getString("status_hidden"));
+        addStatusItem(player, inventory, 10, WorldStatus.NOT_STARTED);
+        addStatusItem(player, inventory, 11, WorldStatus.IN_PROGRESS);
+        addStatusItem(player, inventory, 12, WorldStatus.ALMOST_FINISHED);
+        addStatusItem(player, inventory, 13, WorldStatus.FINISHED);
+        addStatusItem(player, inventory, 14, WorldStatus.ARCHIVE);
+        addStatusItem(player, inventory, 16, WorldStatus.HIDDEN);
 
         return inventory;
     }
@@ -76,10 +76,11 @@ public class StatusInventory implements Listener {
         }
     }
 
-    private void addStatusItem(Player player, Inventory inventory, int position, WorldStatus worldStatus, String displayName) {
-        XMaterial material = inventoryUtils.getStatusItem(worldStatus);
+    private void addStatusItem(Player player, Inventory inventory, int position, WorldStatus status) {
+        XMaterial material = inventoryUtils.getStatusItem(status);
+        String displayName = status.getName();
 
-        if (!player.hasPermission(worldStatus.getPermission())) {
+        if (!player.hasPermission(status.getPermission())) {
             material = XMaterial.BARRIER;
             displayName = "§c§m" + ChatColor.stripColor(displayName);
         }
@@ -91,7 +92,7 @@ public class StatusInventory implements Listener {
         itemStack.setItemMeta(itemMeta);
 
         BuildWorld cachedWorld = playerManager.getBuildPlayer(player).getCachedWorld();
-        if (cachedWorld != null && cachedWorld.getData().status().get() == worldStatus) {
+        if (cachedWorld != null && cachedWorld.getData().status().get() == status) {
             itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
         }
 
