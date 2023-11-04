@@ -123,9 +123,7 @@ public class StatusInventory implements Listener {
             return;
         }
 
-        WorldData worldData = buildWorld.getData();
         int slot = event.getSlot();
-
         if (slot >= 10 && slot <= 14 || slot == 16) {
             WorldStatus status = getStatusFromSlot(slot);
             if (!player.hasPermission(status.getPermission())) {
@@ -133,7 +131,7 @@ public class StatusInventory implements Listener {
                 event.setCancelled(true);
                 return;
             } else {
-                worldData.status().set(status);
+                buildWorld.getData().status().set(status);
             }
         } else {
             XSound.BLOCK_CHEST_OPEN.play(player);
