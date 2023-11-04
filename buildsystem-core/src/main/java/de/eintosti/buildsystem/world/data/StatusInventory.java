@@ -11,10 +11,12 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.player.BuildPlayer;
 import de.eintosti.buildsystem.player.PlayerManager;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.world.BuildWorld;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -51,12 +53,12 @@ public class StatusInventory implements Listener {
         Inventory inventory = Bukkit.createInventory(null, 27, title);
         fillGuiWithGlass(player, inventory);
 
-        addItem(player, inventory, 10, inventoryUtils.getStatusItem(WorldStatus.NOT_STARTED), Messages.getString("status_not_started"), WorldStatus.NOT_STARTED);
-        addItem(player, inventory, 11, inventoryUtils.getStatusItem(WorldStatus.IN_PROGRESS), Messages.getString("status_in_progress"), WorldStatus.IN_PROGRESS);
-        addItem(player, inventory, 12, inventoryUtils.getStatusItem(WorldStatus.ALMOST_FINISHED), Messages.getString("status_almost_finished"), WorldStatus.ALMOST_FINISHED);
-        addItem(player, inventory, 13, inventoryUtils.getStatusItem(WorldStatus.FINISHED), Messages.getString("status_finished"), WorldStatus.FINISHED);
-        addItem(player, inventory, 14, inventoryUtils.getStatusItem(WorldStatus.ARCHIVE), Messages.getString("status_archive"), WorldStatus.ARCHIVE);
-        addItem(player, inventory, 16, inventoryUtils.getStatusItem(WorldStatus.HIDDEN), Messages.getString("status_hidden"), WorldStatus.HIDDEN);
+        addStatusItem(player, inventory, 10, WorldStatus.NOT_STARTED);
+        addStatusItem(player, inventory, 11, WorldStatus.IN_PROGRESS);
+        addStatusItem(player, inventory, 12, WorldStatus.ALMOST_FINISHED);
+        addStatusItem(player, inventory, 13, WorldStatus.FINISHED);
+        addStatusItem(player, inventory, 14, WorldStatus.ARCHIVE);
+        addStatusItem(player, inventory, 16, WorldStatus.HIDDEN);
 
         return inventory;
     }
@@ -74,18 +76,23 @@ public class StatusInventory implements Listener {
         }
     }
 
-    private void addItem(Player player, Inventory inventory, int position, XMaterial material, String displayName, WorldStatus worldStatus) {
+    private void addStatusItem(Player player, Inventory inventory, int position, WorldStatus status) {
+        XMaterial material = inventoryUtils.getStatusItem(status);
+        String displayName = status.getName();
+
+        if (!player.hasPermission(status.getPermission())) {
+            material = XMaterial.BARRIER;
+            displayName = "§c§m" + ChatColor.stripColor(displayName);
+        }
+
         ItemStack itemStack = material.parseItem();
         ItemMeta itemMeta = itemStack.getItemMeta();
-
-        if (itemMeta != null) {
-            itemMeta.setDisplayName(displayName);
-            itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        }
+        itemMeta.setDisplayName(displayName);
+        itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         itemStack.setItemMeta(itemMeta);
 
         BuildWorld cachedWorld = playerManager.getBuildPlayer(player).getCachedWorld();
-        if (cachedWorld != null && cachedWorld.getData().status().get() == worldStatus) {
+        if (cachedWorld != null && cachedWorld.getData().status().get() == status) {
             itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
         }
 
@@ -116,47 +123,61 @@ public class StatusInventory implements Listener {
             return;
         }
 
-        BuildWorld buildWorld = playerManager.getBuildPlayer(player).getCachedWorld();
+        BuildPlayer buildPlayer = playerManager.getBuildPlayer(player);
+        BuildWorld buildWorld = buildPlayer.getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();
             Messages.sendMessage(player, "worlds_setstatus_error");
             return;
         }
 
-        WorldData worldData = buildWorld.getData();
-        switch (event.getSlot()) {
-            case 10:
-                worldData.status().set(WorldStatus.NOT_STARTED);
-                break;
-            case 11:
-                worldData.status().set(WorldStatus.IN_PROGRESS);
-                break;
-            case 12:
-                worldData.status().set(WorldStatus.ALMOST_FINISHED);
-                break;
-            case 13:
-                worldData.status().set(WorldStatus.FINISHED);
-                break;
-            case 14:
-                worldData.status().set(WorldStatus.ARCHIVE);
-                break;
-            case 16:
-                worldData.status().set(WorldStatus.HIDDEN);
-                break;
-            default:
-                XSound.BLOCK_CHEST_OPEN.play(player);
-                plugin.getEditInventory().openInventory(player, buildWorld);
-                return;
+        int slot = event.getSlot();
+        if (slot < 10 || slot > 14 && slot != 16) {
+            XSound.BLOCK_CHEST_OPEN.play(player);
+            plugin.getEditInventory().openInventory(player, buildWorld);
+            return;
         }
 
-        playerManager.forceUpdateSidebar(buildWorld);
+        WorldStatus status = getStatusFromSlot(slot);
+        if (!player.hasPermission(status.getPermission())) {
+            XSound.ENTITY_ITEM_BREAK.play(player);
+            return;
+        }
+
         player.closeInventory();
+        buildPlayer.setCachedWorld(null);
+        buildWorld.getData().status().set(status);
+        playerManager.forceUpdateSidebar(buildWorld);
 
         XSound.ENTITY_CHICKEN_EGG.play(player);
         Messages.sendMessage(player, "worlds_setstatus_set",
                 new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()),
-                new AbstractMap.SimpleEntry<>("%status%", buildWorld.getData().status().get().getName())
+                new AbstractMap.SimpleEntry<>("%status%", status.getName())
         );
-        playerManager.getBuildPlayer(player).setCachedWorld(null);
+    }
+
+    /**
+     * Gets the {@link WorldStatus} which is represented by the item at the given slot.
+     *
+     * @param slot The slot to get the status from
+     * @return The status which is represented by the item at the given slot
+     */
+    private WorldStatus getStatusFromSlot(int slot) {
+        switch (slot) {
+            case 10:
+                return WorldStatus.NOT_STARTED;
+            case 11:
+                return WorldStatus.IN_PROGRESS;
+            case 12:
+                return WorldStatus.ALMOST_FINISHED;
+            case 13:
+                return WorldStatus.FINISHED;
+            case 14:
+                return WorldStatus.ARCHIVE;
+            case 16:
+                return WorldStatus.HIDDEN;
+            default:
+                throw new IllegalArgumentException("Slot " + slot + " does not correspond to status");
+        }
     }
 }
