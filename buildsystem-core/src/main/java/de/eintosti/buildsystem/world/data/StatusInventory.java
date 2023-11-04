@@ -124,29 +124,29 @@ public class StatusInventory implements Listener {
         }
 
         WorldData worldData = buildWorld.getData();
-        switch (event.getSlot()) {
-            case 10:
-                worldData.status().set(WorldStatus.NOT_STARTED);
-                break;
-            case 11:
-                worldData.status().set(WorldStatus.IN_PROGRESS);
-                break;
-            case 12:
-                worldData.status().set(WorldStatus.ALMOST_FINISHED);
-                break;
-            case 13:
-                worldData.status().set(WorldStatus.FINISHED);
-                break;
-            case 14:
-                worldData.status().set(WorldStatus.ARCHIVE);
-                break;
-            case 16:
-                worldData.status().set(WorldStatus.HIDDEN);
-                break;
-            default:
-                XSound.BLOCK_CHEST_OPEN.play(player);
-                plugin.getEditInventory().openInventory(player, buildWorld);
+        int slot = event.getSlot();
+
+        if (slot >= 10 && slot <= 14) {
+            String permissionNode = "buildsystem.setstatus." + getStatusFromSlot(slot);
+            if (!player.hasPermission(permissionNode)) {
+                Messages.sendMessage(player, "no_permissions");
+                event.setCancelled(true);
                 return;
+            } else {
+                worldData.status().set(WorldStatus.valueOf(getStatusFromSlot(slot).toUpperCase()));
+            }
+        } else if (slot == 16) {
+            if (!player.hasPermission("buildsystem.setstatus.hidden")) {
+                Messages.sendMessage(player, "no_permissions");
+                event.setCancelled(true);
+                return;
+            } else {
+                worldData.status().set(WorldStatus.HIDDEN);
+            }
+        } else {
+            XSound.BLOCK_CHEST_OPEN.play(player);
+            plugin.getEditInventory().openInventory(player, buildWorld);
+            return;
         }
 
         playerManager.forceUpdateSidebar(buildWorld);
@@ -158,5 +158,22 @@ public class StatusInventory implements Listener {
                 new AbstractMap.SimpleEntry<>("%status%", buildWorld.getData().status().get().getName())
         );
         playerManager.getBuildPlayer(player).setCachedWorld(null);
+    }
+
+    private String getStatusFromSlot(int slot) {
+        switch (slot) {
+            case 10:
+                return "not_started";
+            case 11:
+                return "in_progress";
+            case 12:
+                return "almost_finished";
+            case 13:
+                return "finished";
+            case 14:
+                return "archive";
+            default:
+                return "hidden";
+        }
     }
 }

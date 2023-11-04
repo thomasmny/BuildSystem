@@ -67,6 +67,16 @@ commands:
     usage: /<command>
 
 permissions:
+  buildsystem.setstatus:
+    children:
+      - buildsystem.setstatus.hidden
+      - buildsystem.setstatus.archive
+      - buildsystem.setstatus.finished
+      - buildsystem.setstatus.almost_finished
+      - buildsystem.setstatus.in_progress
+      - buildsystem.setstatus.not_started
+    default: op
+    description: Permission for specific status states
   buildsystem.navigator:
     description: Open the worlds navigator.
     default: true
