@@ -28,12 +28,11 @@ public class SetStatusSubCommand implements SubCommand {
 
     @Override
     public void execute(Player player, String[] args) {
-        WorldManager worldManager = plugin.getWorldManager();
-
         boolean hasPermission = player.getEffectivePermissions().stream()
             .anyMatch(effectivePermission -> effectivePermission.getPermission().contains("buildsystem.setstatus"));
 
-        if (!worldManager.isPermitted(player, getArgument().getPermission(), worldName) && !hasPermission) {
+        WorldManager worldManager = plugin.getWorldManager();
+        if (!worldManager.isPermitted(player, getArgument().getPermission(), worldName) || !hasPermission) {
             plugin.sendPermissionMessage(player);
             return;
         }

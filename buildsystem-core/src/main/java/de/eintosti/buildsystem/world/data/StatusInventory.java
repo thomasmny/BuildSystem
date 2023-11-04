@@ -126,22 +126,14 @@ public class StatusInventory implements Listener {
         WorldData worldData = buildWorld.getData();
         int slot = event.getSlot();
 
-        if (slot >= 10 && slot <= 14) {
-            String permissionNode = "buildsystem.setstatus." + getStatusFromSlot(slot);
-            if (!player.hasPermission(permissionNode)) {
+        if (slot >= 10 && slot <= 14 || slot == 16) {
+            WorldStatus status = getStatusFromSlot(slot);
+            if (!player.hasPermission(status.getPermission())) {
                 Messages.sendMessage(player, "no_permissions");
                 event.setCancelled(true);
                 return;
             } else {
-                worldData.status().set(WorldStatus.valueOf(getStatusFromSlot(slot).toUpperCase()));
-            }
-        } else if (slot == 16) {
-            if (!player.hasPermission("buildsystem.setstatus.hidden")) {
-                Messages.sendMessage(player, "no_permissions");
-                event.setCancelled(true);
-                return;
-            } else {
-                worldData.status().set(WorldStatus.HIDDEN);
+                worldData.status().set(status);
             }
         } else {
             XSound.BLOCK_CHEST_OPEN.play(player);
@@ -160,20 +152,22 @@ public class StatusInventory implements Listener {
         playerManager.getBuildPlayer(player).setCachedWorld(null);
     }
 
-    private String getStatusFromSlot(int slot) {
+    private WorldStatus getStatusFromSlot(int slot) {
         switch (slot) {
             case 10:
-                return "not_started";
+                return WorldStatus.NOT_STARTED;
             case 11:
-                return "in_progress";
+                return WorldStatus.IN_PROGRESS;
             case 12:
-                return "almost_finished";
+                return WorldStatus.ALMOST_FINISHED;
             case 13:
-                return "finished";
+                return WorldStatus.FINISHED;
             case 14:
-                return "archive";
+                return WorldStatus.ARCHIVE;
+            case 16:
+                return WorldStatus.HIDDEN;
             default:
-                return "hidden";
+                throw new IllegalArgumentException("Slot " + slot + " does not correspond to status");
         }
     }
 }
