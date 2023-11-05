@@ -70,7 +70,7 @@ public class BackCommand implements CommandExecutor {
                     if (!completed) {
                         return;
                     }
-                    XSound.ENTITY_ZOMBIE_INFECT.parseSound();
+                    XSound.ENTITY_ZOMBIE_INFECT.play(player);
                     Messages.sendMessage(player, "back_teleported");
                     buildPlayer.setPreviousLocation(null);
                 });

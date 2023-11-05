@@ -63,7 +63,7 @@ public class EntityDamageListener implements Listener {
                     if (!completed) {
                         return;
                     }
-                    XSound.ENTITY_ZOMBIE_INFECT.parseSound();
+                    XSound.ENTITY_ZOMBIE_INFECT.play(player);
                 });
     }
 }

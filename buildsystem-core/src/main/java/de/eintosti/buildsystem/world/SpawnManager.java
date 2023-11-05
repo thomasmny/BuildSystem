@@ -51,7 +51,7 @@ public class SpawnManager {
                     if (!completed) {
                         return;
                     }
-                    XSound.ENTITY_ZOMBIE_INFECT.parseSound();
+                    XSound.ENTITY_ZOMBIE_INFECT.play(player);
                     Titles.clearTitle(player);
                 });
         return true;
