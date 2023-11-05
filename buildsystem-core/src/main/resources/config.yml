@@ -9,7 +9,6 @@ settings:
   teleport-after-creation: true
   save-from-death:
     enable: true
-    min-y-height: 0
     teleport-to-map-spawn: true
   build-mode:
     drop-items: true

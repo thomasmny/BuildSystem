@@ -7,12 +7,52 @@
  */
 package de.eintosti.buildsystem;
 
-import de.eintosti.buildsystem.command.*;
+import de.eintosti.buildsystem.command.BackCommand;
+import de.eintosti.buildsystem.command.BlocksCommand;
+import de.eintosti.buildsystem.command.BuildCommand;
+import de.eintosti.buildsystem.command.BuildSystemCommand;
+import de.eintosti.buildsystem.command.ConfigCommand;
+import de.eintosti.buildsystem.command.ExplosionsCommand;
+import de.eintosti.buildsystem.command.GamemodeCommand;
+import de.eintosti.buildsystem.command.NoAICommand;
+import de.eintosti.buildsystem.command.PhysicsCommand;
+import de.eintosti.buildsystem.command.SettingsCommand;
+import de.eintosti.buildsystem.command.SetupCommand;
+import de.eintosti.buildsystem.command.SkullCommand;
+import de.eintosti.buildsystem.command.SpawnCommand;
+import de.eintosti.buildsystem.command.SpeedCommand;
+import de.eintosti.buildsystem.command.TimeCommand;
+import de.eintosti.buildsystem.command.TopCommand;
+import de.eintosti.buildsystem.command.WorldsCommand;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.expansion.luckperms.LuckPermsExpansion;
 import de.eintosti.buildsystem.expansion.placeholderapi.PlaceholderApiExpansion;
 import de.eintosti.buildsystem.internal.CraftBukkitVersion;
-import de.eintosti.buildsystem.listener.*;
+import de.eintosti.buildsystem.listener.AsyncPlayerChatListener;
+import de.eintosti.buildsystem.listener.AsyncPlayerPreLoginListener;
+import de.eintosti.buildsystem.listener.BlockPhysicsListener;
+import de.eintosti.buildsystem.listener.BlockPlaceListener;
+import de.eintosti.buildsystem.listener.BuildModePreventationListener;
+import de.eintosti.buildsystem.listener.BuildWorldResetUnloadListener;
+import de.eintosti.buildsystem.listener.EditSessionListener;
+import de.eintosti.buildsystem.listener.EntityDamageListener;
+import de.eintosti.buildsystem.listener.EntitySpawnListener;
+import de.eintosti.buildsystem.listener.FoodLevelChangeListener;
+import de.eintosti.buildsystem.listener.InventoryCloseListener;
+import de.eintosti.buildsystem.listener.InventoryCreativeListener;
+import de.eintosti.buildsystem.listener.NavigatorListener;
+import de.eintosti.buildsystem.listener.PlayerChangedWorldListener;
+import de.eintosti.buildsystem.listener.PlayerCommandPreprocessListener;
+import de.eintosti.buildsystem.listener.PlayerInventoryClearListener;
+import de.eintosti.buildsystem.listener.PlayerJoinListener;
+import de.eintosti.buildsystem.listener.PlayerMoveListener;
+import de.eintosti.buildsystem.listener.PlayerQuitListener;
+import de.eintosti.buildsystem.listener.PlayerRespawnListener;
+import de.eintosti.buildsystem.listener.PlayerTeleportListener;
+import de.eintosti.buildsystem.listener.SettingsInteractListener;
+import de.eintosti.buildsystem.listener.SignChangeListener;
+import de.eintosti.buildsystem.listener.WeatherChangeListener;
+import de.eintosti.buildsystem.listener.WorldManipulateListener;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.navigator.inventory.ArchiveInventory;
 import de.eintosti.buildsystem.navigator.inventory.NavigatorInventory;
@@ -23,8 +63,21 @@ import de.eintosti.buildsystem.player.BlocksInventory;
 import de.eintosti.buildsystem.player.BuildPlayer;
 import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.player.PlayerManager;
-import de.eintosti.buildsystem.settings.*;
-import de.eintosti.buildsystem.tabcomplete.*;
+import de.eintosti.buildsystem.settings.DesignInventory;
+import de.eintosti.buildsystem.settings.NoClipManager;
+import de.eintosti.buildsystem.settings.Settings;
+import de.eintosti.buildsystem.settings.SettingsInventory;
+import de.eintosti.buildsystem.settings.SettingsManager;
+import de.eintosti.buildsystem.settings.SpeedInventory;
+import de.eintosti.buildsystem.tabcomplete.BuildTabComplete;
+import de.eintosti.buildsystem.tabcomplete.ConfigTabComplete;
+import de.eintosti.buildsystem.tabcomplete.EmptyTabComplete;
+import de.eintosti.buildsystem.tabcomplete.GamemodeTabComplete;
+import de.eintosti.buildsystem.tabcomplete.PhysicsTabComplete;
+import de.eintosti.buildsystem.tabcomplete.SpawnTabComplete;
+import de.eintosti.buildsystem.tabcomplete.SpeedTabComplete;
+import de.eintosti.buildsystem.tabcomplete.TimeTabComplete;
+import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
@@ -34,7 +87,12 @@ import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.SpawnManager;
 import de.eintosti.buildsystem.world.WorldManager;
 import de.eintosti.buildsystem.world.data.StatusInventory;
-import de.eintosti.buildsystem.world.modification.*;
+import de.eintosti.buildsystem.world.modification.BuilderInventory;
+import de.eintosti.buildsystem.world.modification.CreateInventory;
+import de.eintosti.buildsystem.world.modification.DeleteInventory;
+import de.eintosti.buildsystem.world.modification.EditInventory;
+import de.eintosti.buildsystem.world.modification.GameRuleInventory;
+import de.eintosti.buildsystem.world.modification.SetupInventory;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.AdvancedPie;
 import org.bstats.charts.SimplePie;
@@ -50,44 +108,43 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-
 public class BuildSystem extends JavaPlugin {
 
-    public static final int    SPIGOT_ID        = 60441;
-    public static final int    METRICS_ID       = 7427;
+    public static final int SPIGOT_ID = 60441;
+    public static final int METRICS_ID = 7427;
     public static final String ADMIN_PERMISSION = "buildsystem.admin";
 
     private CraftBukkitVersion craftBukkitVersion;
 
     private ArmorStandManager armorStandManager;
-    private InventoryUtils    inventoryUtils;
-    private NoClipManager     noClipManager;
-    private PlayerManager     playerManager;
-    private SettingsManager   settingsManager;
-    private SpawnManager      spawnManager;
-    private WorldManager      worldManager;
+    private InventoryUtils inventoryUtils;
+    private NoClipManager noClipManager;
+    private PlayerManager playerManager;
+    private SettingsManager settingsManager;
+    private SpawnManager spawnManager;
+    private WorldManager worldManager;
 
-    private ArchiveInventory   archiveInventory;
-    private BlocksInventory    blocksInventory;
-    private BuilderInventory   builderInventory;
-    private CreateInventory    createInventory;
-    private DeleteInventory    deleteInventory;
-    private DesignInventory    designInventory;
-    private EditInventory      editInventory;
-    private GameRuleInventory  gameRuleInventory;
+    private ArchiveInventory archiveInventory;
+    private BlocksInventory blocksInventory;
+    private BuilderInventory builderInventory;
+    private CreateInventory createInventory;
+    private DeleteInventory deleteInventory;
+    private DesignInventory designInventory;
+    private EditInventory editInventory;
+    private GameRuleInventory gameRuleInventory;
     private NavigatorInventory navigatorInventory;
-    private PrivateInventory   privateInventory;
-    private SettingsInventory  settingsInventory;
-    private SetupInventory     setupInventory;
-    private SpeedInventory     speedInventory;
-    private StatusInventory    statusInventory;
-    private WorldsInventory    worldsInventory;
+    private PrivateInventory privateInventory;
+    private SettingsInventory settingsInventory;
+    private SetupInventory setupInventory;
+    private SpeedInventory speedInventory;
+    private StatusInventory statusInventory;
+    private WorldsInventory worldsInventory;
 
     private ConfigValues configValues;
     private CustomBlocks customBlocks;
-    private GameRules    gameRules;
+    private GameRules gameRules;
 
-    private LuckPermsExpansion      luckPermsExpansion;
+    private LuckPermsExpansion luckPermsExpansion;
     private PlaceholderApiExpansion placeholderApiExpansion;
 
     @Override
@@ -121,16 +178,14 @@ public class BuildSystem extends JavaPlugin {
 
         Bukkit.getOnlinePlayers().forEach(pl -> {
             BuildPlayer buildPlayer = playerManager.createBuildPlayer(pl);
-            Settings    settings    = buildPlayer.getSettings();
+            Settings settings = buildPlayer.getSettings();
             settingsManager.startScoreboard(pl, settings);
             noClipManager.startNoClip(pl, settings);
         });
 
         registerStats();
 
-        Bukkit.getConsoleSender()
-            .sendMessage(
-                ChatColor.RESET + "BuildSystem » Plugin " + ChatColor.GREEN + "enabled" + ChatColor.RESET + "!");
+        Bukkit.getConsoleSender().sendMessage(ChatColor.RESET + "BuildSystem » Plugin " + ChatColor.GREEN + "enabled" + ChatColor.RESET + "!");
     }
 
     @Override
@@ -157,8 +212,8 @@ public class BuildSystem extends JavaPlugin {
         unregisterExpansions();
 
         Bukkit.getConsoleSender()
-            .sendMessage(
-                ChatColor.RESET + "BuildSystem » Plugin " + ChatColor.RED + "disabled" + ChatColor.RESET + "!");
+                .sendMessage(
+                        ChatColor.RESET + "BuildSystem » Plugin " + ChatColor.RED + "disabled" + ChatColor.RESET + "!");
     }
 
     private boolean initVersionedClasses() {
@@ -170,15 +225,12 @@ public class BuildSystem extends JavaPlugin {
         this.craftBukkitVersion = CraftBukkitVersion.matchCraftBukkitVersion(minecraftVersion);
         if (craftBukkitVersion == CraftBukkitVersion.UNKNOWN) {
             getLogger().severe("BuildSystem does not support your server version: " + minecraftVersion);
-            getLogger().severe(
-                "If you wish to enable the plugin anyway, start your server with the '-DPaper"
-                + ".ignoreWorldDataVersion=true' flag");
+            getLogger().severe("If you wish to enable the plugin anyway, start your server with the '-DPaper.ignoreWorldDataVersion=true' flag");
             getLogger().severe("Disabling plugin...");
             return false;
         }
 
-        getLogger().info(
-            String.format("Detected server version: %s (%s)", minecraftVersion, craftBukkitVersion.name()));
+        getLogger().info(String.format("Detected server version: %s (%s)", minecraftVersion, craftBukkitVersion.name()));
         this.customBlocks = craftBukkitVersion.initCustomBlocks();
         this.gameRules = craftBukkitVersion.initGameRules();
         return true;
@@ -274,14 +326,11 @@ public class BuildSystem extends JavaPlugin {
     private void registerStats() {
         Metrics metrics = new Metrics(this, METRICS_ID);
         metrics.addCustomChart(new SimplePie("archive_vanish", () -> String.valueOf(configValues.isArchiveVanish())));
-        metrics.addCustomChart(
-            new SimplePie("block_world_edit", () -> String.valueOf(configValues.isBlockWorldEditNonBuilder())));
-        metrics.addCustomChart(
-            new SimplePie("join_quit_messages", () -> String.valueOf(configValues.isJoinQuitMessages())));
+        metrics.addCustomChart(new SimplePie("block_world_edit", () -> String.valueOf(configValues.isBlockWorldEditNonBuilder())));
+        metrics.addCustomChart(new SimplePie("join_quit_messages", () -> String.valueOf(configValues.isJoinQuitMessages())));
         metrics.addCustomChart(new SimplePie("lock_weather", () -> String.valueOf(configValues.isLockWeather())));
         metrics.addCustomChart(new SimplePie("scoreboard", () -> String.valueOf(configValues.isScoreboard())));
-        metrics.addCustomChart(
-            new SimplePie("teleport_after_creation", () -> String.valueOf(configValues.isTeleportAfterCreation())));
+        metrics.addCustomChart(new SimplePie("teleport_after_creation", () -> String.valueOf(configValues.isTeleportAfterCreation())));
         metrics.addCustomChart(new SimplePie("update_checker", () -> String.valueOf(configValues.isUpdateChecker())));
         metrics.addCustomChart(new SimplePie("unload_worlds", () -> String.valueOf(configValues.isUnloadWorlds())));
         metrics.addCustomChart(new SimplePie("void_block", () -> String.valueOf(configValues.isVoidBlock())));
@@ -296,8 +345,8 @@ public class BuildSystem extends JavaPlugin {
 
             private int getPlayersWithNavigator(NavigatorType navigatorType) {
                 return (int) playerManager.getBuildPlayers().stream()
-                    .filter(buildPlayer -> buildPlayer.getSettings().getNavigatorType() == navigatorType)
-                    .count();
+                        .filter(buildPlayer -> buildPlayer.getSettings().getNavigatorType() == navigatorType)
+                        .count();
             }
         }));
     }
@@ -316,7 +365,7 @@ public class BuildSystem extends JavaPlugin {
         }
 
         if (configValues.isBlockWorldEditNonBuilder() && (pluginManager.getPlugin("FastAsyncWorldEdit") != null
-                                                          || pluginManager.getPlugin("WorldEdit") != null)) {
+                || pluginManager.getPlugin("WorldEdit") != null)) {
             new EditSessionListener(this);
         }
     }
@@ -337,41 +386,23 @@ public class BuildSystem extends JavaPlugin {
         }
 
         UpdateChecker.init(this, SPIGOT_ID).requestUpdateCheck().whenComplete((result, e) -> {
-                                                                                  if (result.requiresUpdate()) {
-                                                                                      Bukkit.getConsoleSender()
-                                                                                          .sendMessage(
-                                                                                              ChatColor.YELLOW +
-                                                                                              "[BuildSystem] Great! a"
-                                                                                              + " new update is "
-                                                                                              + "available: " + ChatColor.GREEN + "v"
-                                                                                              + result.getNewestVersion());
-                                                                                      Bukkit.getConsoleSender()
-                                                                                          .sendMessage(ChatColor.YELLOW + " ➥ Your current version: " + ChatColor.RED + this.getDescription()
-                                                                                              .getVersion());
-                                                                                      return;
-                                                                                  }
+                    if (result.requiresUpdate()) {
+                        Bukkit.getConsoleSender().sendMessage(ChatColor.YELLOW + "[BuildSystem] Great! a new update is available: " + ChatColor.GREEN + "v" + result.getNewestVersion());
+                        Bukkit.getConsoleSender().sendMessage(ChatColor.YELLOW + " ➥ Your current version: " + ChatColor.RED + this.getDescription().getVersion());
+                        return;
+                    }
 
-                                                                                  UpdateChecker.UpdateReason reason =
-                                                                                      result.getReason();
-                                                                                  switch (reason) {
-                                                                                      case COULD_NOT_CONNECT:
-                                                                                      case INVALID_JSON:
-                                                                                      case UNAUTHORIZED_QUERY:
-                                                                                      case UNKNOWN_ERROR:
-                                                                                      case UNSUPPORTED_VERSION_SCHEME:
-                                                                                          Bukkit.getConsoleSender()
-                                                                                              .sendMessage(
-                                                                                                  ChatColor.RED +
-                                                                                                  "[BuildSystem] "
-                                                                                                  + "Could not check "
-                                                                                                  + "for a new "
-                                                                                                  + "version of "
-                                                                                                  + "BuildSystem. "
-                                                                                                  + "Reason: "
-                                                                                                  + reason);
-                                                                                          break;
-                                                                                  }
-                                                                              }
+                    UpdateChecker.UpdateReason reason = result.getReason();
+                    switch (reason) {
+                        case COULD_NOT_CONNECT:
+                        case INVALID_JSON:
+                        case UNAUTHORIZED_QUERY:
+                        case UNKNOWN_ERROR:
+                        case UNSUPPORTED_VERSION_SCHEME:
+                            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[BuildSystem] Could not check  for a new version of BuildSystem. Reason: " + reason);
+                            break;
+                    }
+                }
         );
     }
 

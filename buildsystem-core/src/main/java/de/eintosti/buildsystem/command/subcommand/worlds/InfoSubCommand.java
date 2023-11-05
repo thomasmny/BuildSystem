@@ -79,22 +79,11 @@ public class InfoSubCommand implements SubCommand {
 
     private String getCustomSpawn(BuildWorld buildWorld) {
         WorldData worldData = buildWorld.getData();
-        String spawn = worldData.customSpawn().get();
+        Location spawn = worldData.getCustomSpawnLocation();
         if (spawn == null) {
             return "-";
         }
-
-        String[] spawnString = spawn.split(";");
-        Location location = new Location(
-                Bukkit.getWorld(buildWorld.getName()),
-                Double.parseDouble(spawnString[0]),
-                Double.parseDouble(spawnString[1]),
-                Double.parseDouble(spawnString[2]),
-                Float.parseFloat(spawnString[3]),
-                Float.parseFloat(spawnString[4])
-        );
-
-        return "XYZ: " + round(location.getX()) + " / " + round(location.getY()) + " / " + round(location.getZ());
+        return "XYZ: " + round(spawn.getX()) + " / " + round(spawn.getY()) + " / " + round(spawn.getZ());
     }
 
     private double round(double value) {

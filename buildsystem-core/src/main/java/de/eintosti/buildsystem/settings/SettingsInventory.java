@@ -118,7 +118,6 @@ public class SettingsInventory implements Listener {
         inventory.setItem(11, itemStack);
     }
 
-
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!inventoryUtils.checkIfValidClick(event, "settings_title")) {

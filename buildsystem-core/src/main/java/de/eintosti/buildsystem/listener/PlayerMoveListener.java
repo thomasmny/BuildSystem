@@ -21,8 +21,8 @@ import org.bukkit.event.player.PlayerMoveEvent;
 
 public class PlayerMoveListener implements Listener {
 
-    private final BuildSystem     plugin;
-    private final PlayerManager   playerManager;
+    private final BuildSystem plugin;
+    private final PlayerManager playerManager;
     private final SettingsManager settingsManager;
 
     public PlayerMoveListener(BuildSystem plugin) {
