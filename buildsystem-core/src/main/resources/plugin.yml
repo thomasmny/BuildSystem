@@ -82,7 +82,7 @@ permissions:
       - buildsystem.create.type.end
       - buildsystem.create.type.void
     default: true
-    description: Permission for creating world types 
+    description: Permission for creating world types
   buildsystem.setstatus:
     children:
       - buildsystem.setstatus.hidden
@@ -92,7 +92,7 @@ permissions:
       - buildsystem.setstatus.inprogress
       - buildsystem.setstatus.notstarted
     default: op
-    description: Permission for specific status states  
+    description: Permission for specific status states
   buildsystem.physics.message:
     description: Receive the message that physics are disabled in a world.
     default: true
