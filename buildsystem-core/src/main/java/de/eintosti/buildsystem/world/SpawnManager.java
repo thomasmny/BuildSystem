@@ -7,6 +7,7 @@
  */
 package de.eintosti.buildsystem.world;
 
+import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.Titles;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.config.SpawnConfig;
@@ -45,9 +46,14 @@ public class SpawnManager {
         }
 
         player.setFallDistance(0);
-        PaperLib.teleportAsync(player, spawn);
-        Titles.clearTitle(player);
-
+        PaperLib.teleportAsync(player, spawn)
+                .whenComplete((completed, throwable) -> {
+                    if (!completed) {
+                        return;
+                    }
+                    XSound.ENTITY_ZOMBIE_INFECT.parseSound();
+                    Titles.clearTitle(player);
+                });
         return true;
     }
 

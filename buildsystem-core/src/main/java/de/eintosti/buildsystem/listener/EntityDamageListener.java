@@ -4,6 +4,7 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.world.BuildWorld;
+import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -55,8 +56,14 @@ public class EntityDamageListener implements Listener {
             }
         }
 
-        player.teleport(teleportLoc);
-        XSound.ENTITY_CHICKEN_EGG.play(player);
         event.setCancelled(true);
+        player.setFallDistance(0);
+        PaperLib.teleportAsync(player, teleportLoc)
+                .whenComplete((completed, throwable) -> {
+                    if (!completed) {
+                        return;
+                    }
+                    XSound.ENTITY_ZOMBIE_INFECT.parseSound();
+                });
     }
 }
