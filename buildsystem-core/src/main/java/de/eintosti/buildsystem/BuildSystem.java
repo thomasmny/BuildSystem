@@ -28,7 +28,31 @@ import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.expansion.luckperms.LuckPermsExpansion;
 import de.eintosti.buildsystem.expansion.placeholderapi.PlaceholderApiExpansion;
 import de.eintosti.buildsystem.internal.CraftBukkitVersion;
-import de.eintosti.buildsystem.listener.*;
+import de.eintosti.buildsystem.listener.AsyncPlayerChatListener;
+import de.eintosti.buildsystem.listener.AsyncPlayerPreLoginListener;
+import de.eintosti.buildsystem.listener.BlockPhysicsListener;
+import de.eintosti.buildsystem.listener.BlockPlaceListener;
+import de.eintosti.buildsystem.listener.BuildModePreventationListener;
+import de.eintosti.buildsystem.listener.BuildWorldResetUnloadListener;
+import de.eintosti.buildsystem.listener.EditSessionListener;
+import de.eintosti.buildsystem.listener.EntityDamageListener;
+import de.eintosti.buildsystem.listener.EntitySpawnListener;
+import de.eintosti.buildsystem.listener.FoodLevelChangeListener;
+import de.eintosti.buildsystem.listener.InventoryCloseListener;
+import de.eintosti.buildsystem.listener.InventoryCreativeListener;
+import de.eintosti.buildsystem.listener.NavigatorListener;
+import de.eintosti.buildsystem.listener.PlayerChangedWorldListener;
+import de.eintosti.buildsystem.listener.PlayerCommandPreprocessListener;
+import de.eintosti.buildsystem.listener.PlayerInventoryClearListener;
+import de.eintosti.buildsystem.listener.PlayerJoinListener;
+import de.eintosti.buildsystem.listener.PlayerMoveListener;
+import de.eintosti.buildsystem.listener.PlayerQuitListener;
+import de.eintosti.buildsystem.listener.PlayerRespawnListener;
+import de.eintosti.buildsystem.listener.PlayerTeleportListener;
+import de.eintosti.buildsystem.listener.SettingsInteractListener;
+import de.eintosti.buildsystem.listener.SignChangeListener;
+import de.eintosti.buildsystem.listener.WeatherChangeListener;
+import de.eintosti.buildsystem.listener.WorldManipulateListener;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.navigator.inventory.ArchiveInventory;
 import de.eintosti.buildsystem.navigator.inventory.NavigatorInventory;
@@ -83,7 +107,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
-
 
 public class BuildSystem extends JavaPlugin {
 
@@ -162,7 +185,7 @@ public class BuildSystem extends JavaPlugin {
 
         registerStats();
 
-        Bukkit.getConsoleSender().sendMessage(ChatColor.RESET + "BuildSystem » Plugin " + ChatColor.GREEN + "enabled" + ChatColor.RESET + "!");
+        Bukkit.getConsoleSender().sendMessage(String.format("%sBuildSystem » Plugin %senabled%s!", ChatColor.RESET, ChatColor.GREEN, ChatColor.RESET));
     }
 
     @Override
@@ -188,7 +211,7 @@ public class BuildSystem extends JavaPlugin {
 
         unregisterExpansions();
 
-        Bukkit.getConsoleSender().sendMessage(ChatColor.RESET + "BuildSystem » Plugin " + ChatColor.RED + "disabled" + ChatColor.RESET + "!");
+        Bukkit.getConsoleSender().sendMessage(String.format("%sBuildSystem » Plugin %sdisabled%s!", ChatColor.RESET, ChatColor.RED, ChatColor.RESET));
     }
 
     private boolean initVersionedClasses() {
@@ -284,6 +307,7 @@ public class BuildSystem extends JavaPlugin {
         new InventoryCreativeListener(this);
         new NavigatorListener(this);
         new PlayerChangedWorldListener(this);
+        new EntityDamageListener(this);
         new PlayerCommandPreprocessListener(this);
         new PlayerInventoryClearListener(this);
         new PlayerJoinListener(this);

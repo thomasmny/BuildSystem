@@ -558,8 +558,10 @@ public class WorldManager {
         }
 
         Location location = bukkitWorld.getSpawnLocation().add(0.5, 0, 0.5);
-        String customSpawn = buildWorld.getData().customSpawn().get();
-        if (customSpawn == null) {
+        Location customSpawn = buildWorld.getData().getCustomSpawnLocation();
+        if (customSpawn != null) {
+            location = customSpawn;
+        } else {
             switch (buildWorld.getType()) {
                 case NETHER:
                 case END:
@@ -578,9 +580,6 @@ public class WorldManager {
                 default:
                     break;
             }
-        } else {
-            String[] spawnString = customSpawn.split(";");
-            location = new Location(bukkitWorld, Double.parseDouble(spawnString[0]), Double.parseDouble(spawnString[1]), Double.parseDouble(spawnString[2]), Float.parseFloat(spawnString[3]), Float.parseFloat(spawnString[4]));
         }
 
         Location finalLocation = location;
@@ -748,6 +747,7 @@ public class WorldManager {
             boolean privateWorld = configuration.isBoolean("worlds." + worldName + ".private") && configuration.getBoolean("worlds." + worldName + ".private");
 
             return new WorldData(
+                    worldName,
                     customSpawn, permission, project, difficulty, material, worldStatus, blockBreaking, blockInteractions,
                     blockPlacement, buildersEnabled, explosions, mobAi, physics, privateWorld, -1, -1, -1
             );
@@ -775,6 +775,7 @@ public class WorldManager {
         long lastUnloaded = configuration.getLong(path + ".last-unloaded");
 
         return new WorldData(
+                worldName,
                 customSpawn, permission, project, difficulty, material, worldStatus, blockBreaking, blockInteractions,
                 blockPlacement, buildersEnabled, explosions, mobAi, physics, privateWorld, lastEdited, lastLoaded, lastUnloaded
         );

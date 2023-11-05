@@ -63,7 +63,7 @@ public enum WorldStatus {
 
     /**
      * Gets the permission needed to change the status.
-     * 
+     *
      * @return The permission needed to change the status
      */
     public String getPermission() {

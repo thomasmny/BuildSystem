@@ -9,9 +9,12 @@ package de.eintosti.buildsystem.world.data;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.config.ConfigValues;
+import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
+import org.bukkit.Location;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,6 +45,8 @@ public class WorldData implements ConfigurationSerializable {
     private final Type<Long> lastLoaded = register("last-loaded");
     private final Type<Long> lastUnloaded = register("last-unloaded");
 
+    private String worldName;
+
     public <T> Type<T> register(@NotNull String key) {
         return register(key, new Type<>());
     }
@@ -51,9 +56,9 @@ public class WorldData implements ConfigurationSerializable {
         return type;
     }
 
-    public WorldData(String name, ConfigValues configValues, boolean privateWorld) {
+    public WorldData(String worldName, ConfigValues configValues, boolean privateWorld) {
         this.customSpawn.set(null);
-        this.permission.set(configValues.getDefaultPermission(privateWorld).replace("%world%", name));
+        this.permission.set(configValues.getDefaultPermission(privateWorld).replace("%world%", worldName));
         this.project.set("-");
 
         this.difficulty.set(configValues.getWorldDifficulty());
@@ -71,9 +76,30 @@ public class WorldData implements ConfigurationSerializable {
         this.lastEdited.set((long) -1);
         this.lastLoaded.set((long) -1);
         this.lastUnloaded.set((long) -1);
+
+        this.worldName = worldName;
     }
 
-    public WorldData(String customSpawn, String permission, String project, Difficulty difficulty, XMaterial material, WorldStatus worldStatus, boolean blockBreaking, boolean blockInteractions, boolean blockPlacement, boolean buildersEnabled, boolean explosions, boolean mobAi, boolean physics, boolean privateWorld, long lastLoaded, long lastUnloaded, long lastEdited) {
+    public WorldData(
+            String worldName,
+            String customSpawn,
+            String permission,
+            String project,
+            Difficulty difficulty,
+            XMaterial material,
+            WorldStatus worldStatus,
+            boolean blockBreaking,
+            boolean blockInteractions,
+            boolean blockPlacement,
+            boolean buildersEnabled,
+            boolean explosions,
+            boolean mobAi,
+            boolean physics,
+            boolean privateWorld,
+            long lastLoaded,
+            long lastUnloaded,
+            long lastEdited
+    ) {
         this.customSpawn.set(customSpawn);
         this.permission.set(permission);
         this.project.set(project);
@@ -94,10 +120,30 @@ public class WorldData implements ConfigurationSerializable {
         this.lastEdited.set(lastEdited);
         this.lastLoaded.set(lastLoaded);
         this.lastUnloaded.set(lastUnloaded);
+
+        this.worldName = worldName;
     }
 
     public Type<String> customSpawn() {
         return customSpawn;
+    }
+
+    @Nullable
+    public Location getCustomSpawnLocation() {
+        String customSpawn = customSpawn().get();
+        if (customSpawn == null) {
+            return null;
+        }
+
+        String[] spawnString = customSpawn.split(";");
+        return new Location(
+                Bukkit.getWorld(worldName),
+                Double.parseDouble(spawnString[0]),
+                Double.parseDouble(spawnString[1]),
+                Double.parseDouble(spawnString[2]),
+                Float.parseFloat(spawnString[3]),
+                Float.parseFloat(spawnString[4])
+        );
     }
 
     public Type<String> permission() {
@@ -162,6 +208,10 @@ public class WorldData implements ConfigurationSerializable {
 
     public Type<Long> lastUnloaded() {
         return lastUnloaded;
+    }
+
+    public void setWorldName(String worldName) {
+        this.worldName = worldName;
     }
 
     @Override

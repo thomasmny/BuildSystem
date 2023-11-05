@@ -171,6 +171,7 @@ public class BuildWorld implements ConfigurationSerializable {
      */
     public void setName(String name) {
         this.name = name;
+        this.worldData.setWorldName(name);
     }
 
     /**

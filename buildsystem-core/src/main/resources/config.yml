@@ -7,6 +7,9 @@ settings:
   scoreboard: true
   archive-vanish: true
   teleport-after-creation: true
+  save-from-death:
+    enable: true
+    teleport-to-map-spawn: true
   build-mode:
     drop-items: true
     move-items: true

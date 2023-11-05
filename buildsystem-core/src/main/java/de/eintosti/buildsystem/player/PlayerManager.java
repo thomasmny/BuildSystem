@@ -247,7 +247,6 @@ public class PlayerManager {
         }
     }
 
-
     public void closeNavigator(Player player) {
         if (!openNavigator.contains(player)) {
             return;
