@@ -57,5 +57,6 @@ public class EntityDamageListener implements Listener {
 
         player.teleport(teleportLoc);
         XSound.ENTITY_CHICKEN_EGG.play(player);
+        event.setCancelled(true);
     }
 }
