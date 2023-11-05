@@ -102,6 +102,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.checkerframework.checker.units.qual.C;
 
 import java.io.File;
 import java.util.HashMap;
@@ -185,7 +186,7 @@ public class BuildSystem extends JavaPlugin {
 
         registerStats();
 
-        Bukkit.getConsoleSender().sendMessage(ChatColor.RESET + "BuildSystem » Plugin " + ChatColor.GREEN + "enabled" + ChatColor.RESET + "!");
+        Bukkit.getConsoleSender().sendMessage(String.format("%sBuildSystem » Plugin %senabled%s!", ChatColor.RESET, ChatColor.GREEN, ChatColor.RESET));
     }
 
     @Override
@@ -211,9 +212,7 @@ public class BuildSystem extends JavaPlugin {
 
         unregisterExpansions();
 
-        Bukkit.getConsoleSender()
-                .sendMessage(
-                        ChatColor.RESET + "BuildSystem » Plugin " + ChatColor.RED + "disabled" + ChatColor.RESET + "!");
+        Bukkit.getConsoleSender().sendMessage(String.format("%sBuildSystem » Plugin %sdisabled%s!", ChatColor.RESET, ChatColor.RED, ChatColor.RESET));
     }
 
     private boolean initVersionedClasses() {
@@ -364,8 +363,7 @@ public class BuildSystem extends JavaPlugin {
             this.luckPermsExpansion.registerAll();
         }
 
-        if (configValues.isBlockWorldEditNonBuilder() && (pluginManager.getPlugin("FastAsyncWorldEdit") != null
-                || pluginManager.getPlugin("WorldEdit") != null)) {
+        if (configValues.isBlockWorldEditNonBuilder() && (pluginManager.getPlugin("FastAsyncWorldEdit") != null || pluginManager.getPlugin("WorldEdit") != null)) {
             new EditSessionListener(this);
         }
     }
@@ -399,7 +397,7 @@ public class BuildSystem extends JavaPlugin {
                         case UNAUTHORIZED_QUERY:
                         case UNKNOWN_ERROR:
                         case UNSUPPORTED_VERSION_SCHEME:
-                            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[BuildSystem] Could not check  for a new version of BuildSystem. Reason: " + reason);
+                            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[BuildSystem] Could not check for a new version of BuildSystem. Reason: " + reason);
                             break;
                     }
                 }
