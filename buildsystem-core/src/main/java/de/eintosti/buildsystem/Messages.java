@@ -15,6 +15,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -910,7 +911,7 @@ public class Messages {
      * @return The message uniquely identified by the given key
      */
     @SafeVarargs
-    public static String getString(String key, Player player, Map.Entry<String, Object>... placeholders) {
+    public static String getString(String key, @Nullable Player player, Map.Entry<String, Object>... placeholders) {
         checkIfKeyPresent(key);
 
         String message = MESSAGES.get(key).replace("%prefix%", getPrefix());
@@ -932,7 +933,7 @@ public class Messages {
      * @return A list of messages using the given key
      */
     @SafeVarargs
-    public static List<String> getStringList(String key, Player player, Map.Entry<String, Object>... placeholders) {
+    public static List<String> getStringList(String key, @Nullable Player player, Map.Entry<String, Object>... placeholders) {
         return getStringList(key, player, (line) -> placeholders);
     }
 
@@ -944,11 +945,11 @@ public class Messages {
      * @param placeholders The function which gets the placeholders to be injected into a given line
      * @return A list of messages using the given key
      */
-    public static List<String> getStringList(String key, Player player, Function<String, Map.Entry<String, Object>[]> placeholders) {
+    public static List<String> getStringList(String key, @Nullable Player player, Function<String, Map.Entry<String, Object>[]> placeholders) {
         String message = MESSAGES.get(key).replace("%prefix%", getPrefix());
         return Arrays.stream(message.split("\n"))
                 .map(line -> replacePlaceholders(line, placeholders.apply(line)))
-                .map(line -> PLACEHOLDER_API_ENABLED ? PlaceholderAPI.setPlaceholders(player, line) : line)
+                .map(line -> PLACEHOLDER_API_ENABLED && player != null ? PlaceholderAPI.setPlaceholders(player, line) : line)
                 .map(ColorAPI::process)
                 .collect(Collectors.toList());
     }
