@@ -7,7 +7,7 @@
  */
 package de.eintosti.buildsystem;
 
-import de.eintosti.buildsystem.util.RGBUtils;
+import de.eintosti.buildsystem.color.IlleniumColorAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -20,11 +20,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -909,7 +905,7 @@ public class Messages {
 
         String message = MESSAGES.get(key).replace("%prefix%", getPrefix());
         String injectedPlaceholders = replacePlaceholders(message, placeholders);
-        return ChatColor.translateAlternateColorCodes('&', RGBUtils.color(injectedPlaceholders));
+        return IlleniumColorAPI.process(injectedPlaceholders);
     }
 
     /**
@@ -935,7 +931,7 @@ public class Messages {
         String message = MESSAGES.get(key).replace("%prefix%", getPrefix());
         return Arrays.stream(message.split("\n"))
                 .map(line -> replacePlaceholders(line, placeholders.apply(line)))
-                .map(line -> ChatColor.translateAlternateColorCodes('&', RGBUtils.color(line)))
+                .map(IlleniumColorAPI::process)
                 .collect(Collectors.toList());
     }
 
