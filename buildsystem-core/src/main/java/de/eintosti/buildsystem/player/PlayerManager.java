@@ -233,12 +233,12 @@ public class PlayerManager {
             return;
         }
 
-        PlayerInventory playerInventory = player.getInventory();
-        if (plugin.getInventoryUtil().inventoryContainsNavigator(playerInventory)) {
+        if (plugin.getInventoryUtil().inventoryContainsNavigator(player)) {
             return;
         }
 
-        ItemStack itemStack = plugin.getInventoryUtil().getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item"));
+        ItemStack itemStack = plugin.getInventoryUtil().getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item", player));
+        PlayerInventory playerInventory = player.getInventory();
         ItemStack slot8 = playerInventory.getItem(8);
         if (slot8 == null || slot8.getType() == XMaterial.AIR.parseMaterial()) {
             playerInventory.setItem(8, itemStack);
@@ -275,8 +275,8 @@ public class PlayerManager {
         }
 
         InventoryUtils inventoryUtils = plugin.getInventoryUtil();
-        String findItemName = Messages.getString("barrier_item");
-        ItemStack replaceItem = inventoryUtils.getItemStack(plugin.getConfigValues().getNavigatorItem(), Messages.getString("navigator_item"));
+        String findItemName = Messages.getString("barrier_item", player);
+        ItemStack replaceItem = inventoryUtils.getItemStack(plugin.getConfigValues().getNavigatorItem(), Messages.getString("navigator_item", player));
 
         inventoryUtils.replaceItem(player, findItemName, XMaterial.BARRIER, replaceItem);
     }
@@ -371,7 +371,7 @@ public class PlayerManager {
                 break;
         }
 
-        ActionBar.sendActionBar(player, Messages.getString(message));
+        ActionBar.sendActionBar(player, Messages.getString(message, player));
         XSound.ENTITY_CHICKEN_EGG.play(player);
     }
 

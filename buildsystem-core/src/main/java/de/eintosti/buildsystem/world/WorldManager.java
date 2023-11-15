@@ -371,7 +371,7 @@ public class WorldManager {
 
     /**
      * Delete an existing {@link BuildWorld}.
-     * In comparison to {@link #unimportWorld(BuildWorld, boolean)}, deleting a world deletes the world's directory.
+     * In comparison to {@link #unimportWorld(Player, BuildWorld, boolean)}, deleting a world deletes the world's directory.
      *
      * @param player     The player who issued the deletion
      * @param buildWorld The world to be deleted
@@ -390,9 +390,9 @@ public class WorldManager {
         }
 
         Messages.sendMessage(player, "worlds_delete_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
-        removePlayersFromWorld(worldName, Messages.getString("worlds_delete_players_world"));
+        removePlayersFromWorld(worldName, Messages.getString("worlds_delete_players_world", player));
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            unimportWorld(buildWorld, false);
+            unimportWorld(player, buildWorld, false);
             FileUtils.deleteDirectory(deleteFolder);
             Messages.sendMessage(player, "worlds_delete_finished");
         }, 20L);
@@ -402,13 +402,14 @@ public class WorldManager {
      * Unimport an existing {@link BuildWorld}.
      * In comparison to {@link #deleteWorld(Player, BuildWorld)}, unimporting a world does not delete the world's directory.
      *
+     * @param player     The player unloading the world
      * @param buildWorld The build world object
      * @param save       Should the world be saved before unimporting
      */
-    public void unimportWorld(BuildWorld buildWorld, boolean save) {
+    public void unimportWorld(Player player, BuildWorld buildWorld, boolean save) {
         buildWorld.forceUnload(save);
         this.buildWorlds.remove(buildWorld.getName());
-        removePlayersFromWorld(buildWorld.getName(), Messages.getString("worlds_unimport_players_world"));
+        removePlayersFromWorld(buildWorld.getName(), Messages.getString("worlds_unimport_players_world", player));
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             this.worldConfig.getFile().set("worlds." + buildWorld.getName(), null);
             this.worldConfig.saveFile();
@@ -497,7 +498,7 @@ public class WorldManager {
             return;
         }
 
-        List<Player> removedPlayers = removePlayersFromWorld(oldName, Messages.getString("worlds_rename_players_world"));
+        List<Player> removedPlayers = removePlayersFromWorld(oldName, Messages.getString("worlds_rename_players_world", player));
         for (Chunk chunk : oldWorld.getLoadedChunks()) {
             chunk.unload(true);
         }

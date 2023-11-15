@@ -52,7 +52,7 @@ public class EditSubCommand implements SubCommand {
             plugin.getEditInventory().openInventory(player, buildWorld);
         } else {
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-            Titles.sendTitle(player, 5, 70, 20, " ", Messages.getString("world_not_loaded"));
+            Titles.sendTitle(player, 5, 70, 20, " ", Messages.getString("world_not_loaded", player));
         }
     }
 

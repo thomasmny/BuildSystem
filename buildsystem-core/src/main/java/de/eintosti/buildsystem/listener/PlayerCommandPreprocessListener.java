@@ -234,7 +234,7 @@ public class PlayerCommandPreprocessListener implements Listener {
         Player player = event.getPlayer();
 
         if (command.equalsIgnoreCase("/clear")) {
-            ItemStack navigatorItem = inventoryUtils.getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item"));
+            ItemStack navigatorItem = inventoryUtils.getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item", player));
             if (!player.getInventory().contains(navigatorItem)) {
                 return;
             }

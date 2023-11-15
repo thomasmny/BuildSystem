@@ -27,8 +27,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import java.util.List;
-
 public class SettingsInventory implements Listener {
 
     private final BuildSystem plugin;
@@ -47,25 +45,24 @@ public class SettingsInventory implements Listener {
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 45, Messages.getString("settings_title"));
+        Inventory inventory = Bukkit.createInventory(null, 45, Messages.getString("settings_title", player));
         fillGuiWithGlass(player, inventory);
 
         Settings settings = settingsManager.getSettings(player);
         addDesignItem(inventory, player);
         addClearInventoryItem(inventory, player);
-        addSettingsItem(inventory, 13, XMaterial.DIAMOND_AXE, settings.isDisableInteract(), Messages.getString("settings_disableinteract_item"), Messages.getStringList("settings_disableinteract_lore"));
-        addSettingsItem(inventory, 14, XMaterial.ENDER_EYE, settings.isHidePlayers(), Messages.getString("settings_hideplayers_item"), Messages.getStringList("settings_hideplayers_lore"));
-        addSettingsItem(inventory, 15, XMaterial.OAK_SIGN, settings.isInstantPlaceSigns(), Messages.getString("settings_instantplacesigns_item"), Messages.getStringList("settings_instantplacesigns_lore"));
-        addSettingsItem(inventory, 20, XMaterial.SLIME_BLOCK, settings.isKeepNavigator(), Messages.getString("settings_keep_navigator_item"), Messages.getStringList("settings_keep_navigator_lore"));
-        addSettingsItem(inventory, 21, configValues.getNavigatorItem(), settings.getNavigatorType().equals(NavigatorType.NEW), Messages.getString("settings_new_navigator_item"), Messages.getStringList("settings_new_navigator_lore"));
-        addSettingsItem(inventory, 22, XMaterial.GOLDEN_CARROT, settings.isNightVision(), Messages.getString("settings_nightvision_item"), Messages.getStringList("settings_nightvision_lore"));
-        addSettingsItem(inventory, 23, XMaterial.BRICKS, settings.isNoClip(), Messages.getString("settings_no_clip_item"), Messages.getStringList("settings_no_clip_lore"));
-        addSettingsItem(inventory, 24, XMaterial.IRON_TRAPDOOR, settings.isTrapDoor(), Messages.getString("settings_open_trapdoors_item"), Messages.getStringList("settings_open_trapdoors_lore"));
-        addSettingsItem(inventory, 29, XMaterial.FERN, settings.isPlacePlants(), Messages.getString("settings_placeplants_item"), Messages.getStringList("settings_placeplants_lore"));
-        addSettingsItem(inventory, 30, XMaterial.PAPER, settings.isScoreboard(), configValues.isScoreboard() ? Messages.getString("settings_scoreboard_item") : Messages.getString("settings_scoreboard_disabled_item"),
-                configValues.isScoreboard() ? Messages.getStringList("settings_scoreboard_lore") : Messages.getStringList("settings_scoreboard_disabled_lore"));
-        addSettingsItem(inventory, 31, getSlabBreakingMaterial(), settings.isSlabBreaking(), Messages.getString("settings_slab_breaking_item"), Messages.getStringList("settings_slab_breaking_lore"));
-        addSettingsItem(inventory, 32, XMaterial.MAGMA_CREAM, settings.isSpawnTeleport(), Messages.getString("settings_spawnteleport_item"), Messages.getStringList("settings_spawnteleport_lore"));
+        addSettingsItem(player, inventory, 13, XMaterial.DIAMOND_AXE, settings.isDisableInteract(), "settings_disableinteract_item", "settings_disableinteract_lore");
+        addSettingsItem(player, inventory, 14, XMaterial.ENDER_EYE, settings.isHidePlayers(), "settings_hideplayers_item", "settings_hideplayers_lore");
+        addSettingsItem(player, inventory, 15, XMaterial.OAK_SIGN, settings.isInstantPlaceSigns(), "settings_instantplacesigns_item", "settings_instantplacesigns_lore");
+        addSettingsItem(player, inventory, 20, XMaterial.SLIME_BLOCK, settings.isKeepNavigator(), "settings_keep_navigator_item", "settings_keep_navigator_lore");
+        addSettingsItem(player, inventory, 21, configValues.getNavigatorItem(), settings.getNavigatorType() == NavigatorType.NEW, "settings_new_navigator_item", "settings_new_navigator_lore");
+        addSettingsItem(player, inventory, 22, XMaterial.GOLDEN_CARROT, settings.isNightVision(), "settings_nightvision_item", "settings_nightvision_lore");
+        addSettingsItem(player, inventory, 23, XMaterial.BRICKS, settings.isNoClip(), "settings_no_clip_item", "settings_no_clip_lore");
+        addSettingsItem(player, inventory, 24, XMaterial.IRON_TRAPDOOR, settings.isTrapDoor(), "settings_open_trapdoors_item", "settings_open_trapdoors_lore");
+        addSettingsItem(player, inventory, 29, XMaterial.FERN, settings.isPlacePlants(), "settings_placeplants_item", "settings_placeplants_lore");
+        addSettingsItem(player, inventory, 30, XMaterial.PAPER, settings.isScoreboard(), configValues.isScoreboard() ? "settings_scoreboard_item" : "settings_scoreboard_disabled_item", configValues.isScoreboard() ? "settings_scoreboard_lore" : "settings_scoreboard_disabled_lore");
+        addSettingsItem(player, inventory, 31, getSlabBreakingMaterial(), settings.isSlabBreaking(), "settings_slab_breaking_item", "settings_slab_breaking_lore");
+        addSettingsItem(player, inventory, 32, XMaterial.MAGMA_CREAM, settings.isSpawnTeleport(), "settings_spawnteleport_item", "settings_spawnteleport_lore");
 
         return inventory;
     }
@@ -84,12 +81,12 @@ public class SettingsInventory implements Listener {
         }
     }
 
-    private void addSettingsItem(Inventory inventory, int position, XMaterial material, boolean enabled, String displayName, List<String> lore) {
+    private void addSettingsItem(Player player, Inventory inventory, int position, XMaterial material, boolean enabled, String displayNameKey, String loreKey) {
         ItemStack itemStack = material.parseItem();
         ItemMeta itemMeta = itemStack.getItemMeta();
 
-        itemMeta.setDisplayName(displayName);
-        itemMeta.setLore(lore);
+        itemMeta.setDisplayName(Messages.getString(displayNameKey, player));
+        itemMeta.setLore(Messages.getStringList(loreKey, player));
         itemMeta.addItemFlags(ItemFlag.values());
         itemStack.setItemMeta(itemMeta);
 
@@ -103,15 +100,17 @@ public class SettingsInventory implements Listener {
     private void addClearInventoryItem(Inventory inventory, Player player) {
         Settings settings = settingsManager.getSettings(player);
         XMaterial xMaterial = settings.isClearInventory() ? XMaterial.MINECART : XMaterial.CHEST_MINECART;
-        addSettingsItem(inventory, 12, xMaterial, settings.isClearInventory(), Messages.getString("settings_clear_inventory_item"), Messages.getStringList("settings_clear_inventory_lore"));
+        addSettingsItem(player, inventory, 12, xMaterial, settings.isClearInventory(),
+                "settings_clear_inventory_item", "settings_clear_inventory_lore"
+        );
     }
 
     private void addDesignItem(Inventory inventory, Player player) {
-        ItemStack itemStack = inventoryUtils.getItemStack(inventoryUtils.getColouredGlass(plugin, player), Messages.getString("settings_change_design_item"));
+        ItemStack itemStack = inventoryUtils.getItemStack(inventoryUtils.getColouredGlass(plugin, player), Messages.getString("settings_change_design_item", player));
         ItemMeta itemMeta = itemStack.getItemMeta();
 
         itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        itemMeta.setLore(Messages.getStringList("settings_change_design_lore"));
+        itemMeta.setLore(Messages.getStringList("settings_change_design_lore", player));
         itemStack.setItemMeta(itemMeta);
         itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
 

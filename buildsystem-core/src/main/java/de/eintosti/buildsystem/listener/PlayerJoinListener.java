@@ -58,8 +58,10 @@ public class PlayerJoinListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void sendPlayerJoinMessage(PlayerJoinEvent event) {
-        boolean isJoinMessage = plugin.getConfigValues().isJoinQuitMessages();
-        String message = isJoinMessage ? Messages.getString("player_join", new AbstractMap.SimpleEntry<>("%player%", event.getPlayer().getName())) : null;
+        Player player = event.getPlayer();
+        String message = plugin.getConfigValues().isJoinQuitMessages()
+                ? Messages.getString("player_join", player, new AbstractMap.SimpleEntry<>("%player%", player.getName()))
+                : null;
         event.setJoinMessage(message);
     }
 
@@ -172,7 +174,7 @@ public class PlayerJoinListener implements Listener {
                 .whenComplete((result, e) -> {
                     if (result.requiresUpdate()) {
                         StringBuilder stringBuilder = new StringBuilder();
-                        Messages.getStringList("update_available").forEach(line ->
+                        Messages.getStringList("update_available", player).forEach(line ->
                                 stringBuilder.append(line
                                                 .replace("%new_version%", result.getNewestVersion())
                                                 .replace("%current_version%", plugin.getDescription().getVersion()))

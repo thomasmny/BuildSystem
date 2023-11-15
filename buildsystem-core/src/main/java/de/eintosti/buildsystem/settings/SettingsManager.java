@@ -84,7 +84,7 @@ public class SettingsManager {
             return;
         }
 
-        board.updateTitle(Messages.getString("title"));
+        board.updateTitle(Messages.getString("title", player));
         BukkitTask scoreboardTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> updateScoreboard(player, board), 0L, 20L);
         settings.setScoreboardTask(scoreboardTask);
     }
@@ -108,7 +108,7 @@ public class SettingsManager {
     }
 
     private void updateScoreboard(Player player, FastBoard board) {
-        List<String> body = Messages.getStringList("body", (line) -> getPlaceholders(line, player));
+        List<String> body = Messages.getStringList("body", player, (line) -> getPlaceholders(line, player));
 
         // Scoreboard line cannot be longer than 30 chars in versions <1.13
         if (MinecraftVersion.getCurrent().isLowerThan(MinecraftVersion.AQUATIC_13)) {
@@ -129,19 +129,19 @@ public class SettingsManager {
 
         return new Map.Entry[]{
                 new AbstractMap.SimpleEntry<>("%world%", worldName),
-                new AbstractMap.SimpleEntry<>("%status%", parseWorldInformation(buildWorld, "%status%")),
-                new AbstractMap.SimpleEntry<>("%permission%", parseWorldInformation(buildWorld, "%permission%")),
-                new AbstractMap.SimpleEntry<>("%project%", parseWorldInformation(buildWorld, "%project%")),
-                new AbstractMap.SimpleEntry<>("%creator%", parseWorldInformation(buildWorld, "%creator%")),
-                new AbstractMap.SimpleEntry<>("%creation%", parseWorldInformation(buildWorld, "%creation%")),
-                new AbstractMap.SimpleEntry<>("%lastedited%", parseWorldInformation(buildWorld, "%lastedited%")),
-                new AbstractMap.SimpleEntry<>("%lastloaded%", parseWorldInformation(buildWorld, "%lastloaded%")),
-                new AbstractMap.SimpleEntry<>("%lastunloaded%", parseWorldInformation(buildWorld, "%lastunloaded%"))
+                new AbstractMap.SimpleEntry<>("%status%", parseWorldInformation(player, buildWorld, "%status%")),
+                new AbstractMap.SimpleEntry<>("%permission%", parseWorldInformation(player, buildWorld, "%permission%")),
+                new AbstractMap.SimpleEntry<>("%project%", parseWorldInformation(player, buildWorld, "%project%")),
+                new AbstractMap.SimpleEntry<>("%creator%", parseWorldInformation(player, buildWorld, "%creator%")),
+                new AbstractMap.SimpleEntry<>("%creation%", parseWorldInformation(player, buildWorld, "%creation%")),
+                new AbstractMap.SimpleEntry<>("%lastedited%", parseWorldInformation(player, buildWorld, "%lastedited%")),
+                new AbstractMap.SimpleEntry<>("%lastloaded%", parseWorldInformation(player, buildWorld, "%lastloaded%")),
+                new AbstractMap.SimpleEntry<>("%lastunloaded%", parseWorldInformation(player, buildWorld, "%lastunloaded%"))
         };
     }
 
     // Is there an easier way of doing this?
-    private String parseWorldInformation(BuildWorld buildWorld, String input) {
+    private String parseWorldInformation(Player player, BuildWorld buildWorld, String input) {
         if (buildWorld == null) {
             return "§f-";
         }
@@ -149,7 +149,7 @@ public class SettingsManager {
         WorldData worldData = buildWorld.getData();
         switch (input) {
             case "%status%":
-                return worldData.status().get().getName();
+                return worldData.status().get().getName(player);
             case "%permission%":
                 return worldData.permission().get();
             case "%project%":

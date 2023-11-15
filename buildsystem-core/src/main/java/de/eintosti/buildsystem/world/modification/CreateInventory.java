@@ -50,23 +50,23 @@ public class CreateInventory extends PaginatedInventory implements Listener {
     }
 
     private Inventory getInventory(Player player, Page page) {
-        Inventory inventory = Bukkit.createInventory(null, 45, Messages.getString("create_title"));
+        Inventory inventory = Bukkit.createInventory(null, 45, Messages.getString("create_title", player));
         fillGuiWithGlass(player, inventory, page);
 
-        addPageItem(inventory, page, Page.PREDEFINED, inventoryUtils.getUrlSkull(Messages.getString("create_predefined_worlds"), "2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78"));
-        addPageItem(inventory, page, Page.GENERATOR, inventoryUtils.getUrlSkull(Messages.getString("create_generators"), "b2f79016cad84d1ae21609c4813782598e387961be13c15682752f126dce7a"));
-        addPageItem(inventory, page, Page.TEMPLATES, inventoryUtils.getUrlSkull(Messages.getString("create_templates"), "d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c"));
+        addPageItem(inventory, page, Page.PREDEFINED, inventoryUtils.getUrlSkull(Messages.getString("create_predefined_worlds", player), "2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78"));
+        addPageItem(inventory, page, Page.GENERATOR, inventoryUtils.getUrlSkull(Messages.getString("create_generators", player), "b2f79016cad84d1ae21609c4813782598e387961be13c15682752f126dce7a"));
+        addPageItem(inventory, page, Page.TEMPLATES, inventoryUtils.getUrlSkull(Messages.getString("create_templates", player), "d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c"));
 
         switch (page) {
             case PREDEFINED:
-                addPredefinedWorldItem(player, inventory, 29, WorldType.NORMAL, Messages.getString("create_normal_world"));
-                addPredefinedWorldItem(player, inventory, 30, WorldType.FLAT, Messages.getString("create_flat_world"));
-                addPredefinedWorldItem(player, inventory, 31, WorldType.NETHER, Messages.getString("create_nether_world"));
-                addPredefinedWorldItem(player, inventory, 32, WorldType.END, Messages.getString("create_end_world"));
-                addPredefinedWorldItem(player, inventory, 33, WorldType.VOID, Messages.getString("create_void_world"));
+                addPredefinedWorldItem(player, inventory, 29, WorldType.NORMAL, Messages.getString("create_normal_world", player));
+                addPredefinedWorldItem(player, inventory, 30, WorldType.FLAT, Messages.getString("create_flat_world", player));
+                addPredefinedWorldItem(player, inventory, 31, WorldType.NETHER, Messages.getString("create_nether_world", player));
+                addPredefinedWorldItem(player, inventory, 32, WorldType.END, Messages.getString("create_end_world", player));
+                addPredefinedWorldItem(player, inventory, 33, WorldType.VOID, Messages.getString("create_void_world", player));
                 break;
             case GENERATOR:
-                inventoryUtils.addUrlSkull(inventory, 31, Messages.getString("create_generators_create_world"), "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
+                inventoryUtils.addUrlSkull(inventory, 31, Messages.getString("create_generators_create_world", player), "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
                 break;
             case TEMPLATES:
                 // Template stuff is done during inventory open
@@ -121,7 +121,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         inventories[index] = inventory;
         if (numTemplates == 0) {
             for (int i = 29; i <= 33; i++) {
-                inventoryUtils.addItemStack(inventory, i, XMaterial.BARRIER, Messages.getString("create_no_templates"));
+                inventoryUtils.addItemStack(inventory, i, XMaterial.BARRIER, Messages.getString("create_no_templates", player));
             }
             return;
         }
@@ -131,7 +131,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         }
 
         for (File templateFile : templateFiles) {
-            inventoryUtils.addItemStack(inventory, columnTemplate++, XMaterial.FILLED_MAP, Messages.getString("create_template", new AbstractMap.SimpleEntry<>("%template%", templateFile.getName())));
+            inventoryUtils.addItemStack(inventory, columnTemplate++, XMaterial.FILLED_MAP, Messages.getString("create_template", player, new AbstractMap.SimpleEntry<>("%template%", templateFile.getName())));
             if (columnTemplate > maxColumnTemplate) {
                 columnTemplate = 29;
                 inventory = getInventory(player, page);
@@ -156,8 +156,8 @@ public class CreateInventory extends PaginatedInventory implements Listener {
                 inventoryUtils.addGlassPane(plugin, player, inventory, 33);
                 break;
             case TEMPLATES:
-                inventoryUtils.addUrlSkull(inventory, 38, Messages.getString("gui_previous_page"), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
-                inventoryUtils.addUrlSkull(inventory, 42, Messages.getString("gui_next_page"), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
+                inventoryUtils.addUrlSkull(inventory, 38, Messages.getString("gui_previous_page", player), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
+                inventoryUtils.addUrlSkull(inventory, 42, Messages.getString("gui_next_page", player), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
                 break;
         }
     }

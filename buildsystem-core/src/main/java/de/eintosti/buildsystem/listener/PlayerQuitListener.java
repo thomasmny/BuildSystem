@@ -39,8 +39,10 @@ public class PlayerQuitListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void sendPlayerQuitMessage(PlayerQuitEvent event) {
-        boolean isQuitMessage = plugin.getConfigValues().isJoinQuitMessages();
-        String message = isQuitMessage ? Messages.getString("player_quit", new AbstractMap.SimpleEntry<>("%player%", event.getPlayer().getName())) : null;
+        Player player = event.getPlayer();
+        String message = plugin.getConfigValues().isJoinQuitMessages()
+                ? Messages.getString("player_quit", player, new AbstractMap.SimpleEntry<>("%player%", player.getName()))
+                : null;
         event.setQuitMessage(message);
     }
 

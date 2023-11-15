@@ -33,7 +33,7 @@ public class SkullCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player"));
+            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
             return true;
         }
 
@@ -51,7 +51,7 @@ public class SkullCommand implements CommandExecutor {
             case 1:
                 String skullName = args[0];
                 if (skullName.length() > 16) {
-                    ItemStack customSkull = inventoryUtils.getUrlSkull(Messages.getString("custom_skull_item"), skullName);
+                    ItemStack customSkull = inventoryUtils.getUrlSkull(Messages.getString("custom_skull_item", player), skullName);
                     player.getInventory().addItem(customSkull);
                     Messages.sendMessage(player, "skull_custom_received");
                 } else {

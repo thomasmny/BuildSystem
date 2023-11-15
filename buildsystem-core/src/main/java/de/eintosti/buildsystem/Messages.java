@@ -8,10 +8,12 @@
 package de.eintosti.buildsystem;
 
 import de.eintosti.buildsystem.util.color.ColorAPI;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -31,6 +33,8 @@ import java.util.stream.Collectors;
 public class Messages {
 
     private static final Map<String, String> MESSAGES = new HashMap<>();
+    private static final boolean PLACEHOLDER_API_ENABLED = Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null;
+
     private static YamlConfiguration config;
 
     public static void createMessageFile() {
@@ -890,7 +894,8 @@ public class Messages {
 
     @SafeVarargs
     public static void sendMessage(CommandSender sender, String key, Map.Entry<String, Object>... placeholders) {
-        String message = getString(key, placeholders);
+        Player player = sender instanceof Player ? (Player) sender : null;
+        String message = getString(key, player, placeholders);
         if (!message.isEmpty()) {
             sender.sendMessage(message);
         }
@@ -900,15 +905,21 @@ public class Messages {
      * Gets a message using the given key.
      *
      * @param key          The key of the message
+     * @param player       The player to parse the placeholders against
      * @param placeholders The placeholders which are to be injected
      * @return The message uniquely identified by the given key
      */
     @SafeVarargs
-    public static String getString(String key, Map.Entry<String, Object>... placeholders) {
+    public static String getString(String key, Player player, Map.Entry<String, Object>... placeholders) {
         checkIfKeyPresent(key);
 
         String message = MESSAGES.get(key).replace("%prefix%", getPrefix());
         String injectedPlaceholders = replacePlaceholders(message, placeholders);
+
+        if (PLACEHOLDER_API_ENABLED && player != null) { // Player is null if message is sent to console
+            injectedPlaceholders = PlaceholderAPI.setPlaceholders(player, injectedPlaceholders);
+        }
+
         return ColorAPI.process(injectedPlaceholders);
     }
 
@@ -916,25 +927,28 @@ public class Messages {
      * Gets a list of messages using the given key and injects the same placeholders into each line.
      *
      * @param key          The key of the message
+     * @param player       The player to parse the placeholders against
      * @param placeholders The placeholders which are to be injected into all lines
      * @return A list of messages using the given key
      */
     @SafeVarargs
-    public static List<String> getStringList(String key, Map.Entry<String, Object>... placeholders) {
-        return getStringList(key, (line) -> placeholders);
+    public static List<String> getStringList(String key, Player player, Map.Entry<String, Object>... placeholders) {
+        return getStringList(key, player, (line) -> placeholders);
     }
 
     /**
      * Gets a list of messages using the given key and injects placeholders into each individual line.
      *
      * @param key          The key of the message
+     * @param player       The player to parse the placeholders against
      * @param placeholders The function which gets the placeholders to be injected into a given line
      * @return A list of messages using the given key
      */
-    public static List<String> getStringList(String key, Function<String, Map.Entry<String, Object>[]> placeholders) {
+    public static List<String> getStringList(String key, Player player, Function<String, Map.Entry<String, Object>[]> placeholders) {
         String message = MESSAGES.get(key).replace("%prefix%", getPrefix());
         return Arrays.stream(message.split("\n"))
                 .map(line -> replacePlaceholders(line, placeholders.apply(line)))
+                .map(line -> PLACEHOLDER_API_ENABLED ? PlaceholderAPI.setPlaceholders(player, line) : line)
                 .map(ColorAPI::process)
                 .collect(Collectors.toList());
     }
