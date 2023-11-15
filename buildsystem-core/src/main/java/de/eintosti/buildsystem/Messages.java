@@ -7,7 +7,7 @@
  */
 package de.eintosti.buildsystem;
 
-import de.eintosti.buildsystem.color.IlleniumColorAPI;
+import de.eintosti.buildsystem.util.color.IlleniumColorAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;

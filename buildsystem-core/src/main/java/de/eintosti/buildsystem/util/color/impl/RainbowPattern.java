@@ -1,6 +1,6 @@
 package de.eintosti.buildsystem.util.color.impl;
 
-import de.eintosti.buildsystem.color.IlleniumColorAPI;
+import de.eintosti.buildsystem.util.color.IlleniumColorAPI;
 import de.eintosti.buildsystem.util.color.ColorPattern;
 
 import java.util.regex.Matcher;

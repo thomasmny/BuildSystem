@@ -1,7 +1,6 @@
-package de.eintosti.buildsystem.color;
+package de.eintosti.buildsystem.util.color;
 
 import com.google.common.collect.ImmutableMap;
-import de.eintosti.buildsystem.util.color.ColorPattern;
 import de.eintosti.buildsystem.util.color.impl.GradientPattern;
 import de.eintosti.buildsystem.util.color.impl.RainbowPattern;
 import de.eintosti.buildsystem.util.color.impl.SolidPattern;
