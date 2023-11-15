@@ -20,17 +20,6 @@ public class RGBUtils {
     private static final Pattern BRACKET_HEX = Pattern.compile("\\{#[0-9a-fA-F]{6}}");
     private static final Pattern SPIGOT_HEX = Pattern.compile("&x[&0-9a-fA-F]{12}");
 
-    private static String toChatColor(String hexCode) {
-        StringBuilder magic = new StringBuilder("§x");
-        char[] colorChars = hexCode.substring(1).toCharArray();
-
-        for (char c : colorChars) {
-            magic.append('§').append(c);
-        }
-
-        return magic.toString();
-    }
-
     public static String color(String input) {
         String text = applyFormats(input);
 
@@ -84,5 +73,16 @@ public class RGBUtils {
         }
 
         return text;
+    }
+
+    private static String toChatColor(String hexCode) {
+        StringBuilder magic = new StringBuilder("§x");
+        char[] colorChars = hexCode.substring(1).toCharArray();
+
+        for (char c : colorChars) {
+            magic.append('§').append(c);
+        }
+
+        return magic.toString();
     }
 }

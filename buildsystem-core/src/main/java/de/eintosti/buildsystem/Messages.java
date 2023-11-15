@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class Messages {
 
@@ -895,22 +896,51 @@ public class Messages {
         }
     }
 
+    /**
+     * Gets a message using the given key.
+     *
+     * @param key          The key of the message
+     * @param placeholders The placeholders which are to be injected
+     * @return The message uniquely identified by the given key
+     */
     @SafeVarargs
     public static String getString(String key, Map.Entry<String, Object>... placeholders) {
         checkIfKeyPresent(key);
 
         String message = MESSAGES.get(key).replace("%prefix%", getPrefix());
-        String colored = ChatColor.translateAlternateColorCodes('&', RGBUtils.color(message));
-        return replacePlaceHolders(colored, placeholders);
+        String injectedPlaceholders = replacePlaceholders(message, placeholders);
+        return ChatColor.translateAlternateColorCodes('&', RGBUtils.color(injectedPlaceholders));
     }
 
+    /**
+     * Gets a list of messages using the given key and injects the same placeholders into each line.
+     *
+     * @param key          The key of the message
+     * @param placeholders The placeholders which are to be injected into all lines
+     * @return A list of messages using the given key
+     */
     @SafeVarargs
     public static List<String> getStringList(String key, Map.Entry<String, Object>... placeholders) {
-        return Arrays.asList(getString(key, placeholders).split("\n"));
+        return getStringList(key, (line) -> placeholders);
+    }
+
+    /**
+     * Gets a list of messages using the given key and injects placeholders into each individual line.
+     *
+     * @param key          The key of the message
+     * @param placeholders The function which gets the placeholders to be injected into a given line
+     * @return A list of messages using the given key
+     */
+    public static List<String> getStringList(String key, Function<String, Map.Entry<String, Object>[]> placeholders) {
+        String message = MESSAGES.get(key).replace("%prefix%", getPrefix());
+        return Arrays.stream(message.split("\n"))
+                .map(line -> replacePlaceholders(line, placeholders.apply(line)))
+                .map(line -> ChatColor.translateAlternateColorCodes('&', RGBUtils.color(line)))
+                .collect(Collectors.toList());
     }
 
     @SafeVarargs
-    private static String replacePlaceHolders(String query, Map.Entry<String, Object>... placeholders) {
+    private static String replacePlaceholders(String query, Map.Entry<String, Object>... placeholders) {
         if (placeholders.length == 0) {
             return query;
         }
