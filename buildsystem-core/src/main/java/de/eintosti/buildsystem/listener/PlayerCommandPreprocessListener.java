@@ -41,6 +41,7 @@ import java.util.Set;
 public class PlayerCommandPreprocessListener implements Listener {
 
     private static final Set<String> DISABLED_COMMANDS = Sets.newHashSet(
+            // <editor-fold defaultstate="collapsed" desc="WorldEdit & VoxelSniper Commands">
             "/worldedit",
             "/we",
 
@@ -215,6 +216,7 @@ public class PlayerCommandPreprocessListener implements Listener {
             "/vir",
             "/vl",
             "/vr--"
+            // </editor-fold>
     );
 
     private final BuildSystemPlugin plugin;

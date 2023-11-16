@@ -20,15 +20,26 @@ package de.eintosti.buildsystem.api.world.data;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import org.bukkit.Difficulty;
+import org.bukkit.Location;
+import org.jetbrains.annotations.Nullable;
 
 public interface WorldData {
 
     /**
      * Gets the {@link BuildWorld}'s custom spawn in the format {@code x;y;z;yaw;pitch}.
      *
-     * @return The custom spawn location as a string
+     * @return The custom spawn as a string
+     * @see #getCustomSpawnLocation()
      */
     Type<String> customSpawn();
+
+    /**
+     * Gets the {@link BuildWorld}'s custom spawn as a location.
+     *
+     * @return The custom spawn as a location
+     */
+    @Nullable
+    Location getCustomSpawnLocation();
 
     /**
      * Gets the permission needed to enter the {@link BuildWorld}.

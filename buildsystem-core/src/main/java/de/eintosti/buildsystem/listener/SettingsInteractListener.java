@@ -29,6 +29,7 @@ import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.player.BuildPlayerManager;
 import de.eintosti.buildsystem.settings.CraftSettings;
 import de.eintosti.buildsystem.settings.SettingsManager;
+import de.eintosti.buildsystem.util.MaterialUtils;
 import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import de.eintosti.buildsystem.version.util.DirectionUtil;
 import de.eintosti.buildsystem.world.BuildWorldManager;
@@ -261,7 +262,7 @@ public class SettingsInteractListener implements Listener {
         }
 
         Block block = event.getClickedBlock();
-        if (block == null) {
+        if (block == null || !MaterialUtils.isInteractable(XMaterial.matchXMaterial(block.getType()))) {
             return;
         }
 
@@ -285,7 +286,7 @@ public class SettingsInteractListener implements Listener {
             material = Material.valueOf(material.toString().replace("_ITEM", ""));
         }
 
-        if (XTag.SIGNS.isTagged(xMaterial)) {
+        if (XTag.SIGNS.isTagged(xMaterial) && event.getBlockFace() != BlockFace.UP) {
             if (!XMaterial.supports(13)) {
                 material = Material.valueOf("WALL_SIGN");
             } else {

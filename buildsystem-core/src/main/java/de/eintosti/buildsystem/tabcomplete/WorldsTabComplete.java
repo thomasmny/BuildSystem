@@ -40,11 +40,9 @@ import java.util.stream.Collectors;
 
 public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
 
-    private final BuildSystemPlugin plugin;
     private final BuildWorldManager worldManager;
 
     public WorldsTabComplete(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
         this.worldManager = plugin.getWorldManager();
         plugin.getCommand("worlds").setTabCompleter(this);
     }
@@ -52,10 +50,10 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         ArrayList<String> arrayList = new ArrayList<>();
-
         if (!(sender instanceof Player)) {
             return arrayList;
         }
+
         Player player = (Player) sender;
 
         switch (args.length) {

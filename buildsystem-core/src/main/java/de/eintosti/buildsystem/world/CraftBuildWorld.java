@@ -172,6 +172,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
     @Override
     public void setName(String name) {
         this.name = name;
+        this.worldData.setWorldName(name);
     }
 
     @Override
@@ -424,6 +425,10 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
             return;
         }
 
+        if (configValues.getBlackListedWorldsToUnload().contains(name) || isSpawnWorld(bukkitWorld)) {
+            return;
+        }
+
         forceUnload(true);
     }
 
@@ -431,10 +436,6 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
     public void forceUnload(boolean save) {
         World bukkitWorld = getWorld();
         if (bukkitWorld == null) {
-            return;
-        }
-
-        if (configValues.getBlackListedWorldsToUnload().contains(name) || isSpawnWorld(bukkitWorld)) {
             return;
         }
 

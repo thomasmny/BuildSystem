@@ -1,25 +1,13 @@
 /*
- * Copyright (c) 2018-2023, Thomas Meaney
- * Copyright (c) contributors
+ * Copyright (c) 2023, Thomas Meaney
+ * All rights reserved.
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree.
  */
 package de.eintosti.buildsystem.world.data;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.api.world.data.WorldData;
-import de.eintosti.buildsystem.api.world.data.WorldStatus;
 import de.eintosti.buildsystem.config.ConfigValues;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
@@ -32,45 +20,45 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class BuildWorldData implements WorldData, ConfigurationSerializable {
+public class WorldData implements ConfigurationSerializable {
 
-    private final Map<String, DataType<?>> data = new HashMap<>();
+    private final Map<String, Type<?>> data = new HashMap<>();
 
-    private final DataType<String> customSpawn = register("spawn");
-    private final DataType<String> permission = register("permission");
-    private final DataType<String> project = register("project");
+    private final Type<String> customSpawn = register("spawn");
+    private final Type<String> permission = register("permission");
+    private final Type<String> project = register("project");
 
-    private final DataType<Difficulty> difficulty = register("difficulty", new DifficultyType());
-    private final DataType<XMaterial> material = register("material", new MaterialType());
-    private final DataType<WorldStatus> status = register("status", new StatusType());
+    private final Type<Difficulty> difficulty = register("difficulty", new DifficultyType());
+    private final Type<XMaterial> material = register("material", new MaterialType());
+    private final Type<WorldStatus> status = register("status", new StatusType());
 
-    private final DataType<Boolean> blockBreaking = register("block-breaking");
-    private final DataType<Boolean> blockInteractions = register("block-interactions");
-    private final DataType<Boolean> blockPlacement = register("block-placement");
-    private final DataType<Boolean> buildersEnabled = register("builders-enabled");
-    private final DataType<Boolean> explosions = register("explosions");
-    private final DataType<Boolean> mobAi = register("mob-ai");
-    private final DataType<Boolean> physics = register("physics");
-    private final DataType<Boolean> privateWorld = register("private");
+    private final Type<Boolean> blockBreaking = register("block-breaking");
+    private final Type<Boolean> blockInteractions = register("block-interactions");
+    private final Type<Boolean> blockPlacement = register("block-placement");
+    private final Type<Boolean> buildersEnabled = register("builders-enabled");
+    private final Type<Boolean> explosions = register("explosions");
+    private final Type<Boolean> mobAi = register("mob-ai");
+    private final Type<Boolean> physics = register("physics");
+    private final Type<Boolean> privateWorld = register("private");
 
-    private final DataType<Long> lastEdited = register("last-edited");
-    private final DataType<Long> lastLoaded = register("last-loaded");
-    private final DataType<Long> lastUnloaded = register("last-unloaded");
+    private final Type<Long> lastEdited = register("last-edited");
+    private final Type<Long> lastLoaded = register("last-loaded");
+    private final Type<Long> lastUnloaded = register("last-unloaded");
 
     private String worldName;
 
-    public <T> DataType<T> register(@NotNull String key) {
-        return register(key, new DataType<>());
+    public <T> Type<T> register(@NotNull String key) {
+        return register(key, new Type<>());
     }
 
-    public <T> DataType<T> register(@NotNull String key, DataType<T> type) {
+    public <T> Type<T> register(@NotNull String key, Type<T> type) {
         this.data.put(key, type);
         return type;
     }
 
-    public BuildWorldData(String worldName, ConfigValues configValues, boolean privateWorld) {
+    public WorldData(String worldName, ConfigValues configValues, boolean privateWorld) {
         this.customSpawn.set(null);
-        this.permission.set(configValues.getDefaultPermission(privateWorld).replace("%world%", name));
+        this.permission.set(configValues.getDefaultPermission(privateWorld).replace("%world%", worldName));
         this.project.set("-");
 
         this.difficulty.set(configValues.getWorldDifficulty());
@@ -92,7 +80,26 @@ public class BuildWorldData implements WorldData, ConfigurationSerializable {
         this.worldName = worldName;
     }
 
-    public BuildWorldData(String worldName, String customSpawn, String permission, String project, Difficulty difficulty, XMaterial material, WorldStatus worldStatus, boolean blockBreaking, boolean blockInteractions, boolean blockPlacement, boolean buildersEnabled, boolean explosions, boolean mobAi, boolean physics, boolean privateWorld, long lastLoaded, long lastUnloaded, long lastEdited) {
+    public WorldData(
+            String worldName,
+            String customSpawn,
+            String permission,
+            String project,
+            Difficulty difficulty,
+            XMaterial material,
+            WorldStatus worldStatus,
+            boolean blockBreaking,
+            boolean blockInteractions,
+            boolean blockPlacement,
+            boolean buildersEnabled,
+            boolean explosions,
+            boolean mobAi,
+            boolean physics,
+            boolean privateWorld,
+            long lastLoaded,
+            long lastUnloaded,
+            long lastEdited
+    ) {
         this.customSpawn.set(customSpawn);
         this.permission.set(permission);
         this.project.set(project);
@@ -117,12 +124,10 @@ public class BuildWorldData implements WorldData, ConfigurationSerializable {
         this.worldName = worldName;
     }
 
-    @Override
-    public DataType<String> customSpawn() {
+    public Type<String> customSpawn() {
         return customSpawn;
     }
 
-    @Override
     @Nullable
     public Location getCustomSpawnLocation() {
         String customSpawn = customSpawn().get();
@@ -141,83 +146,67 @@ public class BuildWorldData implements WorldData, ConfigurationSerializable {
         );
     }
 
-    @Override
-    public DataType<String> permission() {
+    public Type<String> permission() {
         return permission;
     }
 
-    @Override
-    public DataType<String> project() {
+    public Type<String> project() {
         return project;
     }
 
-    @Override
-    public DataType<Difficulty> difficulty() {
+    public Type<Difficulty> difficulty() {
         return difficulty;
     }
 
-    @Override
-    public DataType<XMaterial> material() {
+    public Type<XMaterial> material() {
         return material;
     }
 
-    @Override
-    public DataType<WorldStatus> status() {
+    public Type<WorldStatus> status() {
         return status;
     }
 
-    @Override
-    public DataType<Boolean> blockBreaking() {
+    public Type<Boolean> blockBreaking() {
         return blockBreaking;
     }
 
-    @Override
-    public DataType<Boolean> blockInteractions() {
+    public Type<Boolean> blockInteractions() {
         return blockInteractions;
     }
 
-    @Override
-    public DataType<Boolean> blockPlacement() {
+    public Type<Boolean> blockPlacement() {
         return blockPlacement;
     }
 
-    @Override
-    public DataType<Boolean> buildersEnabled() {
+    public Type<Boolean> buildersEnabled() {
         return buildersEnabled;
     }
 
-    @Override
-    public DataType<Boolean> explosions() {
+    public Type<Boolean> explosions() {
         return explosions;
     }
 
-    @Override
-    public DataType<Boolean> mobAi() {
+    public Type<Boolean> mobAi() {
         return mobAi;
     }
 
-    @Override
-    public DataType<Boolean> physics() {
+    public Type<Boolean> physics() {
         return physics;
     }
 
-    @Override
-    public DataType<Boolean> privateWorld() {
+    public Type<Boolean> privateWorld() {
         return privateWorld;
     }
 
-    @Override
-    public DataType<Long> lastEdited() {
+    public Type<Long> lastEdited() {
         return lastEdited;
     }
 
-    @Override
-    public DataType<Long> lastLoaded() {
+    public Type<Long> lastLoaded() {
         return lastLoaded;
     }
 
-    @Override
-    public DataType<Long> lastUnloaded() {
+    public Type<Long> lastUnloaded() {
         return lastUnloaded;
     }
 
@@ -232,15 +221,13 @@ public class BuildWorldData implements WorldData, ConfigurationSerializable {
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getConfigFormat()));
     }
 
-    public static class DataType<T> implements Type<T> {
+    public static class Type<T> {
         private T value;
 
-        @Override
         public T get() {
             return value;
         }
 
-        @Override
         public void set(T value) {
             this.value = value;
         }
@@ -250,21 +237,21 @@ public class BuildWorldData implements WorldData, ConfigurationSerializable {
         }
     }
 
-    public static class DifficultyType extends DataType<Difficulty> {
+    public static class DifficultyType extends Type<Difficulty> {
         @Override
         protected Object getConfigFormat() {
             return super.get().name();
         }
     }
 
-    public static class MaterialType extends DataType<XMaterial> {
+    public static class MaterialType extends Type<XMaterial> {
         @Override
         protected Object getConfigFormat() {
             return super.get().name();
         }
     }
 
-    public static class StatusType extends DataType<WorldStatus> {
+    public static class StatusType extends Type<WorldStatus> {
         @Override
         protected Object getConfigFormat() {
             return super.get().name();

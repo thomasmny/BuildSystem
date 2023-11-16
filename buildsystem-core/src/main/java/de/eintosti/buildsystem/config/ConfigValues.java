@@ -65,6 +65,8 @@ public class ConfigValues {
     private boolean worldBlockPlacement;
     private boolean worldBlockInteractions;
     private boolean[] worldBuildersEnabled;
+    private boolean saveFromDeath;
+    private boolean teleportToMapSpawn;
 
     private int sunriseTime;
     private int noonTime;
@@ -89,6 +91,10 @@ public class ConfigValues {
         this.spawnTeleportMessage = config.getBoolean("messages.spawn-teleport-message", false);
         this.joinQuitMessages = config.getBoolean("messages.join-quit-messages", true);
         this.dateFormat = config.getString("messages.date-format", "dd/MM/yyyy");
+
+        // Save from death
+        this.saveFromDeath = config.getBoolean("settings.save-from-death.enable", true);
+        this.teleportToMapSpawn = config.getBoolean("settings.save-from-death.teleport-to-map-spawn", true);
 
         // Settings
         this.updateChecker = config.getBoolean("settings.update-checker", true);
@@ -138,7 +144,7 @@ public class ConfigValues {
                 config.getBoolean("world.default.settings.builders-enabled.private", true)
         };
 
-        this.unloadWorlds = config.getBoolean("world.unload.enabled", false);
+        this.unloadWorlds = config.getBoolean("world.unload.enabled", true);
         this.timeUntilUnload = config.getString("world.unload.time-until-unload", "01:00:00");
         this.blackListedWorldsToUnload = new HashSet<>(config.getStringList("world.unload.blacklisted-worlds"));
 
@@ -329,6 +335,14 @@ public class ConfigValues {
 
     public String getDefaultPermission(boolean privateWorld) {
         return (privateWorld ? defaultPrivatePermission : defaultPublicPermission);
+    }
+
+    public boolean isSaveFromDeath() {
+        return saveFromDeath;
+    }
+
+    public boolean isTeleportToMapSpawn() {
+        return teleportToMapSpawn;
     }
 
     public String getInvalidNameCharacters() {

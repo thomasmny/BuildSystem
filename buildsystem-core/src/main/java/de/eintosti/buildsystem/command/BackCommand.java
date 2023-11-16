@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.command;
 
+import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.player.BuildPlayerManager;
@@ -74,8 +75,14 @@ public class BackCommand implements CommandExecutor {
             return;
         }
 
-        PaperLib.teleportAsync(player, previousLocation);
-        Messages.sendMessage(player, "back_teleported");
-        buildPlayer.setPreviousLocation(null);
+        PaperLib.teleportAsync(player, previousLocation)
+                .whenComplete((completed, throwable) -> {
+                    if (!completed) {
+                        return;
+                    }
+                    XSound.ENTITY_ZOMBIE_INFECT.play(player);
+                    Messages.sendMessage(player, "back_teleported");
+                    buildPlayer.setPreviousLocation(null);
+                });
     }
 }

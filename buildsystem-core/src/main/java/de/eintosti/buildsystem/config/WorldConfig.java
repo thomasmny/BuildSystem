@@ -17,11 +17,10 @@
  */
 package de.eintosti.buildsystem.config;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.data.WorldData;
-import de.eintosti.buildsystem.world.BuildWorldManager;
+import de.eintosti.buildsystem.api.world.BuildWorldCreator;
+import de.eintosti.buildsystem.api.world.WorldManager;
 import de.eintosti.buildsystem.world.CraftBuildWorld;
 import de.eintosti.buildsystem.world.CraftBuildWorldCreator;
 import org.bukkit.World;
@@ -33,11 +32,14 @@ import java.util.logging.Logger;
 
 public class WorldConfig extends ConfigurationFile {
 
+
     private final BuildSystemPlugin plugin;
+    private final Logger logger;
 
     public WorldConfig(BuildSystemPlugin plugin) {
         super(plugin, "worlds.yml");
         this.plugin = plugin;
+        this.logger = plugin.getLogger();
     }
 
     public void saveWorlds(Collection<CraftBuildWorld> buildWorlds) {
@@ -45,34 +47,67 @@ public class WorldConfig extends ConfigurationFile {
         saveFile();
     }
 
-    public void loadWorlds(BuildWorldManager worldManager) {
-        Logger logger = plugin.getLogger();
-        if (plugin.getConfigValues().isUnloadWorlds()) {
-            logger.info("*** \"Unload worlds\" has been enabled in the config. Therefore worlds will not be pre-loaded ***");
-            return;
+    public void loadWorlds(WorldManager worldManager) {
+        boolean loadAllWorlds = !plugin.getConfigValues().isUnloadWorlds();
+        if (loadAllWorlds) {
+            logger.info("*** All worlds will be loaded now ***");
+        } else {
+            logger.info("*** 'Unload worlds' has been enabled in the config ***");
+            logger.info("*** Therefore, worlds will not be pre-loaded ***");
         }
-
-        logger.info("*** All worlds will be loaded now ***");
 
         List<BuildWorld> notLoaded = new ArrayList<>();
         worldManager.getBuildWorlds().forEach(buildWorld -> {
-            String worldName = buildWorld.getName();
-            World world = new CraftBuildWorldCreator(plugin, buildWorld).generateBukkitWorld();
-            if (world == null) {
+            if (loadWorld(buildWorld, loadAllWorlds) == LoadResult.FAILED) {
                 notLoaded.add(buildWorld);
-                return;
             }
-
-            WorldData worldData = buildWorld.getData();
-            worldData.lastLoaded().set(System.currentTimeMillis());
-            if (worldData.material().get() == XMaterial.PLAYER_HEAD) {
-                plugin.getSkullCache().cacheSkull(worldName);
-            }
-
-            logger.info("✔ World loaded: " + worldName);
         });
         notLoaded.forEach(worldManager::removeBuildWorld);
 
-        logger.info("*** All worlds have been loaded ***");
+        if (loadAllWorlds) {
+            logger.info("*** All worlds have been loaded ***");
+        }
+    }
+
+    /**
+     * Loads the {@link BuildWorld} if {@link ConfigValues#isUnloadWorlds()} is not enabled.
+     * Otherwise, the world will only be loaded if it's on the unload blacklist.
+     *
+     * @param buildWorld The world to load
+     * @param alwaysLoad Should the world always be loaded
+     * @return The result of the load attempt
+     */
+    private LoadResult loadWorld(BuildWorld buildWorld, boolean alwaysLoad) {
+        String worldName = buildWorld.getName();
+        if (!alwaysLoad && !plugin.getConfigValues().getBlackListedWorldsToUnload().contains(worldName)) {
+            return LoadResult.NOT_BLACKLISTED;
+        }
+
+        World world = new CraftBuildWorldCreator(plugin, buildWorld).generateBukkitWorld();
+        if (world == null) {
+            return LoadResult.FAILED;
+        }
+
+        buildWorld.getData().lastLoaded().set(System.currentTimeMillis());
+        logger.info("✔ World loaded: " + worldName);
+        return LoadResult.LOADED;
+    }
+
+    private enum LoadResult {
+
+        /**
+         * The world was loaded
+         */
+        LOADED,
+
+        /**
+         * The world was unable to be loaded
+         */
+        FAILED,
+
+        /**
+         * {@link ConfigValues#isUnloadWorlds()} is enabled and the world is not blacklisted to unload
+         */
+        NOT_BLACKLISTED
     }
 }

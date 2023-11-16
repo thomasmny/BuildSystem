@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.api.world.data;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 
 public enum WorldStatus {
+
     /**
      * Represent a world that has not been modified.
      */
@@ -61,12 +62,21 @@ public enum WorldStatus {
     }
 
     /**
-     * Get the display name of the {@link WorldStatus}.
+     * Gets the display name of the status.
      *
      * @return The type's display name
      */
     public String getKey() {
         return key;
+    }
+
+    /**
+     * Gets the permission needed to change the status.
+     *
+     * @return The permission needed to change the status
+     */
+    public String getPermission() {
+        return "buildsystem.setstatus." + name().toLowerCase().replace("_", "");
     }
 
     /**

@@ -44,6 +44,7 @@ import org.bukkit.Chunk;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -546,8 +547,10 @@ public class BuildWorldManager implements WorldManager {
         }
 
         Location location = bukkitWorld.getSpawnLocation().add(0.5, 0, 0.5);
-        String customSpawn = buildWorld.getData().customSpawn().get();
-        if (customSpawn == null) {
+        Location customSpawn = buildWorld.getData().getCustomSpawnLocation();
+        if (customSpawn != null) {
+            location = customSpawn;
+        } else {
             switch (buildWorld.getType()) {
                 case NETHER:
                 case END:
@@ -566,16 +569,22 @@ public class BuildWorldManager implements WorldManager {
                 default:
                     break;
             }
-        } else {
-            String[] spawnString = customSpawn.split(";");
-            location = new Location(bukkitWorld, Double.parseDouble(spawnString[0]), Double.parseDouble(spawnString[1]), Double.parseDouble(spawnString[2]), Float.parseFloat(spawnString[3]), Float.parseFloat(spawnString[4]));
         }
 
         Location finalLocation = location;
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            PaperLib.teleportAsync(player, finalLocation);
-            Titles.clearTitle(player);
-            XSound.ENTITY_ENDERMAN_TELEPORT.play(player);
+            PaperLib.teleportAsync(player, finalLocation).whenComplete((completed, throwable) -> {
+                if (!completed) {
+                    return;
+                }
+
+                Titles.clearTitle(player);
+                player.playSound(player, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
+
+                if (!finalLocation.clone().add(0, -1, 0).getBlock().getType().isSolid()) {
+                    player.setFlying(player.getAllowFlight());
+                }
+            });
         }, hadToLoad ? 20L : 0L);
     }
 
@@ -727,6 +736,7 @@ public class BuildWorldManager implements WorldManager {
             boolean privateWorld = configuration.isBoolean("worlds." + worldName + ".private") && configuration.getBoolean("worlds." + worldName + ".private");
 
             return new BuildWorldData(
+                    worldName,
                     customSpawn, permission, project, difficulty, material, worldStatus, blockBreaking, blockInteractions,
                     blockPlacement, buildersEnabled, explosions, mobAi, physics, privateWorld, -1, -1, -1
             );
@@ -754,6 +764,7 @@ public class BuildWorldManager implements WorldManager {
         long lastUnloaded = configuration.getLong(path + ".last-unloaded");
 
         return new BuildWorldData(
+                worldName,
                 customSpawn, permission, project, difficulty, material, worldStatus, blockBreaking, blockInteractions,
                 blockPlacement, buildersEnabled, explosions, mobAi, physics, privateWorld, lastEdited, lastLoaded, lastUnloaded
         );

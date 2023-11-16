@@ -73,24 +73,26 @@ permissions:
   buildsystem.navigator.item:
     description: Receive and use the naviagtor open.
     default: true
-  buildsystem.create.private:
-    description: Create a private world.
+  buildsystem.create:
+    children:
+      - buildsystem.create.private
+      - buildsystem.create.type.normal
+      - buildsystem.create.type.flat
+      - buildsystem.create.type.nether
+      - buildsystem.create.type.end
+      - buildsystem.create.type.void
     default: true
-  buildsystem.create.type.normal:
-    description: Create a normal world.
-    default: true
-  buildsystem.create.type.flat:
-    description: Create a flat world.
-    default: true
-  buildsystem.create.type.nether:
-    description: Create a nether world.
-    default: true
-  buildsystem.create.type.end:
-    description: Create an end world.
-    default: true
-  buildsystem.create.type.void:
-    description: Create a void world.
-    default: true
+    description: Permission for creating world types
+  buildsystem.setstatus:
+    children:
+      - buildsystem.setstatus.hidden
+      - buildsystem.setstatus.archive
+      - buildsystem.setstatus.finished
+      - buildsystem.setstatus.almostfinished
+      - buildsystem.setstatus.inprogress
+      - buildsystem.setstatus.notstarted
+    default: op
+    description: Permission for specific status states
   buildsystem.physics.message:
     description: Receive the message that physics are disabled in a world.
     default: true

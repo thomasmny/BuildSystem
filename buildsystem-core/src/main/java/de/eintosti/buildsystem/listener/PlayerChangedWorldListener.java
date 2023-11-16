@@ -81,6 +81,8 @@ public class PlayerChangedWorldListener implements Listener {
         Player player = event.getPlayer();
         String worldName = player.getWorld().getName();
 
+        event.getPlayer().setAllowFlight(true);
+
         CraftBuildWorld oldWorld = worldManager.getBuildWorld(event.getFrom().getName());
         if (oldWorld != null && configValues.isUnloadWorlds()) {
             oldWorld.resetUnloadTask();

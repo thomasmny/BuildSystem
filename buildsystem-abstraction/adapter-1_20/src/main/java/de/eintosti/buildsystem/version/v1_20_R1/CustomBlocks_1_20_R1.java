@@ -48,6 +48,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.RayTraceResult;
 
 public class CustomBlocks_1_20_R1 implements CustomBlocks, Listener {
 
@@ -218,13 +219,21 @@ public class CustomBlocks_1_20_R1 implements CustomBlocks, Listener {
         event.setCancelled(true);
         Player player = event.getPlayer();
 
-        if (DirectionUtil.isTop(player, block)) {
+        if (isTopHalf(player)) {
             slab.setType(Slab.Type.BOTTOM);
         } else {
             slab.setType(Slab.Type.TOP);
         }
 
         block.setBlockData(slab);
+    }
+
+    public boolean isTopHalf(Player player) {
+        RayTraceResult result = player.rayTraceBlocks(6);
+        if (result == null) {
+            return false;
+        }
+        return Math.abs(result.getHitPosition().getY() % 1) < 0.5;
     }
 
     @Override
@@ -259,7 +268,20 @@ public class CustomBlocks_1_20_R1 implements CustomBlocks, Listener {
             block.setBlockData(directional);
         } else if (blockData instanceof Orientable) {
             Orientable orientable = (Orientable) blockData;
-            Axis axis = (direction == BlockFace.NORTH || direction == BlockFace.SOUTH) ? Axis.X : Axis.Z;
+            Axis axis;
+            switch (direction) {
+                case UP:
+                case DOWN:
+                    axis = Axis.Y;
+                    break;
+                case EAST:
+                case WEST:
+                    axis = Axis.X;
+                    break;
+                default:
+                    axis = Axis.Z;
+                    break;
+            }
             orientable.setAxis(axis);
             block.setBlockData(orientable);
         } else if (blockData instanceof Sign) {
