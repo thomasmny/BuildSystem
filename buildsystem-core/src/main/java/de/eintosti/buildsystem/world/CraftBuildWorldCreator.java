@@ -19,13 +19,13 @@ package de.eintosti.buildsystem.world;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.BuildWorldCreator;
 import de.eintosti.buildsystem.api.world.Builder;
 import de.eintosti.buildsystem.api.world.data.WorldType;
 import de.eintosti.buildsystem.api.world.generator.CustomGenerator;
 import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.generator.voidgenerator.DeprecatedVoidGenerator;
 import de.eintosti.buildsystem.world.generator.voidgenerator.ModernVoidGenerator;
@@ -172,13 +172,13 @@ public class CraftBuildWorldCreator implements BuildWorldCreator {
         CraftBuildWorld buildWorld = createBuildWorldObject(player);
         worldManager.addBuildWorld(buildWorld);
 
-        Messages.sendMessage(player, "worlds_world_creation_started",
+        MessagesOld.sendMessage(player, "worlds_world_creation_started",
                 new AbstractMap.SimpleEntry<>("%world%", worldName),
-                new AbstractMap.SimpleEntry<>("%type%", Messages.getDataString(worldType.getKey(), player))
+                new AbstractMap.SimpleEntry<>("%type%", MessagesOld.getDataString(worldType.getKey(), player))
         );
         finishPreparationsAndGenerate(buildWorld);
         teleportAfterCreation(player);
-        Messages.sendMessage(player, "worlds_creation_finished");
+        MessagesOld.sendMessage(player, "worlds_creation_finished");
     }
 
     /**
@@ -209,14 +209,14 @@ public class CraftBuildWorldCreator implements BuildWorldCreator {
         File worldFile = new File(Bukkit.getWorldContainer(), worldName);
         File templateFile = new File(plugin.getDataFolder() + File.separator + "templates" + File.separator + template);
         if (!templateFile.exists()) {
-            Messages.sendMessage(player, "worlds_template_does_not_exist");
+            MessagesOld.sendMessage(player, "worlds_template_does_not_exist");
             return;
         }
 
         CraftBuildWorld buildWorld = createBuildWorldObject(player);
         worldManager.addBuildWorld(buildWorld);
 
-        Messages.sendMessage(player, "worlds_template_creation_started",
+        MessagesOld.sendMessage(player, "worlds_template_creation_started",
                 new AbstractMap.SimpleEntry<>("%world%", worldName),
                 new AbstractMap.SimpleEntry<>("%template%", template)
         );
@@ -225,7 +225,7 @@ public class CraftBuildWorldCreator implements BuildWorldCreator {
                 .type(org.bukkit.WorldType.FLAT)
                 .generateStructures(false));
         teleportAfterCreation(player);
-        Messages.sendMessage(player, "worlds_creation_finished");
+        MessagesOld.sendMessage(player, "worlds_creation_finished");
     }
 
     /**

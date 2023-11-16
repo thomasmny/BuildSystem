@@ -18,9 +18,9 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.BuildWorldManager;
 import de.eintosti.buildsystem.world.CraftBuildWorld;
@@ -44,20 +44,20 @@ public class TeleportSubCommand implements SubCommand {
         }
 
         if (args.length != 2) {
-            Messages.sendMessage(player, "worlds_tp_usage");
+            MessagesOld.sendMessage(player, "worlds_tp_usage");
             return;
         }
 
         BuildWorldManager worldManager = plugin.getWorldManager();
         CraftBuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_tp_unknown_world");
+            MessagesOld.sendMessage(player, "worlds_tp_unknown_world");
             return;
         }
 
         World bukkitWorld = Bukkit.getServer().getWorld(args[1]);
         if (buildWorld.isLoaded() && bukkitWorld == null) {
-            Messages.sendMessage(player, "worlds_tp_unknown_world");
+            MessagesOld.sendMessage(player, "worlds_tp_unknown_world");
             return;
         }
 
@@ -65,7 +65,7 @@ public class TeleportSubCommand implements SubCommand {
         if (player.hasPermission(permission) || permission.equalsIgnoreCase("-")) {
             worldManager.teleport(player, buildWorld);
         } else {
-            Messages.sendMessage(player, "worlds_tp_entry_forbidden");
+            MessagesOld.sendMessage(player, "worlds_tp_entry_forbidden");
         }
     }
 

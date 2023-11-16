@@ -18,10 +18,10 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.BuildWorldManager;
 import org.bukkit.entity.Player;
@@ -47,12 +47,12 @@ public class RemoveSpawnSubCommand implements SubCommand {
 
         BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_removespawn_world_not_imported");
+            MessagesOld.sendMessage(player, "worlds_removespawn_world_not_imported");
             return;
         }
 
         buildWorld.getData().customSpawn().set(null);
-        Messages.sendMessage(player, "worlds_removespawn_world_spawn_removed", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+        MessagesOld.sendMessage(player, "worlds_removespawn_world_spawn_removed", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
     }
 
     @Override

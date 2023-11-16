@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.internal;
 
 import com.google.common.collect.Lists;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import de.eintosti.buildsystem.version.gamerules.GameRules;
 import de.eintosti.buildsystem.version.util.MinecraftVersion;
@@ -198,10 +198,10 @@ public enum CraftBukkitVersion {
         try {
             Constructor<? extends GameRules> constructor = gameRules.getConstructor(String.class, List.class, List.class, List.class);
             return constructor.newInstance(
-                    Messages.getString("worldeditor_gamerules_title", null),
-                    Messages.getStringList("worldeditor_gamerules_boolean_enabled", null),
-                    Messages.getStringList("worldeditor_gamerules_boolean_disabled", null),
-                    Messages.getStringList("worldeditor_gamerules_integer", null)
+                    MessagesOld.getString("worldeditor_gamerules_title", null),
+                    MessagesOld.getStringList("worldeditor_gamerules_boolean_enabled", null),
+                    MessagesOld.getStringList("worldeditor_gamerules_boolean_disabled", null),
+                    MessagesOld.getStringList("worldeditor_gamerules_integer", null)
             );
         } catch (Exception e) {
             e.printStackTrace();

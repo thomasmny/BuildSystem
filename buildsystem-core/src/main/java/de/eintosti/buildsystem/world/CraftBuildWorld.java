@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.world;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.messages.Titles;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.event.world.BuildWorldLoadEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostLoadEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostUnloadEvent;
@@ -30,6 +29,7 @@ import de.eintosti.buildsystem.api.world.Builder;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldType;
 import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.data.BuildWorldData;
@@ -257,13 +257,13 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
     public String getDifficultyName(Player player) {
         switch (worldData.difficulty().get()) {
             case PEACEFUL:
-                return Messages.getString("difficulty_peaceful", player);
+                return MessagesOld.getString("difficulty_peaceful", player);
             case EASY:
-                return Messages.getString("difficulty_easy", player);
+                return MessagesOld.getString("difficulty_easy", player);
             case NORMAL:
-                return Messages.getString("difficulty_normal", player);
+                return MessagesOld.getString("difficulty_normal", player);
             case HARD:
-                return Messages.getString("difficulty_hard", player);
+                return MessagesOld.getString("difficulty_hard", player);
             default:
                 return "-";
         }
@@ -299,7 +299,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
      * @return The list of builders which have been added to the given world as a string
      */
     public String getBuildersInfo(Player player) {
-        String template = Messages.getString("world_item_builders_builder_template", player);
+        String template = MessagesOld.getString("world_item_builders_builder_template", player);
         List<String> builderNames = getBuilderNames();
 
         String string = "";
@@ -478,7 +478,7 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
 
         player.closeInventory();
         Titles.sendTitle(player, 5, 70, 20, " ",
-                Messages.getString("loading_world", player, new AbstractMap.SimpleEntry<>("%world%", name))
+                MessagesOld.getString("loading_world", player, new AbstractMap.SimpleEntry<>("%world%", name))
         );
 
         load();

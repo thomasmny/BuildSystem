@@ -18,8 +18,8 @@
 package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.player.BuildPlayerManager;
 import de.eintosti.buildsystem.world.BuildWorldManager;
 import org.bukkit.Bukkit;
@@ -67,7 +67,7 @@ public class PlayerTeleportListener implements Listener {
 
         if (!Bukkit.getWorlds().get(0).equals(Bukkit.getWorld(worldName))) {
             if (!worldManager.canEnter(player, buildWorld)) {
-                Messages.sendMessage(player, "worlds_tp_entry_forbidden");
+                MessagesOld.sendMessage(player, "worlds_tp_entry_forbidden");
                 event.setCancelled(true);
             }
         }

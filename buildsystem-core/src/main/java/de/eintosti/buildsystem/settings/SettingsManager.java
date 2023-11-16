@@ -18,11 +18,11 @@
 package de.eintosti.buildsystem.settings;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import de.eintosti.buildsystem.world.BuildWorldManager;
 import fr.mrmicky.fastboard.FastBoard;
@@ -96,7 +96,7 @@ public class SettingsManager {
             return;
         }
 
-        board.updateTitle(Messages.getString("title", player));
+        board.updateTitle(MessagesOld.getString("title", player));
         BukkitTask scoreboardTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> updateScoreboard(player, board), 0L, 20L);
         settings.setScoreboardTask(scoreboardTask);
     }
@@ -120,7 +120,7 @@ public class SettingsManager {
     }
 
     private void updateScoreboard(Player player, FastBoard board) {
-        List<String> body = Messages.getStringList("body", player, (line) -> getPlaceholders(line, player));
+        List<String> body = MessagesOld.getStringList("body", player, (line) -> getPlaceholders(line, player));
 
         // Scoreboard line cannot be longer than 30 chars in versions <1.13
         if (MinecraftVersion.getCurrent().isLowerThan(MinecraftVersion.AQUATIC_13)) {
@@ -161,7 +161,7 @@ public class SettingsManager {
         WorldData worldData = buildWorld.getData();
         switch (input) {
             case "%status%":
-                return Messages.getDataString(worldData.status().get().getKey(), player);
+                return MessagesOld.getDataString(worldData.status().get().getKey(), player);
             case "%permission%":
                 return worldData.permission().get();
             case "%project%":
@@ -169,13 +169,13 @@ public class SettingsManager {
             case "%creator%":
                 return buildWorld.getCreator();
             case "%creation%":
-                return Messages.formatDate(buildWorld.getCreationDate());
+                return MessagesOld.formatDate(buildWorld.getCreationDate());
             case "%lastedited%":
-                return Messages.formatDate(worldData.lastEdited().get());
+                return MessagesOld.formatDate(worldData.lastEdited().get());
             case "%lastloaded%":
-                return Messages.formatDate(worldData.lastLoaded().get());
+                return MessagesOld.formatDate(worldData.lastLoaded().get());
             case "%lastunloaded%":
-                return Messages.formatDate(worldData.lastUnloaded().get());
+                return MessagesOld.formatDate(worldData.lastUnloaded().get());
             default:
                 return ChatColor.WHITE + "-";
         }

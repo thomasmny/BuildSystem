@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.settings;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -42,14 +42,14 @@ public class SpeedInventory implements Listener {
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 27, Messages.getString("speed_title", player));
+        Inventory inventory = Bukkit.createInventory(null, 27, MessagesOld.getString("speed_title", player));
         fillGuiWithGlass(player, inventory);
 
-        inventoryUtils.addUrlSkull(inventory, 11, Messages.getString("speed_1", player), "71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530");
-        inventoryUtils.addUrlSkull(inventory, 12, Messages.getString("speed_2", player), "4cd9eeee883468881d83848a46bf3012485c23f75753b8fbe8487341419847");
-        inventoryUtils.addUrlSkull(inventory, 13, Messages.getString("speed_3", player), "1d4eae13933860a6df5e8e955693b95a8c3b15c36b8b587532ac0996bc37e5");
-        inventoryUtils.addUrlSkull(inventory, 14, Messages.getString("speed_4", player), "d2e78fb22424232dc27b81fbcb47fd24c1acf76098753f2d9c28598287db5");
-        inventoryUtils.addUrlSkull(inventory, 15, Messages.getString("speed_5", player), "6d57e3bc88a65730e31a14e3f41e038a5ecf0891a6c243643b8e5476ae2");
+        inventoryUtils.addUrlSkull(inventory, 11, MessagesOld.getString("speed_1", player), "71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530");
+        inventoryUtils.addUrlSkull(inventory, 12, MessagesOld.getString("speed_2", player), "4cd9eeee883468881d83848a46bf3012485c23f75753b8fbe8487341419847");
+        inventoryUtils.addUrlSkull(inventory, 13, MessagesOld.getString("speed_3", player), "1d4eae13933860a6df5e8e955693b95a8c3b15c36b8b587532ac0996bc37e5");
+        inventoryUtils.addUrlSkull(inventory, 14, MessagesOld.getString("speed_4", player), "d2e78fb22424232dc27b81fbcb47fd24c1acf76098753f2d9c28598287db5");
+        inventoryUtils.addUrlSkull(inventory, 15, MessagesOld.getString("speed_5", player), "6d57e3bc88a65730e31a14e3f41e038a5ecf0891a6c243643b8e5476ae2");
 
         return inventory;
     }
@@ -103,10 +103,10 @@ public class SpeedInventory implements Listener {
     private void setSpeed(Player player, float speed, int num) {
         if (player.isFlying()) {
             player.setFlySpeed(speed - 0.1f);
-            Messages.sendMessage(player, "speed_set_flying", new AbstractMap.SimpleEntry<>("%speed%", num));
+            MessagesOld.sendMessage(player, "speed_set_flying", new AbstractMap.SimpleEntry<>("%speed%", num));
         } else {
             player.setWalkSpeed(speed);
-            Messages.sendMessage(player, "speed_set_walking", new AbstractMap.SimpleEntry<>("%speed%", num));
+            MessagesOld.sendMessage(player, "speed_set_walking", new AbstractMap.SimpleEntry<>("%speed%", num));
         }
     }
 }

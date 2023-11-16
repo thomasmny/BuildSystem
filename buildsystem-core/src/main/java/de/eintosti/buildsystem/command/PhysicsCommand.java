@@ -18,9 +18,9 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.world.BuildWorldManager;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -46,7 +46,7 @@ public class PhysicsCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
+            plugin.getLogger().warning(MessagesOld.getString("sender_not_player", null));
             return true;
         }
 
@@ -65,13 +65,13 @@ public class PhysicsCommand implements CommandExecutor {
                 //TODO: Check each world for permission individually?
                 if (args[0].equalsIgnoreCase("all") && worldManager.getBuildWorld("all") == null) {
                     worldManager.getBuildWorlds().forEach(buildWorld -> buildWorld.getData().physics().set(true));
-                    Messages.sendMessage(player, "physics_activated_all");
+                    MessagesOld.sendMessage(player, "physics_activated_all");
                 } else {
                     togglePhysics(player, Bukkit.getWorld(args[0]));
                 }
                 break;
             default:
-                Messages.sendMessage(player, "physics_usage");
+                MessagesOld.sendMessage(player, "physics_usage");
                 break;
         }
         return true;
@@ -79,23 +79,23 @@ public class PhysicsCommand implements CommandExecutor {
 
     private void togglePhysics(Player player, World bukkitWorld) {
         if (bukkitWorld == null) {
-            Messages.sendMessage(player, "physics_unknown_world");
+            MessagesOld.sendMessage(player, "physics_unknown_world");
             return;
         }
 
         BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
         if (buildWorld == null) {
-            Messages.sendMessage(player, "physics_world_not_imported");
+            MessagesOld.sendMessage(player, "physics_world_not_imported");
             return;
         }
 
         WorldData worldData = buildWorld.getData();
         if (!worldData.physics().get()) {
             worldData.physics().set(true);
-            Messages.sendMessage(player, "physics_activated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+            MessagesOld.sendMessage(player, "physics_activated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
         } else {
             worldData.physics().set(false);
-            Messages.sendMessage(player, "physics_deactivated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+            MessagesOld.sendMessage(player, "physics_deactivated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
         }
     }
 }

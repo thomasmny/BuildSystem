@@ -20,11 +20,11 @@ package de.eintosti.buildsystem.listener;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.settings.NavigatorType;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldStatus;
 import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.navigator.settings.NavigatorInventoryType;
 import de.eintosti.buildsystem.player.BuildPlayerManager;
@@ -109,7 +109,7 @@ public class NavigatorListener implements Listener {
         }
 
         XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-        if (xMaterial != configValues.getNavigatorItem() || !itemMeta.getDisplayName().equals(Messages.getString("navigator_item", player))) {
+        if (xMaterial != configValues.getNavigatorItem() || !itemMeta.getDisplayName().equals(MessagesOld.getString("navigator_item", player))) {
             return;
         }
 
@@ -130,14 +130,14 @@ public class NavigatorListener implements Listener {
             XSound.BLOCK_CHEST_OPEN.play(player);
         } else { // NEW
             if (playerManager.getOpenNavigator().contains(player)) {
-                Messages.sendMessage(player, "worlds_navigator_open");
+                MessagesOld.sendMessage(player, "worlds_navigator_open");
                 return;
             }
 
             summonNewNavigator(player);
 
-            String findItemName = Messages.getString("navigator_item", player);
-            ItemStack replaceItem = inventoryUtils.getItemStack(XMaterial.BARRIER, Messages.getString("barrier_item", player));
+            String findItemName = MessagesOld.getString("navigator_item", player);
+            ItemStack replaceItem = inventoryUtils.getItemStack(XMaterial.BARRIER, MessagesOld.getString("barrier_item", player));
             inventoryUtils.replaceItem(player, findItemName, configValues.getNavigatorItem(), replaceItem);
         }
     }
@@ -265,7 +265,7 @@ public class NavigatorListener implements Listener {
             return false;
         }
 
-        return itemMeta.getDisplayName().equals(Messages.getString("barrier_item", player));
+        return itemMeta.getDisplayName().equals(MessagesOld.getString("barrier_item", player));
     }
 
     /**

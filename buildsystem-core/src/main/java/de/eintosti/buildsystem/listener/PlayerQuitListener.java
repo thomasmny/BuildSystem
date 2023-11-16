@@ -18,21 +18,20 @@
 package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.settings.Settings;
+import de.eintosti.buildsystem.messages.Messages;
 import de.eintosti.buildsystem.player.BuildPlayerManager;
 import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.CraftBuildPlayer;
 import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.settings.SettingsManager;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
-
-import java.util.AbstractMap;
 
 public class PlayerQuitListener implements Listener {
 
@@ -51,7 +50,7 @@ public class PlayerQuitListener implements Listener {
     public void sendPlayerQuitMessage(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         String message = plugin.getConfigValues().isJoinQuitMessages()
-                ? Messages.getString("player_quit", player, new AbstractMap.SimpleEntry<>("%player%", player.getName()))
+                ? Messages.getLegacyMessage("player.quit", Placeholder.unparsed("player", player.getName()))
                 : null;
         event.setQuitMessage(message);
     }

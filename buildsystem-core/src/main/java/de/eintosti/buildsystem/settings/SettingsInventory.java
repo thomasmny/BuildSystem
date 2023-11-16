@@ -20,9 +20,9 @@ package de.eintosti.buildsystem.settings;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.settings.NavigatorType;
 import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.enchantments.Enchantment;
@@ -55,7 +55,7 @@ public class SettingsInventory implements Listener {
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 45, Messages.getString("settings_title", player));
+        Inventory inventory = Bukkit.createInventory(null, 45, MessagesOld.getString("settings_title", player));
         fillGuiWithGlass(player, inventory);
 
         CraftSettings settings = settingsManager.getSettings(player);
@@ -95,8 +95,8 @@ public class SettingsInventory implements Listener {
         ItemStack itemStack = material.parseItem();
         ItemMeta itemMeta = itemStack.getItemMeta();
 
-        itemMeta.setDisplayName(Messages.getString(displayNameKey, player));
-        itemMeta.setLore(Messages.getStringList(loreKey, player));
+        itemMeta.setDisplayName(MessagesOld.getString(displayNameKey, player));
+        itemMeta.setLore(MessagesOld.getStringList(loreKey, player));
         itemMeta.addItemFlags(ItemFlag.values());
         itemStack.setItemMeta(itemMeta);
 
@@ -116,11 +116,11 @@ public class SettingsInventory implements Listener {
     }
 
     private void addDesignItem(Inventory inventory, Player player) {
-        ItemStack itemStack = inventoryUtils.getItemStack(inventoryUtils.getColouredGlass(plugin, player), Messages.getString("settings_change_design_item", player));
+        ItemStack itemStack = inventoryUtils.getItemStack(inventoryUtils.getColouredGlass(plugin, player), MessagesOld.getString("settings_change_design_item", player));
         ItemMeta itemMeta = itemStack.getItemMeta();
 
         itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        itemMeta.setLore(Messages.getStringList("settings_change_design_lore", player));
+        itemMeta.setLore(MessagesOld.getStringList("settings_change_design_lore", player));
         itemStack.setItemMeta(itemMeta);
         itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
 
