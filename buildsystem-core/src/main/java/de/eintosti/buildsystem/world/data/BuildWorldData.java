@@ -70,7 +70,7 @@ public class BuildWorldData implements WorldData, ConfigurationSerializable {
 
     public BuildWorldData(String worldName, ConfigValues configValues, boolean privateWorld) {
         this.customSpawn.set(null);
-        this.permission.set(configValues.getDefaultPermission(privateWorld).replace("%world%", name));
+        this.permission.set(configValues.getDefaultPermission(privateWorld).replace("%world%", worldName));
         this.project.set("-");
 
         this.difficulty.set(configValues.getWorldDifficulty());

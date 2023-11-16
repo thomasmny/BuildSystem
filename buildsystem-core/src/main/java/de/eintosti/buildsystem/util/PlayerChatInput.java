@@ -48,8 +48,8 @@ public class PlayerChatInput implements Listener {
     public PlayerChatInput(BuildSystemPlugin plugin, Player player, String titleKey, InputRunnable runWhenComplete) {
         this.plugin = plugin;
 
-        String title = Messages.getString(titleKey);
-        String subtitle = Messages.getString("cancel_subtitle");
+        String title = Messages.getString(titleKey, player);
+        String subtitle = Messages.getString("cancel_subtitle", player);
 
         this.taskId = new BukkitRunnable() {
             public void run() {

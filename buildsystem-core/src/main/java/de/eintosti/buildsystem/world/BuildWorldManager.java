@@ -367,6 +367,13 @@ public class BuildWorldManager implements WorldManager {
         deleteWorld(null, buildWorld);
     }
 
+    /**
+     * Delete an existing {@link BuildWorld}.
+     * In comparison to {@link #unimportWorld(Player, BuildWorld, boolean)}, deleting a world deletes the world's directory.
+     *
+     * @param player     The player who issued the deletion
+     * @param buildWorld The world to be deleted
+     */
     public void deleteWorld(Player player, BuildWorld buildWorld) {
         if (!buildWorlds.containsKey(buildWorld.getName())) {
             Messages.sendMessage(player, "worlds_delete_unknown_world");
@@ -381,9 +388,9 @@ public class BuildWorldManager implements WorldManager {
         }
 
         Messages.sendMessage(player, "worlds_delete_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
-        removePlayersFromWorld(worldName, Messages.getString("worlds_delete_players_world"));
+        removePlayersFromWorld(worldName, "worlds_delete_players_world");
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            unimportWorld(buildWorld, false);
+            unimportWorld(player, buildWorld, false);
             FileUtils.deleteDirectory(deleteFolder);
             Messages.sendMessage(player, "worlds_delete_finished");
         }, 20L);
@@ -391,9 +398,21 @@ public class BuildWorldManager implements WorldManager {
 
     @Override
     public void unimportWorld(BuildWorld buildWorld, boolean save) {
+        unimportWorld(null, buildWorld, save);
+    }
+
+    /**
+     * Unimport an existing {@link BuildWorld}.
+     * In comparison to {@link #deleteWorld(Player, BuildWorld)}, unimporting a world does not delete the world's directory.
+     *
+     * @param player     The player unloading the world
+     * @param buildWorld The build world object
+     * @param save       Should the world be saved before unimporting
+     */
+    public void unimportWorld(Player player, BuildWorld buildWorld, boolean save) {
         buildWorld.forceUnload(save);
         this.buildWorlds.remove(buildWorld.getName());
-        removePlayersFromWorld(buildWorld.getName(), Messages.getString("worlds_unimport_players_world"));
+        removePlayersFromWorld(buildWorld.getName(), "worlds_unimport_players_world");
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             this.worldConfig.getFile().set("worlds." + buildWorld.getName(), null);
             this.worldConfig.saveFile();
@@ -404,11 +423,11 @@ public class BuildWorldManager implements WorldManager {
      * In order to properly unload/rename/delete a world, no players may be present in the {@link World}.
      * Removes all player's from the world to insure proper manipulation.
      *
-     * @param worldName The name of the world
-     * @param message   The message sent to a player when they are removed from the world
+     * @param worldName  The name of the world
+     * @param messageKey The key of the message sent to a player when they are removed from the world
      * @return A list of all players who were teleported out of the world
      */
-    private List<Player> removePlayersFromWorld(String worldName, String message) {
+    private List<Player> removePlayersFromWorld(String worldName, String messageKey) {
         List<Player> players = new ArrayList<>();
 
         World bukkitWorld = Bukkit.getWorld(worldName);
@@ -436,7 +455,7 @@ public class BuildWorldManager implements WorldManager {
                 PaperLib.teleportAsync(player, spawnLocation);
             }
 
-            player.sendMessage(message);
+            Messages.sendMessage(player, messageKey);
             players.add(player);
         });
 
@@ -453,7 +472,7 @@ public class BuildWorldManager implements WorldManager {
 
         World oldWorld = impl.getWorld();
 
-        List<Player> removedPlayers = removePlayersFromWorld(oldName, Messages.getString("worlds_rename_players_world"));
+        List<Player> removedPlayers = removePlayersFromWorld(oldName, "worlds_rename_players_world");
         for (Chunk chunk : oldWorld.getLoadedChunks()) {
             chunk.unload(true);
         }

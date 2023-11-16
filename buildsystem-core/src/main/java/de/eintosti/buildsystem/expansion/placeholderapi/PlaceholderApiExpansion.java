@@ -208,7 +208,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "blockplacement":
                 return String.valueOf(worldData.blockPlacement().get());
             case "builders":
-                return buildWorld.getBuildersInfo();
+                return buildWorld.getBuildersInfo(player);
             case "buildersenabled":
                 return String.valueOf(worldData.buildersEnabled().get());
             case "creation":
@@ -242,11 +242,11 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "spawn":
                 return worldData.customSpawn().get();
             case "status":
-                return Messages.getDataString(worldData.status().get().getKey());
+                return Messages.getDataString(worldData.status().get().getKey(), player);
             case "time":
                 return buildWorld.getWorldTime();
             case "type":
-                return Messages.getDataString(buildWorld.getType().getKey());
+                return Messages.getDataString(buildWorld.getType().getKey(), player);
             case "world":
                 return buildWorld.getName();
             default:

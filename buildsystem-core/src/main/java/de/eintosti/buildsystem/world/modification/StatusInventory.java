@@ -60,7 +60,7 @@ public class StatusInventory implements Listener {
             selectedWorldName = "N/A";
         }
 
-        String title = Messages.getString("status_title", new AbstractMap.SimpleEntry<>("%world%", selectedWorldName));
+        String title = Messages.getString("status_title", player, new AbstractMap.SimpleEntry<>("%world%", selectedWorldName));
         Inventory inventory = Bukkit.createInventory(null, 27, title);
         fillGuiWithGlass(player, inventory);
 
@@ -89,7 +89,7 @@ public class StatusInventory implements Listener {
 
     private void addStatusItem(Player player, Inventory inventory, int position, WorldStatus status) {
         XMaterial material = inventoryUtils.getStatusItem(status);
-        String displayName = Messages.getString(status.getKey());
+        String displayName = Messages.getString(status.getKey(), player);
 
         if (!player.hasPermission(status.getPermission())) {
             material = XMaterial.BARRIER;
@@ -118,7 +118,7 @@ public class StatusInventory implements Listener {
             return;
         }
 
-        String title = Messages.getString("status_title", new AbstractMap.SimpleEntry<>("%world%", selectedWorldName));
+        String title = Messages.getString("status_title", player, new AbstractMap.SimpleEntry<>("%world%", selectedWorldName));
         if (!event.getView().getTitle().equals(title)) {
             return;
         }
@@ -163,7 +163,7 @@ public class StatusInventory implements Listener {
         XSound.ENTITY_CHICKEN_EGG.play(player);
         Messages.sendMessage(player, "worlds_setstatus_set",
                 new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()),
-                new AbstractMap.SimpleEntry<>("%status%", Messages.getDataString(buildWorld.getData().status().get().getKey()))
+                new AbstractMap.SimpleEntry<>("%status%", Messages.getDataString(buildWorld.getData().status().get().getKey(), player))
         );
     }
 

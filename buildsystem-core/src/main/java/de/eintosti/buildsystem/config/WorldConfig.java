@@ -21,6 +21,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.BuildWorldCreator;
 import de.eintosti.buildsystem.api.world.WorldManager;
+import de.eintosti.buildsystem.world.BuildWorldManager;
 import de.eintosti.buildsystem.world.CraftBuildWorld;
 import de.eintosti.buildsystem.world.CraftBuildWorldCreator;
 import org.bukkit.World;
@@ -47,7 +48,7 @@ public class WorldConfig extends ConfigurationFile {
         saveFile();
     }
 
-    public void loadWorlds(WorldManager worldManager) {
+    public void loadWorlds(BuildWorldManager worldManager) {
         boolean loadAllWorlds = !plugin.getConfigValues().isUnloadWorlds();
         if (loadAllWorlds) {
             logger.info("*** All worlds will be loaded now ***");

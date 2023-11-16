@@ -174,7 +174,7 @@ public class CraftBuildWorldCreator implements BuildWorldCreator {
 
         Messages.sendMessage(player, "worlds_world_creation_started",
                 new AbstractMap.SimpleEntry<>("%world%", worldName),
-                new AbstractMap.SimpleEntry<>("%type%", Messages.getDataString(worldType.getKey()))
+                new AbstractMap.SimpleEntry<>("%type%", Messages.getDataString(worldType.getKey(), player))
         );
         finishPreparationsAndGenerate(buildWorld);
         teleportAfterCreation(player);

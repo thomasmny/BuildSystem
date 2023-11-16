@@ -85,7 +85,7 @@ public class InventoryUtils {
         this.playerManager = plugin.getPlayerManager();
     }
 
-    public boolean isNavigator(ItemStack itemStack) {
+    public boolean isNavigator(Player player, ItemStack itemStack) {
         if (itemStack == null || itemStack.getType() != configValues.getNavigatorItem().parseMaterial()) {
             return false;
         }
@@ -95,12 +95,12 @@ public class InventoryUtils {
             return false;
         }
 
-        return itemMeta.getDisplayName().equals(Messages.getString("navigator_item"));
+        return itemMeta.getDisplayName().equals(Messages.getString("navigator_item", player));
     }
 
-    public boolean inventoryContainsNavigator(PlayerInventory playerInventory) {
-        for (ItemStack itemStack : playerInventory.getContents()) {
-            if (isNavigator(itemStack)) {
+    public boolean inventoryContainsNavigator(Player player) {
+        for (ItemStack itemStack : player.getInventory().getContents()) {
+            if (isNavigator(player, itemStack)) {
                 return true;
             }
         }
@@ -113,7 +113,7 @@ public class InventoryUtils {
 
         for (int i = 0; i < playerInventory.getSize(); i++) {
             ItemStack currentItem = playerInventory.getItem(i);
-            if (isNavigator(currentItem)) {
+            if (isNavigator(player, currentItem)) {
                 navigatorSlots.add(i);
             }
         }
@@ -232,7 +232,7 @@ public class InventoryUtils {
     }
 
     public boolean checkIfValidClick(InventoryClickEvent event, String titleKey) {
-        if (!event.getView().getTitle().equals(Messages.getString(titleKey))) {
+        if (!event.getView().getTitle().equals(Messages.getString(titleKey, (Player) event.getWhoClicked()))) {
             return false;
         }
 
@@ -247,7 +247,7 @@ public class InventoryUtils {
 
     public void addWorldItem(Player player, Inventory inventory, int position, BuildWorld buildWorld) {
         String worldName = buildWorld.getName();
-        String displayName = Messages.getString("world_item_title", new AbstractMap.SimpleEntry<>("%world%", worldName));
+        String displayName = Messages.getString("world_item_title", player, new AbstractMap.SimpleEntry<>("%world%", worldName));
         XMaterial material = buildWorld.getData().material().get();
 
         if (material == XMaterial.PLAYER_HEAD) {
@@ -277,14 +277,14 @@ public class InventoryUtils {
         String displayName = itemMeta.getDisplayName();
 
         if (slot == 22 &&
-                displayName.equals(Messages.getString("world_navigator_no_worlds"))
-                || displayName.equals(Messages.getString("archive_no_worlds"))
-                || displayName.equals(Messages.getString("private_no_worlds"))) {
+                displayName.equals(Messages.getString("world_navigator_no_worlds", player))
+                || displayName.equals(Messages.getString("archive_no_worlds", player))
+                || displayName.equals(Messages.getString("private_no_worlds", player))) {
             return;
         }
 
         if (slot >= 9 && slot <= 44) {
-            CraftBuildWorld buildWorld = plugin.getWorldManager().getBuildWorld(getWorldName(displayName));
+            CraftBuildWorld buildWorld = plugin.getWorldManager().getBuildWorld(getWorldName(player, displayName));
             manageWorldItemClick(event, player, itemMeta, buildWorld);
             return;
         }
@@ -324,7 +324,7 @@ public class InventoryUtils {
         } else {
             player.closeInventory();
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-            Titles.sendTitle(player, 5, 70, 20, " ", Messages.getString("world_not_loaded"));
+            Titles.sendTitle(player, 5, 70, 20, " ", Messages.getString("world_not_loaded", player));
         }
     }
 
@@ -336,7 +336,7 @@ public class InventoryUtils {
      */
     private void performNonEditClick(Player player, ItemMeta itemMeta) {
         playerManager.closeNavigator(player);
-        teleport(player, getWorldName(itemMeta.getDisplayName()));
+        teleport(player, getWorldName(player, itemMeta.getDisplayName()));
     }
 
     private void teleport(Player player, String worldName) {
@@ -351,11 +351,12 @@ public class InventoryUtils {
     /**
      * Parse the name of a world from the given input.
      *
-     * @param input The string to parse the name from
+     * @param player The player used to parse the placeholders
+     * @param input  The string to parse the name from
      * @return The name of the world
      */
-    private String getWorldName(String input) {
-        String template = Messages.getString("world_item_title", new AbstractMap.SimpleEntry<>("%world%", ""));
+    private String getWorldName(Player player, String input) {
+        String template = Messages.getString("world_item_title", player, new AbstractMap.SimpleEntry<>("%world%", ""));
         return StringUtils.difference(template, input);
     }
 
@@ -413,9 +414,8 @@ public class InventoryUtils {
      */
     private List<String> getLore(Player player, BuildWorld buildWorld) {
         WorldData worldData = buildWorld.getData();
-        @SuppressWarnings("unchecked")
         Map.Entry<String, Object>[] placeholders = new Map.Entry[]{
-                new AbstractMap.SimpleEntry<>("%status%", Messages.getDataString(worldData.status().get().getKey())),
+                new AbstractMap.SimpleEntry<>("%status%", Messages.getDataString(worldData.status().get().getKey(), player)),
                 new AbstractMap.SimpleEntry<>("%project%", worldData.project().get()),
                 new AbstractMap.SimpleEntry<>("%permission%", worldData.permission().get()),
                 new AbstractMap.SimpleEntry<>("%creator%", buildWorld.hasCreator() ? buildWorld.getCreator() : "-"),
@@ -424,8 +424,9 @@ public class InventoryUtils {
                 new AbstractMap.SimpleEntry<>("%lastloaded%", Messages.formatDate(worldData.lastLoaded().get())),
                 new AbstractMap.SimpleEntry<>("%lastunloaded%", Messages.formatDate(worldData.lastUnloaded().get()))
         };
-        List<String> messageList = plugin.getWorldManager().isPermitted(player, WorldsTabComplete.WorldsArgument.EDIT.getPermission(),
-                buildWorld.getName()) ? Messages.getStringList("world_item_lore_edit", placeholders) : Messages.getStringList("world_item_lore_normal", placeholders);
+        List<String> messageList = plugin.getWorldManager().isPermitted(player, WorldsTabComplete.WorldsArgument.EDIT.getPermission(), buildWorld.getName())
+                ? Messages.getStringList("world_item_lore_edit", player, placeholders)
+                : Messages.getStringList("world_item_lore_normal", player, placeholders);
 
         // Replace %builders% placeholder
         List<String> lore = new ArrayList<>();
@@ -435,7 +436,7 @@ public class InventoryUtils {
                 continue;
             }
 
-            List<String> builders = formatBuilders(buildWorld);
+            List<String> builders = formatBuilders(player, buildWorld);
             for (int i = 0; i < builders.size(); i++) {
                 String builderString = builders.get(i).trim();
                 if (builderString.isEmpty()) {
@@ -460,12 +461,13 @@ public class InventoryUtils {
     /**
      * Format the {@code %builder%} placeholder which can be used by a lore.
      *
+     * @param player     The player used to format the placeholders
      * @param buildWorld The world which provides the builders
      * @return The formatted list of builders which have been added to the given world
-     * @see CraftBuildWorld#getBuildersInfo()
+     * @see CraftBuildWorld#getBuildersInfo(Player)
      */
-    private List<String> formatBuilders(BuildWorld buildWorld) {
-        String template = Messages.getString("world_item_builders_builder_template");
+    private List<String> formatBuilders(Player player, BuildWorld buildWorld) {
+        String template = Messages.getString("world_item_builders_builder_template", player);
         List<Builder> builders = buildWorld.getBuilders();
 
         List<String> builderNames = new ArrayList<>();

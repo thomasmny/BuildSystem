@@ -250,19 +250,20 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
     /**
      * Get the display name of a {@link Difficulty}.
      *
+     * @param player The player to parse the placeholders against
      * @return the difficulty's display name
      * @see BuildWorldData#difficulty()
      */
-    public String getDifficultyName() {
+    public String getDifficultyName(Player player) {
         switch (worldData.difficulty().get()) {
             case PEACEFUL:
-                return Messages.getString("difficulty_peaceful");
+                return Messages.getString("difficulty_peaceful", player);
             case EASY:
-                return Messages.getString("difficulty_easy");
+                return Messages.getString("difficulty_easy", player);
             case NORMAL:
-                return Messages.getString("difficulty_normal");
+                return Messages.getString("difficulty_normal", player);
             case HARD:
-                return Messages.getString("difficulty_hard");
+                return Messages.getString("difficulty_hard", player);
             default:
                 return "-";
         }
@@ -294,10 +295,11 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
     /**
      * Format the {@code %builder%} placeholder.
      *
+     * @param player The player to parse the placeholders against
      * @return The list of builders which have been added to the given world as a string
      */
-    public String getBuildersInfo() {
-        String template = Messages.getString("world_item_builders_builder_template");
+    public String getBuildersInfo(Player player) {
+        String template = Messages.getString("world_item_builders_builder_template", player);
         List<String> builderNames = getBuilderNames();
 
         String string = "";
@@ -475,7 +477,9 @@ public class CraftBuildWorld implements BuildWorld, ConfigurationSerializable {
         }
 
         player.closeInventory();
-        Titles.sendTitle(player, 5, 70, 20, " ", Messages.getString("loading_world", new AbstractMap.SimpleEntry<>("%world%", name)));
+        Titles.sendTitle(player, 5, 70, 20, " ",
+                Messages.getString("loading_world", player, new AbstractMap.SimpleEntry<>("%world%", name))
+        );
 
         load();
     }

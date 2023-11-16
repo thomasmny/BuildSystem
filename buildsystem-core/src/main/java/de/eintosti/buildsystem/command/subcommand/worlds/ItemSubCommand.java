@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public class ItemSubCommand implements SubCommand {
 
@@ -39,7 +40,8 @@ public class ItemSubCommand implements SubCommand {
             return;
         }
 
-        player.getInventory().addItem(plugin.getInventoryUtil().getItemStack(plugin.getConfigValues().getNavigatorItem(), Messages.getString("navigator_item")));
+        ItemStack navigator = plugin.getInventoryUtil().getItemStack(plugin.getConfigValues().getNavigatorItem(), Messages.getString("navigator_item", player));
+        player.getInventory().addItem(navigator);
         Messages.sendMessage(player, "worlds_item_receive");
     }
 
