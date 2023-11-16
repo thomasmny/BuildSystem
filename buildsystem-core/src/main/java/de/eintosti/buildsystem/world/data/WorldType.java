@@ -9,6 +9,7 @@ package de.eintosti.buildsystem.world.data;
 
 import de.eintosti.buildsystem.Messages;
 import org.bukkit.World.Environment;
+import org.bukkit.entity.Player;
 
 public enum WorldType {
     /**
@@ -70,12 +71,13 @@ public enum WorldType {
     /**
      * Get the display name of the {@link WorldType}.
      *
+     * @param player The player to parse the placeholders against
      * @return The type's display name
      */
-    public String getName() {
+    public String getName(Player player) {
         if (typeNameKey == null) {
             return "-";
         }
-        return Messages.getString(typeNameKey);
+        return Messages.getString(typeNameKey, player);
     }
 }

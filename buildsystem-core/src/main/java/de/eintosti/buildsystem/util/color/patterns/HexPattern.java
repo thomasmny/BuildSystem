@@ -1,49 +1,28 @@
-/*
- * Copyright (c) 2023, Thomas Meaney
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree.
- */
-package de.eintosti.buildsystem.util;
+package de.eintosti.buildsystem.util.color.patterns;
+
+import de.eintosti.buildsystem.util.color.ColorPattern;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * @author CoasterFreakDE (Original Author)
- * @author einTosti (Ported to Java)
- */
-public class RGBUtils {
+public class HexPattern implements ColorPattern {
 
     private static final Pattern DEFAULT_HEX = Pattern.compile("#[0-9a-fA-F]{6}");
     private static final Pattern BRACKET_HEX = Pattern.compile("\\{#[0-9a-fA-F]{6}}");
     private static final Pattern SPIGOT_HEX = Pattern.compile("&x[&0-9a-fA-F]{12}");
 
-    private static String toChatColor(String hexCode) {
-        StringBuilder magic = new StringBuilder("§x");
-        char[] colorChars = hexCode.substring(1).toCharArray();
-
-        for (char c : colorChars) {
-            magic.append('§').append(c);
-        }
-
-        return magic.toString();
-    }
-
-    public static String color(String input) {
+    @Override
+    public String process(String input) {
         String text = applyFormats(input);
-
         Matcher matcher = DEFAULT_HEX.matcher(text);
         while (matcher.find()) {
             String hexCode = matcher.group();
             text = text.replace(hexCode, toChatColor(hexCode));
         }
-
         return text;
     }
 
-    private static String applyFormats(String input) {
+    private String applyFormats(String input) {
         String text = input;
 
         text = parseDefaultFormat(text);
@@ -54,12 +33,12 @@ public class RGBUtils {
     }
 
     //&#RRGGBB
-    private static String parseDefaultFormat(String input) {
+    private String parseDefaultFormat(String input) {
         return input.replace("&#", "#");
     }
 
     //{#RRGGBB}
-    private static String parseBracketFormat(String input) {
+    private String parseBracketFormat(String input) {
         String text = input;
         Matcher matcher = BRACKET_HEX.matcher(text);
 
@@ -73,7 +52,7 @@ public class RGBUtils {
     }
 
     //&x&R&R&G&G&B&B
-    private static String parseSpigotFormat(String input) {
+    private String parseSpigotFormat(String input) {
         String text = input.replace('§', '&');
 
         Matcher matcher = SPIGOT_HEX.matcher(text);
@@ -84,5 +63,16 @@ public class RGBUtils {
         }
 
         return text;
+    }
+
+    private String toChatColor(String hexCode) {
+        StringBuilder magic = new StringBuilder("§x");
+        char[] colorChars = hexCode.substring(1).toCharArray();
+
+        for (char c : colorChars) {
+            magic.append('§').append(c);
+        }
+
+        return magic.toString();
     }
 }

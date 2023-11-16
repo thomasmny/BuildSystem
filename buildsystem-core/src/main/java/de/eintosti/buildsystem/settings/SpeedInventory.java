@@ -32,14 +32,14 @@ public class SpeedInventory implements Listener {
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 27, Messages.getString("speed_title"));
+        Inventory inventory = Bukkit.createInventory(null, 27, Messages.getString("speed_title", player));
         fillGuiWithGlass(player, inventory);
 
-        inventoryUtils.addUrlSkull(inventory, 11, Messages.getString("speed_1"), "71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530");
-        inventoryUtils.addUrlSkull(inventory, 12, Messages.getString("speed_2"), "4cd9eeee883468881d83848a46bf3012485c23f75753b8fbe8487341419847");
-        inventoryUtils.addUrlSkull(inventory, 13, Messages.getString("speed_3"), "1d4eae13933860a6df5e8e955693b95a8c3b15c36b8b587532ac0996bc37e5");
-        inventoryUtils.addUrlSkull(inventory, 14, Messages.getString("speed_4"), "d2e78fb22424232dc27b81fbcb47fd24c1acf76098753f2d9c28598287db5");
-        inventoryUtils.addUrlSkull(inventory, 15, Messages.getString("speed_5"), "6d57e3bc88a65730e31a14e3f41e038a5ecf0891a6c243643b8e5476ae2");
+        inventoryUtils.addUrlSkull(inventory, 11, Messages.getString("speed_1", player), "71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530");
+        inventoryUtils.addUrlSkull(inventory, 12, Messages.getString("speed_2", player), "4cd9eeee883468881d83848a46bf3012485c23f75753b8fbe8487341419847");
+        inventoryUtils.addUrlSkull(inventory, 13, Messages.getString("speed_3", player), "1d4eae13933860a6df5e8e955693b95a8c3b15c36b8b587532ac0996bc37e5");
+        inventoryUtils.addUrlSkull(inventory, 14, Messages.getString("speed_4", player), "d2e78fb22424232dc27b81fbcb47fd24c1acf76098753f2d9c28598287db5");
+        inventoryUtils.addUrlSkull(inventory, 15, Messages.getString("speed_5", player), "6d57e3bc88a65730e31a14e3f41e038a5ecf0891a6c243643b8e5476ae2");
 
         return inventory;
     }

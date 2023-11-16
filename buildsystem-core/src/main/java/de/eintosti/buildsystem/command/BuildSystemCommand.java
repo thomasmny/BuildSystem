@@ -33,7 +33,7 @@ public class BuildSystemCommand extends PagedCommand implements CommandExecutor 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player"));
+            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
             return true;
         }
         Player player = (Player) sender;
@@ -54,25 +54,25 @@ public class BuildSystemCommand extends PagedCommand implements CommandExecutor 
     }
 
     @Override
-    protected List<TextComponent> getCommands() {
+    protected List<TextComponent> getCommands(Player player) {
         List<TextComponent> commands = Lists.newArrayList(
-                createComponent("/back", Messages.getString("buildsystem_back"), "/back", "buildsystem.back"),
-                createComponent("/blocks", Messages.getString("buildsystem_blocks"), "/blocks", "buildsystem.blocks"),
-                createComponent("/build [player]", Messages.getString("buildsystem_build"), "/build", "buildsystem.build"),
-                createComponent("/config reload", Messages.getString("buildsystem_config"), "/config reload", "buildsystem.config"),
-                createComponent("/day [world]", Messages.getString("buildsystem_day"), "/day", "buildsystem.day"),
-                createComponent("/explosions [world]", Messages.getString("buildsystem_explosions"), "/explosions", "buildsystem.explosions"),
-                createComponent("/gm <gamemode> [player]", Messages.getString("buildsystem_gamemode"), "/gm ", "buildsystem.gamemode"),
-                createComponent("/night [world]", Messages.getString("buildsystem_night"), "/night", "buildsystem.night"),
-                createComponent("/noai [world]", Messages.getString("buildsystem_noai"), "/noai", "buildsystem.noai"),
-                createComponent("/physics [world]", Messages.getString("buildsystem_physics"), "/physics", "buildsystem.physics"),
-                createComponent("/settings", Messages.getString("buildsystem_settings"), "/settings", "buildsystem.settings"),
-                createComponent("/setup", Messages.getString("buildsystem_setup"), "/setup", "buildsystem.setup"),
-                createComponent("/skull [player/id]", Messages.getString("buildsystem_skull"), "/skull", "buildsystem.skull"),
-                createComponent("/spawn", Messages.getString("buildsystem_spawn"), "/spawn", "-"),
-                createComponent("/speed <1-5>", Messages.getString("buildsystem_speed"), "/speed ", "buildsystem.speed"),
-                createComponent("/top", Messages.getString("buildsystem_top"), "/top", "buildsystem.top"),
-                createComponent("/worlds help", Messages.getString("buildsystem_worlds"), "/worlds help", "-")
+                createComponent(player, "/back", "buildsystem_back", "/back", "buildsystem.back"),
+                createComponent(player, "/blocks", "buildsystem_blocks", "/blocks", "buildsystem.blocks"),
+                createComponent(player, "/build [player]", "buildsystem_build", "/build", "buildsystem.build"),
+                createComponent(player, "/config reload", "buildsystem_config", "/config reload", "buildsystem.config"),
+                createComponent(player, "/day [world]", "buildsystem_day", "/day", "buildsystem.day"),
+                createComponent(player, "/explosions [world]", "buildsystem_explosions", "/explosions", "buildsystem.explosions"),
+                createComponent(player, "/gm <gamemode> [player]", "buildsystem_gamemode", "/gm ", "buildsystem.gamemode"),
+                createComponent(player, "/night [world]", "buildsystem_night", "/night", "buildsystem.night"),
+                createComponent(player, "/noai [world]", "buildsystem_noai", "/noai", "buildsystem.noai"),
+                createComponent(player, "/physics [world]", "buildsystem_physics", "/physics", "buildsystem.physics"),
+                createComponent(player, "/settings", "buildsystem_settings", "/settings", "buildsystem.settings"),
+                createComponent(player, "/setup", "buildsystem_setup", "/setup", "buildsystem.setup"),
+                createComponent(player, "/skull [player/id]", "buildsystem_skull", "/skull", "buildsystem.skull"),
+                createComponent(player, "/spawn", "buildsystem_spawn", "/spawn", "-"),
+                createComponent(player, "/speed <1-5>", "buildsystem_speed", "/speed ", "buildsystem.speed"),
+                createComponent(player, "/top", "buildsystem_top", "/top", "buildsystem.top"),
+                createComponent(player, "/worlds help", "buildsystem_worlds", "/worlds help", "-")
         );
         commands.removeIf(textComponent -> textComponent.getText().isEmpty());
         return commands;

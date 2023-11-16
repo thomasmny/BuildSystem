@@ -9,6 +9,7 @@ package de.eintosti.buildsystem.world.data;
 
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.world.BuildWorld;
+import org.bukkit.entity.Player;
 
 public enum WorldStatus {
 
@@ -55,10 +56,11 @@ public enum WorldStatus {
     /**
      * Gets the display name of the status.
      *
+     * @param player The player to parse the placeholders against
      * @return The type's display name
      */
-    public String getName() {
-        return Messages.getString(typeNameKey);
+    public String getName(Player player) {
+        return Messages.getString(typeNameKey, player);
     }
 
     /**

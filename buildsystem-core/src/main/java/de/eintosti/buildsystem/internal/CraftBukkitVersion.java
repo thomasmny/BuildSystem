@@ -188,10 +188,10 @@ public enum CraftBukkitVersion {
         try {
             Constructor<? extends GameRules> constructor = gameRules.getConstructor(String.class, List.class, List.class, List.class);
             return constructor.newInstance(
-                    Messages.getString("worldeditor_gamerules_title"),
-                    Messages.getStringList("worldeditor_gamerules_boolean_enabled"),
-                    Messages.getStringList("worldeditor_gamerules_boolean_disabled"),
-                    Messages.getStringList("worldeditor_gamerules_integer")
+                    Messages.getString("worldeditor_gamerules_title", null),
+                    Messages.getStringList("worldeditor_gamerules_boolean_enabled", null),
+                    Messages.getStringList("worldeditor_gamerules_boolean_disabled", null),
+                    Messages.getStringList("worldeditor_gamerules_integer", null)
             );
         } catch (Exception e) {
             e.printStackTrace();

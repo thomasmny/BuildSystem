@@ -8,6 +8,7 @@
 package de.eintosti.buildsystem.navigator.settings;
 
 import de.eintosti.buildsystem.Messages;
+import org.bukkit.entity.Player;
 
 import java.util.List;
 
@@ -27,8 +28,8 @@ public enum WorldSort {
         this.loreKey = loreKey;
     }
 
-    public List<String> getItemLore() {
-        return Messages.getStringList(loreKey);
+    public List<String> getItemLore(Player player) {
+        return Messages.getStringList(loreKey, player);
     }
 
     public static WorldSort matchWorldSort(String type) {

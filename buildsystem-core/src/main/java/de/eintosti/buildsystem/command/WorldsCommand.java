@@ -11,26 +11,7 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.BuildersSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.DeleteSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.EditSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.HelpSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.ImportAllSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.ImportSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.InfoSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.ItemSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.RemoveBuilderSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.RemoveSpawnSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.RenameSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.SetCreatorSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.SetItemSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.SetPermissionSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.SetSpawnSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.SetStatusSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.TeleportSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.UnimportSubCommand;
+import de.eintosti.buildsystem.command.subcommand.worlds.*;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -50,7 +31,7 @@ public class WorldsCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player"));
+            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
             return true;
         }
         Player player = (Player) sender;

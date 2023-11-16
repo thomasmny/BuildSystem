@@ -30,14 +30,14 @@ public class NavigatorInventory implements Listener {
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 27, Messages.getString("old_navigator_title"));
+        Inventory inventory = Bukkit.createInventory(null, 27, Messages.getString("old_navigator_title", player));
         fillGuiWithGlass(player, inventory);
 
-        inventoryUtils.addUrlSkull(inventory, 11, Messages.getString("old_navigator_world_navigator"), "d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622");
-        inventoryUtils.addUrlSkull(inventory, 12, Messages.getString("old_navigator_world_archive"), "7f6bf958abd78295eed6ffc293b1aa59526e80f54976829ea068337c2f5e8");
-        inventoryUtils.addSkull(inventory, 13, Messages.getString("old_navigator_private_worlds"), player.getName());
+        inventoryUtils.addUrlSkull(inventory, 11, Messages.getString("old_navigator_world_navigator", player), "d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622");
+        inventoryUtils.addUrlSkull(inventory, 12, Messages.getString("old_navigator_world_archive", player), "7f6bf958abd78295eed6ffc293b1aa59526e80f54976829ea068337c2f5e8");
+        inventoryUtils.addSkull(inventory, 13, Messages.getString("old_navigator_private_worlds", player), player.getName());
 
-        inventoryUtils.addUrlSkull(inventory, 15, Messages.getString("old_navigator_settings"), "1cba7277fc895bf3b673694159864b83351a4d14717e476ebda1c3bf38fcf37");
+        inventoryUtils.addUrlSkull(inventory, 15, Messages.getString("old_navigator_settings", player), "1cba7277fc895bf3b673694159864b83351a4d14717e476ebda1c3bf38fcf37");
 
         return inventory;
     }

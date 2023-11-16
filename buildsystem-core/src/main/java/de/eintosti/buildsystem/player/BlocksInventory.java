@@ -21,7 +21,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public class BlocksInventory implements Listener {
@@ -36,46 +35,46 @@ public class BlocksInventory implements Listener {
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 45, Messages.getString("blocks_title"));
+        Inventory inventory = Bukkit.createInventory(null, 45, Messages.getString("blocks_title", player));
         fillGuiWithGlass(player, inventory);
 
-        setCustomBlock(inventory, 1, CustomBlock.FULL_OAK_BARCH);
-        setCustomBlock(inventory, 2, CustomBlock.FULL_SPRUCE_BARCH);
-        setCustomBlock(inventory, 3, CustomBlock.FULL_BIRCH_BARCH);
-        setCustomBlock(inventory, 4, CustomBlock.FULL_JUNGLE_BARCH);
-        setCustomBlock(inventory, 5, CustomBlock.FULL_ACACIA_BARCH);
-        setCustomBlock(inventory, 6, CustomBlock.FULL_DARK_OAK_BARCH);
+        setCustomBlock(inventory, player, 1, CustomBlock.FULL_OAK_BARCH);
+        setCustomBlock(inventory, player, 2, CustomBlock.FULL_SPRUCE_BARCH);
+        setCustomBlock(inventory, player, 3, CustomBlock.FULL_BIRCH_BARCH);
+        setCustomBlock(inventory, player, 4, CustomBlock.FULL_JUNGLE_BARCH);
+        setCustomBlock(inventory, player, 5, CustomBlock.FULL_ACACIA_BARCH);
+        setCustomBlock(inventory, player, 6, CustomBlock.FULL_DARK_OAK_BARCH);
 
-        setCustomBlock(inventory, 10, CustomBlock.RED_MUSHROOM);
-        setCustomBlock(inventory, 11, CustomBlock.BROWN_MUSHROOM);
-        setCustomBlock(inventory, 12, CustomBlock.FULL_MUSHROOM_STEM);
-        setCustomBlock(inventory, 13, CustomBlock.MUSHROOM_STEM);
-        setCustomBlock(inventory, 14, CustomBlock.MUSHROOM_BLOCK);
+        setCustomBlock(inventory, player, 10, CustomBlock.RED_MUSHROOM);
+        setCustomBlock(inventory, player, 11, CustomBlock.BROWN_MUSHROOM);
+        setCustomBlock(inventory, player, 12, CustomBlock.FULL_MUSHROOM_STEM);
+        setCustomBlock(inventory, player, 13, CustomBlock.MUSHROOM_STEM);
+        setCustomBlock(inventory, player, 14, CustomBlock.MUSHROOM_BLOCK);
 
-        setCustomBlock(inventory, 19, CustomBlock.SMOOTH_STONE);
-        setCustomBlock(inventory, 20, CustomBlock.DOUBLE_STONE_SLAB);
-        setCustomBlock(inventory, 21, CustomBlock.SMOOTH_SANDSTONE);
-        setCustomBlock(inventory, 22, CustomBlock.SMOOTH_RED_SANDSTONE);
+        setCustomBlock(inventory, player, 19, CustomBlock.SMOOTH_STONE);
+        setCustomBlock(inventory, player, 20, CustomBlock.DOUBLE_STONE_SLAB);
+        setCustomBlock(inventory, player, 21, CustomBlock.SMOOTH_SANDSTONE);
+        setCustomBlock(inventory, player, 22, CustomBlock.SMOOTH_RED_SANDSTONE);
 
-        setCustomBlock(inventory, 28, CustomBlock.POWERED_REDSTONE_LAMP);
-        setCustomBlock(inventory, 29, CustomBlock.BURNING_FURNACE);
-        setCustomBlock(inventory, 30, CustomBlock.PISTON_HEAD);
-        setCustomBlock(inventory, 31, CustomBlock.COMMAND_BLOCK);
-        setCustomBlock(inventory, 32, CustomBlock.BARRIER);
-        setCustomBlock(inventory, 33, CustomBlock.INVISIBLE_ITEM_FRAME);
+        setCustomBlock(inventory, player, 28, CustomBlock.POWERED_REDSTONE_LAMP);
+        setCustomBlock(inventory, player, 29, CustomBlock.BURNING_FURNACE);
+        setCustomBlock(inventory, player, 30, CustomBlock.PISTON_HEAD);
+        setCustomBlock(inventory, player, 31, CustomBlock.COMMAND_BLOCK);
+        setCustomBlock(inventory, player, 32, CustomBlock.BARRIER);
+        setCustomBlock(inventory, player, 33, CustomBlock.INVISIBLE_ITEM_FRAME);
 
-        setCustomBlock(inventory, 37, CustomBlock.MOB_SPAWNER);
-        setCustomBlock(inventory, 38, CustomBlock.NETHER_PORTAL);
-        setCustomBlock(inventory, 39, CustomBlock.END_PORTAL);
-        setCustomBlock(inventory, 40, CustomBlock.DRAGON_EGG);
-        setCustomBlock(inventory, 41, CustomBlock.DEBUG_STICK);
+        setCustomBlock(inventory, player, 37, CustomBlock.MOB_SPAWNER);
+        setCustomBlock(inventory, player, 38, CustomBlock.NETHER_PORTAL);
+        setCustomBlock(inventory, player, 39, CustomBlock.END_PORTAL);
+        setCustomBlock(inventory, player, 40, CustomBlock.DRAGON_EGG);
+        setCustomBlock(inventory, player, 41, CustomBlock.DEBUG_STICK);
 
         return inventory;
     }
 
-    private void setCustomBlock(Inventory inventory, int position, CustomBlock customBlock) {
+    private void setCustomBlock(Inventory inventory, Player player, int position, CustomBlock customBlock) {
         if (MinecraftVersion.getCurrent().isEqualOrHigherThan(customBlock.getVersion())) {
-            inventoryUtils.addUrlSkull(inventory, position, Messages.getString(customBlock.getKey()), customBlock.getSkullUrl());
+            inventoryUtils.addUrlSkull(inventory, position, Messages.getString(customBlock.getKey(), player), customBlock.getSkullUrl());
         }
     }
 
@@ -97,106 +96,105 @@ public class BlocksInventory implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        PlayerInventory playerInventory = player.getInventory();
         switch (event.getSlot()) {
             case 1:
-                giveCustomBlock(CustomBlock.FULL_OAK_BARCH, playerInventory);
+                giveCustomBlock(player, CustomBlock.FULL_OAK_BARCH);
                 break;
             case 2:
-                giveCustomBlock(CustomBlock.FULL_SPRUCE_BARCH, playerInventory);
+                giveCustomBlock(player, CustomBlock.FULL_SPRUCE_BARCH);
                 break;
             case 3:
-                giveCustomBlock(CustomBlock.FULL_BIRCH_BARCH, playerInventory);
+                giveCustomBlock(player, CustomBlock.FULL_BIRCH_BARCH);
                 break;
             case 4:
-                giveCustomBlock(CustomBlock.FULL_JUNGLE_BARCH, playerInventory);
+                giveCustomBlock(player, CustomBlock.FULL_JUNGLE_BARCH);
                 break;
             case 5:
-                giveCustomBlock(CustomBlock.FULL_ACACIA_BARCH, playerInventory);
+                giveCustomBlock(player, CustomBlock.FULL_ACACIA_BARCH);
                 break;
             case 6:
-                giveCustomBlock(CustomBlock.FULL_DARK_OAK_BARCH, playerInventory);
+                giveCustomBlock(player, CustomBlock.FULL_DARK_OAK_BARCH);
                 break;
 
             case 10:
-                giveCustomBlock(CustomBlock.RED_MUSHROOM, playerInventory);
+                giveCustomBlock(player, CustomBlock.RED_MUSHROOM);
                 break;
             case 11:
-                giveCustomBlock(CustomBlock.BROWN_MUSHROOM, playerInventory);
+                giveCustomBlock(player, CustomBlock.BROWN_MUSHROOM);
                 break;
             case 12:
-                giveCustomBlock(CustomBlock.FULL_MUSHROOM_STEM, playerInventory);
+                giveCustomBlock(player, CustomBlock.FULL_MUSHROOM_STEM);
                 break;
             case 13:
-                giveCustomBlock(CustomBlock.MUSHROOM_STEM, playerInventory);
+                giveCustomBlock(player, CustomBlock.MUSHROOM_STEM);
                 break;
             case 14:
-                giveCustomBlock(CustomBlock.MUSHROOM_BLOCK, playerInventory);
+                giveCustomBlock(player, CustomBlock.MUSHROOM_BLOCK);
                 break;
 
             case 19:
-                giveCustomBlock(CustomBlock.SMOOTH_STONE, playerInventory);
+                giveCustomBlock(player, CustomBlock.SMOOTH_STONE);
                 break;
             case 20:
-                giveCustomBlock(CustomBlock.DOUBLE_STONE_SLAB, playerInventory);
+                giveCustomBlock(player, CustomBlock.DOUBLE_STONE_SLAB);
                 break;
             case 21:
-                giveCustomBlock(CustomBlock.SMOOTH_SANDSTONE, playerInventory);
+                giveCustomBlock(player, CustomBlock.SMOOTH_SANDSTONE);
                 break;
             case 22:
-                giveCustomBlock(CustomBlock.SMOOTH_RED_SANDSTONE, playerInventory);
+                giveCustomBlock(player, CustomBlock.SMOOTH_RED_SANDSTONE);
                 break;
 
             case 28:
-                giveCustomBlock(CustomBlock.POWERED_REDSTONE_LAMP, playerInventory);
+                giveCustomBlock(player, CustomBlock.POWERED_REDSTONE_LAMP);
                 break;
             case 29:
-                giveCustomBlock(CustomBlock.BURNING_FURNACE, playerInventory);
+                giveCustomBlock(player, CustomBlock.BURNING_FURNACE);
                 break;
             case 30:
-                giveCustomBlock(CustomBlock.PISTON_HEAD, playerInventory);
+                giveCustomBlock(player, CustomBlock.PISTON_HEAD);
                 break;
             case 31:
-                giveCustomBlock(CustomBlock.COMMAND_BLOCK, playerInventory);
+                giveCustomBlock(player, CustomBlock.COMMAND_BLOCK);
                 break;
             case 32:
-                giveCustomBlock(CustomBlock.BARRIER, playerInventory, inventoryUtils.getItemStack(XMaterial.BARRIER, Messages.getString(CustomBlock.BARRIER.getKey())));
+                giveCustomBlock(player, CustomBlock.BARRIER, inventoryUtils.getItemStack(XMaterial.BARRIER, Messages.getString(CustomBlock.BARRIER.getKey(), player)));
                 break;
             case 33:
-                ItemStack itemStack = inventoryUtils.getItemStack(XMaterial.ITEM_FRAME, Messages.getString(CustomBlock.INVISIBLE_ITEM_FRAME.getKey()));
+                ItemStack itemStack = inventoryUtils.getItemStack(XMaterial.ITEM_FRAME, Messages.getString(CustomBlock.INVISIBLE_ITEM_FRAME.getKey(), player));
                 ItemMeta itemMeta = itemStack.getItemMeta();
                 itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
                 // Inline imports to allow backwards compatibility
                 itemMeta.getPersistentDataContainer().set(new org.bukkit.NamespacedKey(plugin, "invisible-itemframe"), org.bukkit.persistence.PersistentDataType.BYTE, (byte) 1);
                 itemStack.setItemMeta(itemMeta);
-                giveCustomBlock(CustomBlock.INVISIBLE_ITEM_FRAME, playerInventory, itemStack);
+                giveCustomBlock(player, CustomBlock.INVISIBLE_ITEM_FRAME, itemStack);
                 break;
 
             case 37:
-                giveCustomBlock(CustomBlock.MOB_SPAWNER, playerInventory);
+                giveCustomBlock(player, CustomBlock.MOB_SPAWNER);
                 break;
             case 38:
-                giveCustomBlock(CustomBlock.NETHER_PORTAL, playerInventory);
+                giveCustomBlock(player, CustomBlock.NETHER_PORTAL);
                 break;
             case 39:
-                giveCustomBlock(CustomBlock.END_PORTAL, playerInventory);
+                giveCustomBlock(player, CustomBlock.END_PORTAL);
                 break;
             case 40:
-                giveCustomBlock(CustomBlock.DRAGON_EGG, playerInventory);
+                giveCustomBlock(player, CustomBlock.DRAGON_EGG);
                 break;
             case 41:
-                giveCustomBlock(CustomBlock.DEBUG_STICK, playerInventory, inventoryUtils.getItemStack(XMaterial.DEBUG_STICK, Messages.getString(CustomBlock.DEBUG_STICK.getKey())));
+                giveCustomBlock(player, CustomBlock.DEBUG_STICK, inventoryUtils.getItemStack(XMaterial.DEBUG_STICK, Messages.getString(CustomBlock.DEBUG_STICK.getKey(), player)));
                 break;
         }
     }
 
-    private void giveCustomBlock(CustomBlock customBlock, Inventory inventory, ItemStack itemStack) {
+    private void giveCustomBlock(Player player, CustomBlock customBlock, ItemStack itemStack) {
         if (MinecraftVersion.getCurrent().isEqualOrHigherThan(customBlock.getVersion())) {
-            inventory.addItem(itemStack);
+            player.getInventory().addItem(itemStack);
         }
     }
 
-    private void giveCustomBlock(CustomBlock customBlock, Inventory inventory) {
-        giveCustomBlock(customBlock, inventory, inventoryUtils.getUrlSkull(Messages.getString(customBlock.getKey()), customBlock.getSkullUrl()));
+    private void giveCustomBlock(Player player, CustomBlock customBlock) {
+        giveCustomBlock(player, customBlock, inventoryUtils.getUrlSkull(Messages.getString(customBlock.getKey(), player), customBlock.getSkullUrl()));
     }
 }

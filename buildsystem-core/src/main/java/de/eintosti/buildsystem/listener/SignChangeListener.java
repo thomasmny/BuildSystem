@@ -8,7 +8,7 @@
 package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.util.RGBUtils;
+import de.eintosti.buildsystem.util.color.ColorAPI;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -31,7 +31,7 @@ public class SignChangeListener implements Listener {
         for (int i = 0; i < event.getLines().length; i++) {
             String line = event.getLine(i);
             if (line != null) {
-                String coloredLine = ChatColor.translateAlternateColorCodes('&', RGBUtils.color(line));
+                String coloredLine = ChatColor.translateAlternateColorCodes('&', ColorAPI.process(line));
                 event.setLine(i, coloredLine);
             }
         }

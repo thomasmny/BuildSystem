@@ -156,7 +156,7 @@ public class BuildWorldCreator {
 
         Messages.sendMessage(player, "worlds_world_creation_started",
                 new AbstractMap.SimpleEntry<>("%world%", worldName),
-                new AbstractMap.SimpleEntry<>("%type%", worldType.getName())
+                new AbstractMap.SimpleEntry<>("%type%", worldType.getName(player))
         );
         finishPreparationsAndGenerate(buildWorld);
         teleportAfterCreation(player);

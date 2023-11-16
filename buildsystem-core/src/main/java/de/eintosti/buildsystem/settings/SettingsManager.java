@@ -19,7 +19,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.ArrayList;
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,18 +34,12 @@ public class SettingsManager {
 
     private final Map<UUID, FastBoard> boards;
 
-    private final String scoreboardTitle;
-    private final List<String> scoreboardBody;
-
     public SettingsManager(BuildSystem plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
         this.worldManager = plugin.getWorldManager();
 
         this.boards = new HashMap<>();
-
-        this.scoreboardTitle = Messages.getString("title");
-        this.scoreboardBody = Messages.getStringList("body");
     }
 
     public Settings getSettings(UUID uuid) {
@@ -90,7 +84,7 @@ public class SettingsManager {
             return;
         }
 
-        board.updateTitle(this.scoreboardTitle);
+        board.updateTitle(Messages.getString("title", player));
         BukkitTask scoreboardTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> updateScoreboard(player, board), 0L, 20L);
         settings.setScoreboardTask(scoreboardTask);
     }
@@ -114,11 +108,7 @@ public class SettingsManager {
     }
 
     private void updateScoreboard(Player player, FastBoard board) {
-        List<String> body = new ArrayList<>();
-
-        for (String line : this.scoreboardBody) {
-            body.add(injectPlaceholders(line, player));
-        }
+        List<String> body = Messages.getStringList("body", player, (line) -> getPlaceholders(line, player));
 
         // Scoreboard line cannot be longer than 30 chars in versions <1.13
         if (MinecraftVersion.getCurrent().isLowerThan(MinecraftVersion.AQUATIC_13)) {
@@ -128,28 +118,30 @@ public class SettingsManager {
         board.updateLines(body);
     }
 
-    private String injectPlaceholders(String originalString, Player player) {
+    @SuppressWarnings("unchecked")
+    private Map.Entry<String, Object>[] getPlaceholders(String originalString, Player player) {
         if (!originalString.matches(".*%*%.*")) {
-            return originalString;
+            return new Map.Entry[0]; // Don't replace anything
         }
 
         String worldName = player.getWorld().getName();
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
 
-        return originalString
-                .replace("%world%", worldName)
-                .replace("%status%", parseWorldInformation(buildWorld, "%status%"))
-                .replace("%permission%", parseWorldInformation(buildWorld, "%permission%"))
-                .replace("%project%", parseWorldInformation(buildWorld, "%project%"))
-                .replace("%creator%", parseWorldInformation(buildWorld, "%creator%"))
-                .replace("%creation%", parseWorldInformation(buildWorld, "%creation%"))
-                .replace("%lastedited%", parseWorldInformation(buildWorld, "%lastedited%"))
-                .replace("%lastloaded%", parseWorldInformation(buildWorld, "%lastloaded%"))
-                .replace("%lastunloaded%", parseWorldInformation(buildWorld, "%lastunloaded%"));
+        return new Map.Entry[]{
+                new AbstractMap.SimpleEntry<>("%world%", worldName),
+                new AbstractMap.SimpleEntry<>("%status%", parseWorldInformation(player, buildWorld, "%status%")),
+                new AbstractMap.SimpleEntry<>("%permission%", parseWorldInformation(player, buildWorld, "%permission%")),
+                new AbstractMap.SimpleEntry<>("%project%", parseWorldInformation(player, buildWorld, "%project%")),
+                new AbstractMap.SimpleEntry<>("%creator%", parseWorldInformation(player, buildWorld, "%creator%")),
+                new AbstractMap.SimpleEntry<>("%creation%", parseWorldInformation(player, buildWorld, "%creation%")),
+                new AbstractMap.SimpleEntry<>("%lastedited%", parseWorldInformation(player, buildWorld, "%lastedited%")),
+                new AbstractMap.SimpleEntry<>("%lastloaded%", parseWorldInformation(player, buildWorld, "%lastloaded%")),
+                new AbstractMap.SimpleEntry<>("%lastunloaded%", parseWorldInformation(player, buildWorld, "%lastunloaded%"))
+        };
     }
 
     // Is there an easier way of doing this?
-    private String parseWorldInformation(BuildWorld buildWorld, String input) {
+    private String parseWorldInformation(Player player, BuildWorld buildWorld, String input) {
         if (buildWorld == null) {
             return "§f-";
         }
@@ -157,7 +149,7 @@ public class SettingsManager {
         WorldData worldData = buildWorld.getData();
         switch (input) {
             case "%status%":
-                return worldData.status().get().getName();
+                return worldData.status().get().getName(player);
             case "%permission%":
                 return worldData.permission().get();
             case "%project%":

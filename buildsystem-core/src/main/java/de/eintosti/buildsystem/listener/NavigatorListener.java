@@ -87,7 +87,7 @@ public class NavigatorListener implements Listener {
             return;
         }
 
-        if (isCloseNavigatorItem(itemStack)) {
+        if (isCloseNavigatorItem(player, itemStack)) {
             event.setCancelled(true);
             playerManager.closeNavigator(player);
             return;
@@ -99,7 +99,7 @@ public class NavigatorListener implements Listener {
         }
 
         XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-        if (xMaterial != configValues.getNavigatorItem() || !itemMeta.getDisplayName().equals(Messages.getString("navigator_item"))) {
+        if (xMaterial != configValues.getNavigatorItem() || !itemMeta.getDisplayName().equals(Messages.getString("navigator_item", player))) {
             return;
         }
 
@@ -126,8 +126,8 @@ public class NavigatorListener implements Listener {
 
             summonNewNavigator(player);
 
-            String findItemName = Messages.getString("navigator_item");
-            ItemStack replaceItem = inventoryUtils.getItemStack(XMaterial.BARRIER, Messages.getString("barrier_item"));
+            String findItemName = Messages.getString("navigator_item", player);
+            ItemStack replaceItem = inventoryUtils.getItemStack(XMaterial.BARRIER, Messages.getString("barrier_item", player));
             inventoryUtils.replaceItem(player, findItemName, configValues.getNavigatorItem(), replaceItem);
         }
     }
@@ -162,7 +162,7 @@ public class NavigatorListener implements Listener {
             return;
         }
 
-        if (isCloseNavigatorItem(player.getItemInHand())) {
+        if (isCloseNavigatorItem(player, player.getItemInHand())) {
             event.setCancelled(true);
             playerManager.closeNavigator(player);
             return;
@@ -229,7 +229,7 @@ public class NavigatorListener implements Listener {
             return;
         }
 
-        if (isCloseNavigatorItem(event.getItemDrop().getItemStack())) {
+        if (isCloseNavigatorItem(player, event.getItemDrop().getItemStack())) {
             event.setCancelled(true);
         }
     }
@@ -237,10 +237,11 @@ public class NavigatorListener implements Listener {
     /**
      * Checks if the given item is the item which is used to close the {@link NavigatorType#NEW} navigator.
      *
+     * @param player    The player used to get the item name
      * @param itemStack The item stack to check
      * @return {@code true} if the item is the navigator close item, {@code false} otherwise
      */
-    private boolean isCloseNavigatorItem(ItemStack itemStack) {
+    private boolean isCloseNavigatorItem(Player player, ItemStack itemStack) {
         if (itemStack.getType() == Material.AIR) {
             return false;
         }
@@ -254,7 +255,7 @@ public class NavigatorListener implements Listener {
             return false;
         }
 
-        return itemMeta.getDisplayName().equals(Messages.getString("barrier_item"));
+        return itemMeta.getDisplayName().equals(Messages.getString("barrier_item", player));
     }
 
     /**

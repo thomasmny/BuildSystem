@@ -34,26 +34,26 @@ public class DesignInventory implements Listener {
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 36, Messages.getString("design_title"));
+        Inventory inventory = Bukkit.createInventory(null, 36, Messages.getString("design_title", player));
         fillGuiWithGlass(inventory, player);
 
-        setItem(player, inventory, 10, XMaterial.RED_STAINED_GLASS, Messages.getString("design_red"), DesignColor.RED);
-        setItem(player, inventory, 11, XMaterial.ORANGE_STAINED_GLASS, Messages.getString("design_orange"), DesignColor.ORANGE);
-        setItem(player, inventory, 12, XMaterial.YELLOW_STAINED_GLASS, Messages.getString("design_yellow"), DesignColor.YELLOW);
-        setItem(player, inventory, 13, XMaterial.PINK_STAINED_GLASS, Messages.getString("design_pink"), DesignColor.PINK);
-        setItem(player, inventory, 14, XMaterial.MAGENTA_STAINED_GLASS, Messages.getString("design_magenta"), DesignColor.MAGENTA);
-        setItem(player, inventory, 15, XMaterial.PURPLE_STAINED_GLASS, Messages.getString("design_purple"), DesignColor.PURPLE);
-        setItem(player, inventory, 16, XMaterial.BROWN_STAINED_GLASS, Messages.getString("design_brown"), DesignColor.BROWN);
+        setItem(player, inventory, 10, XMaterial.RED_STAINED_GLASS, "design_red", DesignColor.RED);
+        setItem(player, inventory, 11, XMaterial.ORANGE_STAINED_GLASS, "design_orange", DesignColor.ORANGE);
+        setItem(player, inventory, 12, XMaterial.YELLOW_STAINED_GLASS, "design_yellow", DesignColor.YELLOW);
+        setItem(player, inventory, 13, XMaterial.PINK_STAINED_GLASS, "design_pink", DesignColor.PINK);
+        setItem(player, inventory, 14, XMaterial.MAGENTA_STAINED_GLASS, "design_magenta", DesignColor.MAGENTA);
+        setItem(player, inventory, 15, XMaterial.PURPLE_STAINED_GLASS, "design_purple", DesignColor.PURPLE);
+        setItem(player, inventory, 16, XMaterial.BROWN_STAINED_GLASS, "design_brown", DesignColor.BROWN);
 
-        setItem(player, inventory, 18, XMaterial.LIME_STAINED_GLASS, Messages.getString("design_lime"), DesignColor.LIME);
-        setItem(player, inventory, 19, XMaterial.GREEN_STAINED_GLASS, Messages.getString("design_green"), DesignColor.GREEN);
-        setItem(player, inventory, 20, XMaterial.BLUE_STAINED_GLASS, Messages.getString("design_blue"), DesignColor.BLUE);
-        setItem(player, inventory, 21, XMaterial.CYAN_STAINED_GLASS, Messages.getString("design_aqua"), DesignColor.CYAN);
-        setItem(player, inventory, 22, XMaterial.LIGHT_BLUE_STAINED_GLASS, Messages.getString("design_light_blue"), DesignColor.LIGHT_BLUE);
-        setItem(player, inventory, 23, XMaterial.WHITE_STAINED_GLASS, Messages.getString("design_white"), DesignColor.WHITE);
-        setItem(player, inventory, 24, XMaterial.LIGHT_GRAY_STAINED_GLASS, Messages.getString("design_grey"), DesignColor.LIGHT_GRAY);
-        setItem(player, inventory, 25, XMaterial.GRAY_STAINED_GLASS, Messages.getString("design_dark_grey"), DesignColor.GRAY);
-        setItem(player, inventory, 26, XMaterial.BLACK_STAINED_GLASS, Messages.getString("design_black"), DesignColor.BLACK);
+        setItem(player, inventory, 18, XMaterial.LIME_STAINED_GLASS, "design_lime", DesignColor.LIME);
+        setItem(player, inventory, 19, XMaterial.GREEN_STAINED_GLASS, "design_green", DesignColor.GREEN);
+        setItem(player, inventory, 20, XMaterial.BLUE_STAINED_GLASS, "design_blue", DesignColor.BLUE);
+        setItem(player, inventory, 21, XMaterial.CYAN_STAINED_GLASS, "design_aqua", DesignColor.CYAN);
+        setItem(player, inventory, 22, XMaterial.LIGHT_BLUE_STAINED_GLASS, "design_light_blue", DesignColor.LIGHT_BLUE);
+        setItem(player, inventory, 23, XMaterial.WHITE_STAINED_GLASS, "design_white", DesignColor.WHITE);
+        setItem(player, inventory, 24, XMaterial.LIGHT_GRAY_STAINED_GLASS, "design_grey", DesignColor.LIGHT_GRAY);
+        setItem(player, inventory, 25, XMaterial.GRAY_STAINED_GLASS, "design_dark_grey", DesignColor.GRAY);
+        setItem(player, inventory, 26, XMaterial.BLACK_STAINED_GLASS, "design_black", DesignColor.BLACK);
 
         return inventory;
     }
@@ -71,10 +71,11 @@ public class DesignInventory implements Listener {
         }
     }
 
-    private void setItem(Player player, Inventory inventory, int position, XMaterial material, String displayName, DesignColor color) {
+    private void setItem(Player player, Inventory inventory, int position, XMaterial material, String key, DesignColor color) {
         SettingsManager settingsManager = plugin.getSettingsManager();
         Settings settings = settingsManager.getSettings(player);
 
+        String displayName = Messages.getString(key, player);
         ItemStack itemStack = inventoryUtils.getItemStack(material, settings.getDesignColor() == color ? "§a" + displayName : "§7" + displayName);
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta != null) {

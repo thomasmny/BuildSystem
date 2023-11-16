@@ -40,7 +40,7 @@ public class BlockPlaceListener implements Listener {
     private Map<String, String> initBlockLookup() {
         Map<String, String> lookup = new HashMap<>();
         for (CustomBlock customBlock : CustomBlock.values()) {
-            lookup.put(Messages.getString(customBlock.getKey()), customBlock.getKey());
+            lookup.put(Messages.getString(customBlock.getKey(), null), customBlock.getKey());
         }
         return lookup;
     }

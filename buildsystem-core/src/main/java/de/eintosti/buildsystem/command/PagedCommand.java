@@ -31,12 +31,12 @@ public abstract class PagedCommand {
     }
 
     protected void sendMessage(Player player, int pageNum) {
-        List<TextComponent> commands = getCommands();
+        List<TextComponent> commands = getCommands(player);
         int numPages = (int) Math.ceil((double) commands.size() / MAX_COMMANDS_PER_PAGE);
 
         List<TextComponent> page = createPage(commands, numPages, pageNum);
         page.add(0, new TextComponent("§7§m----------------------------------------------------"));
-        page.add(1, new TextComponent(Messages.getString(this.title)
+        page.add(1, new TextComponent(Messages.getString(this.title, player)
                 .replace("%page%", String.valueOf(pageNum))
                 .replace("%max%", String.valueOf(numPages))
                 .concat("\n"))
@@ -64,19 +64,19 @@ public abstract class PagedCommand {
         return pages.get(page - 1);
     }
 
-    protected abstract List<TextComponent> getCommands();
+    protected abstract List<TextComponent> getCommands(Player player);
 
-    protected TextComponent createComponent(String command, String text, String suggest, String permission) {
+    protected TextComponent createComponent(Player player, String commandKey, String text, String suggest, String permission) {
         if (text.isEmpty()) {
             return new TextComponent();
         }
 
-        TextComponent commandComponent = new TextComponent("§b" + command);
+        TextComponent commandComponent = new TextComponent("§b" + Messages.getString(commandKey, player));
         TextComponent textComponent = new TextComponent(" §8» " + text);
 
         commandComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, suggest));
         commandComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new ComponentBuilder(Messages.getString(this.permission, new AbstractMap.SimpleEntry<>("%permission%", permission))).create()
+                new ComponentBuilder(Messages.getString(this.permission, player, new AbstractMap.SimpleEntry<>("%permission%", permission))).create()
         ));
         commandComponent.addExtra(textComponent);
         return commandComponent;

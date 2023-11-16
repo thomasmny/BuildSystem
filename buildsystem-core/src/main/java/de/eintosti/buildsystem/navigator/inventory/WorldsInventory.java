@@ -43,7 +43,7 @@ public class WorldsInventory extends FilteredWorldsInventory {
 
     private void addWorldCreateItem(Inventory inventory, Player player) {
         if (player.hasPermission("buildsystem.create.public")) {
-            inventoryUtils.addUrlSkull(inventory, 49, Messages.getString("world_navigator_create_world"), "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
+            inventoryUtils.addUrlSkull(inventory, 49, Messages.getString("world_navigator_create_world", player), "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
         } else {
             inventoryUtils.addGlassPane(plugin, player, inventory, 49);
         }

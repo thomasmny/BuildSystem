@@ -13,6 +13,7 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.world.data.WorldStatus;
 import de.eintosti.buildsystem.world.data.WorldType;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -30,7 +31,7 @@ public class InventoryCloseListener implements Listener {
 
     @EventHandler
     public void onSetupInventoryClose(InventoryCloseEvent event) {
-        if (!event.getView().getTitle().equals(Messages.getString("setup_title"))) {
+        if (!event.getView().getTitle().equals(Messages.getString("setup_title", (Player) event.getPlayer()))) {
             return;
         }
         setNewItems(event);

@@ -39,7 +39,7 @@ public class NoAICommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player"));
+            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
             return true;
         }
 

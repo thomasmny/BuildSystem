@@ -31,7 +31,7 @@ public class GamemodeCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player"));
+            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
             return true;
         }
 
@@ -46,22 +46,22 @@ public class GamemodeCommand implements CommandExecutor {
                 case "survival":
                 case "s":
                 case "0":
-                    setGamemode(player, args, GameMode.SURVIVAL, Messages.getString("gamemode_survival"));
+                    setGamemode(player, args, GameMode.SURVIVAL, Messages.getString("gamemode_survival", player));
                     break;
                 case "creative":
                 case "c":
                 case "1":
-                    setGamemode(player, args, GameMode.CREATIVE, Messages.getString("gamemode_creative"));
+                    setGamemode(player, args, GameMode.CREATIVE, Messages.getString("gamemode_creative", player));
                     break;
                 case "adventure":
                 case "a":
                 case "2":
-                    setGamemode(player, args, GameMode.ADVENTURE, Messages.getString("gamemode_adventure"));
+                    setGamemode(player, args, GameMode.ADVENTURE, Messages.getString("gamemode_adventure", player));
                     break;
                 case "spectator":
                 case "sp":
                 case "3":
-                    setGamemode(player, args, GameMode.SPECTATOR, Messages.getString("gamemode_spectator"));
+                    setGamemode(player, args, GameMode.SPECTATOR, Messages.getString("gamemode_spectator", player));
                     break;
                 default:
                     sendUsageMessage(player);
