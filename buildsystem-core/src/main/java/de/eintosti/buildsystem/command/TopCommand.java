@@ -17,8 +17,8 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import com.cryptomorin.xseries.XSound;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.world.BuildWorldManager;
 import io.papermc.lib.PaperLib;

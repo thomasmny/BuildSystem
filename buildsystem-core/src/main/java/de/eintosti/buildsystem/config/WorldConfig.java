@@ -19,8 +19,6 @@ package de.eintosti.buildsystem.config;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.BuildWorldCreator;
-import de.eintosti.buildsystem.api.world.WorldManager;
 import de.eintosti.buildsystem.world.BuildWorldManager;
 import de.eintosti.buildsystem.world.CraftBuildWorld;
 import de.eintosti.buildsystem.world.CraftBuildWorldCreator;
