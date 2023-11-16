@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
@@ -41,7 +41,7 @@ public class GamemodeCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
+            plugin.getLogger().warning(MessagesOld.getString("sender_not_player", null));
             return true;
         }
 
@@ -56,22 +56,22 @@ public class GamemodeCommand implements CommandExecutor {
                 case "survival":
                 case "s":
                 case "0":
-                    setGamemode(player, args, GameMode.SURVIVAL, Messages.getString("gamemode_survival", player));
+                    setGamemode(player, args, GameMode.SURVIVAL, MessagesOld.getString("gamemode_survival", player));
                     break;
                 case "creative":
                 case "c":
                 case "1":
-                    setGamemode(player, args, GameMode.CREATIVE, Messages.getString("gamemode_creative", player));
+                    setGamemode(player, args, GameMode.CREATIVE, MessagesOld.getString("gamemode_creative", player));
                     break;
                 case "adventure":
                 case "a":
                 case "2":
-                    setGamemode(player, args, GameMode.ADVENTURE, Messages.getString("gamemode_adventure", player));
+                    setGamemode(player, args, GameMode.ADVENTURE, MessagesOld.getString("gamemode_adventure", player));
                     break;
                 case "spectator":
                 case "sp":
                 case "3":
-                    setGamemode(player, args, GameMode.SPECTATOR, Messages.getString("gamemode_spectator", player));
+                    setGamemode(player, args, GameMode.SPECTATOR, MessagesOld.getString("gamemode_spectator", player));
                     break;
                 default:
                     sendUsageMessage(player);
@@ -96,7 +96,7 @@ public class GamemodeCommand implements CommandExecutor {
     }
 
     private void sendUsageMessage(Player player) {
-        Messages.sendMessage(player, "gamemode_usage");
+        MessagesOld.sendMessage(player, "gamemode_usage");
     }
 
     private void setPlayerGamemode(Player player, GameMode gameMode, String gameModeName) {
@@ -106,7 +106,7 @@ public class GamemodeCommand implements CommandExecutor {
         }
 
         player.setGameMode(gameMode);
-        Messages.sendMessage(player, "gamemode_set_self", new AbstractMap.SimpleEntry<>("%gamemode%", gameModeName));
+        MessagesOld.sendMessage(player, "gamemode_set_self", new AbstractMap.SimpleEntry<>("%gamemode%", gameModeName));
     }
 
     private void setTargetGamemode(Player player, String[] args, GameMode gameMode, String gameModeName) {
@@ -117,13 +117,13 @@ public class GamemodeCommand implements CommandExecutor {
 
         Player target = Bukkit.getPlayerExact(args[1]);
         if (target == null) {
-            Messages.sendMessage(player, "gamemode_player_not_found");
+            MessagesOld.sendMessage(player, "gamemode_player_not_found");
             return;
         }
 
         target.setGameMode(gameMode);
-        Messages.sendMessage(target, "gamemode_set_self", new AbstractMap.SimpleEntry<>("%gamemode%", gameModeName));
-        Messages.sendMessage(player, "gamemode_set_other",
+        MessagesOld.sendMessage(target, "gamemode_set_self", new AbstractMap.SimpleEntry<>("%gamemode%", gameModeName));
+        MessagesOld.sendMessage(player, "gamemode_set_other",
                 new AbstractMap.SimpleEntry<>("%target%", target.getName()),
                 new AbstractMap.SimpleEntry<>("%gamemode%", gameModeName)
         );

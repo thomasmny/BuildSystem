@@ -19,11 +19,11 @@ package de.eintosti.buildsystem.listener;
 
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldStatus;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.settings.SettingsManager;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.world.BuildWorldManager;
@@ -246,7 +246,7 @@ public class PlayerCommandPreprocessListener implements Listener {
         Player player = event.getPlayer();
 
         if (command.equalsIgnoreCase("/clear")) {
-            ItemStack navigatorItem = inventoryUtils.getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item", player));
+            ItemStack navigatorItem = inventoryUtils.getItemStack(configValues.getNavigatorItem(), MessagesOld.getString("navigator_item", player));
             if (!player.getInventory().contains(navigatorItem)) {
                 return;
             }
@@ -278,7 +278,7 @@ public class PlayerCommandPreprocessListener implements Listener {
     private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
         if (!worldManager.canBypassBuildRestriction(player) && buildWorld.getData().status().get() == WorldStatus.ARCHIVE) {
             event.setCancelled(true);
-            Messages.sendMessage(player, "command_archive_world");
+            MessagesOld.sendMessage(player, "command_archive_world");
             return true;
         }
         return false;
@@ -295,7 +295,7 @@ public class PlayerCommandPreprocessListener implements Listener {
 
         if (buildWorld.getData().buildersEnabled().get() && !buildWorld.isBuilder(player)) {
             event.setCancelled(true);
-            Messages.sendMessage(player, "command_not_builder");
+            MessagesOld.sendMessage(player, "command_not_builder");
         }
     }
 }

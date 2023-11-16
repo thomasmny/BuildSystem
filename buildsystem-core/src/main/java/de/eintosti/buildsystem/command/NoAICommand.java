@@ -18,9 +18,9 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.util.EntityAIManager;
 import de.eintosti.buildsystem.world.BuildWorldManager;
 import org.bukkit.Bukkit;
@@ -49,7 +49,7 @@ public class NoAICommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
+            plugin.getLogger().warning(MessagesOld.getString("sender_not_player", null));
             return true;
         }
 
@@ -68,7 +68,7 @@ public class NoAICommand implements CommandExecutor {
                 toggleAI(player, Bukkit.getWorld(args[0]));
                 break;
             default:
-                Messages.sendMessage(player, "noai_usage");
+                MessagesOld.sendMessage(player, "noai_usage");
                 break;
         }
 
@@ -77,23 +77,23 @@ public class NoAICommand implements CommandExecutor {
 
     private void toggleAI(Player player, World bukkitWorld) {
         if (bukkitWorld == null) {
-            Messages.sendMessage(player, "noai_unknown_world");
+            MessagesOld.sendMessage(player, "noai_unknown_world");
             return;
         }
 
         BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
         if (buildWorld == null) {
-            Messages.sendMessage(player, "noai_world_not_imported");
+            MessagesOld.sendMessage(player, "noai_world_not_imported");
             return;
         }
 
         WorldData worldData = buildWorld.getData();
         if (worldData.mobAi().get()) {
             worldData.mobAi().set(false);
-            Messages.sendMessage(player, "noai_activated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+            MessagesOld.sendMessage(player, "noai_activated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
         } else {
             worldData.mobAi().set(true);
-            Messages.sendMessage(player, "noai_deactivated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+            MessagesOld.sendMessage(player, "noai_deactivated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
         }
 
         boolean mobAI = worldData.mobAi().get();

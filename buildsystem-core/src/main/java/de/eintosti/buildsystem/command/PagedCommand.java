@@ -17,7 +17,7 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -46,7 +46,7 @@ public abstract class PagedCommand {
 
         List<TextComponent> page = createPage(commands, numPages, pageNum);
         page.add(0, new TextComponent("§7§m----------------------------------------------------"));
-        page.add(1, new TextComponent(Messages.getString(this.title, player)
+        page.add(1, new TextComponent(MessagesOld.getString(this.title, player)
                 .replace("%page%", String.valueOf(pageNum))
                 .replace("%max%", String.valueOf(numPages))
                 .concat("\n"))
@@ -81,12 +81,12 @@ public abstract class PagedCommand {
             return new TextComponent();
         }
 
-        TextComponent commandComponent = new TextComponent("§b" + Messages.getString(commandKey, player));
+        TextComponent commandComponent = new TextComponent("§b" + MessagesOld.getString(commandKey, player));
         TextComponent textComponent = new TextComponent(" §8» " + text);
 
         commandComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, suggest));
         commandComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new ComponentBuilder(Messages.getString(this.permission, player, new AbstractMap.SimpleEntry<>("%permission%", permission))).create()
+                new ComponentBuilder(MessagesOld.getString(this.permission, player, new AbstractMap.SimpleEntry<>("%permission%", permission))).create()
         ));
         commandComponent.addExtra(textComponent);
         return commandComponent;

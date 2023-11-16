@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.player.BuildPlayerManager;
 import de.eintosti.buildsystem.player.CraftBuildPlayer;
 import io.papermc.lib.PaperLib;
@@ -46,7 +46,7 @@ public class BackCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
+            plugin.getLogger().warning(MessagesOld.getString("sender_not_player", null));
             return true;
         }
 
@@ -59,7 +59,7 @@ public class BackCommand implements CommandExecutor {
         if (args.length == 0) {
             teleportBack(player);
         } else {
-            Messages.sendMessage(player, "back_usage");
+            MessagesOld.sendMessage(player, "back_usage");
         }
 
         return true;
@@ -71,7 +71,7 @@ public class BackCommand implements CommandExecutor {
         Location previousLocation = buildPlayer.getPreviousLocation();
 
         if (previousLocation == null) {
-            Messages.sendMessage(player, "back_failed");
+            MessagesOld.sendMessage(player, "back_failed");
             return;
         }
 
@@ -81,7 +81,7 @@ public class BackCommand implements CommandExecutor {
                         return;
                     }
                     XSound.ENTITY_ZOMBIE_INFECT.play(player);
-                    Messages.sendMessage(player, "back_teleported");
+                    MessagesOld.sendMessage(player, "back_teleported");
                     buildPlayer.setPreviousLocation(null);
                 });
     }

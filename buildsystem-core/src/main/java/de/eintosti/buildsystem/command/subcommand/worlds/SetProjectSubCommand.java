@@ -19,9 +19,9 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.world.BuildWorldManager;
@@ -49,13 +49,13 @@ public class SetProjectSubCommand implements SubCommand {
         }
 
         if (args.length > 2) {
-            Messages.sendMessage(player, "worlds_setproject_usage");
+            MessagesOld.sendMessage(player, "worlds_setproject_usage");
             return;
         }
 
         CraftBuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_setproject_unknown_world");
+            MessagesOld.sendMessage(player, "worlds_setproject_unknown_world");
             return;
         }
 
@@ -68,7 +68,7 @@ public class SetProjectSubCommand implements SubCommand {
             plugin.getPlayerManager().forceUpdateSidebar(buildWorld);
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
-            Messages.sendMessage(player, "worlds_setproject_set", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+            MessagesOld.sendMessage(player, "worlds_setproject_set", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
 
             if (closeInventory) {
                 player.closeInventory();

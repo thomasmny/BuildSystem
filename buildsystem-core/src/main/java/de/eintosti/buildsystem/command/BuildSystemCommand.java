@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.command;
 
 import com.google.common.collect.Lists;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -43,7 +43,7 @@ public class BuildSystemCommand extends PagedCommand implements CommandExecutor 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
+            plugin.getLogger().warning(MessagesOld.getString("sender_not_player", null));
             return true;
         }
         Player player = (Player) sender;
@@ -55,10 +55,10 @@ public class BuildSystemCommand extends PagedCommand implements CommandExecutor 
                 int page = Integer.parseInt(args[0]);
                 sendMessage(player, page);
             } catch (NumberFormatException e) {
-                Messages.sendMessage(player, "buildsystem_invalid_page");
+                MessagesOld.sendMessage(player, "buildsystem_invalid_page");
             }
         } else {
-            Messages.sendMessage(player, "buildsystem_usage");
+            MessagesOld.sendMessage(player, "buildsystem_usage");
         }
         return true;
     }

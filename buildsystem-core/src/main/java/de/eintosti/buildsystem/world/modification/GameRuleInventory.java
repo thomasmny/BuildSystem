@@ -20,8 +20,8 @@ package de.eintosti.buildsystem.world.modification;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.version.gamerules.GameRules;
 import de.eintosti.buildsystem.world.CraftBuildWorld;
@@ -69,13 +69,13 @@ public class GameRuleInventory implements Listener {
         int invIndex = gameRules.getInvIndex(playerUUID);
 
         if (numGameRules > 1 && invIndex > 0) {
-            inventoryUtils.addUrlSkull(inventory, 36, Messages.getString("gui_previous_page", player), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
+            inventoryUtils.addUrlSkull(inventory, 36, MessagesOld.getString("gui_previous_page", player), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
         } else {
             inventoryUtils.addGlassPane(plugin, player, inventory, 36);
         }
 
         if (numGameRules > 1 && invIndex < (numGameRules - 1)) {
-            inventoryUtils.addUrlSkull(inventory, 44, Messages.getString("gui_next_page", player), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
+            inventoryUtils.addUrlSkull(inventory, 44, MessagesOld.getString("gui_next_page", player), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
         } else {
             inventoryUtils.addGlassPane(plugin, player, inventory, 44);
         }
@@ -95,7 +95,7 @@ public class GameRuleInventory implements Listener {
         CraftBuildWorld buildWorld = plugin.getPlayerManager().getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();
-            Messages.sendMessage(player, "worlds_edit_error");
+            MessagesOld.sendMessage(player, "worlds_edit_error");
             return;
         }
 

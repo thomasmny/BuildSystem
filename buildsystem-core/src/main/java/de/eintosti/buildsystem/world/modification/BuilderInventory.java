@@ -20,10 +20,10 @@ package de.eintosti.buildsystem.world.modification;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.Builder;
 import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.PaginatedInventory;
 import de.eintosti.buildsystem.util.StringUtils;
@@ -59,14 +59,14 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
     }
 
     private Inventory createInventory(BuildWorld buildWorld, Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 27, Messages.getString("worldeditor_builders_title", player));
+        Inventory inventory = Bukkit.createInventory(null, 27, MessagesOld.getString("worldeditor_builders_title", player));
         fillGuiWithGlass(inventory, player);
 
         addCreatorInfoItem(inventory, buildWorld, player);
         addBuilderAddItem(inventory, buildWorld, player);
 
-        inventoryUtils.addUrlSkull(inventory, 18, Messages.getString("gui_previous_page", player), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
-        inventoryUtils.addUrlSkull(inventory, 26, Messages.getString("gui_next_page", player), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
+        inventoryUtils.addUrlSkull(inventory, 18, MessagesOld.getString("gui_previous_page", player), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
+        inventoryUtils.addUrlSkull(inventory, 26, MessagesOld.getString("gui_next_page", player), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
 
         return inventory;
     }
@@ -74,10 +74,10 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
     private void addCreatorInfoItem(Inventory inventory, BuildWorld buildWorld, Player player) {
         String creatorName = buildWorld.getCreator();
         if (creatorName == null || creatorName.equalsIgnoreCase("-")) {
-            inventoryUtils.addItemStack(inventory, 4, XMaterial.BARRIER, Messages.getString("worldeditor_builders_no_creator_item", player));
+            inventoryUtils.addItemStack(inventory, 4, XMaterial.BARRIER, MessagesOld.getString("worldeditor_builders_no_creator_item", player));
         } else {
-            inventoryUtils.addSkull(inventory, 4, Messages.getString("worldeditor_builders_creator_item", player),
-                    buildWorld.getCreator(), Messages.getString("worldeditor_builders_creator_lore", player, new AbstractMap.SimpleEntry<>("%creator%", buildWorld.getCreator()))
+            inventoryUtils.addSkull(inventory, 4, MessagesOld.getString("worldeditor_builders_creator_item", player),
+                    buildWorld.getCreator(), MessagesOld.getString("worldeditor_builders_creator_lore", player, new AbstractMap.SimpleEntry<>("%creator%", buildWorld.getCreator()))
             );
         }
     }
@@ -85,7 +85,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
     private void addBuilderAddItem(Inventory inventory, BuildWorld buildWorld, Player player) {
         UUID creatorId = buildWorld.getCreatorId();
         if ((creatorId != null && creatorId.equals(player.getUniqueId())) || player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)) {
-            inventoryUtils.addUrlSkull(inventory, 22, Messages.getString("worldeditor_builders_add_builder_item", player),
+            inventoryUtils.addUrlSkull(inventory, 22, MessagesOld.getString("worldeditor_builders_add_builder_item", player),
                     "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716"
             );
         } else {
@@ -109,8 +109,8 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         for (Builder builder : builders) {
             String builderName = builder.getName();
             inventoryUtils.addSkull(inventory, columnSkull++,
-                    Messages.getString("worldeditor_builders_builder_item", player, new AbstractMap.SimpleEntry<>("%builder%", builderName)),
-                    builderName, Messages.getStringList("worldeditor_builders_builder_lore", player)
+                    MessagesOld.getString("worldeditor_builders_builder_item", player, new AbstractMap.SimpleEntry<>("%builder%", builderName)),
+                    builderName, MessagesOld.getStringList("worldeditor_builders_builder_lore", player)
             );
 
             if (columnSkull > maxColumnSkull) {
@@ -149,7 +149,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         CraftBuildWorld buildWorld = plugin.getPlayerManager().getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();
-            Messages.sendMessage(player, "worlds_addbuilder_error");
+            MessagesOld.sendMessage(player, "worlds_addbuilder_error");
             return;
         }
 
@@ -193,13 +193,13 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
                     return;
                 }
 
-                String template = Messages.getString("worldeditor_builders_builder_item", player, new AbstractMap.SimpleEntry<>("%builder%", ""));
+                String template = MessagesOld.getString("worldeditor_builders_builder_item", player, new AbstractMap.SimpleEntry<>("%builder%", ""));
                 String builderName = StringUtils.difference(template, itemMeta.getDisplayName());
                 UUID builderId = UUIDFetcher.getUUID(builderName);
                 buildWorld.removeBuilder(builderId);
 
                 XSound.ENTITY_ENDERMAN_TELEPORT.play(player);
-                Messages.sendMessage(player, "worlds_removebuilder_removed", new AbstractMap.SimpleEntry<>("%builder%", builderName));
+                MessagesOld.sendMessage(player, "worlds_removebuilder_removed", new AbstractMap.SimpleEntry<>("%builder%", builderName));
         }
 
         XSound.ENTITY_CHICKEN_EGG.play(player);

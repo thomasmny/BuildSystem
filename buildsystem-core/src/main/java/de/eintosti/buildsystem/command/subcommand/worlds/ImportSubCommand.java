@@ -18,11 +18,11 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.generator.Generator;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.UUIDFetcher;
@@ -54,21 +54,21 @@ public class ImportSubCommand implements SubCommand {
         }
 
         if (args.length < 2) {
-            Messages.sendMessage(player, "worlds_import_usage");
+            MessagesOld.sendMessage(player, "worlds_import_usage");
             return;
         }
 
         BuildWorldManager worldManager = plugin.getWorldManager();
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld != null) {
-            Messages.sendMessage(player, "worlds_import_world_is_imported");
+            MessagesOld.sendMessage(player, "worlds_import_world_is_imported");
             return;
         }
 
         File worldFolder = new File(Bukkit.getWorldContainer(), args[1]);
         File levelFile = new File(worldFolder, "level.dat");
         if (!worldFolder.isDirectory() || !levelFile.exists()) {
-            Messages.sendMessage(player, "worlds_import_unknown_world");
+            MessagesOld.sendMessage(player, "worlds_import_unknown_world");
             return;
         }
 
@@ -77,7 +77,7 @@ public class ImportSubCommand implements SubCommand {
                 .findFirst()
                 .orElse(null);
         if (invalidChar != null) {
-            Messages.sendMessage(player, "worlds_import_invalid_character",
+            MessagesOld.sendMessage(player, "worlds_import_invalid_character",
                     new AbstractMap.SimpleEntry<>("%world%", worldName),
                     new AbstractMap.SimpleEntry<>("%char%", invalidChar)
             );
@@ -94,7 +94,7 @@ public class ImportSubCommand implements SubCommand {
             if (parser.isArgument("g")) {
                 String generatorArg = parser.getValue("g");
                 if (generatorArg == null) {
-                    Messages.sendMessage(player, "worlds_import_usage");
+                    MessagesOld.sendMessage(player, "worlds_import_usage");
                     return;
                 }
                 try {
@@ -108,21 +108,21 @@ public class ImportSubCommand implements SubCommand {
             if (parser.isArgument("c")) {
                 String creatorArg = parser.getValue("c");
                 if (creatorArg == null) {
-                    Messages.sendMessage(player, "worlds_import_usage");
+                    MessagesOld.sendMessage(player, "worlds_import_usage");
                     return;
                 }
                 UUID creatorId = UUIDFetcher.getUUID(creatorArg);
                 if (creatorId == null) {
-                    Messages.sendMessage(player, "worlds_import_player_not_found");
+                    MessagesOld.sendMessage(player, "worlds_import_player_not_found");
                     return;
                 }
                 creator = new CraftBuilder(creatorId, creatorArg);
             }
         }
 
-        Messages.sendMessage(player, "worlds_import_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
+        MessagesOld.sendMessage(player, "worlds_import_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
         if (worldManager.importWorld(player, worldName, creator, generator, generatorName, true)) {
-            Messages.sendMessage(player, "worlds_import_finished");
+            MessagesOld.sendMessage(player, "worlds_import_finished");
         }
     }
 

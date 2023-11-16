@@ -18,10 +18,10 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.google.common.collect.Lists;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.PagedCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
@@ -43,10 +43,10 @@ public class HelpSubCommand extends PagedCommand implements SubCommand {
                 int page = Integer.parseInt(args[1]);
                 sendMessage(player, page);
             } catch (NumberFormatException e) {
-                Messages.sendMessage(player, "worlds_help_invalid_page");
+                MessagesOld.sendMessage(player, "worlds_help_invalid_page");
             }
         } else {
-            Messages.sendMessage(player, "worlds_help_usage");
+            MessagesOld.sendMessage(player, "worlds_help_usage");
         }
     }
 

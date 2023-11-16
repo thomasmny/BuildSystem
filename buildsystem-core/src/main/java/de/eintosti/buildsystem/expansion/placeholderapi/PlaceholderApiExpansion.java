@@ -18,8 +18,8 @@
 package de.eintosti.buildsystem.expansion.placeholderapi;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.settings.CraftSettings;
 import de.eintosti.buildsystem.settings.SettingsManager;
 import de.eintosti.buildsystem.world.BuildWorldManager;
@@ -212,7 +212,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "buildersenabled":
                 return String.valueOf(worldData.buildersEnabled().get());
             case "creation":
-                return Messages.formatDate(buildWorld.getCreationDate());
+                return MessagesOld.formatDate(buildWorld.getCreationDate());
             case "creator":
                 return buildWorld.getCreator();
             case "creatorid":
@@ -220,11 +220,11 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "explosions":
                 return String.valueOf(worldData.explosions().get());
             case "lastedited":
-                return Messages.formatDate(worldData.lastEdited().get());
+                return MessagesOld.formatDate(worldData.lastEdited().get());
             case "lastloaded":
-                return Messages.formatDate(worldData.lastLoaded().get());
+                return MessagesOld.formatDate(worldData.lastLoaded().get());
             case "lastunloaded":
-                return Messages.formatDate(worldData.lastUnloaded().get());
+                return MessagesOld.formatDate(worldData.lastUnloaded().get());
             case "loaded":
                 return String.valueOf(buildWorld.isLoaded());
             case "material":
@@ -242,11 +242,11 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "spawn":
                 return worldData.customSpawn().get();
             case "status":
-                return Messages.getDataString(worldData.status().get().getKey(), player);
+                return MessagesOld.getDataString(worldData.status().get().getKey(), player);
             case "time":
                 return buildWorld.getWorldTime();
             case "type":
-                return Messages.getDataString(buildWorld.getType().getKey(), player);
+                return MessagesOld.getDataString(buildWorld.getType().getKey(), player);
             case "world":
                 return buildWorld.getName();
             default:

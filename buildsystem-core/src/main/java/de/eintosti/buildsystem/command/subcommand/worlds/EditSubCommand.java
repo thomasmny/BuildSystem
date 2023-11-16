@@ -20,9 +20,9 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.Titles;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.BuildWorldManager;
 import de.eintosti.buildsystem.world.CraftBuildWorld;
@@ -47,13 +47,13 @@ public class EditSubCommand implements SubCommand {
         }
 
         if (args.length > 2) {
-            Messages.sendMessage(player, "worlds_edit_usage");
+            MessagesOld.sendMessage(player, "worlds_edit_usage");
             return;
         }
 
         CraftBuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_edit_unknown_world");
+            MessagesOld.sendMessage(player, "worlds_edit_unknown_world");
             return;
         }
 
@@ -62,7 +62,7 @@ public class EditSubCommand implements SubCommand {
             plugin.getEditInventory().openInventory(player, buildWorld);
         } else {
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-            Titles.sendTitle(player, 5, 70, 20, " ", Messages.getString("world_not_loaded", player));
+            Titles.sendTitle(player, 5, 70, 20, " ", MessagesOld.getString("world_not_loaded", player));
         }
     }
 

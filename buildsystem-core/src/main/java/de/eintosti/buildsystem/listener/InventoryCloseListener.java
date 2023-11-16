@@ -19,9 +19,9 @@ package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.data.WorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldType;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -41,7 +41,7 @@ public class InventoryCloseListener implements Listener {
 
     @EventHandler
     public void onSetupInventoryClose(InventoryCloseEvent event) {
-        if (!event.getView().getTitle().equals(Messages.getString("setup_title", (Player) event.getPlayer()))) {
+        if (!event.getView().getTitle().equals(MessagesOld.getString("setup_title", (Player) event.getPlayer()))) {
             return;
         }
         setNewItems(event);

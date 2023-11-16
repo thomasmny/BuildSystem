@@ -42,6 +42,8 @@ import de.eintosti.buildsystem.expansion.luckperms.LuckPermsExpansion;
 import de.eintosti.buildsystem.expansion.placeholderapi.PlaceholderApiExpansion;
 import de.eintosti.buildsystem.internal.CraftBukkitVersion;
 import de.eintosti.buildsystem.listener.*;
+import de.eintosti.buildsystem.messages.MessagesOld;
+import de.eintosti.buildsystem.messages.MessagesProvider;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.navigator.inventory.ArchiveInventory;
 import de.eintosti.buildsystem.navigator.inventory.NavigatorInventory;
@@ -81,6 +83,7 @@ import de.eintosti.buildsystem.world.modification.EditInventory;
 import de.eintosti.buildsystem.world.modification.GameRuleInventory;
 import de.eintosti.buildsystem.world.modification.SetupInventory;
 import de.eintosti.buildsystem.world.modification.StatusInventory;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.AdvancedPie;
 import org.bstats.charts.SimplePie;
@@ -91,6 +94,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.File;
 import java.util.HashMap;
@@ -137,11 +141,12 @@ public class BuildSystemPlugin extends JavaPlugin {
     private PlaceholderApiExpansion placeholderApiExpansion;
 
     private BuildSystemApi api;
+    private BukkitAudiences adventure;
 
     @Override
     public void onLoad() {
         createTemplateFolder();
-        Messages.createMessageFile();
+        new MessagesProvider(this).setup();
     }
 
     @Override
@@ -168,6 +173,8 @@ public class BuildSystemPlugin extends JavaPlugin {
         this.api = new BuildSystemApi(this);
         this.api.register();
         getServer().getServicesManager().register(BuildSystem.class, api, this, ServicePriority.Normal);
+
+        this.adventure = BukkitAudiences.create(this);
 
         Bukkit.getOnlinePlayers().forEach(pl -> {
             CraftBuildPlayer buildPlayer = playerManager.createBuildPlayer(pl);
@@ -206,6 +213,12 @@ public class BuildSystemPlugin extends JavaPlugin {
         unregisterExpansions();
 
         this.api.unregister();
+
+        if (this.adventure != null) {
+            this.adventure.close();
+            this.adventure = null;
+        }
+
         Bukkit.getConsoleSender().sendMessage(String.format("%sBuildSystem » Plugin %sdisabled%s!", ChatColor.RESET, ChatColor.RED, ChatColor.RESET));
     }
 
@@ -372,6 +385,13 @@ public class BuildSystemPlugin extends JavaPlugin {
         }
     }
 
+    public @NonNull BukkitAudiences adventure() {
+        if (this.adventure == null) {
+            throw new IllegalStateException("Tried to access Adventure when the plugin was disabled!");
+        }
+        return this.adventure;
+    }
+
     private void performUpdateCheck() {
         if (!configValues.isUpdateChecker()) {
             return;
@@ -406,7 +426,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     }
 
     public void sendPermissionMessage(CommandSender sender) {
-        Messages.sendMessage(sender, "no_permissions");
+        MessagesOld.sendMessage(sender, "no_permissions");
     }
 
     public void reloadConfigData(boolean init) {

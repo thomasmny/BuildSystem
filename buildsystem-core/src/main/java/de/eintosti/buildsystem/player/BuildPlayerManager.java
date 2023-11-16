@@ -21,7 +21,6 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.ActionBar;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.PlayerManager;
 import de.eintosti.buildsystem.api.settings.DesignColor;
@@ -31,6 +30,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.config.PlayersConfig;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.navigator.settings.BuildWorldDisplay;
 import de.eintosti.buildsystem.navigator.settings.BuildWorldFilter;
 import de.eintosti.buildsystem.navigator.settings.NavigatorInventoryType;
@@ -230,7 +230,7 @@ public class BuildPlayerManager implements PlayerManager {
             return;
         }
 
-        ItemStack itemStack = plugin.getInventoryUtil().getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item", player));
+        ItemStack itemStack = plugin.getInventoryUtil().getItemStack(configValues.getNavigatorItem(), MessagesOld.getString("navigator_item", player));
         PlayerInventory playerInventory = player.getInventory();
         ItemStack slot8 = playerInventory.getItem(8);
         if (slot8 == null || slot8.getType() == XMaterial.AIR.parseMaterial()) {
@@ -268,8 +268,8 @@ public class BuildPlayerManager implements PlayerManager {
         }
 
         InventoryUtils inventoryUtils = plugin.getInventoryUtil();
-        String findItemName = Messages.getString("barrier_item", player);
-        ItemStack replaceItem = inventoryUtils.getItemStack(plugin.getConfigValues().getNavigatorItem(), Messages.getString("navigator_item", player));
+        String findItemName = MessagesOld.getString("barrier_item", player);
+        ItemStack replaceItem = inventoryUtils.getItemStack(plugin.getConfigValues().getNavigatorItem(), MessagesOld.getString("navigator_item", player));
 
         inventoryUtils.replaceItem(player, findItemName, XMaterial.BARRIER, replaceItem);
     }
@@ -364,7 +364,7 @@ public class BuildPlayerManager implements PlayerManager {
                 break;
         }
 
-        ActionBar.sendActionBar(player, Messages.getString(message, player));
+        ActionBar.sendActionBar(player, MessagesOld.getString(message, player));
         XSound.ENTITY_CHICKEN_EGG.play(player);
     }
 

@@ -19,11 +19,11 @@ package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldType;
 import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.player.BuildPlayerManager;
 import de.eintosti.buildsystem.player.CachedValues;
@@ -90,7 +90,7 @@ public class PlayerChangedWorldListener implements Listener {
 
         CraftBuildWorld newWorld = worldManager.getBuildWorld(worldName);
         if (newWorld != null && !newWorld.getData().physics().get() && player.hasPermission("buildsystem.physics.message")) {
-            Messages.sendMessage(player, "physics_deactivated_in_world", new AbstractMap.SimpleEntry<>("%world%", newWorld.getName()));
+            MessagesOld.sendMessage(player, "physics_deactivated_in_world", new AbstractMap.SimpleEntry<>("%world%", newWorld.getName()));
         }
 
         removeOldNavigator(player);
@@ -120,7 +120,7 @@ public class PlayerChangedWorldListener implements Listener {
         cachedValues.resetGameModeIfPresent(player);
         cachedValues.resetInventoryIfPresent(player);
         XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
-        Messages.sendMessage(player, "build_deactivated_self");
+        MessagesOld.sendMessage(player, "build_deactivated_self");
     }
 
     private void setGoldBlock(BuildWorld buildWorld) {

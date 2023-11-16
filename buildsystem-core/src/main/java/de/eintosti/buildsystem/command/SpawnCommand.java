@@ -18,8 +18,8 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.world.BuildWorldManager;
 import de.eintosti.buildsystem.world.SpawnManager;
 import org.bukkit.Location;
@@ -48,7 +48,7 @@ public class SpawnCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
+            plugin.getLogger().warning(MessagesOld.getString("sender_not_player", null));
             return true;
         }
 
@@ -57,15 +57,15 @@ public class SpawnCommand implements CommandExecutor {
         switch (args.length) {
             case 0:
                 if (!spawnManager.teleport(player)) {
-                    Messages.sendMessage(player, "spawn_unavailable");
+                    MessagesOld.sendMessage(player, "spawn_unavailable");
                 } else if (plugin.getConfigValues().isSpawnTeleportMessage()) {
-                    Messages.sendMessage(player, "spawn_teleported");
+                    MessagesOld.sendMessage(player, "spawn_teleported");
                 }
                 break;
 
             case 1:
                 if (!player.hasPermission("buildsystem.spawn")) {
-                    Messages.sendMessage(player, "spawn_usage");
+                    MessagesOld.sendMessage(player, "spawn_usage");
                     return true;
                 }
 
@@ -76,12 +76,12 @@ public class SpawnCommand implements CommandExecutor {
                         BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
 
                         if (buildWorld == null) {
-                            Messages.sendMessage(player, "spawn_world_not_imported");
+                            MessagesOld.sendMessage(player, "spawn_world_not_imported");
                             return true;
                         }
 
                         spawnManager.set(playerLocation, buildWorld.getName());
-                        Messages.sendMessage(player, "spawn_set",
+                        MessagesOld.sendMessage(player, "spawn_set",
                                 new AbstractMap.SimpleEntry<>("%x%", round(playerLocation.getX())),
                                 new AbstractMap.SimpleEntry<>("%y%", round(playerLocation.getY())),
                                 new AbstractMap.SimpleEntry<>("%z%", round(playerLocation.getZ())),
@@ -90,17 +90,17 @@ public class SpawnCommand implements CommandExecutor {
                         break;
                     case "remove":
                         spawnManager.remove();
-                        Messages.sendMessage(player, "spawn_remove");
+                        MessagesOld.sendMessage(player, "spawn_remove");
                         break;
                     default:
-                        Messages.sendMessage(player, "spawn_admin");
+                        MessagesOld.sendMessage(player, "spawn_admin");
                         break;
                 }
                 break;
 
             default:
                 String key = player.hasPermission("buildsystem.spawn") ? "spawn_admin" : "spawn_usage";
-                Messages.sendMessage(player, key);
+                MessagesOld.sendMessage(player, key);
                 break;
         }
         return true;

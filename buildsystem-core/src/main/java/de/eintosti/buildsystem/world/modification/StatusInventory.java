@@ -20,8 +20,8 @@ package de.eintosti.buildsystem.world.modification;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.data.WorldStatus;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.player.BuildPlayerManager;
 import de.eintosti.buildsystem.player.CraftBuildPlayer;
 import de.eintosti.buildsystem.util.InventoryUtils;
@@ -60,7 +60,7 @@ public class StatusInventory implements Listener {
             selectedWorldName = "N/A";
         }
 
-        String title = Messages.getString("status_title", player, new AbstractMap.SimpleEntry<>("%world%", selectedWorldName));
+        String title = MessagesOld.getString("status_title", player, new AbstractMap.SimpleEntry<>("%world%", selectedWorldName));
         Inventory inventory = Bukkit.createInventory(null, 27, title);
         fillGuiWithGlass(player, inventory);
 
@@ -89,7 +89,7 @@ public class StatusInventory implements Listener {
 
     private void addStatusItem(Player player, Inventory inventory, int position, WorldStatus status) {
         XMaterial material = inventoryUtils.getStatusItem(status);
-        String displayName = Messages.getString(status.getKey(), player);
+        String displayName = MessagesOld.getString(status.getKey(), player);
 
         if (!player.hasPermission(status.getPermission())) {
             material = XMaterial.BARRIER;
@@ -118,7 +118,7 @@ public class StatusInventory implements Listener {
             return;
         }
 
-        String title = Messages.getString("status_title", player, new AbstractMap.SimpleEntry<>("%world%", selectedWorldName));
+        String title = MessagesOld.getString("status_title", player, new AbstractMap.SimpleEntry<>("%world%", selectedWorldName));
         if (!event.getView().getTitle().equals(title)) {
             return;
         }
@@ -138,7 +138,7 @@ public class StatusInventory implements Listener {
         CraftBuildWorld buildWorld = buildPlayer.getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();
-            Messages.sendMessage(player, "worlds_setstatus_error");
+            MessagesOld.sendMessage(player, "worlds_setstatus_error");
             return;
         }
 
@@ -161,9 +161,9 @@ public class StatusInventory implements Listener {
         playerManager.forceUpdateSidebar(buildWorld);
 
         XSound.ENTITY_CHICKEN_EGG.play(player);
-        Messages.sendMessage(player, "worlds_setstatus_set",
+        MessagesOld.sendMessage(player, "worlds_setstatus_set",
                 new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()),
-                new AbstractMap.SimpleEntry<>("%status%", Messages.getDataString(buildWorld.getData().status().get().getKey(), player))
+                new AbstractMap.SimpleEntry<>("%status%", MessagesOld.getDataString(buildWorld.getData().status().get().getKey(), player))
         );
     }
 

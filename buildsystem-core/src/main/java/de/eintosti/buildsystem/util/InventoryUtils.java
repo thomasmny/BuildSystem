@@ -22,7 +22,6 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.Titles;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.settings.WorldDisplay;
 import de.eintosti.buildsystem.api.settings.WorldSort;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -32,6 +31,7 @@ import de.eintosti.buildsystem.api.world.data.WorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldType;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.config.SetupConfig;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.navigator.inventory.FilteredWorldsInventory;
 import de.eintosti.buildsystem.navigator.inventory.NavigatorInventory;
 import de.eintosti.buildsystem.navigator.settings.BuildWorldFilter;
@@ -95,7 +95,7 @@ public class InventoryUtils {
             return false;
         }
 
-        return itemMeta.getDisplayName().equals(Messages.getString("navigator_item", player));
+        return itemMeta.getDisplayName().equals(MessagesOld.getString("navigator_item", player));
     }
 
     public boolean inventoryContainsNavigator(Player player) {
@@ -232,7 +232,7 @@ public class InventoryUtils {
     }
 
     public boolean checkIfValidClick(InventoryClickEvent event, String titleKey) {
-        if (!event.getView().getTitle().equals(Messages.getString(titleKey, (Player) event.getWhoClicked()))) {
+        if (!event.getView().getTitle().equals(MessagesOld.getString(titleKey, (Player) event.getWhoClicked()))) {
             return false;
         }
 
@@ -247,7 +247,7 @@ public class InventoryUtils {
 
     public void addWorldItem(Player player, Inventory inventory, int position, BuildWorld buildWorld) {
         String worldName = buildWorld.getName();
-        String displayName = Messages.getString("world_item_title", player, new AbstractMap.SimpleEntry<>("%world%", worldName));
+        String displayName = MessagesOld.getString("world_item_title", player, new AbstractMap.SimpleEntry<>("%world%", worldName));
         XMaterial material = buildWorld.getData().material().get();
 
         if (material == XMaterial.PLAYER_HEAD) {
@@ -277,9 +277,9 @@ public class InventoryUtils {
         String displayName = itemMeta.getDisplayName();
 
         if (slot == 22 &&
-                displayName.equals(Messages.getString("world_navigator_no_worlds", player))
-                || displayName.equals(Messages.getString("archive_no_worlds", player))
-                || displayName.equals(Messages.getString("private_no_worlds", player))) {
+                displayName.equals(MessagesOld.getString("world_navigator_no_worlds", player))
+                || displayName.equals(MessagesOld.getString("archive_no_worlds", player))
+                || displayName.equals(MessagesOld.getString("private_no_worlds", player))) {
             return;
         }
 
@@ -324,7 +324,7 @@ public class InventoryUtils {
         } else {
             player.closeInventory();
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-            Titles.sendTitle(player, 5, 70, 20, " ", Messages.getString("world_not_loaded", player));
+            Titles.sendTitle(player, 5, 70, 20, " ", MessagesOld.getString("world_not_loaded", player));
         }
     }
 
@@ -356,7 +356,7 @@ public class InventoryUtils {
      * @return The name of the world
      */
     private String getWorldName(Player player, String input) {
-        String template = Messages.getString("world_item_title", player, new AbstractMap.SimpleEntry<>("%world%", ""));
+        String template = MessagesOld.getString("world_item_title", player, new AbstractMap.SimpleEntry<>("%world%", ""));
         return StringUtils.difference(template, input);
     }
 
@@ -415,18 +415,18 @@ public class InventoryUtils {
     private List<String> getLore(Player player, BuildWorld buildWorld) {
         WorldData worldData = buildWorld.getData();
         Map.Entry<String, Object>[] placeholders = new Map.Entry[]{
-                new AbstractMap.SimpleEntry<>("%status%", Messages.getDataString(worldData.status().get().getKey(), player)),
+                new AbstractMap.SimpleEntry<>("%status%", MessagesOld.getDataString(worldData.status().get().getKey(), player)),
                 new AbstractMap.SimpleEntry<>("%project%", worldData.project().get()),
                 new AbstractMap.SimpleEntry<>("%permission%", worldData.permission().get()),
                 new AbstractMap.SimpleEntry<>("%creator%", buildWorld.hasCreator() ? buildWorld.getCreator() : "-"),
-                new AbstractMap.SimpleEntry<>("%creation%", Messages.formatDate(buildWorld.getCreationDate())),
-                new AbstractMap.SimpleEntry<>("%lastedited%", Messages.formatDate(worldData.lastEdited().get())),
-                new AbstractMap.SimpleEntry<>("%lastloaded%", Messages.formatDate(worldData.lastLoaded().get())),
-                new AbstractMap.SimpleEntry<>("%lastunloaded%", Messages.formatDate(worldData.lastUnloaded().get()))
+                new AbstractMap.SimpleEntry<>("%creation%", MessagesOld.formatDate(buildWorld.getCreationDate())),
+                new AbstractMap.SimpleEntry<>("%lastedited%", MessagesOld.formatDate(worldData.lastEdited().get())),
+                new AbstractMap.SimpleEntry<>("%lastloaded%", MessagesOld.formatDate(worldData.lastLoaded().get())),
+                new AbstractMap.SimpleEntry<>("%lastunloaded%", MessagesOld.formatDate(worldData.lastUnloaded().get()))
         };
         List<String> messageList = plugin.getWorldManager().isPermitted(player, WorldsTabComplete.WorldsArgument.EDIT.getPermission(), buildWorld.getName())
-                ? Messages.getStringList("world_item_lore_edit", player, placeholders)
-                : Messages.getStringList("world_item_lore_normal", player, placeholders);
+                ? MessagesOld.getStringList("world_item_lore_edit", player, placeholders)
+                : MessagesOld.getStringList("world_item_lore_normal", player, placeholders);
 
         // Replace %builders% placeholder
         List<String> lore = new ArrayList<>();
@@ -467,7 +467,7 @@ public class InventoryUtils {
      * @see CraftBuildWorld#getBuildersInfo(Player)
      */
     private List<String> formatBuilders(Player player, BuildWorld buildWorld) {
-        String template = Messages.getString("world_item_builders_builder_template", player);
+        String template = MessagesOld.getString("world_item_builders_builder_template", player);
         List<Builder> builders = buildWorld.getBuilders();
 
         List<String> builderNames = new ArrayList<>();
