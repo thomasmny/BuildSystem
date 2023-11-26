@@ -132,6 +132,7 @@ public class BuildSystem extends JavaPlugin {
     @Override
     public void onEnable() {
         this.getConfig().options().copyDefaults(true);
+        this.saveResource("messages.yml", false);
         this.saveConfig();
         this.configValues = new ConfigValues(this);
 
