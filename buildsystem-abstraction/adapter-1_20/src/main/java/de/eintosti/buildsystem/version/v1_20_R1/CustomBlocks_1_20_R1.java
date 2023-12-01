@@ -40,6 +40,8 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.RayTraceResult;
 
+import java.util.Arrays;
+
 public class CustomBlocks_1_20_R1 implements CustomBlocks, Listener {
 
     private final JavaPlugin plugin;
@@ -190,8 +192,28 @@ public class CustomBlocks_1_20_R1 implements CustomBlocks, Listener {
             return;
         }
 
+        Material material = event.getItem().getType();
         Block adjacent = block.getRelative(event.getBlockFace());
-        adjacent.setType(event.getItem().getType());
+
+        switch (material) {
+            case SWEET_BERRIES:
+                adjacent.setType(Material.SWEET_BERRY_BUSH);
+                break;
+            case VINE:
+                BlockFace toPlace = event.getBlockFace().getOppositeFace();
+                if (toPlace == BlockFace.DOWN) { // Cannot place vines facing down
+                    break;
+                }
+                adjacent.setType(material);
+                MultipleFacing multipleFacing = (MultipleFacing) adjacent.getBlockData();
+                Arrays.stream(new BlockFace[]{BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP})
+                        .forEach(blockFace -> multipleFacing.setFace(blockFace, blockFace == toPlace));
+                adjacent.setBlockData(multipleFacing);
+                break;
+            default:
+                adjacent.setType(material);
+                break;
+        }
     }
 
     @Override
