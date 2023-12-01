@@ -10,6 +10,7 @@ package de.eintosti.buildsystem.listener;
 import com.cryptomorin.xseries.XBlock;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XTag;
+import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.player.PlayerManager;
@@ -40,6 +41,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -142,12 +144,12 @@ public class SettingsInteractListener implements Listener {
                 && !XTag.REPLACEABLE_PLANTS.isTagged(xMaterial)
                 && !XTag.ALIVE_CORAL_PLANTS.isTagged(xMaterial)
                 && !XTag.DEAD_CORAL_PLANTS.isTagged(xMaterial)
-                && !XTag.SAPLINGS.isTagged(xMaterial)) {
+                && !XTag.SAPLINGS.isTagged(xMaterial)
+                && !OTHER_PLANTS.contains(xMaterial)) {
             return;
         }
 
-        Player player = event.getPlayer();
-        Settings settings = settingsManager.getSettings(player);
+        Settings settings = settingsManager.getSettings(event.getPlayer());
         if (!settings.isPlacePlants()) {
             return;
         }
@@ -155,6 +157,14 @@ public class SettingsInteractListener implements Listener {
         event.setCancelled(true);
         customBlocks.setPlant(event);
     }
+
+    private static final EnumSet<XMaterial> OTHER_PLANTS = Sets.newEnumSet(Sets.newHashSet(
+            XMaterial.TORCHFLOWER, XMaterial.PITCHER_PLANT, XMaterial.LILY_PAD, XMaterial.PINK_PETALS,
+            XMaterial.BROWN_MUSHROOM, XMaterial.RED_MUSHROOM, XMaterial.CRIMSON_FUNGUS, XMaterial.WARPED_FUNGUS,
+            XMaterial.GRASS, XMaterial.FERN, XMaterial.DEAD_BUSH, XMaterial.LARGE_FERN, XMaterial.TALL_GRASS,
+            XMaterial.NETHER_SPROUTS, XMaterial.WARPED_ROOTS, XMaterial.CRIMSON_ROOTS, XMaterial.SUGAR_CANE, XMaterial.BAMBOO,
+            XMaterial.BIG_DRIPLEAF, XMaterial.SMALL_DRIPLEAF, XMaterial.SEAGRASS, XMaterial.SWEET_BERRIES
+    ), XMaterial.class);
 
     @EventHandler
     public void manageInstantPlaceSignsSetting(PlayerInteractEvent event) {
