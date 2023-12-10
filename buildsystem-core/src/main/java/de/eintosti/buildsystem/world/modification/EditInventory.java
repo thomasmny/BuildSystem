@@ -78,7 +78,7 @@ public class EditInventory implements Listener {
                 Messages.getStringList("worldeditor_gamerules_lore", player)
         );
         addDifficultyItem(player, inventory, buildWorld);
-        inventoryUtils.addItemStack(inventory, 40, inventoryUtils.getStatusItem(worldData.status().get()), "worldeditor_status_item",
+        inventoryUtils.addItemStack(inventory, 40, inventoryUtils.getStatusItem(worldData.status().get()), Messages.getString("worldeditor_status_item", player),
                 Messages.getStringList("worldeditor_status_lore", player,
                         new AbstractMap.SimpleEntry<>("%status%", buildWorld.getData().status().get().getName(player))
                 )
