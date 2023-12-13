@@ -66,13 +66,13 @@ public abstract class PagedCommand {
 
     protected abstract List<TextComponent> getCommands(Player player);
 
-    protected TextComponent createComponent(Player player, String commandKey, String text, String suggest, String permission) {
-        if (text.isEmpty()) {
+    protected TextComponent createComponent(Player player, String command, String commandDescriptionKey, String suggest, String permission) {
+        if (command.isEmpty()) {
             return new TextComponent();
         }
 
-        TextComponent commandComponent = new TextComponent("§b" + Messages.getString(commandKey, player));
-        TextComponent textComponent = new TextComponent(" §8» " + text);
+        TextComponent commandComponent = new TextComponent("§b" + command);
+        TextComponent textComponent = new TextComponent(" §8» " + Messages.getString(commandDescriptionKey, player));
 
         commandComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, suggest));
         commandComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
