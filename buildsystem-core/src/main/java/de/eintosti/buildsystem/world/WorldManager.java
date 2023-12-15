@@ -668,6 +668,8 @@ public class WorldManager {
             return true;
         }
 
+        if(buildWorld.getData().status().get() == WorldStatus.ARCHIVE) return false;
+
         if (buildWorld.isCreator(player)) {
             return (player.hasPermission(permission + ".self") || player.hasPermission(permission));
         }
