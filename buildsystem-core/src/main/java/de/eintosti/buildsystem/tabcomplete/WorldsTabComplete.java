@@ -11,6 +11,7 @@ import com.google.common.collect.Lists;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.data.WorldType;
 import de.eintosti.buildsystem.world.generator.Generator;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -128,6 +129,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                 Map<String, List<String>> arguments = new HashMap<String, List<String>>() {{
                     put("-g", Arrays.stream(Generator.values()).filter(generator -> generator != Generator.CUSTOM).map(Enum::name).collect(Collectors.toList()));
                     put("-c", Lists.newArrayList());
+                    put("-t", Arrays.stream(WorldType.values()).map(Enum::name).collect(Collectors.toList()));
                 }};
 
                 if (args.length % 2 == 1) {

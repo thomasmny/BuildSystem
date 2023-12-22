@@ -280,9 +280,10 @@ public class WorldManager {
      * @param generator     The generator type used by the world
      * @param generatorName The name of the custom generator if generator type is {@link Generator#CUSTOM}
      * @param single        Is only one world being imported? Used for message sent to the player
+     * @param worldType     The type of the world to import
      * @return {@code true} if the world was successfully imported, otherwise {@code false}
      */
-    public boolean importWorld(Player player, String worldName, Builder creator, Generator generator, String generatorName, boolean single) {
+    public boolean importWorld(Player player, String worldName, Builder creator, Generator generator, String generatorName, boolean single, WorldType worldType) {
         ChunkGenerator chunkGenerator = null;
         if (generator == Generator.CUSTOM) {
             String[] generatorInfo = generatorName.split(":");
@@ -298,7 +299,7 @@ public class WorldManager {
         }
 
         BuildWorldCreator worldCreator = new BuildWorldCreator(plugin, worldName)
-                .setType(WorldType.IMPORTED)
+                .setType(worldType)
                 .setCreator(creator)
                 .setCustomGenerator(new CustomGenerator(generatorName, chunkGenerator))
                 .setPrivate(false)
@@ -359,7 +360,7 @@ public class WorldManager {
                     return;
                 }
 
-                if (importWorld(player, worldName, creator, generator, null, false)) {
+                if (importWorld(player, worldName, creator, generator, null, false, WorldType.IMPORTED)) {
                     Messages.sendMessage(player, "worlds_importall_world_imported", new AbstractMap.SimpleEntry<>("%world%", worldName));
                 }
             }

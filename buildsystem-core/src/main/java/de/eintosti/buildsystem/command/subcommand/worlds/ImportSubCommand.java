@@ -17,6 +17,7 @@ import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.Builder;
 import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.data.WorldType;
 import de.eintosti.buildsystem.world.generator.Generator;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -78,6 +79,7 @@ public class ImportSubCommand implements SubCommand {
         Builder creator = new Builder(null, "-");
         Generator generator = Generator.VOID;
         String generatorName = null;
+        WorldType worldType = WorldType.IMPORTED;
 
         if (args.length != 2) {
             ArgumentParser parser = new ArgumentParser(args);
@@ -109,10 +111,23 @@ public class ImportSubCommand implements SubCommand {
                 }
                 creator = new Builder(creatorId, creatorArg);
             }
+
+            if (parser.isArgument("t")) {
+                String worldTypeArg = parser.getValue("t");
+                if (worldTypeArg == null) {
+                    Messages.sendMessage(player, "worlds_import_usage");
+                    return;
+                }
+                try {
+                    worldType = WorldType.valueOf(worldTypeArg.toUpperCase(Locale.ROOT));
+                } catch (IllegalArgumentException ignored) {
+
+                }
+            }
         }
 
         Messages.sendMessage(player, "worlds_import_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
-        if (worldManager.importWorld(player, worldName, creator, generator, generatorName, true)) {
+        if (worldManager.importWorld(player, worldName, creator, generator, generatorName, true, worldType)) {
             Messages.sendMessage(player, "worlds_import_finished");
         }
     }
