@@ -162,6 +162,8 @@ public class BuildSystem extends JavaPlugin {
 
         registerStats();
 
+        Bukkit.getScheduler().runTaskTimer(this, this::saveBuildConfig, 6000L, 6000L);
+
         Bukkit.getConsoleSender().sendMessage(String.format(Locale.ROOT, "%sBuildSystem » Plugin %senabled%s!", ChatColor.RESET, ChatColor.GREEN, ChatColor.RESET));
     }
 
@@ -181,10 +183,7 @@ public class BuildSystem extends JavaPlugin {
         reloadConfigData(false);
         saveConfig();
 
-        worldManager.save();
-        playerManager.save();
-        spawnManager.save();
-        inventoryUtils.save();
+        saveBuildConfig();
 
         unregisterExpansions();
 
@@ -385,6 +384,13 @@ public class BuildSystem extends JavaPlugin {
         if (templateFolder.mkdirs()) {
             getLogger().info("Created \"templates\" folder");
         }
+    }
+
+    private void saveBuildConfig() {
+        worldManager.save();
+        playerManager.save();
+        spawnManager.save();
+        inventoryUtils.save();
     }
 
     public void sendPermissionMessage(CommandSender sender) {
