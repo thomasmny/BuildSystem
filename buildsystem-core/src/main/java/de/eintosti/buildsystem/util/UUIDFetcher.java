@@ -21,6 +21,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -40,13 +41,13 @@ public class UUIDFetcher {
      * @return The uuid which belongs to the player
      */
     public static UUID getUUID(String name) {
-        String lowerCase = name.toLowerCase();
+        String lowerCase = name.toLowerCase(Locale.ROOT);
         if (UUID_CACHE.containsKey(lowerCase)) {
             return UUID_CACHE.get(lowerCase);
         }
 
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(String.format(UUID_URL, name)).openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URL(String.format(Locale.ROOT, UUID_URL, name)).openConnection();
             connection.setReadTimeout(5000);
 
             JsonObject jsonObject;
@@ -81,7 +82,7 @@ public class UUIDFetcher {
         }
 
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(String.format(NAME_URL, UUIDTypeAdapter.fromUUID(uuid))).openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URL(String.format(Locale.ROOT, NAME_URL, UUIDTypeAdapter.fromUUID(uuid))).openConnection();
             connection.setReadTimeout(5000);
             JsonArray nameHistory;
             try {
@@ -105,7 +106,7 @@ public class UUIDFetcher {
     }
 
     public static void cacheUser(UUID uuid, String name) {
-        UUID_CACHE.put(name.toLowerCase(), uuid);
+        UUID_CACHE.put(name.toLowerCase(Locale.ROOT), uuid);
         NAME_CACHE.put(uuid, name);
     }
 

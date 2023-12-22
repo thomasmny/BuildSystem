@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class GamemodeTabComplete extends ArgumentSorter implements TabCompleter {
 
@@ -40,14 +41,14 @@ public class GamemodeTabComplete extends ArgumentSorter implements TabCompleter 
 
         if (args.length == 1) {
             for (GameMode gameMode : GameMode.values()) {
-                addArgument(args[0], gameMode.name().toLowerCase(), arrayList);
+                addArgument(args[0], gameMode.name().toLowerCase(Locale.ROOT), arrayList);
             }
         } else if (args.length == 2) {
             if (!player.hasPermission("buildsystem.gamemode.others")) {
                 return arrayList;
             }
 
-            switch (args[0].toLowerCase()) {
+            switch (args[0].toLowerCase(Locale.ROOT)) {
                 case "survival":
                 case "s":
                 case "0":

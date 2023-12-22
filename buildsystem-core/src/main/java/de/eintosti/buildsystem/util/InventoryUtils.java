@@ -49,6 +49,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -365,17 +366,17 @@ public class InventoryUtils {
 
         switch (worldDisplay.getWorldSort()) {
             default: // NAME_A_TO_Z
-                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getName().toLowerCase()));
+                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getName().toLowerCase(Locale.ROOT)));
                 break;
             case NAME_Z_TO_A:
-                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getName().toLowerCase()));
+                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getName().toLowerCase(Locale.ROOT)));
                 Collections.reverse(buildWorlds);
                 break;
             case PROJECT_A_TO_Z:
-                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getData().project().get().toLowerCase()));
+                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getData().project().get().toLowerCase(Locale.ROOT)));
                 break;
             case PROJECT_Z_TO_A:
-                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getData().project().get().toLowerCase()));
+                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getData().project().get().toLowerCase(Locale.ROOT)));
                 Collections.reverse(buildWorlds);
                 break;
             case STATUS_NOT_STARTED:
@@ -761,13 +762,13 @@ public class InventoryUtils {
             String createMaterialString = configuration.getString("setup.type." + worldType + ".create");
             if (createMaterialString != null) {
                 Optional<XMaterial> xMaterial = XMaterial.matchXMaterial(createMaterialString);
-                xMaterial.ifPresent(material -> setCreateItem(WorldType.valueOf(worldType.toUpperCase()), material));
+                xMaterial.ifPresent(material -> setCreateItem(WorldType.valueOf(worldType.toUpperCase(Locale.ROOT)), material));
             }
 
             String defaultMaterialString = configuration.getString("setup.type." + worldType + ".default");
             if (defaultMaterialString != null) {
                 Optional<XMaterial> xMaterial = XMaterial.matchXMaterial(defaultMaterialString);
-                xMaterial.ifPresent(material -> setDefaultItem(WorldType.valueOf(worldType.toUpperCase()), material));
+                xMaterial.ifPresent(material -> setDefaultItem(WorldType.valueOf(worldType.toUpperCase(Locale.ROOT)), material));
             }
         }
     }
@@ -792,7 +793,7 @@ public class InventoryUtils {
             String statusString = configuration.getString("setup.status." + status);
             if (statusString != null) {
                 Optional<XMaterial> xMaterial = XMaterial.matchXMaterial(statusString);
-                xMaterial.ifPresent(material -> setStatusItem(WorldStatus.valueOf(status.toUpperCase()), material));
+                xMaterial.ifPresent(material -> setStatusItem(WorldStatus.valueOf(status.toUpperCase(Locale.ROOT)), material));
             }
         }
     }

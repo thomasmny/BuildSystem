@@ -21,6 +21,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.AbstractMap;
+import java.util.Locale;
 
 public class SpawnCommand implements CommandExecutor {
 
@@ -59,7 +60,7 @@ public class SpawnCommand implements CommandExecutor {
                     return true;
                 }
 
-                switch (args[0].toLowerCase()) {
+                switch (args[0].toLowerCase(Locale.ROOT)) {
                     case "set":
                         Location playerLocation = player.getLocation();
                         World bukkitWorld = playerLocation.getWorld();

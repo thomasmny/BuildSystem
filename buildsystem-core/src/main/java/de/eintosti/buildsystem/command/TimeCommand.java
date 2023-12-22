@@ -20,6 +20,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.AbstractMap;
+import java.util.Locale;
 
 public class TimeCommand implements CommandExecutor {
 
@@ -46,7 +47,7 @@ public class TimeCommand implements CommandExecutor {
         String worldName = args.length == 0 ? player.getWorld().getName() : args[0];
         World world = Bukkit.getWorld(worldName);
 
-        switch (label.toLowerCase()) {
+        switch (label.toLowerCase(Locale.ROOT)) {
             case "day": {
                 if (!worldManager.isPermitted(player, "buildsystem.day", worldName)) {
                     plugin.sendPermissionMessage(player);

@@ -81,6 +81,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -161,7 +162,7 @@ public class BuildSystem extends JavaPlugin {
 
         registerStats();
 
-        Bukkit.getConsoleSender().sendMessage(String.format("%sBuildSystem » Plugin %senabled%s!", ChatColor.RESET, ChatColor.GREEN, ChatColor.RESET));
+        Bukkit.getConsoleSender().sendMessage(String.format(Locale.ROOT, "%sBuildSystem » Plugin %senabled%s!", ChatColor.RESET, ChatColor.GREEN, ChatColor.RESET));
     }
 
     @Override
@@ -187,7 +188,7 @@ public class BuildSystem extends JavaPlugin {
 
         unregisterExpansions();
 
-        Bukkit.getConsoleSender().sendMessage(String.format("%sBuildSystem » Plugin %sdisabled%s!", ChatColor.RESET, ChatColor.RED, ChatColor.RESET));
+        Bukkit.getConsoleSender().sendMessage(String.format(Locale.ROOT, "%sBuildSystem » Plugin %sdisabled%s!", ChatColor.RESET, ChatColor.RED, ChatColor.RESET));
     }
 
     private boolean initVersionedClasses() {
@@ -204,7 +205,7 @@ public class BuildSystem extends JavaPlugin {
             return false;
         }
 
-        getLogger().info(String.format("Detected server version: %s (%s)", minecraftVersion, craftBukkitVersion.name()));
+        getLogger().info(String.format(Locale.ROOT, "Detected server version: %s (%s)", minecraftVersion, craftBukkitVersion.name()));
         this.customBlocks = craftBukkitVersion.initCustomBlocks();
         this.gameRules = craftBukkitVersion.initGameRules();
         return true;

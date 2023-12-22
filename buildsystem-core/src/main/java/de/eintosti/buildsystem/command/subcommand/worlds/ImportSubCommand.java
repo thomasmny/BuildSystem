@@ -24,6 +24,7 @@ import org.bukkit.entity.Player;
 import java.io.File;
 import java.util.AbstractMap;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.UUID;
 
 public class ImportSubCommand implements SubCommand {
@@ -88,7 +89,7 @@ public class ImportSubCommand implements SubCommand {
                     return;
                 }
                 try {
-                    generator = Generator.valueOf(generatorArg.toUpperCase());
+                    generator = Generator.valueOf(generatorArg.toUpperCase(Locale.ROOT));
                 } catch (IllegalArgumentException ignored) {
                     generator = Generator.CUSTOM;
                     generatorName = generatorArg;

@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -734,7 +735,7 @@ public class WorldManager {
             String permission = configuration.getString("worlds." + worldName + ".permission");
             String project = configuration.getString("worlds." + worldName + ".project");
 
-            Difficulty difficulty = Difficulty.valueOf(configuration.getString("worlds." + worldName + ".difficulty", "PEACEFUL").toUpperCase());
+            Difficulty difficulty = Difficulty.valueOf(configuration.getString("worlds." + worldName + ".difficulty", "PEACEFUL").toUpperCase(Locale.ROOT));
             XMaterial material = parseMaterial(configuration, "worlds." + worldName + ".item", worldName);
             WorldStatus worldStatus = WorldStatus.valueOf(configuration.getString("worlds." + worldName + ".status"));
 
@@ -758,7 +759,7 @@ public class WorldManager {
         String permission = configuration.getString(path + ".permission");
         String project = configuration.getString(path + ".project");
 
-        Difficulty difficulty = Difficulty.valueOf(configuration.getString(path + ".difficulty").toUpperCase());
+        Difficulty difficulty = Difficulty.valueOf(configuration.getString(path + ".difficulty").toUpperCase(Locale.ROOT));
         XMaterial material = parseMaterial(configuration, path + ".material", worldName);
         WorldStatus worldStatus = WorldStatus.valueOf(configuration.getString(path + ".status"));
 

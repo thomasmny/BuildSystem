@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -60,7 +61,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
             }
 
             case 2: {
-                switch (args[0].toLowerCase()) {
+                switch (args[0].toLowerCase(Locale.ROOT)) {
                     case "builders":
                     case "edit":
                     case "info":
@@ -74,7 +75,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                     case "unimport":
                         worldManager.getBuildWorlds().stream()
                                 .filter(world -> player.hasPermission(world.getData().permission().get()) || world.getData().permission().get().equalsIgnoreCase("-"))
-                                .filter(world -> worldManager.isPermitted(player, "buildsystem." + args[0].toLowerCase(), world.getName()))
+                                .filter(world -> worldManager.isPermitted(player, "buildsystem." + args[0].toLowerCase(Locale.ROOT), world.getName()))
                                 .forEach(world -> addArgument(args[1], world.getName(), arrayList));
                         break;
 
@@ -82,7 +83,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                     case "delete":
                     case "removebuilder":
                         worldManager.getBuildWorlds().stream()
-                                .filter(world -> worldManager.isPermitted(player, "buildsystem." + args[0].toLowerCase(), world.getName()))
+                                .filter(world -> worldManager.isPermitted(player, "buildsystem." + args[0].toLowerCase(Locale.ROOT), world.getName()))
                                 .forEach(world -> addArgument(args[1], world.getName(), arrayList));
                         break;
 

@@ -14,6 +14,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Locale;
+
 public class ConfigCommand implements CommandExecutor {
 
     private final BuildSystem plugin;
@@ -35,7 +37,7 @@ public class ConfigCommand implements CommandExecutor {
             return true;
         }
 
-        switch (args[0].toLowerCase()) {
+        switch (args[0].toLowerCase(Locale.ROOT)) {
             case "rl":
             case "reload":
                 plugin.reloadConfig();

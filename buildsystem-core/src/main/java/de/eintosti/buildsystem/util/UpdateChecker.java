@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -148,7 +149,7 @@ public final class UpdateChecker {
             int responseCode;
 
             try {
-                URL url = new URL(String.format(UPDATE_URL, pluginID));
+                URL url = new URL(String.format(Locale.ROOT, UPDATE_URL, pluginID));
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.addRequestProperty("User-Agent", USER_AGENT);
                 responseCode = connection.getResponseCode();
