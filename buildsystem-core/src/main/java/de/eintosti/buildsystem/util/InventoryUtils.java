@@ -455,7 +455,7 @@ public class InventoryUtils {
      * @param player     The player used to format the placeholders
      * @param buildWorld The world which provides the builders
      * @return The formatted list of builders which have been added to the given world
-     * @see BuildWorld#getBuildersInfo()
+     * @see BuildWorld#getBuilders()
      */
     private List<String> formatBuilders(Player player, BuildWorld buildWorld) {
         String template = Messages.getString("world_item_builders_builder_template", player);
