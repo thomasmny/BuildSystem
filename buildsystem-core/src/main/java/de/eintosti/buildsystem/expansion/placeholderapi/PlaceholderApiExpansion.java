@@ -19,6 +19,8 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Locale;
+
 public class PlaceholderApiExpansion extends PlaceholderExpansion {
 
     private static final String SETTINGS_KEY = "settings";
@@ -129,7 +131,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
         Settings settings = settingsManager.getSettings(player);
         String settingIdentifier = identifier.split("_")[1];
 
-        switch (settingIdentifier.toLowerCase()) {
+        switch (settingIdentifier.toLowerCase(Locale.ROOT)) {
             case "navigatortype":
                 return settings.getNavigatorType().toString();
             case "glasscolor":
@@ -192,7 +194,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
         }
 
         WorldData worldData = buildWorld.getData();
-        switch (identifier.toLowerCase()) {
+        switch (identifier.toLowerCase(Locale.ROOT)) {
             case "blockbreaking":
                 return String.valueOf(worldData.blockBreaking().get());
             case "blockplacement":

@@ -29,6 +29,7 @@ import org.bukkit.inventory.ItemStack;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.AbstractMap;
+import java.util.Locale;
 
 public class CreateInventory extends PaginatedInventory implements Listener {
 
@@ -98,7 +99,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
     private void addPredefinedWorldItem(Player player, Inventory inventory, int position, WorldType worldType, String displayName) {
         XMaterial material = inventoryUtils.getCreateItem(worldType);
 
-        if (!player.hasPermission("buildsystem.create.type." + worldType.name().toLowerCase())) {
+        if (!player.hasPermission("buildsystem.create.type." + worldType.name().toLowerCase(Locale.ROOT))) {
             material = XMaterial.BARRIER;
             displayName = "§c§m" + ChatColor.stripColor(displayName);
         }
@@ -218,7 +219,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
                         break;
                 }
 
-                if (worldType == null || !player.hasPermission("buildsystem.create.type." + worldType.name().toLowerCase())) {
+                if (worldType == null || !player.hasPermission("buildsystem.create.type." + worldType.name().toLowerCase(Locale.ROOT))) {
                     XSound.ENTITY_ITEM_BREAK.play(player);
                     return;
                 }

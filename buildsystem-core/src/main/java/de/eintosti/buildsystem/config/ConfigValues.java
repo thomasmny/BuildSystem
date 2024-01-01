@@ -17,6 +17,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -104,7 +105,7 @@ public class ConfigValues {
         this.defaultPrivatePermission = config.getString("world.default.permission.private", "-");
         this.lockWeather = config.getBoolean("world.lock-weather", true);
         this.invalidNameCharacters = config.getString("world.invalid-characters", "^\b$");
-        this.worldDifficulty = Difficulty.valueOf(config.getString("world.default.difficulty", "PEACEFUL").toUpperCase());
+        this.worldDifficulty = Difficulty.valueOf(config.getString("world.default.difficulty", "PEACEFUL").toUpperCase(Locale.ROOT));
         this.sunriseTime = config.getInt("world.default.time.sunrise", 0);
         this.noonTime = config.getInt("world.default.time.noon", 6000);
         this.nightTime = config.getInt("world.default.time.night", 18000);
@@ -171,7 +172,7 @@ public class ConfigValues {
         }
 
         String namespace = "minecraft:";
-        if (wand.toLowerCase().startsWith(namespace)) {
+        if (wand.toLowerCase(Locale.ROOT).startsWith(namespace)) {
             wand = wand.substring(namespace.length());
         }
 

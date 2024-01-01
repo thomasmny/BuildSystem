@@ -18,6 +18,8 @@ import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Locale;
+
 public class RoleCalculator implements ContextCalculator<Player> {
 
     private static final String KEY = "buildsystem:role";
@@ -76,7 +78,7 @@ public class RoleCalculator implements ContextCalculator<Player> {
 
         @Override
         public String toString() {
-            return this.name().toLowerCase();
+            return this.name().toLowerCase(Locale.ROOT);
         }
     }
 }

@@ -21,6 +21,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.io.File;
+import java.util.Locale;
 import java.util.UUID;
 
 public class ImportAllSubCommand implements SubCommand {
@@ -79,7 +80,7 @@ public class ImportAllSubCommand implements SubCommand {
                 return;
             }
             try {
-                generator = Generator.valueOf(generatorArg.toUpperCase());
+                generator = Generator.valueOf(generatorArg.toUpperCase(Locale.ROOT));
             } catch (IllegalArgumentException ignored) {
             }
         }

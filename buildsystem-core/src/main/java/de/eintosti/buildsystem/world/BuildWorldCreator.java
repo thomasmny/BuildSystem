@@ -33,6 +33,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.AbstractMap;
+import java.util.Locale;
 
 /**
  * @author Trichtern
@@ -252,7 +253,7 @@ public class BuildWorldCreator {
     @Nullable
     public World generateBukkitWorld(boolean checkVersion) {
         if (checkVersion && isHigherVersion()) {
-            plugin.getLogger().warning(String.format("\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping...", worldName, parseDataVersion(), plugin.getCraftBukkitVersion().getDataVersion()));
+            plugin.getLogger().warning(String.format(Locale.ROOT, "\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping...", worldName, parseDataVersion(), plugin.getCraftBukkitVersion().getDataVersion()));
             return null;
         }
 

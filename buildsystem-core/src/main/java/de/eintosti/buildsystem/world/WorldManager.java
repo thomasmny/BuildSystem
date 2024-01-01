@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -279,9 +280,10 @@ public class WorldManager {
      * @param generator     The generator type used by the world
      * @param generatorName The name of the custom generator if generator type is {@link Generator#CUSTOM}
      * @param single        Is only one world being imported? Used for message sent to the player
+     * @param worldType     The type of the world to import
      * @return {@code true} if the world was successfully imported, otherwise {@code false}
      */
-    public boolean importWorld(Player player, String worldName, Builder creator, Generator generator, String generatorName, boolean single) {
+    public boolean importWorld(Player player, String worldName, Builder creator, Generator generator, String generatorName, boolean single, WorldType worldType) {
         ChunkGenerator chunkGenerator = null;
         if (generator == Generator.CUSTOM) {
             String[] generatorInfo = generatorName.split(":");
@@ -297,7 +299,7 @@ public class WorldManager {
         }
 
         BuildWorldCreator worldCreator = new BuildWorldCreator(plugin, worldName)
-                .setType(WorldType.IMPORTED)
+                .setType(worldType)
                 .setCreator(creator)
                 .setCustomGenerator(new CustomGenerator(generatorName, chunkGenerator))
                 .setPrivate(false)
@@ -358,7 +360,7 @@ public class WorldManager {
                     return;
                 }
 
-                if (importWorld(player, worldName, creator, generator, null, false)) {
+                if (importWorld(player, worldName, creator, generator, null, false, WorldType.IMPORTED)) {
                     Messages.sendMessage(player, "worlds_importall_world_imported", new AbstractMap.SimpleEntry<>("%world%", worldName));
                 }
             }
@@ -734,7 +736,7 @@ public class WorldManager {
             String permission = configuration.getString("worlds." + worldName + ".permission");
             String project = configuration.getString("worlds." + worldName + ".project");
 
-            Difficulty difficulty = Difficulty.valueOf(configuration.getString("worlds." + worldName + ".difficulty", "PEACEFUL").toUpperCase());
+            Difficulty difficulty = Difficulty.valueOf(configuration.getString("worlds." + worldName + ".difficulty", "PEACEFUL").toUpperCase(Locale.ROOT));
             XMaterial material = parseMaterial(configuration, "worlds." + worldName + ".item", worldName);
             WorldStatus worldStatus = WorldStatus.valueOf(configuration.getString("worlds." + worldName + ".status"));
 
@@ -758,7 +760,7 @@ public class WorldManager {
         String permission = configuration.getString(path + ".permission");
         String project = configuration.getString(path + ".project");
 
-        Difficulty difficulty = Difficulty.valueOf(configuration.getString(path + ".difficulty").toUpperCase());
+        Difficulty difficulty = Difficulty.valueOf(configuration.getString(path + ".difficulty").toUpperCase(Locale.ROOT));
         XMaterial material = parseMaterial(configuration, path + ".material", worldName);
         WorldStatus worldStatus = WorldStatus.valueOf(configuration.getString(path + ".status"));
 

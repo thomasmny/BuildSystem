@@ -11,6 +11,8 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.world.BuildWorld;
 import org.bukkit.entity.Player;
 
+import java.util.Locale;
+
 public enum WorldStatus {
 
     /**
@@ -69,7 +71,7 @@ public enum WorldStatus {
      * @return The permission needed to change the status
      */
     public String getPermission() {
-        return "buildsystem.setstatus." + name().toLowerCase().replace("_", "");
+        return "buildsystem.setstatus." + name().toLowerCase(Locale.ROOT).replace("_", "");
     }
 
     /**
