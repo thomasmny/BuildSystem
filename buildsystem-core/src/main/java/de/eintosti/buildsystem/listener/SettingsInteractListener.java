@@ -345,16 +345,15 @@ public class SettingsInteractListener implements Listener {
         }
 
         WorldData worldData = buildWorld.getData();
-        boolean isInBuildMode = playerManager.isInBuildMode(player);
-        if (worldData.status().get() == WorldStatus.ARCHIVE && !isInBuildMode) {
+        if (worldData.status().get() == WorldStatus.ARCHIVE && !player.hasPermission("buildsystem.bypass.archive")) {
             return false;
         }
 
-        if (!worldData.blockPlacement().get() && !isInBuildMode) {
+        if (!worldData.blockPlacement().get()) {
             return false;
         }
 
-        if (buildWorld.getData().buildersEnabled().get() && !buildWorld.isBuilder(player)) {
+        if (buildWorld.getData().buildersEnabled().get() && !buildWorld.isBuilder(player) && !player.hasPermission("buildsystem.bypass.builders")) {
             return buildWorld.isCreator(player);
         }
 

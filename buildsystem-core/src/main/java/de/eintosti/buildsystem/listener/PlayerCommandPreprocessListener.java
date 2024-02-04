@@ -267,7 +267,11 @@ public class PlayerCommandPreprocessListener implements Listener {
     }
 
     private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
-        if (!worldManager.canBypassBuildRestriction(player) && buildWorld.getData().status().get() == WorldStatus.ARCHIVE) {
+        if (worldManager.canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.archive")) {
+            return false;
+        }
+
+        if (buildWorld.getData().status().get() == WorldStatus.ARCHIVE) {
             event.setCancelled(true);
             Messages.sendMessage(player, "command_archive_world");
             return true;
@@ -276,7 +280,7 @@ public class PlayerCommandPreprocessListener implements Listener {
     }
 
     private void checkBuilders(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
-        if (worldManager.canBypassBuildRestriction(player)) {
+        if (worldManager.canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.builders")) {
             return;
         }
 
