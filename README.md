@@ -146,4 +146,4 @@ that come with them.
 
 ## License
 
-This project is licensed under the [BSD 4-Clause License](LICENSE).
+This project is licensed under the [GNU General Public License v3.0](LICENSE.txt).
