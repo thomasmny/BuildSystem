@@ -70,7 +70,7 @@ public class WorldsCommand implements CommandExecutor {
         SubCommand subCommand;
         switch (argument) {
             case ADD_BUILDER: {
-                subCommand = new AddBuilderSubCommand(plugin, worldName);
+                subCommand = new AddBuilderSubCommand(plugin, player.getWorld().getName());
                 break;
             }
             case BUILDERS: {
@@ -106,7 +106,7 @@ public class WorldsCommand implements CommandExecutor {
                 break;
             }
             case REMOVE_BUILDER: {
-                subCommand = new RemoveBuilderSubCommand(plugin, worldName);
+                subCommand = new RemoveBuilderSubCommand(plugin, player.getWorld().getName());
                 break;
             }
             case REMOVE_SPAWN: {

@@ -227,9 +227,9 @@ public class Messages {
         setMessage(sb, "top_failed", "%prefix% &cNo higher location was found.");
         addSpacer(sb, "");
         addSpacer(sb, "# /worlds");
-        setMessage(sb, "worlds_addbuilder_usage", "%prefix% &7Usage: &b/worlds addBuilder <world>");
+        setMessage(sb, "worlds_addbuilder_usage", "%prefix% &7Usage: &b/worlds addBuilder [player]");
         setMessage(sb, "worlds_addbuilder_error", "%prefix% &cError: Please try again!");
-        setMessage(sb, "worlds_addbuilder_unknown_world", "%prefix% &cUnknown world.");
+        setMessage(sb, "worlds_addbuilder_unknown_world", "%prefix% &cWorld must be imported: /worlds import <world>");
         setMessage(sb, "worlds_addbuilder_player_not_found", "%prefix% &cThat player was not found.");
         setMessage(sb, "worlds_addbuilder_already_creator", "%prefix% &cYou are already the creator.");
         setMessage(sb, "worlds_addbuilder_already_added", "%prefix% &cThis player is already a builder.");
@@ -338,9 +338,9 @@ public class Messages {
         addSpacer(sb, "");
         setMessage(sb, "worlds_item_receive", "%prefix% &7You received the &bNavigator&7.");
         addSpacer(sb, "");
-        setMessage(sb, "worlds_removebuilder_usage", "%prefix% &7Usage: &b/worlds removeBuilder <world>");
+        setMessage(sb, "worlds_removebuilder_usage", "%prefix% &7Usage: &b/worlds removeBuilder [player]");
         setMessage(sb, "worlds_removebuilder_error", "%prefix% &cError: Please try again!");
-        setMessage(sb, "worlds_removebuilder_unknown_world", "%prefix% &cUnknown world.");
+        setMessage(sb, "worlds_removebuilder_unknown_world", "%prefix% &cWorld must be imported: /worlds import <world>");
         setMessage(sb, "worlds_removebuilder_player_not_found", "%prefix% &cThat player was not found.");
         setMessage(sb, "worlds_removebuilder_not_yourself", "%prefix% &cYou cannot remove yourself as creator.");
         setMessage(sb, "worlds_removebuilder_not_builder", "%prefix% &cThis player is not a builder.");

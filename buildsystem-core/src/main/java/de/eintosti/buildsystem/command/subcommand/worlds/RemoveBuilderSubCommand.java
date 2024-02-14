@@ -51,54 +51,63 @@ public class RemoveBuilderSubCommand implements SubCommand {
             return;
         }
 
-        if (args.length > 2) {
-            Messages.sendMessage(player, "worlds_removebuilder_usage");
-            return;
-        }
-
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
             Messages.sendMessage(player, "worlds_removebuilder_unknown_world");
             return;
         }
 
-        getRemoveBuilderInput(player, buildWorld);
+        switch (args.length) {
+            case 1:
+                getRemoveBuilderInput(player, buildWorld);
+                break;
+            case 2:
+                removeBuilder(player, buildWorld, args[1]);
+                break;
+            default:
+                Messages.sendMessage(player, "worlds_removebuilder_usage");
+                break;
+        }
+    }
+
+    private void removeBuilder(Player player, BuildWorld buildWorld, String builderName) {
+        Player builderPlayer = Bukkit.getPlayerExact(builderName);
+        UUID builderId;
+
+        if (builderPlayer == null) {
+            builderId = UUIDFetcher.getUUID(builderName);
+            if (builderId == null) {
+                Messages.sendMessage(player, "worlds_removebuilder_player_not_found");
+                player.closeInventory();
+                return;
+            }
+        } else {
+            builderId = builderPlayer.getUniqueId();
+        }
+
+        if (builderId.equals(player.getUniqueId()) && buildWorld.isCreator(player)) {
+            Messages.sendMessage(player, "worlds_removebuilder_not_yourself");
+            player.closeInventory();
+            return;
+        }
+
+        if (!buildWorld.isBuilder(builderId)) {
+            Messages.sendMessage(player, "worlds_removebuilder_not_builder");
+            player.closeInventory();
+            return;
+        }
+
+        buildWorld.removeBuilder(builderId);
+        XSound.ENTITY_PLAYER_LEVELUP.play(player);
+        Messages.sendMessage(player, "worlds_removebuilder_removed", new AbstractMap.SimpleEntry<>("%builder%", builderName));
+
+        player.closeInventory();
     }
 
     private void getRemoveBuilderInput(Player player, BuildWorld buildWorld) {
         new PlayerChatInput(plugin, player, "enter_player_name", input -> {
             String builderName = input.trim();
-            Player builderPlayer = Bukkit.getPlayerExact(builderName);
-            UUID builderId;
-
-            if (builderPlayer == null) {
-                builderId = UUIDFetcher.getUUID(builderName);
-                if (builderId == null) {
-                    Messages.sendMessage(player, "worlds_removebuilder_player_not_found");
-                    player.closeInventory();
-                    return;
-                }
-            } else {
-                builderId = builderPlayer.getUniqueId();
-            }
-
-            if (builderId.equals(player.getUniqueId()) && buildWorld.isCreator(player)) {
-                Messages.sendMessage(player, "worlds_removebuilder_not_yourself");
-                player.closeInventory();
-                return;
-            }
-
-            if (!buildWorld.isBuilder(builderId)) {
-                Messages.sendMessage(player, "worlds_removebuilder_not_builder");
-                player.closeInventory();
-                return;
-            }
-
-            buildWorld.removeBuilder(builderId);
-            XSound.ENTITY_PLAYER_LEVELUP.play(player);
-            Messages.sendMessage(player, "worlds_removebuilder_removed", new AbstractMap.SimpleEntry<>("%builder%", builderName));
-
-            player.closeInventory();
+            removeBuilder(player, buildWorld, builderName);
         });
     }
 

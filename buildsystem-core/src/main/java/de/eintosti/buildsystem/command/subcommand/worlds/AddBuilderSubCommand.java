@@ -52,66 +52,75 @@ public class AddBuilderSubCommand implements SubCommand {
             return;
         }
 
-        if (args.length > 2) {
-            Messages.sendMessage(player, "worlds_addbuilder_usage");
-            return;
-        }
-
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
             Messages.sendMessage(player, "worlds_addbuilder_unknown_world");
             return;
         }
 
-        getAddBuilderInput(player, buildWorld, true);
+        switch (args.length) {
+            case 1:
+                getAddBuilderInput(player, buildWorld, true);
+                break;
+            case 2:
+                addBuilder(player, buildWorld, args[1], true);
+                break;
+            default:
+                Messages.sendMessage(player, "worlds_addbuilder_usage");
+                break;
+        }
     }
 
-    @Override
-    public Argument getArgument() {
-        return WorldsTabComplete.WorldsArgument.ADD_BUILDER;
+    private void addBuilder(Player player, BuildWorld buildWorld, String builderName, boolean closeInventory) {
+        Player builderPlayer = Bukkit.getPlayerExact(builderName);
+        Builder builder;
+        UUID builderId;
+
+        if (builderPlayer == null) {
+            builderId = UUIDFetcher.getUUID(builderName);
+            if (builderId == null) {
+                Messages.sendMessage(player, "worlds_addbuilder_player_not_found");
+                player.closeInventory();
+                return;
+            }
+            builder = new Builder(builderId, builderName);
+        } else {
+            builder = new Builder(builderPlayer);
+            builderId = builderPlayer.getUniqueId();
+        }
+
+        if (builderId.equals(player.getUniqueId()) && buildWorld.isCreator(player)) {
+            Messages.sendMessage(player, "worlds_addbuilder_already_creator");
+            player.closeInventory();
+            return;
+        }
+
+        if (buildWorld.isBuilder(builderId)) {
+            Messages.sendMessage(player, "worlds_addbuilder_already_added");
+            player.closeInventory();
+            return;
+        }
+
+        buildWorld.addBuilder(builder);
+        XSound.ENTITY_PLAYER_LEVELUP.play(player);
+        Messages.sendMessage(player, "worlds_addbuilder_added", new AbstractMap.SimpleEntry<>("%builder%", builderName));
+
+        if (closeInventory) {
+            player.closeInventory();
+        } else {
+            plugin.getBuilderInventory().openInventory(buildWorld, player);
+        }
     }
 
     public void getAddBuilderInput(Player player, BuildWorld buildWorld, boolean closeInventory) {
         new PlayerChatInput(plugin, player, "enter_player_name", input -> {
             String builderName = input.trim();
-            Player builderPlayer = Bukkit.getPlayerExact(builderName);
-            Builder builder;
-            UUID builderId;
-
-            if (builderPlayer == null) {
-                builderId = UUIDFetcher.getUUID(builderName);
-                if (builderId == null) {
-                    Messages.sendMessage(player, "worlds_addbuilder_player_not_found");
-                    player.closeInventory();
-                    return;
-                }
-                builder = new Builder(builderId, builderName);
-            } else {
-                builder = new Builder(builderPlayer);
-                builderId = builderPlayer.getUniqueId();
-            }
-
-            if (builderId.equals(player.getUniqueId()) && buildWorld.isCreator(player)) {
-                Messages.sendMessage(player, "worlds_addbuilder_already_creator");
-                player.closeInventory();
-                return;
-            }
-
-            if (buildWorld.isBuilder(builderId)) {
-                Messages.sendMessage(player, "worlds_addbuilder_already_added");
-                player.closeInventory();
-                return;
-            }
-
-            buildWorld.addBuilder(builder);
-            XSound.ENTITY_PLAYER_LEVELUP.play(player);
-            Messages.sendMessage(player, "worlds_addbuilder_added", new AbstractMap.SimpleEntry<>("%builder%", builderName));
-
-            if (closeInventory) {
-                player.closeInventory();
-            } else {
-                plugin.getBuilderInventory().openInventory(buildWorld, player);
-            }
+            addBuilder(player, buildWorld, builderName, closeInventory);
         });
+    }
+
+    @Override
+    public Argument getArgument() {
+        return WorldsTabComplete.WorldsArgument.ADD_BUILDER;
     }
 }

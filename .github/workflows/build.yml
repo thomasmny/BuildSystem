@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ 17 ]
+        java: [ 8 ]
       fail-fast: true
 
     steps:
@@ -19,7 +19,6 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
           cache: 'gradle'
-          distribution: 'temurin'
 
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@v2
