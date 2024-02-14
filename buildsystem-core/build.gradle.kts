@@ -7,6 +7,12 @@ plugins {
 
 project.description = "Core"
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
+}
+
 repositories {
     maven {
         name = "AuthLib"
