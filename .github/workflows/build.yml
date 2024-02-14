@@ -19,6 +19,7 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
           cache: 'gradle'
+          distribution: 'temurin'
 
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@v2
