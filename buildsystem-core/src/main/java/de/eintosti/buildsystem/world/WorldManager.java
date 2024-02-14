@@ -481,6 +481,10 @@ public class WorldManager {
     public void renameWorld(Player player, BuildWorld buildWorld, String newName) {
         player.closeInventory();
 
+        if (worldExists(player, newName)) {
+            return;
+        }
+
         String oldName = buildWorld.getName();
         if (oldName.equalsIgnoreCase(newName)) {
             Messages.sendMessage(player, "worlds_rename_same_name");
