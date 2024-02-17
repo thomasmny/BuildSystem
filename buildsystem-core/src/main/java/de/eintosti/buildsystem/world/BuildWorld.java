@@ -541,6 +541,10 @@ public class BuildWorld implements ConfigurationSerializable {
             return;
         }
 
+        if (save) {
+            bukkitWorld.save();
+        }
+
         for (Chunk chunk : bukkitWorld.getLoadedChunks()) {
             chunk.unload(save);
         }
