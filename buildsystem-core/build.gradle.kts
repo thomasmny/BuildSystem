@@ -7,12 +7,6 @@ plugins {
 
 project.description = "Core"
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
-    }
-}
-
 repositories {
     maven {
         name = "AuthLib"
@@ -51,10 +45,6 @@ dependencies {
 tasks {
     assemble {
         dependsOn(shadowJar)
-    }
-
-    compileJava {
-        options.encoding = Charsets.UTF_8.name()
     }
 
     shadowJar {
