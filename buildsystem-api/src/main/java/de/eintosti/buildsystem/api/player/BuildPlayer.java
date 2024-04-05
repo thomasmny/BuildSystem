@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.api.player;
 
 import de.eintosti.buildsystem.api.settings.Settings;
+import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
@@ -25,13 +26,16 @@ public interface BuildPlayer {
 
     /**
      * Gets the unique-id of the player.
+     * <p>
+     * Should match the wrapped {@link Player}'s UUID.
      *
      * @return The player's UUID
+     * @see Player#getUniqueId()
      */
     UUID getUniqueId();
 
     /**
-     * Gets the player's per-player settings.
+     * Gets the player's custom settings.
      *
      * @return The player's settings
      */

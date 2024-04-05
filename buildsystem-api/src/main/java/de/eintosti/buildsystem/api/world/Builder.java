@@ -25,6 +25,7 @@ public interface Builder {
 
     /**
      * Returns a unique and persistent id for the builder.
+     * <p>
      * Should be equal to the corresponding {@link Player}'s unique id.
      *
      * @return The uuid

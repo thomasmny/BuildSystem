@@ -29,17 +29,17 @@ import java.util.UUID;
 public interface PlayerManager {
 
     /**
-     * Gets a build-player object by the given uuid.
+     * Gets the {@link BuildPlayer} whose unique-id matches the given uuid.
      *
-     * @param uuid The uuid to look up
+     * @param uuid The uuid of the player
      * @return The player, if found, otherwise {@code null}
      */
     BuildPlayer getBuildPlayer(UUID uuid);
 
     /**
-     * Gets a build-player object by the given player.
+     * Gets the {@link BuildPlayer} which wraps the given player.
      *
-     * @param player The uuid to look up
+     * @param player The wrapped player
      * @return The player, if found, otherwise {@code null}
      */
     BuildPlayer getBuildPlayer(Player player);

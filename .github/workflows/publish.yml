@@ -1,4 +1,4 @@
-name: Publish project to Maven repository
+name: Publish to Reposolite
 
 on:
   push:
@@ -23,5 +23,5 @@ jobs:
       - name: Publish with Gradle
         run: ./gradlew build publish
         env:
-          MAVEN_NAME: ${{ secrets.MAVEN_NAME }}
-          MAVEN_SECRET: ${{ secrets.MAVEN_SECRET }}
+          ORG_GRADLE_PROJECT_reposoliteUsername: ${{ secrets.REPOSOLITE_USERNAME }}
+          ORG_GRADLE_PROJECT_reposolitePassword: ${{ secrets.REPOSOLITE_PASSWORD }}
