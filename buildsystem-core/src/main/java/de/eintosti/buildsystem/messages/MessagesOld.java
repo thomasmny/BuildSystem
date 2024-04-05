@@ -43,10 +43,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * TODO: Migrate all messages to MiniMessage and replace this class with "Messages"
+ * TODO: Migrate all messages to MiniMessage and replace this class with {@link Messages}
  *
  * @deprecated Use {@link Messages} instead
  */
+@Deprecated
 public class MessagesOld {
 
     private static final Map<String, String> MESSAGES = new HashMap<>();

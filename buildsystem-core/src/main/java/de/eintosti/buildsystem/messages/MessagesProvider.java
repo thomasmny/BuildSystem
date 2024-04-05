@@ -34,6 +34,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
 
 public class MessagesProvider {
 
@@ -117,8 +118,7 @@ public class MessagesProvider {
             writer = Files.newBufferedWriter(messagesPath, StandardCharsets.UTF_8);
             defaultProperties.store(writer, null);
         } catch (IOException e) {
-            plugin.getLogger().severe("Error while updating missing messages:");
-            e.printStackTrace();
+            plugin.getLogger().log(Level.SEVERE, "Error while updating missing messages:", e);
         } finally {
             close(messagesInputStream);
             close(defaultMessagesInputStream);
@@ -137,8 +137,7 @@ public class MessagesProvider {
             messages.load(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
             messages.forEach((key, value) -> MESSAGES.put(key.toString(), value.toString()));
         } catch (IOException e) {
-            plugin.getLogger().severe("Error while updating missing messages:");
-            e.printStackTrace();
+            plugin.getLogger().log(Level.SEVERE, "Error while loading messages:", e);
         } finally {
             close(inputStream);
         }

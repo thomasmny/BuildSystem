@@ -17,9 +17,7 @@
  */
 package de.eintosti.buildsystem.messages;
 
-import com.google.common.collect.Lists;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
@@ -27,7 +25,12 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class Messages {
 
@@ -43,19 +46,51 @@ public final class Messages {
      * @param tagResolvers The tag resolvers to apply extra tags from
      * @return The message as a component
      */
-    @NotNull
     public static Component getMessage(String key, TagResolver... tagResolvers) {
         String message = MessagesProvider.MESSAGES.get(key);
         if (message == null) {
+            PLUGIN.getLogger().warning("Could not find message with key '" + key + "'");
             return Component.empty();
         }
 
-        TagResolver[] allResolvers = Lists.newArrayList(
-                tagResolvers,
-                Placeholder.component("prefix", MINI_MESSAGE.deserialize(MessagesProvider.MESSAGES.get("prefix")))
-        ).toArray(new TagResolver[0]);
+        return MINI_MESSAGE.deserialize(message, mergeTagResolvers(tagResolvers));
+    }
 
-        return MINI_MESSAGE.deserialize(message, allResolvers);
+    /**
+     * Gets the messages with the given key as a list of components after they were parsed by {@link MiniMessage}
+     * using the given tag resolvers.
+     *
+     * @param key          The key of the messages
+     * @param tagResolvers The tag resolvers to apply extra tags from
+     * @return The messages as a list of components
+     */
+    public static List<Component> getMessages(String key, TagResolver... tagResolvers) {
+        String message = MessagesProvider.MESSAGES.get(key);
+        if (message == null) {
+            PLUGIN.getLogger().warning("Could not find message with key '" + key + "'");
+            return new ArrayList<>();
+        }
+
+        String[] split = message.split("\n");
+        Component[] parsed = new Component[split.length];
+        for (int i = 0; i < split.length; i++) {
+            parsed[i] = MINI_MESSAGE.deserialize(split[i], mergeTagResolvers(tagResolvers));
+        }
+
+        return Arrays.asList(parsed);
+    }
+
+    /**
+     * Merges an array of {@link TagResolver} objects with the prefix tag resolver.
+     *
+     * @param tagResolvers The tag resolvers to merge
+     * @return An array of {@link TagResolver} objects containing the merged resolvers
+     */
+    private static TagResolver[] mergeTagResolvers(TagResolver... tagResolvers) {
+        return Stream.concat(
+                Stream.of(Placeholder.component("prefix", MINI_MESSAGE.deserialize(MessagesProvider.MESSAGES.get("prefix")))),
+                Arrays.stream(tagResolvers)
+        ).toArray(TagResolver[]::new);
     }
 
     /**
@@ -67,9 +102,24 @@ public final class Messages {
      * @return The message a legacy string
      * @see #getMessage(String, TagResolver...)
      */
-    @NotNull
-    public static String getLegacyMessage(String key, TagResolver... tagResolvers) {
+    public static String getString(String key, TagResolver... tagResolvers) {
         return LEGACY_SERIALIZER.serialize(getMessage(key, tagResolvers));
+    }
+
+    /**
+     * Gets the message with the given key as a list of legacy strings after it was parsed by {@link MiniMessage}
+     * using the given tag resolvers.
+     *
+     * @param key          The key of the messages
+     * @param tagResolvers The tag resolvers to apply extra tags from
+     * @return The message a legacy string
+     * @see #getMessages(String, TagResolver...)
+     */
+    public static List<String> getStringList(String key, TagResolver... tagResolvers) {
+        List<Component> messages = getMessages(key, tagResolvers);
+        return messages.stream()
+                .map(LEGACY_SERIALIZER::serialize)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -80,9 +130,7 @@ public final class Messages {
      * @param tagResolvers The tag resolvers to apply extra tags from
      */
     public static void sendMessage(CommandSender sender, String key, TagResolver... tagResolvers) {
-        try (BukkitAudiences audiences = PLUGIN.adventure()) {
-            Component message = getMessage(key, tagResolvers);
-            audiences.sender(sender).sendMessage(message);
-        }
+        Component message = getMessage(key, tagResolvers);
+        PLUGIN.adventure().sender(sender).sendMessage(message);
     }
 }
