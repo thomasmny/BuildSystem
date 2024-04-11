@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -43,7 +43,7 @@ public class SkullCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
+            plugin.getLogger().warning(MessagesOld.getString("sender_not_player", null));
             return true;
         }
 
@@ -56,21 +56,21 @@ public class SkullCommand implements CommandExecutor {
         switch (args.length) {
             case 0:
                 player.getInventory().addItem(inventoryUtils.getSkull("§b" + player.getName(), player.getName()));
-                Messages.sendMessage(player, "skull_player_received", new AbstractMap.SimpleEntry<>("%player%", player.getName()));
+                MessagesOld.sendMessage(player, "skull_player_received", new AbstractMap.SimpleEntry<>("%player%", player.getName()));
                 break;
             case 1:
                 String skullName = args[0];
                 if (skullName.length() > 16) {
-                    ItemStack customSkull = inventoryUtils.getUrlSkull(Messages.getString("custom_skull_item", player), skullName);
+                    ItemStack customSkull = inventoryUtils.getUrlSkull(MessagesOld.getString("custom_skull_item", player), skullName);
                     player.getInventory().addItem(customSkull);
-                    Messages.sendMessage(player, "skull_custom_received");
+                    MessagesOld.sendMessage(player, "skull_custom_received");
                 } else {
                     player.getInventory().addItem(inventoryUtils.getSkull("§b" + skullName, skullName));
-                    Messages.sendMessage(player, "skull_player_received", new AbstractMap.SimpleEntry<>("%player%", skullName));
+                    MessagesOld.sendMessage(player, "skull_player_received", new AbstractMap.SimpleEntry<>("%player%", skullName));
                 }
                 break;
             default:
-                Messages.sendMessage(player, "skull_usage");
+                MessagesOld.sendMessage(player, "skull_usage");
                 break;
         }
         return true;

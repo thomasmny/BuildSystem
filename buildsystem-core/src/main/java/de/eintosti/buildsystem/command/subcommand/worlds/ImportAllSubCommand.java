@@ -18,10 +18,10 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.generator.Generator;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.UUIDFetcher;
@@ -49,13 +49,13 @@ public class ImportAllSubCommand implements SubCommand {
         }
 
         if (args.length != 1) {
-            Messages.sendMessage(player, "worlds_importall_usage");
+            MessagesOld.sendMessage(player, "worlds_importall_usage");
             return;
         }
 
         BuildWorldManager worldManager = plugin.getWorldManager();
         if (worldManager.isImportingAllWorlds()) {
-            Messages.sendMessage(player, "worlds_importall_already_started");
+            MessagesOld.sendMessage(player, "worlds_importall_already_started");
             return;
         }
 
@@ -74,7 +74,7 @@ public class ImportAllSubCommand implements SubCommand {
         });
 
         if (directories == null || directories.length == 0) {
-            Messages.sendMessage(player, "worlds_importall_no_worlds");
+            MessagesOld.sendMessage(player, "worlds_importall_no_worlds");
             return;
         }
 
@@ -85,7 +85,7 @@ public class ImportAllSubCommand implements SubCommand {
         if (parser.isArgument("g")) {
             String generatorArg = parser.getValue("g");
             if (generatorArg == null) {
-                Messages.sendMessage(player, "worlds_importall_usage");
+                MessagesOld.sendMessage(player, "worlds_importall_usage");
                 return;
             }
             try {
@@ -97,12 +97,12 @@ public class ImportAllSubCommand implements SubCommand {
         if (parser.isArgument("c")) {
             String creatorArg = parser.getValue("c");
             if (creatorArg == null) {
-                Messages.sendMessage(player, "worlds_importall_usage");
+                MessagesOld.sendMessage(player, "worlds_importall_usage");
                 return;
             }
             UUID creatorId = UUIDFetcher.getUUID(creatorArg);
             if (creatorId == null) {
-                Messages.sendMessage(player, "worlds_importall_player_not_found");
+                MessagesOld.sendMessage(player, "worlds_importall_player_not_found");
                 return;
             }
             builder = new CraftBuilder(creatorId, creatorArg);

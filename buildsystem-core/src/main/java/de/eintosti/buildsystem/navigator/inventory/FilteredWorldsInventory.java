@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.navigator.inventory;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.settings.WorldDisplay;
 import de.eintosti.buildsystem.api.settings.WorldFilter;
 import de.eintosti.buildsystem.api.settings.WorldSort;
@@ -28,6 +27,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldStatus;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.navigator.settings.BuildWorldFilter;
 import de.eintosti.buildsystem.settings.CraftSettings;
 import de.eintosti.buildsystem.settings.SettingsManager;
@@ -78,7 +78,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
     }
 
     protected Inventory createInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 54, Messages.getString(inventoryName, player));
+        Inventory inventory = Bukkit.createInventory(null, 54, MessagesOld.getString(inventoryName, player));
 
         int numOfPages = (numOfWorlds(player) / MAX_WORLDS) + (numOfWorlds(player) % MAX_WORLDS == 0 ? 0 : 1);
         inventoryUtils.fillMultiInvWithGlass(plugin, inventory, player, getInvIndex(player), numOfPages);
@@ -86,8 +86,8 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         addWorldSortItem(inventory, player);
         addWorldFilterItem(inventory, player);
 
-        inventoryUtils.addUrlSkull(inventory, 52, Messages.getString("gui_previous_page", player), "86971dd881dbaf4fd6bcaa93614493c612f869641ed59d1c9363a3666a5fa6");
-        inventoryUtils.addUrlSkull(inventory, 53, Messages.getString("gui_next_page", player), "f32ca66056b72863e98f7f32bd7d94c7a0d796af691c9ac3a9136331352288f9");
+        inventoryUtils.addUrlSkull(inventory, 52, MessagesOld.getString("gui_previous_page", player), "86971dd881dbaf4fd6bcaa93614493c612f869641ed59d1c9363a3666a5fa6");
+        inventoryUtils.addUrlSkull(inventory, 53, MessagesOld.getString("gui_next_page", player), "f32ca66056b72863e98f7f32bd7d94c7a0d796af691c9ac3a9136331352288f9");
 
         return inventory;
     }
@@ -132,7 +132,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         int index = 0;
         inventories[index] = inventory;
         if (numWorlds == 0) {
-            inventoryUtils.addUrlSkull(inventory, 22, Messages.getString(noWorldsText, player), "2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6");
+            inventoryUtils.addUrlSkull(inventory, 22, MessagesOld.getString(noWorldsText, player), "2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6");
             return;
         }
 
@@ -154,8 +154,8 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         CraftSettings settings = settingsManager.getSettings(player);
         WorldSort worldSort = settings.getWorldDisplay().getWorldSort();
         inventoryUtils.addItemStack(inventory, 45, XMaterial.BOOK,
-                Messages.getString("world_sort_title", player),
-                Messages.getStringList(worldSort.getLoreKey(), player)
+                MessagesOld.getString("world_sort_title", player),
+                MessagesOld.getStringList(worldSort.getLoreKey(), player)
         );
     }
 
@@ -164,10 +164,10 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         WorldFilter worldFilter = settings.getWorldDisplay().getWorldFilter();
 
         List<String> lore = new ArrayList<>();
-        lore.add(Messages.getString(worldFilter.getMode().getLoreKey(), player, new AbstractMap.SimpleEntry<>("%text%", worldFilter.getText())));
-        lore.addAll(Messages.getStringList("world_filter_lore", player));
+        lore.add(MessagesOld.getString(worldFilter.getMode().getLoreKey(), player, new AbstractMap.SimpleEntry<>("%text%", worldFilter.getText())));
+        lore.addAll(MessagesOld.getStringList("world_filter_lore", player));
 
-        inventoryUtils.addItemStack(inventory, 46, XMaterial.HOPPER, Messages.getString("world_filter_title", player), lore);
+        inventoryUtils.addItemStack(inventory, 46, XMaterial.HOPPER, MessagesOld.getString("world_filter_title", player), lore);
     }
 
     /**

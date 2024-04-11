@@ -19,8 +19,8 @@ package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.version.customblocks.CustomBlock;
 import de.eintosti.buildsystem.world.BuildWorldManager;
 import org.bukkit.entity.Player;
@@ -50,7 +50,7 @@ public class BlockPlaceListener implements Listener {
     private Map<String, String> initBlockLookup() {
         Map<String, String> lookup = new HashMap<>();
         for (CustomBlock customBlock : CustomBlock.values()) {
-            lookup.put(Messages.getString(customBlock.getKey(), null), customBlock.getKey());
+            lookup.put(MessagesOld.getString(customBlock.getKey(), null), customBlock.getKey());
         }
         return lookup;
     }

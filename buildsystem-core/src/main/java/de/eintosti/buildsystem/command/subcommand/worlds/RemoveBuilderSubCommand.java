@@ -19,10 +19,10 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.UUIDFetcher;
@@ -52,13 +52,13 @@ public class RemoveBuilderSubCommand implements SubCommand {
         }
 
         if (args.length > 2) {
-            Messages.sendMessage(player, "worlds_removebuilder_usage");
+            MessagesOld.sendMessage(player, "worlds_removebuilder_usage");
             return;
         }
 
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_removebuilder_unknown_world");
+            MessagesOld.sendMessage(player, "worlds_removebuilder_unknown_world");
             return;
         }
 
@@ -74,7 +74,7 @@ public class RemoveBuilderSubCommand implements SubCommand {
             if (builderPlayer == null) {
                 builderId = UUIDFetcher.getUUID(builderName);
                 if (builderId == null) {
-                    Messages.sendMessage(player, "worlds_removebuilder_player_not_found");
+                    MessagesOld.sendMessage(player, "worlds_removebuilder_player_not_found");
                     player.closeInventory();
                     return;
                 }
@@ -83,20 +83,20 @@ public class RemoveBuilderSubCommand implements SubCommand {
             }
 
             if (builderId.equals(player.getUniqueId()) && buildWorld.isCreator(player)) {
-                Messages.sendMessage(player, "worlds_removebuilder_not_yourself");
+                MessagesOld.sendMessage(player, "worlds_removebuilder_not_yourself");
                 player.closeInventory();
                 return;
             }
 
             if (!buildWorld.isBuilder(builderId)) {
-                Messages.sendMessage(player, "worlds_removebuilder_not_builder");
+                MessagesOld.sendMessage(player, "worlds_removebuilder_not_builder");
                 player.closeInventory();
                 return;
             }
 
             buildWorld.removeBuilder(builderId);
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
-            Messages.sendMessage(player, "worlds_removebuilder_removed", new AbstractMap.SimpleEntry<>("%builder%", builderName));
+            MessagesOld.sendMessage(player, "worlds_removebuilder_removed", new AbstractMap.SimpleEntry<>("%builder%", builderName));
 
             player.closeInventory();
         });

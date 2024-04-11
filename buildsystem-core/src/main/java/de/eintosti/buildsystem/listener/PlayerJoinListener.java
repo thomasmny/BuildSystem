@@ -18,12 +18,13 @@
 package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldStatus;
 import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.messages.Messages;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.player.BuildPlayerManager;
 import de.eintosti.buildsystem.player.CraftBuildPlayer;
 import de.eintosti.buildsystem.player.LogoutLocation;
@@ -33,6 +34,7 @@ import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.world.BuildWorldManager;
 import de.eintosti.buildsystem.world.SpawnManager;
 import io.papermc.lib.PaperLib;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -70,7 +72,7 @@ public class PlayerJoinListener implements Listener {
     public void sendPlayerJoinMessage(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         String message = plugin.getConfigValues().isJoinQuitMessages()
-                ? Messages.getString("player_join", player, new AbstractMap.SimpleEntry<>("%player%", player.getName()))
+                ? Messages.getLegacyMessage("player.join", Placeholder.unparsed("player", player.getName()))
                 : null;
         event.setJoinMessage(message);
     }
@@ -92,7 +94,7 @@ public class PlayerJoinListener implements Listener {
         if (buildWorld != null) {
             WorldData worldData = buildWorld.getData();
             if (!worldData.physics().get() && player.hasPermission("buildsystem.physics.message")) {
-                Messages.sendMessage(player, "physics_deactivated_in_world", new AbstractMap.SimpleEntry<>("%world%", worldName));
+                MessagesOld.sendMessage(player, "physics_deactivated_in_world", new AbstractMap.SimpleEntry<>("%world%", worldName));
             }
 
             if (configValues.isArchiveVanish() && worldData.status().get() == WorldStatus.ARCHIVE) {
@@ -184,7 +186,7 @@ public class PlayerJoinListener implements Listener {
                 .whenComplete((result, e) -> {
                     if (result.requiresUpdate()) {
                         StringBuilder stringBuilder = new StringBuilder();
-                        Messages.getStringList("update_available", player).forEach(line ->
+                        MessagesOld.getStringList("update_available", player).forEach(line ->
                                 stringBuilder.append(line
                                                 .replace("%new_version%", result.getNewestVersion())
                                                 .replace("%current_version%", plugin.getDescription().getVersion()))

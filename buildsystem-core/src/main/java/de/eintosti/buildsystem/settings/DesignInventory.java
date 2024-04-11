@@ -19,8 +19,8 @@ package de.eintosti.buildsystem.settings;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.settings.DesignColor;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -46,7 +46,7 @@ public class DesignInventory implements Listener {
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 36, Messages.getString("design_title", player));
+        Inventory inventory = Bukkit.createInventory(null, 36, MessagesOld.getString("design_title", player));
         fillGuiWithGlass(inventory, player);
 
         setItem(player, inventory, 10, XMaterial.RED_STAINED_GLASS, "design_red", DesignColor.RED);
@@ -87,7 +87,7 @@ public class DesignInventory implements Listener {
         SettingsManager settingsManager = plugin.getSettingsManager();
         CraftSettings settings = settingsManager.getSettings(player);
 
-        String displayName = Messages.getString(key, player);
+        String displayName = MessagesOld.getString(key, player);
         ItemStack itemStack = inventoryUtils.getItemStack(material,
                 settings.getDesignColor() == color
                         ? ChatColor.GREEN + displayName

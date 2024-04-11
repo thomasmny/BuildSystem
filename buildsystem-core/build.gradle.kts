@@ -32,11 +32,14 @@ dependencies {
     compileOnly(libs.authlib)
     compileOnly(libs.paperlib)
     compileOnly(libs.luckperms)
-    compileOnly(libs.placeholderapi)
+    compileOnly(libs.placeholderapi) { isTransitive = false }
     compileOnly(libs.worldedit)
     compileOnly(libs.annotations)
 
     implementation(libs.paperlib)
+    implementation(libs.adventure.api)
+    implementation(libs.adventure.minimessage)
+    implementation(libs.adventure.platform)
     implementation(libs.xseries) { isTransitive = false }
     implementation(libs.fastboard)
     implementation(libs.nbt) { isTransitive = false }
@@ -61,11 +64,12 @@ tasks {
         archiveFileName.set("${rootProject.name}-${project.version}.jar")
 
         val shadePath = "de.eintosti.buildsystem.util.external"
-        relocate("io.papermc.lib", "$shadePath.paperlib")
         relocate("com.cryptomorin.xseries", "$shadePath.xseries")
-        relocate("fr.mrmicky.fastboard", "$shadePath.fastboard")
         relocate("dev.dewy.nbt", "$shadePath.nbt")
+        relocate("fr.mrmicky.fastboard", "$shadePath.fastboard")
+        relocate("io.papermc.lib", "$shadePath.paperlib")
         relocate("org.bstats", "$shadePath.bstats")
+        relocate("net.kyori.adventure", "$shadePath.adventure")
     }
 
     processResources {

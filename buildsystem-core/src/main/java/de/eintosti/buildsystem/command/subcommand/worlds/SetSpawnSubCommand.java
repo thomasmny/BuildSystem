@@ -18,10 +18,10 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.BuildWorldManager;
 import org.bukkit.Location;
@@ -48,14 +48,14 @@ public class SetSpawnSubCommand implements SubCommand {
 
         BuildWorld buildWorld = worldManager.getBuildWorld(playerWorldName);
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_setspawn_world_not_imported");
+            MessagesOld.sendMessage(player, "worlds_setspawn_world_not_imported");
             return;
         }
 
         Location loc = player.getLocation();
         String locString = loc.getX() + ";" + loc.getY() + ";" + loc.getZ() + ";" + loc.getYaw() + ";" + loc.getPitch();
         buildWorld.getData().customSpawn().set(locString);
-        Messages.sendMessage(player, "worlds_setspawn_world_spawn_set", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+        MessagesOld.sendMessage(player, "worlds_setspawn_world_spawn_set", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
     }
 
     @Override

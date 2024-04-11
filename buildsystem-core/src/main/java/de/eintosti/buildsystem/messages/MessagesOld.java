@@ -15,8 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem;
+package de.eintosti.buildsystem.messages;
 
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
@@ -41,7 +42,13 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class Messages {
+/**
+ * TODO: Migrate all messages to MiniMessage and replace this class with {@link Messages}
+ *
+ * @deprecated Use {@link Messages} instead
+ */
+@Deprecated
+public class MessagesOld {
 
     private static final Map<String, String> MESSAGES = new HashMap<>();
     private static final boolean PLACEHOLDER_API_ENABLED = Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null;

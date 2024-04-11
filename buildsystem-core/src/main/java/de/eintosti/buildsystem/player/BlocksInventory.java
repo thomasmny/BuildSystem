@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.player;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.version.customblocks.CustomBlock;
 import de.eintosti.buildsystem.version.util.MinecraftVersion;
@@ -45,7 +45,7 @@ public class BlocksInventory implements Listener {
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 45, Messages.getString("blocks_title", player));
+        Inventory inventory = Bukkit.createInventory(null, 45, MessagesOld.getString("blocks_title", player));
         fillGuiWithGlass(player, inventory);
 
         setCustomBlock(inventory, player, 1, CustomBlock.FULL_OAK_BARCH);
@@ -84,7 +84,7 @@ public class BlocksInventory implements Listener {
 
     private void setCustomBlock(Inventory inventory, Player player, int position, CustomBlock customBlock) {
         if (MinecraftVersion.getCurrent().isEqualOrHigherThan(customBlock.getVersion())) {
-            inventoryUtils.addUrlSkull(inventory, position, Messages.getString(customBlock.getKey(), player), customBlock.getSkullUrl());
+            inventoryUtils.addUrlSkull(inventory, position, MessagesOld.getString(customBlock.getKey(), player), customBlock.getSkullUrl());
         }
     }
 
@@ -168,10 +168,10 @@ public class BlocksInventory implements Listener {
                 giveCustomBlock(player, CustomBlock.COMMAND_BLOCK);
                 break;
             case 32:
-                giveCustomBlock(player, CustomBlock.BARRIER, inventoryUtils.getItemStack(XMaterial.BARRIER, Messages.getString(CustomBlock.BARRIER.getKey(), player)));
+                giveCustomBlock(player, CustomBlock.BARRIER, inventoryUtils.getItemStack(XMaterial.BARRIER, MessagesOld.getString(CustomBlock.BARRIER.getKey(), player)));
                 break;
             case 33:
-                ItemStack itemStack = inventoryUtils.getItemStack(XMaterial.ITEM_FRAME, Messages.getString(CustomBlock.INVISIBLE_ITEM_FRAME.getKey(), player));
+                ItemStack itemStack = inventoryUtils.getItemStack(XMaterial.ITEM_FRAME, MessagesOld.getString(CustomBlock.INVISIBLE_ITEM_FRAME.getKey(), player));
                 ItemMeta itemMeta = itemStack.getItemMeta();
                 itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
                 // Inline imports to allow backwards compatibility
@@ -193,7 +193,7 @@ public class BlocksInventory implements Listener {
                 giveCustomBlock(player, CustomBlock.DRAGON_EGG);
                 break;
             case 41:
-                giveCustomBlock(player, CustomBlock.DEBUG_STICK, inventoryUtils.getItemStack(XMaterial.DEBUG_STICK, Messages.getString(CustomBlock.DEBUG_STICK.getKey(), player)));
+                giveCustomBlock(player, CustomBlock.DEBUG_STICK, inventoryUtils.getItemStack(XMaterial.DEBUG_STICK, MessagesOld.getString(CustomBlock.DEBUG_STICK.getKey(), player)));
                 break;
         }
     }
@@ -205,6 +205,6 @@ public class BlocksInventory implements Listener {
     }
 
     private void giveCustomBlock(Player player, CustomBlock customBlock) {
-        giveCustomBlock(player, customBlock, inventoryUtils.getUrlSkull(Messages.getString(customBlock.getKey(), player), customBlock.getSkullUrl()));
+        giveCustomBlock(player, customBlock, inventoryUtils.getUrlSkull(MessagesOld.getString(customBlock.getKey(), player), customBlock.getSkullUrl()));
     }
 }

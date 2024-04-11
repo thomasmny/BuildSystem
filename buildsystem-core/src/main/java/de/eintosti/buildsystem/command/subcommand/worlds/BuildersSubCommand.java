@@ -18,9 +18,9 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.BuildWorldManager;
 import de.eintosti.buildsystem.world.CraftBuildWorld;
@@ -45,13 +45,13 @@ public class BuildersSubCommand implements SubCommand {
         }
 
         if (args.length > 2) {
-            Messages.sendMessage(player, "worlds_builders_usage");
+            MessagesOld.sendMessage(player, "worlds_builders_usage");
             return;
         }
 
         CraftBuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_builders_unknown_world");
+            MessagesOld.sendMessage(player, "worlds_builders_unknown_world");
             return;
         }
 

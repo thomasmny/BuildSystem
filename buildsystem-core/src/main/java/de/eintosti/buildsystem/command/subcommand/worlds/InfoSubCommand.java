@@ -18,11 +18,11 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.BuildWorldManager;
 import de.eintosti.buildsystem.world.CraftBuildWorld;
@@ -50,40 +50,40 @@ public class InfoSubCommand implements SubCommand {
         }
 
         if (args.length > 2) {
-            Messages.sendMessage(player, "worlds_info_usage");
+            MessagesOld.sendMessage(player, "worlds_info_usage");
             return;
         }
 
         CraftBuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_info_unknown_world");
+            MessagesOld.sendMessage(player, "worlds_info_unknown_world");
             return;
         }
 
         //TODO: Print information about the custom generator?
         WorldData worldData = buildWorld.getData();
-        Messages.sendMessage(player, "world_info",
+        MessagesOld.sendMessage(player, "world_info",
                 new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()),
                 new AbstractMap.SimpleEntry<>("%creator%", buildWorld.getCreator()),
                 new AbstractMap.SimpleEntry<>("%item%", worldData.material().get().name()),
-                new AbstractMap.SimpleEntry<>("%type%", Messages.getDataString(buildWorld.getType().getKey(), player)),
+                new AbstractMap.SimpleEntry<>("%type%", MessagesOld.getDataString(buildWorld.getType().getKey(), player)),
                 new AbstractMap.SimpleEntry<>("%private%", worldData.privateWorld().get()),
                 new AbstractMap.SimpleEntry<>("%builders_enabled%", worldData.buildersEnabled().get()),
                 new AbstractMap.SimpleEntry<>("%builders%", buildWorld.getBuildersInfo(player)),
                 new AbstractMap.SimpleEntry<>("%block_breaking%", worldData.blockBreaking().get()),
                 new AbstractMap.SimpleEntry<>("%block_placement%", worldData.blockPlacement().get()),
-                new AbstractMap.SimpleEntry<>("%status%", Messages.getDataString(worldData.status().get().getKey(), player)),
+                new AbstractMap.SimpleEntry<>("%status%", MessagesOld.getDataString(worldData.status().get().getKey(), player)),
                 new AbstractMap.SimpleEntry<>("%project%", worldData.project().get()),
                 new AbstractMap.SimpleEntry<>("%permission%", worldData.permission().get()),
                 new AbstractMap.SimpleEntry<>("%time%", buildWorld.getWorldTime()),
-                new AbstractMap.SimpleEntry<>("%creation%", Messages.formatDate(buildWorld.getCreationDate())),
+                new AbstractMap.SimpleEntry<>("%creation%", MessagesOld.formatDate(buildWorld.getCreationDate())),
                 new AbstractMap.SimpleEntry<>("%physics%", worldData.physics().get()),
                 new AbstractMap.SimpleEntry<>("%explosions%", worldData.explosions().get()),
                 new AbstractMap.SimpleEntry<>("%mobai%", worldData.mobAi().get()),
                 new AbstractMap.SimpleEntry<>("%custom_spawn%", getCustomSpawn(buildWorld)),
-                new AbstractMap.SimpleEntry<>("%lastedited%", Messages.formatDate(worldData.lastEdited().get())),
-                new AbstractMap.SimpleEntry<>("%lastloaded%", Messages.formatDate(worldData.lastLoaded().get())),
-                new AbstractMap.SimpleEntry<>("%lastunloaded%", Messages.formatDate(worldData.lastUnloaded().get()))
+                new AbstractMap.SimpleEntry<>("%lastedited%", MessagesOld.formatDate(worldData.lastEdited().get())),
+                new AbstractMap.SimpleEntry<>("%lastloaded%", MessagesOld.formatDate(worldData.lastLoaded().get())),
+                new AbstractMap.SimpleEntry<>("%lastunloaded%", MessagesOld.formatDate(worldData.lastUnloaded().get()))
         );
     }
 

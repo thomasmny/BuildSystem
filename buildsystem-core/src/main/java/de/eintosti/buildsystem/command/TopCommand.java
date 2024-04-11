@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.world.BuildWorldManager;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
@@ -43,7 +43,7 @@ public class TopCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
+            plugin.getLogger().warning(MessagesOld.getString("sender_not_player", null));
             return true;
         }
 
@@ -54,7 +54,7 @@ public class TopCommand implements CommandExecutor {
         }
 
         if (args.length != 0) {
-            Messages.sendMessage(player, "top_usage");
+            MessagesOld.sendMessage(player, "top_usage");
             return true;
         }
 
@@ -69,7 +69,7 @@ public class TopCommand implements CommandExecutor {
                 .getLocation();
 
         if (!worldManager.isSafeLocation(blockLocation) || blockLocation.getBlock().getY() < playerLocation.getBlock().getY()) {
-            Messages.sendMessage(player, "top_failed");
+            MessagesOld.sendMessage(player, "top_failed");
             return;
         }
 
@@ -79,7 +79,7 @@ public class TopCommand implements CommandExecutor {
                         return;
                     }
                     XSound.ENTITY_ZOMBIE_INFECT.play(player);
-                    Messages.sendMessage(player, "top_teleported");
+                    MessagesOld.sendMessage(player, "top_teleported");
                 });
     }
 }

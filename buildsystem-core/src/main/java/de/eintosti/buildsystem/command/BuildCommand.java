@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import de.eintosti.buildsystem.player.BuildPlayerManager;
 import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.CraftBuildPlayer;
@@ -48,7 +48,7 @@ public class BuildCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
+            plugin.getLogger().warning(MessagesOld.getString("sender_not_player", null));
             return true;
         }
 
@@ -72,7 +72,7 @@ public class BuildCommand implements CommandExecutor {
 
                 Player target = Bukkit.getPlayer(args[0]);
                 if (target == null) {
-                    Messages.sendMessage(player, "build_player_not_found");
+                    MessagesOld.sendMessage(player, "build_player_not_found");
                     return true;
                 }
 
@@ -81,7 +81,7 @@ public class BuildCommand implements CommandExecutor {
             }
 
             default: {
-                Messages.sendMessage(player, "build_usage");
+                MessagesOld.sendMessage(player, "build_usage");
                 break;
             }
         }
@@ -100,11 +100,11 @@ public class BuildCommand implements CommandExecutor {
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
             if (self) {
-                Messages.sendMessage(target, "build_deactivated_self");
+                MessagesOld.sendMessage(target, "build_deactivated_self");
             } else {
                 XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(sender);
-                Messages.sendMessage(sender, "build_deactivated_other_sender", new AbstractMap.SimpleEntry<>("%target%", target.getName()));
-                Messages.sendMessage(target, "build_deactivated_other_target", new AbstractMap.SimpleEntry<>("%sender%", sender.getName()));
+                MessagesOld.sendMessage(sender, "build_deactivated_other_sender", new AbstractMap.SimpleEntry<>("%target%", target.getName()));
+                MessagesOld.sendMessage(target, "build_deactivated_other_target", new AbstractMap.SimpleEntry<>("%sender%", sender.getName()));
             }
         } else {
             playerManager.getBuildModePlayers().add(targetUuid);
@@ -114,11 +114,11 @@ public class BuildCommand implements CommandExecutor {
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
             if (self) {
-                Messages.sendMessage(target, "build_activated_self");
+                MessagesOld.sendMessage(target, "build_activated_self");
             } else {
                 XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(sender);
-                Messages.sendMessage(sender, "build_activated_other_sender", new AbstractMap.SimpleEntry<>("%target%", target.getName()));
-                Messages.sendMessage(target, "build_activated_other_target", new AbstractMap.SimpleEntry<>("%sender%", sender.getName()));
+                MessagesOld.sendMessage(sender, "build_activated_other_sender", new AbstractMap.SimpleEntry<>("%target%", target.getName()));
+                MessagesOld.sendMessage(target, "build_activated_other_target", new AbstractMap.SimpleEntry<>("%sender%", sender.getName()));
             }
         }
     }

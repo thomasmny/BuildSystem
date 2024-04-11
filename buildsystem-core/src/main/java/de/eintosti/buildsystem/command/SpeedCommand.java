@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.messages.MessagesOld;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -40,7 +40,7 @@ public class SpeedCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
+            plugin.getLogger().warning(MessagesOld.getString("sender_not_player", null));
             return true;
         }
 
@@ -74,12 +74,12 @@ public class SpeedCommand implements CommandExecutor {
                         setSpeed(player, 1.0f, speedString);
                         break;
                     default:
-                        Messages.sendMessage(player, "speed_usage");
+                        MessagesOld.sendMessage(player, "speed_usage");
                         break;
                 }
                 break;
             default:
-                Messages.sendMessage(player, "speed_usage");
+                MessagesOld.sendMessage(player, "speed_usage");
                 break;
         }
 
@@ -89,10 +89,10 @@ public class SpeedCommand implements CommandExecutor {
     private void setSpeed(Player player, float speed, String speedString) {
         if (player.isFlying()) {
             player.setFlySpeed(speed - 0.1f);
-            Messages.sendMessage(player, "speed_set_flying", new AbstractMap.SimpleEntry<>("%speed%", speedString));
+            MessagesOld.sendMessage(player, "speed_set_flying", new AbstractMap.SimpleEntry<>("%speed%", speedString));
         } else {
             player.setWalkSpeed(speed);
-            Messages.sendMessage(player, "speed_set_walking", new AbstractMap.SimpleEntry<>("%speed%", speedString));
+            MessagesOld.sendMessage(player, "speed_set_walking", new AbstractMap.SimpleEntry<>("%speed%", speedString));
         }
     }
 }
