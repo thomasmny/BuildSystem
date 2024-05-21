@@ -6,7 +6,7 @@ paperlib = "1.0.8"
 # Plugins
 luckperms = "5.4"
 worldedit = "7.2.20"
-placeholderapi = "2.11.5"
+placeholderapi = "2.11.6"
 
 # Third Party
 annotations = "24.1.0"
