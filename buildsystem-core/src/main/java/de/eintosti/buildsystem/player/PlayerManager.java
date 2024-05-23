@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.player;
 
 import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.ActionBar;
 import de.eintosti.buildsystem.BuildSystem;
@@ -47,7 +48,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.permissions.PermissionAttachmentInfo;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -273,8 +273,8 @@ public class PlayerManager {
         CachedValues cachedValues = buildPlayer.getCachedValues();
         cachedValues.resetWalkSpeedIfPresent(player);
         cachedValues.resetFlySpeedIfPresent(player);
-        player.removePotionEffect(PotionEffectType.JUMP);
-        player.removePotionEffect(PotionEffectType.BLINDNESS);
+        player.removePotionEffect(XPotion.JUMP_BOOST.getPotionEffectType());
+        player.removePotionEffect(XPotion.BLINDNESS.getPotionEffectType());
 
         openNavigator.remove(player);
     }
