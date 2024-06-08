@@ -17,8 +17,8 @@
  */
 package de.eintosti.buildsystem.util;
 
-import com.cryptomorin.xseries.SkullUtils;
 import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.XSkull;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.Titles;
 import de.eintosti.buildsystem.BuildSystem;
@@ -51,7 +51,6 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -184,14 +183,15 @@ public class InventoryUtils {
     }
 
     public ItemStack getSkull(String displayName, String skullOwner, List<String> lore) {
-        ItemStack skull = XMaterial.PLAYER_HEAD.parseItem();
-        SkullMeta skullMeta = SkullUtils.applySkin(skull.getItemMeta(), skullOwner);
+        ItemStack skull = XSkull.create()
+                .profile(skullOwner)
+                .apply();
 
-        skullMeta.setDisplayName(displayName);
-        skullMeta.setLore(lore);
-        skull.setItemMeta(skullMeta);
+        ItemMeta itemMeta = skull.getItemMeta();
+        itemMeta.setDisplayName(displayName);
+        itemMeta.setLore(lore);
+        skull.setItemMeta(itemMeta);
 
-        skull.setItemMeta(skullMeta);
         return skull;
     }
 
@@ -208,13 +208,15 @@ public class InventoryUtils {
     }
 
     public ItemStack getUrlSkull(String displayName, String url, List<String> lore) {
-        ItemStack skull = XMaterial.PLAYER_HEAD.parseItem();
-        SkullMeta skullMeta = SkullUtils.applySkin(skull.getItemMeta(), url);
+        ItemStack skull = XSkull.create()
+                .profile(url)
+                .apply();
 
-        skullMeta.setDisplayName(displayName);
-        skullMeta.setLore(lore);
-        skullMeta.addItemFlags(ItemFlag.values());
-        skull.setItemMeta(skullMeta);
+        ItemMeta itemMeta = skull.getItemMeta();
+        itemMeta.setDisplayName(displayName);
+        itemMeta.setLore(lore);
+        itemMeta.addItemFlags(ItemFlag.values());
+        skull.setItemMeta(itemMeta);
 
         return skull;
     }
