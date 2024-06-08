@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.world.modification;
 
+import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystem;
@@ -28,7 +29,6 @@ import de.eintosti.buildsystem.world.WorldManager;
 import de.eintosti.buildsystem.world.data.WorldType;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -101,7 +101,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
 
     private void addPageItem(Inventory inventory, Page currentPage, Page page, ItemStack itemStack) {
         if (currentPage == page) {
-            itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+            itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.getEnchant(), 1);
         }
         inventory.setItem(page.getSlot(), itemStack);
     }
@@ -288,7 +288,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         public static Page getCurrentPage(Inventory inventory) {
             for (Page page : Page.values()) {
                 ItemStack itemStack = inventory.getItem(page.getSlot());
-                if (itemStack != null && itemStack.containsEnchantment(Enchantment.DURABILITY)) {
+                if (itemStack != null && itemStack.containsEnchantment(XEnchantment.UNBREAKING.getEnchant())) {
                     return page;
                 }
             }

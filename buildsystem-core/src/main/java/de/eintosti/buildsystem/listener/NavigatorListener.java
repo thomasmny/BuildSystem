@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
@@ -50,7 +51,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 public class NavigatorListener implements Listener {
@@ -149,8 +149,8 @@ public class NavigatorListener implements Listener {
 
         player.setWalkSpeed(0);
         player.setFlySpeed(0);
-        player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, Integer.MAX_VALUE, 0, false, false));
-        player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 250, false, false));
+        player.addPotionEffect(new PotionEffect(XPotion.BLINDNESS.getPotionEffectType(), Integer.MAX_VALUE, 0, false, false));
+        player.addPotionEffect(new PotionEffect(XPotion.JUMP_BOOST.getPotionEffectType(), Integer.MAX_VALUE, 250, false, false));
 
         armorStandManager.spawnArmorStands(player);
         playerManager.getOpenNavigator().add(player);

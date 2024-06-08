@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.world.data;
 
+import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystem;
@@ -28,7 +29,6 @@ import de.eintosti.buildsystem.world.BuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -103,7 +103,7 @@ public class StatusInventory implements Listener {
 
         BuildWorld cachedWorld = playerManager.getBuildPlayer(player).getCachedWorld();
         if (cachedWorld != null && cachedWorld.getData().status().get() == status) {
-            itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+            itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.getEnchant(), 1);
         }
 
         inventory.setItem(position, itemStack);

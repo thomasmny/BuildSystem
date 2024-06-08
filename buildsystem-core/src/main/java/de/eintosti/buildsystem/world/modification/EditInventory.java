@@ -17,6 +17,8 @@
  */
 package de.eintosti.buildsystem.world.modification;
 
+import com.cryptomorin.xseries.XEnchantment;
+import com.cryptomorin.xseries.XEntityType;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.google.common.collect.Sets;
@@ -33,8 +35,6 @@ import de.eintosti.buildsystem.world.data.WorldData;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -140,7 +140,7 @@ public class EditInventory implements Listener {
 
         itemStack.setItemMeta(itemMeta);
         if (isEnabled) {
-            itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+            itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.getEnchant(), 1);
         }
 
         inventory.setItem(position, itemStack);
@@ -417,7 +417,7 @@ public class EditInventory implements Listener {
 
         AtomicInteger entitiesRemoved = new AtomicInteger();
         bukkitWorld.getEntities().stream()
-                .filter(entity -> !IGNORED_ENTITIES.contains(entity.getType()))
+                .filter(entity -> !IGNORED_ENTITIES.contains(XEntityType.of(entity)))
                 .forEach(entity -> {
                     entity.remove();
                     entitiesRemoved.incrementAndGet();
@@ -427,18 +427,18 @@ public class EditInventory implements Listener {
         Messages.sendMessage(player, "worldeditor_butcher_removed", new AbstractMap.SimpleEntry<>("%amount%", entitiesRemoved.get()));
     }
 
-    private static final Set<EntityType> IGNORED_ENTITIES = Sets.newHashSet(
-            EntityType.ARMOR_STAND,
-            EntityType.ENDER_CRYSTAL,
-            EntityType.ITEM_FRAME,
-            EntityType.FALLING_BLOCK,
-            EntityType.MINECART,
-            EntityType.MINECART_CHEST,
-            EntityType.MINECART_COMMAND,
-            EntityType.MINECART_FURNACE,
-            EntityType.MINECART_HOPPER,
-            EntityType.MINECART_MOB_SPAWNER,
-            EntityType.MINECART_TNT,
-            EntityType.PLAYER
+    private static final Set<XEntityType> IGNORED_ENTITIES = Sets.newHashSet(
+            XEntityType.ARMOR_STAND,
+            XEntityType.END_CRYSTAL,
+            XEntityType.ITEM_FRAME,
+            XEntityType.FALLING_BLOCK,
+            XEntityType.MINECART,
+            XEntityType.CHEST_MINECART,
+            XEntityType.COMMAND_BLOCK_MINECART,
+            XEntityType.FURNACE_MINECART,
+            XEntityType.HOPPER_MINECART,
+            XEntityType.SPAWNER_MINECART,
+            XEntityType.TNT_MINECART,
+            XEntityType.PLAYER
     );
 }
