@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout Git Repository
-        uses: actions/checkout@v4.1.6
+        uses: actions/checkout@v4.1.7
 
       - name: JDK ${{ matrix.java }}
         uses: actions/setup-java@v4.2.1
