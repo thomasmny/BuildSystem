@@ -183,9 +183,9 @@ public class InventoryUtils {
         addItemStack(inventory, position, getColouredGlassPane(plugin, player), " ");
     }
 
-    public ItemStack getSkull(String displayName, String identifier, List<String> lore) {
+    public ItemStack getSkull(String displayName, Profileable profileable, List<String> lore) {
         ItemStack skull = XSkull.createItem()
-                .profile(Profileable.detect(identifier))
+                .profile(profileable)
                 .lenient()
                 .apply();
 
@@ -197,16 +197,16 @@ public class InventoryUtils {
         return skull;
     }
 
-    public ItemStack getSkull(String displayName, String identifier, String... lore) {
-        return getSkull(displayName, identifier, Arrays.asList(lore));
+    public ItemStack getSkull(String displayName, Profileable profileable, String... lore) {
+        return getSkull(displayName, profileable, Arrays.asList(lore));
     }
 
-    public void addSkull(Inventory inventory, int position, String displayName, String identifier, List<String> lore) {
-        inventory.setItem(position, getSkull(displayName, identifier, lore));
+    public void addSkull(Inventory inventory, int position, String displayName, Profileable profileable, List<String> lore) {
+        inventory.setItem(position, getSkull(displayName, profileable, lore));
     }
 
-    public void addSkull(Inventory inventory, int position, String displayName, String identifier, String... lore) {
-        addSkull(inventory, position, displayName, identifier, Arrays.asList(lore));
+    public void addSkull(Inventory inventory, int position, String displayName, Profileable profileable, String... lore) {
+        addSkull(inventory, position, displayName, profileable, Arrays.asList(lore));
     }
 
     public boolean checkIfValidClick(InventoryClickEvent event, String titleKey) {
@@ -237,18 +237,26 @@ public class InventoryUtils {
         // Initially set default head
         addItemStack(inventory, position, XMaterial.PLAYER_HEAD, displayName, lore);
 
-        // Then asynchronously set texture
-        XSkull.createItem()
-                .profile(buildWorld.asProfilable())
-                .lenient()
-                .applyAsync()
-                .thenAcceptAsync(itemStack -> {
-                    ItemMeta itemMeta = itemStack.getItemMeta();
-                    itemMeta.setDisplayName(displayName);
-                    itemMeta.setLore(lore);
-                    itemStack.setItemMeta(itemMeta);
-                    inventory.setItem(position, itemStack);
-                });
+        // The try to set texture asynchronously
+        try {
+            XSkull.createItem()
+                    .profile(buildWorld.getData().privateWorld().get()
+                            ? buildWorld.asProfilable()
+                            : Profileable.username(buildWorld.getName())
+                    )
+                    .fallback(buildWorld.asProfilable())
+                    .lenient()
+                    .applyAsync()
+                    .thenAcceptAsync(itemStack -> {
+                        ItemMeta itemMeta = itemStack.getItemMeta();
+                        itemMeta.setDisplayName(displayName);
+                        itemMeta.setLore(lore);
+                        itemStack.setItemMeta(itemMeta);
+                        inventory.setItem(position, itemStack);
+                    });
+        } catch (Exception e) {
+            // Probably too many requests
+        }
     }
 
     /**

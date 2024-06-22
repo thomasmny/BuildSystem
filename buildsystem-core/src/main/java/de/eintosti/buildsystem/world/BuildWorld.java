@@ -186,9 +186,9 @@ public class BuildWorld implements ConfigurationSerializable {
     }
 
     public Profileable asProfilable() {
-        return getCreatorId() != null
-                ? Profileable.of(getCreatorId())
-                : Profileable.username(getName());
+        return hasCreator()
+                ? Profileable.of(creatorId)
+                : Profileable.username(name);
     }
 
     /**

@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.player;
 
 import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.util.InventoryUtils;
@@ -84,7 +85,7 @@ public class BlocksInventory implements Listener {
 
     private void setCustomBlock(Inventory inventory, Player player, int position, CustomBlock customBlock) {
         if (MinecraftVersion.getCurrent().isEqualOrHigherThan(customBlock.getVersion())) {
-            inventoryUtils.addSkull(inventory, position, Messages.getString(customBlock.getKey(), player), customBlock.getSkullUrl());
+            inventoryUtils.addSkull(inventory, position, Messages.getString(customBlock.getKey(), player), Profileable.detect(customBlock.getSkullUrl()));
         }
     }
 
@@ -205,6 +206,6 @@ public class BlocksInventory implements Listener {
     }
 
     private void giveCustomBlock(Player player, CustomBlock customBlock) {
-        giveCustomBlock(player, customBlock, inventoryUtils.getSkull(Messages.getString(customBlock.getKey(), player), customBlock.getSkullUrl()));
+        giveCustomBlock(player, customBlock, inventoryUtils.getSkull(Messages.getString(customBlock.getKey(), player), Profileable.detect(customBlock.getSkullUrl())));
     }
 }
