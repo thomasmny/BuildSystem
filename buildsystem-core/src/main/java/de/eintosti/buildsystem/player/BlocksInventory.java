@@ -84,7 +84,7 @@ public class BlocksInventory implements Listener {
 
     private void setCustomBlock(Inventory inventory, Player player, int position, CustomBlock customBlock) {
         if (MinecraftVersion.getCurrent().isEqualOrHigherThan(customBlock.getVersion())) {
-            inventoryUtils.addUrlSkull(inventory, position, Messages.getString(customBlock.getKey(), player), customBlock.getSkullUrl());
+            inventoryUtils.addSkull(inventory, position, Messages.getString(customBlock.getKey(), player), customBlock.getSkullUrl());
         }
     }
 
@@ -205,6 +205,6 @@ public class BlocksInventory implements Listener {
     }
 
     private void giveCustomBlock(Player player, CustomBlock customBlock) {
-        giveCustomBlock(player, customBlock, inventoryUtils.getUrlSkull(Messages.getString(customBlock.getKey(), player), customBlock.getSkullUrl()));
+        giveCustomBlock(player, customBlock, inventoryUtils.getSkull(Messages.getString(customBlock.getKey(), player), customBlock.getSkullUrl()));
     }
 }

@@ -64,8 +64,8 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         addCreatorInfoItem(inventory, buildWorld, player);
         addBuilderAddItem(inventory, buildWorld, player);
 
-        inventoryUtils.addUrlSkull(inventory, 18, Messages.getString("gui_previous_page", player), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
-        inventoryUtils.addUrlSkull(inventory, 26, Messages.getString("gui_next_page", player), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
+        inventoryUtils.addSkull(inventory, 18, Messages.getString("gui_previous_page", player), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
+        inventoryUtils.addSkull(inventory, 26, Messages.getString("gui_next_page", player), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
 
         return inventory;
     }
@@ -84,7 +84,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
     private void addBuilderAddItem(Inventory inventory, BuildWorld buildWorld, Player player) {
         UUID creatorId = buildWorld.getCreatorId();
         if ((creatorId != null && creatorId.equals(player.getUniqueId())) || player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
-            inventoryUtils.addUrlSkull(inventory, 22, Messages.getString("worldeditor_builders_add_builder_item", player),
+            inventoryUtils.addSkull(inventory, 22, Messages.getString("worldeditor_builders_add_builder_item", player),
                     "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716"
             );
         } else {

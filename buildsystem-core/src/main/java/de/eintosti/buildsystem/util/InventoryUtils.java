@@ -18,9 +18,10 @@
 package de.eintosti.buildsystem.util;
 
 import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSkull;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.Titles;
+import com.cryptomorin.xseries.profiles.builder.XSkull;
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.config.ConfigValues;
@@ -182,9 +183,10 @@ public class InventoryUtils {
         addItemStack(inventory, position, getColouredGlassPane(plugin, player), " ");
     }
 
-    public ItemStack getSkull(String displayName, String skullOwner, List<String> lore) {
-        ItemStack skull = XSkull.create()
-                .profile(skullOwner)
+    public ItemStack getSkull(String displayName, String identifier, List<String> lore) {
+        ItemStack skull = XSkull.createItem()
+                .profile(Profileable.detect(identifier))
+                .lenient()
                 .apply();
 
         ItemMeta itemMeta = skull.getItemMeta();
@@ -195,42 +197,16 @@ public class InventoryUtils {
         return skull;
     }
 
-    public ItemStack getSkull(String displayName, String skullOwner, String... lore) {
-        return getSkull(displayName, skullOwner, Arrays.asList(lore));
+    public ItemStack getSkull(String displayName, String identifier, String... lore) {
+        return getSkull(displayName, identifier, Arrays.asList(lore));
     }
 
-    public void addSkull(Inventory inventory, int position, String displayName, String skullOwner, List<String> lore) {
-        inventory.setItem(position, getSkull(displayName, skullOwner, lore));
+    public void addSkull(Inventory inventory, int position, String displayName, String identifier, List<String> lore) {
+        inventory.setItem(position, getSkull(displayName, identifier, lore));
     }
 
-    public void addSkull(Inventory inventory, int position, String displayName, String skullOwner, String... lore) {
-        addSkull(inventory, position, displayName, skullOwner, Arrays.asList(lore));
-    }
-
-    public ItemStack getUrlSkull(String displayName, String url, List<String> lore) {
-        ItemStack skull = XSkull.create()
-                .profile(url)
-                .apply();
-
-        ItemMeta itemMeta = skull.getItemMeta();
-        itemMeta.setDisplayName(displayName);
-        itemMeta.setLore(lore);
-        itemMeta.addItemFlags(ItemFlag.values());
-        skull.setItemMeta(itemMeta);
-
-        return skull;
-    }
-
-    public ItemStack getUrlSkull(String displayName, String url, String... lore) {
-        return getUrlSkull(displayName, url, Arrays.asList(lore));
-    }
-
-    public void addUrlSkull(Inventory inventory, int position, String displayName, String url, List<String> lore) {
-        inventory.setItem(position, getUrlSkull(displayName, url, lore));
-    }
-
-    public void addUrlSkull(Inventory inventory, int position, String displayName, String url, String... lore) {
-        addUrlSkull(inventory, position, displayName, url, Arrays.asList(lore));
+    public void addSkull(Inventory inventory, int position, String displayName, String identifier, String... lore) {
+        addSkull(inventory, position, displayName, identifier, Arrays.asList(lore));
     }
 
     public boolean checkIfValidClick(InventoryClickEvent event, String titleKey) {
@@ -250,13 +226,29 @@ public class InventoryUtils {
     public void addWorldItem(Player player, Inventory inventory, int position, BuildWorld buildWorld) {
         String worldName = buildWorld.getName();
         String displayName = Messages.getString("world_item_title", player, new AbstractMap.SimpleEntry<>("%world%", worldName));
-        XMaterial material = buildWorld.getData().material().get();
+        List<String> lore = getLore(player, buildWorld);
 
-        if (material == XMaterial.PLAYER_HEAD) {
-            addSkull(inventory, position, displayName, worldName, getLore(player, buildWorld));
-        } else {
-            addItemStack(inventory, position, material, displayName, getLore(player, buildWorld));
+        XMaterial material = buildWorld.getData().material().get();
+        if (material != XMaterial.PLAYER_HEAD) {
+            addItemStack(inventory, position, material, displayName, lore);
+            return;
         }
+
+        // Initially set default head
+        addItemStack(inventory, position, XMaterial.PLAYER_HEAD, displayName, lore);
+
+        // Then asynchronously set texture
+        XSkull.createItem()
+                .profile(buildWorld.asProfilable())
+                .lenient()
+                .applyAsync()
+                .thenAcceptAsync(itemStack -> {
+                    ItemMeta itemMeta = itemStack.getItemMeta();
+                    itemMeta.setDisplayName(displayName);
+                    itemMeta.setLore(lore);
+                    itemStack.setItemMeta(itemMeta);
+                    inventory.setItem(position, itemStack);
+                });
     }
 
     /**

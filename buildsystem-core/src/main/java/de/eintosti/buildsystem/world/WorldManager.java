@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.world;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.Titles;
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.config.ConfigValues;
@@ -711,6 +712,14 @@ public class WorldManager {
 
         worlds.forEach(this::loadWorld);
         worldConfig.loadWorlds(this);
+
+        // Cache player heads
+        Profileable.prepare(getBuildWorlds().stream()
+                        .filter(buildWorld -> buildWorld.getData().material().get() == XMaterial.PLAYER_HEAD)
+                        .map(BuildWorld::asProfilable)
+                        .collect(Collectors.toList())
+                )
+                .thenAcceptAsync(profiles -> plugin.getLogger().info("Cached " + profiles.size() + " profiles"));
     }
 
     public void loadWorld(String worldName) {

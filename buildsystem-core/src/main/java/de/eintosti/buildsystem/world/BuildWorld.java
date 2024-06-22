@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.world;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.messages.Titles;
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.config.ConfigValues;
@@ -182,6 +183,12 @@ public class BuildWorld implements ConfigurationSerializable {
     public void setName(String name) {
         this.name = name;
         this.worldData.setWorldName(name);
+    }
+
+    public Profileable asProfilable() {
+        return getCreatorId() != null
+                ? Profileable.of(getCreatorId())
+                : Profileable.username(getName());
     }
 
     /**
