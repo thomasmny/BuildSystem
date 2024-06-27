@@ -17,7 +17,8 @@
  */
 package de.eintosti.buildsystem.navigator;
 
-import com.cryptomorin.xseries.XSkull;
+import com.cryptomorin.xseries.profiles.builder.XSkull;
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.navigator.settings.NavigatorInventoryType;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
@@ -61,8 +62,8 @@ public class ArmorStandManager {
         armorStand.setCustomNameVisible(false);
         armorStand.setGravity(false);
         armorStand.setCanPickupItems(false);
-        armorStand.setHelmet(XSkull.create()
-                .profile(customSkull ? skullUrl : player.getName())
+        armorStand.setHelmet(XSkull.createItem()
+                .profile(Profileable.detect(customSkull ? skullUrl : player.getName()))
                 .apply()
         );
 

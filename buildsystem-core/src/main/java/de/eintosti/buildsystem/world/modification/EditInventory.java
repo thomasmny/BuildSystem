@@ -122,7 +122,7 @@ public class EditInventory implements Listener {
         XMaterial material = buildWorld.getData().material().get();
 
         if (material == XMaterial.PLAYER_HEAD) {
-            inventoryUtils.addSkull(inventory, 4, displayName, buildWorld.getName());
+            inventoryUtils.addSkull(inventory, 4, displayName, buildWorld.asProfilable());
         } else {
             inventoryUtils.addItemStack(inventory, 4, material, displayName);
         }
