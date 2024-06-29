@@ -333,7 +333,7 @@ public class WorldManager {
      * @param creator   The player who should be set as the creator of the world
      * @param worldList The list of world to be imported
      */
-    public void importWorlds(Player player, String[] worldList, Generator generator, Builder creator) {
+    public void importWorlds(Player player, String[] worldList, Generator generator, @Nullable Builder creator) {
         int worlds = worldList.length;
         int delay = configValues.getImportDelay();
 
@@ -728,8 +728,7 @@ public class WorldManager {
             return;
         }
 
-        String creator = configuration.isString("worlds." + worldName + ".creator") ? configuration.getString("worlds." + worldName + ".creator") : "-";
-        UUID creatorId = parseCreatorId(configuration, worldName, creator);
+        Builder creator = parseCreator(configuration, worldName);
         WorldType worldType = configuration.isString("worlds." + worldName + ".type") ? WorldType.valueOf(configuration.getString("worlds." + worldName + ".type")) : WorldType.UNKNOWN;
         WorldData worldData = parseWorldData(configuration, worldName);
         long creationDate = configuration.isLong("worlds." + worldName + ".date") ? configuration.getLong("worlds." + worldName + ".date") : -1;
@@ -740,7 +739,6 @@ public class WorldManager {
         this.addBuildWorld(new BuildWorld(
                 worldName,
                 creator,
-                creatorId,
                 worldType,
                 worldData,
                 creationDate,
@@ -822,19 +820,25 @@ public class WorldManager {
         }
     }
 
-    private UUID parseCreatorId(FileConfiguration configuration, String worldName, String creator) {
-        final String path = "worlds." + worldName + ".creator-id";
-        final String id = configuration.isString(path) ? configuration.getString(path) : null;
+    private Builder parseCreator(FileConfiguration configuration, String worldName) {
+        final String creator = configuration.getString("worlds." + worldName + ".creator");
+        final String oldCreatorIdPath = "worlds." + worldName + ".creator-id";
+        final String oldCreatorId = configuration.isString(oldCreatorIdPath) ? configuration.getString(oldCreatorIdPath) : null;
 
-        if (id == null || id.equalsIgnoreCase("null")) {
-            if (!creator.equals("-")) {
-                return UUIDFetcher.getUUID(creator);
-            } else {
+        // Previously, creator name & id were stored separately
+        if (oldCreatorId != null) {
+            if (creator == null || creator.equals("-")) {
                 return null;
             }
-        } else {
-            return UUID.fromString(id);
+
+            if (!oldCreatorId.equals("null")) {
+                return Builder.of(UUID.fromString(oldCreatorId), creator);
+            }
+
+            return Builder.of(UUIDFetcher.getUUID(creator), creator);
         }
+
+        return Builder.deserialize(creator);
     }
 
     private List<Builder> parseBuilders(FileConfiguration configuration, String worldName) {
@@ -845,8 +849,7 @@ public class WorldManager {
             if (buildersString != null && !buildersString.isEmpty()) {
                 String[] splitBuilders = buildersString.split(";");
                 for (String builder : splitBuilders) {
-                    String[] information = builder.split(",");
-                    builders.add(new Builder(UUID.fromString(information[0]), information[1]));
+                    builders.add(Builder.deserialize(builder));
                 }
             }
         }

@@ -72,20 +72,20 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
     }
 
     private void addCreatorInfoItem(Inventory inventory, BuildWorld buildWorld, Player player) {
-        String creatorName = buildWorld.getCreator();
-        if (creatorName == null || creatorName.equalsIgnoreCase("-")) {
+        Builder creator = buildWorld.getCreator();
+        if (creator == null || creator.getName().equalsIgnoreCase("-")) {
             inventoryUtils.addItemStack(inventory, 4, XMaterial.BARRIER, Messages.getString("worldeditor_builders_no_creator_item", player));
         } else {
             inventoryUtils.addSkull(inventory, 4, Messages.getString("worldeditor_builders_creator_item", player),
-                    Profileable.of(buildWorld.getCreatorId()),
+                    Profileable.of(creator.getUniqueId()),
                     Messages.getString("worldeditor_builders_creator_lore", player, new AbstractMap.SimpleEntry<>("%creator%", buildWorld.getCreator()))
             );
         }
     }
 
     private void addBuilderAddItem(Inventory inventory, BuildWorld buildWorld, Player player) {
-        UUID creatorId = buildWorld.getCreatorId();
-        if ((creatorId != null && creatorId.equals(player.getUniqueId())) || player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
+        Builder creator = buildWorld.getCreator();
+        if ((creator != null && creator.getUniqueId().equals(player.getUniqueId())) || player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
             inventoryUtils.addSkull(inventory, 22, Messages.getString("worldeditor_builders_add_builder_item", player),
                     Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716")
             );

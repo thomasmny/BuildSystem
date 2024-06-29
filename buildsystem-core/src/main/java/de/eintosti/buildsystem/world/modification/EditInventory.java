@@ -31,6 +31,7 @@ import de.eintosti.buildsystem.navigator.inventory.FilteredWorldsInventory.Visib
 import de.eintosti.buildsystem.player.PlayerManager;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.world.BuildWorld;
+import de.eintosti.buildsystem.world.Builder;
 import de.eintosti.buildsystem.world.data.WorldData;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -47,7 +48,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class EditInventory implements Listener {
@@ -190,8 +190,8 @@ public class EditInventory implements Listener {
     }
 
     private void addBuildersItem(Player player, Inventory inventory, BuildWorld buildWorld) {
-        UUID creatorId = buildWorld.getCreatorId();
-        if ((creatorId != null && creatorId.equals(player.getUniqueId())) || player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
+        Builder creator = buildWorld.getCreator();
+        if ((creator != null && creator.getUniqueId().equals(player.getUniqueId())) || player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
             addSettingsItem(player, inventory, 30, XMaterial.IRON_PICKAXE, buildWorld.getData().buildersEnabled().get(),
                     "worldeditor_builders_item", "worldeditor_builders_lore"
             );

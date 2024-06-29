@@ -28,7 +28,6 @@ import de.eintosti.buildsystem.event.world.BuildWorldPostLoadEvent;
 import de.eintosti.buildsystem.event.world.BuildWorldPostUnloadEvent;
 import de.eintosti.buildsystem.event.world.BuildWorldUnloadEvent;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.data.WorldData;
 import de.eintosti.buildsystem.world.data.WorldType;
 import de.eintosti.buildsystem.world.generator.CustomGenerator;
@@ -58,8 +57,7 @@ public class BuildWorld implements ConfigurationSerializable {
     private final ConfigValues configValues;
 
     private String name;
-    private String creator;
-    private UUID creatorId;
+    private Builder creator;
 
     private final WorldType worldType;
     private final WorldData worldData;
@@ -73,8 +71,7 @@ public class BuildWorld implements ConfigurationSerializable {
 
     public BuildWorld(
             String name,
-            String creator,
-            UUID creatorId,
+            Builder creator,
             WorldType worldType,
             long creationDate,
             boolean privateWorld,
@@ -85,7 +82,6 @@ public class BuildWorld implements ConfigurationSerializable {
 
         this.name = name;
         this.creator = creator;
-        this.creatorId = creatorId;
         this.worldType = worldType;
         this.worldData = new WorldData(
                 name,
@@ -134,8 +130,7 @@ public class BuildWorld implements ConfigurationSerializable {
 
     public BuildWorld(
             String name,
-            String creator,
-            UUID creatorId,
+            Builder creator,
             WorldType worldType,
             WorldData worldData,
             long creationDate,
@@ -147,7 +142,6 @@ public class BuildWorld implements ConfigurationSerializable {
 
         this.name = name;
         this.creator = creator;
-        this.creatorId = creatorId;
         this.worldType = worldType;
         this.worldData = worldData;
         this.creationDate = creationDate;
@@ -187,7 +181,7 @@ public class BuildWorld implements ConfigurationSerializable {
 
     public Profileable asProfilable() {
         return hasCreator()
-                ? Profileable.of(creatorId)
+                ? Profileable.of(creator.getUniqueId())
                 : Profileable.username(name);
     }
 
@@ -197,7 +191,7 @@ public class BuildWorld implements ConfigurationSerializable {
      * @return {@code true} if the world has a creator, {@code false} otherwise
      */
     public boolean hasCreator() {
-        return getCreator() != null;
+        return creator != null;
     }
 
     /**
@@ -208,7 +202,7 @@ public class BuildWorld implements ConfigurationSerializable {
      * @return The name of the player who created the world
      */
     @Nullable
-    public String getCreator() {
+    public Builder getCreator() {
         return creator;
     }
 
@@ -217,29 +211,8 @@ public class BuildWorld implements ConfigurationSerializable {
      *
      * @param creator The name of the creator
      */
-    public void setCreator(String creator) {
+    public void setCreator(@Nullable Builder creator) {
         this.creator = creator;
-    }
-
-    /**
-     * Get the unique-id of the player who created the world.
-     * <p>
-     * In older versions of the plugin, the creator was not saved which is why {@code null} can be returned.
-     *
-     * @return The unique-id of the player who created the world
-     */
-    @Nullable
-    public UUID getCreatorId() {
-        return creatorId;
-    }
-
-    /**
-     * Set the unique-id of the creator.
-     *
-     * @param creatorId The unique-id of the creator
-     */
-    public void setCreatorId(UUID creatorId) {
-        this.creatorId = creatorId;
     }
 
     /**
@@ -249,26 +222,7 @@ public class BuildWorld implements ConfigurationSerializable {
      * @return {@code true} if the player is the creator, {@code false} otherwise
      */
     public boolean isCreator(Player player) {
-        return creatorId != null && creatorId.equals(player.getUniqueId());
-    }
-
-    /**
-     * Save the creator's unique-id in a string which is suitable to be stored.
-     *
-     * @return The creator's unique-id as a string
-     */
-    @Nullable
-    private String saveCreatorId() {
-        if (creatorId != null) {
-            return String.valueOf(getCreatorId());
-        }
-
-        String creator = getCreator();
-        if (creator != null && !creator.equalsIgnoreCase("-")) {
-            return String.valueOf(UUIDFetcher.getUUID(creator));
-        } else {
-            return null;
-        }
+        return Objects.equals(this.creator, Builder.of(player));
     }
 
     /**
@@ -402,7 +356,7 @@ public class BuildWorld implements ConfigurationSerializable {
     @Nullable
     public Builder getBuilder(UUID uuid) {
         return this.builders.parallelStream()
-                .filter(builder -> builder.getUuid().equals(uuid))
+                .filter(builder -> builder.getUniqueId().equals(uuid))
                 .findFirst()
                 .orElse(null);
     }
@@ -414,7 +368,7 @@ public class BuildWorld implements ConfigurationSerializable {
      * @return Whether the player is a builder
      */
     public boolean isBuilder(UUID uuid) {
-        return this.builders.parallelStream().anyMatch(builder -> builder.getUuid().equals(uuid));
+        return this.builders.parallelStream().anyMatch(builder -> builder.getUniqueId().equals(uuid));
     }
 
     /**
@@ -618,11 +572,12 @@ public class BuildWorld implements ConfigurationSerializable {
     public @NotNull Map<String, Object> serialize() {
         Map<String, Object> world = new HashMap<>();
 
-        world.put("creator", getCreator());
-        world.put("creator-id", saveCreatorId());
-        world.put("type", getType().name());
-        world.put("data", getData().serialize());
-        world.put("date", getCreationDate());
+        if (creator != null) {
+            world.put("creator", creator.toString());
+        }
+        world.put("type", worldType.name());
+        world.put("data", worldData.serialize());
+        world.put("date", creationDate);
         world.put("builders", saveBuilders());
         if (customGenerator != null) {
             world.put("chunk-generator", customGenerator.getName());

@@ -141,8 +141,7 @@ public class BuildWorldCreator {
     private BuildWorld createBuildWorldObject(Player player) {
         BuildWorld buildWorld = new BuildWorld(
                 worldName,
-                creator == null ? player.getName() : creator.getName(),
-                creator == null ? player.getUniqueId() : creator.getUuid(),
+                creator == null ? Builder.of(player) : creator,
                 worldType,
                 creationDate,
                 privateWorld,

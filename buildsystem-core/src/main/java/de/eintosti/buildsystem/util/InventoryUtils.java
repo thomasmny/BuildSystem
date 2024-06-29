@@ -421,7 +421,7 @@ public class InventoryUtils {
                 new AbstractMap.SimpleEntry<>("%status%", worldData.status().get().getName(player)),
                 new AbstractMap.SimpleEntry<>("%project%", worldData.project().get()),
                 new AbstractMap.SimpleEntry<>("%permission%", worldData.permission().get()),
-                new AbstractMap.SimpleEntry<>("%creator%", buildWorld.hasCreator() ? buildWorld.getCreator() : "-"),
+                new AbstractMap.SimpleEntry<>("%creator%", buildWorld.hasCreator() ? buildWorld.getCreator().getName() : "-"),
                 new AbstractMap.SimpleEntry<>("%creation%", Messages.formatDate(buildWorld.getCreationDate())),
                 new AbstractMap.SimpleEntry<>("%lastedited%", Messages.formatDate(worldData.lastEdited().get())),
                 new AbstractMap.SimpleEntry<>("%lastloaded%", Messages.formatDate(worldData.lastLoaded().get())),

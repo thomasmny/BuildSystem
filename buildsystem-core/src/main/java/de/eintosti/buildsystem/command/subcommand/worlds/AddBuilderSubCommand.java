@@ -83,9 +83,9 @@ public class AddBuilderSubCommand implements SubCommand {
                 player.closeInventory();
                 return;
             }
-            builder = new Builder(builderId, builderName);
+            builder = Builder.of(builderId, builderName);
         } else {
-            builder = new Builder(builderPlayer);
+            builder = Builder.of(builderPlayer);
             builderId = builderPlayer.getUniqueId();
         }
 
