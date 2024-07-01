@@ -234,14 +234,17 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
                 if (event.isShiftClick()) {
                     worldFilter.setMode(WorldFilter.Mode.NONE);
                     worldFilter.setText("");
+                    setInvIndex(player, 0);
                     openInventory(player);
                 } else if (event.isLeftClick()) {
                     new PlayerChatInput(plugin, player, "world_filter_title", input -> {
                         worldFilter.setText(input.replace("\"", ""));
+                        setInvIndex(player, 0);
                         openInventory(player);
                     });
                 } else if (event.isRightClick()) {
                     worldFilter.setMode(currentMode.getNext());
+                    setInvIndex(player, 0);
                     openInventory(player);
                 }
                 return;
