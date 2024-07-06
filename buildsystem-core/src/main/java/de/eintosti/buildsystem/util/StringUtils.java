@@ -177,7 +177,8 @@ public class StringUtils {
      * both {@code null}
      * @see java.lang.String#startsWith(String)
      * @since 2.4
-     * @since 3.0 Changed signature from startsWithIgnoreCase(String, String) to startsWithIgnoreCase(CharSequence, CharSequence)
+     * @since 3.0 Changed signature from startsWithIgnoreCase(String, String) to startsWithIgnoreCase(CharSequence,
+     * CharSequence)
      */
     public static boolean startsWithIgnoreCase(final CharSequence str, final CharSequence prefix) {
         if (str == null || prefix == null) {

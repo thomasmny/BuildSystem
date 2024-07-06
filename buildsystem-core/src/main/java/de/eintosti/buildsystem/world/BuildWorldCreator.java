@@ -51,13 +51,13 @@ import java.util.Locale;
  */
 public class BuildWorldCreator {
 
-    private final BuildSystem  plugin;
+    private final BuildSystem plugin;
     private final WorldManager worldManager;
 
     private String worldName;
     private Builder creator;
     private boolean privateWorld = false;
-    private WorldType worldType  = WorldType.NORMAL;
+    private WorldType worldType = WorldType.NORMAL;
     private CustomGenerator customGenerator = null;
     private long creationDate = System.currentTimeMillis();
     private String template = null;
@@ -200,7 +200,7 @@ public class BuildWorldCreator {
             return;
         }
 
-        File worldFile    = new File(Bukkit.getWorldContainer(), worldName);
+        File worldFile = new File(Bukkit.getWorldContainer(), worldName);
         File templateFile = new File(plugin.getDataFolder() + File.separator + "templates" + File.separator + template);
         if (!templateFile.exists()) {
             Messages.sendMessage(player, "worlds_template_does_not_exist");
@@ -228,8 +228,8 @@ public class BuildWorldCreator {
      * @param buildWorld The build world object
      */
     private void finishPreparationsAndGenerate(BuildWorld buildWorld) {
-        WorldType worldType   = buildWorld.getType();
-        World     bukkitWorld = generateBukkitWorld();
+        WorldType worldType = buildWorld.getType();
+        World bukkitWorld = generateBukkitWorld();
         if (bukkitWorld == null) {
             return;
         }
@@ -272,7 +272,7 @@ public class BuildWorldCreator {
             return null;
         }
 
-        WorldCreator         worldCreator = new WorldCreator(worldName);
+        WorldCreator worldCreator = new WorldCreator(worldName);
         org.bukkit.WorldType bukkitWorldType;
 
         switch (worldType) {
@@ -360,9 +360,9 @@ public class BuildWorldCreator {
         }
 
         try {
-            CompoundTag level       = new Nbt().fromFile(levelFile);
-            CompoundTag data        = level.get("Data");
-            IntTag      dataVersion = data.getInt("DataVersion");
+            CompoundTag level = new Nbt().fromFile(levelFile);
+            CompoundTag data = level.get("Data");
+            IntTag dataVersion = data.getInt("DataVersion");
 
             return dataVersion != null ? dataVersion.getValue() : -1;
         } catch (IOException e) {
@@ -384,10 +384,10 @@ public class BuildWorldCreator {
         }
 
         try {
-            Nbt         nbt         = new Nbt();
-            CompoundTag level       = nbt.fromFile(levelFile);
-            CompoundTag data        = level.get("Data");
-            IntTag      dataVersion = data.getInt("DataVersion");
+            Nbt nbt = new Nbt();
+            CompoundTag level = nbt.fromFile(levelFile);
+            CompoundTag data = level.get("Data");
+            IntTag dataVersion = data.getInt("DataVersion");
             if (dataVersion == null) {
                 return;
             }

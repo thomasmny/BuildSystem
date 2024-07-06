@@ -49,8 +49,8 @@ public class ArgumentParser {
      */
     public boolean isArgument(String name) {
         return args.stream()
-                .map(arg -> arg.replace("-", ""))
-                .anyMatch(name::equalsIgnoreCase);
+            .map(arg -> arg.replace("-", ""))
+            .anyMatch(name::equalsIgnoreCase);
     }
 
     /**
@@ -124,7 +124,7 @@ public class ArgumentParser {
      */
     private List<String> storeArgumentValues(String arg, int index) {
         List<String> argumentValues = new ArrayList<>();
-        int          i              = index + 1;
+        int i = index + 1;
         while (i != args.size() && !args.get(i).startsWith("-")) {
             argumentValues.add(args.get(i));
             i++;

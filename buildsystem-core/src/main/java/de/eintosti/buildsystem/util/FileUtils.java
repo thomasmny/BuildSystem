@@ -93,7 +93,7 @@ public class FileUtils {
         try (InputStream inputStream = Files.newInputStream(source.toPath());
              OutputStream outputStream = Files.newOutputStream(target.toPath())) {
             byte[] buffer = new byte[1024];
-            int    length;
+            int length;
             while ((length = inputStream.read(buffer)) > 0) {
                 outputStream.write(buffer, 0, length);
             }
@@ -125,7 +125,7 @@ public class FileUtils {
         long creation = System.currentTimeMillis();
         try {
             BasicFileAttributes attrs = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
-            FileTime            time  = attrs.creationTime();
+            FileTime time = attrs.creationTime();
             creation = time.toMillis();
         } catch (IOException e) {
             e.printStackTrace();
