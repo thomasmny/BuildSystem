@@ -21,6 +21,7 @@ import com.google.common.collect.ComparisonChain;
 import org.bukkit.Bukkit;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 
 /**
  * Utility class for retrieving and comparing minecraft server versions.
@@ -31,6 +32,7 @@ public class MinecraftVersion implements Comparable<MinecraftVersion> {
 
     public static final MinecraftVersion BOUNTIFUL_8 = new MinecraftVersion(1, 8);
     public static final MinecraftVersion AQUATIC_13 = new MinecraftVersion(1, 13);
+    public static final MinecraftVersion NETHER_16 = new MinecraftVersion(1, 16);
     public static final MinecraftVersion CAVES_17 = new MinecraftVersion(1, 17);
 
     private static MinecraftVersion current = null;
@@ -77,6 +79,12 @@ public class MinecraftVersion implements Comparable<MinecraftVersion> {
         try {
             parts = Bukkit.getBukkitVersion().split("-")[0].split("\\.");
         } catch (ArrayIndexOutOfBoundsException ignored) {
+        }
+
+        // 1.21 is stored as '1.21-R0.1-SNAPSHOT'
+        if (parts.length == 2) {
+            parts = Arrays.copyOf(parts, 3);
+            parts[2] = "0";
         }
 
         if (parts.length != 3) {
@@ -175,6 +183,9 @@ public class MinecraftVersion implements Comparable<MinecraftVersion> {
 
     @Override
     public String toString() {
+        if (patch == 0) {
+            return major + "." + minor;
+        }
         return major + "." + minor + "." + patch;
     }
 }
