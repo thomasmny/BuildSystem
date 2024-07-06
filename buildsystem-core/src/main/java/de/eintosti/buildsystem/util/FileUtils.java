@@ -34,46 +34,69 @@ import java.util.stream.Stream;
 
 public class FileUtils {
 
+    private static final Set<String> IGNORE_FILES = Sets.newHashSet("uid.dat", "session.lock");
+
     /**
-     * Copies a file to a new location preserving the file date.
+     * Copies a file or directory from the source location to the target location.
      *
-     * @param source An existing file to copy, must not be {@code null}
-     * @param target The new file, must not be {@code null}
+     * @param source The source file or directory to be copied
+     * @param target The target file or directory where the source will be copied to
+     * @throws RuntimeException If an I/O error occurs while copying
      */
     public static void copy(@NotNull File source, @NotNull File target) {
         try {
-            Set<String> ignore = Sets.newHashSet("uid.dat", "session.lock");
-            if (ignore.contains(source.getName())) {
+            if (IGNORE_FILES.contains(source.getName())) {
                 return;
             }
 
             if (source.isDirectory()) {
-                if (!target.exists() && !target.mkdirs()) {
-                    throw new IOException("Couldn't create directory: " + target.getName());
-                }
-
-                for (String fileName : source.list()) {
-                    if (ignore.contains(fileName)) {
-                        continue;
-                    }
-
-                    File sourceFile = new File(source, fileName);
-                    File targetFile = new File(target, fileName);
-                    copy(sourceFile, targetFile);
-                }
+                copyDirectory(source, target);
             } else {
-                InputStream inputStream = Files.newInputStream(source.toPath());
-                OutputStream outputStream = Files.newOutputStream(target.toPath());
-                byte[] buffer = new byte[1024];
-                int length;
-                while ((length = inputStream.read(buffer)) > 0) {
-                    outputStream.write(buffer, 0, length);
-                }
-                inputStream.close();
-                outputStream.close();
+                copyFile(source, target);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Copies a directory from source to target.
+     *
+     * @param source The source directory to be copied
+     * @param target The target directory where the source directory will be copied to
+     * @throws IOException If an I/O error occurs while copying the directory
+     */
+    private static void copyDirectory(@NotNull File source, @NotNull File target) throws IOException {
+        if (!target.exists() && !target.mkdirs()) {
+            throw new IOException("Couldn't create directory: " + target.getName());
+        }
+
+        for (String fileName : source.list()) {
+            if (IGNORE_FILES.contains(fileName)) {
+                continue;
+            }
+
+            File sourceFile = new File(source, fileName);
+            File targetFile = new File(target, fileName);
+            copy(sourceFile, targetFile);
+        }
+    }
+
+    /**
+     * Copies a file from the source to the target location.
+     *
+     * @param source The source file to be copied
+     * @param target The target file where the source file will be copied to
+     * @throws IOException If an I/O error occurs while copying the file
+     */
+    private static void copyFile(@NotNull File source, @NotNull File target) throws IOException {
+        try (InputStream inputStream = Files.newInputStream(source.toPath());
+             OutputStream outputStream = Files.newOutputStream(target.toPath())) {
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = inputStream.read(buffer)) > 0) {
+                outputStream.write(buffer, 0, length);
+            }
         }
     }
 
@@ -85,8 +108,8 @@ public class FileUtils {
     public static void deleteDirectory(File directory) {
         try (Stream<Path> walk = Files.walk(directory.toPath())) {
             walk.sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
+                .map(Path::toFile)
+                .forEach(File::delete);
         } catch (IOException e) {
             e.printStackTrace();
         }

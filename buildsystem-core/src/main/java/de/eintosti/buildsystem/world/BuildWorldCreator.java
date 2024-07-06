@@ -122,8 +122,10 @@ public class BuildWorldCreator {
     }
 
     /**
-     * Depending on the {@link BuildWorld}'s {@link WorldType}, the corresponding {@link World} will be generated in a different way.
-     * Then, if the creation of the world was successful and the config is set accordingly, the player is teleported to the world.
+     * Depending on the {@link BuildWorld}'s {@link WorldType}, the corresponding {@link World} will be generated in
+     * a different way.
+     * Then, if the creation of the world was successful and the config is set accordingly, the player is teleported
+     * to the world.
      *
      * @param player The player who is creating the world
      */
@@ -140,12 +142,12 @@ public class BuildWorldCreator {
 
     private BuildWorld createBuildWorldObject(Player player) {
         BuildWorld buildWorld = new BuildWorld(
-                worldName,
-                creator == null ? Builder.of(player) : creator,
-                worldType,
-                creationDate,
-                privateWorld,
-                customGenerator
+            worldName,
+            creator == null ? Builder.of(player) : creator,
+            worldType,
+            creationDate,
+            privateWorld,
+            customGenerator
         );
         buildWorld.getData().lastLoaded().set(System.currentTimeMillis());
         return buildWorld;
@@ -165,8 +167,8 @@ public class BuildWorldCreator {
         worldManager.addBuildWorld(buildWorld);
 
         Messages.sendMessage(player, "worlds_world_creation_started",
-                new AbstractMap.SimpleEntry<>("%world%", worldName),
-                new AbstractMap.SimpleEntry<>("%type%", worldType.getName(player))
+                             new AbstractMap.SimpleEntry<>("%world%", worldName),
+                             new AbstractMap.SimpleEntry<>("%type%", worldType.getName(player))
         );
         finishPreparationsAndGenerate(buildWorld);
         teleportAfterCreation(player);
@@ -209,13 +211,13 @@ public class BuildWorldCreator {
         worldManager.addBuildWorld(buildWorld);
 
         Messages.sendMessage(player, "worlds_template_creation_started",
-                new AbstractMap.SimpleEntry<>("%world%", worldName),
-                new AbstractMap.SimpleEntry<>("%template%", template)
+                             new AbstractMap.SimpleEntry<>("%world%", worldName),
+                             new AbstractMap.SimpleEntry<>("%template%", template)
         );
         FileUtils.copy(templateFile, worldFile);
         Bukkit.createWorld(WorldCreator.name(worldName)
-                .type(org.bukkit.WorldType.FLAT)
-                .generateStructures(false));
+                               .type(org.bukkit.WorldType.FLAT)
+                               .generateStructures(false));
         teleportAfterCreation(player);
         Messages.sendMessage(player, "worlds_creation_finished");
     }
@@ -262,7 +264,11 @@ public class BuildWorldCreator {
     @Nullable
     public World generateBukkitWorld(boolean checkVersion) {
         if (checkVersion && isHigherVersion()) {
-            plugin.getLogger().warning(String.format(Locale.ROOT, "\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping...", worldName, parseDataVersion(), plugin.getCraftBukkitVersion().getDataVersion()));
+            plugin.getLogger()
+                .warning(String.format(Locale.ROOT,
+                                       "\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping...",
+                                       worldName, parseDataVersion(), plugin.getCraftBukkitVersion().getDataVersion()
+                ));
             return null;
         }
 
@@ -367,7 +373,8 @@ public class BuildWorldCreator {
     }
 
     /**
-     * The {@code level.dat} file is not updated when a newer Minecraft version loads chunks, making the world not loadable.
+     * The {@code level.dat} file is not updated when a newer Minecraft version loads chunks, making the world not
+     * loadable.
      * Therefore, manually sets the world's {@code DataVersion} to the current server version, if lower.
      */
     private void updateDataVersion() {

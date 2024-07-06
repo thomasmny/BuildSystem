@@ -49,8 +49,8 @@ public class ArgumentParser {
      */
     public boolean isArgument(String name) {
         return args.stream()
-                .map(arg -> arg.replace("-", ""))
-                .anyMatch(name::equalsIgnoreCase);
+            .map(arg -> arg.replace("-", ""))
+            .anyMatch(name::equalsIgnoreCase);
     }
 
     /**
@@ -83,23 +83,52 @@ public class ArgumentParser {
         return null;
     }
 
+    /**
+     * Maps the arguments passed to the ArgumentParser.
+     * Arguments starting with "-" are considered flags, and their presence is added to the 'flags' set.
+     * Arguments without "-" are considered argument names, and their values are stored in the 'map' HashMap.
+     */
     public void map() {
-        for (String arg : args) {
+        for (int index = 0; index < args.size(); index++) {
+            String arg = args.get(index);
             if (!arg.startsWith("-")) {
                 continue;
             }
-
-            if (args.indexOf(arg) == (args.size() - 1) || args.get(args.indexOf(arg) + 1).startsWith("-")) {
+            if (isFlagArgument(arg, index)) {
                 flags.add(arg.replace("-", ""));
             } else {
-                List<String> argumentValues = new ArrayList<>();
-                int i = 1;
-                while (args.indexOf(arg) + i != args.size() && !args.get(args.indexOf(arg) + i).startsWith("-")) {
-                    argumentValues.add(args.get(args.indexOf(arg) + i));
-                    i++;
-                }
-                map.put(arg.replace("-", ""), argumentValues);
+                map.put(arg.replace("-", ""), storeArgumentValues(arg, index));
             }
         }
+    }
+
+    /**
+     * Determines whether the provided argument is a flag argument.
+     * A flag argument is an argument that is either the last argument in the list
+     * or is followed by another argument that starts with a dash (-).
+     *
+     * @param arg   The argument to check
+     * @param index The index of the argument in the argument list
+     * @return {@code true} if the argument is a flag argument, otherwise {@code false}
+     */
+    private boolean isFlagArgument(String arg, int index) {
+        return index == (args.size() - 1) || args.get(index + 1).startsWith("-");
+    }
+
+    /**
+     * Stores the argument values for a given argument name.
+     *
+     * @param arg   The argument name
+     * @param index The index of the argument in the list of arguments
+     * @return The argument values as a list, or an empty list if no values are found
+     */
+    private List<String> storeArgumentValues(String arg, int index) {
+        List<String> argumentValues = new ArrayList<>();
+        int i = index + 1;
+        while (i != args.size() && !args.get(i).startsWith("-")) {
+            argumentValues.add(args.get(i));
+            i++;
+        }
+        return argumentValues;
     }
 }
