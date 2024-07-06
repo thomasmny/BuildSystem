@@ -51,17 +51,17 @@ import java.util.Locale;
  */
 public class BuildWorldCreator {
 
-    private final BuildSystem plugin;
+    private final BuildSystem  plugin;
     private final WorldManager worldManager;
 
-    private String worldName;
-    private Builder creator;
-    private boolean privateWorld = false;
-    private WorldType worldType = WorldType.NORMAL;
+    private String          worldName;
+    private Builder         creator;
+    private boolean         privateWorld    = false;
+    private WorldType       worldType       = WorldType.NORMAL;
     private CustomGenerator customGenerator = null;
-    private long creationDate = System.currentTimeMillis();
-    private String template = null;
-    private Difficulty difficulty;
+    private long            creationDate    = System.currentTimeMillis();
+    private String          template        = null;
+    private Difficulty      difficulty;
 
     public BuildWorldCreator(BuildSystem plugin, @NotNull String name) {
         this.plugin = plugin;
@@ -122,8 +122,10 @@ public class BuildWorldCreator {
     }
 
     /**
-     * Depending on the {@link BuildWorld}'s {@link WorldType}, the corresponding {@link World} will be generated in a different way.
-     * Then, if the creation of the world was successful and the config is set accordingly, the player is teleported to the world.
+     * Depending on the {@link BuildWorld}'s {@link WorldType}, the corresponding {@link World} will be generated in
+     * a different way.
+     * Then, if the creation of the world was successful and the config is set accordingly, the player is teleported
+     * to the world.
      *
      * @param player The player who is creating the world
      */
@@ -140,12 +142,12 @@ public class BuildWorldCreator {
 
     private BuildWorld createBuildWorldObject(Player player) {
         BuildWorld buildWorld = new BuildWorld(
-                worldName,
-                creator == null ? Builder.of(player) : creator,
-                worldType,
-                creationDate,
-                privateWorld,
-                customGenerator
+            worldName,
+            creator == null ? Builder.of(player) : creator,
+            worldType,
+            creationDate,
+            privateWorld,
+            customGenerator
         );
         buildWorld.getData().lastLoaded().set(System.currentTimeMillis());
         return buildWorld;
@@ -165,8 +167,8 @@ public class BuildWorldCreator {
         worldManager.addBuildWorld(buildWorld);
 
         Messages.sendMessage(player, "worlds_world_creation_started",
-                new AbstractMap.SimpleEntry<>("%world%", worldName),
-                new AbstractMap.SimpleEntry<>("%type%", worldType.getName(player))
+                             new AbstractMap.SimpleEntry<>("%world%", worldName),
+                             new AbstractMap.SimpleEntry<>("%type%", worldType.getName(player))
         );
         finishPreparationsAndGenerate(buildWorld);
         teleportAfterCreation(player);
@@ -198,7 +200,7 @@ public class BuildWorldCreator {
             return;
         }
 
-        File worldFile = new File(Bukkit.getWorldContainer(), worldName);
+        File worldFile    = new File(Bukkit.getWorldContainer(), worldName);
         File templateFile = new File(plugin.getDataFolder() + File.separator + "templates" + File.separator + template);
         if (!templateFile.exists()) {
             Messages.sendMessage(player, "worlds_template_does_not_exist");
@@ -209,13 +211,13 @@ public class BuildWorldCreator {
         worldManager.addBuildWorld(buildWorld);
 
         Messages.sendMessage(player, "worlds_template_creation_started",
-                new AbstractMap.SimpleEntry<>("%world%", worldName),
-                new AbstractMap.SimpleEntry<>("%template%", template)
+                             new AbstractMap.SimpleEntry<>("%world%", worldName),
+                             new AbstractMap.SimpleEntry<>("%template%", template)
         );
         FileUtils.copy(templateFile, worldFile);
         Bukkit.createWorld(WorldCreator.name(worldName)
-                .type(org.bukkit.WorldType.FLAT)
-                .generateStructures(false));
+                               .type(org.bukkit.WorldType.FLAT)
+                               .generateStructures(false));
         teleportAfterCreation(player);
         Messages.sendMessage(player, "worlds_creation_finished");
     }
@@ -226,8 +228,8 @@ public class BuildWorldCreator {
      * @param buildWorld The build world object
      */
     private void finishPreparationsAndGenerate(BuildWorld buildWorld) {
-        WorldType worldType = buildWorld.getType();
-        World bukkitWorld = generateBukkitWorld();
+        WorldType worldType   = buildWorld.getType();
+        World     bukkitWorld = generateBukkitWorld();
         if (bukkitWorld == null) {
             return;
         }
@@ -262,11 +264,15 @@ public class BuildWorldCreator {
     @Nullable
     public World generateBukkitWorld(boolean checkVersion) {
         if (checkVersion && isHigherVersion()) {
-            plugin.getLogger().warning(String.format(Locale.ROOT, "\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping...", worldName, parseDataVersion(), plugin.getCraftBukkitVersion().getDataVersion()));
+            plugin.getLogger()
+                .warning(String.format(Locale.ROOT,
+                                       "\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping...",
+                                       worldName, parseDataVersion(), plugin.getCraftBukkitVersion().getDataVersion()
+                ));
             return null;
         }
 
-        WorldCreator worldCreator = new WorldCreator(worldName);
+        WorldCreator         worldCreator = new WorldCreator(worldName);
         org.bukkit.WorldType bukkitWorldType;
 
         switch (worldType) {
@@ -354,9 +360,9 @@ public class BuildWorldCreator {
         }
 
         try {
-            CompoundTag level = new Nbt().fromFile(levelFile);
-            CompoundTag data = level.get("Data");
-            IntTag dataVersion = data.getInt("DataVersion");
+            CompoundTag level       = new Nbt().fromFile(levelFile);
+            CompoundTag data        = level.get("Data");
+            IntTag      dataVersion = data.getInt("DataVersion");
 
             return dataVersion != null ? dataVersion.getValue() : -1;
         } catch (IOException e) {
@@ -367,7 +373,8 @@ public class BuildWorldCreator {
     }
 
     /**
-     * The {@code level.dat} file is not updated when a newer Minecraft version loads chunks, making the world not loadable.
+     * The {@code level.dat} file is not updated when a newer Minecraft version loads chunks, making the world not
+     * loadable.
      * Therefore, manually sets the world's {@code DataVersion} to the current server version, if lower.
      */
     private void updateDataVersion() {
@@ -377,10 +384,10 @@ public class BuildWorldCreator {
         }
 
         try {
-            Nbt nbt = new Nbt();
-            CompoundTag level = nbt.fromFile(levelFile);
-            CompoundTag data = level.get("Data");
-            IntTag dataVersion = data.getInt("DataVersion");
+            Nbt         nbt         = new Nbt();
+            CompoundTag level       = nbt.fromFile(levelFile);
+            CompoundTag data        = level.get("Data");
+            IntTag      dataVersion = data.getInt("DataVersion");
             if (dataVersion == null) {
                 return;
             }

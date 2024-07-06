@@ -54,6 +54,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -530,7 +531,11 @@ public class WorldManager {
 
         File oldWorldFile = new File(Bukkit.getWorldContainer(), oldName);
         File newWorldFile = new File(Bukkit.getWorldContainer(), parsedNewName);
-        FileUtils.copy(oldWorldFile, newWorldFile);
+        try {
+            FileUtils.copy(oldWorldFile, newWorldFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         FileUtils.deleteDirectory(oldWorldFile);
 
         buildWorld.setName(parsedNewName);
