@@ -21,7 +21,7 @@ public final class ColorAPI {
     /**
      * Clients are able to display RGB colors after Minecraft 1.16
      */
-    private static final boolean SUPPORTS_RGB = MinecraftVersion.getCurrent().getMinor() >= 16;
+    private static final boolean SUPPORTS_RGB = MinecraftVersion.getCurrent().isEqualOrHigherThan(MinecraftVersion.NETHER_16);
 
     private static final Map<Color, ChatColor> COLORS = ImmutableMap.<Color, ChatColor>builder()
             .put(new Color(0), ChatColor.getByChar('0'))
