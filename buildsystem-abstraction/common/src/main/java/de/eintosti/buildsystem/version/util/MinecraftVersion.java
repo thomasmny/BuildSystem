@@ -21,7 +21,6 @@ import com.google.common.collect.ComparisonChain;
 import org.bukkit.Bukkit;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
 
 /**
  * Utility class for retrieving and comparing minecraft server versions.
@@ -81,19 +80,13 @@ public class MinecraftVersion implements Comparable<MinecraftVersion> {
         } catch (ArrayIndexOutOfBoundsException ignored) {
         }
 
-        // 1.21 is stored as '1.21-R0.1-SNAPSHOT'
-        if (parts.length == 2) {
-            parts = Arrays.copyOf(parts, 3);
-            parts[2] = "0";
-        }
-
-        if (parts.length != 3) {
+        if (parts.length < 2) {
             throw new IllegalStateException("Failed to determine minecraft version: " + Bukkit.getBukkitVersion());
         }
 
         int major = Integer.parseInt(parts[0]);
         int minor = Integer.parseInt(parts[1]);
-        int patch = Integer.parseInt(parts[2]);
+        int patch = parts.length == 3 ? Integer.parseInt(parts[2]) : 0;
 
         return new MinecraftVersion(major, minor, patch);
     }
