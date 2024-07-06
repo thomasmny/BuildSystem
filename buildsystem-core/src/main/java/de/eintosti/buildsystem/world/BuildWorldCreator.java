@@ -54,14 +54,14 @@ public class BuildWorldCreator {
     private final BuildSystem  plugin;
     private final WorldManager worldManager;
 
-    private String          worldName;
-    private Builder         creator;
-    private boolean         privateWorld    = false;
-    private WorldType       worldType       = WorldType.NORMAL;
+    private String worldName;
+    private Builder creator;
+    private boolean privateWorld = false;
+    private WorldType worldType  = WorldType.NORMAL;
     private CustomGenerator customGenerator = null;
-    private long            creationDate    = System.currentTimeMillis();
-    private String          template        = null;
-    private Difficulty      difficulty;
+    private long creationDate = System.currentTimeMillis();
+    private String template = null;
+    private Difficulty difficulty;
 
     public BuildWorldCreator(BuildSystem plugin, @NotNull String name) {
         this.plugin = plugin;
