@@ -99,7 +99,7 @@ public class NoAICommand implements CommandExecutor {
         boolean mobAI = worldData.mobAi().get();
         for (Entity entity : bukkitWorld.getEntities()) {
             if (entity instanceof LivingEntity) {
-                EntityAIManager.setAIEnabled(entity, mobAI);
+                EntityAIManager.setAIEnabled((LivingEntity) entity, mobAI);
             }
         }
     }
