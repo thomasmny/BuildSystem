@@ -22,7 +22,10 @@ import com.cryptomorin.xseries.XMaterial;
 /**
  * @author Trichtern
  */
-public class MaterialUtils {
+public final class MaterialUtils {
+
+    private MaterialUtils() {
+    }
 
     /**
      * Checks if this Material can be interacted with.
@@ -35,8 +38,8 @@ public class MaterialUtils {
      * @param xMaterial The material to check
      * @return {@code true} if this material can be interacted with.
      */
-    public static boolean isInteractable(XMaterial xMaterial) {
-        switch (xMaterial) {
+    public static boolean isInteractable(XMaterial material) {
+        switch (material) {
             case ACACIA_BUTTON:
             case ACACIA_DOOR:
             case ACACIA_FENCE:

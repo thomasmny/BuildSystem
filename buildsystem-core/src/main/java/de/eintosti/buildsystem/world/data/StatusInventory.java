@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.player.BuildPlayer;
 import de.eintosti.buildsystem.player.PlayerManager;
+import de.eintosti.buildsystem.util.CompatibilityUtils;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.world.BuildWorld;
 import org.bukkit.Bukkit;
@@ -118,7 +119,7 @@ public class StatusInventory implements Listener {
         }
 
         String title = Messages.getString("status_title", player, new AbstractMap.SimpleEntry<>("%world%", selectedWorldName));
-        if (!event.getView().getTitle().equals(title)) {
+        if (!CompatibilityUtils.getInventoryTitle(event).equals(title)) {
             return;
         }
 

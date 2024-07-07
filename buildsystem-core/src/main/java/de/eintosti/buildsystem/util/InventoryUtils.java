@@ -210,7 +210,7 @@ public class InventoryUtils {
     }
 
     public boolean checkIfValidClick(InventoryClickEvent event, String titleKey) {
-        if (!event.getView().getTitle().equals(Messages.getString(titleKey, (Player) event.getWhoClicked()))) {
+        if (!CompatibilityUtils.getInventoryTitle(event).equals(Messages.getString(titleKey, (Player) event.getWhoClicked()))) {
             return false;
         }
 

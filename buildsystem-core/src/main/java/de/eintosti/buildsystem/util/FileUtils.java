@@ -32,7 +32,10 @@ import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Stream;
 
-public class FileUtils {
+public final class FileUtils {
+
+    private FileUtils() {
+    }
 
     private static final Set<String> IGNORE_FILES = Sets.newHashSet("uid.dat", "session.lock");
 
