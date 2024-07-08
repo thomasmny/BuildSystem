@@ -111,8 +111,8 @@ public final class FileUtils {
     public static void deleteDirectory(File directory) {
         try (Stream<Path> walk = Files.walk(directory.toPath())) {
             walk.sorted(Comparator.reverseOrder())
-                .map(Path::toFile)
-                .forEach(File::delete);
+                    .map(Path::toFile)
+                    .forEach(File::delete);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -49,8 +49,8 @@ public class ArgumentParser {
      */
     public boolean isArgument(String name) {
         return args.stream()
-            .map(arg -> arg.replace("-", ""))
-            .anyMatch(name::equalsIgnoreCase);
+                .map(arg -> arg.replace("-", ""))
+                .anyMatch(name::equalsIgnoreCase);
     }
 
     /**

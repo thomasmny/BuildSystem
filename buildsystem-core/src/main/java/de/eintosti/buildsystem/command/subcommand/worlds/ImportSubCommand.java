@@ -137,7 +137,7 @@ public class ImportSubCommand implements SubCommand {
         }
 
         Messages.sendMessage(player, "worlds_import_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
-        if (worldManager.importWorld(player, worldName, creator, generator, generatorName, true, worldType)) {
+        if (worldManager.importWorld(player, worldName, creator, worldType, generator, generatorName, true)) {
             Messages.sendMessage(player, "worlds_import_finished");
         }
     }

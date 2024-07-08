@@ -236,7 +236,7 @@ public class StringUtils {
             final char c2 = substring.charAt(index2++);
             if (c1 != c2) {
                 if (Character.toUpperCase(c1) != Character.toUpperCase(c2)
-                    && Character.toLowerCase(c1) != Character.toLowerCase(c2)) {
+                        && Character.toLowerCase(c1) != Character.toLowerCase(c2)) {
                     return false;
                 }
             }
