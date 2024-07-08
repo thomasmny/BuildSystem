@@ -30,6 +30,7 @@ import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.PlayerManager;
 import de.eintosti.buildsystem.settings.Settings;
 import de.eintosti.buildsystem.settings.SettingsManager;
+import de.eintosti.buildsystem.util.CompatibilityUtils;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;
@@ -93,7 +94,7 @@ public class NavigatorListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        if (player.getOpenInventory().getTopInventory().getType() != InventoryType.CRAFTING) {
+        if (CompatibilityUtils.getTopInventory(player).getType() != InventoryType.CRAFTING) {
             return;
         }
 

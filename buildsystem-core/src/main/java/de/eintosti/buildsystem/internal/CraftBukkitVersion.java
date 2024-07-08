@@ -33,11 +33,13 @@ import de.eintosti.buildsystem.version.v1_20_R1.CustomBlocks_1_20_R1;
 import org.bukkit.Bukkit;
 import org.bukkit.UnsafeValues;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Constructor;
 import java.util.List;
 
+@ApiStatus.Internal
 public enum CraftBukkitVersion {
 
     v1_8_R1(-1, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),

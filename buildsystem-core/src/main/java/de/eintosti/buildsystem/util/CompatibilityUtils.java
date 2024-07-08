@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.util;
 
+import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
@@ -37,7 +38,6 @@ public final class CompatibilityUtils {
      *
      * @param event The generic InventoryEvent with an InventoryView to inspect
      * @return The title of the inventory
-     * @author <a href="https://www.spigotmc.org/threads/inventoryview-changed-to-interface-backwards-compatibility.651754/#post-4747875">Rumsfield</a>
      */
     public static String getInventoryTitle(InventoryEvent event) {
         try {
@@ -45,6 +45,47 @@ public final class CompatibilityUtils {
             Method getTitle = view.getClass().getMethod("getTitle");
             getTitle.setAccessible(true);
             return (String) getTitle.invoke(view);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Gets the top {@link Inventory} associated with the given {@link InventoryEvent}.
+     * <p>
+     * This is needed, since in API versions 1.20.6 and earlier, {@link InventoryView} is a class and in versions 1.21
+     * and later, it is an interface.
+     *
+     * @param event The generic InventoryEvent with an InventoryView to inspect
+     * @return The top inventory
+     * @author <a href="https://www.spigotmc.org/threads/inventoryview-changed-to-interface-backwards-compatibility.651754/#post-4747875">Rumsfield</a>
+     */
+    public static Inventory getTopInventory(InventoryEvent event) {
+        try {
+            Object view = event.getView();
+            Method getTopInventory = view.getClass().getMethod("getTopInventory");
+            getTopInventory.setAccessible(true);
+            return (Inventory) getTopInventory.invoke(view);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Gets the top {@link Inventory} for a given {@link Player}.
+     * <p>
+     * This is needed, since in API versions 1.20.6 and earlier, {@link InventoryView} is a class and in versions 1.21
+     * and later, it is an interface.
+     *
+     * @param player The player whose inventory is to be found
+     * @return The top inventory
+     */
+    public static Inventory getTopInventory(Player player) {
+        try {
+            Object view = player.getOpenInventory();
+            Method getTopInventory = view.getClass().getMethod("getTopInventory");
+            getTopInventory.setAccessible(true);
+            return (Inventory) getTopInventory.invoke(view);
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
