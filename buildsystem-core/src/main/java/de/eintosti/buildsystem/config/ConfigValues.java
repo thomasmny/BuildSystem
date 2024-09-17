@@ -46,6 +46,7 @@ public class ConfigValues {
     private Difficulty worldDifficulty;
 
     private boolean archiveVanish;
+    private boolean adventureGameModeOnArchiveWorlds;
     private boolean scoreboard;
     private boolean spawnTeleportMessage;
     private boolean joinQuitMessages;
@@ -100,6 +101,7 @@ public class ConfigValues {
         this.updateChecker = config.getBoolean("settings.update-checker", true);
         this.scoreboard = config.getBoolean("settings.scoreboard", true);
         this.archiveVanish = config.getBoolean("settings.archive-vanish", true);
+        this.adventureGameModeOnArchiveWorlds = config.getBoolean("settings.adventure-game-mode-on-archive-worlds", true);
         this.teleportAfterCreation = config.getBoolean("settings.teleport-after-creation", true);
         this.buildModeDropItems = config.getBoolean("settings.build-mode.drop-items", true);
         this.buildModeMoveItems = config.getBoolean("settings.build-mode.move-items", true);
@@ -207,6 +209,10 @@ public class ConfigValues {
 
     public boolean isArchiveVanish() {
         return archiveVanish;
+    }
+    
+    public boolean isAdventureGameModeOnArchiveWorlds() {
+        return adventureGameModeOnArchiveWorlds;
     }
 
     public boolean isTeleportAfterCreation() {

@@ -6,6 +6,7 @@ settings:
   update-checker: true
   scoreboard: true
   archive-vanish: true
+  adventure-game-mode-on-archive-worlds: true
   teleport-after-creation: true
   save-from-death:
     enable: true
