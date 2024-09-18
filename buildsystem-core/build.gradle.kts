@@ -2,7 +2,7 @@ applyCoreConfiguration()
 
 plugins {
     `java-library`
-    id("com.gradleup.shadow") version "8.3.1"
+    id("com.gradleup.shadow") version "8.3.2"
 }
 
 project.description = "Core"
