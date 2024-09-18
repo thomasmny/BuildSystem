@@ -17,14 +17,12 @@
  */
 package de.eintosti.buildsystem.navigator;
 
-import com.cryptomorin.xseries.SkullUtils;
-import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.profiles.builder.XSkull;
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.navigator.settings.NavigatorInventoryType;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -64,11 +62,10 @@ public class ArmorStandManager {
         armorStand.setCustomNameVisible(false);
         armorStand.setGravity(false);
         armorStand.setCanPickupItems(false);
-
-        ItemStack skull = XMaterial.PLAYER_HEAD.parseItem();
-        SkullMeta skullMeta = SkullUtils.applySkin(skull.getItemMeta(), customSkull ? skullUrl : player.getName());
-        skull.setItemMeta(skullMeta);
-        armorStand.setHelmet(skull);
+        armorStand.setHelmet(XSkull.createItem()
+                .profile(Profileable.detect(customSkull ? skullUrl : player.getName()))
+                .apply()
+        );
 
         return armorStand;
     }

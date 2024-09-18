@@ -81,7 +81,7 @@ public class ImportAllSubCommand implements SubCommand {
 
         ArgumentParser parser = new ArgumentParser(args);
         Generator generator = Generator.VOID;
-        Builder builder = new Builder(null, "-");
+        Builder creator = null;
 
         if (parser.isArgument("g")) {
             String generatorArg = parser.getValue("g");
@@ -106,10 +106,10 @@ public class ImportAllSubCommand implements SubCommand {
                 Messages.sendMessage(player, "worlds_importall_player_not_found");
                 return;
             }
-            builder = new Builder(creatorId, creatorArg);
+            creator = Builder.of(creatorId, creatorArg);
         }
 
-        worldManager.importWorlds(player, directories, generator, builder);
+        worldManager.importWorlds(player, directories, generator, creator);
     }
 
     @Override

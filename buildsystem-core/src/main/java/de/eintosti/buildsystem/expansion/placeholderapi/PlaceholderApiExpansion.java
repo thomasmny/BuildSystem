@@ -216,9 +216,9 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "creation":
                 return Messages.formatDate(buildWorld.getCreationDate());
             case "creator":
-                return buildWorld.getCreator();
+                return buildWorld.hasCreator() ? buildWorld.getCreator().getName() : "-";
             case "creatorid":
-                return String.valueOf(buildWorld.getCreatorId());
+                return buildWorld.hasCreator() ? String.valueOf(buildWorld.getCreator().getUniqueId()) : "-";
             case "explosions":
                 return String.valueOf(worldData.explosions().get());
             case "lastedited":

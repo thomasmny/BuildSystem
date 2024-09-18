@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.world.modification;
 
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.util.InventoryUtils;
@@ -47,9 +48,9 @@ public class SetupInventory implements Listener {
         Inventory inventory = Bukkit.createInventory(null, 45, Messages.getString("setup_title", player));
         fillGuiWithGlass(player, inventory);
 
-        inventoryUtils.addUrlSkull(inventory, 10, Messages.getString("setup_create_item_name", player), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158", Messages.getStringList("setup_create_item_lore", player));
-        inventoryUtils.addUrlSkull(inventory, 19, Messages.getString("setup_default_item_name", player), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158", Messages.getStringList("setup_default_item_lore", player));
-        inventoryUtils.addUrlSkull(inventory, 28, Messages.getString("setup_status_item_name", player), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158", Messages.getStringList("setup_status_item_name_lore", player));
+        inventoryUtils.addSkull(inventory, 10, Messages.getString("setup_create_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_create_item_lore", player));
+        inventoryUtils.addSkull(inventory, 19, Messages.getString("setup_default_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_default_item_lore", player));
+        inventoryUtils.addSkull(inventory, 28, Messages.getString("setup_status_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_status_item_name_lore", player));
 
         inventoryUtils.addItemStack(inventory, 11, inventoryUtils.getCreateItem(WorldType.NORMAL), Messages.getString("setup_normal_world", player));
         inventoryUtils.addItemStack(inventory, 12, inventoryUtils.getCreateItem(WorldType.FLAT), Messages.getString("setup_flat_world", player));

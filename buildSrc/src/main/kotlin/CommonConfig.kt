@@ -1,8 +1,10 @@
+import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
-import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.kotlin.dsl.repositories
 import org.gradle.kotlin.dsl.the
+import org.gradle.kotlin.dsl.withType
 
 fun Project.applyCommonConfiguration() {
     group = rootProject.group
@@ -26,8 +28,11 @@ fun Project.applyCommonConfiguration() {
     }
 
     plugins.withId("java") {
-        the<JavaPluginExtension>().toolchain {
-            languageVersion.set(JavaLanguageVersion.of(8))
-        }
+        the<JavaPluginExtension>().sourceCompatibility = JavaVersion.VERSION_1_8
+        the<JavaPluginExtension>().targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    tasks.withType<JavaCompile> {
+        options.encoding = Charsets.UTF_8.name()
     }
 }

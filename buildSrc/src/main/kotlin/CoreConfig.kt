@@ -5,6 +5,7 @@ import org.gradle.kotlin.dsl.the
 
 fun Project.applyCoreConfiguration() {
     applyCommonConfiguration()
+
     apply(plugin = "java")
     apply(plugin = "eclipse")
     apply(plugin = "idea")

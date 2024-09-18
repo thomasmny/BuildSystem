@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.settings;
 
+import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystem;
@@ -25,7 +26,6 @@ import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.navigator.settings.NavigatorType;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -101,7 +101,7 @@ public class SettingsInventory implements Listener {
         itemStack.setItemMeta(itemMeta);
 
         if (enabled) {
-            itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+            itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.getEnchant(), 1);
         }
 
         inventory.setItem(position, itemStack);
@@ -122,7 +122,7 @@ public class SettingsInventory implements Listener {
         itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         itemMeta.setLore(Messages.getStringList("settings_change_design_lore", player));
         itemStack.setItemMeta(itemMeta);
-        itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+        itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.getEnchant(), 1);
 
         inventory.setItem(11, itemStack);
     }

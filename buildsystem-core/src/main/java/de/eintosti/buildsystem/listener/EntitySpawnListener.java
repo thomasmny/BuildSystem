@@ -51,7 +51,7 @@ public class EntitySpawnListener implements Listener {
 
         Entity entity = event.getEntity();
         if (entity instanceof LivingEntity) {
-            EntityAIManager.setAIEnabled(entity, false);
+            EntityAIManager.setAIEnabled((LivingEntity) entity, false);
         }
     }
 }

@@ -86,7 +86,7 @@ public class ImportSubCommand implements SubCommand {
             return;
         }
 
-        Builder creator = new Builder(null, "-");
+        Builder creator = null;
         Generator generator = Generator.VOID;
         String generatorName = null;
         WorldType worldType = WorldType.IMPORTED;
@@ -119,7 +119,7 @@ public class ImportSubCommand implements SubCommand {
                     Messages.sendMessage(player, "worlds_import_player_not_found");
                     return;
                 }
-                creator = new Builder(creatorId, creatorArg);
+                creator = Builder.of(creatorId, creatorArg);
             }
 
             if (parser.isArgument("t")) {
@@ -137,7 +137,7 @@ public class ImportSubCommand implements SubCommand {
         }
 
         Messages.sendMessage(player, "worlds_import_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
-        if (worldManager.importWorld(player, worldName, creator, generator, generatorName, true, worldType)) {
+        if (worldManager.importWorld(player, worldName, creator, worldType, generator, generatorName, true)) {
             Messages.sendMessage(player, "worlds_import_finished");
         }
     }

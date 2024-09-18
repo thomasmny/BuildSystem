@@ -17,8 +17,10 @@
  */
 package de.eintosti.buildsystem.world.modification;
 
+import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.navigator.inventory.FilteredWorldsInventory.Visibility;
@@ -28,7 +30,6 @@ import de.eintosti.buildsystem.world.WorldManager;
 import de.eintosti.buildsystem.world.data.WorldType;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -64,9 +65,9 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         Inventory inventory = Bukkit.createInventory(null, 45, Messages.getString("create_title", player));
         fillGuiWithGlass(player, inventory, page);
 
-        addPageItem(inventory, page, Page.PREDEFINED, inventoryUtils.getUrlSkull(Messages.getString("create_predefined_worlds", player), "2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78"));
-        addPageItem(inventory, page, Page.GENERATOR, inventoryUtils.getUrlSkull(Messages.getString("create_generators", player), "b2f79016cad84d1ae21609c4813782598e387961be13c15682752f126dce7a"));
-        addPageItem(inventory, page, Page.TEMPLATES, inventoryUtils.getUrlSkull(Messages.getString("create_templates", player), "d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c"));
+        addPageItem(inventory, page, Page.PREDEFINED, inventoryUtils.getSkull(Messages.getString("create_predefined_worlds", player), Profileable.detect("2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78")));
+        addPageItem(inventory, page, Page.GENERATOR, inventoryUtils.getSkull(Messages.getString("create_generators", player), Profileable.detect("b2f79016cad84d1ae21609c4813782598e387961be13c15682752f126dce7a")));
+        addPageItem(inventory, page, Page.TEMPLATES, inventoryUtils.getSkull(Messages.getString("create_templates", player), Profileable.detect("d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c")));
 
         switch (page) {
             case PREDEFINED:
@@ -77,7 +78,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
                 addPredefinedWorldItem(player, inventory, 33, WorldType.VOID, Messages.getString("create_void_world", player));
                 break;
             case GENERATOR:
-                inventoryUtils.addUrlSkull(inventory, 31, Messages.getString("create_generators_create_world", player), "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716");
+                inventoryUtils.addSkull(inventory, 31, Messages.getString("create_generators_create_world", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716"));
                 break;
             case TEMPLATES:
                 // Template stuff is done during inventory open
@@ -101,7 +102,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
 
     private void addPageItem(Inventory inventory, Page currentPage, Page page, ItemStack itemStack) {
         if (currentPage == page) {
-            itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+            itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.getEnchant(), 1);
         }
         inventory.setItem(page.getSlot(), itemStack);
     }
@@ -167,8 +168,8 @@ public class CreateInventory extends PaginatedInventory implements Listener {
                 inventoryUtils.addGlassPane(plugin, player, inventory, 33);
                 break;
             case TEMPLATES:
-                inventoryUtils.addUrlSkull(inventory, 38, Messages.getString("gui_previous_page", player), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
-                inventoryUtils.addUrlSkull(inventory, 42, Messages.getString("gui_next_page", player), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
+                inventoryUtils.addSkull(inventory, 38, Messages.getString("gui_previous_page", player), Profileable.detect("f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2"));
+                inventoryUtils.addSkull(inventory, 42, Messages.getString("gui_next_page", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"));
                 break;
         }
     }
@@ -288,7 +289,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         public static Page getCurrentPage(Inventory inventory) {
             for (Page page : Page.values()) {
                 ItemStack itemStack = inventory.getItem(page.getSlot());
-                if (itemStack != null && itemStack.containsEnchantment(Enchantment.DURABILITY)) {
+                if (itemStack != null && itemStack.containsEnchantment(XEnchantment.UNBREAKING.getEnchant())) {
                     return page;
                 }
             }

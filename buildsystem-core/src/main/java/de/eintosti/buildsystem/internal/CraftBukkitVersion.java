@@ -33,11 +33,13 @@ import de.eintosti.buildsystem.version.v1_20_R1.CustomBlocks_1_20_R1;
 import org.bukkit.Bukkit;
 import org.bukkit.UnsafeValues;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Constructor;
 import java.util.List;
 
+@ApiStatus.Internal
 public enum CraftBukkitVersion {
 
     v1_8_R1(-1, CustomBlocks_1_12_R1.class, GameRules_1_12_R1.class),
@@ -64,6 +66,8 @@ public enum CraftBukkitVersion {
     v1_20_R1(3465, CustomBlocks_1_20_R1.class, GameRules_1_13_R1.class),
     v1_20_R2(3578, CustomBlocks_1_20_R1.class, GameRules_1_13_R1.class),
     v1_20_R3(3700, CustomBlocks_1_20_R1.class, GameRules_1_13_R1.class),
+    v1_20_R4(3839, CustomBlocks_1_20_R1.class, GameRules_1_13_R1.class),
+    v1_21_R1(3953, CustomBlocks_1_20_R1.class, GameRules_1_13_R1.class),
     UNKNOWN;
 
     private final int dataVersion;
@@ -148,9 +152,13 @@ public enum CraftBukkitVersion {
                     return v1_20_R1;
                 } else if (patch == 2) {
                     return v1_20_R2;
-                } else {
+                } else if (patch == 3 || patch == 4) {
                     return v1_20_R3;
+                } else {
+                    return v1_20_R4;
                 }
+            case 21:
+                return v1_21_R1;
             default:
                 if (Boolean.getBoolean("Paper.ignoreWorldDataVersion")) {
                     // Get latest version if server version is to be ignored

@@ -17,13 +17,14 @@
  */
 package de.eintosti.buildsystem.util;
 
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Entity;
+import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.internal.CraftBukkitVersion;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Method;
 
-public class EntityAIManager {
+public final class EntityAIManager {
 
     private static Class<?> nmsEntityClass;
     private static Class<?> nbtTagClass;
@@ -34,7 +35,10 @@ public class EntityAIManager {
     private static Method setInt;
     private static Method f;
 
-    public static void setAIEnabled(Entity entity, boolean enabled) {
+    private EntityAIManager() {
+    }
+
+    public static void setAIEnabled(LivingEntity entity, boolean enabled) {
         switch (entity.getType()) {
             case ARMOR_STAND:
             case ITEM_FRAME:
@@ -43,20 +47,21 @@ public class EntityAIManager {
                 return;
         }
 
-        String version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+        CraftBukkitVersion craftBukkitVersion = JavaPlugin.getPlugin(BuildSystem.class).getCraftBukkitVersion();
 
-        switch (version) {
-            case "v1_8_R1":
-            case "v1_8_R2":
-            case "v1_8_R3":
+        switch (craftBukkitVersion) {
+            case v1_8_R1:
+            case v1_8_R2:
+            case v1_8_R3:
+                // Drop through
                 break;
             default:
-                LivingEntity livingEntity = (LivingEntity) entity;
-                livingEntity.setAI(enabled);
+                entity.setAI(enabled);
                 return;
         }
 
         try {
+            String version = craftBukkitVersion.name();
             if (getHandle == null) {
                 Class<?> craftEntity = Class.forName("org.bukkit.craftbukkit." + version + ".entity.CraftEntity");
                 getHandle = craftEntity.getDeclaredMethod("getHandle");

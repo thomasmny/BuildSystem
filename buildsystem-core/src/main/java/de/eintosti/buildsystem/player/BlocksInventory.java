@@ -17,14 +17,15 @@
  */
 package de.eintosti.buildsystem.player;
 
+import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.version.customblocks.CustomBlock;
 import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import org.bukkit.Bukkit;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -84,7 +85,7 @@ public class BlocksInventory implements Listener {
 
     private void setCustomBlock(Inventory inventory, Player player, int position, CustomBlock customBlock) {
         if (MinecraftVersion.getCurrent().isEqualOrHigherThan(customBlock.getVersion())) {
-            inventoryUtils.addUrlSkull(inventory, position, Messages.getString(customBlock.getKey(), player), customBlock.getSkullUrl());
+            inventoryUtils.addSkull(inventory, position, Messages.getString(customBlock.getKey(), player), Profileable.detect(customBlock.getSkullUrl()));
         }
     }
 
@@ -173,7 +174,7 @@ public class BlocksInventory implements Listener {
             case 33:
                 ItemStack itemStack = inventoryUtils.getItemStack(XMaterial.ITEM_FRAME, Messages.getString(CustomBlock.INVISIBLE_ITEM_FRAME.getKey(), player));
                 ItemMeta itemMeta = itemStack.getItemMeta();
-                itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
+                itemMeta.addEnchant(XEnchantment.UNBREAKING.getEnchant(), 1, true);
                 // Inline imports to allow backwards compatibility
                 itemMeta.getPersistentDataContainer().set(new org.bukkit.NamespacedKey(plugin, "invisible-itemframe"), org.bukkit.persistence.PersistentDataType.BYTE, (byte) 1);
                 itemStack.setItemMeta(itemMeta);
@@ -205,6 +206,6 @@ public class BlocksInventory implements Listener {
     }
 
     private void giveCustomBlock(Player player, CustomBlock customBlock) {
-        giveCustomBlock(player, customBlock, inventoryUtils.getUrlSkull(Messages.getString(customBlock.getKey(), player), customBlock.getSkullUrl()));
+        giveCustomBlock(player, customBlock, inventoryUtils.getSkull(Messages.getString(customBlock.getKey(), player), Profileable.detect(customBlock.getSkullUrl())));
     }
 }

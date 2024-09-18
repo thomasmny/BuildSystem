@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.command;
 
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.util.InventoryUtils;
@@ -24,7 +25,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.AbstractMap;
@@ -55,18 +55,17 @@ public class SkullCommand implements CommandExecutor {
 
         switch (args.length) {
             case 0:
-                player.getInventory().addItem(inventoryUtils.getSkull("§b" + player.getName(), player.getName()));
+                player.getInventory().addItem(inventoryUtils.getSkull("§b" + player.getName(), Profileable.of(player)));
                 Messages.sendMessage(player, "skull_player_received", new AbstractMap.SimpleEntry<>("%player%", player.getName()));
                 break;
             case 1:
-                String skullName = args[0];
-                if (skullName.length() > 16) {
-                    ItemStack customSkull = inventoryUtils.getUrlSkull(Messages.getString("custom_skull_item", player), skullName);
-                    player.getInventory().addItem(customSkull);
+                String identifier = args[0];
+                if (identifier.length() > 16) {
+                    player.getInventory().addItem(inventoryUtils.getSkull(Messages.getString("custom_skull_item", player), Profileable.detect(identifier)));
                     Messages.sendMessage(player, "skull_custom_received");
                 } else {
-                    player.getInventory().addItem(inventoryUtils.getSkull("§b" + skullName, skullName));
-                    Messages.sendMessage(player, "skull_player_received", new AbstractMap.SimpleEntry<>("%player%", skullName));
+                    player.getInventory().addItem(inventoryUtils.getSkull("§b" + identifier, Profileable.detect(identifier)));
+                    Messages.sendMessage(player, "skull_player_received", new AbstractMap.SimpleEntry<>("%player%", identifier));
                 }
                 break;
             default:

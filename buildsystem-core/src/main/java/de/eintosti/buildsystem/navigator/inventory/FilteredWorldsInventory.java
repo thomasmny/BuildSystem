@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.navigator.inventory;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.navigator.settings.WorldDisplay;
@@ -84,8 +85,8 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         addWorldSortItem(inventory, player);
         addWorldFilterItem(inventory, player);
 
-        inventoryUtils.addUrlSkull(inventory, 52, Messages.getString("gui_previous_page", player), "86971dd881dbaf4fd6bcaa93614493c612f869641ed59d1c9363a3666a5fa6");
-        inventoryUtils.addUrlSkull(inventory, 53, Messages.getString("gui_next_page", player), "f32ca66056b72863e98f7f32bd7d94c7a0d796af691c9ac3a9136331352288f9");
+        inventoryUtils.addSkull(inventory, 52, Messages.getString("gui_previous_page", player), Profileable.detect("86971dd881dbaf4fd6bcaa93614493c612f869641ed59d1c9363a3666a5fa6"));
+        inventoryUtils.addSkull(inventory, 53, Messages.getString("gui_next_page", player), Profileable.detect("f32ca66056b72863e98f7f32bd7d94c7a0d796af691c9ac3a9136331352288f9"));
 
         return inventory;
     }
@@ -130,7 +131,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         int index = 0;
         inventories[index] = inventory;
         if (numWorlds == 0) {
-            inventoryUtils.addUrlSkull(inventory, 22, Messages.getString(noWorldsText, player), "2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6");
+            inventoryUtils.addSkull(inventory, 22, Messages.getString(noWorldsText, player), Profileable.detect("2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6"));
             return;
         }
 
@@ -233,14 +234,17 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
                 if (event.isShiftClick()) {
                     worldFilter.setMode(WorldFilter.Mode.NONE);
                     worldFilter.setText("");
+                    setInvIndex(player, 0);
                     openInventory(player);
                 } else if (event.isLeftClick()) {
                     new PlayerChatInput(plugin, player, "world_filter_title", input -> {
                         worldFilter.setText(input.replace("\"", ""));
+                        setInvIndex(player, 0);
                         openInventory(player);
                     });
                 } else if (event.isRightClick()) {
                     worldFilter.setMode(currentMode.getNext());
+                    setInvIndex(player, 0);
                     openInventory(player);
                 }
                 return;

@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.world.modification;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
@@ -64,28 +65,29 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         addCreatorInfoItem(inventory, buildWorld, player);
         addBuilderAddItem(inventory, buildWorld, player);
 
-        inventoryUtils.addUrlSkull(inventory, 18, Messages.getString("gui_previous_page", player), "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2");
-        inventoryUtils.addUrlSkull(inventory, 26, Messages.getString("gui_next_page", player), "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158");
+        inventoryUtils.addSkull(inventory, 18, Messages.getString("gui_previous_page", player), Profileable.detect("f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2"));
+        inventoryUtils.addSkull(inventory, 26, Messages.getString("gui_next_page", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"));
 
         return inventory;
     }
 
     private void addCreatorInfoItem(Inventory inventory, BuildWorld buildWorld, Player player) {
-        String creatorName = buildWorld.getCreator();
-        if (creatorName == null || creatorName.equalsIgnoreCase("-")) {
+        Builder creator = buildWorld.getCreator();
+        if (creator == null || creator.getName().equalsIgnoreCase("-")) {
             inventoryUtils.addItemStack(inventory, 4, XMaterial.BARRIER, Messages.getString("worldeditor_builders_no_creator_item", player));
         } else {
             inventoryUtils.addSkull(inventory, 4, Messages.getString("worldeditor_builders_creator_item", player),
-                    buildWorld.getCreator(), Messages.getString("worldeditor_builders_creator_lore", player, new AbstractMap.SimpleEntry<>("%creator%", buildWorld.getCreator()))
+                    Profileable.of(creator.getUniqueId()),
+                    Messages.getString("worldeditor_builders_creator_lore", player, new AbstractMap.SimpleEntry<>("%creator%", buildWorld.getCreator()))
             );
         }
     }
 
     private void addBuilderAddItem(Inventory inventory, BuildWorld buildWorld, Player player) {
-        UUID creatorId = buildWorld.getCreatorId();
-        if ((creatorId != null && creatorId.equals(player.getUniqueId())) || player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
-            inventoryUtils.addUrlSkull(inventory, 22, Messages.getString("worldeditor_builders_add_builder_item", player),
-                    "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716"
+        Builder creator = buildWorld.getCreator();
+        if ((creator != null && creator.getUniqueId().equals(player.getUniqueId())) || player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
+            inventoryUtils.addSkull(inventory, 22, Messages.getString("worldeditor_builders_add_builder_item", player),
+                    Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716")
             );
         } else {
             inventoryUtils.addGlassPane(plugin, player, inventory, 22);
@@ -109,7 +111,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
             String builderName = builder.getName();
             inventoryUtils.addSkull(inventory, columnSkull++,
                     Messages.getString("worldeditor_builders_builder_item", player, new AbstractMap.SimpleEntry<>("%builder%", builderName)),
-                    builderName, Messages.getStringList("worldeditor_builders_builder_lore", player)
+                    Profileable.username(builderName), Messages.getStringList("worldeditor_builders_builder_lore", player)
             );
 
             if (columnSkull > maxColumnSkull) {

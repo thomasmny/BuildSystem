@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.listener;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.util.CompatibilityUtils;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.world.data.WorldStatus;
 import de.eintosti.buildsystem.world.data.WorldType;
@@ -41,7 +42,7 @@ public class InventoryCloseListener implements Listener {
 
     @EventHandler
     public void onSetupInventoryClose(InventoryCloseEvent event) {
-        if (!event.getView().getTitle().equals(Messages.getString("setup_title", (Player) event.getPlayer()))) {
+        if (!CompatibilityUtils.getInventoryTitle(event).equals(Messages.getString("setup_title", (Player) event.getPlayer()))) {
             return;
         }
         setNewItems(event);

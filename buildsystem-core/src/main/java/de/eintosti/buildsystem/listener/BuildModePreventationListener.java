@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.listener;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.player.PlayerManager;
+import de.eintosti.buildsystem.util.CompatibilityUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -74,7 +75,7 @@ public class BuildModePreventationListener implements Listener {
             return;
         }
 
-        if (player.getOpenInventory().getTopInventory().getType() != InventoryType.CRAFTING) {
+        if (CompatibilityUtils.getTopInventory(event).getType() != InventoryType.CRAFTING) {
             event.setCancelled(true);
         }
     }

@@ -2,16 +2,10 @@ applyCoreConfiguration()
 
 plugins {
     `java-library`
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "8.3.2"
 }
 
 project.description = "Core"
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
-    }
-}
 
 repositories {
     maven {
@@ -42,7 +36,7 @@ dependencies {
     compileOnly(libs.annotations)
 
     implementation(libs.paperlib)
-    implementation(libs.xseries) { isTransitive = false }
+    implementation(libs.xseries)
     implementation(libs.fastboard)
     implementation(libs.nbt) { isTransitive = false }
     implementation(libs.bstats)
@@ -51,10 +45,6 @@ dependencies {
 tasks {
     assemble {
         dependsOn(shadowJar)
-    }
-
-    compileJava {
-        options.encoding = Charsets.UTF_8.name()
     }
 
     shadowJar {

@@ -31,6 +31,7 @@ public class MinecraftVersion implements Comparable<MinecraftVersion> {
 
     public static final MinecraftVersion BOUNTIFUL_8 = new MinecraftVersion(1, 8);
     public static final MinecraftVersion AQUATIC_13 = new MinecraftVersion(1, 13);
+    public static final MinecraftVersion NETHER_16 = new MinecraftVersion(1, 16);
     public static final MinecraftVersion CAVES_17 = new MinecraftVersion(1, 17);
 
     private static MinecraftVersion current = null;
@@ -79,13 +80,13 @@ public class MinecraftVersion implements Comparable<MinecraftVersion> {
         } catch (ArrayIndexOutOfBoundsException ignored) {
         }
 
-        if (parts.length != 3) {
+        if (parts.length < 2) {
             throw new IllegalStateException("Failed to determine minecraft version: " + Bukkit.getBukkitVersion());
         }
 
         int major = Integer.parseInt(parts[0]);
         int minor = Integer.parseInt(parts[1]);
-        int patch = Integer.parseInt(parts[2]);
+        int patch = parts.length == 3 ? Integer.parseInt(parts[2]) : 0;
 
         return new MinecraftVersion(major, minor, patch);
     }
@@ -175,6 +176,9 @@ public class MinecraftVersion implements Comparable<MinecraftVersion> {
 
     @Override
     public String toString() {
+        if (patch == 0) {
+            return major + "." + minor;
+        }
         return major + "." + minor + "." + patch;
     }
 }

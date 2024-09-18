@@ -3,12 +3,14 @@
     "config:base",
     ":disableDependencyDashboard"
   ],
+  "automerge": true,
+  "ignoreDeps": [
+    "org.spigotmc:spigot-api",
+    "com.sk89q.worldedit:worldedit-core"
+  ],
   "labels": [
     "renovate"
   ],
   "commitMessagePrefix": "chore: ",
-  "rebaseWhen": "conflicted",
-  "schedule": [
-    "before 4am"
-  ]
+  "rebaseWhen": "conflicted"
 }

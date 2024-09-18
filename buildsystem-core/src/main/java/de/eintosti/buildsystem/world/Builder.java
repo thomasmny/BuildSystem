@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.world;
 
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
@@ -26,17 +27,55 @@ public class Builder {
     private final UUID uuid;
     private String name;
 
-    public Builder(Player player) {
-        this.uuid = player.getUniqueId();
-        this.name = player.getName();
-    }
-
-    public Builder(UUID uuid, String name) {
+    private Builder(UUID uuid, String name) {
         this.uuid = uuid;
         this.name = name;
     }
 
-    public UUID getUuid() {
+    /**
+     * Creates a new {@link Builder} instance with the given uuid and name.
+     *
+     * @param uuid The uuid
+     * @param name The name
+     * @return The builder
+     */
+    public static Builder of(UUID uuid, String name) {
+        return new Builder(uuid, name);
+    }
+
+    /**
+     * Creates a new {@link Builder} instance using the given player.
+     *
+     * @param player The player
+     * @return The builder
+     */
+    public static Builder of(Player player) {
+        return new Builder(player.getUniqueId(), player.getName());
+    }
+
+    /**
+     * Creates a new {@link Builder} instance using a serialized string.
+     * <p>
+     * The format of the string must be {@code <uuid>,<name>}.
+     *
+     * @param serialized The serialized builder
+     * @return The builder if all the input is valid, otherwise {@code null}
+     */
+    @Nullable
+    public static Builder deserialize(@Nullable String serialized) {
+        if (serialized == null) {
+            return null;
+        }
+
+        String[] parts = serialized.split(",");
+        if (parts.length != 2) {
+            return null;
+        }
+
+        return Builder.of(UUID.fromString(parts[0]), parts[1]);
+    }
+
+    public UUID getUniqueId() {
         return uuid;
     }
 
@@ -51,5 +90,15 @@ public class Builder {
     @Override
     public String toString() {
         return uuid.toString() + "," + name;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Builder)) {
+            return false;
+        }
+
+        Builder other = (Builder) obj;
+        return other.getUniqueId().equals(this.uuid) && other.getName().equals(this.name);
     }
 }
