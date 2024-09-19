@@ -226,7 +226,7 @@ public class ConfigValues {
         return archiveVanish;
     }
 
-    public boolean isChangeGameModeOnArchivedWorlds() {
+    public boolean shouldChangeGameModeInArchivedWorlds() {
         return changeGameModeOnArchivedWorlds;
     }
 
