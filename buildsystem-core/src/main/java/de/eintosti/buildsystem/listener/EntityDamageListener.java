@@ -15,9 +15,11 @@ import org.bukkit.event.entity.EntityDamageEvent;
 public class EntityDamageListener implements Listener {
 
     private final BuildSystem plugin;
+    private final ConfigValues configValues;
 
     public EntityDamageListener(BuildSystem plugin) {
         this.plugin = plugin;
+        this.configValues = plugin.getConfigValues();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -27,19 +29,8 @@ public class EntityDamageListener implements Listener {
             return;
         }
 
-        EntityDamageEvent.DamageCause cause = event.getCause();
-        if (cause == EntityDamageEvent.DamageCause.FALL) {
-            event.setCancelled(true);
-            return;
-        }
-
         // Teleport player up if void damage is taken
-        if (cause != EntityDamageEvent.DamageCause.VOID) {
-            return;
-        }
-
-        ConfigValues configValues = plugin.getConfigValues();
-        if (!configValues.isSaveFromDeath()) {
+        if (event.getCause() != EntityDamageEvent.DamageCause.VOID || !configValues.isSaveFromDeath()) {
             return;
         }
 
