@@ -20,16 +20,13 @@ package de.eintosti.buildsystem.config;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystem;
 import org.bukkit.Difficulty;
+import org.bukkit.GameMode;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ConfigValues {
 
@@ -44,6 +41,9 @@ public class ConfigValues {
     private XMaterial navigatorItem;
     private XMaterial worldEditWand;
     private Difficulty worldDifficulty;
+
+    private boolean changeGameModeOnArchivedWorlds;
+    private GameMode archiveWorldGameMode;
 
     private boolean archiveVanish;
     private boolean scoreboard;
@@ -103,6 +103,8 @@ public class ConfigValues {
         this.teleportAfterCreation = config.getBoolean("settings.teleport-after-creation", true);
         this.buildModeDropItems = config.getBoolean("settings.build-mode.drop-items", true);
         this.buildModeMoveItems = config.getBoolean("settings.build-mode.move-items", true);
+        this.changeGameModeOnArchivedWorlds = config.getBoolean("settings.archive-should-change-gamemode", true);
+        this.archiveWorldGameMode = parseGameMode(config.getString("settings.archive-world-game-mode", "ADVENTURE"));
 
         this.blockWorldEditNonBuilder = config.getBoolean("settings.builder.block-worldedit-non-builder", true);
         this.worldEditWand = parseWorldEditWand();
@@ -156,6 +158,21 @@ public class ConfigValues {
         this.voidBlock = config.getBoolean("world.void-block", true);
     }
 
+    /**
+     * Parsing the {@link GameMode} from a string. Defaulting to {@link GameMode#ADVENTURE} if the string is not a valid {@link GameMode}.
+     *
+     * @param gameModeName The name of the {@link GameMode} to parse.
+     * @return The parsed {@link GameMode}.
+     */
+    private GameMode parseGameMode(String gameModeName) {
+        for (GameMode gameMode : GameMode.values()) {
+            if (gameMode.name().equalsIgnoreCase(gameModeName)) {
+                return gameMode;
+            }
+        }
+        return GameMode.ADVENTURE;
+    }
+
     private XMaterial parseWorldEditWand() {
         File pluginDir = plugin.getDataFolder().getParentFile();
         File configFile = null;
@@ -207,6 +224,14 @@ public class ConfigValues {
 
     public boolean isArchiveVanish() {
         return archiveVanish;
+    }
+
+    public boolean shouldChangeGameModeInArchivedWorlds() {
+        return changeGameModeOnArchivedWorlds;
+    }
+
+    public GameMode getArchiveWorldGameMode() {
+        return archiveWorldGameMode;
     }
 
     public boolean isTeleportAfterCreation() {

@@ -6,6 +6,9 @@ settings:
   update-checker: true
   scoreboard: true
   archive-vanish: true
+  archive-should-change-gamemode: true
+  # Possible values are: "SURVIVAL", "CREATIVE", "ADVENTURE", "SPECTATOR"
+  archive-world-game-mode: "ADVENTURE"
   teleport-after-creation: true
   save-from-death:
     enable: true
