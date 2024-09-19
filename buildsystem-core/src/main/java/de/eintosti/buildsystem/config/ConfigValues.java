@@ -166,7 +166,7 @@ public class ConfigValues {
      */
     private GameMode parseGameMode(String gameModeName) {
         for (GameMode gameMode : GameMode.values()) {
-            if (gameMode.name().equals(gameModeName)) {
+            if (gameMode.name().equalsIgnoreCase(gameModeName)) {
                 return gameMode;
             }
         }
