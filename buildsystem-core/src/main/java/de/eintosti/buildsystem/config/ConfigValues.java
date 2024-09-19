@@ -103,7 +103,7 @@ public class ConfigValues {
         this.teleportAfterCreation = config.getBoolean("settings.teleport-after-creation", true);
         this.buildModeDropItems = config.getBoolean("settings.build-mode.drop-items", true);
         this.buildModeMoveItems = config.getBoolean("settings.build-mode.move-items", true);
-        this.changeGameModeOnArchivedWorlds = config.getBoolean("settings.change-game-mode-on-archived-worlds", true);
+        this.changeGameModeOnArchivedWorlds = config.getBoolean("settings.archive-should-change-gamemode", true);
         this.archiveWorldGameMode = parseGameMode(config.getString("settings.archive-world-game-mode", "ADVENTURE"));
 
         this.blockWorldEditNonBuilder = config.getBoolean("settings.builder.block-worldedit-non-builder", true);
