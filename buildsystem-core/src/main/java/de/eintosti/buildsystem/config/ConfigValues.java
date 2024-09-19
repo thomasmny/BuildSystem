@@ -20,16 +20,13 @@ package de.eintosti.buildsystem.config;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystem;
 import org.bukkit.Difficulty;
+import org.bukkit.GameMode;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ConfigValues {
 
@@ -45,8 +42,10 @@ public class ConfigValues {
     private XMaterial worldEditWand;
     private Difficulty worldDifficulty;
 
+    private boolean changeGameModeOnArchivedWorlds;
+    private GameMode archiveWorldGameMode;
+
     private boolean archiveVanish;
-    private boolean adventureGameModeOnArchiveWorlds;
     private boolean scoreboard;
     private boolean spawnTeleportMessage;
     private boolean joinQuitMessages;
@@ -101,10 +100,11 @@ public class ConfigValues {
         this.updateChecker = config.getBoolean("settings.update-checker", true);
         this.scoreboard = config.getBoolean("settings.scoreboard", true);
         this.archiveVanish = config.getBoolean("settings.archive-vanish", true);
-        this.adventureGameModeOnArchiveWorlds = config.getBoolean("settings.adventure-game-mode-on-archive-worlds", true);
         this.teleportAfterCreation = config.getBoolean("settings.teleport-after-creation", true);
         this.buildModeDropItems = config.getBoolean("settings.build-mode.drop-items", true);
         this.buildModeMoveItems = config.getBoolean("settings.build-mode.move-items", true);
+        this.changeGameModeOnArchivedWorlds = config.getBoolean("settings.change-game-mode-on-archived-worlds", true);
+        this.archiveWorldGameMode = parseGameMode(config.getString("settings.archive-world-game-mode", "ADVENTURE"));
 
         this.blockWorldEditNonBuilder = config.getBoolean("settings.builder.block-worldedit-non-builder", true);
         this.worldEditWand = parseWorldEditWand();
@@ -156,6 +156,21 @@ public class ConfigValues {
         this.maxPrivateWorldAmount = config.getInt("world.max-amount.private", -1);
 
         this.voidBlock = config.getBoolean("world.void-block", true);
+    }
+
+    /**
+     * Parsing the {@link GameMode} from a string. Defaulting to {@link GameMode#ADVENTURE} if the string is not a valid {@link GameMode}.
+     *
+     * @param gameModeName The name of the {@link GameMode} to parse.
+     * @return The parsed {@link GameMode}.
+     */
+    private GameMode parseGameMode(String gameModeName) {
+        for (GameMode gameMode : GameMode.values()) {
+            if (gameMode.name().equals(gameModeName)) {
+                return gameMode;
+            }
+        }
+        return GameMode.ADVENTURE;
     }
 
     private XMaterial parseWorldEditWand() {
@@ -210,9 +225,13 @@ public class ConfigValues {
     public boolean isArchiveVanish() {
         return archiveVanish;
     }
-    
-    public boolean isAdventureGameModeOnArchiveWorlds() {
-        return adventureGameModeOnArchiveWorlds;
+
+    public boolean isChangeGameModeOnArchivedWorlds() {
+        return changeGameModeOnArchivedWorlds;
+    }
+
+    public GameMode getArchiveWorldGameMode() {
+        return archiveWorldGameMode;
     }
 
     public boolean isTeleportAfterCreation() {

@@ -190,8 +190,8 @@ public class PlayerChangedWorldListener implements Listener {
 
     private void setSpectatorMode(Player player) {
         // Checking if the game mode should be set to adventure mode on archive worlds
-        if (configValues.isAdventureGameModeOnArchiveWorlds()) {
-            player.setGameMode(GameMode.ADVENTURE);
+        if (configValues.isChangeGameModeOnArchivedWorlds()) {
+            player.setGameMode(configValues.getArchiveWorldGameMode());
         }
         player.setSaturation(20);
         player.setHealth(20);
