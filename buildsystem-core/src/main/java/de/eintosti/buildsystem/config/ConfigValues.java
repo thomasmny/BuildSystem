@@ -26,7 +26,11 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 public class ConfigValues {
 
@@ -42,7 +46,7 @@ public class ConfigValues {
     private XMaterial worldEditWand;
     private Difficulty worldDifficulty;
 
-    private boolean changeGameModeOnArchivedWorlds;
+    private boolean archiveChangeGameMode;
     private GameMode archiveWorldGameMode;
 
     private boolean archiveVanish;
@@ -103,7 +107,7 @@ public class ConfigValues {
         this.teleportAfterCreation = config.getBoolean("settings.teleport-after-creation", true);
         this.buildModeDropItems = config.getBoolean("settings.build-mode.drop-items", true);
         this.buildModeMoveItems = config.getBoolean("settings.build-mode.move-items", true);
-        this.changeGameModeOnArchivedWorlds = config.getBoolean("settings.archive-should-change-gamemode", true);
+        this.archiveChangeGameMode = config.getBoolean("settings.archive-should-change-gamemode", true);
         this.archiveWorldGameMode = parseGameMode(config.getString("settings.archive-world-game-mode", "ADVENTURE"));
 
         this.blockWorldEditNonBuilder = config.getBoolean("settings.builder.block-worldedit-non-builder", true);
@@ -226,8 +230,8 @@ public class ConfigValues {
         return archiveVanish;
     }
 
-    public boolean shouldChangeGameModeInArchivedWorlds() {
-        return changeGameModeOnArchivedWorlds;
+    public boolean shouldArchiveChangeGameMode() {
+        return archiveChangeGameMode;
     }
 
     public GameMode getArchiveWorldGameMode() {
