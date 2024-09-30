@@ -834,14 +834,14 @@ public class WorldManager {
         boolean physics = configuration.getBoolean(path + ".physics");
         boolean privateWorld = configuration.getBoolean(path + ".private");
 
-        long lastEdited = configuration.getLong(path + ".last-edited");
         long lastLoaded = configuration.getLong(path + ".last-loaded");
         long lastUnloaded = configuration.getLong(path + ".last-unloaded");
+        long lastEdited = configuration.getLong(path + ".last-edited");
 
         return new WorldData(
                 worldName, customSpawn, permission, project, difficulty, material, worldStatus, blockBreaking,
                 blockInteractions, blockPlacement, buildersEnabled, explosions, mobAi, physics, privateWorld,
-                lastEdited, lastLoaded, lastUnloaded
+                lastLoaded, lastUnloaded, lastEdited
         );
     }
 
