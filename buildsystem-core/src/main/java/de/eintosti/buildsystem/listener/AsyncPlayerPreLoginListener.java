@@ -25,12 +25,11 @@ import de.eintosti.buildsystem.settings.Settings;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.SpawnManager;
 import de.eintosti.buildsystem.world.WorldManager;
+import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
-
-import java.util.UUID;
 
 public class AsyncPlayerPreLoginListener implements Listener {
 

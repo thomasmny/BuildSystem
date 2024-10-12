@@ -27,11 +27,10 @@ import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-
 import java.util.AbstractMap;
 import java.util.UUID;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 public class RemoveBuilderSubCommand implements SubCommand {
 

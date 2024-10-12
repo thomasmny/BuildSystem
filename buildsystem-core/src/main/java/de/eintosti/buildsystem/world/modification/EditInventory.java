@@ -33,6 +33,10 @@ import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.Builder;
 import de.eintosti.buildsystem.world.data.WorldData;
+import java.util.AbstractMap;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -45,13 +49,22 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.AbstractMap;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
 public class EditInventory implements Listener {
 
+    private static final Set<XEntityType> IGNORED_ENTITIES = Sets.newHashSet(
+            XEntityType.ARMOR_STAND,
+            XEntityType.END_CRYSTAL,
+            XEntityType.ITEM_FRAME,
+            XEntityType.FALLING_BLOCK,
+            XEntityType.MINECART,
+            XEntityType.CHEST_MINECART,
+            XEntityType.COMMAND_BLOCK_MINECART,
+            XEntityType.FURNACE_MINECART,
+            XEntityType.HOPPER_MINECART,
+            XEntityType.SPAWNER_MINECART,
+            XEntityType.TNT_MINECART,
+            XEntityType.PLAYER
+    );
     private final BuildSystem plugin;
     private final ConfigValues configValues;
     private final InventoryUtils inventoryUtils;
@@ -72,23 +85,30 @@ public class EditInventory implements Listener {
         fillGuiWithGlass(player, inventory);
         addBuildWorldInfoItem(player, inventory, buildWorld);
 
-        addSettingsItem(player, inventory, 20, XMaterial.OAK_PLANKS, worldData.blockBreaking().get(), "worldeditor_blockbreaking_item", "worldeditor_blockbreaking_lore");
-        addSettingsItem(player, inventory, 21, XMaterial.POLISHED_ANDESITE, worldData.blockPlacement().get(), "worldeditor_blockplacement_item", "worldeditor_blockplacement_lore");
-        addSettingsItem(player, inventory, 22, XMaterial.SAND, worldData.physics().get(), "worldeditor_physics_item", "worldeditor_physics_lore");
+        addSettingsItem(player, inventory, 20, XMaterial.OAK_PLANKS, worldData.blockBreaking()
+                .get(), "worldeditor_blockbreaking_item", "worldeditor_blockbreaking_lore");
+        addSettingsItem(player, inventory, 21, XMaterial.POLISHED_ANDESITE, worldData.blockPlacement()
+                .get(), "worldeditor_blockplacement_item", "worldeditor_blockplacement_lore");
+        addSettingsItem(player, inventory, 22, XMaterial.SAND, worldData.physics()
+                .get(), "worldeditor_physics_item", "worldeditor_physics_lore");
         addTimeItem(player, inventory, buildWorld);
-        addSettingsItem(player, inventory, 24, XMaterial.TNT, worldData.explosions().get(), "worldeditor_explosions_item", "worldeditor_explosions_lore");
+        addSettingsItem(player, inventory, 24, XMaterial.TNT, worldData.explosions()
+                .get(), "worldeditor_explosions_item", "worldeditor_explosions_lore");
         inventoryUtils.addItemStack(inventory, 29, XMaterial.DIAMOND_SWORD, Messages.getString("worldeditor_butcher_item", player),
                 Messages.getStringList("worldeditor_butcher_lore", player)
         );
         addBuildersItem(player, inventory, buildWorld);
-        addSettingsItem(player, inventory, 31, XMaterial.ARMOR_STAND, worldData.mobAi().get(), "worldeditor_mobai_item", "worldeditor_mobai_lore");
+        addSettingsItem(player, inventory, 31, XMaterial.ARMOR_STAND, worldData.mobAi()
+                .get(), "worldeditor_mobai_item", "worldeditor_mobai_lore");
         addVisibilityItem(player, inventory, buildWorld);
-        addSettingsItem(player, inventory, 33, XMaterial.TRIPWIRE_HOOK, worldData.blockInteractions().get(), "worldeditor_blockinteractions_item", "worldeditor_blockinteractions_lore");
+        addSettingsItem(player, inventory, 33, XMaterial.TRIPWIRE_HOOK, worldData.blockInteractions()
+                .get(), "worldeditor_blockinteractions_item", "worldeditor_blockinteractions_lore");
         inventoryUtils.addItemStack(inventory, 38, XMaterial.FILLED_MAP, Messages.getString("worldeditor_gamerules_item", player),
                 Messages.getStringList("worldeditor_gamerules_lore", player)
         );
         addDifficultyItem(player, inventory, buildWorld);
-        inventoryUtils.addItemStack(inventory, 40, inventoryUtils.getStatusItem(worldData.status().get()), Messages.getString("worldeditor_status_item", player),
+        inventoryUtils.addItemStack(inventory, 40, inventoryUtils.getStatusItem(worldData.status()
+                        .get()), Messages.getString("worldeditor_status_item", player),
                 Messages.getStringList("worldeditor_status_lore", player,
                         new AbstractMap.SimpleEntry<>("%status%", buildWorld.getData().status().get().getName(player))
                 )
@@ -191,7 +211,8 @@ public class EditInventory implements Listener {
 
     private void addBuildersItem(Player player, Inventory inventory, BuildWorld buildWorld) {
         Builder creator = buildWorld.getCreator();
-        if ((creator != null && creator.getUniqueId().equals(player.getUniqueId())) || player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
+        if ((creator != null && creator.getUniqueId().equals(player.getUniqueId()))
+                || player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
             addSettingsItem(player, inventory, 30, XMaterial.IRON_PICKAXE, buildWorld.getData().buildersEnabled().get(),
                     "worldeditor_builders_item", "worldeditor_builders_lore"
             );
@@ -426,19 +447,4 @@ public class EditInventory implements Listener {
         player.closeInventory();
         Messages.sendMessage(player, "worldeditor_butcher_removed", new AbstractMap.SimpleEntry<>("%amount%", entitiesRemoved.get()));
     }
-
-    private static final Set<XEntityType> IGNORED_ENTITIES = Sets.newHashSet(
-            XEntityType.ARMOR_STAND,
-            XEntityType.END_CRYSTAL,
-            XEntityType.ITEM_FRAME,
-            XEntityType.FALLING_BLOCK,
-            XEntityType.MINECART,
-            XEntityType.CHEST_MINECART,
-            XEntityType.COMMAND_BLOCK_MINECART,
-            XEntityType.FURNACE_MINECART,
-            XEntityType.HOPPER_MINECART,
-            XEntityType.SPAWNER_MINECART,
-            XEntityType.TNT_MINECART,
-            XEntityType.PLAYER
-    );
 }

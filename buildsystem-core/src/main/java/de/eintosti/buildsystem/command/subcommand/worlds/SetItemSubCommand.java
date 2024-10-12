@@ -25,11 +25,10 @@ import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;
+import java.util.AbstractMap;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-
-import java.util.AbstractMap;
 
 public class SetItemSubCommand implements SubCommand {
 
@@ -67,7 +66,9 @@ public class SetItemSubCommand implements SubCommand {
         }
 
         buildWorld.getData().material().set(XMaterial.matchXMaterial(itemStack));
-        Messages.sendMessage(player, "worlds_setitem_set", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+        Messages.sendMessage(player, "worlds_setitem_set",
+                new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName())
+        );
     }
 
     @Override

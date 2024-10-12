@@ -15,25 +15,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 package de.eintosti.buildsystem.version.gamerules;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 /**
  * @author Trichtern
  */
 public abstract class AbstractGameRulesInventory implements GameRules {
 
-    private static final int[] SLOTS = new int[]{11, 12, 13, 14, 15, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33};
+    private static final int[] SLOTS = new int[]{
+            11, 12, 13, 14, 15, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33
+    };
 
     private final Map<UUID, Integer> invIndex;
     private final String inventoryTitle;
@@ -60,7 +62,10 @@ public abstract class AbstractGameRulesInventory implements GameRules {
     public void addGameRules(World world) {
         int columnGameRule = 0, maxColumnGameRule = 14;
         setNumGameRules(world);
-        int numInventories = (numGameRules % SLOTS.length == 0 ? numGameRules : numGameRules + 1) != 0 ? (numGameRules % SLOTS.length == 0 ? numGameRules : numGameRules + 1) : 1;
+
+        int numInventories = (numGameRules == 0 || numGameRules % SLOTS.length == 0)
+                ? Math.max(numGameRules, 1)
+                : numGameRules + 1;
 
         inventories = new Inventory[numInventories];
         Inventory inventory = createInventory();
@@ -84,7 +89,7 @@ public abstract class AbstractGameRulesInventory implements GameRules {
     protected abstract boolean isEnabled(World world, String gameRule);
 
     @Override
-    public abstract void toggleGameRule(InventoryClickEvent event, World world);
+    public abstract void modifyGameRule(InventoryClickEvent event, World world);
 
     public boolean isValidSlot(int slot) {
         return Arrays.stream(SLOTS).anyMatch(i -> i == slot);

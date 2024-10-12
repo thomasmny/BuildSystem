@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.expansion.luckperms.calculators;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;
+import java.util.Locale;
 import net.luckperms.api.context.ContextCalculator;
 import net.luckperms.api.context.ContextConsumer;
 import net.luckperms.api.context.ContextSet;
@@ -27,8 +28,6 @@ import net.luckperms.api.context.ImmutableContextSet;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Locale;
 
 public class RoleCalculator implements ContextCalculator<Player> {
 
@@ -63,7 +62,8 @@ public class RoleCalculator implements ContextCalculator<Player> {
         CREATOR,
 
         /**
-         * A player which has been added to the list of trusted players and is therefore allowed to build in a {@link BuildWorld}.
+         * A player which has been added to the list of trusted players and is therefore allowed to build in a
+         * {@link BuildWorld}.
          */
         BUILDER,
 

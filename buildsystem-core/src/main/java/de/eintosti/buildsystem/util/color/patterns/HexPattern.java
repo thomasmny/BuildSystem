@@ -1,7 +1,6 @@
 package de.eintosti.buildsystem.util.color.patterns;
 
 import de.eintosti.buildsystem.util.color.ColorPattern;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

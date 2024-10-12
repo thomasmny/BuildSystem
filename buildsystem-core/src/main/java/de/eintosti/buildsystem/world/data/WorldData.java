@@ -19,16 +19,15 @@ package de.eintosti.buildsystem.world.data;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.config.ConfigValues;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class WorldData implements ConfigurationSerializable {
 
@@ -56,15 +55,6 @@ public class WorldData implements ConfigurationSerializable {
     private final Type<Long> lastUnloaded = register("last-unloaded");
 
     private String worldName;
-
-    public <T> Type<T> register(@NotNull String key) {
-        return register(key, new Type<>());
-    }
-
-    public <T> Type<T> register(@NotNull String key, Type<T> type) {
-        this.data.put(key, type);
-        return type;
-    }
 
     public WorldData(String worldName, ConfigValues configValues, boolean privateWorld) {
         this.customSpawn.set(null);
@@ -133,6 +123,15 @@ public class WorldData implements ConfigurationSerializable {
 
         this.worldName = worldName;
     }
+
+  public <T> Type<T> register(@NotNull String key) {
+    return register(key, new Type<>());
+  }
+
+  public <T> Type<T> register(@NotNull String key, Type<T> type) {
+    this.data.put(key, type);
+    return type;
+  }
 
     public Type<String> customSpawn() {
         return customSpawn;
@@ -232,7 +231,8 @@ public class WorldData implements ConfigurationSerializable {
     }
 
     public static class Type<T> {
-        private T value;
+
+      private T value;
 
         public T get() {
             return value;
@@ -248,21 +248,24 @@ public class WorldData implements ConfigurationSerializable {
     }
 
     public static class DifficultyType extends Type<Difficulty> {
-        @Override
+
+      @Override
         protected Object getConfigFormat() {
             return super.get().name();
         }
     }
 
     public static class MaterialType extends Type<XMaterial> {
-        @Override
+
+      @Override
         protected Object getConfigFormat() {
             return super.get().name();
         }
     }
 
     public static class StatusType extends Type<WorldStatus> {
-        @Override
+
+      @Override
         protected Object getConfigFormat() {
             return super.get().name();
         }

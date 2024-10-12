@@ -29,6 +29,10 @@ import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;
 import de.eintosti.buildsystem.world.data.WorldStatus;
 import de.eintosti.buildsystem.world.data.WorldType;
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -41,11 +45,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 public class PlayerChangedWorldListener implements Listener {
 
@@ -88,7 +87,8 @@ public class PlayerChangedWorldListener implements Listener {
         }
 
         BuildWorld newWorld = worldManager.getBuildWorld(worldName);
-        if (newWorld != null && !newWorld.getData().physics().get() && player.hasPermission("buildsystem.physics.message")) {
+        if (newWorld != null && !newWorld.getData().physics().get()
+                && player.hasPermission("buildsystem.physics.message")) {
             Messages.sendMessage(player, "physics_deactivated_in_world", new AbstractMap.SimpleEntry<>("%world%", newWorld.getName()));
         }
 
@@ -123,7 +123,8 @@ public class PlayerChangedWorldListener implements Listener {
     }
 
     private void setGoldBlock(BuildWorld buildWorld) {
-        if (buildWorld == null || buildWorld.getType() != WorldType.VOID || buildWorld.getData().status().get() != WorldStatus.NOT_STARTED) {
+        if (buildWorld == null || buildWorld.getType() != WorldType.VOID
+                || buildWorld.getData().status().get() != WorldStatus.NOT_STARTED) {
             return;
         }
 

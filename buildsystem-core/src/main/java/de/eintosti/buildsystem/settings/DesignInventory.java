@@ -86,7 +86,8 @@ public class DesignInventory implements Listener {
         Settings settings = settingsManager.getSettings(player);
 
         String displayName = Messages.getString(key, player);
-        ItemStack itemStack = inventoryUtils.getItemStack(material, settings.getDesignColor() == color ? "§a" + displayName : "§7" + displayName);
+        ItemStack itemStack = inventoryUtils.getItemStack(material,
+                settings.getDesignColor() == color ? "§a" + displayName : "§7" + displayName);
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta != null) {
             itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);

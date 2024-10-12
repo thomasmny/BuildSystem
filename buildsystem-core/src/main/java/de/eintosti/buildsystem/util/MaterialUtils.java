@@ -30,10 +30,11 @@ public final class MaterialUtils {
     /**
      * Checks if this Material can be interacted with.
      * <p>
-     * Interactable materials include those with functionality when they are interacted with by a player such as chests, furnaces, etc.
-     * Some blocks such as piston heads and stairs are considered interactable though may not perform any additional functionality.
-     * Note that the interactability of some materials may be dependent on their state as well.
-     * This method will return true if there is at least one state in which additional interact handling is performed for the material.
+     * Interactable materials include those with functionality when they are interacted with by a player such as chests,
+     * furnaces, etc. Some blocks such as piston heads and stairs are considered interactable though may not perform any
+     * additional functionality. Note that the interactability of some materials may be dependent on their state as
+     * well. This method will return true if there is at least one state in which additional interact handling is
+     * performed for the material.
      *
      * @param xMaterial The material to check
      * @return {@code true} if this material can be interacted with.

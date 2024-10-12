@@ -18,12 +18,11 @@
 package de.eintosti.buildsystem.navigator.settings;
 
 import de.eintosti.buildsystem.world.BuildWorld;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Predicate;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.jetbrains.annotations.NotNull;
 
 public class WorldFilter implements ConfigurationSerializable {
 
@@ -38,36 +37,6 @@ public class WorldFilter implements ConfigurationSerializable {
     public WorldFilter(Mode mode, String text) {
         this.mode = mode;
         this.text = text;
-    }
-
-    public enum Mode {
-        NONE("world_filter_mode_none"),
-        STARTS_WITH("world_filter_mode_starts_with"),
-        CONTAINS("world_filter_mode_contains"),
-        MATCHES("world_filter_mode_matches");
-
-        private final String loreKey;
-
-        Mode(String loreKey) {
-            this.loreKey = loreKey;
-        }
-
-        public String getLoreKey() {
-            return loreKey;
-        }
-
-        public Mode getNext() {
-            switch (this) {
-                default: // NONE
-                    return STARTS_WITH;
-                case STARTS_WITH:
-                    return CONTAINS;
-                case CONTAINS:
-                    return MATCHES;
-                case MATCHES:
-                    return NONE;
-            }
-        }
     }
 
     public Mode getMode() {
@@ -106,4 +75,34 @@ public class WorldFilter implements ConfigurationSerializable {
         display.put("text", text);
         return display;
     }
+
+  public enum Mode {
+    NONE("world_filter_mode_none"),
+    STARTS_WITH("world_filter_mode_starts_with"),
+    CONTAINS("world_filter_mode_contains"),
+    MATCHES("world_filter_mode_matches");
+
+    private final String loreKey;
+
+    Mode(String loreKey) {
+      this.loreKey = loreKey;
+    }
+
+    public String getLoreKey() {
+      return loreKey;
+    }
+
+    public Mode getNext() {
+      switch (this) {
+        default: // NONE
+          return STARTS_WITH;
+        case STARTS_WITH:
+          return CONTAINS;
+        case CONTAINS:
+          return MATCHES;
+        case MATCHES:
+          return NONE;
+      }
+    }
+  }
 }

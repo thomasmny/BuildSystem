@@ -68,7 +68,8 @@ public class TopCommand implements CommandExecutor {
                 .getHighestBlockAt(playerLocation.getBlockX(), playerLocation.getBlockZ())
                 .getLocation();
 
-        if (!worldManager.isSafeLocation(blockLocation) || blockLocation.getBlock().getY() < playerLocation.getBlock().getY()) {
+        if (!worldManager.isSafeLocation(blockLocation) || blockLocation.getBlock().getY() < playerLocation.getBlock()
+                .getY()) {
             Messages.sendMessage(player, "top_failed");
             return;
         }

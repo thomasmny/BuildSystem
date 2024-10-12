@@ -19,18 +19,19 @@ package de.eintosti.buildsystem.config;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystem;
-import org.bukkit.Difficulty;
-import org.bukkit.GameMode;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
+import org.bukkit.Difficulty;
+import org.bukkit.GameMode;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 public class ConfigValues {
 
@@ -108,7 +109,7 @@ public class ConfigValues {
         this.buildModeDropItems = config.getBoolean("settings.build-mode.drop-items", true);
         this.buildModeMoveItems = config.getBoolean("settings.build-mode.move-items", true);
         this.archiveChangeGameMode = config.getBoolean("settings.archive-should-change-gamemode", true);
-        this.archiveWorldGameMode = parseGameMode(config.getString("settings.archive-world-game-mode", "ADVENTURE"));
+        this.archiveWorldGameMode = parseGameMode(config.getString("settings.archive-world-game-mode"));
 
         this.blockWorldEditNonBuilder = config.getBoolean("settings.builder.block-worldedit-non-builder", true);
         this.worldEditWand = parseWorldEditWand();
@@ -121,7 +122,9 @@ public class ConfigValues {
         this.defaultPrivatePermission = config.getString("world.default.permission.private", "-");
         this.lockWeather = config.getBoolean("world.lock-weather", true);
         this.invalidNameCharacters = config.getString("world.invalid-characters", "^\b$");
-        this.worldDifficulty = Difficulty.valueOf(config.getString("world.default.difficulty", "PEACEFUL").toUpperCase(Locale.ROOT));
+        this.worldDifficulty = Difficulty.valueOf(
+                config.getString("world.default.difficulty", "PEACEFUL").toUpperCase(Locale.ROOT)
+        );
         this.sunriseTime = config.getInt("world.default.time.sunrise", 0);
         this.noonTime = config.getInt("world.default.time.noon", 6000);
         this.nightTime = config.getInt("world.default.time.night", 18000);
@@ -163,18 +166,21 @@ public class ConfigValues {
     }
 
     /**
-     * Parsing the {@link GameMode} from a string. Defaulting to {@link GameMode#ADVENTURE} if the string is not a valid {@link GameMode}.
+     * Parsing the {@link GameMode} from a string. Defaulting to {@link GameMode#ADVENTURE} if the string is not a valid
+     * {@link GameMode}.
      *
      * @param gameModeName The name of the {@link GameMode} to parse.
      * @return The parsed {@link GameMode}.
      */
-    private GameMode parseGameMode(String gameModeName) {
-        for (GameMode gameMode : GameMode.values()) {
-            if (gameMode.name().equalsIgnoreCase(gameModeName)) {
-                return gameMode;
-            }
+    private GameMode parseGameMode(@Nullable String gameModeName) {
+        if (gameModeName == null) {
+            return GameMode.ADVENTURE;
         }
-        return GameMode.ADVENTURE;
+
+        return Arrays.stream(GameMode.values())
+                .filter(gameMode -> gameMode.name().equalsIgnoreCase(gameModeName))
+                .findAny()
+                .orElse(GameMode.ADVENTURE);
     }
 
     private XMaterial parseWorldEditWand() {

@@ -29,6 +29,9 @@ import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.Builder;
+import java.util.AbstractMap;
+import java.util.List;
+import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -38,10 +41,6 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import java.util.AbstractMap;
-import java.util.List;
-import java.util.UUID;
 
 public class BuilderInventory extends PaginatedInventory implements Listener {
 
@@ -85,7 +84,8 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
 
     private void addBuilderAddItem(Inventory inventory, BuildWorld buildWorld, Player player) {
         Builder creator = buildWorld.getCreator();
-        if ((creator != null && creator.getUniqueId().equals(player.getUniqueId())) || player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
+        if ((creator != null && creator.getUniqueId().equals(player.getUniqueId()))
+                || player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
             inventoryUtils.addSkull(inventory, 22, Messages.getString("worldeditor_builders_add_builder_item", player),
                     Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716")
             );
@@ -97,7 +97,8 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
     private void addItems(BuildWorld buildWorld, Player player) {
         List<Builder> builders = buildWorld.getBuilders();
         this.numBuilders = builders.size();
-        int numInventories = (numBuilders % MAX_BUILDERS == 0 ? numBuilders : numBuilders + 1) != 0 ? (numBuilders % MAX_BUILDERS == 0 ? numBuilders : numBuilders + 1) : 1;
+        int numInventories = (numBuilders % MAX_BUILDERS == 0 ? numBuilders : numBuilders + 1) != 0 ? (
+                numBuilders % MAX_BUILDERS == 0 ? numBuilders : numBuilders + 1) : 1;
 
         int index = 0;
 

@@ -28,9 +28,8 @@ import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.Builder;
 import de.eintosti.buildsystem.world.WorldManager;
-import org.bukkit.entity.Player;
-
 import java.util.AbstractMap;
+import org.bukkit.entity.Player;
 
 public class SetCreatorSubCommand implements SubCommand {
 
@@ -71,7 +70,9 @@ public class SetCreatorSubCommand implements SubCommand {
 
             plugin.getPlayerManager().forceUpdateSidebar(buildWorld);
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
-            Messages.sendMessage(player, "worlds_setcreator_set", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+            Messages.sendMessage(player, "worlds_setcreator_set",
+                    new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName())
+            );
             player.closeInventory();
         });
     }

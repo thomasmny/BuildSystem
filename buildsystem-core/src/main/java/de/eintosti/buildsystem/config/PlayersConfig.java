@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.config;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.player.BuildPlayer;
-
 import java.util.Collection;
 
 public class PlayersConfig extends ConfigurationFile {
@@ -29,7 +28,9 @@ public class PlayersConfig extends ConfigurationFile {
     }
 
     public void savePlayers(Collection<BuildPlayer> buildPlayers) {
-        buildPlayers.forEach(buildPlayer -> getFile().set("players." + buildPlayer.getUniqueId().toString(), buildPlayer.serialize()));
+        buildPlayers.forEach(buildPlayer -> {
+            getFile().set("players." + buildPlayer.getUniqueId().toString(), buildPlayer.serialize());
+        });
         saveFile();
     }
 }

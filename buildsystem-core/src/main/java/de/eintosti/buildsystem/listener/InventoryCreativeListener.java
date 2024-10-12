@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.listener;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
 import de.eintosti.buildsystem.util.InventoryUtils;
+import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -28,8 +29,6 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.inventory.InventoryType;
-
-import java.util.List;
 
 public class InventoryCreativeListener implements Listener {
 
@@ -44,7 +43,8 @@ public class InventoryCreativeListener implements Listener {
 
     @EventHandler
     public void onClearInventory(InventoryCreativeEvent event) {
-        if (event.getClick() != ClickType.CREATIVE || event.getSlotType() != InventoryType.SlotType.QUICKBAR || event.getAction() != InventoryAction.PLACE_ALL) {
+        if (event.getClick() != ClickType.CREATIVE || event.getSlotType() != InventoryType.SlotType.QUICKBAR
+                || event.getAction() != InventoryAction.PLACE_ALL) {
             return;
         }
 

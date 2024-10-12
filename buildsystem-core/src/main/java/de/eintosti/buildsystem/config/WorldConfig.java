@@ -21,12 +21,11 @@ import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.BuildWorldCreator;
 import de.eintosti.buildsystem.world.WorldManager;
-import org.bukkit.World;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
+import org.bukkit.World;
 
 public class WorldConfig extends ConfigurationFile {
 
@@ -67,8 +66,8 @@ public class WorldConfig extends ConfigurationFile {
     }
 
     /**
-     * Loads the {@link BuildWorld} if {@link ConfigValues#isUnloadWorlds()} is not enabled.
-     * Otherwise, the world will only be loaded if it's on the unload blacklist.
+     * Loads the {@link BuildWorld} if {@link ConfigValues#isUnloadWorlds()} is not enabled. Otherwise, the world will
+     * only be loaded if it's on the unload blacklist.
      *
      * @param buildWorld The world to load
      * @param alwaysLoad Should the world always be loaded

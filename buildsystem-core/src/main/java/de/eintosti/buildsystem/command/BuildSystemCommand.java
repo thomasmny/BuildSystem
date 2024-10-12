@@ -20,14 +20,13 @@ package de.eintosti.buildsystem.command;
 import com.google.common.collect.Lists;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
+import java.util.List;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 public class BuildSystemCommand extends PagedCommand implements CommandExecutor {
 

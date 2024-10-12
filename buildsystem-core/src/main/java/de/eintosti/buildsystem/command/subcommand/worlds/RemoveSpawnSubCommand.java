@@ -24,9 +24,8 @@ import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;
-import org.bukkit.entity.Player;
-
 import java.util.AbstractMap;
+import org.bukkit.entity.Player;
 
 public class RemoveSpawnSubCommand implements SubCommand {
 
@@ -52,7 +51,9 @@ public class RemoveSpawnSubCommand implements SubCommand {
         }
 
         buildWorld.getData().customSpawn().set(null);
-        Messages.sendMessage(player, "worlds_removespawn_world_spawn_removed", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+        Messages.sendMessage(player, "worlds_removespawn_world_spawn_removed",
+                new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName())
+        );
     }
 
     @Override

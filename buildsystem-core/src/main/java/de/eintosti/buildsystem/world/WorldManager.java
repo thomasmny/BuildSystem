@@ -35,6 +35,22 @@ import de.eintosti.buildsystem.world.data.WorldType;
 import de.eintosti.buildsystem.world.generator.CustomGenerator;
 import de.eintosti.buildsystem.world.generator.Generator;
 import io.papermc.lib.PaperLib;
+import java.io.File;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Difficulty;
@@ -53,32 +69,13 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
-import java.io.File;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
 public class WorldManager {
 
+    private static boolean importingAllWorlds = false;
     private final BuildSystem plugin;
     private final ConfigValues configValues;
     private final WorldConfig worldConfig;
-
     private final Map<String, BuildWorld> buildWorlds;
-
-    private static boolean importingAllWorlds = false;
 
     public WorldManager(BuildSystem plugin) {
         this.plugin = plugin;
@@ -182,22 +179,20 @@ public class WorldManager {
     }
 
     /**
-     * Gets the name (and in doing so removes all illegal characters) of the {@link BuildWorld} the player is trying
-     * to create.
-     * If the world is going to be a private world, its name will be equal to the player's name.
+     * Gets the name (and in doing so removes all illegal characters) of the {@link BuildWorld} the player is trying to
+     * create. If the world is going to be a private world, its name will be equal to the player's name.
      *
      * @param player       The player who is creating the world
      * @param worldType    The world type
      * @param template     The name of the template world, if any, otherwise {@code null}
      * @param privateWorld Is world going to be a private world?
      */
-    public void startWorldNameInput(Player player, WorldType worldType, @Nullable String template,
-                                    boolean privateWorld) {
+    public void startWorldNameInput(Player player, WorldType worldType, @Nullable String template, boolean privateWorld) {
         player.closeInventory();
         new PlayerChatInput(plugin, player, "enter_world_name", input -> {
-            if (Arrays.stream(input.split(""))
-                    .anyMatch(c -> c.matches("[^A-Za-z\\d/_-]") || c.matches(configValues.getInvalidNameCharacters()))
-            ) {
+            boolean hasInvalidChar = Arrays.stream(input.split(""))
+                    .anyMatch(c -> c.matches("[^A-Za-z\\d/_-]") || c.matches(configValues.getInvalidNameCharacters()));
+            if (hasInvalidChar) {
                 Messages.sendMessage(player, "worlds_world_creation_invalid_characters");
             }
 
@@ -373,7 +368,8 @@ public class WorldManager {
                 }
 
                 String invalidChar = Arrays.stream(worldName.split(""))
-                        .filter(c -> c.matches("[^A-Za-z\\d/_-]") || c.matches(plugin.getConfigValues().getInvalidNameCharacters()))
+                        .filter(c -> c.matches("[^A-Za-z\\d/_-]") || c.matches(plugin.getConfigValues()
+                                .getInvalidNameCharacters()))
                         .findFirst()
                         .orElse(null);
                 if (invalidChar != null) {
@@ -396,9 +392,8 @@ public class WorldManager {
     }
 
     /**
-     * Delete an existing {@link BuildWorld}.
-     * In comparison to {@link #unimportWorld(Player, BuildWorld, boolean)}, deleting a world deletes the world's
-     * directory.
+     * Delete an existing {@link BuildWorld}. In comparison to {@link #unimportWorld(Player, BuildWorld, boolean)},
+     * deleting a world deletes the world's directory.
      *
      * @param player     The player who issued the deletion
      * @param buildWorld The world to be deleted
@@ -426,9 +421,8 @@ public class WorldManager {
     }
 
     /**
-     * Unimport an existing {@link BuildWorld}.
-     * In comparison to {@link #deleteWorld(Player, BuildWorld)}, unimporting a world does not delete the world's
-     * directory.
+     * Unimport an existing {@link BuildWorld}. In comparison to {@link #deleteWorld(Player, BuildWorld)}, unimporting a
+     * world does not delete the world's directory.
      *
      * @param player     The player unloading the world
      * @param buildWorld The build world object
@@ -445,8 +439,8 @@ public class WorldManager {
     }
 
     /**
-     * In order to properly unload/rename/delete a world, no players may be present in the {@link World}.
-     * Removes all player's from the world to insure proper manipulation.
+     * In order to properly unload/rename/delete a world, no players may be present in the {@link World}. Removes all
+     * player's from the world to insure proper manipulation.
      *
      * @param worldName The name of the world
      * @param message   The message sent to a player when they are removed from the world
@@ -496,7 +490,6 @@ public class WorldManager {
      */
     public void renameWorld(Player player, BuildWorld buildWorld, String newName) {
         player.closeInventory();
-
         if (worldExists(player, newName)) {
             return;
         }
@@ -507,9 +500,9 @@ public class WorldManager {
             return;
         }
 
-        if (Arrays.stream(newName.split(""))
-                .anyMatch(c -> c.matches("[^A-Za-z\\d/_-]") || c.matches(configValues.getInvalidNameCharacters()))
-        ) {
+        boolean hasInvalidChar = Arrays.stream(newName.split(""))
+                .anyMatch(c -> c.matches("[^A-Za-z\\d/_-]") || c.matches(configValues.getInvalidNameCharacters()));
+        if (hasInvalidChar) {
             Messages.sendMessage(player, "worlds_world_creation_invalid_characters");
         }
         String parsedNewName = newName
@@ -541,8 +534,9 @@ public class WorldManager {
         this.buildWorlds.remove(oldName);
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            worldConfig.getFile().set("worlds." + parsedNewName, worldConfig.getFile().getConfigurationSection("worlds." + buildWorld.getName()));
-            worldConfig.getFile().set("worlds." + oldName, null);
+            FileConfiguration worldFile = worldConfig.getFile();
+            worldFile.set("worlds." + parsedNewName, worldFile.getConfigurationSection("worlds." + oldName));
+            worldFile.set("worlds." + oldName, null);
         });
 
         File oldWorldFile = new File(Bukkit.getWorldContainer(), oldName);
@@ -790,7 +784,9 @@ public class WorldManager {
             String permission = configuration.getString("worlds." + worldName + ".permission");
             String project = configuration.getString("worlds." + worldName + ".project");
 
-            Difficulty difficulty = Difficulty.valueOf(configuration.getString("worlds." + worldName + ".difficulty", "PEACEFUL").toUpperCase(Locale.ROOT));
+            Difficulty difficulty = Difficulty.valueOf(
+                    configuration.getString("worlds." + worldName + ".difficulty", "PEACEFUL").toUpperCase(Locale.ROOT)
+            );
             XMaterial material = parseMaterial(configuration, "worlds." + worldName + ".item", worldName);
             WorldStatus worldStatus = WorldStatus.valueOf(configuration.getString("worlds." + worldName + ".status"));
 
@@ -821,7 +817,9 @@ public class WorldManager {
         String permission = configuration.getString(path + ".permission");
         String project = configuration.getString(path + ".project");
 
-        Difficulty difficulty = Difficulty.valueOf(configuration.getString(path + ".difficulty").toUpperCase(Locale.ROOT));
+        Difficulty difficulty = Difficulty.valueOf(
+                configuration.getString(path + ".difficulty").toUpperCase(Locale.ROOT)
+        );
         XMaterial material = parseMaterial(configuration, path + ".material", worldName);
         WorldStatus worldStatus = WorldStatus.valueOf(configuration.getString(path + ".status"));
 

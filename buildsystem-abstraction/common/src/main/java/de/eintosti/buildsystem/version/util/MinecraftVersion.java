@@ -18,9 +18,8 @@
 package de.eintosti.buildsystem.version.util;
 
 import com.google.common.collect.ComparisonChain;
-import org.bukkit.Bukkit;
-
 import javax.annotation.Nonnull;
+import org.bukkit.Bukkit;
 
 /**
  * Utility class for retrieving and comparing minecraft server versions.
@@ -30,6 +29,7 @@ import javax.annotation.Nonnull;
 public class MinecraftVersion implements Comparable<MinecraftVersion> {
 
     public static final MinecraftVersion BOUNTIFUL_8 = new MinecraftVersion(1, 8);
+    public static final MinecraftVersion COMBAT_9 = new MinecraftVersion(1, 9);
     public static final MinecraftVersion AQUATIC_13 = new MinecraftVersion(1, 13);
     public static final MinecraftVersion NETHER_16 = new MinecraftVersion(1, 16);
     public static final MinecraftVersion CAVES_17 = new MinecraftVersion(1, 17);
@@ -54,8 +54,7 @@ public class MinecraftVersion implements Comparable<MinecraftVersion> {
     }
 
     /**
-     * Construct a new version with major and minor version.
-     * The patch version is set to 0, therefore ignored.
+     * Construct a new version with major and minor version. The patch version is set to 0, therefore ignored.
      *
      * @see MinecraftVersion#MinecraftVersion(int, int, int)
      */

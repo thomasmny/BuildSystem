@@ -38,7 +38,31 @@ import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.expansion.luckperms.LuckPermsExpansion;
 import de.eintosti.buildsystem.expansion.placeholderapi.PlaceholderApiExpansion;
 import de.eintosti.buildsystem.internal.CraftBukkitVersion;
-import de.eintosti.buildsystem.listener.*;
+import de.eintosti.buildsystem.listener.AsyncPlayerChatListener;
+import de.eintosti.buildsystem.listener.AsyncPlayerPreLoginListener;
+import de.eintosti.buildsystem.listener.BlockPhysicsListener;
+import de.eintosti.buildsystem.listener.BlockPlaceListener;
+import de.eintosti.buildsystem.listener.BuildModePreventationListener;
+import de.eintosti.buildsystem.listener.BuildWorldResetUnloadListener;
+import de.eintosti.buildsystem.listener.EditSessionListener;
+import de.eintosti.buildsystem.listener.EntityDamageListener;
+import de.eintosti.buildsystem.listener.EntitySpawnListener;
+import de.eintosti.buildsystem.listener.FoodLevelChangeListener;
+import de.eintosti.buildsystem.listener.InventoryCloseListener;
+import de.eintosti.buildsystem.listener.InventoryCreativeListener;
+import de.eintosti.buildsystem.listener.NavigatorListener;
+import de.eintosti.buildsystem.listener.PlayerChangedWorldListener;
+import de.eintosti.buildsystem.listener.PlayerCommandPreprocessListener;
+import de.eintosti.buildsystem.listener.PlayerInventoryClearListener;
+import de.eintosti.buildsystem.listener.PlayerJoinListener;
+import de.eintosti.buildsystem.listener.PlayerMoveListener;
+import de.eintosti.buildsystem.listener.PlayerQuitListener;
+import de.eintosti.buildsystem.listener.PlayerRespawnListener;
+import de.eintosti.buildsystem.listener.PlayerTeleportListener;
+import de.eintosti.buildsystem.listener.SettingsInteractListener;
+import de.eintosti.buildsystem.listener.SignChangeListener;
+import de.eintosti.buildsystem.listener.WeatherChangeListener;
+import de.eintosti.buildsystem.listener.WorldManipulateListener;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.navigator.inventory.ArchiveInventory;
 import de.eintosti.buildsystem.navigator.inventory.NavigatorInventory;
@@ -79,6 +103,11 @@ import de.eintosti.buildsystem.world.modification.DeleteInventory;
 import de.eintosti.buildsystem.world.modification.EditInventory;
 import de.eintosti.buildsystem.world.modification.GameRuleInventory;
 import de.eintosti.buildsystem.world.modification.SetupInventory;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.Callable;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.AdvancedPie;
 import org.bstats.charts.SimplePie;
@@ -88,12 +117,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.Callable;
 
 public class BuildSystem extends JavaPlugin {
 
@@ -174,7 +197,10 @@ public class BuildSystem extends JavaPlugin {
 
         Bukkit.getScheduler().runTaskTimer(this, this::saveBuildConfig, 6000L, 6000L);
 
-        Bukkit.getConsoleSender().sendMessage(String.format(Locale.ROOT, "%sBuildSystem » Plugin %senabled%s!", ChatColor.RESET, ChatColor.GREEN, ChatColor.RESET));
+        Bukkit.getConsoleSender().sendMessage(String.format(Locale.ROOT,
+                "%sBuildSystem » Plugin %senabled%s!",
+                ChatColor.RESET, ChatColor.GREEN, ChatColor.RESET)
+        );
     }
 
     @Override
@@ -197,7 +223,8 @@ public class BuildSystem extends JavaPlugin {
 
         unregisterExpansions();
 
-        Bukkit.getConsoleSender().sendMessage(String.format(Locale.ROOT, "%sBuildSystem » Plugin %sdisabled%s!", ChatColor.RESET, ChatColor.RED, ChatColor.RESET));
+        Bukkit.getConsoleSender()
+                .sendMessage(String.format(Locale.ROOT, "%sBuildSystem » Plugin %sdisabled%s!", ChatColor.RESET, ChatColor.RED, ChatColor.RESET));
     }
 
     private boolean initVersionedClasses() {
@@ -348,7 +375,9 @@ public class BuildSystem extends JavaPlugin {
             this.luckPermsExpansion.registerAll();
         }
 
-        if (configValues.isBlockWorldEditNonBuilder() && (pluginManager.getPlugin("FastAsyncWorldEdit") != null || pluginManager.getPlugin("WorldEdit") != null)) {
+        boolean isWorldEdit = pluginManager.getPlugin("WorldEdit") != null
+                || pluginManager.getPlugin("FastAsyncWorldEdit") != null;
+        if (isWorldEdit && configValues.isBlockWorldEditNonBuilder()) {
             new EditSessionListener(this);
         }
     }
@@ -370,8 +399,14 @@ public class BuildSystem extends JavaPlugin {
 
         UpdateChecker.init(this, SPIGOT_ID).requestUpdateCheck().whenComplete((result, e) -> {
                     if (result.requiresUpdate()) {
-                        Bukkit.getConsoleSender().sendMessage(ChatColor.YELLOW + "[BuildSystem] Great! a new update is available: " + ChatColor.GREEN + "v" + result.getNewestVersion());
-                        Bukkit.getConsoleSender().sendMessage(ChatColor.YELLOW + " ➥ Your current version: " + ChatColor.RED + this.getDescription().getVersion());
+                        Bukkit.getConsoleSender().sendMessage(
+                                ChatColor.YELLOW + "[BuildSystem] Great! a new update is available: "
+                                        + ChatColor.GREEN + "v" + result.getNewestVersion()
+                        );
+                        Bukkit.getConsoleSender().sendMessage(
+                                ChatColor.YELLOW + " ➥ Your current version: " +
+                                        ChatColor.RED + this.getDescription().getVersion()
+                        );
                         return;
                     }
 
@@ -382,7 +417,9 @@ public class BuildSystem extends JavaPlugin {
                         case UNAUTHORIZED_QUERY:
                         case UNKNOWN_ERROR:
                         case UNSUPPORTED_VERSION_SCHEME:
-                            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[BuildSystem] Could not check for a new version of BuildSystem. Reason: " + reason);
+                            Bukkit.getConsoleSender().sendMessage(ChatColor.RED +
+                                    "[BuildSystem] Could not check for a new version of BuildSystem. Reason: " + reason
+                            );
                             break;
                     }
                 }

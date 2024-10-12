@@ -114,7 +114,8 @@ public class SpawnManager {
 
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
-            plugin.getLogger().warning("Could load spawn world \"" + worldName + "\". Please check logs for possible errors.");
+          plugin.getLogger()
+              .warning("Could load spawn world \"" + worldName + "\". Please check logs for possible errors.");
             return;
         }
 

@@ -23,10 +23,9 @@ import de.eintosti.buildsystem.command.PagedCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import java.util.List;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
-
-import java.util.List;
 
 public class HelpSubCommand extends PagedCommand implements SubCommand {
 

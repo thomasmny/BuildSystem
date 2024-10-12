@@ -31,6 +31,14 @@ import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.world.data.WorldData;
 import de.eintosti.buildsystem.world.data.WorldType;
 import de.eintosti.buildsystem.world.generator.CustomGenerator;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Difficulty;
@@ -42,29 +50,17 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 public class BuildWorld implements ConfigurationSerializable {
 
     private final BuildSystem plugin;
     private final ConfigValues configValues;
-
-    private String name;
-    private Builder creator;
-
     private final WorldType worldType;
     private final WorldData worldData;
     private final long creationDate;
     private final CustomGenerator customGenerator;
     private final List<Builder> builders;
-
+  private String name;
+  private Builder creator;
     private long seconds;
     private boolean loaded;
     private BukkitTask unloadTask;
@@ -118,7 +114,8 @@ public class BuildWorld implements ConfigurationSerializable {
                 material = inventoryUtils.getDefaultItem(WorldType.IMPORTED);
                 break;
             default:
-                throw new IllegalArgumentException("Unsupported world type '" + worldType.name() + "' for world " + name);
+              throw new IllegalArgumentException(
+                  "Unsupported world type '" + worldType.name() + "' for world " + name);
         }
         if (privateWorld) {
             material = XMaterial.PLAYER_HEAD;
@@ -246,7 +243,8 @@ public class BuildWorld implements ConfigurationSerializable {
     /**
      * Get the creation date of the world.
      *
-     * @return The amount of milliseconds that have passed since {@code January 1, 1970 UTC}, until the world was created.
+     * @return The amount of milliseconds that have passed since {@code January 1, 1970 UTC}, until the world was
+     * created.
      */
     public long getCreationDate() {
         return creationDate;

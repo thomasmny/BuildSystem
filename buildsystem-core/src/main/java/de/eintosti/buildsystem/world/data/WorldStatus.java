@@ -19,9 +19,8 @@ package de.eintosti.buildsystem.world.data;
 
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.world.BuildWorld;
-import org.bukkit.entity.Player;
-
 import java.util.Locale;
+import org.bukkit.entity.Player;
 
 public enum WorldStatus {
 
@@ -85,8 +84,8 @@ public enum WorldStatus {
     }
 
     /**
-     * Gets the stage in which the {@link BuildWorld} is currently in.
-     * A higher value means the world is further in development.
+     * Gets the stage in which the {@link BuildWorld} is currently in. A higher value means the world is further in
+     * development.
      *
      * @return the stage in which the world is currently in.
      */

@@ -18,13 +18,12 @@
 package de.eintosti.buildsystem.tabcomplete;
 
 import de.eintosti.buildsystem.BuildSystem;
+import java.util.ArrayList;
+import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ConfigTabComplete implements TabCompleter {
 

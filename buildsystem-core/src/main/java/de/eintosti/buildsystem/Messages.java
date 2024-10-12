@@ -18,15 +18,6 @@
 package de.eintosti.buildsystem;
 
 import de.eintosti.buildsystem.util.color.ColorAPI;
-import me.clip.placeholderapi.PlaceholderAPI;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.Nullable;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -40,20 +31,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import me.clip.placeholderapi.PlaceholderAPI;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Nullable;
 
 public class Messages {
 
+    private static final BuildSystem PLUGIN = JavaPlugin.getPlugin(BuildSystem.class);
     private static final Map<String, String> MESSAGES = new HashMap<>();
-    private static final boolean PLACEHOLDER_API_ENABLED = Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null;
+    private static final boolean PLACEHOLDER_API_ENABLED =
+            Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null;
 
     private static YamlConfiguration config;
 
     public static void createMessageFile() {
-        JavaPlugin plugin = JavaPlugin.getPlugin(BuildSystem.class);
-        File file = new File(plugin.getDataFolder(), "messages.yml");
+        File file = new File(PLUGIN.getDataFolder(), "messages.yml");
         try {
             if (file.createNewFile()) {
-                plugin.getLogger().info("Created file: " + file.getName());
+                PLUGIN.getLogger().info("Created file: " + file.getName());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -894,7 +894,8 @@ public class Messages {
 
     private static void checkIfKeyPresent(String key) {
         if (!MESSAGES.containsKey(key)) {
-            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[BuildSystem] Could not find message with key: " + key);
+            Bukkit.getConsoleSender()
+                    .sendMessage(ChatColor.RED + "[BuildSystem] Could not find message with key: " + key);
             createMessageFile();
         }
     }
@@ -959,7 +960,10 @@ public class Messages {
         String message = MESSAGES.get(key).replace("%prefix%", getPrefix());
         return Arrays.stream(message.split("\n"))
                 .map(line -> replacePlaceholders(line, placeholders.apply(line)))
-                .map(line -> PLACEHOLDER_API_ENABLED && player != null ? PlaceholderAPI.setPlaceholders(player, line) : line)
+                .map(line -> PLACEHOLDER_API_ENABLED && player != null
+                        ? PlaceholderAPI.setPlaceholders(player, line)
+                        : line
+                )
                 .map(ColorAPI::process)
                 .collect(Collectors.toList());
     }
@@ -978,7 +982,7 @@ public class Messages {
 
     public static String formatDate(long millis) {
         return millis > 0
-                ? new SimpleDateFormat(JavaPlugin.getPlugin(BuildSystem.class).getConfigValues().getDateFormat()).format(millis)
+                ? new SimpleDateFormat(PLUGIN.getConfigValues().getDateFormat()).format(millis)
                 : "-";
     }
 }

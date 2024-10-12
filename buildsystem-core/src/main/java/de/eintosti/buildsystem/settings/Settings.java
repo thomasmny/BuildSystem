@@ -19,12 +19,11 @@ package de.eintosti.buildsystem.settings;
 
 import de.eintosti.buildsystem.navigator.settings.NavigatorType;
 import de.eintosti.buildsystem.navigator.settings.WorldDisplay;
+import java.util.HashMap;
+import java.util.Map;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class Settings implements ConfigurationSerializable {
 

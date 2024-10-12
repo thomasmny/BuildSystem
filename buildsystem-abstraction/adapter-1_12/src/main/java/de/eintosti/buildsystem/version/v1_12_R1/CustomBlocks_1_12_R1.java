@@ -21,6 +21,8 @@ import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.version.customblocks.CustomBlock;
 import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import de.eintosti.buildsystem.version.util.DirectionUtil;
+import de.eintosti.buildsystem.version.util.MinecraftVersion;
+import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -39,19 +41,15 @@ import org.bukkit.material.TrapDoor;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Set;
-
 @SuppressWarnings("deprecation")
 public class CustomBlocks_1_12_R1 implements CustomBlocks {
 
     private final JavaPlugin plugin;
-    private final int mcVersion;
+    private final boolean isOneDotNine;
 
     public CustomBlocks_1_12_R1(JavaPlugin plugin) {
         this.plugin = plugin;
-
-        String version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-        this.mcVersion = Integer.parseInt(version.replaceAll("\\D", ""));
+        this.isOneDotNine = MinecraftVersion.getCurrent().isEqualOrHigherThan(MinecraftVersion.COMBAT_9);
     }
 
     @Override
@@ -208,7 +206,7 @@ public class CustomBlocks_1_12_R1 implements CustomBlocks {
         }
 
         Set<Material> slabs = Sets.newHashSet(Material.STEP, Material.WOOD_STEP, Material.STONE_SLAB2);
-        if (mcVersion >= 190) {
+        if (this.isOneDotNine) {
             slabs.add(Material.PURPUR_SLAB);
         }
 
@@ -218,7 +216,7 @@ public class CustomBlocks_1_12_R1 implements CustomBlocks {
         }
 
         Material changedMaterial = null;
-        if (mcVersion >= 190 && material == Material.PURPUR_DOUBLE_SLAB) {
+        if (this.isOneDotNine && material == Material.PURPUR_DOUBLE_SLAB) {
             changedMaterial = Material.PURPUR_SLAB;
         }
 

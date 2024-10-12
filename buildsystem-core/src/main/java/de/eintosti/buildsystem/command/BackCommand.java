@@ -23,14 +23,13 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.player.BuildPlayer;
 import de.eintosti.buildsystem.player.PlayerManager;
 import io.papermc.lib.PaperLib;
+import java.util.UUID;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.UUID;
 
 public class BackCommand implements CommandExecutor {
 

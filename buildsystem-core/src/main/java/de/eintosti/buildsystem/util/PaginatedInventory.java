@@ -18,12 +18,11 @@
 package de.eintosti.buildsystem.util;
 
 import com.cryptomorin.xseries.XSound;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 
 public abstract class PaginatedInventory {
 

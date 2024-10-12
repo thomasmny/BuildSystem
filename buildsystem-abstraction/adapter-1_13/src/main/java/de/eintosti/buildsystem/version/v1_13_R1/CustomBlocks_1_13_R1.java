@@ -98,7 +98,9 @@ public class CustomBlocks_1_13_R1 implements CustomBlocks {
                 case MUSHROOM_BLOCK:
                     block.setType(Material.MUSHROOM_STEM);
                     MultipleFacing mushroomBlock = (MultipleFacing) block.getBlockData();
-                    for (BlockFace blockFace : new BlockFace[]{BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST}) {
+                    for (BlockFace blockFace : new BlockFace[]{BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH,
+                            BlockFace.EAST,
+                            BlockFace.SOUTH, BlockFace.WEST}) {
                         mushroomBlock.setFace(blockFace, false);
                     }
                     block.setBlockData(mushroomBlock);

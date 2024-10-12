@@ -29,14 +29,13 @@ import de.eintosti.buildsystem.world.Builder;
 import de.eintosti.buildsystem.world.WorldManager;
 import de.eintosti.buildsystem.world.data.WorldType;
 import de.eintosti.buildsystem.world.generator.Generator;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-
 import java.io.File;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.UUID;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 public class ImportSubCommand implements SubCommand {
 
@@ -75,7 +74,9 @@ public class ImportSubCommand implements SubCommand {
         }
 
         String invalidChar = Arrays.stream(worldName.split(""))
-                .filter(c -> c.matches("[^A-Za-z\\d/_-]") || c.matches(plugin.getConfigValues().getInvalidNameCharacters()))
+                .filter(c -> c.matches("[^A-Za-z\\d/_-]")
+                        || c.matches(plugin.getConfigValues().getInvalidNameCharacters())
+                )
                 .findFirst()
                 .orElse(null);
         if (invalidChar != null) {
@@ -136,7 +137,9 @@ public class ImportSubCommand implements SubCommand {
             }
         }
 
-        Messages.sendMessage(player, "worlds_import_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
+        Messages.sendMessage(player, "worlds_import_started",
+                new AbstractMap.SimpleEntry<>("%world%", worldName)
+        );
         if (worldManager.importWorld(player, worldName, creator, worldType, generator, generatorName, true)) {
             Messages.sendMessage(player, "worlds_import_finished");
         }

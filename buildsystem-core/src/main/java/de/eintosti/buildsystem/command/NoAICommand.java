@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.util.EntityAIManager;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;
 import de.eintosti.buildsystem.world.data.WorldData;
+import java.util.AbstractMap;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -32,8 +33,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.AbstractMap;
 
 public class NoAICommand implements CommandExecutor {
 

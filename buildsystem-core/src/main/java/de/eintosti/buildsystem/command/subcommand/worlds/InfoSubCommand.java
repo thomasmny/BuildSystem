@@ -25,10 +25,9 @@ import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;
 import de.eintosti.buildsystem.world.data.WorldData;
+import java.util.AbstractMap;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-
-import java.util.AbstractMap;
 
 public class InfoSubCommand implements SubCommand {
 

@@ -18,6 +18,9 @@
 package de.eintosti.buildsystem.version.v1_12_R1;
 
 import de.eintosti.buildsystem.version.gamerules.AbstractGameRulesInventory;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -26,10 +29,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class GameRules_1_12_R1 extends AbstractGameRulesInventory {
 
@@ -91,7 +90,7 @@ public class GameRules_1_12_R1 extends AbstractGameRulesInventory {
     }
 
     @Override
-    public void toggleGameRule(InventoryClickEvent event, World world) {
+    public void modifyGameRule(InventoryClickEvent event, World world) {
         int slot = event.getSlot();
         if (!isValidSlot(slot)) {
             return;

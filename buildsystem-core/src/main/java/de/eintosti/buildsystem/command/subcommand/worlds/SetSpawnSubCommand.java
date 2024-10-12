@@ -24,10 +24,9 @@ import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;
+import java.util.AbstractMap;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-
-import java.util.AbstractMap;
 
 public class SetSpawnSubCommand implements SubCommand {
 
@@ -55,7 +54,9 @@ public class SetSpawnSubCommand implements SubCommand {
         Location loc = player.getLocation();
         String locString = loc.getX() + ";" + loc.getY() + ";" + loc.getZ() + ";" + loc.getYaw() + ";" + loc.getPitch();
         buildWorld.getData().customSpawn().set(locString);
-        Messages.sendMessage(player, "worlds_setspawn_world_spawn_set", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+        Messages.sendMessage(player, "worlds_setspawn_world_spawn_set",
+                new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName())
+        );
     }
 
     @Override

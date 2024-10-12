@@ -40,8 +40,7 @@ public class NumberUtils {
      * </pre>
      *
      * @param str the string to convert, may be null
-     * @return the int represented by the string, or {@code zero} if
-     * conversion fails
+     * @return the int represented by the string, or {@code zero} if conversion fails
      * @since 2.1
      */
     public static int toInt(final String str) {

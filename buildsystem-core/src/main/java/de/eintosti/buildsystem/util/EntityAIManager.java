@@ -19,10 +19,9 @@ package de.eintosti.buildsystem.util;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.internal.CraftBukkitVersion;
+import java.lang.reflect.Method;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.lang.reflect.Method;
 
 public final class EntityAIManager {
 

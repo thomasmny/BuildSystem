@@ -40,7 +40,10 @@ public class ItemSubCommand implements SubCommand {
             return;
         }
 
-        ItemStack navigator = plugin.getInventoryUtil().getItemStack(plugin.getConfigValues().getNavigatorItem(), Messages.getString("navigator_item", player));
+        ItemStack navigator = plugin.getInventoryUtil().getItemStack(
+                plugin.getConfigValues().getNavigatorItem(),
+                Messages.getString("navigator_item", player)
+        );
         player.getInventory().addItem(navigator);
         Messages.sendMessage(player, "worlds_item_receive");
     }

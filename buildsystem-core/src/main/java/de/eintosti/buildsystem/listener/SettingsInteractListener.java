@@ -34,6 +34,10 @@ import de.eintosti.buildsystem.world.Builder;
 import de.eintosti.buildsystem.world.WorldManager;
 import de.eintosti.buildsystem.world.data.WorldData;
 import de.eintosti.buildsystem.world.data.WorldStatus;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
@@ -51,20 +55,20 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-
 public class SettingsInteractListener implements Listener {
 
+    private static final EnumSet<XMaterial> OTHER_PLANTS = Sets.newEnumSet(Sets.newHashSet(
+            XMaterial.TORCHFLOWER, XMaterial.PITCHER_PLANT, XMaterial.LILY_PAD, XMaterial.PINK_PETALS,
+            XMaterial.BROWN_MUSHROOM, XMaterial.RED_MUSHROOM, XMaterial.CRIMSON_FUNGUS, XMaterial.WARPED_FUNGUS,
+            XMaterial.SHORT_GRASS, XMaterial.FERN, XMaterial.DEAD_BUSH, XMaterial.LARGE_FERN, XMaterial.TALL_GRASS,
+            XMaterial.NETHER_SPROUTS, XMaterial.WARPED_ROOTS, XMaterial.CRIMSON_ROOTS, XMaterial.SUGAR_CANE, XMaterial.BAMBOO,
+            XMaterial.BIG_DRIPLEAF, XMaterial.SMALL_DRIPLEAF, XMaterial.SEAGRASS, XMaterial.SWEET_BERRIES
+    ), XMaterial.class);
     private final ConfigValues configValues;
     private final CustomBlocks customBlocks;
-
     private final PlayerManager playerManager;
     private final SettingsManager settingsManager;
     private final WorldManager worldManager;
-
     private final Set<UUID> cachePlayers;
 
     public SettingsInteractListener(BuildSystem plugin) {
@@ -104,7 +108,8 @@ public class SettingsInteractListener implements Listener {
 
         Action action = event.getAction();
         XMaterial material = XMaterial.matchXMaterial(block.getType());
-        if (action == Action.RIGHT_CLICK_BLOCK && (material == XMaterial.IRON_DOOR || material == XMaterial.IRON_TRAPDOOR)) {
+        if (action == Action.RIGHT_CLICK_BLOCK && (material == XMaterial.IRON_DOOR
+                || material == XMaterial.IRON_TRAPDOOR)) {
             if (player.isSneaking()) {
                 return;
             }
@@ -167,14 +172,6 @@ public class SettingsInteractListener implements Listener {
         event.setCancelled(true);
         customBlocks.setPlant(event);
     }
-
-    private static final EnumSet<XMaterial> OTHER_PLANTS = Sets.newEnumSet(Sets.newHashSet(
-            XMaterial.TORCHFLOWER, XMaterial.PITCHER_PLANT, XMaterial.LILY_PAD, XMaterial.PINK_PETALS,
-            XMaterial.BROWN_MUSHROOM, XMaterial.RED_MUSHROOM, XMaterial.CRIMSON_FUNGUS, XMaterial.WARPED_FUNGUS,
-            XMaterial.SHORT_GRASS, XMaterial.FERN, XMaterial.DEAD_BUSH, XMaterial.LARGE_FERN, XMaterial.TALL_GRASS,
-            XMaterial.NETHER_SPROUTS, XMaterial.WARPED_ROOTS, XMaterial.CRIMSON_ROOTS, XMaterial.SUGAR_CANE, XMaterial.BAMBOO,
-            XMaterial.BIG_DRIPLEAF, XMaterial.SMALL_DRIPLEAF, XMaterial.SEAGRASS, XMaterial.SWEET_BERRIES
-    ), XMaterial.class);
 
     @EventHandler
     public void manageInstantPlaceSignsSetting(PlayerInteractEvent event) {
@@ -363,7 +360,8 @@ public class SettingsInteractListener implements Listener {
             return false;
         }
 
-        if (buildWorld.getData().buildersEnabled().get() && !buildWorld.isBuilder(player) && !player.hasPermission("buildsystem.bypass.builders")) {
+        if (buildWorld.getData().buildersEnabled().get() && !buildWorld.isBuilder(player)
+                && !player.hasPermission("buildsystem.bypass.builders")) {
             return buildWorld.isCreator(player);
         }
 
@@ -371,8 +369,8 @@ public class SettingsInteractListener implements Listener {
     }
 
     /**
-     * Stop {@link Player} from opening {@link Inventory} because the event should be cancelled
-     * as it was fired due to an interaction caused in {@link SettingsInteractListener#manageDisabledInteractSetting}
+     * Stop {@link Player} from opening {@link Inventory} because the event should be cancelled as it was fired due to
+     * an interaction caused in {@link SettingsInteractListener#manageDisabledInteractSetting}
      */
     @EventHandler
     public void onInventoryOpen(InventoryOpenEvent event) {

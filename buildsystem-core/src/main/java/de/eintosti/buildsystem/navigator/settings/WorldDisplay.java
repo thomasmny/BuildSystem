@@ -17,16 +17,15 @@
  */
 package de.eintosti.buildsystem.navigator.settings;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class WorldDisplay implements ConfigurationSerializable {
 
-    private WorldSort worldSort;
     private final WorldFilter worldFilter;
+    private WorldSort worldSort;
 
     public WorldDisplay() {
         this.worldSort = WorldSort.NAME_A_TO_Z;

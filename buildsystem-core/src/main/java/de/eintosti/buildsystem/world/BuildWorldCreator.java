@@ -30,6 +30,10 @@ import dev.dewy.nbt.Nbt;
 import dev.dewy.nbt.io.CompressionType;
 import dev.dewy.nbt.tags.collection.CompoundTag;
 import dev.dewy.nbt.tags.primitive.IntTag;
+import java.io.File;
+import java.io.IOException;
+import java.util.AbstractMap;
+import java.util.Locale;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Difficulty;
@@ -39,11 +43,6 @@ import org.bukkit.WorldCreator;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.AbstractMap;
-import java.util.Locale;
 
 /**
  * @author Trichtern
@@ -122,10 +121,9 @@ public class BuildWorldCreator {
     }
 
     /**
-     * Depending on the {@link BuildWorld}'s {@link WorldType}, the corresponding {@link World} will be generated in
-     * a different way.
-     * Then, if the creation of the world was successful and the config is set accordingly, the player is teleported
-     * to the world.
+     * Depending on the {@link BuildWorld}'s {@link WorldType}, the corresponding {@link World} will be generated in a
+     * different way. Then, if the creation of the world was successful and the config is set accordingly, the player is
+     * teleported to the world.
      *
      * @param player The player who is creating the world
      */
@@ -374,8 +372,7 @@ public class BuildWorldCreator {
 
     /**
      * The {@code level.dat} file is not updated when a newer Minecraft version loads chunks, making the world not
-     * loadable.
-     * Therefore, manually sets the world's {@code DataVersion} to the current server version, if lower.
+     * loadable. Therefore, manually sets the world's {@code DataVersion} to the current server version, if lower.
      */
     private void updateDataVersion() {
         File levelFile = new File(Bukkit.getWorldContainer() + File.separator + worldName, "level.dat");

@@ -6,22 +6,22 @@ import de.eintosti.buildsystem.util.color.patterns.HexPattern;
 import de.eintosti.buildsystem.util.color.patterns.RainbowPattern;
 import de.eintosti.buildsystem.util.color.patterns.SolidPattern;
 import de.eintosti.buildsystem.version.util.MinecraftVersion;
-import net.md_5.bungee.api.ChatColor;
-import org.jetbrains.annotations.NotNull;
-
-import java.awt.*;
+import java.awt.Color;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import net.md_5.bungee.api.ChatColor;
+import org.jetbrains.annotations.NotNull;
 
 public final class ColorAPI {
 
     /**
      * Clients are able to display RGB colors after Minecraft 1.16
      */
-    private static final boolean SUPPORTS_RGB = MinecraftVersion.getCurrent().isEqualOrHigherThan(MinecraftVersion.NETHER_16);
+    private static final boolean SUPPORTS_RGB = MinecraftVersion.getCurrent()
+        .isEqualOrHigherThan(MinecraftVersion.NETHER_16);
 
     private static final Map<Color, ChatColor> COLORS = ImmutableMap.<Color, ChatColor>builder()
             .put(new Color(0), ChatColor.getByChar('0'))
@@ -55,8 +55,7 @@ public final class ColorAPI {
     );
 
     /**
-     * Processes a string to add color to it.
-     * Thanks to Distressing for helping with the regex <3
+     * Processes a string to add color to it. Thanks to Distressing for helping with the regex <3
      *
      * @param string The string we want to process
      */

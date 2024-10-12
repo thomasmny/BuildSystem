@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.version.v1_14_R1;
 import de.eintosti.buildsystem.version.customblocks.CustomBlock;
 import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import de.eintosti.buildsystem.version.util.DirectionUtil;
+import java.util.Arrays;
 import org.bukkit.Axis;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -39,8 +40,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.RayTraceResult;
-
-import java.util.Arrays;
 
 public class CustomBlocks_1_14_R1 implements CustomBlocks {
 
@@ -100,7 +99,8 @@ public class CustomBlocks_1_14_R1 implements CustomBlocks {
                 case MUSHROOM_BLOCK:
                     block.setType(Material.MUSHROOM_STEM);
                     MultipleFacing mushroomBlock = (MultipleFacing) block.getBlockData();
-                    for (BlockFace blockFace : new BlockFace[]{BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST}) {
+                    for (BlockFace blockFace : new BlockFace[]{BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH,
+                            BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST}) {
                         mushroomBlock.setFace(blockFace, false);
                     }
                     block.setBlockData(mushroomBlock);
@@ -189,7 +189,7 @@ public class CustomBlocks_1_14_R1 implements CustomBlocks {
                 }
                 adjacent.setType(material);
                 MultipleFacing multipleFacing = (MultipleFacing) adjacent.getBlockData();
-                Arrays.stream(new BlockFace[]{BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP})
+                Arrays.stream(DirectionUtil.BLOCK_SIDES)
                         .forEach(blockFace -> multipleFacing.setFace(blockFace, blockFace == toPlace));
                 adjacent.setBlockData(multipleFacing);
                 break;

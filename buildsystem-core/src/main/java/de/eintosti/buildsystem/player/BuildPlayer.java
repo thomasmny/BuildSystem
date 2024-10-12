@@ -20,14 +20,13 @@ package de.eintosti.buildsystem.player;
 import de.eintosti.buildsystem.navigator.settings.NavigatorInventoryType;
 import de.eintosti.buildsystem.settings.Settings;
 import de.eintosti.buildsystem.world.BuildWorld;
-import org.bukkit.Location;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.jetbrains.annotations.NotNull;
-
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import javax.annotation.Nullable;
+import org.bukkit.Location;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author einTosti

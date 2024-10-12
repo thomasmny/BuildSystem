@@ -22,11 +22,16 @@ import org.bukkit.entity.Player;
 
 public final class DirectionUtil {
 
+    public static final BlockFace[] BLOCK_SIDES = new BlockFace[]{
+            BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN
+    };
+
     public static BlockFace getPlayerDirection(Player player) {
         float yaw = player.getLocation().getYaw();
         if (yaw < 0) {
             yaw += 360;
         }
+
         yaw %= 360;
         int i = (int) ((yaw + 8) / 22.5);
         switch (i) {

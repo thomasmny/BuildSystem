@@ -43,8 +43,8 @@ public enum NavigatorInventoryType {
     ARCHIVE("§6World Archive"),
 
     /**
-     * The navigator inventory which contains all private {@link BuildWorld}s that can only be modified by the world's creator
-     * and all players who have been added as a {@link Builder}.
+     * The navigator inventory which contains all private {@link BuildWorld}s that can only be modified by the world's
+     * creator and all players who have been added as a {@link Builder}.
      *
      * @see WorldData#privateWorld()
      */
@@ -70,9 +70,8 @@ public enum NavigatorInventoryType {
     }
 
     /**
-     * When opening the {@link NavigatorType#NEW} navigator, each armor stand has a custom name which is unique for every player
-     * and each {@link NavigatorInventoryType}.<br>
-     * Gets said name.
+     * When opening the {@link NavigatorType#NEW} navigator, each armor stand has a custom name which is unique for
+     * every player and each {@link NavigatorInventoryType}.<br> Gets said name.
      *
      * @return The name which an armor stand uses to represent a navigator inventory type
      */

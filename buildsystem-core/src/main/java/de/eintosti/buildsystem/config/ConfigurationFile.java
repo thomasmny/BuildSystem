@@ -18,12 +18,11 @@
 package de.eintosti.buildsystem.config;
 
 import de.eintosti.buildsystem.BuildSystem;
+import java.io.File;
+import java.io.IOException;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-
-import java.io.File;
-import java.io.IOException;
 
 public abstract class ConfigurationFile {
 

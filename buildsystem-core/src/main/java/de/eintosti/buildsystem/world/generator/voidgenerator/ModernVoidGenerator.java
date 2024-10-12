@@ -17,14 +17,13 @@
  */
 package de.eintosti.buildsystem.world.generator.voidgenerator;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 import org.bukkit.block.Biome;
 import org.bukkit.generator.BiomeProvider;
 import org.bukkit.generator.WorldInfo;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
 
 /**
  * The {@link VoidGenerator} that is used for servers which run on Spigot 1.17+

@@ -21,7 +21,6 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.world.data.WorldStatus;
 import de.eintosti.buildsystem.world.data.WorldType;
-
 import java.util.Locale;
 
 public class SetupConfig extends ConfigurationFile {

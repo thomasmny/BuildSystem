@@ -35,6 +35,10 @@ import de.eintosti.buildsystem.world.WorldManager;
 import de.eintosti.buildsystem.world.data.WorldData;
 import de.eintosti.buildsystem.world.data.WorldStatus;
 import de.eintosti.buildsystem.world.modification.CreateInventory;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -42,11 +46,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 public class FilteredWorldsInventory extends PaginatedInventory implements Listener {
 
@@ -123,7 +122,10 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
 
     private void addWorlds(Player player) {
         int numWorlds = numOfWorlds(player);
-        int numInventories = (numWorlds % MAX_WORLDS == 0 ? numWorlds : numWorlds + 1) != 0 ? (numWorlds % MAX_WORLDS == 0 ? numWorlds : numWorlds + 1) : 1;
+        int numInventories =
+                (numWorlds % MAX_WORLDS == 0 ? numWorlds : numWorlds + 1) != 0 ? (numWorlds % MAX_WORLDS == 0
+                        ? numWorlds
+                        : numWorlds + 1) : 1;
 
         inventories = new Inventory[numInventories];
         Inventory inventory = createInventory(player);
@@ -136,7 +138,8 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         }
 
         int columnWorld = 9, maxColumnWorld = 44;
-        for (BuildWorld buildWorld : inventoryUtils.getDisplayOrder(worldManager, plugin.getSettingsManager().getSettings(player))) {
+        for (BuildWorld buildWorld : inventoryUtils.getDisplayOrder(worldManager, plugin.getSettingsManager()
+                .getSettings(player))) {
             if (isValidWorld(player, buildWorld)) {
                 inventoryUtils.addWorldItem(player, inventory, columnWorld++, buildWorld);
             }
@@ -160,7 +163,8 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         WorldFilter worldFilter = settings.getWorldDisplay().getWorldFilter();
 
         List<String> lore = new ArrayList<>();
-        lore.add(Messages.getString(worldFilter.getMode().getLoreKey(), player, new AbstractMap.SimpleEntry<>("%text%", worldFilter.getText())));
+        lore.add(Messages.getString(worldFilter.getMode()
+                .getLoreKey(), player, new AbstractMap.SimpleEntry<>("%text%", worldFilter.getText())));
         lore.addAll(Messages.getStringList("world_filter_lore", player));
 
         inventoryUtils.addItemStack(inventory, 46, XMaterial.HOPPER, Messages.getString("world_filter_title", player), lore);
@@ -224,7 +228,9 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
 
         switch (event.getSlot()) {
             case 45:
-                WorldSort newSort = event.isLeftClick() ? worldDisplay.getWorldSort().getNext() : worldDisplay.getWorldSort().getPrevious();
+                WorldSort newSort =
+                        event.isLeftClick() ? worldDisplay.getWorldSort().getNext()
+                                : worldDisplay.getWorldSort().getPrevious();
                 worldDisplay.setWorldSort(newSort);
                 openInventory(player);
                 return;

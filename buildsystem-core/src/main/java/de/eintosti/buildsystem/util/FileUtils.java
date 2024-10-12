@@ -18,8 +18,6 @@
 package de.eintosti.buildsystem.util;
 
 import com.google.common.collect.Sets;
-import org.jetbrains.annotations.NotNull;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,13 +29,14 @@ import java.nio.file.attribute.FileTime;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Stream;
+import org.jetbrains.annotations.NotNull;
 
 public final class FileUtils {
 
+    private static final Set<String> IGNORE_FILES = Sets.newHashSet("uid.dat", "session.lock");
+
     private FileUtils() {
     }
-
-    private static final Set<String> IGNORE_FILES = Sets.newHashSet("uid.dat", "session.lock");
 
     /**
      * Copies a file or directory from the source location to the target location.
@@ -94,7 +93,7 @@ public final class FileUtils {
      */
     private static void copyFile(@NotNull File source, @NotNull File target) throws IOException {
         try (InputStream inputStream = Files.newInputStream(source.toPath());
-             OutputStream outputStream = Files.newOutputStream(target.toPath())) {
+                OutputStream outputStream = Files.newOutputStream(target.toPath())) {
             byte[] buffer = new byte[1024];
             int length;
             while ((length = inputStream.read(buffer)) > 0) {

@@ -133,7 +133,8 @@ public class WorldManipulateListener implements Listener {
         manageWorldInteraction(player, event, worldData.blockInteractions().get());
 
         if (!worldData.physics().get() && event.getClickedBlock() != null) {
-            if (event.getAction() == Action.PHYSICAL && event.getClickedBlock().getType() == XMaterial.FARMLAND.parseMaterial()) {
+            if (event.getAction() == Action.PHYSICAL
+                    && event.getClickedBlock().getType() == XMaterial.FARMLAND.parseMaterial()) {
                 event.setCancelled(true);
             }
         }

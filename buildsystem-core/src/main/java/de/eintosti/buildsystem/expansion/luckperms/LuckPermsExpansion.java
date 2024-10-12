@@ -20,14 +20,13 @@ package de.eintosti.buildsystem.expansion.luckperms;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.expansion.luckperms.calculators.BuildModeCalculator;
 import de.eintosti.buildsystem.expansion.luckperms.calculators.RoleCalculator;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.context.ContextCalculator;
 import net.luckperms.api.context.ContextManager;
 import org.bukkit.entity.Player;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Supplier;
 
 public class LuckPermsExpansion {
 

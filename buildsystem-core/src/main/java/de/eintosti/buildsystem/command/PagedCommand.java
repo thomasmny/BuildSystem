@@ -18,16 +18,15 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.Messages;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.IntStream;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
-
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.IntStream;
 
 public abstract class PagedCommand {
 

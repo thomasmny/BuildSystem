@@ -17,11 +17,10 @@
  */
 package de.eintosti.buildsystem.world.generator.voidgenerator;
 
+import java.util.Random;
+import javax.annotation.Nonnull;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
-
-import javax.annotation.Nonnull;
-import java.util.Random;
 
 /**
  * The {@link VoidGenerator} that is used for servers which run on Spigot 1.13-1.16.

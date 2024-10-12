@@ -25,6 +25,8 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.version.gamerules.GameRules;
 import de.eintosti.buildsystem.world.BuildWorld;
+import java.util.Arrays;
+import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -32,9 +34,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-
-import java.util.Arrays;
-import java.util.UUID;
 
 public class GameRuleInventory implements Listener {
 

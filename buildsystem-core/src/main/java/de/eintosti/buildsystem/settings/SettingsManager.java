@@ -25,16 +25,15 @@ import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;
 import de.eintosti.buildsystem.world.data.WorldData;
 import fr.mrmicky.fastboard.FastBoard;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
-
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
 public class SettingsManager {
 
@@ -95,7 +94,8 @@ public class SettingsManager {
         }
 
         board.updateTitle(Messages.getString("title", player));
-        BukkitTask scoreboardTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> updateScoreboard(player, board), 0L, 20L);
+      BukkitTask scoreboardTask = Bukkit.getScheduler()
+          .runTaskTimerAsynchronously(plugin, () -> updateScoreboard(player, board), 0L, 20L);
         settings.setScoreboardTask(scoreboardTask);
     }
 
@@ -122,7 +122,8 @@ public class SettingsManager {
 
         // Scoreboard line cannot be longer than 30 chars in versions <1.13
         if (MinecraftVersion.getCurrent().isLowerThan(MinecraftVersion.AQUATIC_13)) {
-            body = body.stream().map(line -> line.substring(0, Math.min(line.length(), 30))).collect(Collectors.toList());
+          body = body.stream().map(line -> line.substring(0, Math.min(line.length(), 30)))
+              .collect(Collectors.toList());
         }
 
         board.updateLines(body);

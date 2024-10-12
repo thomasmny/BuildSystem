@@ -19,13 +19,6 @@ package de.eintosti.buildsystem.settings;
 
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystem;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,6 +26,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 
 public class NoClipManager {
 
@@ -144,8 +143,8 @@ public class NoClipManager {
     }
 
     /**
-     * Only remove a player from the list of No-Clip players if said player has
-     * No-Clip enabled, i.e. {@link NoClipManager#isNoClip} is equal to {@code true}.
+     * Only remove a player from the list of No-Clip players if said player has No-Clip enabled, i.e.
+     * {@link NoClipManager#isNoClip} is equal to {@code true}.
      * <p>
      * Will also set the player to their previous {@link GameMode}.
      *

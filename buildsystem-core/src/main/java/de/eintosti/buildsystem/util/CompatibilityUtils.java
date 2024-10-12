@@ -17,13 +17,12 @@
  */
 package de.eintosti.buildsystem.util;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 public final class CompatibilityUtils {
 
@@ -58,7 +57,8 @@ public final class CompatibilityUtils {
      *
      * @param event The generic InventoryEvent with an InventoryView to inspect
      * @return The top inventory
-     * @author <a href="https://www.spigotmc.org/threads/inventoryview-changed-to-interface-backwards-compatibility.651754/#post-4747875">Rumsfield</a>
+     * @author <a
+     * href="https://www.spigotmc.org/threads/inventoryview-changed-to-interface-backwards-compatibility.651754/#post-4747875">Rumsfield</a>
      */
     public static Inventory getTopInventory(InventoryEvent event) {
         try {

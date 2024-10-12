@@ -28,11 +28,10 @@ import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.Builder;
 import de.eintosti.buildsystem.world.WorldManager;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-
 import java.util.AbstractMap;
 import java.util.UUID;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 public class AddBuilderSubCommand implements SubCommand {
 
@@ -103,7 +102,9 @@ public class AddBuilderSubCommand implements SubCommand {
 
         buildWorld.addBuilder(builder);
         XSound.ENTITY_PLAYER_LEVELUP.play(player);
-        Messages.sendMessage(player, "worlds_addbuilder_added", new AbstractMap.SimpleEntry<>("%builder%", builderName));
+        Messages.sendMessage(player, "worlds_addbuilder_added",
+                new AbstractMap.SimpleEntry<>("%builder%", builderName)
+        );
 
         if (closeInventory) {
             player.closeInventory();

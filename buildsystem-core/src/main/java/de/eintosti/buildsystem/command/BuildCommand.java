@@ -23,6 +23,8 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.player.BuildPlayer;
 import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.PlayerManager;
+import java.util.AbstractMap;
+import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
@@ -30,9 +32,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.AbstractMap;
-import java.util.UUID;
 
 public class BuildCommand implements CommandExecutor {
 

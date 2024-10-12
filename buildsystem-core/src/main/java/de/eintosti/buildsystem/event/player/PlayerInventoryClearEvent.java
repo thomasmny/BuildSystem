@@ -17,12 +17,11 @@
  */
 package de.eintosti.buildsystem.event.player;
 
+import java.util.List;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerEvent;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 /**
  * Thrown when a player's inventory is cleared.

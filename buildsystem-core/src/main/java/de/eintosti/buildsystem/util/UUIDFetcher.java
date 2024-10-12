@@ -23,7 +23,6 @@ import com.google.gson.JsonParser;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -63,7 +62,8 @@ public class UUIDFetcher {
             JsonObject jsonObject;
             try {
                 // Support older versions of JSON used by Minecraft versions <1.18
-                jsonObject = new JsonParser().parse(new BufferedReader(new InputStreamReader(connection.getInputStream()))).getAsJsonObject();
+                jsonObject = new JsonParser().parse(new BufferedReader(new InputStreamReader(connection.getInputStream())))
+                        .getAsJsonObject();
             } catch (IllegalStateException | FileNotFoundException ignored) {
                 return null;
             }
@@ -97,7 +97,8 @@ public class UUIDFetcher {
             JsonArray nameHistory;
             try {
                 // Support older versions of JSON used by Minecraft versions <1.18
-                nameHistory = new JsonParser().parse(new BufferedReader(new InputStreamReader(connection.getInputStream()))).getAsJsonArray();
+                nameHistory = new JsonParser().parse(new BufferedReader(new InputStreamReader(connection.getInputStream())))
+                        .getAsJsonArray();
             } catch (IllegalStateException ignored) {
                 return null;
             }

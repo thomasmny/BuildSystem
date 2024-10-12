@@ -17,8 +17,6 @@
  */
 package de.eintosti.buildsystem.util;
 
-import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.jetbrains.annotations.Nullable;
 
 public class ArgumentParser {
 
@@ -41,8 +40,7 @@ public class ArgumentParser {
     }
 
     /**
-     * Gets whether the provided string is used as an argument.<br>
-     * Useful for figuring out if an argument has a value.
+     * Gets whether the provided string is used as an argument.<br> Useful for figuring out if an argument has a value.
      *
      * @param name The name of the argument
      * @return {@code true} if the argument is present, otherwise {@code false}
@@ -54,8 +52,7 @@ public class ArgumentParser {
     }
 
     /**
-     * Gets whether the flag is present in the array of arguments.
-     * A flag is a true or false argument with no value.
+     * Gets whether the flag is present in the array of arguments. A flag is a true or false argument with no value.
      * <p>
      * For example: {@code -nogui}
      *
@@ -84,9 +81,9 @@ public class ArgumentParser {
     }
 
     /**
-     * Maps the arguments passed to the ArgumentParser.
-     * Arguments starting with "-" are considered flags, and their presence is added to the 'flags' set.
-     * Arguments without "-" are considered argument names, and their values are stored in the 'map' HashMap.
+     * Maps the arguments passed to the ArgumentParser. Arguments starting with "-" are considered flags, and their
+     * presence is added to the 'flags' set. Arguments without "-" are considered argument names, and their values are
+     * stored in the 'map' HashMap.
      */
     public void map() {
         for (int index = 0; index < args.size(); index++) {
@@ -103,9 +100,8 @@ public class ArgumentParser {
     }
 
     /**
-     * Determines whether the provided argument is a flag argument.
-     * A flag argument is an argument that is either the last argument in the list
-     * or is followed by another argument that starts with a dash (-).
+     * Determines whether the provided argument is a flag argument. A flag argument is an argument that is either the
+     * last argument in the list or is followed by another argument that starts with a dash (-).
      *
      * @param arg   The argument to check
      * @param index The index of the argument in the argument list

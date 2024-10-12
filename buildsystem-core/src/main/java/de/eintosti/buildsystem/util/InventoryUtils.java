@@ -42,17 +42,6 @@ import de.eintosti.buildsystem.world.data.WorldData;
 import de.eintosti.buildsystem.world.data.WorldStatus;
 import de.eintosti.buildsystem.world.data.WorldType;
 import de.eintosti.buildsystem.world.modification.EditInventory;
-import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemFlag;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.inventory.meta.ItemMeta;
-
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,6 +53,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public class InventoryUtils {
 
@@ -210,7 +209,8 @@ public class InventoryUtils {
     }
 
     public boolean checkIfValidClick(InventoryClickEvent event, String titleKey) {
-        if (!CompatibilityUtils.getInventoryTitle(event).equals(Messages.getString(titleKey, (Player) event.getWhoClicked()))) {
+        if (!CompatibilityUtils.getInventoryTitle(event)
+                .equals(Messages.getString(titleKey, (Player) event.getWhoClicked()))) {
             return false;
         }
 
@@ -262,8 +262,9 @@ public class InventoryUtils {
     /**
      * Manage clicking in a {@link FilteredWorldsInventory}.
      * <p>
-     * If the clicked item is the icon of a {@link BuildWorld}, the click is managed by {@link InventoryUtils#manageWorldItemClick(InventoryClickEvent, Player, ItemMeta, BuildWorld)}.
-     * Otherwise, the {@link NavigatorInventory} is opened if the glass pane at the bottom of the inventory is clicked.
+     * If the clicked item is the icon of a {@link BuildWorld}, the click is managed by
+     * {@link InventoryUtils#manageWorldItemClick(InventoryClickEvent, Player, ItemMeta, BuildWorld)}. Otherwise, the
+     * {@link NavigatorInventory} is opened if the glass pane at the bottom of the inventory is clicked.
      *
      * @param event     The click event object to modify
      * @param player    The player who clicked
@@ -314,7 +315,8 @@ public class InventoryUtils {
      * @param buildWorld The world represents by the clicked item
      */
     private void manageWorldItemClick(InventoryClickEvent event, Player player, ItemMeta itemMeta, BuildWorld buildWorld) {
-        if (event.isLeftClick() || !plugin.getWorldManager().isPermitted(player, WorldsTabComplete.WorldsArgument.EDIT.getPermission(), buildWorld.getName())) {
+        if (event.isLeftClick() || !plugin.getWorldManager()
+                .isPermitted(player, WorldsTabComplete.WorldsArgument.EDIT.getPermission(), buildWorld.getName())) {
             performNonEditClick(player, itemMeta);
             return;
         }
@@ -363,8 +365,8 @@ public class InventoryUtils {
     }
 
     /**
-     * Gets the worlds in the order they are to be displayed.
-     * First, the {@link WorldFilter} is applied. Then, the list of worlds is sorted using the {@link WorldSort}.
+     * Gets the worlds in the order they are to be displayed. First, the {@link WorldFilter} is applied. Then, the list
+     * of worlds is sorted using the {@link WorldSort}.
      *
      * @param worldManager The world manager object
      * @param settings     The settings that provide the sorting method
@@ -385,10 +387,12 @@ public class InventoryUtils {
                 Collections.reverse(buildWorlds);
                 break;
             case PROJECT_A_TO_Z:
-                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getData().project().get().toLowerCase(Locale.ROOT)));
+                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getData().project().get()
+                        .toLowerCase(Locale.ROOT)));
                 break;
             case PROJECT_Z_TO_A:
-                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getData().project().get().toLowerCase(Locale.ROOT)));
+                buildWorlds.sort(Comparator.comparing(worldA -> worldA.getData().project().get()
+                        .toLowerCase(Locale.ROOT)));
                 Collections.reverse(buildWorlds);
                 break;
             case STATUS_NOT_STARTED:
@@ -421,13 +425,15 @@ public class InventoryUtils {
                 new AbstractMap.SimpleEntry<>("%status%", worldData.status().get().getName(player)),
                 new AbstractMap.SimpleEntry<>("%project%", worldData.project().get()),
                 new AbstractMap.SimpleEntry<>("%permission%", worldData.permission().get()),
-                new AbstractMap.SimpleEntry<>("%creator%", buildWorld.hasCreator() ? buildWorld.getCreator().getName() : "-"),
+                new AbstractMap.SimpleEntry<>("%creator%",
+                        buildWorld.hasCreator() ? buildWorld.getCreator().getName() : "-"),
                 new AbstractMap.SimpleEntry<>("%creation%", Messages.formatDate(buildWorld.getCreationDate())),
                 new AbstractMap.SimpleEntry<>("%lastedited%", Messages.formatDate(worldData.lastEdited().get())),
                 new AbstractMap.SimpleEntry<>("%lastloaded%", Messages.formatDate(worldData.lastLoaded().get())),
                 new AbstractMap.SimpleEntry<>("%lastunloaded%", Messages.formatDate(worldData.lastUnloaded().get()))
         };
-        List<String> messageList = plugin.getWorldManager().isPermitted(player, WorldsTabComplete.WorldsArgument.EDIT.getPermission(), buildWorld.getName())
+        List<String> messageList = plugin.getWorldManager()
+                .isPermitted(player, WorldsTabComplete.WorldsArgument.EDIT.getPermission(), buildWorld.getName())
                 ? Messages.getStringList("world_item_lore_edit", player, placeholders)
                 : Messages.getStringList("world_item_lore_normal", player, placeholders);
 
@@ -822,7 +828,8 @@ public class InventoryUtils {
 
         @Override
         public int compare(BuildWorld buildWorld1, BuildWorld buildWorld2) {
-            return Integer.compare(buildWorld1.getData().status().get().getStage(), buildWorld2.getData().status().get().getStage());
+            return Integer.compare(buildWorld1.getData().status().get().getStage(), buildWorld2.getData().status().get()
+                    .getStage());
         }
     }
 }
