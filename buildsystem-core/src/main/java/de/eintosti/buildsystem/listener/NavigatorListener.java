@@ -53,6 +53,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.Nullable;
 
 public class NavigatorListener implements Listener {
 
@@ -110,8 +111,8 @@ public class NavigatorListener implements Listener {
         }
 
         XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-        if (xMaterial != configValues.getNavigatorItem() || !itemMeta.getDisplayName()
-                .equals(Messages.getString("navigator_item", player))) {
+        if (xMaterial != configValues.getNavigatorItem()
+                || !itemMeta.getDisplayName().equals(Messages.getString("navigator_item", player))) {
             return;
         }
 
@@ -126,22 +127,23 @@ public class NavigatorListener implements Listener {
 
     private void openNavigator(Player player) {
         Settings settings = settingsManager.getSettings(player);
-
         if (settings.getNavigatorType() == NavigatorType.OLD) {
             plugin.getNavigatorInventory().openInventory(player);
             XSound.BLOCK_CHEST_OPEN.play(player);
-        } else { // NEW
-            if (playerManager.getOpenNavigator().contains(player)) {
-                Messages.sendMessage(player, "worlds_navigator_open");
-                return;
-            }
-
-            summonNewNavigator(player);
-
-            String findItemName = Messages.getString("navigator_item", player);
-            ItemStack replaceItem = inventoryUtils.getItemStack(XMaterial.BARRIER, Messages.getString("barrier_item", player));
-            inventoryUtils.replaceItem(player, findItemName, configValues.getNavigatorItem(), replaceItem);
+            return;
         }
+
+        // NEW
+        if (playerManager.getOpenNavigator().contains(player)) {
+            Messages.sendMessage(player, "worlds_navigator_open");
+            return;
+        }
+
+        summonNewNavigator(player);
+
+        String findItemName = Messages.getString("navigator_item", player);
+        ItemStack replaceItem = inventoryUtils.getItemStack(XMaterial.BARRIER, Messages.getString("barrier_item", player));
+        inventoryUtils.replaceItem(player, findItemName, configValues.getNavigatorItem(), replaceItem);
     }
 
     private void summonNewNavigator(Player player) {
@@ -253,8 +255,8 @@ public class NavigatorListener implements Listener {
      * @param itemStack The item stack to check
      * @return {@code true} if the item is the navigator close item, {@code false} otherwise
      */
-    private boolean isCloseNavigatorItem(Player player, ItemStack itemStack) {
-        if (itemStack.getType() == Material.AIR) {
+    private boolean isCloseNavigatorItem(Player player, @Nullable ItemStack itemStack) {
+        if (itemStack == null || itemStack.getType() == Material.AIR) {
             return false;
         }
 

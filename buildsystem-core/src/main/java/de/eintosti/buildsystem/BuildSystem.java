@@ -199,8 +199,8 @@ public class BuildSystem extends JavaPlugin {
 
         Bukkit.getConsoleSender().sendMessage(String.format(Locale.ROOT,
                 "%sBuildSystem » Plugin %senabled%s!",
-                ChatColor.RESET, ChatColor.GREEN, ChatColor.RESET)
-        );
+                ChatColor.RESET, ChatColor.GREEN, ChatColor.RESET
+        ));
     }
 
     @Override
@@ -223,8 +223,10 @@ public class BuildSystem extends JavaPlugin {
 
         unregisterExpansions();
 
-        Bukkit.getConsoleSender()
-                .sendMessage(String.format(Locale.ROOT, "%sBuildSystem » Plugin %sdisabled%s!", ChatColor.RESET, ChatColor.RED, ChatColor.RESET));
+        Bukkit.getConsoleSender().sendMessage(String.format(Locale.ROOT,
+                "%sBuildSystem » Plugin %sdisabled%s!",
+                ChatColor.RESET, ChatColor.RED, ChatColor.RESET
+        ));
     }
 
     private boolean initVersionedClasses() {

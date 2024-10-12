@@ -97,13 +97,10 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
     private void addItems(BuildWorld buildWorld, Player player) {
         List<Builder> builders = buildWorld.getBuilders();
         this.numBuilders = builders.size();
-        int numInventories = (numBuilders % MAX_BUILDERS == 0 ? numBuilders : numBuilders + 1) != 0 ? (
-                numBuilders % MAX_BUILDERS == 0 ? numBuilders : numBuilders + 1) : 1;
+        int numInventories = numBuilders % MAX_BUILDERS == 0 ? Math.max(numBuilders, 1) : numBuilders + 1;
 
         int index = 0;
-
         Inventory inventory = createInventory(buildWorld, player);
-
         inventories = new Inventory[numInventories];
         inventories[index] = inventory;
 

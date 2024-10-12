@@ -122,10 +122,9 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
 
     private void addWorlds(Player player) {
         int numWorlds = numOfWorlds(player);
-        int numInventories =
-                (numWorlds % MAX_WORLDS == 0 ? numWorlds : numWorlds + 1) != 0 ? (numWorlds % MAX_WORLDS == 0
-                        ? numWorlds
-                        : numWorlds + 1) : 1;
+        int numInventories = numWorlds % MAX_WORLDS == 0
+                ? Math.max(numWorlds, 1)
+                : numWorlds + 1;
 
         inventories = new Inventory[numInventories];
         Inventory inventory = createInventory(player);

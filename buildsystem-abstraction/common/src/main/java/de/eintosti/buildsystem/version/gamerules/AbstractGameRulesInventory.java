@@ -63,7 +63,7 @@ public abstract class AbstractGameRulesInventory implements GameRules {
         int columnGameRule = 0, maxColumnGameRule = 14;
         setNumGameRules(world);
 
-        int numInventories = (numGameRules == 0 || numGameRules % SLOTS.length == 0)
+        int numInventories = numGameRules % SLOTS.length == 0
                 ? Math.max(numGameRules, 1)
                 : numGameRules + 1;
 

@@ -17,11 +17,11 @@
  */
 package de.eintosti.buildsystem.world;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.util.FileUtils;
+import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import de.eintosti.buildsystem.world.data.WorldType;
 import de.eintosti.buildsystem.world.generator.CustomGenerator;
 import de.eintosti.buildsystem.world.generator.voidgenerator.DeprecatedVoidGenerator;
@@ -240,7 +240,7 @@ public class BuildWorldCreator {
                 bukkitWorld.setSpawnLocation(0, 65, 0);
                 break;
             case FLAT:
-                int y = XMaterial.supports(18) ? -60 : 4;
+                int y = MinecraftVersion.getCurrent().isEqualOrHigherThan(MinecraftVersion.CAVES_18) ? -60 : 4;
                 bukkitWorld.setSpawnLocation(0, y, 0);
                 break;
             default:
@@ -277,9 +277,10 @@ public class BuildWorldCreator {
             case VOID:
                 worldCreator.generateStructures(false);
                 bukkitWorldType = org.bukkit.WorldType.FLAT;
-                if (XMaterial.supports(17)) {
+                MinecraftVersion minecraftVersion = MinecraftVersion.getCurrent();
+                if (minecraftVersion.isEqualOrHigherThan(MinecraftVersion.CAVES_17)) {
                     worldCreator.generator(new ModernVoidGenerator());
-                } else if (XMaterial.supports(13)) {
+                } else if (minecraftVersion.isEqualOrHigherThan(MinecraftVersion.AQUATIC_13)) {
                     worldCreator.generator(new DeprecatedVoidGenerator());
                 } else {
                     worldCreator.generatorSettings("2;0;1");

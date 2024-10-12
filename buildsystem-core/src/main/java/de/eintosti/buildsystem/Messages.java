@@ -894,8 +894,9 @@ public class Messages {
 
     private static void checkIfKeyPresent(String key) {
         if (!MESSAGES.containsKey(key)) {
-            Bukkit.getConsoleSender()
-                    .sendMessage(ChatColor.RED + "[BuildSystem] Could not find message with key: " + key);
+            Bukkit.getConsoleSender().sendMessage(
+                    ChatColor.RED + "[BuildSystem] Could not find message with key: " + key
+            );
             createMessageFile();
         }
     }

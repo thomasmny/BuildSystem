@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.navigator.settings.NavigatorType;
 import de.eintosti.buildsystem.util.InventoryUtils;
+import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -81,7 +82,9 @@ public class SettingsInventory implements Listener {
     }
 
     private XMaterial getSlabBreakingMaterial() {
-        return XMaterial.supports(13) ? XMaterial.SMOOTH_STONE_SLAB : XMaterial.STONE_SLAB;
+        return MinecraftVersion.getCurrent().isEqualOrHigherThan(MinecraftVersion.AQUATIC_13)
+                ? XMaterial.SMOOTH_STONE_SLAB
+                : XMaterial.STONE_SLAB;
     }
 
     public void openInventory(Player player) {

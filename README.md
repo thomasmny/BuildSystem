@@ -19,10 +19,8 @@
 ## Introduction
 
 **BuildSystem** is a simple but powerful - as the name already says - system for builders, with lots
-of great features
-for everyday usage. Manage worlds in the worlds navigator, change their permission, projects and
-status with ease. And
-not to forget: let each player decide which settings whey think are best for them and now the
+of great features for everyday usage. Manage worlds in the worlds navigator, change their permission, projects and
+status with ease. And not to forget: let each player decide which settings whey think are best for them and now the
 building can start!
 
 ## Links and Contacts
@@ -146,8 +144,7 @@ building can start!
 * `gradlew idea` will generate an [IntelliJ IDEA](https://www.jetbrains.com/idea/) module for each
   folder.
 * `gradlew eclipse` will generate an [Eclipse](https://www.eclipse.org/downloads/) project for each
-  folder. _(Possibly
-  broken!)_
+  folder. _(Possibly broken!)_
 
 ### PR Policy
 

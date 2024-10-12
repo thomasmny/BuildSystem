@@ -23,12 +23,12 @@ import com.cryptomorin.xseries.XTag;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.config.ConfigValues;
-import de.eintosti.buildsystem.player.PlayerManager;
 import de.eintosti.buildsystem.settings.Settings;
 import de.eintosti.buildsystem.settings.SettingsManager;
 import de.eintosti.buildsystem.util.MaterialUtils;
 import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import de.eintosti.buildsystem.version.util.DirectionUtil;
+import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.Builder;
 import de.eintosti.buildsystem.world.WorldManager;
@@ -64,18 +64,19 @@ public class SettingsInteractListener implements Listener {
             XMaterial.NETHER_SPROUTS, XMaterial.WARPED_ROOTS, XMaterial.CRIMSON_ROOTS, XMaterial.SUGAR_CANE, XMaterial.BAMBOO,
             XMaterial.BIG_DRIPLEAF, XMaterial.SMALL_DRIPLEAF, XMaterial.SEAGRASS, XMaterial.SWEET_BERRIES
     ), XMaterial.class);
+
     private final ConfigValues configValues;
     private final CustomBlocks customBlocks;
-    private final PlayerManager playerManager;
+
     private final SettingsManager settingsManager;
     private final WorldManager worldManager;
+
     private final Set<UUID> cachePlayers;
 
     public SettingsInteractListener(BuildSystem plugin) {
         this.configValues = plugin.getConfigValues();
         this.customBlocks = plugin.getCustomBlocks();
 
-        this.playerManager = plugin.getPlayerManager();
         this.settingsManager = plugin.getSettingsManager();
         this.worldManager = plugin.getWorldManager();
 
@@ -95,36 +96,36 @@ public class SettingsInteractListener implements Listener {
             return;
         }
 
-        boolean duelHanded = XMaterial.supports(9);
+        boolean duelHanded = MinecraftVersion.getCurrent().isEqualOrHigherThan(MinecraftVersion.COMBAT_9);
         if (duelHanded && event.getHand() != EquipmentSlot.valueOf("HAND")) {
             return;
         }
 
         Player player = event.getPlayer();
+        if (player.isSneaking() || event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
+
         Settings settings = settingsManager.getSettings(player);
         if (!settings.isTrapDoor()) {
             return;
         }
 
-        Action action = event.getAction();
         XMaterial material = XMaterial.matchXMaterial(block.getType());
-        if (action == Action.RIGHT_CLICK_BLOCK && (material == XMaterial.IRON_DOOR
-                || material == XMaterial.IRON_TRAPDOOR)) {
-            if (player.isSneaking()) {
-                return;
-            }
+        if (material != XMaterial.IRON_DOOR && material != XMaterial.IRON_TRAPDOOR) {
+            return;
+        }
 
-            event.setCancelled(true);
-            switch (material) {
-                case IRON_TRAPDOOR:
-                    customBlocks.toggleIronTrapdoor(event);
-                    break;
-                case IRON_DOOR:
-                    customBlocks.toggleIronDoor(event);
-                    break;
-                default:
-                    break;
-            }
+        event.setCancelled(true);
+        switch (material) {
+            case IRON_TRAPDOOR:
+                customBlocks.toggleIronTrapdoor(event);
+                break;
+            case IRON_DOOR:
+                customBlocks.toggleIronDoor(event);
+                break;
+            default:
+                break;
         }
     }
 
@@ -217,7 +218,7 @@ public class SettingsInteractListener implements Listener {
                 if (isHangingSign) {
                     return;
                 }
-                if (!XMaterial.supports(13)) {
+                if (MinecraftVersion.getCurrent().isLowerThan(MinecraftVersion.AQUATIC_13)) {
                     material = Material.getMaterial("SIGN_POST") != null ? Material.valueOf("SIGN_POST") : material;
                 }
                 adjacent.setType(material);
@@ -289,12 +290,13 @@ public class SettingsInteractListener implements Listener {
         event.setUseItemInHand(Event.Result.DENY);
         event.setUseInteractedBlock(Event.Result.DENY);
 
-        if (!XMaterial.supports(13) && XTag.isItem(xMaterial)) {
+        boolean preFlattening = MinecraftVersion.getCurrent().isLowerThan(MinecraftVersion.AQUATIC_13);
+        if (preFlattening && XTag.isItem(xMaterial)) {
             material = Material.valueOf(material.toString().replace("_ITEM", ""));
         }
 
         if (XTag.SIGNS.isTagged(xMaterial) && event.getBlockFace() != BlockFace.UP) {
-            if (!XMaterial.supports(13)) {
+            if (preFlattening) {
                 material = Material.valueOf("WALL_SIGN");
             } else {
                 String[] splitMaterial = material.toString().split("_");
@@ -360,7 +362,8 @@ public class SettingsInteractListener implements Listener {
             return false;
         }
 
-        if (buildWorld.getData().buildersEnabled().get() && !buildWorld.isBuilder(player)
+        if (buildWorld.getData().buildersEnabled().get()
+                && !buildWorld.isBuilder(player)
                 && !player.hasPermission("buildsystem.bypass.builders")) {
             return buildWorld.isCreator(player);
         }

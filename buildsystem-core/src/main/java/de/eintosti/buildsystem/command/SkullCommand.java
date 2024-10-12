@@ -54,18 +54,16 @@ public class SkullCommand implements CommandExecutor {
 
         switch (args.length) {
             case 0:
-                player.getInventory().addItem(inventoryUtils.getSkull("§b" + player.getName(), Profileable.of(player)));
+                addSkull(player, "§b" + player.getName(), Profileable.of(player));
                 Messages.sendMessage(player, "skull_player_received", new AbstractMap.SimpleEntry<>("%player%", player.getName()));
                 break;
             case 1:
                 String identifier = args[0];
                 if (identifier.length() > 16) {
-                    player.getInventory()
-                            .addItem(inventoryUtils.getSkull(Messages.getString("custom_skull_item", player), Profileable.detect(identifier)));
+                    addSkull(player, Messages.getString("custom_skull_item", player), Profileable.detect(identifier));
                     Messages.sendMessage(player, "skull_custom_received");
                 } else {
-                    player.getInventory()
-                            .addItem(inventoryUtils.getSkull("§b" + identifier, Profileable.detect(identifier)));
+                    addSkull(player, "§b" + identifier, Profileable.detect(identifier));
                     Messages.sendMessage(player, "skull_player_received", new AbstractMap.SimpleEntry<>("%player%", identifier));
                 }
                 break;
@@ -74,5 +72,9 @@ public class SkullCommand implements CommandExecutor {
                 break;
         }
         return true;
+    }
+
+    private void addSkull(Player player, String displayName, Profileable profileable) {
+        player.getInventory().addItem(inventoryUtils.getSkull(displayName, profileable));
     }
 }
