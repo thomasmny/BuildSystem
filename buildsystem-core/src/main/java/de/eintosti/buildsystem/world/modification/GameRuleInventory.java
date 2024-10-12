@@ -113,7 +113,7 @@ public class GameRuleInventory implements Listener {
             case FILLED_MAP:
             case MAP:
                 World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
-                gameRules.toggleGameRule(event, bukkitWorld);
+                gameRules.modifyGameRule(event, bukkitWorld);
                 break;
 
             default:
