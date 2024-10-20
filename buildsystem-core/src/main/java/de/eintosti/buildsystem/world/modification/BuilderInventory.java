@@ -75,18 +75,20 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         if (creator == null || creator.getName().equalsIgnoreCase("-")) {
             inventoryUtils.addItemStack(inventory, 4, XMaterial.BARRIER, Messages.getString("worldeditor_builders_no_creator_item", player));
         } else {
-            inventoryUtils.addSkull(inventory, 4, Messages.getString("worldeditor_builders_creator_item", player),
+            inventoryUtils.addSkull(inventory, 4,
+                    Messages.getString("worldeditor_builders_creator_item", player),
                     Profileable.of(creator.getUniqueId()),
-                    Messages.getString("worldeditor_builders_creator_lore", player, new AbstractMap.SimpleEntry<>("%creator%", buildWorld.getCreator()))
+                    Messages.getString("worldeditor_builders_creator_lore", player,
+                            new AbstractMap.SimpleEntry<>("%creator%", buildWorld.getCreator().getName())
+                    )
             );
         }
     }
 
     private void addBuilderAddItem(Inventory inventory, BuildWorld buildWorld, Player player) {
-        Builder creator = buildWorld.getCreator();
-        if ((creator != null && creator.getUniqueId().equals(player.getUniqueId()))
-                || player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
-            inventoryUtils.addSkull(inventory, 22, Messages.getString("worldeditor_builders_add_builder_item", player),
+        if (buildWorld.isCreator(player) || player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
+            inventoryUtils.addSkull(inventory, 22,
+                    Messages.getString("worldeditor_builders_add_builder_item", player),
                     Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716")
             );
         } else {
@@ -153,11 +155,6 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         }
 
         ItemStack itemStack = event.getCurrentItem();
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null) {
-            return;
-        }
-
         Material material = itemStack.getType();
         if (material != XMaterial.PLAYER_HEAD.parseMaterial()) {
             XSound.BLOCK_CHEST_OPEN.play(player);
@@ -185,10 +182,9 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
                 if (slot == 4) {
                     return;
                 }
-                if (!itemMeta.hasDisplayName()) {
-                    return;
-                }
-                if (!event.isShiftClick()) {
+
+                ItemMeta itemMeta = itemStack.getItemMeta();
+                if (itemMeta == null || !itemMeta.hasDisplayName() || !event.isShiftClick()) {
                     return;
                 }
 
