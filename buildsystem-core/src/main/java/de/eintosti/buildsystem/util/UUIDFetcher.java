@@ -17,12 +17,14 @@
  */
 package de.eintosti.buildsystem.util;
 
+import com.google.common.base.Charsets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import org.bukkit.Bukkit;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -53,6 +55,10 @@ public class UUIDFetcher {
         String lowerCase = name.toLowerCase(Locale.ROOT);
         if (UUID_CACHE.containsKey(lowerCase)) {
             return UUID_CACHE.get(lowerCase);
+        }
+
+        if (!Bukkit.getServer().getOnlineMode()) {
+            return UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(Charsets.UTF_8));
         }
 
         try {
