@@ -67,6 +67,7 @@ public enum CraftBukkitVersion {
     v1_20_R3(3700, CustomBlocks_1_20_R1.class, GameRules_1_13_R1.class),
     v1_20_R4(3839, CustomBlocks_1_20_R1.class, GameRules_1_13_R1.class),
     v1_21_R1(3953, CustomBlocks_1_20_R1.class, GameRules_1_13_R1.class),
+    v1_21_R2(4082, CustomBlocks_1_20_R1.class, GameRules_1_13_R1.class),
     UNKNOWN;
 
     private final int dataVersion;
@@ -157,7 +158,11 @@ public enum CraftBukkitVersion {
                     return v1_20_R4;
                 }
             case 21:
-                return v1_21_R1;
+                if (patch <= 1) {
+                    return v1_21_R1;
+                } else {
+                    return v1_21_R2;
+                }
             default:
                 if (Boolean.getBoolean("Paper.ignoreWorldDataVersion")) {
                     // Get latest version if server version is to be ignored
