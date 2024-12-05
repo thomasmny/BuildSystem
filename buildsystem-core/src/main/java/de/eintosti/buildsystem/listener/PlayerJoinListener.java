@@ -79,7 +79,6 @@ public class PlayerJoinListener implements Listener {
     @SuppressWarnings("deprecation")
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        UUIDFetcher.cacheUser(player.getUniqueId(), player.getName());
 
         BuildPlayer buildPlayer = playerManager.createBuildPlayer(player);
         manageHidePlayer(player, buildPlayer);
