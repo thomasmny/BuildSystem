@@ -62,6 +62,7 @@ import de.eintosti.buildsystem.listener.PlayerTeleportListener;
 import de.eintosti.buildsystem.listener.SettingsInteractListener;
 import de.eintosti.buildsystem.listener.SignChangeListener;
 import de.eintosti.buildsystem.listener.WeatherChangeListener;
+import de.eintosti.buildsystem.listener.WorldManipulateByAxiomListener;
 import de.eintosti.buildsystem.listener.WorldManipulateListener;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.navigator.inventory.ArchiveInventory;
@@ -88,6 +89,7 @@ import de.eintosti.buildsystem.tabcomplete.SpawnTabComplete;
 import de.eintosti.buildsystem.tabcomplete.SpeedTabComplete;
 import de.eintosti.buildsystem.tabcomplete.TimeTabComplete;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import de.eintosti.buildsystem.util.Axiom;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
@@ -333,7 +335,10 @@ public class BuildSystem extends JavaPlugin {
         new SettingsInteractListener(this);
         new SignChangeListener(this);
         new WeatherChangeListener(this);
-        new WorldManipulateListener(this);
+        WorldManipulateListener worldManipulateListener = new WorldManipulateListener(this);
+        if (Axiom.isAxiomAvailable()) {
+            new WorldManipulateByAxiomListener(this);
+        }
     }
 
     private void registerStats() {

@@ -19,6 +19,8 @@ package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.event.BuildWorldManipulationEventDispatcher;
+import de.eintosti.buildsystem.event.world.BuildWorldManipulationEvent;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.Builder;
 import de.eintosti.buildsystem.world.WorldManager;
@@ -43,44 +45,32 @@ public class WorldManipulateListener implements Listener {
 
     private final BuildSystem plugin;
     private final WorldManager worldManager;
+    private final BuildWorldManipulationEventDispatcher dispatcher;
 
     public WorldManipulateListener(BuildSystem plugin) {
         this.plugin = plugin;
         this.worldManager = plugin.getWorldManager();
+        this.dispatcher = new BuildWorldManipulationEventDispatcher(worldManager);
+
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBreak(BlockBreakEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
+        dispatcher.dispatchIfPlayerInBuildWorld(event.getPlayer(), event);
+    }
 
-        Player player = event.getPlayer();
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
-        if (buildWorld == null) {
-            return;
-        }
-
-        WorldData worldData = buildWorld.getData();
-        if (!manageWorldInteraction(player, event, worldData.blockBreaking().get())) {
-            worldData.lastEdited().set(System.currentTimeMillis());
-            updateStatus(worldData, player);
-        }
+    public void onBlockPlace(BlockPlaceEvent event) {
+        dispatcher.dispatchIfPlayerInBuildWorld(event.getPlayer(), event);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onBlockPlace(BlockPlaceEvent event) {
+    public void onWorldManipulation(BuildWorldManipulationEvent event) {
         if (event.isCancelled()) {
             return;
         }
-
         Player player = event.getPlayer();
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
-        if (buildWorld == null) {
-            return;
-        }
-
+        BuildWorld buildWorld = event.getBuildWorld();
         WorldData worldData = buildWorld.getData();
         if (!manageWorldInteraction(player, event, worldData.blockPlacement().get())) {
             worldData.lastEdited().set(System.currentTimeMillis());
@@ -140,6 +130,7 @@ public class WorldManipulateListener implements Listener {
         }
     }
 
+
     /**
      * Not every player can always interact with the {@link BuildWorld} they are in.
      * <p>
@@ -161,7 +152,7 @@ public class WorldManipulateListener implements Listener {
      * @param event  the event which was called by the world manipulation
      * @return if the event called when the player performs an action was cancelled
      */
-    private boolean manageWorldInteraction(Player player, Event event, boolean worldSetting) {
+    public boolean manageWorldInteraction(Player player, Event event, boolean worldSetting) {
         String worldName = player.getWorld().getName();
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
@@ -230,7 +221,7 @@ public class WorldManipulateListener implements Listener {
         }
     }
 
-    private void updateStatus(WorldData worldData, Player player) {
+    public void updateStatus(WorldData worldData, Player player) {
         if (worldData.status().get() == WorldStatus.NOT_STARTED) {
             worldData.status().set(WorldStatus.IN_PROGRESS);
             plugin.getPlayerManager().forceUpdateSidebar(player);
