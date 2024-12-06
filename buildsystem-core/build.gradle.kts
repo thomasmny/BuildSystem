@@ -34,6 +34,7 @@ dependencies {
     compileOnly(libs.placeholderapi)
     compileOnly(libs.worldedit)
     compileOnly(libs.annotations)
+    compileOnly(fileTree("../libs"))
 
     implementation(libs.paperlib)
     implementation(libs.xseries)

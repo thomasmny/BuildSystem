@@ -122,3 +122,6 @@ buildSrc/build/
 buildSrc/.gradle/
 run/
 /*.jar
+
+
+libs/*.jar
