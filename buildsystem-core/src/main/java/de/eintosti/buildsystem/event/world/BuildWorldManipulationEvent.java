@@ -8,12 +8,18 @@ import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * This event shall reduce duplicated code.
+ * This event reduces duplicated code.
  * <p>It will be called when</p>
  * <ul>
  *     <li>Breaking Blocks</li>
  *     <li>Placing Blocks</li>
+ *     <li>Other modification related stuff</li>
  * </ul>
+ * Cancelling this event will affect the parent-Event, which has caused the ManipulationEvent to fire.
+ * <p>Expect the manipulation event to be cancelled at {@link org.bukkit.event.EventPriority#LOW} if the player is not allowed to interact with the world.</p>
+ *
+ * @see de.eintosti.buildsystem.listener.WorldManipulateListener
+ * @since TODO
  */
 public class BuildWorldManipulationEvent extends BuildWorldEvent implements Cancellable {
 
@@ -42,6 +48,9 @@ public class BuildWorldManipulationEvent extends BuildWorldEvent implements Canc
         parentEvent.setCancelled(cancelled);
     }
 
+    /**
+     * @return the event which has caused the manipulation event to fire.
+     */
     public Cancellable getParentEvent() {
         return parentEvent;
     }

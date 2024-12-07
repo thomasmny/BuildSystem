@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.event.BuildWorldManipulationEventDispatcher;
+import de.eintosti.buildsystem.event.EventDispatcher;
 import de.eintosti.buildsystem.event.world.BuildWorldManipulationEvent;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.Builder;
@@ -45,23 +45,23 @@ public class WorldManipulateListener implements Listener {
 
     private final BuildSystem plugin;
     private final WorldManager worldManager;
-    private final BuildWorldManipulationEventDispatcher dispatcher;
+    private final EventDispatcher dispatcher;
 
     public WorldManipulateListener(BuildSystem plugin) {
         this.plugin = plugin;
         this.worldManager = plugin.getWorldManager();
-        this.dispatcher = new BuildWorldManipulationEventDispatcher(worldManager);
+        this.dispatcher = new EventDispatcher(worldManager);
 
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBreak(BlockBreakEvent event) {
-        dispatcher.dispatchIfPlayerInBuildWorld(event.getPlayer(), event);
+        dispatcher.dispatchManipulationEventIfPlayerInBuildWorld(event.getPlayer(), event);
     }
 
     public void onBlockPlace(BlockPlaceEvent event) {
-        dispatcher.dispatchIfPlayerInBuildWorld(event.getPlayer(), event);
+        dispatcher.dispatchManipulationEventIfPlayerInBuildWorld(event.getPlayer(), event);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
