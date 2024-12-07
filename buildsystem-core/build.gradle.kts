@@ -45,7 +45,7 @@ dependencies {
     compileOnly(libs.placeholderapi)
     compileOnly(libs.worldedit)
     compileOnly(libs.annotations)
-    compileOnly("maven.modrinth.workaround:axiom-paper-plugin:4.0.1-1.21.1")
+    compileOnly(libs.axiompaper)
 
     implementation(libs.paperlib)
     implementation(libs.xseries)
