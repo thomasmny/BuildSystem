@@ -19,6 +19,8 @@ package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.event.EventDispatcher;
+import de.eintosti.buildsystem.event.world.BuildWorldManipulationEvent;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.Builder;
 import de.eintosti.buildsystem.world.WorldManager;
@@ -43,49 +45,24 @@ public class WorldManipulateListener implements Listener {
 
     private final BuildSystem plugin;
     private final WorldManager worldManager;
+    private final EventDispatcher dispatcher;
 
     public WorldManipulateListener(BuildSystem plugin) {
         this.plugin = plugin;
         this.worldManager = plugin.getWorldManager();
+        this.dispatcher = new EventDispatcher(worldManager);
+
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBreak(BlockBreakEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
-
-        Player player = event.getPlayer();
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
-        if (buildWorld == null) {
-            return;
-        }
-
-        WorldData worldData = buildWorld.getData();
-        if (!manageWorldInteraction(player, event, worldData.blockBreaking().get())) {
-            worldData.lastEdited().set(System.currentTimeMillis());
-            updateStatus(worldData, player);
-        }
+        dispatcher.dispatchManipulationEventIfPlayerInBuildWorld(event.getPlayer(), event);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockPlace(BlockPlaceEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
-
-        Player player = event.getPlayer();
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
-        if (buildWorld == null) {
-            return;
-        }
-
-        WorldData worldData = buildWorld.getData();
-        if (!manageWorldInteraction(player, event, worldData.blockPlacement().get())) {
-            worldData.lastEdited().set(System.currentTimeMillis());
-            updateStatus(worldData, player);
-        }
+        dispatcher.dispatchManipulationEventIfPlayerInBuildWorld(event.getPlayer(), event);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -94,7 +71,6 @@ public class WorldManipulateListener implements Listener {
             return;
         }
         Player player = (Player) event.getDamager();
-
         BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
         if (buildWorld == null) {
             return;
@@ -139,6 +115,33 @@ public class WorldManipulateListener implements Listener {
             }
         }
     }
+
+
+    @EventHandler(priority = EventPriority.LOW)
+    public void onWorldManipulation(BuildWorldManipulationEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+        Player player = event.getPlayer();
+        BuildWorld buildWorld = event.getBuildWorld();
+        WorldData worldData = buildWorld.getData();
+
+        if (!manageWorldInteraction(player, event, getRelatedWorldSetting(event.getParentEvent(), worldData))) {
+            worldData.lastEdited().set(System.currentTimeMillis());
+            updateStatus(worldData, player);
+        }
+    }
+
+    private boolean getRelatedWorldSetting(Cancellable event, WorldData data) {
+        if (event instanceof BlockBreakEvent) {
+            return data.blockBreaking().get();
+        }
+        if (event instanceof BlockPlaceEvent) {
+            return data.blockPlacement().get();
+        }
+        return data.blockInteractions().get();
+    }
+
 
     /**
      * Not every player can always interact with the {@link BuildWorld} they are in.
