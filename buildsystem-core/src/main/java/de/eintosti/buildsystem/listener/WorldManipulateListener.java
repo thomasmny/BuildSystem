@@ -125,12 +125,22 @@ public class WorldManipulateListener implements Listener {
         Player player = event.getPlayer();
         BuildWorld buildWorld = event.getBuildWorld();
         WorldData worldData = buildWorld.getData();
-        if (!manageWorldInteraction(player, event, worldData.blockPlacement().get())) {
+
+        if (!manageWorldInteraction(player, event, getRelatedWorldSetting(event.getParentEvent(), worldData))) {
             worldData.lastEdited().set(System.currentTimeMillis());
             updateStatus(worldData, player);
         }
     }
 
+    private boolean getRelatedWorldSetting(Cancellable event, WorldData data) {
+        if (event instanceof BlockBreakEvent) {
+            return data.blockBreaking().get();
+        }
+        if (event instanceof BlockPlaceEvent) {
+            return data.blockPlacement().get();
+        }
+        return data.blockInteractions().get();
+    }
 
 
     /**
