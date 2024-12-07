@@ -154,7 +154,7 @@ public class WorldManipulateListener implements Listener {
      * @param event  the event which was called by the world manipulation
      * @return if the event called when the player performs an action was cancelled
      */
-    public boolean manageWorldInteraction(Player player, Event event, boolean worldSetting) {
+    private boolean manageWorldInteraction(Player player, Event event, boolean worldSetting) {
         String worldName = player.getWorld().getName();
         BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
@@ -223,7 +223,7 @@ public class WorldManipulateListener implements Listener {
         }
     }
 
-    public void updateStatus(WorldData worldData, Player player) {
+    private void updateStatus(WorldData worldData, Player player) {
         if (worldData.status().get() == WorldStatus.NOT_STARTED) {
             worldData.status().set(WorldStatus.IN_PROGRESS);
             plugin.getPlayerManager().forceUpdateSidebar(player);
