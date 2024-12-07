@@ -20,6 +20,17 @@ repositories {
         name = "PlaceholderAPI"
         url = uri("https://repo.extendedclip.com/content/repositories/placeholderapi/")
     }
+
+    maven {
+        name = "Modrinth"
+        url = uri("https://api.modrinth.com/maven")
+    }
+
+    modrinthMavenWorkaround(
+        "axiom-paper-plugin",
+        "4.0.1-1.21.1",
+        "AxiomPaper-4.0.1-for-MC1.21.1.jar"
+    )
 }
 
 dependencies {
@@ -34,7 +45,7 @@ dependencies {
     compileOnly(libs.placeholderapi)
     compileOnly(libs.worldedit)
     compileOnly(libs.annotations)
-    compileOnly(fileTree("../libs"))
+    compileOnly("maven.modrinth.workaround:axiom-paper-plugin:4.0.1-1.21.1")
 
     implementation(libs.paperlib)
     implementation(libs.xseries)
