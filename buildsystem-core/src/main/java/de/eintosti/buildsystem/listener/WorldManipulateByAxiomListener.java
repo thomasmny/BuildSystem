@@ -12,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
  */
 public class WorldManipulateByAxiomListener implements Listener {
 
-    private final BuildSystem plugin;
     private final EventDispatcher dispatcher;
 
 
@@ -20,7 +19,6 @@ public class WorldManipulateByAxiomListener implements Listener {
      * @param plugin plugin to register.
      */
     public WorldManipulateByAxiomListener(@NotNull BuildSystem plugin) {
-        this.plugin = plugin;
         this.dispatcher = new EventDispatcher(plugin.getWorldManager());
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }

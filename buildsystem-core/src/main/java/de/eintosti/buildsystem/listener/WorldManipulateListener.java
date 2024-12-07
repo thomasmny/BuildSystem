@@ -60,22 +60,9 @@ public class WorldManipulateListener implements Listener {
         dispatcher.dispatchManipulationEventIfPlayerInBuildWorld(event.getPlayer(), event);
     }
 
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockPlace(BlockPlaceEvent event) {
         dispatcher.dispatchManipulationEventIfPlayerInBuildWorld(event.getPlayer(), event);
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onWorldManipulation(BuildWorldManipulationEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
-        Player player = event.getPlayer();
-        BuildWorld buildWorld = event.getBuildWorld();
-        WorldData worldData = buildWorld.getData();
-        if (!manageWorldInteraction(player, event, worldData.blockPlacement().get())) {
-            worldData.lastEdited().set(System.currentTimeMillis());
-            updateStatus(worldData, player);
-        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -84,7 +71,6 @@ public class WorldManipulateListener implements Listener {
             return;
         }
         Player player = (Player) event.getDamager();
-
         BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
         if (buildWorld == null) {
             return;
@@ -129,6 +115,22 @@ public class WorldManipulateListener implements Listener {
             }
         }
     }
+
+
+    @EventHandler(priority = EventPriority.LOW)
+    public void onWorldManipulation(BuildWorldManipulationEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+        Player player = event.getPlayer();
+        BuildWorld buildWorld = event.getBuildWorld();
+        WorldData worldData = buildWorld.getData();
+        if (!manageWorldInteraction(player, event, worldData.blockPlacement().get())) {
+            worldData.lastEdited().set(System.currentTimeMillis());
+            updateStatus(worldData, player);
+        }
+    }
+
 
 
     /**
