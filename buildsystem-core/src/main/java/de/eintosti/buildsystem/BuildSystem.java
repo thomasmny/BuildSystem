@@ -335,7 +335,7 @@ public class BuildSystem extends JavaPlugin {
         new SettingsInteractListener(this);
         new SignChangeListener(this);
         new WeatherChangeListener(this);
-        WorldManipulateListener worldManipulateListener = new WorldManipulateListener(this);
+        new WorldManipulateListener(this);
         if (Axiom.isAxiomAvailable()) {
             new WorldManipulateByAxiomListener(this);
             getLogger().info("Detected Axiom: Axiom build-world manipulation prevention has been enabled.");
