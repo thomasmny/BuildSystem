@@ -62,6 +62,7 @@ import de.eintosti.buildsystem.listener.PlayerTeleportListener;
 import de.eintosti.buildsystem.listener.SettingsInteractListener;
 import de.eintosti.buildsystem.listener.SignChangeListener;
 import de.eintosti.buildsystem.listener.WeatherChangeListener;
+import de.eintosti.buildsystem.listener.WorldManipulateByAxiomListener;
 import de.eintosti.buildsystem.listener.WorldManipulateListener;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.navigator.inventory.ArchiveInventory;
@@ -375,6 +376,11 @@ public class BuildSystem extends JavaPlugin {
         if (pluginManager.getPlugin("LuckPerms") != null) {
             this.luckPermsExpansion = new LuckPermsExpansion(this);
             this.luckPermsExpansion.registerAll();
+        }
+
+        if (pluginManager.getPlugin("AxiomPaper") != null) {
+            new WorldManipulateByAxiomListener(this);
+            getLogger().info("Axiom build-world manipulation prevention has been enabled.");
         }
 
         boolean isWorldEdit = pluginManager.getPlugin("WorldEdit") != null
