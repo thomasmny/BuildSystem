@@ -335,10 +335,7 @@ public class BuildSystem extends JavaPlugin {
         new SignChangeListener(this);
         new WeatherChangeListener(this);
         new WorldManipulateListener(this);
-        if (getServer().getPluginManager().getPlugin("AxiomPaper") != null) {
-            new WorldManipulateByAxiomListener(this);
-            getLogger().info("Detected Axiom: Axiom build-world manipulation prevention has been enabled.");
-        }
+
     }
 
     private void registerStats() {
@@ -380,6 +377,11 @@ public class BuildSystem extends JavaPlugin {
         if (pluginManager.getPlugin("LuckPerms") != null) {
             this.luckPermsExpansion = new LuckPermsExpansion(this);
             this.luckPermsExpansion.registerAll();
+        }
+
+        if (pluginManager.getPlugin("AxiomPaper") != null) {
+            new WorldManipulateByAxiomListener(this);
+            getLogger().info("Axiom build-world manipulation prevention has been enabled.");
         }
 
         boolean isWorldEdit = pluginManager.getPlugin("WorldEdit") != null
