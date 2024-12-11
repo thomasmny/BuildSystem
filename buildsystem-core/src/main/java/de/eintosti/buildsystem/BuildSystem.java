@@ -89,7 +89,6 @@ import de.eintosti.buildsystem.tabcomplete.SpawnTabComplete;
 import de.eintosti.buildsystem.tabcomplete.SpeedTabComplete;
 import de.eintosti.buildsystem.tabcomplete.TimeTabComplete;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
-import de.eintosti.buildsystem.util.Axiom;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
@@ -336,7 +335,7 @@ public class BuildSystem extends JavaPlugin {
         new SignChangeListener(this);
         new WeatherChangeListener(this);
         new WorldManipulateListener(this);
-        if (Axiom.isAxiomAvailable()) {
+        if (getServer().getPluginManager().getPlugin("AxiomPaper") != null) {
             new WorldManipulateByAxiomListener(this);
             getLogger().info("Detected Axiom: Axiom build-world manipulation prevention has been enabled.");
         }

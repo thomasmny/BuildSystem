@@ -5,7 +5,7 @@ author: einTosti
 main: de.eintosti.buildsystem.BuildSystem
 description: Powerful, easy to use system for builders
 website: https://buildsystem.eintosti.de
-softdepend: [ LuckPerms, PlaceholderAPI, WorldEdit ]
+softdepend: [ LuckPerms, PlaceholderAPI, WorldEdit, AxiomPaper ]
 
 commands:
   back:
