@@ -335,7 +335,6 @@ public class BuildSystem extends JavaPlugin {
         new SignChangeListener(this);
         new WeatherChangeListener(this);
         new WorldManipulateListener(this);
-
     }
 
     private void registerStats() {
