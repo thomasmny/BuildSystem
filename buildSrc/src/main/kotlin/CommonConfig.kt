@@ -2,6 +2,7 @@ import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.kotlin.dsl.repositories
 import org.gradle.kotlin.dsl.the
 import org.gradle.kotlin.dsl.withType
@@ -28,8 +29,14 @@ fun Project.applyCommonConfiguration() {
     }
 
     plugins.withId("java") {
-        the<JavaPluginExtension>().sourceCompatibility = JavaVersion.VERSION_1_8
-        the<JavaPluginExtension>().targetCompatibility = JavaVersion.VERSION_1_8
+        the<JavaPluginExtension>().apply {
+            sourceCompatibility = JavaVersion.VERSION_1_8
+            targetCompatibility = JavaVersion.VERSION_1_8
+
+            toolchain {
+                languageVersion.set(JavaLanguageVersion.of(21))
+            }
+        }
     }
 
     tasks.withType<JavaCompile> {
