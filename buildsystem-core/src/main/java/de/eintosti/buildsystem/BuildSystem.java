@@ -458,6 +458,7 @@ public class BuildSystem extends JavaPlugin {
         }
 
         configValues.setConfigValues();
+        Messages.createMessageFile();
 
         if (init) {
             initVersionedClasses();
