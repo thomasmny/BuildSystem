@@ -303,10 +303,9 @@ public class InventoryUtils {
      * <p>
      * If the click is a...
      * <ul>
-     *   <l>...left click, the world is loaded (if previously unloaded) and the player is teleported to said world.</li>
+     *   <li>...left click, the world is loaded (if previously unloaded) and the player is teleported to said world.</li>
      *   <li>...right click and the player is permitted to edit the world {@link WorldManager#isPermitted(Player, String, String)},
-     *       the {@link EditInventory} for the world is opened for said player.
-     *       If the player does not the the required permission the click is handled as a normal left click.</li>
+     *       the {@link EditInventory} for the world is opened for said player. If the player does not the required permission the click is handled as a normal left click.</li>
      * </ul>
      *
      * @param event      The click event to modify

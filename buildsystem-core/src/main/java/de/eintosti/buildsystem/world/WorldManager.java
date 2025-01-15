@@ -661,8 +661,29 @@ public class WorldManager {
         return ground.getType().isSolid();
     }
 
+    /**
+     * Determines whether the player can enter the specified build world.
+     * <p>
+     * The following logic is applied to decide if the player can enter:
+     * <ul>
+     *   <li>Does the player have the {@link BuildSystem#ADMIN_PERMISSION} or can bypass the world's permission?</li>
+     *   <li>Is the player the creator of the build world?</li>
+     *   <li>Is the player a builder for the build world?</li>
+     *   <li>Does the build world have a specific permission, and does the player have that permission?</li>
+     *   <li>If no specific permission is set (denoted by {@code "-"}), entry is allowed.</li>
+     * </ul>
+     *
+     * @param player     The player whose access is being evaluated
+     * @param buildWorld The build world the player is attempting to enter
+     * @return {@code true} if the player can enter the build world, {@code false} otherwise
+     * @see #canBypassWorldPermission(Player, BuildWorld)
+     */
     public boolean canEnter(Player player, BuildWorld buildWorld) {
-        if (player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
+        if (player.hasPermission(BuildSystem.ADMIN_PERMISSION) || canBypassWorldPermission(player, buildWorld)) {
+            return true;
+        }
+
+        if (buildWorld.isCreator(player) || buildWorld.isBuilder(player)) {
             return true;
         }
 
@@ -671,11 +692,31 @@ public class WorldManager {
             return true;
         }
 
-        if (buildWorld.isCreator(player) || buildWorld.isBuilder(player)) {
-            return true;
+        return player.hasPermission(permission);
+    }
+
+    /**
+     * Determines whether the player has permission to bypass restrictions for a specific build world.
+     * <p>
+     * <ul>
+     *   <li>If the world is public, does the player have the permission {@code buildsystem.bypass.permission.public}?</li>
+     *   <li>If the world is archived, does the player have the permission {@code buildsystem.bypass.permission.archive}?</li>
+     *   <li>If the world is private, does the player have the permission {@code buildsystem.bypass.permission.private}?</li>
+     * </ul>
+     *
+     * @param player     The player whose permissions will be checked
+     * @param buildWorld The build world for which bypass permissions are evaluated
+     * @return {@code true} if the player has bypass permissions for the specified world, {@code false} otherwise
+     */
+    private boolean canBypassWorldPermission(Player player, BuildWorld buildWorld) {
+        WorldData worldData = buildWorld.getData();
+        if (worldData.status().get() == WorldStatus.ARCHIVE) {
+            return player.hasPermission("buildsystem.bypass.permission.archive");
         }
 
-        return player.hasPermission(permission);
+        return worldData.privateWorld().get()
+                ? player.hasPermission("buildsystem.bypass.permission.private")
+                : player.hasPermission("buildsystem.bypass.permission.public");
     }
 
     public boolean canBypassBuildRestriction(Player player) {
