@@ -73,7 +73,7 @@ public class BlockPhysicsListener implements Listener {
                 break;
             case REDSTONE_LAMP:
                 for (BlockFace blockFace : DirectionUtil.BLOCK_SIDES) {
-                    if (block.getRelative(blockFace).getType() == XMaterial.REDSTONE_BLOCK.parseMaterial()) {
+                    if (block.getRelative(blockFace).getType() == XMaterial.REDSTONE_BLOCK.get()) {
                         event.setCancelled(false);
                         return;
                     }

@@ -153,7 +153,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
 
         ItemStack itemStack = event.getCurrentItem();
         Material material = itemStack.getType();
-        if (material != XMaterial.PLAYER_HEAD.parseMaterial()) {
+        if (material != XMaterial.PLAYER_HEAD.get()) {
             if (plugin.getWorldManager().isPermitted(player, WorldsArgument.EDIT.getPermission(), buildWorld.getName())) {
                 XSound.BLOCK_CHEST_OPEN.play(player);
                 plugin.getEditInventory().openInventory(player, buildWorld);

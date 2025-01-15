@@ -85,7 +85,7 @@ public class InventoryUtils {
     }
 
     public boolean isNavigator(Player player, ItemStack itemStack) {
-        if (itemStack == null || itemStack.getType() != configValues.getNavigatorItem().parseMaterial()) {
+        if (itemStack == null || itemStack.getType() != configValues.getNavigatorItem().get()) {
             return false;
         }
 
@@ -126,7 +126,7 @@ public class InventoryUtils {
 
         for (int i = 0; i < playerInventory.getSize(); i++) {
             ItemStack currentItem = playerInventory.getItem(i);
-            if (currentItem != null && currentItem.getType() == findItemType.parseMaterial()) {
+            if (currentItem != null && currentItem.getType() == findItemType.get()) {
                 ItemMeta itemMeta = currentItem.getItemMeta();
                 if (itemMeta != null) {
                     if (itemMeta.getDisplayName().equals(findItemName)) {
@@ -140,7 +140,7 @@ public class InventoryUtils {
             playerInventory.setItem(slot, replaceItem);
         } else {
             ItemStack slot8 = playerInventory.getItem(8);
-            if (slot8 == null || slot8.getType() == XMaterial.AIR.parseMaterial()) {
+            if (slot8 == null || slot8.getType() == XMaterial.AIR.get()) {
                 playerInventory.setItem(8, replaceItem);
             } else {
                 playerInventory.addItem(replaceItem);
@@ -292,7 +292,7 @@ public class InventoryUtils {
             return;
         }
 
-        if (slot >= 45 && slot <= 53 && itemStack.getType() != XMaterial.PLAYER_HEAD.parseMaterial()) {
+        if (slot >= 45 && slot <= 53 && itemStack.getType() != XMaterial.PLAYER_HEAD.get()) {
             XSound.BLOCK_CHEST_OPEN.play(player);
             plugin.getNavigatorInventory().openInventory(player);
         }

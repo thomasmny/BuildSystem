@@ -204,7 +204,7 @@ public class SettingsInteractListener implements Listener {
         }
 
         Block adjacent = clickedBlock.getRelative(blockFace);
-        if (adjacent.getType() != XMaterial.AIR.parseMaterial()) {
+        if (adjacent.getType() != XMaterial.AIR.get()) {
             return;
         }
 
@@ -240,7 +240,7 @@ public class SettingsInteractListener implements Listener {
                         .replace("_SIGN", ""); // Get wood type
                 String block = isHangingSign ? "_WALL_HANGING_SIGN" : "_WALL_SIGN";
                 BlockFace facing = isHangingSign ? getHangingSignDirection(event) : blockFace;
-                XMaterial.matchXMaterial(woodType + block).ifPresent(value -> adjacent.setType(value.parseMaterial()));
+                XMaterial.matchXMaterial(woodType + block).ifPresent(value -> adjacent.setType(value.get()));
                 customBlocks.rotateBlock(adjacent, player, facing);
                 break;
             default:

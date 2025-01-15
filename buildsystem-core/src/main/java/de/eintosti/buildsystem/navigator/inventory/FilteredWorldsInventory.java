@@ -245,7 +245,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
                 }
                 return;
             case 49:
-                if (itemStack.getType() == XMaterial.PLAYER_HEAD.parseMaterial()) {
+                if (itemStack.getType() == XMaterial.PLAYER_HEAD.get()) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     plugin.getCreateInventory().openInventory(player, CreateInventory.Page.PREDEFINED, visibility);
                     return;

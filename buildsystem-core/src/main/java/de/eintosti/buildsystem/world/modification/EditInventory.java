@@ -320,7 +320,7 @@ public class EditInventory implements Listener {
                 }
                 return;
             case 30:
-                if (itemStack.getType() == XMaterial.BARRIER.parseMaterial()) {
+                if (itemStack.getType() == XMaterial.BARRIER.get()) {
                     XSound.ENTITY_ITEM_BREAK.play(player);
                     return;
                 }
@@ -340,7 +340,7 @@ public class EditInventory implements Listener {
                 }
                 break;
             case 32:
-                if (itemStack.getType() == XMaterial.BARRIER.parseMaterial()) {
+                if (itemStack.getType() == XMaterial.BARRIER.get()) {
                     XSound.ENTITY_ITEM_BREAK.play(player);
                     return;
                 }

@@ -248,7 +248,7 @@ public class PlayerManager {
                 .getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item", player));
         PlayerInventory playerInventory = player.getInventory();
         ItemStack slot8 = playerInventory.getItem(8);
-        if (slot8 == null || slot8.getType() == XMaterial.AIR.parseMaterial()) {
+        if (slot8 == null || slot8.getType() == XMaterial.AIR.get()) {
             playerInventory.setItem(8, itemStack);
         } else {
             playerInventory.addItem(itemStack);

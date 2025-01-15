@@ -95,7 +95,7 @@ public class WorldManipulateListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(PlayerInteractEvent event) {
         ItemStack itemStack = event.getItem();
-        if (itemStack != null && itemStack.getType() == plugin.getConfigValues().getWorldEditWand().parseMaterial()) {
+        if (itemStack != null && itemStack.getType() == plugin.getConfigValues().getWorldEditWand().get()) {
             return;
         }
 
@@ -109,8 +109,7 @@ public class WorldManipulateListener implements Listener {
         manageWorldInteraction(player, event, worldData.blockInteractions().get());
 
         if (!worldData.physics().get() && event.getClickedBlock() != null) {
-            if (event.getAction() == Action.PHYSICAL
-                    && event.getClickedBlock().getType() == XMaterial.FARMLAND.parseMaterial()) {
+            if (event.getAction() == Action.PHYSICAL && event.getClickedBlock().getType() == XMaterial.FARMLAND.get()) {
                 event.setCancelled(true);
             }
         }
@@ -148,7 +147,7 @@ public class WorldManipulateListener implements Listener {
      * <p>
      * Reasons an interaction could be cancelled:
      * <ul>
-     *     <li>The world has its {@link WorldStatus} set to archived;</li>
+     *     <li>The world has its {@link WorldStatus} set to archive;</li>
      *     <li>The world has a setting enabled which disallows certain events;</li>
      *     <li>The world only allows {@link Builder}s to build and the player is not such a builder.</li>
      * </ul>
