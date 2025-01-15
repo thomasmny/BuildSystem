@@ -23,6 +23,7 @@ import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
+import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete.WorldsArgument;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.PaginatedInventory;
 import de.eintosti.buildsystem.util.StringUtils;
@@ -100,8 +101,15 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
 
         int columnSkull = 9, maxColumnSkull = 17;
         for (Builder builder : builders) {
-            String builderName = builder.getName();
-            inventoryUtils.addSkull(inventory, columnSkull++, Messages.getString("worldeditor_builders_builder_item", player, new AbstractMap.SimpleEntry<>("%builder%", builderName)), Profileable.username(builderName), Messages.getStringList("worldeditor_builders_builder_lore", player));
+            inventoryUtils.addSkull(
+                    inventory,
+                    columnSkull++,
+                    Messages.getString("worldeditor_builders_builder_item", player,
+                            new AbstractMap.SimpleEntry<>("%builder%", builder.getName())
+                    ),
+                    Profileable.username(builder.getName()),
+                    Messages.getStringList("worldeditor_builders_builder_lore", player)
+            );
 
             if (columnSkull > maxColumnSkull) {
                 columnSkull = 9;
@@ -146,8 +154,10 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         ItemStack itemStack = event.getCurrentItem();
         Material material = itemStack.getType();
         if (material != XMaterial.PLAYER_HEAD.parseMaterial()) {
-            XSound.BLOCK_CHEST_OPEN.play(player);
-            plugin.getEditInventory().openInventory(player, buildWorld);
+            if (plugin.getWorldManager().isPermitted(player, WorldsArgument.EDIT.getPermission(), buildWorld.getName())) {
+                XSound.BLOCK_CHEST_OPEN.play(player);
+                plugin.getEditInventory().openInventory(player, buildWorld);
+            }
             return;
         }
 
