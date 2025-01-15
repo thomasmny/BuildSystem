@@ -47,7 +47,7 @@ public class BuildSystemCommand extends PagedCommand implements CommandExecutor 
         }
 
         Player player = (Player) sender;
-        if (!player.hasPermission("buildsystem.buildsystem")) {
+        if (!player.hasPermission("buildsystem.help.buildsystem")) {
             plugin.sendPermissionMessage(player);
             return true;
         }
