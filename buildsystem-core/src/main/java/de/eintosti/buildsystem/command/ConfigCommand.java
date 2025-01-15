@@ -49,7 +49,7 @@ public class ConfigCommand implements CommandExecutor {
         switch (args[0].toLowerCase(Locale.ROOT)) {
             case "rl":
             case "reload":
-                plugin.reloadConfig();
+                Messages.reloadMessages();
                 plugin.reloadConfigData(true);
                 Messages.sendMessage(sender, "config_reloaded");
                 break;

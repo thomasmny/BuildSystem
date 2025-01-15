@@ -892,6 +892,11 @@ public class Messages {
                 });
     }
 
+    public static void reloadMessages() {
+        MESSAGES.clear();
+        createMessageFile();
+    }
+
     private static void checkIfKeyPresent(String key) {
         if (!MESSAGES.containsKey(key)) {
             Bukkit.getConsoleSender().sendMessage(

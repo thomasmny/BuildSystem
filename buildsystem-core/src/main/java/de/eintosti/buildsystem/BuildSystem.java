@@ -216,7 +216,6 @@ public class BuildSystem extends JavaPlugin {
             playerManager.closeNavigator(pl);
         });
 
-        reloadConfig();
         reloadConfigData(false);
         saveConfig();
 
@@ -452,13 +451,18 @@ public class BuildSystem extends JavaPlugin {
         Messages.sendMessage(sender, "no_permissions");
     }
 
+    /**
+     * Reloads the config and config data.
+     *
+     * @param init Whether the plugin should reinitialize classes
+     */
     public void reloadConfigData(boolean init) {
         for (Player pl : Bukkit.getOnlinePlayers()) {
             getSettingsManager().stopScoreboard(pl);
         }
 
+        reloadConfig();
         configValues.setConfigValues();
-        Messages.createMessageFile();
 
         if (init) {
             initVersionedClasses();
