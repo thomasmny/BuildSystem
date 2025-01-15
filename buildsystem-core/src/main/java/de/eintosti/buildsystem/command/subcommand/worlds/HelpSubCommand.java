@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.google.common.collect.Lists;
+import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.PagedCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
@@ -29,12 +30,20 @@ import org.bukkit.entity.Player;
 
 public class HelpSubCommand extends PagedCommand implements SubCommand {
 
-    public HelpSubCommand() {
-        super("worlds_help_permission", "worlds_help_title_with_page");
+    private final BuildSystem plugin;
+
+    public HelpSubCommand(BuildSystem plugin) {
+        super("worlds_help_title_with_page", "worlds_help_permission");
+        this.plugin = plugin;
     }
 
     @Override
     public void execute(Player player, String[] args) {
+        if (!hasPermission(player)) {
+            plugin.sendPermissionMessage(player);
+            return;
+        }
+
         if (args.length == 1) {
             sendMessage(player, 1);
         } else if (args.length == 2) {

@@ -67,11 +67,17 @@ commands:
     usage: /<command>
 
 permissions:
+  buildsystem.help:
+    children:
+      - buildsystem.help.buildsystem
+      - buildsystem.help.worlds
+    default: true
+    description: Permission for help commands.
   buildsystem.navigator:
     description: Open the worlds navigator.
     default: true
   buildsystem.navigator.item:
-    description: Receive and use the naviagtor open.
+    description: Receive and use the navigator.
     default: true
   buildsystem.create:
     children:

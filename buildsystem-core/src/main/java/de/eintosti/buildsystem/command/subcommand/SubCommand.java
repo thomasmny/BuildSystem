@@ -26,9 +26,7 @@ public interface SubCommand {
     Argument getArgument();
 
     default boolean hasPermission(Player player) {
-        if (getArgument().getPermission() == null) {
-            return true;
-        }
-        return player.hasPermission(getArgument().getPermission());
+        String permission = getArgument().getPermission();
+        return permission == null || player.hasPermission(permission);
     }
 }

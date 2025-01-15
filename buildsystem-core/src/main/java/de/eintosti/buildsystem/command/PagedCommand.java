@@ -32,11 +32,11 @@ public abstract class PagedCommand {
 
     private static final int MAX_COMMANDS_PER_PAGE = 7;
 
-    private final String permission, title;
+    private final String title, permissionTemplate;
 
-    public PagedCommand(String permission, String title) {
-        this.permission = permission;
+    public PagedCommand(String title, String permissionTemplate) {
         this.title = title;
+        this.permissionTemplate = permissionTemplate;
     }
 
     protected void sendMessage(Player player, int pageNum) {
@@ -85,7 +85,7 @@ public abstract class PagedCommand {
 
         commandComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, suggest));
         commandComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new ComponentBuilder(Messages.getString(this.permission, player, new AbstractMap.SimpleEntry<>("%permission%", permission))).create()
+                new ComponentBuilder(Messages.getString(this.permissionTemplate, player, new AbstractMap.SimpleEntry<>("%permission%", permission))).create()
         ));
         commandComponent.addExtra(textComponent);
         return commandComponent;
