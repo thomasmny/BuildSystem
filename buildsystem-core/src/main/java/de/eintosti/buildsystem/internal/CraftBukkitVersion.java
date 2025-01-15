@@ -183,8 +183,8 @@ public enum CraftBukkitVersion {
     /**
      * Gets the server's data version.
      * <p>
-     * "The data version is a positive integer used in a world saved data to denote a specific version, and determines
-     * whether the player should be warned about opening that world due to client version incompatibilities."
+     * "The data version is a positive integer used in a world saved data to denote a specific version, and determines whether the player should be warned about opening that world
+     * due to client version incompatibilities."
      *
      * @return The server's data version
      * @see <a href="https://minecraft.wiki/wiki/Data_version">Data version</a>

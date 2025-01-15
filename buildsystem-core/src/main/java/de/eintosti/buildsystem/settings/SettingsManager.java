@@ -94,8 +94,8 @@ public class SettingsManager {
         }
 
         board.updateTitle(Messages.getString("title", player));
-      BukkitTask scoreboardTask = Bukkit.getScheduler()
-          .runTaskTimerAsynchronously(plugin, () -> updateScoreboard(player, board), 0L, 20L);
+        BukkitTask scoreboardTask = Bukkit.getScheduler()
+                .runTaskTimerAsynchronously(plugin, () -> updateScoreboard(player, board), 0L, 20L);
         settings.setScoreboardTask(scoreboardTask);
     }
 
@@ -122,8 +122,8 @@ public class SettingsManager {
 
         // Scoreboard line cannot be longer than 30 chars in versions <1.13
         if (MinecraftVersion.getCurrent().isLowerThan(MinecraftVersion.AQUATIC_13)) {
-          body = body.stream().map(line -> line.substring(0, Math.min(line.length(), 30)))
-              .collect(Collectors.toList());
+            body = body.stream().map(line -> line.substring(0, Math.min(line.length(), 30)))
+                    .collect(Collectors.toList());
         }
 
         board.updateLines(body);

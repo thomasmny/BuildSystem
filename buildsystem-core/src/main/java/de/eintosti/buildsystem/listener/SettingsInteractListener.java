@@ -372,8 +372,8 @@ public class SettingsInteractListener implements Listener {
     }
 
     /**
-     * Stop {@link Player} from opening {@link Inventory} because the event should be cancelled as it was fired due to
-     * an interaction caused in {@link SettingsInteractListener#manageDisabledInteractSetting}
+     * Stop {@link Player} from opening {@link Inventory} because the event should be cancelled as it was fired due to an interaction caused in
+     * {@link SettingsInteractListener#manageDisabledInteractSetting}
      */
     @EventHandler
     public void onInventoryOpen(InventoryOpenEvent event) {

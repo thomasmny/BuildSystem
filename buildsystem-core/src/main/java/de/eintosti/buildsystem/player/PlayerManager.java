@@ -134,8 +134,7 @@ public class PlayerManager {
     }
 
     /**
-     * Gets whether the given player is allowed to create a new {@link BuildWorld}.<br> This depends on the following
-     * factors:
+     * Gets whether the given player is allowed to create a new {@link BuildWorld}.<br> This depends on the following factors:
      * <ul>
      *  <li>Is the maximum amount of worlds set by the config less than the amount of existing worlds?</li>
      *  <li>Is the maximum amount of worlds created by the player less than the amount of worlds said player is allowed to create?</li>
@@ -155,14 +154,13 @@ public class PlayerManager {
         }
 
         int maxWorldAmountPlayer = getMaxWorlds(player, showPrivateWorlds);
-      return maxWorldAmountPlayer < 0
-          || worldManager.getBuildWorldsCreatedByPlayer(player, visibility).size() < maxWorldAmountPlayer;
+        return maxWorldAmountPlayer < 0
+                || worldManager.getBuildWorldsCreatedByPlayer(player, visibility).size() < maxWorldAmountPlayer;
     }
 
     /**
-     * Returns the maximum amount of {@link BuildWorld}s a player can create.<br> If the player has the permission
-     * {@code buildsystem.admin}</li>, unlimited worlds can be created.<br> Otherwise, there are two different
-     * permissions to set said amount:<br> To set the maximum of...
+     * Returns the maximum amount of {@link BuildWorld}s a player can create.<br> If the player has the permission {@code buildsystem.admin}</li>, unlimited worlds can be
+     * created.<br> Otherwise, there are two different permissions to set said amount:<br> To set the maximum of...
      * <ul>
      *  <li>...public worlds, use {@literal buildsystem.create.public.<amount>}</li>
      *  <li>...private worlds, use {@literal buildsystem.create.private.<amount>}</li>
@@ -246,8 +244,8 @@ public class PlayerManager {
             return;
         }
 
-      ItemStack itemStack = plugin.getInventoryUtil()
-          .getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item", player));
+        ItemStack itemStack = plugin.getInventoryUtil()
+                .getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item", player));
         PlayerInventory playerInventory = player.getInventory();
         ItemStack slot8 = playerInventory.getItem(8);
         if (slot8 == null || slot8.getType() == XMaterial.AIR.parseMaterial()) {
@@ -286,8 +284,8 @@ public class PlayerManager {
 
         InventoryUtils inventoryUtils = plugin.getInventoryUtil();
         String findItemName = Messages.getString("barrier_item", player);
-      ItemStack replaceItem = inventoryUtils.getItemStack(plugin.getConfigValues()
-          .getNavigatorItem(), Messages.getString("navigator_item", player));
+        ItemStack replaceItem = inventoryUtils.getItemStack(plugin.getConfigValues()
+                .getNavigatorItem(), Messages.getString("navigator_item", player));
 
         inventoryUtils.replaceItem(player, findItemName, XMaterial.BARRIER, replaceItem);
     }
@@ -333,10 +331,10 @@ public class PlayerManager {
             final Location otherLocation = other.getLocation();
             final Vector vector = otherLocation.toVector().subtract(entityLocation.toVector());
 
-          if (entityLocation.getDirection().normalize().crossProduct(vector).lengthSquared() < threshold
-              && vector.normalize().dot(entityLocation.getDirection().normalize()) >= 0) {
-            if (target == null || target.getLocation().distanceSquared(entityLocation)
-                > otherLocation.distanceSquared(entityLocation)) {
+            if (entityLocation.getDirection().normalize().crossProduct(vector).lengthSquared() < threshold
+                    && vector.normalize().dot(entityLocation.getDirection().normalize()) >= 0) {
+                if (target == null || target.getLocation().distanceSquared(entityLocation)
+                        > otherLocation.distanceSquared(entityLocation)) {
                     target = other;
                 }
             }
@@ -455,10 +453,10 @@ public class PlayerManager {
     }
 
     private WorldDisplay loadWorldDisplay(FileConfiguration configuration, String pathPrefix) {
-      WorldSort worldSort = WorldSort.matchWorldSort(configuration.getString(
-          pathPrefix + "sort", WorldSort.NAME_A_TO_Z.name()));
-      WorldFilter.Mode filterMode = WorldFilter.Mode.valueOf(configuration.getString(
-          pathPrefix + "filter.mode", WorldFilter.Mode.NONE.name()));
+        WorldSort worldSort = WorldSort.matchWorldSort(configuration.getString(
+                pathPrefix + "sort", WorldSort.NAME_A_TO_Z.name()));
+        WorldFilter.Mode filterMode = WorldFilter.Mode.valueOf(configuration.getString(
+                pathPrefix + "filter.mode", WorldFilter.Mode.NONE.name()));
         String filterText = configuration.getString(pathPrefix + "filter.text", "");
         return new WorldDisplay(worldSort, new WorldFilter(filterMode, filterText));
     }

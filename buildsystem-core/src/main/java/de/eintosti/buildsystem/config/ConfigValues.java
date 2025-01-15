@@ -166,8 +166,7 @@ public class ConfigValues {
     }
 
     /**
-     * Parsing the {@link GameMode} from a string. Defaulting to {@link GameMode#ADVENTURE} if the string is not a valid
-     * {@link GameMode}.
+     * Parsing the {@link GameMode} from a string. Defaulting to {@link GameMode#ADVENTURE} if the string is not a valid {@link GameMode}.
      *
      * @param gameModeName The name of the {@link GameMode} to parse.
      * @return The parsed {@link GameMode}.

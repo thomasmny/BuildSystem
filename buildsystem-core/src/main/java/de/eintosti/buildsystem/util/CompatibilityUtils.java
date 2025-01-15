@@ -32,8 +32,7 @@ public final class CompatibilityUtils {
     /**
      * Gets the title of the {@link Inventory} associated with the given {@link InventoryEvent}.
      * <p>
-     * This is needed, since in API versions 1.20.6 and earlier, {@link InventoryView} is a class and in versions 1.21
-     * and later, it is an interface.
+     * This is needed, since in API versions 1.20.6 and earlier, {@link InventoryView} is a class and in versions 1.21 and later, it is an interface.
      *
      * @param event The generic InventoryEvent with an InventoryView to inspect
      * @return The title of the inventory
@@ -52,13 +51,11 @@ public final class CompatibilityUtils {
     /**
      * Gets the top {@link Inventory} associated with the given {@link InventoryEvent}.
      * <p>
-     * This is needed, since in API versions 1.20.6 and earlier, {@link InventoryView} is a class and in versions 1.21
-     * and later, it is an interface.
+     * This is needed, since in API versions 1.20.6 and earlier, {@link InventoryView} is a class and in versions 1.21 and later, it is an interface.
      *
      * @param event The generic InventoryEvent with an InventoryView to inspect
      * @return The top inventory
-     * @author <a
-     * href="https://www.spigotmc.org/threads/inventoryview-changed-to-interface-backwards-compatibility.651754/#post-4747875">Rumsfield</a>
+     * @author <a href="https://www.spigotmc.org/threads/inventoryview-changed-to-interface-backwards-compatibility.651754/#post-4747875">Rumsfield</a>
      */
     public static Inventory getTopInventory(InventoryEvent event) {
         try {
@@ -74,8 +71,7 @@ public final class CompatibilityUtils {
     /**
      * Gets the top {@link Inventory} for a given {@link Player}.
      * <p>
-     * This is needed, since in API versions 1.20.6 and earlier, {@link InventoryView} is a class and in versions 1.21
-     * and later, it is an interface.
+     * This is needed, since in API versions 1.20.6 and earlier, {@link InventoryView} is a class and in versions 1.21 and later, it is an interface.
      *
      * @param player The player whose inventory is to be found
      * @return The top inventory

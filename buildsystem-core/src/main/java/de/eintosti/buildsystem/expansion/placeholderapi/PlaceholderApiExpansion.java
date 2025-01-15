@@ -45,8 +45,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
     }
 
     /**
-     * Because this is an internal class, you must override this method to let PlaceholderAPI know to not unregister
-     * your expansion class when PlaceholderAPI is reloaded
+     * Because this is an internal class, you must override this method to let PlaceholderAPI know to not unregister your expansion class when PlaceholderAPI is reloaded
      *
      * @return true to persist through reloads
      */
@@ -66,8 +65,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
     }
 
     /**
-     * The name of the person who created this expansion should go here. For convenience do we return the author from
-     * the plugin.yml
+     * The name of the person who created this expansion should go here. For convenience do we return the author from the plugin.yml
      *
      * @return The name of the author as a String.
      */
@@ -77,8 +75,8 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
     }
 
     /**
-     * The placeholder identifier should go here. This is what tells PlaceholderAPI to call our onRequest method to
-     * obtain a value if a placeholder starts with our identifier. This must be unique and can not contain % or _
+     * The placeholder identifier should go here. This is what tells PlaceholderAPI to call our onRequest method to obtain a value if a placeholder starts with our identifier. This
+     * must be unique and can not contain % or _
      *
      * @return The identifier in {@code %<identifier>_<value>%} as String.
      */
@@ -100,8 +98,8 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
     }
 
     /**
-     * This is the method called when a placeholder with our identifier is found and needs a value. We specify the value
-     * identifier in this method. Since version 2.9.1 can you use OfflinePlayers in your requests.
+     * This is the method called when a placeholder with our identifier is found and needs a value. We specify the value identifier in this method. Since version 2.9.1 can you use
+     * OfflinePlayers in your requests.
      *
      * @param player     A Player.
      * @param identifier A String containing the identifier/value.
@@ -121,8 +119,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
     }
 
     /**
-     * This is the method called when a placeholder with the identifier {@code %buildsystem_settings_<setting>%} is
-     * found
+     * This is the method called when a placeholder with the identifier {@code %buildsystem_settings_<setting>%} is found
      *
      * @param player     A Player.
      * @param identifier A String containing the identifier/value.
@@ -170,11 +167,10 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
     }
 
     /**
-     * This is the method called when a placeholder with the identifier needed for
-     * {@link PlaceholderApiExpansion#parseSettingsPlaceholder(Player, String)} is not found
+     * This is the method called when a placeholder with the identifier needed for {@link PlaceholderApiExpansion#parseSettingsPlaceholder(Player, String)} is not found
      * <p>
-     * The default layout for a world placeholder is {@code %buildsystem_<value>%}. If a world is not specified by using
-     * the format {@code %buildsystem_<value>_<world>%} then the world the player is currently in will be used.
+     * The default layout for a world placeholder is {@code %buildsystem_<value>%}. If a world is not specified by using the format {@code %buildsystem_<value>_<world>%} then the
+     * world the player is currently in will be used.
      *
      * @param player     A Player.
      * @param identifier A String containing the identifier/value.

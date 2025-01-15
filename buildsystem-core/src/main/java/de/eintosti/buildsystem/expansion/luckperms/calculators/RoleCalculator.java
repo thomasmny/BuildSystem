@@ -62,8 +62,7 @@ public class RoleCalculator implements ContextCalculator<Player> {
         CREATOR,
 
         /**
-         * A player which has been added to the list of trusted players and is therefore allowed to build in a
-         * {@link BuildWorld}.
+         * A player which has been added to the list of trusted players and is therefore allowed to build in a {@link BuildWorld}.
          */
         BUILDER,
 

@@ -81,9 +81,8 @@ public class ArgumentParser {
     }
 
     /**
-     * Maps the arguments passed to the ArgumentParser. Arguments starting with "-" are considered flags, and their
-     * presence is added to the 'flags' set. Arguments without "-" are considered argument names, and their values are
-     * stored in the 'map' HashMap.
+     * Maps the arguments passed to the ArgumentParser. Arguments starting with "-" are considered flags, and their presence is added to the 'flags' set. Arguments without "-" are
+     * considered argument names, and their values are stored in the 'map' HashMap.
      */
     public void map() {
         for (int index = 0; index < args.size(); index++) {
@@ -100,8 +99,8 @@ public class ArgumentParser {
     }
 
     /**
-     * Determines whether the provided argument is a flag argument. A flag argument is an argument that is either the
-     * last argument in the list or is followed by another argument that starts with a dash (-).
+     * Determines whether the provided argument is a flag argument. A flag argument is an argument that is either the last argument in the list or is followed by another argument
+     * that starts with a dash (-).
      *
      * @param arg   The argument to check
      * @param index The index of the argument in the argument list

@@ -73,8 +73,8 @@ public class StringUtils {
 
     /**
      * <p>Compares two Strings, and returns the portion where they differ.
-     * More precisely, return the remainder of the second String, starting from where it's different from the first.
-     * This means that the difference between "abc" and "ab" is the empty String and not "c". </p>
+     * More precisely, return the remainder of the second String, starting from where it's different from the first. This means that the difference between "abc" and "ab" is the
+     * empty String and not "c". </p>
      *
      * <p>For example,
      * {@code difference("i am a machine", "i am a robot") -> "robot"}.</p>
@@ -133,8 +133,7 @@ public class StringUtils {
      * @param cs2 the second CharSequence, may be null
      * @return the index where cs1 and cs2 begin to differ; -1 if they are equal
      * @since 2.0
-     * @since 3.0 Changed signature from indexOfDifference(String, String) to indexOfDifference(CharSequence,
-     * CharSequence)
+     * @since 3.0 Changed signature from indexOfDifference(String, String) to indexOfDifference(CharSequence, CharSequence)
      */
     public static int indexOfDifference(final CharSequence cs1, final CharSequence cs2) {
         if (cs1 == cs2) {
@@ -174,8 +173,7 @@ public class StringUtils {
      * @return {@code true} if the CharSequence starts with the prefix, case insensitive, or both {@code null}
      * @see java.lang.String#startsWith(String)
      * @since 2.4
-     * @since 3.0 Changed signature from startsWithIgnoreCase(String, String) to startsWithIgnoreCase(CharSequence,
-     * CharSequence)
+     * @since 3.0 Changed signature from startsWithIgnoreCase(String, String) to startsWithIgnoreCase(CharSequence, CharSequence)
      */
     public static boolean startsWithIgnoreCase(final CharSequence str, final CharSequence prefix) {
         if (str == null || prefix == null) {

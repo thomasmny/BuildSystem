@@ -143,8 +143,7 @@ public class NoClipManager {
     }
 
     /**
-     * Only remove a player from the list of No-Clip players if said player has No-Clip enabled, i.e.
-     * {@link NoClipManager#isNoClip} is equal to {@code true}.
+     * Only remove a player from the list of No-Clip players if said player has No-Clip enabled, i.e. {@link NoClipManager#isNoClip} is equal to {@code true}.
      * <p>
      * Will also set the player to their previous {@link GameMode}.
      *

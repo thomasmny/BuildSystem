@@ -75,22 +75,14 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         if (creator == null || creator.getName().equalsIgnoreCase("-")) {
             inventoryUtils.addItemStack(inventory, 4, XMaterial.BARRIER, Messages.getString("worldeditor_builders_no_creator_item", player));
         } else {
-            inventoryUtils.addSkull(inventory, 4,
-                    Messages.getString("worldeditor_builders_creator_item", player),
-                    Profileable.of(creator.getUniqueId()),
-                    Messages.getString("worldeditor_builders_creator_lore", player,
-                            new AbstractMap.SimpleEntry<>("%creator%", buildWorld.getCreator().getName())
-                    )
-            );
+            inventoryUtils.addSkull(inventory, 4, Messages.getString("worldeditor_builders_creator_item", player), Profileable.of(creator.getUniqueId()), Messages.getString("worldeditor_builders_creator_lore", player, new AbstractMap.SimpleEntry<>("%creator%", buildWorld.getCreator()
+                    .getName())));
         }
     }
 
     private void addBuilderAddItem(Inventory inventory, BuildWorld buildWorld, Player player) {
         if (buildWorld.isCreator(player) || player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
-            inventoryUtils.addSkull(inventory, 22,
-                    Messages.getString("worldeditor_builders_add_builder_item", player),
-                    Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716")
-            );
+            inventoryUtils.addSkull(inventory, 22, Messages.getString("worldeditor_builders_add_builder_item", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716"));
         } else {
             inventoryUtils.addGlassPane(plugin, player, inventory, 22);
         }
@@ -109,10 +101,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         int columnSkull = 9, maxColumnSkull = 17;
         for (Builder builder : builders) {
             String builderName = builder.getName();
-            inventoryUtils.addSkull(inventory, columnSkull++,
-                    Messages.getString("worldeditor_builders_builder_item", player, new AbstractMap.SimpleEntry<>("%builder%", builderName)),
-                    Profileable.username(builderName), Messages.getStringList("worldeditor_builders_builder_lore", player)
-            );
+            inventoryUtils.addSkull(inventory, columnSkull++, Messages.getString("worldeditor_builders_builder_item", player, new AbstractMap.SimpleEntry<>("%builder%", builderName)), Profileable.username(builderName), Messages.getStringList("worldeditor_builders_builder_lore", player));
 
             if (columnSkull > maxColumnSkull) {
                 columnSkull = 9;

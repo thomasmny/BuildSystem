@@ -179,8 +179,8 @@ public class WorldManager {
     }
 
     /**
-     * Gets the name (and in doing so removes all illegal characters) of the {@link BuildWorld} the player is trying to
-     * create. If the world is going to be a private world, its name will be equal to the player's name.
+     * Gets the name (and in doing so removes all illegal characters) of the {@link BuildWorld} the player is trying to create. If the world is going to be a private world, its
+     * name will be equal to the player's name.
      *
      * @param player       The player who is creating the world
      * @param worldType    The world type
@@ -392,8 +392,7 @@ public class WorldManager {
     }
 
     /**
-     * Delete an existing {@link BuildWorld}. In comparison to {@link #unimportWorld(Player, BuildWorld, boolean)},
-     * deleting a world deletes the world's directory.
+     * Delete an existing {@link BuildWorld}. In comparison to {@link #unimportWorld(Player, BuildWorld, boolean)}, deleting a world deletes the world's directory.
      *
      * @param player     The player who issued the deletion
      * @param buildWorld The world to be deleted
@@ -421,8 +420,7 @@ public class WorldManager {
     }
 
     /**
-     * Unimport an existing {@link BuildWorld}. In comparison to {@link #deleteWorld(Player, BuildWorld)}, unimporting a
-     * world does not delete the world's directory.
+     * Unimport an existing {@link BuildWorld}. In comparison to {@link #deleteWorld(Player, BuildWorld)}, unimporting a world does not delete the world's directory.
      *
      * @param player     The player unloading the world
      * @param buildWorld The build world object
@@ -439,8 +437,7 @@ public class WorldManager {
     }
 
     /**
-     * In order to properly unload/rename/delete a world, no players may be present in the {@link World}. Removes all
-     * player's from the world to insure proper manipulation.
+     * In order to properly unload/rename/delete a world, no players may be present in the {@link World}. Removes all player's from the world to insure proper manipulation.
      *
      * @param worldName The name of the world
      * @param message   The message sent to a player when they are removed from the world
@@ -641,8 +638,7 @@ public class WorldManager {
     }
 
     /**
-     * In order to correctly teleport a player to a {@link Location}, the block underneath the player's feet must be
-     * solid.
+     * In order to correctly teleport a player to a {@link Location}, the block underneath the player's feet must be solid.
      *
      * @param location The location the player will be teleported to
      */

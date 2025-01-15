@@ -3,9 +3,6 @@ package de.eintosti.buildsystem.event.world;
 import de.eintosti.buildsystem.world.BuildWorld;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
-import org.bukkit.event.HandlerList;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * This event reduces duplicated code.

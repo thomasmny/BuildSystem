@@ -124,14 +124,14 @@ public class WorldData implements ConfigurationSerializable {
         this.worldName = worldName;
     }
 
-  public <T> Type<T> register(@NotNull String key) {
-    return register(key, new Type<>());
-  }
+    public <T> Type<T> register(@NotNull String key) {
+        return register(key, new Type<>());
+    }
 
-  public <T> Type<T> register(@NotNull String key, Type<T> type) {
-    this.data.put(key, type);
-    return type;
-  }
+    public <T> Type<T> register(@NotNull String key, Type<T> type) {
+        this.data.put(key, type);
+        return type;
+    }
 
     public Type<String> customSpawn() {
         return customSpawn;
@@ -232,7 +232,7 @@ public class WorldData implements ConfigurationSerializable {
 
     public static class Type<T> {
 
-      private T value;
+        private T value;
 
         public T get() {
             return value;
@@ -249,7 +249,7 @@ public class WorldData implements ConfigurationSerializable {
 
     public static class DifficultyType extends Type<Difficulty> {
 
-      @Override
+        @Override
         protected Object getConfigFormat() {
             return super.get().name();
         }
@@ -257,7 +257,7 @@ public class WorldData implements ConfigurationSerializable {
 
     public static class MaterialType extends Type<XMaterial> {
 
-      @Override
+        @Override
         protected Object getConfigFormat() {
             return super.get().name();
         }
@@ -265,7 +265,7 @@ public class WorldData implements ConfigurationSerializable {
 
     public static class StatusType extends Type<WorldStatus> {
 
-      @Override
+        @Override
         protected Object getConfigFormat() {
             return super.get().name();
         }

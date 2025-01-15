@@ -121,9 +121,8 @@ public class BuildWorldCreator {
     }
 
     /**
-     * Depending on the {@link BuildWorld}'s {@link WorldType}, the corresponding {@link World} will be generated in a
-     * different way. Then, if the creation of the world was successful and the config is set accordingly, the player is
-     * teleported to the world.
+     * Depending on the {@link BuildWorld}'s {@link WorldType}, the corresponding {@link World} will be generated in a different way. Then, if the creation of the world was
+     * successful and the config is set accordingly, the player is teleported to the world.
      *
      * @param player The player who is creating the world
      */
@@ -334,8 +333,8 @@ public class BuildWorldCreator {
     }
 
     /**
-     * Once a chunk has been loaded in a newer version of Minecraft, then it cannot be loaded in an older version again.
-     * Paper allows the server admin to bypass this check with {@code }, so we do as well.
+     * Once a chunk has been loaded in a newer version of Minecraft, then it cannot be loaded in an older version again. Paper allows the server admin to bypass this check with
+     * {@code }, so we do as well.
      *
      * @return {@code true} if the world was generated in a higher Minecraft version, otherwise {@code false}
      */
@@ -372,8 +371,8 @@ public class BuildWorldCreator {
     }
 
     /**
-     * The {@code level.dat} file is not updated when a newer Minecraft version loads chunks, making the world not
-     * loadable. Therefore, manually sets the world's {@code DataVersion} to the current server version, if lower.
+     * The {@code level.dat} file is not updated when a newer Minecraft version loads chunks, making the world not loadable. Therefore, manually sets the world's
+     * {@code DataVersion} to the current server version, if lower.
      */
     private void updateDataVersion() {
         File levelFile = new File(Bukkit.getWorldContainer() + File.separator + worldName, "level.dat");

@@ -84,8 +84,7 @@ public enum WorldStatus {
     }
 
     /**
-     * Gets the stage in which the {@link BuildWorld} is currently in. A higher value means the world is further in
-     * development.
+     * Gets the stage in which the {@link BuildWorld} is currently in. A higher value means the world is further in development.
      *
      * @return the stage in which the world is currently in.
      */

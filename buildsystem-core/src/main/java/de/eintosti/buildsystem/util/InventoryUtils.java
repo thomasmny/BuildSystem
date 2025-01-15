@@ -263,8 +263,8 @@ public class InventoryUtils {
      * Manage clicking in a {@link FilteredWorldsInventory}.
      * <p>
      * If the clicked item is the icon of a {@link BuildWorld}, the click is managed by
-     * {@link InventoryUtils#manageWorldItemClick(InventoryClickEvent, Player, ItemMeta, BuildWorld)}. Otherwise, the
-     * {@link NavigatorInventory} is opened if the glass pane at the bottom of the inventory is clicked.
+     * {@link InventoryUtils#manageWorldItemClick(InventoryClickEvent, Player, ItemMeta, BuildWorld)}. Otherwise, the {@link NavigatorInventory} is opened if the glass pane at the
+     * bottom of the inventory is clicked.
      *
      * @param event     The click event object to modify
      * @param player    The player who clicked
@@ -364,8 +364,7 @@ public class InventoryUtils {
     }
 
     /**
-     * Gets the worlds in the order they are to be displayed. First, the {@link WorldFilter} is applied. Then, the list
-     * of worlds is sorted using the {@link WorldSort}.
+     * Gets the worlds in the order they are to be displayed. First, the {@link WorldFilter} is applied. Then, the list of worlds is sorted using the {@link WorldSort}.
      *
      * @param worldManager The world manager object
      * @param settings     The settings that provide the sorting method
