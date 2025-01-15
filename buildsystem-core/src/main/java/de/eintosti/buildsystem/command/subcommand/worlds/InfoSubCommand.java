@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.BuildWorld;
+import de.eintosti.buildsystem.world.Builder;
 import de.eintosti.buildsystem.world.WorldManager;
 import de.eintosti.buildsystem.world.data.WorldData;
 import java.util.AbstractMap;
@@ -62,7 +63,7 @@ public class InfoSubCommand implements SubCommand {
         WorldData worldData = buildWorld.getData();
         Messages.sendMessage(player, "world_info",
                 new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()),
-                new AbstractMap.SimpleEntry<>("%creator%", buildWorld.getCreator()),
+                new AbstractMap.SimpleEntry<>("%creator%", getCreator(buildWorld)),
                 new AbstractMap.SimpleEntry<>("%item%", worldData.material().get().name()),
                 new AbstractMap.SimpleEntry<>("%type%", buildWorld.getType().getName(player)),
                 new AbstractMap.SimpleEntry<>("%private%", worldData.privateWorld().get()),
@@ -83,6 +84,14 @@ public class InfoSubCommand implements SubCommand {
                 new AbstractMap.SimpleEntry<>("%lastloaded%", Messages.formatDate(worldData.lastLoaded().get())),
                 new AbstractMap.SimpleEntry<>("%lastunloaded%", Messages.formatDate(worldData.lastUnloaded().get()))
         );
+    }
+
+    private String getCreator(BuildWorld buildWorld) {
+        Builder creator = buildWorld.getCreator();
+        if (creator == null) {
+            return "-";
+        }
+        return creator.getName();
     }
 
     private String getCustomSpawn(BuildWorld buildWorld) {
