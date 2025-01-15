@@ -67,11 +67,17 @@ commands:
     usage: /<command>
 
 permissions:
+  buildsystem.buildsystem:
+    description: Display all commands provided by the plugin.
+    default: true
+  buildsystem.help:
+    description: Display all /worlds subcommands.
+    default: true
   buildsystem.navigator:
     description: Open the worlds navigator.
     default: true
   buildsystem.navigator.item:
-    description: Receive and use the naviagtor open.
+    description: Receive and use the navigator.
     default: true
   buildsystem.create:
     children:

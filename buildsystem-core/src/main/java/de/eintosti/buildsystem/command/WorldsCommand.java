@@ -105,7 +105,7 @@ public class WorldsCommand implements CommandExecutor {
                 break;
             }
             case HELP: {
-                subCommand = new HelpSubCommand();
+                subCommand = new HelpSubCommand(plugin);
                 break;
             }
             case IMPORT_ALL: {
