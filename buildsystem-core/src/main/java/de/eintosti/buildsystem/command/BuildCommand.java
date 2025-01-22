@@ -64,7 +64,7 @@ public class BuildCommand implements CommandExecutor {
             }
 
             case 1: {
-                if (!player.hasPermission("buildsystem.build.others")) {
+                if (!player.hasPermission("buildsystem.build.other")) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
