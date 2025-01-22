@@ -99,6 +99,22 @@ permissions:
       - buildsystem.setstatus.notstarted
     default: op
     description: Permission for specific status states
+  buildsystem.gamemode:
+    children:
+      - buildsystem.gamemode.survival
+      - buildsystem.gamemode.creative
+      - buildsystem.gamemode.adventure
+      - buildsystem.gamemode.spectator
+    default: op
+    description: Permission for changing own gamemode
+  buildsystem.gamemode.other:
+    children:
+      - buildsystem.gamemode.survival.other
+      - buildsystem.gamemode.creative.other
+      - buildsystem.gamemode.adventure.other
+      - buildsystem.gamemode.spectator.other
+    default: op
+    description: Permission for changing other player's gamemode
   buildsystem.physics.message:
     description: Receive the message that physics are disabled in a world.
     default: true

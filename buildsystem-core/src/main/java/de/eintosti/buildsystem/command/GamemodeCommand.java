@@ -46,37 +46,35 @@ public class GamemodeCommand implements CommandExecutor {
         }
 
         Player player = (Player) sender;
-        if (!player.hasPermission("buildsystem.gamemode")) {
-            plugin.sendPermissionMessage(player);
+        if (args.length == 0) {
+            sendUsageMessage(player);
             return true;
         }
 
-        if (args.length != 0) {
-            switch (args[0].toLowerCase(Locale.ROOT)) {
-                case "survival":
-                case "s":
-                case "0":
-                    setGamemode(player, args, GameMode.SURVIVAL, Messages.getString("gamemode_survival", player));
-                    break;
-                case "creative":
-                case "c":
-                case "1":
-                    setGamemode(player, args, GameMode.CREATIVE, Messages.getString("gamemode_creative", player));
-                    break;
-                case "adventure":
-                case "a":
-                case "2":
-                    setGamemode(player, args, GameMode.ADVENTURE, Messages.getString("gamemode_adventure", player));
-                    break;
-                case "spectator":
-                case "sp":
-                case "3":
-                    setGamemode(player, args, GameMode.SPECTATOR, Messages.getString("gamemode_spectator", player));
-                    break;
-                default:
-                    sendUsageMessage(player);
-                    break;
-            }
+        switch (args[0].toLowerCase(Locale.ROOT)) {
+            case "survival":
+            case "s":
+            case "0":
+                setGamemode(player, args, GameMode.SURVIVAL, Messages.getString("gamemode_survival", player));
+                break;
+            case "creative":
+            case "c":
+            case "1":
+                setGamemode(player, args, GameMode.CREATIVE, Messages.getString("gamemode_creative", player));
+                break;
+            case "adventure":
+            case "a":
+            case "2":
+                setGamemode(player, args, GameMode.ADVENTURE, Messages.getString("gamemode_adventure", player));
+                break;
+            case "spectator":
+            case "sp":
+            case "3":
+                setGamemode(player, args, GameMode.SPECTATOR, Messages.getString("gamemode_spectator", player));
+                break;
+            default:
+                sendUsageMessage(player);
+                break;
         }
 
         return true;
@@ -92,6 +90,7 @@ public class GamemodeCommand implements CommandExecutor {
                 break;
             default:
                 this.sendUsageMessage(player);
+                break;
         }
     }
 
@@ -100,7 +99,7 @@ public class GamemodeCommand implements CommandExecutor {
     }
 
     private void setPlayerGamemode(Player player, GameMode gameMode, String gameModeName) {
-        if (!player.hasPermission("buildsystem.gamemode")) {
+        if (!player.hasPermission(String.format("buildsystem.gamemode.%s", gameMode.name().toLowerCase(Locale.ROOT)))) {
             plugin.sendPermissionMessage(player);
             return;
         }
@@ -110,7 +109,7 @@ public class GamemodeCommand implements CommandExecutor {
     }
 
     private void setTargetGamemode(Player player, String[] args, GameMode gameMode, String gameModeName) {
-        if (!player.hasPermission("buildsystem.gamemode.others")) {
+        if (!player.hasPermission(String.format("buildsystem.gamemode.%s.other", gameMode.name().toLowerCase(Locale.ROOT)))) {
             plugin.sendPermissionMessage(player);
             return;
         }
