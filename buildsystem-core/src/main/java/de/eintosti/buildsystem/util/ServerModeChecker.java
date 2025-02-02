@@ -79,23 +79,28 @@ public final class ServerModeChecker {
      * @return {@code true} if Velocity is enabled, {@code false} otherwise
      */
     private static boolean isVelocityEnabled() {
-        File paperGlobalConfig = getPaperGlobalConfig();
-        if (!paperGlobalConfig.exists()) {
-            return false;
+        File oldPaperConfig = new File(getRootFolder(), "paper.yml");
+        if (oldPaperConfig.exists()) {
+            YamlConfiguration configuration = YamlConfiguration.loadConfiguration(oldPaperConfig);
+            return configuration.getBoolean("settings.velocity-support.enabled", false);
         }
 
-        YamlConfiguration configuration = YamlConfiguration.loadConfiguration(paperGlobalConfig);
-        return configuration.getBoolean("proxies.velocity.enabled", false);
+        File paperGlobalConfig = new File(getRootFolder(), "config" + File.separator + "paper-global.yml");
+        if (paperGlobalConfig.exists()) {
+            YamlConfiguration configuration = YamlConfiguration.loadConfiguration(paperGlobalConfig);
+            return configuration.getBoolean("proxies.velocity.enabled", false);
+        }
+
+        return false;
     }
 
     /**
-     * Retrieves the Paper global configuration file.
+     * Retrieves the server's root folder.
      *
-     * @return A File object pointing to "paper-global.yml"
+     * @return A File object pointing server's root folder
      */
-    private static File getPaperGlobalConfig() {
-        File rootFolder = JavaPlugin.getPlugin(BuildSystem.class).getDataFolder().getParentFile().getParentFile();
-        return new File(rootFolder, "config" + File.separator + "paper-global.yml");
+    private static File getRootFolder() {
+        return JavaPlugin.getPlugin(BuildSystem.class).getDataFolder().getParentFile().getParentFile();
     }
 
     /**
