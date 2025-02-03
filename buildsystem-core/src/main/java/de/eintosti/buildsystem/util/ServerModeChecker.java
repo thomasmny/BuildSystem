@@ -17,17 +17,13 @@
  */
 package de.eintosti.buildsystem.util;
 
-import de.eintosti.buildsystem.BuildSystem;
-import java.io.File;
-import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 /**
  * Utility class to determine the mode in which the server is running. The server can be in one of the following modes:
  * <ul>
  *     <li>{@link ServerMode#ONLINE} - The server is running in online mode</li>
- *     <li>{@link ServerMode#PROXY} - The server is running behind a proxy like BungeeCord or Velocity</li>
  *     <li>{@link ServerMode#OFFLINE} - The server is running in offline mode</li>
  * </ul>
  */
@@ -44,63 +40,22 @@ public final class ServerModeChecker {
      * @return The detected server mode
      */
     private static ServerMode determineServerMode() {
-        if (Bukkit.getOnlineMode()) {
-            return ServerMode.ONLINE;
+        try {
+            Class<?> CLASS_GlobalConfiguration = Class.forName("io.papermc.paper.configuration.GlobalConfiguration");
+            Class<?> CLASS_Proxies = Class.forName("io.papermc.paper.configuration.GlobalConfiguration$Proxies");
+            Field FIELD_instance = CLASS_GlobalConfiguration.getDeclaredField("instance");
+            FIELD_instance.setAccessible(true);
+            Field FIELD_proxies = CLASS_GlobalConfiguration.getDeclaredField("proxies");
+            FIELD_proxies.setAccessible(true);
+            Method METHOD_isProxyOnlineMode = CLASS_Proxies.getDeclaredMethod("isProxyOnlineMode");
+            METHOD_isProxyOnlineMode.setAccessible(true);
+            Object OBJECT_instance = FIELD_instance.get(null);
+            Object OBJECT_proxies = FIELD_proxies.get(OBJECT_instance);
+            boolean isOnline = (boolean) METHOD_isProxyOnlineMode.invoke(OBJECT_proxies);
+            return isOnline ? ServerMode.ONLINE : ServerMode.OFFLINE;
+        } catch (Exception e) {
+            return ServerMode.OFFLINE;
         }
-
-        if (isProxy()) {
-            return ServerMode.PROXY;
-        }
-
-        return ServerMode.OFFLINE;
-    }
-
-    /**
-     * Checks if the server is running behind a proxy (BungeeCord or Velocity).
-     *
-     * @return {@code true} if a proxy is detected, {@code false} otherwise
-     */
-    private static boolean isProxy() {
-        return isBungeeCordEnabled() || isVelocityEnabled();
-    }
-
-    /**
-     * Checks if BungeeCord is enabled in the Spigot configuration.
-     *
-     * @return {@code true} if BungeeCord is enabled, {@code false} otherwise
-     */
-    private static boolean isBungeeCordEnabled() {
-        return Bukkit.spigot().getConfig().getBoolean("settings.bungeecord", false);
-    }
-
-    /**
-     * Checks if Velocity is enabled in the Paper global configuration.
-     *
-     * @return {@code true} if Velocity is enabled, {@code false} otherwise
-     */
-    private static boolean isVelocityEnabled() {
-        File oldPaperConfig = new File(getRootFolder(), "paper.yml");
-        if (oldPaperConfig.exists()) {
-            YamlConfiguration configuration = YamlConfiguration.loadConfiguration(oldPaperConfig);
-            return configuration.getBoolean("settings.velocity-support.enabled", false);
-        }
-
-        File paperGlobalConfig = new File(getRootFolder(), "config" + File.separator + "paper-global.yml");
-        if (paperGlobalConfig.exists()) {
-            YamlConfiguration configuration = YamlConfiguration.loadConfiguration(paperGlobalConfig);
-            return configuration.getBoolean("proxies.velocity.enabled", false);
-        }
-
-        return false;
-    }
-
-    /**
-     * Retrieves the server's root folder.
-     *
-     * @return A File object pointing server's root folder
-     */
-    private static File getRootFolder() {
-        return JavaPlugin.getPlugin(BuildSystem.class).getDataFolder().getParentFile().getParentFile();
     }
 
     /**
@@ -121,11 +76,6 @@ public final class ServerModeChecker {
          * The server is online.
          */
         ONLINE,
-
-        /**
-         * The server is running behind a proxy.
-         */
-        PROXY,
 
         /**
          * The server is offline.
