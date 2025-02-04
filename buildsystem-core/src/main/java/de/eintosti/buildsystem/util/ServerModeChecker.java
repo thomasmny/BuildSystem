@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.util;
 
+import org.bukkit.Bukkit;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -54,7 +55,7 @@ public final class ServerModeChecker {
             boolean isOnline = (boolean) METHOD_isProxyOnlineMode.invoke(OBJECT_proxies);
             return isOnline ? ServerMode.ONLINE : ServerMode.OFFLINE;
         } catch (Exception e) {
-            return ServerMode.OFFLINE;
+            return Bukkit.getOnlineMode() ? ServerMode.ONLINE : ServerMode.OFFLINE;
         }
     }
 
