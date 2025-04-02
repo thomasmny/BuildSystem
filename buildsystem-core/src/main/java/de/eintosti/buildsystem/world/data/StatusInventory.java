@@ -20,11 +20,11 @@ package de.eintosti.buildsystem.world.data;
 import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
+import com.cryptomorin.xseries.inventory.XInventoryView;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.player.BuildPlayer;
 import de.eintosti.buildsystem.player.PlayerManager;
-import de.eintosti.buildsystem.util.CompatibilityUtils;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.world.BuildWorld;
 import java.util.AbstractMap;
@@ -117,8 +117,8 @@ public class StatusInventory implements Listener {
             return;
         }
 
-        String title = Messages.getString("status_title", player, new AbstractMap.SimpleEntry<>("%world%", selectedWorldName));
-        if (!CompatibilityUtils.getInventoryTitle(event).equals(title)) {
+        String statusTitle = Messages.getString("status_title", player, new AbstractMap.SimpleEntry<>("%world%", selectedWorldName));
+        if (!XInventoryView.of(event.getView()).getTitle().equals(statusTitle)) {
             return;
         }
 

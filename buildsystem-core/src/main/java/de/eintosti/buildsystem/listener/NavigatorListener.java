@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.listener;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
+import com.cryptomorin.xseries.inventory.XInventoryView;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.config.ConfigValues;
@@ -30,7 +31,6 @@ import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.PlayerManager;
 import de.eintosti.buildsystem.settings.Settings;
 import de.eintosti.buildsystem.settings.SettingsManager;
-import de.eintosti.buildsystem.util.CompatibilityUtils;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;
@@ -95,7 +95,7 @@ public class NavigatorListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        if (CompatibilityUtils.getTopInventory(player).getType() != InventoryType.CRAFTING) {
+        if (XInventoryView.of(player.getOpenInventory()).getTopInventory().getType() != InventoryType.CRAFTING) {
             return;
         }
 

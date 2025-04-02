@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.util;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
+import com.cryptomorin.xseries.inventory.XInventoryView;
 import com.cryptomorin.xseries.messages.Titles;
 import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
@@ -209,8 +210,8 @@ public class InventoryUtils {
     }
 
     public boolean checkIfValidClick(InventoryClickEvent event, String titleKey) {
-        if (!CompatibilityUtils.getInventoryTitle(event)
-                .equals(Messages.getString(titleKey, (Player) event.getWhoClicked()))) {
+        String title = XInventoryView.of(event.getView()).getTitle();
+        if (!title.equals(Messages.getString(titleKey, (Player) event.getWhoClicked()))) {
             return false;
         }
 
