@@ -137,10 +137,11 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         }
 
         int columnWorld = 9, maxColumnWorld = 44;
-        for (BuildWorld buildWorld : inventoryUtils.getDisplayOrder(worldManager, plugin.getSettingsManager()
-                .getSettings(player))) {
+        for (BuildWorld buildWorld : inventoryUtils.getDisplayOrder(worldManager, plugin.getSettingsManager().getSettings(player))) {
             if (isValidWorld(player, buildWorld)) {
-                inventoryUtils.addWorldItem(player, inventory, columnWorld++, buildWorld);
+                String displayName = Messages.getString("world_item_title", player, new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+                List<String> lore = inventoryUtils.getWorldLore(player, buildWorld);
+                inventoryUtils.addWorldItem(inventory, columnWorld++, buildWorld, displayName, lore);
             }
 
             if (columnWorld > maxColumnWorld) {

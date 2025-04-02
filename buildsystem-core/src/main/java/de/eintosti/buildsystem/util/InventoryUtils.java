@@ -223,11 +223,7 @@ public class InventoryUtils {
         return true;
     }
 
-    public void addWorldItem(Player player, Inventory inventory, int position, BuildWorld buildWorld) {
-        String worldName = buildWorld.getName();
-        String displayName = Messages.getString("world_item_title", player, new AbstractMap.SimpleEntry<>("%world%", worldName));
-        List<String> lore = getLore(player, buildWorld);
-
+    public void addWorldItem(Inventory inventory, int position, BuildWorld buildWorld, String displayName, List<String> lore) {
         XMaterial material = buildWorld.getData().material().get();
         if (material != XMaterial.PLAYER_HEAD) {
             addItemStack(inventory, position, material, displayName, lore);
@@ -416,15 +412,14 @@ public class InventoryUtils {
      * @param buildWorld The world the lore displays information about
      * @return The formatted lore
      */
-    private List<String> getLore(Player player, BuildWorld buildWorld) {
+    public List<String> getWorldLore(Player player, BuildWorld buildWorld) {
         WorldData worldData = buildWorld.getData();
         @SuppressWarnings("unchecked")
         Map.Entry<String, Object>[] placeholders = new Map.Entry[]{
                 new AbstractMap.SimpleEntry<>("%status%", worldData.status().get().getName(player)),
                 new AbstractMap.SimpleEntry<>("%project%", worldData.project().get()),
                 new AbstractMap.SimpleEntry<>("%permission%", worldData.permission().get()),
-                new AbstractMap.SimpleEntry<>("%creator%",
-                        buildWorld.hasCreator() ? buildWorld.getCreator().getName() : "-"),
+                new AbstractMap.SimpleEntry<>("%creator%", buildWorld.hasCreator() ? buildWorld.getCreator().getName() : "-"),
                 new AbstractMap.SimpleEntry<>("%creation%", Messages.formatDate(buildWorld.getCreationDate())),
                 new AbstractMap.SimpleEntry<>("%lastedited%", Messages.formatDate(worldData.lastEdited().get())),
                 new AbstractMap.SimpleEntry<>("%lastloaded%", Messages.formatDate(worldData.lastLoaded().get())),
