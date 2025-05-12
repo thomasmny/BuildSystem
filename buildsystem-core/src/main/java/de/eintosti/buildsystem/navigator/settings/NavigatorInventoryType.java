@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.navigator.settings;
 
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.Builder;
+import de.eintosti.buildsystem.world.builder.Builder;
 import de.eintosti.buildsystem.world.data.WorldData;
 import de.eintosti.buildsystem.world.data.WorldStatus;
 import org.bukkit.entity.Player;

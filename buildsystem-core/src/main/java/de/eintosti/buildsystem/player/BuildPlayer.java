@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.player;
 
 import de.eintosti.buildsystem.navigator.settings.NavigatorInventoryType;
-import de.eintosti.buildsystem.settings.Settings;
+import de.eintosti.buildsystem.player.settings.Settings;
 import de.eintosti.buildsystem.world.BuildWorld;
 import java.util.HashMap;
 import java.util.Map;

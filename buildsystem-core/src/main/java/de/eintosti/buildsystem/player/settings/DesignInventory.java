@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.settings;
+package de.eintosti.buildsystem.player.settings;
 
 import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
@@ -35,11 +35,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class DesignInventory implements Listener {
 
     private final BuildSystem plugin;
-    private final InventoryUtils inventoryUtils;
 
     public DesignInventory(BuildSystem plugin) {
         this.plugin = plugin;
-        this.inventoryUtils = plugin.getInventoryUtil();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -74,10 +72,10 @@ public class DesignInventory implements Listener {
 
     private void fillGuiWithGlass(Inventory inventory, Player player) {
         for (int i = 0; i <= 8; i++) {
-            inventoryUtils.addGlassPane(plugin, player, inventory, i);
+            InventoryUtils.addGlassPane(inventory, player, i);
         }
         for (int i = 27; i <= 35; i++) {
-            inventoryUtils.addGlassPane(plugin, player, inventory, i);
+            InventoryUtils.addGlassPane(inventory, player, i);
         }
     }
 
@@ -86,7 +84,7 @@ public class DesignInventory implements Listener {
         Settings settings = settingsManager.getSettings(player);
 
         String displayName = Messages.getString(key, player);
-        ItemStack itemStack = inventoryUtils.getItemStack(material,
+        ItemStack itemStack = InventoryUtils.createItem(material,
                 settings.getDesignColor() == color ? "§a" + displayName : "§7" + displayName);
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta != null) {
@@ -103,7 +101,7 @@ public class DesignInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!inventoryUtils.checkIfValidClick(event, "design_title")) {
+        if (!InventoryUtils.isValidClick(event, "design_title")) {
             return;
         }
 
