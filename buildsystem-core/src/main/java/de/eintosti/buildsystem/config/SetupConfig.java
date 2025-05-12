@@ -19,9 +19,14 @@ package de.eintosti.buildsystem.config;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.data.WorldStatus;
-import de.eintosti.buildsystem.world.data.WorldType;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.jetbrains.annotations.Nullable;
 
 public class SetupConfig extends ConfigurationFile {
 
@@ -29,18 +34,40 @@ public class SetupConfig extends ConfigurationFile {
         super(plugin, "setup.yml");
     }
 
-    public void saveCreateItem(WorldType worldType, XMaterial material) {
-        getFile().set("setup.type." + worldType.name().toLowerCase(Locale.ROOT) + ".create", material.name());
+    public <T extends Enum<?>> void saveIcon(String key, T type, XMaterial material) {
+        getFile().set("setup." + key + "." + type.name().toLowerCase(Locale.ROOT), material.name());
         saveFile();
     }
 
-    public void saveDefaultItem(WorldType worldType, XMaterial material) {
-        getFile().set("setup.type." + worldType.name().toLowerCase(Locale.ROOT) + ".default", material.name());
-        saveFile();
-    }
+    @Nullable
+    public <T> Map<T, XMaterial> loadIcons(String key, Function<String, T> mapper) {
+        FileConfiguration configuration = getFile();
+        if (configuration == null) {
+            return null;
+        }
 
-    public void saveStatusItem(WorldStatus worldStatus, XMaterial material) {
-        getFile().set("setup.status." + worldStatus.name().toLowerCase(Locale.ROOT), material.name());
-        saveFile();
+        ConfigurationSection configurationSection = configuration.getConfigurationSection("setup." + key);
+        if (configurationSection == null) {
+            return null;
+        }
+
+        Set<String> types = configurationSection.getKeys(false);
+        if (types.isEmpty()) {
+            return null;
+        }
+
+        Map<T, XMaterial> icons = new HashMap<>();
+
+        for (String type : types) {
+            String materialString = configuration.getString("setup." + key + "." + type);
+            if (materialString == null) {
+                continue;
+            }
+
+            T mappedKey = mapper.apply(type);
+            XMaterial.matchXMaterial(materialString).ifPresent(material -> icons.put(mappedKey, material));
+        }
+
+        return icons;
     }
 }

@@ -74,12 +74,12 @@ import de.eintosti.buildsystem.player.BlocksInventory;
 import de.eintosti.buildsystem.player.BuildPlayer;
 import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.player.PlayerManager;
-import de.eintosti.buildsystem.settings.DesignInventory;
-import de.eintosti.buildsystem.settings.NoClipManager;
-import de.eintosti.buildsystem.settings.Settings;
-import de.eintosti.buildsystem.settings.SettingsInventory;
-import de.eintosti.buildsystem.settings.SettingsManager;
-import de.eintosti.buildsystem.settings.SpeedInventory;
+import de.eintosti.buildsystem.player.settings.DesignInventory;
+import de.eintosti.buildsystem.player.settings.NoClipManager;
+import de.eintosti.buildsystem.player.settings.Settings;
+import de.eintosti.buildsystem.player.settings.SettingsInventory;
+import de.eintosti.buildsystem.player.settings.SettingsManager;
+import de.eintosti.buildsystem.player.settings.SpeedInventory;
 import de.eintosti.buildsystem.tabcomplete.BuildTabComplete;
 import de.eintosti.buildsystem.tabcomplete.ConfigTabComplete;
 import de.eintosti.buildsystem.tabcomplete.EmptyTabComplete;
@@ -89,7 +89,6 @@ import de.eintosti.buildsystem.tabcomplete.SpawnTabComplete;
 import de.eintosti.buildsystem.tabcomplete.SpeedTabComplete;
 import de.eintosti.buildsystem.tabcomplete.TimeTabComplete;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
-import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import de.eintosti.buildsystem.version.gamerules.GameRules;
@@ -98,6 +97,7 @@ import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.SpawnManager;
 import de.eintosti.buildsystem.world.WorldManager;
 import de.eintosti.buildsystem.world.data.StatusInventory;
+import de.eintosti.buildsystem.world.display.WorldIcon;
 import de.eintosti.buildsystem.world.modification.BuilderInventory;
 import de.eintosti.buildsystem.world.modification.CreateInventory;
 import de.eintosti.buildsystem.world.modification.DeleteInventory;
@@ -128,7 +128,6 @@ public class BuildSystem extends JavaPlugin {
     private CraftBukkitVersion craftBukkitVersion;
 
     private ArmorStandManager armorStandManager;
-    private InventoryUtils inventoryUtils;
     private NoClipManager noClipManager;
     private PlayerManager playerManager;
     private SettingsManager settingsManager;
@@ -154,6 +153,7 @@ public class BuildSystem extends JavaPlugin {
     private ConfigValues configValues;
     private CustomBlocks customBlocks;
     private GameRules gameRules;
+    private WorldIcon worldIcon;
 
     private LuckPermsExpansion luckPermsExpansion;
     private PlaceholderApiExpansion placeholderApiExpansion;
@@ -168,7 +168,6 @@ public class BuildSystem extends JavaPlugin {
     public void onEnable() {
         this.getConfig().options().copyDefaults(true);
         this.saveConfig();
-        this.configValues = new ConfigValues(this);
 
         initClasses();
         if (!initVersionedClasses()) {
@@ -183,7 +182,6 @@ public class BuildSystem extends JavaPlugin {
 
         performUpdateCheck();
 
-        worldManager.load();
         playerManager.load();
         spawnManager.load();
 
@@ -218,7 +216,6 @@ public class BuildSystem extends JavaPlugin {
 
         reloadConfigData(false);
         saveConfig();
-
         saveBuildConfig();
 
         unregisterExpansions();
@@ -250,11 +247,11 @@ public class BuildSystem extends JavaPlugin {
     }
 
     private void initClasses() {
+        this.configValues = new ConfigValues(this);
+        this.worldIcon = new WorldIcon(this);
+
         this.armorStandManager = new ArmorStandManager();
         this.playerManager = new PlayerManager(this);
-        this.inventoryUtils = new InventoryUtils(this);
-        this.inventoryUtils.loadTypes();
-        this.inventoryUtils.loadStatus();
         this.noClipManager = new NoClipManager(this);
         this.worldManager = new WorldManager(this);
         this.settingsManager = new SettingsManager(this);
@@ -444,7 +441,6 @@ public class BuildSystem extends JavaPlugin {
         worldManager.save();
         playerManager.save();
         spawnManager.save();
-        inventoryUtils.save();
     }
 
     public void sendPermissionMessage(CommandSender sender) {
@@ -466,7 +462,7 @@ public class BuildSystem extends JavaPlugin {
 
         if (init) {
             initVersionedClasses();
-            worldManager.getBuildWorlds().forEach(BuildWorld::manageUnload);
+            worldManager.getWorldStorage().getBuildWorlds().forEach(BuildWorld::manageUnload);
             if (configValues.isScoreboard()) {
                 getSettingsManager().startScoreboard();
             } else {
@@ -481,10 +477,6 @@ public class BuildSystem extends JavaPlugin {
 
     public ArmorStandManager getArmorStandManager() {
         return armorStandManager;
-    }
-
-    public InventoryUtils getInventoryUtil() {
-        return inventoryUtils;
     }
 
     public PlayerManager getPlayerManager() {
@@ -577,5 +569,9 @@ public class BuildSystem extends JavaPlugin {
 
     public GameRules getGameRules() {
         return gameRules;
+    }
+
+    public WorldIcon getWorldIcon() {
+        return worldIcon;
     }
 }

@@ -31,9 +31,7 @@ import de.eintosti.buildsystem.navigator.settings.NavigatorType;
 import de.eintosti.buildsystem.navigator.settings.WorldDisplay;
 import de.eintosti.buildsystem.navigator.settings.WorldFilter;
 import de.eintosti.buildsystem.navigator.settings.WorldSort;
-import de.eintosti.buildsystem.settings.DesignColor;
-import de.eintosti.buildsystem.settings.Settings;
-import de.eintosti.buildsystem.settings.SettingsManager;
+import de.eintosti.buildsystem.player.settings.Settings;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;
@@ -154,8 +152,7 @@ public class PlayerManager {
         }
 
         int maxWorldAmountPlayer = getMaxWorlds(player, showPrivateWorlds);
-        return maxWorldAmountPlayer < 0
-                || worldManager.getBuildWorldsCreatedByPlayer(player, visibility).size() < maxWorldAmountPlayer;
+        return maxWorldAmountPlayer < 0 || worldManager.getBuildWorldsCreatedByPlayer(player, visibility).size() < maxWorldAmountPlayer;
     }
 
     /**
@@ -240,14 +237,18 @@ public class PlayerManager {
             return;
         }
 
-        if (plugin.getInventoryUtil().inventoryContainsNavigator(player)) {
+        if (InventoryUtils.hasNavigator(player)) {
             return;
         }
 
-        ItemStack itemStack = plugin.getInventoryUtil()
-                .getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item", player));
+        XMaterial navigatorMaterial = configValues.getNavigatorItem();
+        ItemStack itemStack = InventoryUtils.createItem(
+                navigatorMaterial,
+                Messages.getString("navigator_item", player)
+        );
         PlayerInventory playerInventory = player.getInventory();
         ItemStack slot8 = playerInventory.getItem(8);
+
         if (slot8 == null || slot8.getType() == XMaterial.AIR.get()) {
             playerInventory.setItem(8, itemStack);
         } else {
@@ -278,16 +279,16 @@ public class PlayerManager {
     }
 
     private void replaceBarrier(Player player) {
-        if (!player.hasPermission("buildsystem.navigator.item")) {
-            return;
-        }
-
-        InventoryUtils inventoryUtils = plugin.getInventoryUtil();
-        String findItemName = Messages.getString("barrier_item", player);
-        ItemStack replaceItem = inventoryUtils.getItemStack(plugin.getConfigValues()
-                .getNavigatorItem(), Messages.getString("navigator_item", player));
-
-        inventoryUtils.replaceItem(player, findItemName, XMaterial.BARRIER, replaceItem);
+        XMaterial navigatorMaterial = configValues.getNavigatorItem();
+        InventoryUtils.replaceItem(
+                player,
+                Messages.getString("navigator_back", player),
+                XMaterial.BARRIER,
+                InventoryUtils.createItem(
+                        navigatorMaterial,
+                        Messages.getString("navigator_item", player)
+                )
+        );
     }
 
     private void initEntityChecker() {

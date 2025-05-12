@@ -15,29 +15,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.util.color;
+package de.eintosti.buildsystem.world.storage.factory;
 
-import org.bukkit.ChatColor;
+import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.world.storage.FolderStorage;
+import de.eintosti.buildsystem.world.storage.yaml.YamlFolderStorage;
 
 /**
- * Utility class for processing color codes in strings.
+ * Factory for creating folder storage implementations.
  */
-public class ColorAPI {
+public class FolderStorageFactory {
 
-    private ColorAPI() {
-        throw new IllegalStateException("Utility class");
+    private final BuildSystem plugin;
+
+    public FolderStorageFactory(BuildSystem plugin) {
+        this.plugin = plugin;
     }
 
     /**
-     * Processes color codes in a string. Supports both & and § color codes.
+     * Creates a folder storage implementation based on the configured storage type.
      *
-     * @param input The string to process
-     * @return The processed string with color codes
+     * @return The folder storage implementation
      */
-    public static String process(String input) {
-        if (input == null) {
-            return "";
-        }
-        return ChatColor.translateAlternateColorCodes('&', input);
+    public FolderStorage createStorage() {
+        return new YamlFolderStorage(plugin);
     }
 } 

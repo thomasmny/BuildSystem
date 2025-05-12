@@ -15,29 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.util.color;
+package de.eintosti.buildsystem.navigator;
 
-import org.bukkit.ChatColor;
+import de.eintosti.buildsystem.BuildSystem;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.Inventory;
 
-/**
- * Utility class for processing color codes in strings.
- */
-public class ColorAPI {
+public abstract class NavigatorInventory {
 
-    private ColorAPI() {
-        throw new IllegalStateException("Utility class");
+    protected final BuildSystem plugin;
+
+    protected NavigatorInventory(BuildSystem plugin) {
+        this.plugin = plugin;
     }
 
-    /**
-     * Processes color codes in a string. Supports both & and § color codes.
-     *
-     * @param input The string to process
-     * @return The processed string with color codes
-     */
-    public static String process(String input) {
-        if (input == null) {
-            return "";
-        }
-        return ChatColor.translateAlternateColorCodes('&', input);
+    protected abstract Inventory createInventory(Player player);
+
+    public abstract void handleClick(InventoryClickEvent event);
+
+    public void openInventory(Player player) {
+        player.openInventory(createInventory(player));
     }
 } 

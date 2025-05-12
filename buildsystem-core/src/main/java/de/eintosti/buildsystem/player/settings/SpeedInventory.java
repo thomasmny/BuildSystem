@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.settings;
+package de.eintosti.buildsystem.player.settings;
 
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
@@ -33,11 +33,9 @@ import org.bukkit.inventory.Inventory;
 public class SpeedInventory implements Listener {
 
     private final BuildSystem plugin;
-    private final InventoryUtils inventoryUtils;
 
     public SpeedInventory(BuildSystem plugin) {
         this.plugin = plugin;
-        this.inventoryUtils = plugin.getInventoryUtil();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -45,11 +43,11 @@ public class SpeedInventory implements Listener {
         Inventory inventory = Bukkit.createInventory(null, 27, Messages.getString("speed_title", player));
         fillGuiWithGlass(player, inventory);
 
-        inventoryUtils.addSkull(inventory, 11, Messages.getString("speed_1", player), Profileable.detect("71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530"));
-        inventoryUtils.addSkull(inventory, 12, Messages.getString("speed_2", player), Profileable.detect("4cd9eeee883468881d83848a46bf3012485c23f75753b8fbe8487341419847"));
-        inventoryUtils.addSkull(inventory, 13, Messages.getString("speed_3", player), Profileable.detect("1d4eae13933860a6df5e8e955693b95a8c3b15c36b8b587532ac0996bc37e5"));
-        inventoryUtils.addSkull(inventory, 14, Messages.getString("speed_4", player), Profileable.detect("d2e78fb22424232dc27b81fbcb47fd24c1acf76098753f2d9c28598287db5"));
-        inventoryUtils.addSkull(inventory, 15, Messages.getString("speed_5", player), Profileable.detect("6d57e3bc88a65730e31a14e3f41e038a5ecf0891a6c243643b8e5476ae2"));
+        InventoryUtils.addSkull(inventory, 11, Messages.getString("speed_1", player), Profileable.detect("71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530"));
+        InventoryUtils.addSkull(inventory, 12, Messages.getString("speed_2", player), Profileable.detect("4cd9eeee883468881d83848a46bf3012485c23f75753b8fbe8487341419847"));
+        InventoryUtils.addSkull(inventory, 13, Messages.getString("speed_3", player), Profileable.detect("1d4eae13933860a6df5e8e955693b95a8c3b15c36b8b587532ac0996bc37e5"));
+        InventoryUtils.addSkull(inventory, 14, Messages.getString("speed_4", player), Profileable.detect("d2e78fb22424232dc27b81fbcb47fd24c1acf76098753f2d9c28598287db5"));
+        InventoryUtils.addSkull(inventory, 15, Messages.getString("speed_5", player), Profileable.detect("6d57e3bc88a65730e31a14e3f41e038a5ecf0891a6c243643b8e5476ae2"));
 
         return inventory;
     }
@@ -60,13 +58,13 @@ public class SpeedInventory implements Listener {
 
     private void fillGuiWithGlass(Player player, Inventory inventory) {
         for (int i = 0; i <= 26; i++) {
-            inventoryUtils.addGlassPane(plugin, player, inventory, i);
+            InventoryUtils.addGlassPane(player, inventory, i);
         }
     }
 
     @EventHandler
     public void oInventoryClick(InventoryClickEvent event) {
-        if (!inventoryUtils.checkIfValidClick(event, "speed_title")) {
+        if (!InventoryUtils.isValidClick(event, "speed_title")) {
             return;
         }
 
