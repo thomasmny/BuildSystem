@@ -23,15 +23,19 @@ import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.player.PlayerManager;
 import de.eintosti.buildsystem.util.InventoryUtils;
+import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.world.data.WorldStatus;
+import de.eintosti.buildsystem.world.display.Folder;
+import java.util.AbstractMap;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
 public class WorldsInventory extends FilteredWorldsInventory {
 
     private final BuildSystem plugin;
     private final PlayerManager playerManager;
-    private final InventoryUtils inventoryUtils;
 
     public WorldsInventory(BuildSystem plugin) {
         super(plugin, "world_navigator_title", "world_navigator_no_worlds", Visibility.PUBLIC,
@@ -39,7 +43,6 @@ public class WorldsInventory extends FilteredWorldsInventory {
         );
 
         this.plugin = plugin;
-        this.inventoryUtils = plugin.getInventoryUtil();
         this.playerManager = plugin.getPlayerManager();
     }
 
@@ -49,14 +52,55 @@ public class WorldsInventory extends FilteredWorldsInventory {
         if (playerManager.canCreateWorld(player, super.getVisibility())) {
             addWorldCreateItem(inventory, player);
         }
+        addFolderCreateItem(inventory, player);
         return inventory;
     }
 
     private void addWorldCreateItem(Inventory inventory, Player player) {
         if (player.hasPermission("buildsystem.create.public")) {
-            inventoryUtils.addSkull(inventory, 49, Messages.getString("world_navigator_create_world", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716"));
+            InventoryUtils.addSkull(inventory, 49, Messages.getString("world_navigator_create_world", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716"));
         } else {
-            inventoryUtils.addGlassPane(plugin, player, inventory, 49);
+            InventoryUtils.addGlassPane(inventory, player, 49);
+        }
+    }
+
+    private void addFolderCreateItem(Inventory inventory, Player player) {
+        if (player.hasPermission("buildsystem.folder.create")) {
+            InventoryUtils.addSkull(inventory, 48, Messages.getString("world_navigator_create_folder", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"));
+        } else {
+            InventoryUtils.addGlassPane(inventory, player, 48);
+        }
+    }
+
+    @Override
+    public void onInventoryClick(InventoryClickEvent event) {
+        super.onInventoryClick(event);
+
+        Player player = (Player) event.getWhoClicked();
+        ItemStack itemStack = event.getCurrentItem();
+
+        if (event.getSlot() == 48 && player.hasPermission("buildsystem.folder.create")) {
+            player.closeInventory();
+            new PlayerChatInput(plugin, player, "enter_folder_name", input -> {
+                String folderName = input.trim();
+                if (folderName.isEmpty()) {
+                    Messages.sendMessage(player, "folder_name_empty");
+                    return;
+                }
+
+                // Check if folder with same name exists
+                if (plugin.getWorldManager().getRootFolders().stream()
+                        .anyMatch(folder -> folder.getName().equalsIgnoreCase(folderName))) {
+                    Messages.sendMessage(player, "folder_already_exists");
+                    return;
+                }
+
+                Folder newFolder = new Folder(folderName);
+                plugin.getWorldManager().addFolder(newFolder);
+                Messages.sendMessage(player, "folder_created",
+                        new AbstractMap.SimpleEntry<>("%folder%", folderName));
+                openInventory(player);
+            });
         }
     }
 }

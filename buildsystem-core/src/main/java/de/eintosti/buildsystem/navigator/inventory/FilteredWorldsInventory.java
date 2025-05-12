@@ -25,7 +25,7 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.navigator.settings.WorldDisplay;
 import de.eintosti.buildsystem.navigator.settings.WorldFilter;
 import de.eintosti.buildsystem.navigator.settings.WorldSort;
-import de.eintosti.buildsystem.settings.Settings;
+import de.eintosti.buildsystem.player.settings.Settings;
 import de.eintosti.buildsystem.settings.SettingsManager;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.PaginatedInventory;
