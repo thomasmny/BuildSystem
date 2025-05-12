@@ -15,16 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.world;
+package de.eintosti.buildsystem.world.builder;
 
 import java.util.UUID;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
 
 public class Builder {
 
     private final UUID uuid;
-    private String name;
+    private final String name;
 
     private Builder(UUID uuid, String name) {
         this.uuid = uuid;
@@ -43,7 +42,7 @@ public class Builder {
     }
 
     /**
-     * Creates a new {@link Builder} instance using the given player.
+     * Creates a new {@link Builder} instance from a player.
      *
      * @param player The player
      * @return The builder
@@ -55,23 +54,22 @@ public class Builder {
     /**
      * Creates a new {@link Builder} instance using a serialized string.
      * <p>
-     * The format of the string must be {@code <uuid>,<name>}.
+     * The format of the string must be {@code <uuid>:<name>}.
      *
      * @param serialized The serialized builder
      * @return The builder if all the input is valid, otherwise {@code null}
      */
-    @Nullable
-    public static Builder deserialize(@Nullable String serialized) {
-        if (serialized == null) {
+    public static Builder deserialize(String serialized) {
+        if (serialized == null || serialized.equals("-")) {
             return null;
         }
 
-        String[] parts = serialized.split(",");
-        if (parts.length != 2) {
-            return null;
-        }
+        String[] parts = serialized.split(":");
+        return new Builder(UUID.fromString(parts[0]), parts[1]);
+    }
 
-        return Builder.of(UUID.fromString(parts[0]), parts[1]);
+    public String serialize() {
+        return uuid.toString() + ":" + name;
     }
 
     public UUID getUniqueId() {
@@ -82,22 +80,20 @@ public class Builder {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     @Override
-    public String toString() {
-        return uuid.toString() + "," + name;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof Builder)) {
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
+        Builder builder = (Builder) o;
+        return uuid.equals(builder.uuid);
+    }
 
-        Builder other = (Builder) obj;
-        return other.getUniqueId().equals(this.uuid) && other.getName().equals(this.name);
+    @Override
+    public int hashCode() {
+        return uuid.hashCode();
     }
 }

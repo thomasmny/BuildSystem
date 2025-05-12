@@ -43,12 +43,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class StatusInventory implements Listener {
 
     private final BuildSystem plugin;
-    private final InventoryUtils inventoryUtils;
     private final PlayerManager playerManager;
 
     public StatusInventory(BuildSystem plugin) {
         this.plugin = plugin;
-        this.inventoryUtils = plugin.getInventoryUtil();
         this.playerManager = plugin.getPlayerManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -79,15 +77,15 @@ public class StatusInventory implements Listener {
 
     private void fillGuiWithGlass(Player player, Inventory inventory) {
         for (int i = 0; i <= 9; i++) {
-            inventoryUtils.addGlassPane(plugin, player, inventory, i);
+            InventoryUtils.addGlassPane(player, inventory, i);
         }
         for (int i = 17; i <= 26; i++) {
-            inventoryUtils.addGlassPane(plugin, player, inventory, i);
+            InventoryUtils.addGlassPane(player, inventory, i);
         }
     }
 
     private void addStatusItem(Player player, Inventory inventory, int position, WorldStatus status) {
-        XMaterial material = inventoryUtils.getStatusItem(status);
+        XMaterial material = plugin.getWorldIcon().getIcon(status);
         String displayName = status.getName(player);
 
         if (!player.hasPermission(status.getPermission())) {
