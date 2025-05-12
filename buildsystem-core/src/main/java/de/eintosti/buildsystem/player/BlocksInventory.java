@@ -37,11 +37,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class BlocksInventory implements Listener {
 
     private final BuildSystem plugin;
-    private final InventoryUtils inventoryUtils;
 
     public BlocksInventory(BuildSystem plugin) {
         this.plugin = plugin;
-        this.inventoryUtils = plugin.getInventoryUtil();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -85,7 +83,7 @@ public class BlocksInventory implements Listener {
 
     private void setCustomBlock(Inventory inventory, Player player, int position, CustomBlock customBlock) {
         if (MinecraftVersion.getCurrent().isEqualOrHigherThan(customBlock.getVersion())) {
-            inventoryUtils.addSkull(inventory, position, Messages.getString(customBlock.getKey(), player), Profileable.detect(customBlock.getSkullUrl()));
+            InventoryUtils.addSkull(inventory, position, Messages.getString(customBlock.getKey(), player), Profileable.detect(customBlock.getSkullUrl()));
         }
     }
 
@@ -96,13 +94,13 @@ public class BlocksInventory implements Listener {
     private void fillGuiWithGlass(Player player, Inventory inventory) {
         int[] glassSlots = {0, 8, 9, 17, 18, 26, 27, 35, 36, 44};
         for (int i : glassSlots) {
-            inventoryUtils.addGlassPane(plugin, player, inventory, i);
+            InventoryUtils.addGlassPane(player, inventory, i);
         }
     }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!inventoryUtils.checkIfValidClick(event, "blocks_title")) {
+        if (!InventoryUtils.isValidClick(event, "blocks_title")) {
             return;
         }
 
@@ -169,10 +167,10 @@ public class BlocksInventory implements Listener {
                 giveCustomBlock(player, CustomBlock.COMMAND_BLOCK);
                 break;
             case 32:
-                giveCustomBlock(player, CustomBlock.BARRIER, inventoryUtils.getItemStack(XMaterial.BARRIER, Messages.getString(CustomBlock.BARRIER.getKey(), player)));
+                giveCustomBlock(player, CustomBlock.BARRIER, InventoryUtils.createItem(XMaterial.BARRIER, Messages.getString(CustomBlock.BARRIER.getKey(), player)));
                 break;
             case 33:
-                ItemStack itemStack = inventoryUtils.getItemStack(XMaterial.ITEM_FRAME, Messages.getString(CustomBlock.INVISIBLE_ITEM_FRAME.getKey(), player));
+                ItemStack itemStack = InventoryUtils.createItem(XMaterial.ITEM_FRAME, Messages.getString(CustomBlock.INVISIBLE_ITEM_FRAME.getKey(), player));
                 ItemMeta itemMeta = itemStack.getItemMeta();
                 itemMeta.addEnchant(XEnchantment.UNBREAKING.getEnchant(), 1, true);
                 // Inline imports to allow backwards compatibility
@@ -196,7 +194,7 @@ public class BlocksInventory implements Listener {
                 giveCustomBlock(player, CustomBlock.DRAGON_EGG);
                 break;
             case 41:
-                giveCustomBlock(player, CustomBlock.DEBUG_STICK, inventoryUtils.getItemStack(XMaterial.DEBUG_STICK, Messages.getString(CustomBlock.DEBUG_STICK.getKey(), player)));
+                giveCustomBlock(player, CustomBlock.DEBUG_STICK, InventoryUtils.createItem(XMaterial.DEBUG_STICK, Messages.getString(CustomBlock.DEBUG_STICK.getKey(), player)));
                 break;
         }
     }
@@ -208,6 +206,6 @@ public class BlocksInventory implements Listener {
     }
 
     private void giveCustomBlock(Player player, CustomBlock customBlock) {
-        giveCustomBlock(player, customBlock, inventoryUtils.getSkull(Messages.getString(customBlock.getKey(), player), Profileable.detect(customBlock.getSkullUrl())));
+        giveCustomBlock(player, customBlock, InventoryUtils.createSkull(Messages.getString(customBlock.getKey(), player), Profileable.detect(customBlock.getSkullUrl())));
     }
 }
