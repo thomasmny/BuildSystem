@@ -21,15 +21,13 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.config.ConfigValues;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class WorldData implements ConfigurationSerializable {
+public class WorldData {
 
     private final Map<String, Type<?>> data = new HashMap<>();
 
@@ -223,11 +221,8 @@ public class WorldData implements ConfigurationSerializable {
         this.worldName = worldName;
     }
 
-    @Override
-    public @NotNull Map<String, Object> serialize() {
-        return data.entrySet().stream()
-                .filter(entry -> entry.getValue().get() != null)
-                .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getConfigFormat()));
+    public Map<String, Type<?>> getAllData() {
+        return data;
     }
 
     public static class Type<T> {
@@ -242,7 +237,7 @@ public class WorldData implements ConfigurationSerializable {
             this.value = value;
         }
 
-        protected Object getConfigFormat() {
+        public Object getConfigFormat() {
             return value;
         }
     }
@@ -250,7 +245,7 @@ public class WorldData implements ConfigurationSerializable {
     public static class DifficultyType extends Type<Difficulty> {
 
         @Override
-        protected Object getConfigFormat() {
+        public Object getConfigFormat() {
             return super.get().name();
         }
     }
@@ -258,7 +253,7 @@ public class WorldData implements ConfigurationSerializable {
     public static class MaterialType extends Type<XMaterial> {
 
         @Override
-        protected Object getConfigFormat() {
+        public Object getConfigFormat() {
             return super.get().name();
         }
     }
@@ -266,7 +261,7 @@ public class WorldData implements ConfigurationSerializable {
     public static class StatusType extends Type<WorldStatus> {
 
         @Override
-        protected Object getConfigFormat() {
+        public Object getConfigFormat() {
             return super.get().name();
         }
     }

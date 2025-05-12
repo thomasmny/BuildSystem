@@ -44,8 +44,7 @@ public class Messages {
 
     private static final BuildSystem PLUGIN = JavaPlugin.getPlugin(BuildSystem.class);
     private static final Map<String, String> MESSAGES = new HashMap<>();
-    private static final boolean PLACEHOLDER_API_ENABLED =
-            Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null;
+    private static final boolean PLACEHOLDER_API_ENABLED = Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null;
 
     private static YamlConfiguration config;
 

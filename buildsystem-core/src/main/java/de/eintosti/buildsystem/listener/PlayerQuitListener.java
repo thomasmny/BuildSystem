@@ -23,7 +23,7 @@ import de.eintosti.buildsystem.player.BuildPlayer;
 import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.player.PlayerManager;
-import de.eintosti.buildsystem.settings.Settings;
+import de.eintosti.buildsystem.player.settings.Settings;
 import de.eintosti.buildsystem.settings.SettingsManager;
 import java.util.AbstractMap;
 import org.bukkit.Bukkit;

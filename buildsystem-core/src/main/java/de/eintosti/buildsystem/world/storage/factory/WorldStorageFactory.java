@@ -15,31 +15,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.settings;
+package de.eintosti.buildsystem.world.storage.factory;
 
-public enum DesignColor {
-    RED,
-    ORANGE,
-    YELLOW,
-    PINK,
-    MAGENTA,
-    PURPLE,
-    BROWN,
-    LIME,
-    GREEN,
-    BLUE,
-    CYAN,
-    LIGHT_BLUE,
-    WHITE,
-    GRAY,
-    LIGHT_GRAY,
-    BLACK;
+import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.world.storage.WorldStorage;
+import de.eintosti.buildsystem.world.storage.yaml.YamlWorldStorage;
 
-    public static DesignColor matchColor(String colorName) {
-        try {
-            return valueOf(colorName);
-        } catch (IllegalArgumentException e) {
-            return DesignColor.BLACK;
-        }
+/**
+ * Factory for creating world storage implementations.
+ */
+public class WorldStorageFactory {
+
+    private final BuildSystem plugin;
+
+    public WorldStorageFactory(BuildSystem plugin) {
+        this.plugin = plugin;
     }
-}
+
+    /**
+     * Creates a world storage implementation based on the configured storage type.
+     *
+     * @return The world storage implementation
+     */
+    public WorldStorage createStorage() {
+        return new YamlWorldStorage(plugin);
+    }
+} 

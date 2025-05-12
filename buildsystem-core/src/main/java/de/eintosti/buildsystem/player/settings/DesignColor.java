@@ -15,29 +15,31 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.util.color;
+package de.eintosti.buildsystem.player.settings;
 
-import org.bukkit.ChatColor;
+public enum DesignColor {
+    RED,
+    ORANGE,
+    YELLOW,
+    PINK,
+    MAGENTA,
+    PURPLE,
+    BROWN,
+    LIME,
+    GREEN,
+    BLUE,
+    CYAN,
+    LIGHT_BLUE,
+    WHITE,
+    GRAY,
+    LIGHT_GRAY,
+    BLACK;
 
-/**
- * Utility class for processing color codes in strings.
- */
-public class ColorAPI {
-
-    private ColorAPI() {
-        throw new IllegalStateException("Utility class");
-    }
-
-    /**
-     * Processes color codes in a string. Supports both & and § color codes.
-     *
-     * @param input The string to process
-     * @return The processed string with color codes
-     */
-    public static String process(String input) {
-        if (input == null) {
-            return "";
+    public static DesignColor matchColor(String colorName) {
+        try {
+            return valueOf(colorName);
+        } catch (IllegalArgumentException e) {
+            return DesignColor.BLACK;
         }
-        return ChatColor.translateAlternateColorCodes('&', input);
     }
-} 
+}
