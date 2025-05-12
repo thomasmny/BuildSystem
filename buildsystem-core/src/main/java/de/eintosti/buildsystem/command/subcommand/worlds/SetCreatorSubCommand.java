@@ -26,8 +26,8 @@ import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.Builder;
 import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.builder.Builder;
 import java.util.AbstractMap;
 import org.bukkit.entity.Player;
 

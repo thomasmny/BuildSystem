@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.version.util.MinecraftVersion;
+import de.eintosti.buildsystem.world.builder.Builder;
 import de.eintosti.buildsystem.world.data.WorldType;
 import de.eintosti.buildsystem.world.generator.CustomGenerator;
 import de.eintosti.buildsystem.world.generator.voidgenerator.DeprecatedVoidGenerator;

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.settings;
+package de.eintosti.buildsystem.player.settings;
 
 import de.eintosti.buildsystem.navigator.settings.NavigatorType;
 import de.eintosti.buildsystem.navigator.settings.WorldDisplay;

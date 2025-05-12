@@ -18,112 +18,44 @@
 package de.eintosti.buildsystem.world;
 
 import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.messages.Titles;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.config.ConfigValues;
-import de.eintosti.buildsystem.event.world.BuildWorldLoadEvent;
-import de.eintosti.buildsystem.event.world.BuildWorldPostLoadEvent;
-import de.eintosti.buildsystem.event.world.BuildWorldPostUnloadEvent;
-import de.eintosti.buildsystem.event.world.BuildWorldUnloadEvent;
-import de.eintosti.buildsystem.util.InventoryUtils;
+import de.eintosti.buildsystem.world.builder.Builder;
+import de.eintosti.buildsystem.world.builder.BuilderManager;
 import de.eintosti.buildsystem.world.data.WorldData;
 import de.eintosti.buildsystem.world.data.WorldType;
+import de.eintosti.buildsystem.world.display.Displayable;
 import de.eintosti.buildsystem.world.generator.CustomGenerator;
+import de.eintosti.buildsystem.world.util.WorldLoader;
+import de.eintosti.buildsystem.world.util.WorldUnloader;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
 import org.bukkit.Difficulty;
 import org.bukkit.World;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
-import org.jetbrains.annotations.NotNull;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-public class BuildWorld implements ConfigurationSerializable {
+/**
+ * Represents a world in the build system. This class is the core model for world management, delegating specific functionality to specialized components.
+ */
+public final class BuildWorld implements Displayable {
 
-    private final BuildSystem plugin;
-    private final ConfigValues configValues;
-    private final WorldType worldType;
     private final WorldData worldData;
-    private final long creationDate;
+    private final WorldType worldType;
+    private final BuilderManager builderManager;
     private final CustomGenerator customGenerator;
-    private final List<Builder> builders;
+    private final long creationDate;
+
+    private final WorldLoader worldLoader;
+    private final WorldUnloader worldUnloader;
+
     private String name;
-    private Builder creator;
-    private long seconds;
     private boolean loaded;
-    private BukkitTask unloadTask;
-
-    public BuildWorld(
-            String name,
-            Builder creator,
-            WorldType worldType,
-            long creationDate,
-            boolean privateWorld,
-            CustomGenerator customGenerator
-    ) {
-        this.plugin = JavaPlugin.getPlugin(BuildSystem.class);
-        this.configValues = plugin.getConfigValues();
-
-        this.name = name;
-        this.creator = creator;
-        this.worldType = worldType;
-        this.worldData = new WorldData(
-                name,
-                configValues,
-                privateWorld
-        );
-        this.customGenerator = customGenerator;
-        this.creationDate = creationDate;
-        this.builders = new ArrayList<>();
-
-        InventoryUtils inventoryUtils = plugin.getInventoryUtil();
-        XMaterial material;
-        switch (worldType) {
-            case NORMAL:
-                material = inventoryUtils.getDefaultItem(WorldType.NORMAL);
-                break;
-            case FLAT:
-                material = inventoryUtils.getDefaultItem(WorldType.FLAT);
-                break;
-            case NETHER:
-                material = inventoryUtils.getDefaultItem(WorldType.NETHER);
-                break;
-            case END:
-                material = inventoryUtils.getDefaultItem(WorldType.END);
-                break;
-            case VOID:
-                material = inventoryUtils.getDefaultItem(WorldType.VOID);
-                break;
-            case CUSTOM:
-            case TEMPLATE:
-                material = XMaterial.FILLED_MAP;
-                break;
-            case IMPORTED:
-                material = inventoryUtils.getDefaultItem(WorldType.IMPORTED);
-                break;
-            default:
-                throw new IllegalArgumentException(
-                        "Unsupported world type '" + worldType.name() + "' for world " + name);
-        }
-        if (privateWorld) {
-            material = XMaterial.PLAYER_HEAD;
-        }
-        worldData.material().set(material);
-
-        manageUnload();
-    }
 
     public BuildWorld(
             String name,
@@ -134,36 +66,33 @@ public class BuildWorld implements ConfigurationSerializable {
             CustomGenerator customGenerator,
             List<Builder> builders
     ) {
-        this.plugin = JavaPlugin.getPlugin(BuildSystem.class);
-        this.configValues = plugin.getConfigValues();
-
         this.name = name;
-        this.creator = creator;
         this.worldType = worldType;
         this.worldData = worldData;
         this.creationDate = creationDate;
         this.customGenerator = customGenerator;
-        this.builders = builders;
+
+        this.builderManager = new BuilderManager(creator);
+        builders.forEach(this.builderManager::addBuilder);
+
+        this.worldLoader = new WorldLoader(this);
+        this.worldUnloader = new WorldUnloader(this);
 
         manageUnload();
     }
 
-    /**
-     * Get the world linked to this object.
-     *
-     * @return The bukkit world
-     */
-    public World getWorld() {
-        return Bukkit.getWorld(name);
+    public BuildWorld(String name, WorldData worldData) {
+        this(name, null, WorldType.NORMAL, worldData, System.currentTimeMillis(), null, Collections.emptyList());
     }
 
     /**
-     * Get the name of the world.
+     * Gets the Bukkit world associated with this build world.
      *
-     * @return The world's name
+     * @return The Bukkit world, or null if not loaded
      */
-    public String getName() {
-        return name;
+    @Nullable
+    public World getWorld() {
+        return Bukkit.getWorld(name);
     }
 
     /**
@@ -178,7 +107,7 @@ public class BuildWorld implements ConfigurationSerializable {
 
     public Profileable asProfilable() {
         return hasCreator()
-                ? Profileable.of(creator.getUniqueId())
+                ? Profileable.of(builderManager.getCreator().getUniqueId())
                 : Profileable.username(name);
     }
 
@@ -188,7 +117,7 @@ public class BuildWorld implements ConfigurationSerializable {
      * @return {@code true} if the world has a creator, {@code false} otherwise
      */
     public boolean hasCreator() {
-        return creator != null;
+        return builderManager.hasCreator();
     }
 
     /**
@@ -200,26 +129,7 @@ public class BuildWorld implements ConfigurationSerializable {
      */
     @Nullable
     public Builder getCreator() {
-        return creator;
-    }
-
-    /**
-     * Set the name of the creator.
-     *
-     * @param creator The name of the creator
-     */
-    public void setCreator(@Nullable Builder creator) {
-        this.creator = creator;
-    }
-
-    /**
-     * Gets whether the given player is the creator of the world.
-     *
-     * @param player The player to check
-     * @return {@code true} if the player is the creator, {@code false} otherwise
-     */
-    public boolean isCreator(Player player) {
-        return Objects.equals(this.creator, Builder.of(player));
+        return builderManager.getCreator();
     }
 
     /**
@@ -307,42 +217,9 @@ public class BuildWorld implements ConfigurationSerializable {
      * @return the list of all builders
      */
     public List<Builder> getBuilders() {
-        return builders;
+        return builderManager.getBuilders();
     }
 
-    /**
-     * Format the {@code %builder%} placeholder.
-     *
-     * @param player The player to parse the placeholders against
-     * @return The list of builders which have been added to the given world as a string
-     */
-    public String getBuildersInfo(Player player) {
-        String template = Messages.getString("world_item_builders_builder_template", player);
-        List<String> builderNames = getBuilderNames();
-
-        String string = "";
-        if (builderNames.isEmpty()) {
-            string = template.replace("%builder%", "-").trim();
-        } else {
-            for (String builderName : builderNames) {
-                string = string.concat(template.replace("%builder%", builderName));
-            }
-            string = string.trim();
-        }
-
-        return string.substring(0, string.length() - 1);
-    }
-
-    /**
-     * Get a list of all {@link Builder} names
-     *
-     * @return A list of all builder names
-     */
-    public List<String> getBuilderNames() {
-        return getBuilders().stream()
-                .map(Builder::getName)
-                .collect(Collectors.toList());
-    }
 
     /**
      * Get a builder by the given uuid.
@@ -352,10 +229,7 @@ public class BuildWorld implements ConfigurationSerializable {
      */
     @Nullable
     public Builder getBuilder(UUID uuid) {
-        return this.builders.parallelStream()
-                .filter(builder -> builder.getUniqueId().equals(uuid))
-                .findFirst()
-                .orElse(null);
+        return builderManager.getBuilder(uuid);
     }
 
     /**
@@ -365,7 +239,7 @@ public class BuildWorld implements ConfigurationSerializable {
      * @return Whether the player is a builder
      */
     public boolean isBuilder(UUID uuid) {
-        return this.builders.stream().anyMatch(builder -> builder.getUniqueId().equals(uuid));
+        return builderManager.isBuilder(uuid);
     }
 
     /**
@@ -385,7 +259,7 @@ public class BuildWorld implements ConfigurationSerializable {
      * @param builder The builder object
      */
     public void addBuilder(Builder builder) {
-        this.builders.add(builder);
+        builderManager.addBuilder(builder);
     }
 
     /**
@@ -394,7 +268,7 @@ public class BuildWorld implements ConfigurationSerializable {
      * @param builder The builder object
      */
     private void removeBuilder(Builder builder) {
-        this.builders.remove(builder);
+        builderManager.removeBuilder(builder);
     }
 
     /**
@@ -413,11 +287,7 @@ public class BuildWorld implements ConfigurationSerializable {
      * @return The list of builders as a string
      */
     private String saveBuilders() {
-        StringBuilder builderList = new StringBuilder();
-        for (Builder builder : getBuilders()) {
-            builderList.append(";").append(builder.toString());
-        }
-        return builderList.length() > 0 ? builderList.substring(1) : builderList.toString();
+        return builderManager.serializeBuilders();
     }
 
     /**
@@ -433,6 +303,44 @@ public class BuildWorld implements ConfigurationSerializable {
         return String.valueOf(bukkitWorld.getTime());
     }
 
+    @Override
+    public String getName() {
+        return this.name;
+    }
+
+    @Override
+    public XMaterial getMaterial() {
+        return this.worldData.material().get();
+    }
+
+    @Override
+    public String getDisplayName(Player player) {
+        return Messages.getString("world_item_title", player,
+                new AbstractMap.SimpleEntry<>("%world%", this.name)
+        );
+    }
+
+    @Override
+    public List<String> getLore(Player player) {
+        List<String> lore = new ArrayList<>();
+        lore.add(Messages.getString("world_item_creator", player,
+                new AbstractMap.SimpleEntry<>("%creator%", hasCreator() ? getCreator().getName() : "N/A"))
+        );
+        lore.add(Messages.getString("world_item_type", player,
+                new AbstractMap.SimpleEntry<>("%type%", getType().getName(player)))
+        );
+        return lore;
+    }
+
+    @Override
+    public ItemStack asItemStack(Player player) {
+        return getMaterial().parseItem();
+    }
+
+    public BuilderManager getBuilderManager() {
+        return builderManager;
+    }
+
     /**
      * Get whether the world has been loaded, allowing a player to enter it.
      *
@@ -442,148 +350,48 @@ public class BuildWorld implements ConfigurationSerializable {
         return loaded;
     }
 
-    public void manageUnload() {
-        if (!configValues.isUnloadWorlds()) {
-            this.loaded = true;
-            return;
-        }
-
-        this.seconds = configValues.getTimeUntilUnload();
-        this.loaded = (getWorld() != null);
-        startUnloadTask();
+    public void setLoaded(boolean loaded) {
+        this.loaded = loaded;
     }
 
-    private void startUnloadTask() {
-        if (!configValues.isUnloadWorlds()) {
-            return;
-        }
-
-        this.unloadTask = Bukkit.getScheduler().runTaskLater(plugin, this::unload, 20L * seconds);
+    public void manageUnload() {
+        worldUnloader.manageUnload();
     }
 
     public void resetUnloadTask() {
-        if (this.unloadTask != null) {
-            this.unloadTask.cancel();
-        }
-
-        startUnloadTask();
-    }
-
-    private void unload() {
-        World bukkitWorld = getWorld();
-        if (bukkitWorld == null) {
-            return;
-        }
-
-        if (!bukkitWorld.getPlayers().isEmpty()) {
-            resetUnloadTask();
-            return;
-        }
-
-        if (configValues.getBlackListedWorldsToUnload().contains(name) || isSpawnWorld(bukkitWorld)) {
-            return;
-        }
-
-        forceUnload(true);
+        worldUnloader.resetUnloadTask();
     }
 
     public void forceUnload(boolean save) {
-        World bukkitWorld = getWorld();
-        if (bukkitWorld == null) {
-            return;
-        }
-
-        BuildWorldUnloadEvent unloadEvent = new BuildWorldUnloadEvent(this);
-        Bukkit.getServer().getPluginManager().callEvent(unloadEvent);
-        if (unloadEvent.isCancelled()) {
-            return;
-        }
-
-        if (save) {
-            bukkitWorld.save();
-        }
-
-        for (Chunk chunk : bukkitWorld.getLoadedChunks()) {
-            chunk.unload(save);
-        }
-        Bukkit.unloadWorld(bukkitWorld, save);
-        Bukkit.getWorlds().remove(bukkitWorld);
-
-        this.worldData.lastUnloaded().set(System.currentTimeMillis());
-        this.loaded = false;
-        this.unloadTask = null;
-
-        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostUnloadEvent(this));
-
-        plugin.getLogger().info("*** Unloaded world \"" + name + "\" ***");
-    }
-
-    private boolean isSpawnWorld(World bukkitWorld) {
-        SpawnManager spawnManager = plugin.getSpawnManager();
-        if (!spawnManager.spawnExists()) {
-            return false;
-        }
-
-        return Objects.equals(spawnManager.getSpawn().getWorld(), bukkitWorld);
+        worldUnloader.forceUnload(save);
     }
 
     public void load(Player player) {
-        if (isLoaded()) {
-            return;
-        }
-
-        player.closeInventory();
-        Titles.sendTitle(player, 5, 70, 20, " ",
-                Messages.getString("loading_world", player, new AbstractMap.SimpleEntry<>("%world%", name))
-        );
-
-        load();
+        worldLoader.loadForPlayer(player);
     }
 
     public void load() {
-        if (isLoaded()) {
-            return;
-        }
-
-        BuildWorldLoadEvent loadEvent = new BuildWorldLoadEvent(this);
-        Bukkit.getServer().getPluginManager().callEvent(loadEvent);
-        if (loadEvent.isCancelled()) {
-            return;
-        }
-
-        plugin.getLogger().info("*** Loading world \"" + name + "\" ***");
-        World world = new BuildWorldCreator(plugin, this).generateBukkitWorld();
-        if (world == null) {
-            return;
-        }
-
-        this.worldData.lastLoaded().set(System.currentTimeMillis());
-        this.loaded = true;
-
-        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostLoadEvent(this));
-
-        resetUnloadTask();
-    }
-
-    @Override
-    public @NotNull Map<String, Object> serialize() {
-        Map<String, Object> world = new HashMap<>();
-
-        if (creator != null) {
-            world.put("creator", creator.toString());
-        }
-        world.put("type", worldType.name());
-        world.put("data", worldData.serialize());
-        world.put("date", creationDate);
-        world.put("builders", saveBuilders());
-        if (customGenerator != null) {
-            world.put("chunk-generator", customGenerator.getName());
-        }
-
-        return world;
+        worldLoader.load();
     }
 
     public enum Time {
         SUNRISE, NOON, NIGHT, UNKNOWN
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        BuildWorld that = (BuildWorld) o;
+        return name.equals(that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
     }
 }
