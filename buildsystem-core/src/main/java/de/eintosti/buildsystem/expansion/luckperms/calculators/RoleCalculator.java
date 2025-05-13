@@ -17,10 +17,12 @@
  */
 package de.eintosti.buildsystem.expansion.luckperms.calculators;
 
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.builder.Builders;
-import de.eintosti.buildsystem.world.storage.WorldStorage;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.builder.BuildersImpl;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import java.util.Locale;
 import net.luckperms.api.context.ContextCalculator;
 import net.luckperms.api.context.ContextConsumer;
@@ -34,9 +36,9 @@ public class RoleCalculator implements ContextCalculator<Player> {
 
     private static final String KEY = "buildsystem:role";
 
-    private final WorldStorage worldStorage;
+    private final WorldStorageImpl worldStorage;
 
-    public RoleCalculator(BuildSystem plugin) {
+    public RoleCalculator(BuildSystemPlugin plugin) {
         this.worldStorage = plugin.getWorldService().getWorldStorage();
     }
 
@@ -58,17 +60,17 @@ public class RoleCalculator implements ContextCalculator<Player> {
 
     private enum Role {
         /**
-         * The creator of a {@link BuildWorld}.
+         * The creator of a {@link BuildWorldImpl}.
          */
         CREATOR,
 
         /**
-         * A player which has been added to the list of trusted players and is therefore allowed to build in a {@link BuildWorld}.
+         * A player which has been added to the list of trusted players and is therefore allowed to build in a {@link BuildWorldImpl}.
          */
         BUILDER,
 
         /**
-         * A player which is neither the {@link #CREATOR} nor a {@link #BUILDER} in a {@link BuildWorld}.
+         * A player which is neither the {@link #CREATOR} nor a {@link #BUILDER} in a {@link BuildWorldImpl}.
          */
         GUEST;
 

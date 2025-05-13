@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.internal;
 
 import com.google.common.collect.Lists;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import de.eintosti.buildsystem.version.gamerules.GameRules;
@@ -76,7 +76,7 @@ public enum CraftBukkitVersion {
     private final Class<? extends CustomBlocks> customBlocks;
     private final Class<? extends GameRules> gameRules;
 
-    private final BuildSystem plugin = JavaPlugin.getPlugin(BuildSystem.class);
+    private final BuildSystemPlugin plugin = JavaPlugin.getPlugin(BuildSystemPlugin.class);
 
     CraftBukkitVersion(int dataVersion, Class<? extends CustomBlocks> customBlocks, Class<? extends GameRules> gameRules) {
         this.dataVersion = dataVersion;

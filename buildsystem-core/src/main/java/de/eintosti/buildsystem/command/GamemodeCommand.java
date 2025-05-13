@@ -17,7 +17,7 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import java.util.AbstractMap;
 import java.util.Locale;
@@ -31,9 +31,9 @@ import org.jetbrains.annotations.NotNull;
 
 public class GamemodeCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
-    public GamemodeCommand(BuildSystem plugin) {
+    public GamemodeCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         plugin.getCommand("gamemode").setExecutor(this);
     }

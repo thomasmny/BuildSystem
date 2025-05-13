@@ -18,14 +18,16 @@
 package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.event.EventDispatcher;
 import de.eintosti.buildsystem.event.world.BuildWorldManipulationEvent;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.data.WorldData;
-import de.eintosti.buildsystem.world.data.WorldStatus;
-import de.eintosti.buildsystem.world.storage.WorldStorage;
-import de.eintosti.buildsystem.world.util.WorldPermissions;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.data.WorldDataImpl;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -43,11 +45,11 @@ import org.bukkit.inventory.ItemStack;
 
 public class WorldManipulateListener implements Listener {
 
-    private final BuildSystem plugin;
-    private final WorldStorage worldStorage;
+    private final BuildSystemPlugin plugin;
+    private final WorldStorageImpl worldStorage;
     private final EventDispatcher dispatcher;
 
-    public WorldManipulateListener(BuildSystem plugin) {
+    public WorldManipulateListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.worldStorage = plugin.getWorldService().getWorldStorage();
         this.dispatcher = new EventDispatcher(worldStorage);
@@ -112,7 +114,7 @@ public class WorldManipulateListener implements Listener {
         WorldData worldData = buildWorld.getData();
 
         Cancellable parentEvent = event.getParentEvent();
-        boolean canModify = WorldPermissions.of(buildWorld).canModify(player, () -> getRelatedWorldSetting(parentEvent, worldData).get());
+        boolean canModify = WorldPermissionsImpl.of(buildWorld).canModify(player, () -> getRelatedWorldSetting(parentEvent, worldData).get());
         if (!canModify) {
             parentEvent.setCancelled(true);
             denyPlayerInteraction(event);
@@ -141,9 +143,9 @@ public class WorldManipulateListener implements Listener {
     }
 
     private void updateStatus(WorldData worldData, Player player) {
-        if (worldData.status().get() == WorldStatus.NOT_STARTED) {
-            worldData.status().set(WorldStatus.IN_PROGRESS);
-            plugin.getPlayerManager().forceUpdateSidebar(player);
+        if (worldData.status().get() == BuildWorldStatus.NOT_STARTED) {
+            worldData.status().set(BuildWorldStatus.IN_PROGRESS);
+            plugin.getPlayerService().forceUpdateSidebar(player);
         }
     }
 }
