@@ -83,7 +83,7 @@ public class BlocksInventory implements Listener {
 
     private void setCustomBlock(Inventory inventory, Player player, int position, CustomBlock customBlock) {
         if (MinecraftVersion.getCurrent().isEqualOrHigherThan(customBlock.getVersion())) {
-            InventoryUtils.addSkull(inventory, position, Messages.getString(customBlock.getKey(), player), Profileable.detect(customBlock.getSkullUrl()));
+            inventory.setItem(position, InventoryUtils.createSkull(Messages.getString(customBlock.getKey(), player), Profileable.detect(customBlock.getSkullUrl())));
         }
     }
 
@@ -172,7 +172,7 @@ public class BlocksInventory implements Listener {
             case 33:
                 ItemStack itemStack = InventoryUtils.createItem(XMaterial.ITEM_FRAME, Messages.getString(CustomBlock.INVISIBLE_ITEM_FRAME.getKey(), player));
                 ItemMeta itemMeta = itemStack.getItemMeta();
-                itemMeta.addEnchant(XEnchantment.UNBREAKING.getEnchant(), 1, true);
+                itemMeta.addEnchant(XEnchantment.UNBREAKING.get(), 1, true);
                 // Inline imports to allow backwards compatibility
                 itemMeta.getPersistentDataContainer().set(
                         new org.bukkit.NamespacedKey(plugin, "invisible-itemframe"), org.bukkit.persistence.PersistentDataType.BYTE, (byte) 1

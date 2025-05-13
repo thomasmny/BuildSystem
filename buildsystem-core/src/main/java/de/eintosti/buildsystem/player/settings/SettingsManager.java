@@ -22,7 +22,7 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.WorldService;
 import de.eintosti.buildsystem.world.data.WorldData;
 import fr.mrmicky.fastboard.FastBoard;
 import java.util.AbstractMap;
@@ -39,14 +39,14 @@ public class SettingsManager {
 
     private final BuildSystem plugin;
     private final ConfigValues configValues;
-    private final WorldManager worldManager;
+    private final WorldService worldService;
 
     private final Map<UUID, FastBoard> boards;
 
     public SettingsManager(BuildSystem plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
-        this.worldManager = plugin.getWorldManager();
+        this.worldService = plugin.getWorldService();
 
         this.boards = new HashMap<>();
     }
@@ -136,7 +136,7 @@ public class SettingsManager {
         }
 
         String worldName = player.getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldService.getBuildWorld(worldName);
 
         return new Map.Entry[]{
                 new AbstractMap.SimpleEntry<>("%world%", worldName),

@@ -95,7 +95,7 @@ import de.eintosti.buildsystem.version.gamerules.GameRules;
 import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.SpawnManager;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.WorldService;
 import de.eintosti.buildsystem.world.data.StatusInventory;
 import de.eintosti.buildsystem.world.display.WorldIcon;
 import de.eintosti.buildsystem.world.modification.BuilderInventory;
@@ -132,7 +132,7 @@ public class BuildSystem extends JavaPlugin {
     private PlayerManager playerManager;
     private SettingsManager settingsManager;
     private SpawnManager spawnManager;
-    private WorldManager worldManager;
+    private WorldService worldService;
 
     private ArchiveInventory archiveInventory;
     private BlocksInventory blocksInventory;
@@ -253,7 +253,7 @@ public class BuildSystem extends JavaPlugin {
         this.armorStandManager = new ArmorStandManager();
         this.playerManager = new PlayerManager(this);
         this.noClipManager = new NoClipManager(this);
-        this.worldManager = new WorldManager(this);
+        this.worldService = new WorldService(this);
         this.settingsManager = new SettingsManager(this);
         this.spawnManager = new SpawnManager(this);
 
@@ -438,7 +438,7 @@ public class BuildSystem extends JavaPlugin {
     }
 
     private void saveBuildConfig() {
-        worldManager.save();
+        worldService.save();
         playerManager.save();
         spawnManager.save();
     }
@@ -462,7 +462,7 @@ public class BuildSystem extends JavaPlugin {
 
         if (init) {
             initVersionedClasses();
-            worldManager.getWorldStorage().getBuildWorlds().forEach(BuildWorld::manageUnload);
+            worldService.getWorldStorage().getBuildWorlds().forEach(BuildWorld::manageUnload);
             if (configValues.isScoreboard()) {
                 getSettingsManager().startScoreboard();
             } else {
@@ -495,8 +495,8 @@ public class BuildSystem extends JavaPlugin {
         return spawnManager;
     }
 
-    public WorldManager getWorldManager() {
-        return worldManager;
+    public WorldService getWorldService() {
+        return worldService;
     }
 
     public ArchiveInventory getArchiveInventory() {

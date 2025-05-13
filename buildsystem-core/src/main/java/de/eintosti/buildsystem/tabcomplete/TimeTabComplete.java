@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.tabcomplete;
 
 import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.WorldService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -30,10 +30,10 @@ import org.jetbrains.annotations.NotNull;
 
 public class TimeTabComplete extends ArgumentSorter implements TabCompleter {
 
-    private final WorldManager worldManager;
+    private final WorldService worldService;
 
     public TimeTabComplete(BuildSystem plugin) {
-        this.worldManager = plugin.getWorldManager();
+        this.worldService = plugin.getWorldService();
         plugin.getCommand("day").setTabCompleter(this);
         plugin.getCommand("night").setTabCompleter(this);
     }
@@ -49,18 +49,18 @@ public class TimeTabComplete extends ArgumentSorter implements TabCompleter {
 
         switch (label.toLowerCase(Locale.ROOT)) {
             case "day":
-                worldManager.getBuildWorlds().forEach(world -> {
+                worldService.getBuildWorlds().forEach(world -> {
                     String worldName = world.getName();
-                    if (worldManager.isPermitted(player, "buildsystem.day", worldName)) {
+                    if (worldService.isPermitted(player, "buildsystem.day", worldName)) {
                         addArgument(args[0], worldName, arrayList);
                     }
                 });
                 break;
 
             case "night":
-                worldManager.getBuildWorlds().forEach(world -> {
+                worldService.getBuildWorlds().forEach(world -> {
                     String worldName = world.getName();
-                    if (worldManager.isPermitted(player, "buildsystem.night", worldName)) {
+                    if (worldService.isPermitted(player, "buildsystem.night", worldName)) {
                         addArgument(args[0], worldName, arrayList);
                     }
                 });

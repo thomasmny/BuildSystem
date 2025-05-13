@@ -148,7 +148,7 @@ public class WorldPermissions {
             return true;
         }
 
-        if (buildWorld.getBuilderManager().isCreator(player)) {
+        if (buildWorld.getBuilders().isCreator(player)) {
             return (player.hasPermission(permission + ".self") || player.hasPermission(permission));
         }
 
@@ -192,7 +192,7 @@ public class WorldPermissions {
      * @param player The player to check
      * @return {@code true} if the player can bypass the build restriction, {@code false} otherwise
      */
-    private boolean canBypassBuildRestriction(Player player) {
+    public boolean canBypassBuildRestriction(Player player) {
         BuildSystem plugin = JavaPlugin.getPlugin(BuildSystem.class);
         return plugin.getPlayerManager().isInBuildMode(player);
     }
@@ -223,7 +223,7 @@ public class WorldPermissions {
             return false;
         }
 
-        List<Builder> builders = buildWorld.getBuilders();
+        List<Builder> builders = buildWorld.getBuilders().getAllBuilders();
         return builders.stream().anyMatch(builder -> builder.getUniqueId().equals(player.getUniqueId()));
     }
 } 

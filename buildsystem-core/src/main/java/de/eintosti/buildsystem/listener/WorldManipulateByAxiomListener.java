@@ -37,7 +37,7 @@ public class WorldManipulateByAxiomListener implements Listener {
      * @param plugin plugin to register.
      */
     public WorldManipulateByAxiomListener(@NotNull BuildSystem plugin) {
-        this.dispatcher = new EventDispatcher(plugin.getWorldManager().getWorldStorage());
+        this.dispatcher = new EventDispatcher(plugin.getWorldService().getWorldStorage());
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 

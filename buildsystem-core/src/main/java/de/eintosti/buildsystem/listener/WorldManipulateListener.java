@@ -49,7 +49,7 @@ public class WorldManipulateListener implements Listener {
 
     public WorldManipulateListener(BuildSystem plugin) {
         this.plugin = plugin;
-        this.worldStorage = plugin.getWorldManager().getWorldStorage();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         this.dispatcher = new EventDispatcher(worldStorage);
 
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
