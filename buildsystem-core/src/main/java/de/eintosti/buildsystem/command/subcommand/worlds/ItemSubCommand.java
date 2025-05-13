@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import de.eintosti.buildsystem.util.InventoryUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -40,7 +41,7 @@ public class ItemSubCommand implements SubCommand {
             return;
         }
 
-        ItemStack navigator = plugin.getInventoryUtil().getItemStack(
+        ItemStack navigator = InventoryUtils.createItem(
                 plugin.getConfigValues().getNavigatorItem(),
                 Messages.getString("navigator_item", player)
         );

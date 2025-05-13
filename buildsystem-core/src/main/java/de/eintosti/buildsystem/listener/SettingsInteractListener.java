@@ -24,7 +24,7 @@ import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.player.settings.Settings;
-import de.eintosti.buildsystem.settings.SettingsManager;
+import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.util.MaterialUtils;
 import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import de.eintosti.buildsystem.version.util.DirectionUtil;

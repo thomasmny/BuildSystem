@@ -217,32 +217,6 @@ public final class InventoryUtils {
     }
 
     /**
-     * Adds a player skull to the given inventory at the specified position.
-     *
-     * @param inventory   The inventory to add the skull to
-     * @param position    The position to add the skull at
-     * @param displayName The display name of the skull
-     * @param profileable The profile to use for the skull
-     * @param lore        The lore of the skull
-     */
-    public static void addSkull(Inventory inventory, int position, String displayName, Profileable profileable, List<String> lore) {
-        inventory.setItem(position, createSkull(displayName, profileable, lore));
-    }
-
-    /**
-     * Adds a player skull to the given inventory at the specified position.
-     *
-     * @param inventory   The inventory to add the skull to
-     * @param position    The position to add the skull at
-     * @param displayName The display name of the skull
-     * @param profileable The profile to use for the skull
-     * @param lore        The lore of the skull as varargs
-     */
-    public static void addSkull(Inventory inventory, int position, String displayName, Profileable profileable, String... lore) {
-        addSkull(inventory, position, displayName, profileable, Arrays.asList(lore));
-    }
-
-    /**
      * Checks if a click event is valid for the given inventory title.
      *
      * @param event    The click event to check

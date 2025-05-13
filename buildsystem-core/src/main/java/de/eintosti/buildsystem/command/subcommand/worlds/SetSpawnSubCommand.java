@@ -23,7 +23,7 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.util.WorldPermissions;
 import java.util.AbstractMap;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -38,22 +38,21 @@ public class SetSpawnSubCommand implements SubCommand {
 
     @Override
     public void execute(Player player, String[] args) {
-        WorldManager worldManager = plugin.getWorldManager();
-        String playerWorldName = player.getWorld().getName();
-        if (!worldManager.isPermitted(player, getArgument().getPermission(), playerWorldName)) {
+        BuildWorld buildWorld = plugin.getWorldManager().getWorldStorage().getBuildWorld(player.getWorld());
+        if (!WorldPermissions.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
             plugin.sendPermissionMessage(player);
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(playerWorldName);
         if (buildWorld == null) {
             Messages.sendMessage(player, "worlds_setspawn_world_not_imported");
             return;
         }
 
-        Location loc = player.getLocation();
-        String locString = loc.getX() + ";" + loc.getY() + ";" + loc.getZ() + ";" + loc.getYaw() + ";" + loc.getPitch();
-        buildWorld.getData().customSpawn().set(locString);
+        Location playerLocation = player.getLocation();
+        buildWorld.getData().customSpawn().set(String.format("%s;%s;%s;%s;%s",
+                playerLocation.getX(), playerLocation.getY(), playerLocation.getZ(), playerLocation.getYaw(), playerLocation.getPitch()
+        ));
         Messages.sendMessage(player, "worlds_setspawn_world_spawn_set",
                 new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName())
         );
