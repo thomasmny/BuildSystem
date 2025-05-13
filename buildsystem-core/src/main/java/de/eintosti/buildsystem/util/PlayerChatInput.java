@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.util;
 
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.Titles;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +35,7 @@ import org.bukkit.scheduler.BukkitTask;
 
 public class PlayerChatInput implements Listener {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
     private final BukkitTask taskId;
     private final InputRunnable runWhenComplete;
@@ -44,7 +44,7 @@ public class PlayerChatInput implements Listener {
 
     private final Map<UUID, PlayerChatInput> inputs = new HashMap<>();
 
-    public PlayerChatInput(BuildSystem plugin, Player player, String titleKey, InputRunnable runWhenComplete) {
+    public PlayerChatInput(BuildSystemPlugin plugin, Player player, String titleKey, InputRunnable runWhenComplete) {
         this.plugin = plugin;
 
         String title = Messages.getString(titleKey, player);

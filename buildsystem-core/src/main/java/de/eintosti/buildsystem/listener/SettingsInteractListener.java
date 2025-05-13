@@ -21,21 +21,19 @@ import com.cryptomorin.xseries.XBlock;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XTag;
 import com.google.common.collect.Sets;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.config.ConfigValues;
-import de.eintosti.buildsystem.player.settings.Settings;
+import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.util.MaterialUtils;
 import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import de.eintosti.buildsystem.version.util.DirectionUtil;
 import de.eintosti.buildsystem.version.util.MinecraftVersion;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.builder.Builder;
-import de.eintosti.buildsystem.world.builder.Builders;
-import de.eintosti.buildsystem.world.data.WorldData;
-import de.eintosti.buildsystem.world.data.WorldStatus;
-import de.eintosti.buildsystem.world.storage.WorldStorage;
-import de.eintosti.buildsystem.world.util.WorldPermissions;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.builder.BuildersImpl;
+import de.eintosti.buildsystem.world.data.WorldDataImpl;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -71,11 +69,11 @@ public class SettingsInteractListener implements Listener {
     private final CustomBlocks customBlocks;
 
     private final SettingsManager settingsManager;
-    private final WorldStorage worldStorage;
+    private final WorldStorageImpl worldStorage;
 
     private final Set<UUID> cachePlayers;
 
-    public SettingsInteractListener(BuildSystem plugin) {
+    public SettingsInteractListener(BuildSystemPlugin plugin) {
         this.configValues = plugin.getConfigValues();
         this.customBlocks = plugin.getCustomBlocks();
 
@@ -108,8 +106,8 @@ public class SettingsInteractListener implements Listener {
             return;
         }
 
-        Settings settings = settingsManager.getSettings(player);
-        if (!settings.isTrapDoor()) {
+        SettingsImpl settings = settingsManager.getSettings(player);
+        if (!settings.isOpenTrapDoors()) {
             return;
         }
 
@@ -140,7 +138,7 @@ public class SettingsInteractListener implements Listener {
         Player player = event.getPlayer();
         Action action = event.getAction();
 
-        Settings settings = settingsManager.getSettings(player);
+        SettingsImpl settings = settingsManager.getSettings(player);
         if (settings.isSlabBreaking() && action == Action.LEFT_CLICK_BLOCK) {
             customBlocks.modifySlab(event);
         }
@@ -167,7 +165,7 @@ public class SettingsInteractListener implements Listener {
             return;
         }
 
-        Settings settings = settingsManager.getSettings(event.getPlayer());
+        SettingsImpl settings = settingsManager.getSettings(event.getPlayer());
         if (!settings.isPlacePlants()) {
             return;
         }
@@ -183,7 +181,7 @@ public class SettingsInteractListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        Settings settings = settingsManager.getSettings(player);
+        SettingsImpl settings = settingsManager.getSettings(player);
         if (!settings.isInstantPlaceSigns()) {
             return;
         }
@@ -266,7 +264,7 @@ public class SettingsInteractListener implements Listener {
             return;
         }
 
-        Settings settings = settingsManager.getSettings(player);
+        SettingsImpl settings = settingsManager.getSettings(player);
         if (!settings.isDisableInteract()) {
             return;
         }
@@ -321,7 +319,7 @@ public class SettingsInteractListener implements Listener {
     }
 
     /**
-     * Not every player can always interact with the {@link BuildWorld} they are in.
+     * Not every player can always interact with the {@link BuildWorldImpl} they are in.
      * <p>
      * Reasons an interaction could be cancelled:
      * <ul>
@@ -351,11 +349,11 @@ public class SettingsInteractListener implements Listener {
             return true;
         }
 
-        if (WorldPermissions.of(buildWorld).canBypassBuildRestriction(player)) {
+        if (WorldPermissionsImpl.of(buildWorld).canBypassBuildRestriction(player)) {
             return true;
         }
 
-        WorldData worldData = buildWorld.getData();
+        WorldDataImpl worldData = buildWorld.getData();
         if (worldData.status().get() == WorldStatus.ARCHIVE && !player.hasPermission("buildsystem.bypass.archive")) {
             return false;
         }
@@ -364,7 +362,7 @@ public class SettingsInteractListener implements Listener {
             return false;
         }
 
-        Builders builders = buildWorld.getBuilders();
+        BuildersImpl builders = buildWorld.getBuilders();
         if (buildWorld.getData().buildersEnabled().get()
                 && !builders.isBuilder(player)
                 && !player.hasPermission("buildsystem.bypass.builders")) {
