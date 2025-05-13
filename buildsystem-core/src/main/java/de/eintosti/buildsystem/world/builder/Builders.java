@@ -13,16 +13,16 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Manages builders for a BuildWorld. This class handles all operations related to adding, removing, and managing builders.
  */
-public class BuilderManager {
+public class Builders {
 
-    private final List<Builder> builders;
     private Builder creator;
+    private final List<Builder> builders;
 
-    public BuilderManager() {
+    public Builders() {
         this.builders = new ArrayList<>();
     }
 
-    public BuilderManager(@Nullable Builder creator) {
+    public Builders(@Nullable Builder creator) {
         this();
         this.creator = creator;
     }
@@ -71,7 +71,7 @@ public class BuilderManager {
      * @return List of builders
      */
     @NotNull
-    public List<Builder> getBuilders() {
+    public List<Builder> getAllBuilders() {
         return Collections.unmodifiableList(builders);
     }
 
@@ -95,9 +95,19 @@ public class BuilderManager {
      * @return A list of all builder names
      */
     public List<String> getBuilderNames() {
-        return getBuilders().stream()
+        return getAllBuilders().stream()
                 .map(Builder::getName)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Checks if a player is a builder.
+     *
+     * @param player The player to check
+     * @return {@code true} if the player is a builder, {@code false} otherwise
+     */
+    public boolean isBuilder(Player player) {
+        return isBuilder(player.getUniqueId());
     }
 
     /**
@@ -141,9 +151,9 @@ public class BuilderManager {
     }
 
     /**
-     * Serializes the builder list to a string format.
+     * Serialises the builder list to a string format.
      *
-     * @return The serialized builders string
+     * @return The serialised builders string
      */
     public String serializeBuilders() {
         StringBuilder builderList = new StringBuilder();

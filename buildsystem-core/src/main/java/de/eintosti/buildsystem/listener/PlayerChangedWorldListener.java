@@ -65,7 +65,7 @@ public class PlayerChangedWorldListener implements Listener {
         this.armorStandManager = plugin.getArmorStandManager();
         this.playerManager = plugin.getPlayerManager();
         this.settingsManager = plugin.getSettingsManager();
-        this.worldStorage = plugin.getWorldManager().getWorldStorage();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
 
         this.playerGamemode = new HashMap<>();
         this.playerInventory = new HashMap<>();
@@ -83,7 +83,7 @@ public class PlayerChangedWorldListener implements Listener {
 
         BuildWorld oldWorld = worldStorage.getBuildWorld(event.getFrom());
         if (oldWorld != null && configValues.isUnloadWorlds()) {
-            oldWorld.resetUnloadTask();
+            oldWorld.getUnloader().resetUnloadTask();
         }
 
         BuildWorld newWorld = worldStorage.getBuildWorld(worldName);

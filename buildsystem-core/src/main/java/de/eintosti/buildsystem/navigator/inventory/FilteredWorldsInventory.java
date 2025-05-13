@@ -31,7 +31,7 @@ import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.PaginatedInventory;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.WorldService;
 import de.eintosti.buildsystem.world.data.WorldData;
 import de.eintosti.buildsystem.world.data.WorldStatus;
 import de.eintosti.buildsystem.world.modification.CreateInventory;
@@ -54,7 +54,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
 
     private final BuildSystem plugin;
     private final SettingsManager settingsManager;
-    private final WorldManager worldManager;
+    private final WorldService worldService;
 
     private final String inventoryName;
     private final String noWorldsText;
@@ -64,7 +64,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
     public FilteredWorldsInventory(BuildSystem plugin, String inventoryName, String noWorldsText, Visibility visibility, Set<WorldStatus> validStatus) {
         this.plugin = plugin;
         this.settingsManager = plugin.getSettingsManager();
-        this.worldManager = plugin.getWorldManager();
+        this.worldService = plugin.getWorldService();
 
         this.inventoryName = inventoryName;
         this.noWorldsText = noWorldsText;
@@ -96,7 +96,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
      * @return The number of worlds
      */
     private int numOfWorlds(Player player) {
-        return (int) worldManager.getWorldStorage().getBuildWorlds().stream()
+        return (int) worldService.getWorldStorage().getBuildWorlds().stream()
                 .filter(buildWorld -> isValidWorld(player, buildWorld))
                 .count();
     }
@@ -136,7 +136,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         }
 
         int columnWorld = 9, maxColumnWorld = 44;
-        for (BuildWorld buildWorld : InventoryUtils.getDisplayOrder(worldManager, plugin.getSettingsManager().getSettings(player))) {
+        for (BuildWorld buildWorld : InventoryUtils.getDisplayOrder(worldService, plugin.getSettingsManager().getSettings(player))) {
             if (isValidWorld(player, buildWorld)) {
                 String displayName = Messages.getString("world_item_title", player, new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
                 List<String> lore = InventoryUtils.getWorldLore(player, buildWorld);
@@ -185,7 +185,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
      */
     private boolean isValidWorld(Player player, BuildWorld buildWorld) {
         WorldData worldData = buildWorld.getData();
-        if (!worldManager.isCorrectVisibility(worldData.privateWorld().get(), visibility)) {
+        if (!worldService.isCorrectVisibility(worldData.privateWorld().get(), visibility)) {
             return false;
         }
 

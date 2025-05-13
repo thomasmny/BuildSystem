@@ -41,7 +41,7 @@ public class AddBuilderSubCommand implements SubCommand {
 
     public AddBuilderSubCommand(BuildSystem plugin, String worldName) {
         this.plugin = plugin;
-        this.buildWorld = plugin.getWorldManager().getWorldStorage().getBuildWorld(worldName);
+        this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
         this.permissions = WorldPermissions.of(buildWorld);
     }
 

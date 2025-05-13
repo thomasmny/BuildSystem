@@ -52,7 +52,7 @@ import org.jetbrains.annotations.Nullable;
 public class BuildWorldCreator {
 
     private final BuildSystem plugin;
-    private final WorldManager worldManager;
+    private final WorldService worldService;
 
     private String worldName;
     private Builder creator;
@@ -65,7 +65,7 @@ public class BuildWorldCreator {
 
     public BuildWorldCreator(BuildSystem plugin, @NotNull String name) {
         this.plugin = plugin;
-        this.worldManager = plugin.getWorldManager();
+        this.worldService = plugin.getWorldService();
 
         setName(name);
         setDifficulty(plugin.getConfigValues().getWorldDifficulty());
@@ -157,12 +157,12 @@ public class BuildWorldCreator {
      * @param player The player who is creating the world
      */
     private void createPredefinedOrCustomWorld(Player player) {
-        if (worldManager.worldExists(player, worldName)) {
+        if (worldService.worldExists(player, worldName)) {
             return;
         }
 
         BuildWorld buildWorld = createBuildWorldObject(player);
-        worldManager.addBuildWorld(buildWorld);
+        worldService.addBuildWorld(buildWorld);
 
         Messages.sendMessage(player, "worlds_world_creation_started",
                 new AbstractMap.SimpleEntry<>("%world%", worldName),
@@ -181,7 +181,7 @@ public class BuildWorldCreator {
      */
     public void importWorld(Player player, boolean teleport) {
         BuildWorld buildWorld = createBuildWorldObject(player);
-        worldManager.addBuildWorld(buildWorld);
+        worldService.addBuildWorld(buildWorld);
         finishPreparationsAndGenerate(buildWorld);
         if (teleport) {
             teleportAfterCreation(player);
@@ -194,7 +194,7 @@ public class BuildWorldCreator {
      * @param player The player who is creating the world
      */
     private void createTemplateWorld(Player player) {
-        if (worldManager.worldExists(player, worldName)) {
+        if (worldService.worldExists(player, worldName)) {
             return;
         }
 
@@ -206,7 +206,7 @@ public class BuildWorldCreator {
         }
 
         BuildWorld buildWorld = createBuildWorldObject(player);
-        worldManager.addBuildWorld(buildWorld);
+        worldService.addBuildWorld(buildWorld);
 
         Messages.sendMessage(player, "worlds_template_creation_started",
                 new AbstractMap.SimpleEntry<>("%world%", worldName),
@@ -405,12 +405,12 @@ public class BuildWorldCreator {
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldService.getBuildWorld(worldName);
         if (buildWorld == null) {
             return;
         }
 
         buildWorld.manageUnload();
-        worldManager.teleport(player, buildWorld);
+        worldService.teleport(player, buildWorld);
     }
 }

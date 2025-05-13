@@ -49,7 +49,7 @@ public class WorldDataManager {
      */
     public void updateWorldData(BuildWorld buildWorld, WorldData worldData) {
         buildWorld.setWorldData(worldData);
-        plugin.getWorldManager().save();
+        plugin.getWorldService().save();
     }
 
     /**
@@ -62,7 +62,7 @@ public class WorldDataManager {
         WorldData currentData = buildWorld.getData();
         WorldData updatedData = updater.apply(currentData);
         buildWorld.setWorldData(updatedData);
-        plugin.getWorldManager().save();
+        plugin.getWorldService().save();
     }
 
     /**

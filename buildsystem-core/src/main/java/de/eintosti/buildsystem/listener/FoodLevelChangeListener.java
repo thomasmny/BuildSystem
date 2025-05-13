@@ -19,8 +19,9 @@ package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.WorldService;
 import de.eintosti.buildsystem.world.data.WorldStatus;
+import de.eintosti.buildsystem.world.storage.WorldStorage;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -29,10 +30,10 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 
 public class FoodLevelChangeListener implements Listener {
 
-    private final WorldManager worldManager;
+    private final WorldStorage worldStorage;
 
     public FoodLevelChangeListener(BuildSystem plugin) {
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -43,9 +44,7 @@ public class FoodLevelChangeListener implements Listener {
         }
 
         Player player = (Player) event.getEntity();
-        World bukkitWorld = player.getWorld();
-        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
-
+        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
         if (buildWorld != null && buildWorld.getData().status().get() == WorldStatus.ARCHIVE) {
             event.setCancelled(true);
         }
