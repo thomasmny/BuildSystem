@@ -18,11 +18,11 @@
 package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.storage.WorldStorage;
-import de.eintosti.buildsystem.world.util.WorldTeleporter;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.world.util.WorldTeleporterImpl;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -33,10 +33,10 @@ import org.jetbrains.annotations.NotNull;
 
 public class TopCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
-    private final WorldStorage worldStorage;
+    private final BuildSystemPlugin plugin;
+    private final WorldStorageImpl worldStorage;
 
-    public TopCommand(BuildSystem plugin) {
+    public TopCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getCommand("top").setExecutor(this);
@@ -72,7 +72,7 @@ public class TopCommand implements CommandExecutor {
                 .getHighestBlockAt(playerLocation.getBlockX(), playerLocation.getBlockZ())
                 .getLocation();
 
-        boolean failed = !WorldTeleporter.of(buildWorld).isSafeLocation(blockLocation) || blockLocation.getBlock().getY() < playerLocation.getBlock().getY();
+        boolean failed = !WorldTeleporterImpl.of(buildWorld).isSafeLocation(blockLocation) || blockLocation.getBlock().getY() < playerLocation.getBlock().getY();
         if (failed) {
             Messages.sendMessage(player, "top_failed");
             return;

@@ -18,9 +18,10 @@
 package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.config.ConfigValues;
-import de.eintosti.buildsystem.world.BuildWorld;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
@@ -31,10 +32,10 @@ import org.bukkit.event.entity.EntityDamageEvent;
 
 public class EntityDamageListener implements Listener {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final ConfigValues configValues;
 
-    public EntityDamageListener(BuildSystem plugin) {
+    public EntityDamageListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);

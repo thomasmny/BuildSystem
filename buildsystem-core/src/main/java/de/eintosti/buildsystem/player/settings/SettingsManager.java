@@ -17,13 +17,17 @@
  */
 package de.eintosti.buildsystem.player.settings;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.player.settings.Settings;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.version.util.MinecraftVersion;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldService;
-import de.eintosti.buildsystem.world.data.WorldData;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
+import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import fr.mrmicky.fastboard.FastBoard;
 import java.util.AbstractMap;
 import java.util.HashMap;
@@ -37,13 +41,13 @@ import org.bukkit.scheduler.BukkitTask;
 
 public class SettingsManager {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final ConfigValues configValues;
-    private final WorldService worldService;
+    private final WorldServiceImpl worldService;
 
     private final Map<UUID, FastBoard> boards;
 
-    public SettingsManager(BuildSystem plugin) {
+    public SettingsManager(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
         this.worldService = plugin.getWorldService();
@@ -51,16 +55,16 @@ public class SettingsManager {
         this.boards = new HashMap<>();
     }
 
-    public Settings getSettings(UUID uuid) {
-        return plugin.getPlayerManager().getBuildPlayer(uuid).getSettings();
+    public SettingsImpl getSettings(UUID uuid) {
+        return plugin.getPlayerService().getPlayerStorage().getBuildPlayer(uuid).getSettings();
     }
 
-    public Settings getSettings(Player player) {
+    public SettingsImpl getSettings(Player player) {
         return getSettings(player.getUniqueId());
     }
 
     /**
-     * Only set a player's scoreboard if {@link Settings#isScoreboard} is equal to {@code true}.
+     * Only set a player's scoreboard if {@link SettingsImpl#isScoreboard} is equal to {@code true}.
      *
      * @param player   The player object
      * @param settings The player's settings
@@ -75,7 +79,7 @@ public class SettingsManager {
     }
 
     /**
-     * Only set a player's scoreboard if {@link Settings#isScoreboard} is equal to {@code true}.
+     * Only set a player's scoreboard if {@link SettingsImpl#isScoreboard} is equal to {@code true}.
      *
      * @param player The player object
      */
@@ -84,7 +88,7 @@ public class SettingsManager {
             return;
         }
 
-        Settings settings = getSettings(player);
+        SettingsImpl settings = getSettings(player);
         FastBoard board = new FastBoard(player);
         this.boards.put(player.getUniqueId(), board);
 
@@ -100,7 +104,7 @@ public class SettingsManager {
     }
 
     /**
-     * Set each player's scoreboard if they have {@link Settings#isScoreboard} enabled.
+     * Set each player's scoreboard if they have {@link SettingsImpl#isScoreboard} enabled.
      */
     public void startScoreboard() {
         if (!configValues.isScoreboard()) {
@@ -136,7 +140,7 @@ public class SettingsManager {
         }
 
         String worldName = player.getWorld().getName();
-        BuildWorld buildWorld = worldService.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(worldName);
 
         return new Map.Entry[]{
                 new AbstractMap.SimpleEntry<>("%world%", worldName),
@@ -157,16 +161,17 @@ public class SettingsManager {
             return "§f-";
         }
 
+        Builders builders = buildWorld.getBuilders();
         WorldData worldData = buildWorld.getData();
         switch (input) {
             case "%status%":
-                return worldData.status().get().getName(player);
+                return Messages.getString(worldData.status().get().getKey(), player);
             case "%permission%":
                 return worldData.permission().get();
             case "%project%":
                 return worldData.project().get();
             case "%creator%":
-                return buildWorld.hasCreator() ? buildWorld.getCreator().getName() : "-";
+                return builders.hasCreator() ? builders.getCreator().getName() : "-";
             case "%creation%":
                 return Messages.formatDate(buildWorld.getCreationDate());
             case "%lastedited%":

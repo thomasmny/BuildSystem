@@ -18,30 +18,31 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.PlayerChatInput;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.util.WorldPermissions;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.AbstractMap;
 import org.bukkit.entity.Player;
 
 public class SetProjectSubCommand implements SubCommand {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final BuildWorld buildWorld;
 
-    public SetProjectSubCommand(BuildSystem plugin, String worldName) {
+    public SetProjectSubCommand(BuildSystemPlugin plugin, String worldName) {
         this.plugin = plugin;
         this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
     }
 
     @Override
     public void execute(Player player, String[] args) {
-        if (!WorldPermissions.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
+        if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
             plugin.sendPermissionMessage(player);
             return;
         }
@@ -62,7 +63,7 @@ public class SetProjectSubCommand implements SubCommand {
     public void getProjectInput(Player player, BuildWorld buildWorld, boolean closeInventory) {
         new PlayerChatInput(plugin, player, "enter_world_project", input -> {
             buildWorld.getData().project().set(input.trim());
-            plugin.getPlayerManager().forceUpdateSidebar(buildWorld);
+            plugin.getPlayerService().forceUpdateSidebar(buildWorld);
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
             Messages.sendMessage(player, "worlds_setproject_set",
