@@ -35,7 +35,7 @@ public class WorldUnloader {
     private final ConfigValues configValues;
     private final BuildWorld buildWorld;
 
-    private final long seconds;
+    private final long secondsUntilUnload;
     private BukkitTask unloadTask;
 
     private WorldUnloader(BuildWorld buildWorld) {
@@ -43,7 +43,7 @@ public class WorldUnloader {
         this.configValues = plugin.getConfigValues();
         this.buildWorld = buildWorld;
 
-        this.seconds = configValues.getTimeUntilUnload();
+        this.secondsUntilUnload = configValues.getTimeUntilUnload();
     }
 
     public static WorldUnloader of(BuildWorld buildWorld) {
@@ -65,7 +65,7 @@ public class WorldUnloader {
             return;
         }
 
-        this.unloadTask = Bukkit.getScheduler().runTaskLater(plugin, this::unload, 20L * seconds);
+        this.unloadTask = Bukkit.getScheduler().runTaskLater(plugin, this::unload, 20L * secondsUntilUnload);
     }
 
     public void resetUnloadTask() {

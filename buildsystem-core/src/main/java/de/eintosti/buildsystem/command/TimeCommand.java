@@ -59,7 +59,7 @@ public class TimeCommand implements CommandExecutor {
             return true;
         }
 
-        BuildWorld buildWorld = plugin.getWorldManager().getWorldStorage().getBuildWorld(world);
+        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(world);
         WorldPermissions permissions = WorldPermissions.of(buildWorld);
 
         switch (label.toLowerCase(Locale.ROOT)) {

@@ -21,7 +21,7 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.world.builder.Builder;
-import de.eintosti.buildsystem.world.builder.BuilderManager;
+import de.eintosti.buildsystem.world.builder.Builders;
 import de.eintosti.buildsystem.world.data.WorldData;
 import de.eintosti.buildsystem.world.data.WorldType;
 import de.eintosti.buildsystem.world.display.Displayable;
@@ -47,7 +47,7 @@ public final class BuildWorld implements Displayable {
 
     private final WorldData worldData;
     private final WorldType worldType;
-    private final BuilderManager builderManager;
+    private final Builders builders;
     private final CustomGenerator customGenerator;
     private final long creationDate;
 
@@ -72,13 +72,12 @@ public final class BuildWorld implements Displayable {
         this.creationDate = creationDate;
         this.customGenerator = customGenerator;
 
-        this.builderManager = new BuilderManager(creator);
-        builders.forEach(this.builderManager::addBuilder);
+        this.builders = new Builders(creator);
+        builders.forEach(this.builders::addBuilder);
 
-        this.worldLoader = new WorldLoader(this);
-        this.worldUnloader = new WorldUnloader(this);
-
-        manageUnload();
+        this.worldLoader = WorldLoader.of(this);
+        this.worldUnloader = WorldUnloader.of(this);
+        this.worldUnloader.manageUnload();
     }
 
     public BuildWorld(String name, WorldData worldData) {
@@ -106,30 +105,9 @@ public final class BuildWorld implements Displayable {
     }
 
     public Profileable asProfilable() {
-        return hasCreator()
-                ? Profileable.of(builderManager.getCreator().getUniqueId())
+        return builders.hasCreator()
+                ? Profileable.of(builders.getCreator().getUniqueId())
                 : Profileable.username(name);
-    }
-
-    /**
-     * Gets whether the world has a creator
-     *
-     * @return {@code true} if the world has a creator, {@code false} otherwise
-     */
-    public boolean hasCreator() {
-        return builderManager.hasCreator();
-    }
-
-    /**
-     * Get the name of the player who created the world.
-     * <p>
-     * In older versions of the plugin, the creator was not saved which is why {@code null} can be returned.
-     *
-     * @return The name of the player who created the world
-     */
-    @Nullable
-    public Builder getCreator() {
-        return builderManager.getCreator();
     }
 
     /**
@@ -153,7 +131,7 @@ public final class BuildWorld implements Displayable {
     /**
      * Get the creation date of the world.
      *
-     * @return The amount of milliseconds that have passed since {@code January 1, 1970 UTC}, until the world was created.
+     * @return The number of milliseconds that have passed since {@code January 1, 1970 UTC}, until the world was created.
      */
     public long getCreationDate() {
         return creationDate;
@@ -167,28 +145,6 @@ public final class BuildWorld implements Displayable {
     @Nullable
     public CustomGenerator getCustomGenerator() {
         return customGenerator;
-    }
-
-    /**
-     * Get the display name of a {@link Difficulty}.
-     *
-     * @param player The player to parse the placeholders against
-     * @return the difficulty's display name
-     * @see WorldData#difficulty()
-     */
-    public String getDifficultyName(Player player) {
-        switch (worldData.difficulty().get()) {
-            case PEACEFUL:
-                return Messages.getString("difficulty_peaceful", player);
-            case EASY:
-                return Messages.getString("difficulty_easy", player);
-            case NORMAL:
-                return Messages.getString("difficulty_normal", player);
-            case HARD:
-                return Messages.getString("difficulty_hard", player);
-            default:
-                return "-";
-        }
     }
 
     /**
@@ -216,78 +172,8 @@ public final class BuildWorld implements Displayable {
      *
      * @return the list of all builders
      */
-    public List<Builder> getBuilders() {
-        return builderManager.getBuilders();
-    }
-
-
-    /**
-     * Get a builder by the given uuid.
-     *
-     * @param uuid The player's unique-id
-     * @return The builder object, if any, or {@code null}
-     */
-    @Nullable
-    public Builder getBuilder(UUID uuid) {
-        return builderManager.getBuilder(uuid);
-    }
-
-    /**
-     * Get whether the given uuid matches that of an added builder.
-     *
-     * @param uuid The unique-id of the player to be checked
-     * @return Whether the player is a builder
-     */
-    public boolean isBuilder(UUID uuid) {
-        return builderManager.isBuilder(uuid);
-    }
-
-    /**
-     * Get whether the given player has been added as a {@link Builder}.
-     *
-     * @param player The player to be checked
-     * @return Whether the {@link Player} is a builder
-     * @see BuildWorld#isBuilder(UUID)
-     */
-    public boolean isBuilder(Player player) {
-        return isBuilder(player.getUniqueId());
-    }
-
-    /**
-     * Add a {@link Builder} to the current list of builders
-     *
-     * @param builder The builder object
-     */
-    public void addBuilder(Builder builder) {
-        builderManager.addBuilder(builder);
-    }
-
-    /**
-     * Remove a {@link Builder} from the current list of builders
-     *
-     * @param builder The builder object
-     */
-    private void removeBuilder(Builder builder) {
-        builderManager.removeBuilder(builder);
-    }
-
-    /**
-     * Add a {@link Builder} to the current list of builders
-     *
-     * @param uuid The builder's unique ID
-     * @see BuildWorld#removeBuilder(Builder)
-     */
-    public void removeBuilder(UUID uuid) {
-        removeBuilder(getBuilder(uuid));
-    }
-
-    /***
-     * Save the list of {@link Builder}s in a string which is suitable to be stored.
-     *
-     * @return The list of builders as a string
-     */
-    private String saveBuilders() {
-        return builderManager.serializeBuilders();
+    public Builders getBuilders() {
+        return builders;
     }
 
     /**
@@ -337,12 +223,8 @@ public final class BuildWorld implements Displayable {
         return getMaterial().parseItem();
     }
 
-    public BuilderManager getBuilderManager() {
-        return builderManager;
-    }
-
     /**
-     * Get whether the world has been loaded, allowing a player to enter it.
+     * Get whether the world is currently loaded, allowing a player to enter it.
      *
      * @return {@code true} if the world is loaded, otherwise {@code false}
      */
@@ -350,28 +232,31 @@ public final class BuildWorld implements Displayable {
         return loaded;
     }
 
+    /**
+     * Set whether the world is currently loaded, allowing a player to enter it.
+     *
+     * @param loaded {@code true} if the world is loaded, otherwise {@code false}
+     */
     public void setLoaded(boolean loaded) {
         this.loaded = loaded;
     }
 
-    public void manageUnload() {
-        worldUnloader.manageUnload();
+    /**
+     * Get the {@link WorldLoader} used to load the world.
+     *
+     * @return The {@link WorldLoader} used to load the world
+     */
+    public WorldLoader getLoader() {
+        return worldLoader;
     }
 
-    public void resetUnloadTask() {
-        worldUnloader.resetUnloadTask();
-    }
-
-    public void forceUnload(boolean save) {
-        worldUnloader.forceUnload(save);
-    }
-
-    public void load(Player player) {
-        worldLoader.loadForPlayer(player);
-    }
-
-    public void load() {
-        worldLoader.load();
+    /**
+     * Get the {@link WorldUnloader} used to unload the world.
+     *
+     * @return The {@link WorldUnloader} used to unload the world
+     */
+    public WorldUnloader getUnloader() {
+        return worldUnloader;
     }
 
     public enum Time {

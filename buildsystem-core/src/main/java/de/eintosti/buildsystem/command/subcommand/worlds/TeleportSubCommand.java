@@ -49,7 +49,7 @@ public class TeleportSubCommand implements SubCommand {
             return;
         }
 
-        BuildWorld buildWorld = plugin.getWorldManager().getWorldStorage().getBuildWorld(args[1]);
+        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(args[1]);
         if (buildWorld == null) {
             Messages.sendMessage(player, "worlds_tp_unknown_world");
             return;

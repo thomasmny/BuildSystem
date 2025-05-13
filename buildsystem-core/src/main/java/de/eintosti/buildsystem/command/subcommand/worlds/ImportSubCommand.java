@@ -24,7 +24,7 @@ import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.UUIDFetcher;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.WorldService;
 import de.eintosti.buildsystem.world.builder.Builder;
 import de.eintosti.buildsystem.world.data.WorldType;
 import de.eintosti.buildsystem.world.generator.Generator;
@@ -58,8 +58,8 @@ public class ImportSubCommand implements SubCommand {
             return;
         }
 
-        WorldManager worldManager = plugin.getWorldManager();
-        if (worldManager.getWorldStorage().worldExists(worldName)) {
+        WorldService worldService = plugin.getWorldService();
+        if (worldService.getWorldStorage().worldExists(worldName)) {
             Messages.sendMessage(player, "worlds_import_world_is_imported");
             return;
         }
@@ -138,7 +138,7 @@ public class ImportSubCommand implements SubCommand {
         Messages.sendMessage(player, "worlds_import_started",
                 new AbstractMap.SimpleEntry<>("%world%", worldName)
         );
-        if (worldManager.importWorld(player, worldName, creator, worldType, generator, generatorName, true)) {
+        if (worldService.importWorld(player, worldName, creator, worldType, generator, generatorName, true)) {
             Messages.sendMessage(player, "worlds_import_finished");
         }
     }
