@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.event.world.BuildWorldPostUnloadEvent;
 import de.eintosti.buildsystem.event.world.BuildWorldUnloadEvent;
 import de.eintosti.buildsystem.world.BuildWorld;
+import de.eintosti.buildsystem.world.SpawnManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
@@ -33,14 +34,20 @@ public class WorldUnloader {
     private final BuildSystem plugin;
     private final ConfigValues configValues;
     private final BuildWorld buildWorld;
-    private BukkitTask unloadTask;
-    private long seconds;
 
-    public WorldUnloader(BuildWorld buildWorld) {
+    private final long seconds;
+    private BukkitTask unloadTask;
+
+    private WorldUnloader(BuildWorld buildWorld) {
         this.plugin = JavaPlugin.getPlugin(BuildSystem.class);
         this.configValues = plugin.getConfigValues();
         this.buildWorld = buildWorld;
+
         this.seconds = configValues.getTimeUntilUnload();
+    }
+
+    public static WorldUnloader of(BuildWorld buildWorld) {
+        return new WorldUnloader(buildWorld);
     }
 
     public void manageUnload() {

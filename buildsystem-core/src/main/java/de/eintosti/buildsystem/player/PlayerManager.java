@@ -31,6 +31,7 @@ import de.eintosti.buildsystem.navigator.settings.NavigatorType;
 import de.eintosti.buildsystem.navigator.settings.WorldDisplay;
 import de.eintosti.buildsystem.navigator.settings.WorldFilter;
 import de.eintosti.buildsystem.navigator.settings.WorldSort;
+import de.eintosti.buildsystem.player.settings.DesignColor;
 import de.eintosti.buildsystem.player.settings.Settings;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.world.BuildWorld;
@@ -134,8 +135,8 @@ public class PlayerManager {
     /**
      * Gets whether the given player is allowed to create a new {@link BuildWorld}.<br> This depends on the following factors:
      * <ul>
-     *  <li>Is the maximum amount of worlds set by the config less than the amount of existing worlds?</li>
-     *  <li>Is the maximum amount of worlds created by the player less than the amount of worlds said player is allowed to create?</li>
+     *  <li>Is the maximum number of worlds set by the config less than the amount of existing worlds?</li>
+     *  <li>Is the maximum number of worlds created by the player less than the amount of worlds said player is allowed to create?</li>
      * <ul>
      *
      * @param player     The player trying to create a world

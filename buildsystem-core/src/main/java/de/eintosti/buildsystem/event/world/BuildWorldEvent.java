@@ -31,7 +31,7 @@ public class BuildWorldEvent extends Event {
 
     private final BuildWorld buildWorld;
 
-    public BuildWorldEvent(BuildWorld buildWorld) {
+    public BuildWorldEvent(@NotNull BuildWorld buildWorld) {
         this.buildWorld = buildWorld;
     }
 
@@ -39,6 +39,12 @@ public class BuildWorldEvent extends Event {
         return HANDLERS;
     }
 
+    /**
+     * Gets the {@link BuildWorld} related to this event.
+     *
+     * @return The {@link BuildWorld} related to this event
+     */
+    @NotNull
     public BuildWorld getBuildWorld() {
         return buildWorld;
     }

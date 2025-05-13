@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.player.settings.Settings;
-import de.eintosti.buildsystem.settings.SettingsManager;
+import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.world.SpawnManager;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

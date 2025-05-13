@@ -33,11 +33,9 @@ import org.bukkit.event.inventory.InventoryType;
 public class InventoryCreativeListener implements Listener {
 
     private final BuildSystem plugin;
-    private final InventoryUtils inventoryUtils;
 
     public InventoryCreativeListener(BuildSystem plugin) {
         this.plugin = plugin;
-        this.inventoryUtils = plugin.getInventoryUtil();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -51,7 +49,7 @@ public class InventoryCreativeListener implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        List<Integer> navigatorSlots = inventoryUtils.getNavigatorSlots(player);
+        List<Integer> navigatorSlots = InventoryUtils.getNavigatorSlots(player);
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             PlayerInventoryClearEvent playerInventoryClearEvent = new PlayerInventoryClearEvent(player, navigatorSlots);

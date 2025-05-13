@@ -31,11 +31,9 @@ import org.jetbrains.annotations.NotNull;
 public class SkullCommand implements CommandExecutor {
 
     private final BuildSystem plugin;
-    private final InventoryUtils inventoryUtils;
 
     public SkullCommand(BuildSystem plugin) {
         this.plugin = plugin;
-        this.inventoryUtils = plugin.getInventoryUtil();
         plugin.getCommand("skull").setExecutor(this);
     }
 
@@ -75,6 +73,6 @@ public class SkullCommand implements CommandExecutor {
     }
 
     private void addSkull(Player player, String displayName, Profileable profileable) {
-        player.getInventory().addItem(inventoryUtils.getSkull(displayName, profileable));
+        player.getInventory().addItem(InventoryUtils.createSkull(displayName, profileable));
     }
 }
