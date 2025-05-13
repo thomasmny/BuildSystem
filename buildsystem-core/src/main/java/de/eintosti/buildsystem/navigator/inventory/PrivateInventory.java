@@ -19,23 +19,22 @@ package de.eintosti.buildsystem.navigator.inventory;
 
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import com.google.common.collect.Sets;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.player.PlayerManager;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.data.WorldStatus;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
 public class PrivateInventory extends FilteredWorldsInventory {
 
-    private final PlayerManager playerManager;
+    private final PlayerServiceImpl playerManager;
 
-    public PrivateInventory(BuildSystem plugin) {
+    public PrivateInventory(BuildSystemPlugin plugin) {
         super(plugin, "private_title", "private_no_worlds", Visibility.PRIVATE,
                 Sets.newHashSet(WorldStatus.NOT_STARTED, WorldStatus.IN_PROGRESS, WorldStatus.ALMOST_FINISHED, WorldStatus.FINISHED)
         );
-        this.playerManager = plugin.getPlayerManager();
+        this.playerManager = plugin.getPlayerService();
     }
 
     @Override

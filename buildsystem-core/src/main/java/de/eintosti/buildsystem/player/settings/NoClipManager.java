@@ -18,7 +18,8 @@
 package de.eintosti.buildsystem.player.settings;
 
 import com.google.common.collect.Sets;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.player.settings.Settings;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,11 +36,11 @@ import org.bukkit.entity.Player;
 
 public class NoClipManager {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final Map<UUID, GameMode> previousGameMode;
     private final Set<UUID> noClipPlayers;
 
-    public NoClipManager(BuildSystem plugin) {
+    public NoClipManager(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.noClipPlayers = new HashSet<>();
         this.previousGameMode = new HashMap<>();

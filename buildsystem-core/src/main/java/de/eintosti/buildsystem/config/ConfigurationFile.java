@@ -17,7 +17,7 @@
  */
 package de.eintosti.buildsystem.config;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import java.io.File;
 import java.io.IOException;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -29,7 +29,7 @@ public abstract class ConfigurationFile {
     private final File file;
     private final FileConfiguration configuration;
 
-    public ConfigurationFile(BuildSystem plugin, String fileName) {
+    public ConfigurationFile(BuildSystemPlugin plugin, String fileName) {
         this.file = new File(plugin.getDataFolder(), fileName);
         this.configuration = YamlConfiguration.loadConfiguration(file);
         loadFile();

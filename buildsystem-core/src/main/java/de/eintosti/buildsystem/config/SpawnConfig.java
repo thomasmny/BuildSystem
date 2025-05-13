@@ -17,12 +17,12 @@
  */
 package de.eintosti.buildsystem.config;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import org.bukkit.Location;
 
 public class SpawnConfig extends ConfigurationFile {
 
-    public SpawnConfig(BuildSystem plugin) {
+    public SpawnConfig(BuildSystemPlugin plugin) {
         super(plugin, "spawn.yml");
     }
 

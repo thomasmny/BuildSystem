@@ -17,7 +17,7 @@
  */
 package de.eintosti.buildsystem.util;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.internal.CraftBukkitVersion;
 import java.lang.reflect.Method;
 import org.bukkit.entity.LivingEntity;
@@ -46,7 +46,7 @@ public final class EntityAIManager {
                 return;
         }
 
-        CraftBukkitVersion craftBukkitVersion = JavaPlugin.getPlugin(BuildSystem.class).getCraftBukkitVersion();
+        CraftBukkitVersion craftBukkitVersion = JavaPlugin.getPlugin(BuildSystemPlugin.class).getCraftBukkitVersion();
 
         switch (craftBukkitVersion) {
             case v1_8_R1:

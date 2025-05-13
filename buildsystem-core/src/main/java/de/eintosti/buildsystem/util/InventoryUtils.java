@@ -21,11 +21,11 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.inventory.XInventoryView;
 import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.player.settings.DesignColor;
-import de.eintosti.buildsystem.player.settings.Settings;
-import de.eintosti.buildsystem.world.BuildWorld;
+import de.eintosti.buildsystem.api.player.settings.DesignColor;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,7 +45,7 @@ import org.bukkit.inventory.meta.ItemMeta;
  */
 public final class InventoryUtils {
 
-    private static final BuildSystem plugin = BuildSystem.getPlugin(BuildSystem.class);
+    private static final BuildSystemPlugin plugin = BuildSystemPlugin.getPlugin(BuildSystemPlugin.class);
     private static final Logger LOGGER = plugin.getLogger();
 
     private InventoryUtils() {
@@ -148,7 +148,7 @@ public final class InventoryUtils {
      * @return The colored glass pane material
      */
     public static XMaterial getColoredGlassPane(Player player) {
-        Settings settings = plugin.getSettingsManager().getSettings(player);
+        SettingsImpl settings = plugin.getSettingsManager().getSettings(player);
         DesignColor color = settings.getDesignColor();
 
         switch (color) {

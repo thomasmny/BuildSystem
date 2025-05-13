@@ -17,8 +17,8 @@
  */
 package de.eintosti.buildsystem.tabcomplete;
 
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.WorldService;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -30,9 +30,9 @@ import org.jetbrains.annotations.NotNull;
 
 public class TimeTabComplete extends ArgumentSorter implements TabCompleter {
 
-    private final WorldService worldService;
+    private final WorldServiceImpl worldService;
 
-    public TimeTabComplete(BuildSystem plugin) {
+    public TimeTabComplete(BuildSystemPlugin plugin) {
         this.worldService = plugin.getWorldService();
         plugin.getCommand("day").setTabCompleter(this);
         plugin.getCommand("night").setTabCompleter(this);

@@ -17,11 +17,12 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.SpawnManager;
-import de.eintosti.buildsystem.world.storage.WorldStorage;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import java.util.AbstractMap;
 import java.util.Locale;
 import org.bukkit.Location;
@@ -34,11 +35,11 @@ import org.jetbrains.annotations.NotNull;
 
 public class SpawnCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final SpawnManager spawnManager;
-    private final WorldStorage worldStorage;
+    private final WorldStorageImpl worldStorage;
 
-    public SpawnCommand(BuildSystem plugin) {
+    public SpawnCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.spawnManager = plugin.getSpawnManager();
         this.worldStorage = plugin.getWorldService().getWorldStorage();

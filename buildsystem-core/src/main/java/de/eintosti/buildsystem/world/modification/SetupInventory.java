@@ -18,11 +18,11 @@
 package de.eintosti.buildsystem.world.modification;
 
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.data.WorldStatus;
-import de.eintosti.buildsystem.world.data.WorldType;
 import de.eintosti.buildsystem.world.display.WorldIcon;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -38,7 +38,7 @@ public class SetupInventory implements Listener {
 
     private final WorldIcon worldIcon;
 
-    public SetupInventory(BuildSystem plugin) {
+    public SetupInventory(BuildSystemPlugin plugin) {
         this.worldIcon = plugin.getWorldIcon();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -47,23 +47,23 @@ public class SetupInventory implements Listener {
         Inventory inventory = Bukkit.createInventory(null, 45, Messages.getString("setup_title", player));
         fillGuiWithGlass(player, inventory);
 
-        InventoryUtils.addSkull(inventory, 10, Messages.getString("setup_create_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_create_item_lore", player));
-        InventoryUtils.addSkull(inventory, 19, Messages.getString("setup_default_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_default_item_lore", player));
-        InventoryUtils.addSkull(inventory, 28, Messages.getString("setup_status_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_status_item_name_lore", player));
+        inventory.setItem(10, InventoryUtils.createSkull(Messages.getString("setup_create_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_create_item_lore", player)));
+        inventory.setItem(19, InventoryUtils.createSkull(Messages.getString("setup_default_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_default_item_lore", player)));
+        inventory.setItem(28, InventoryUtils.createSkull(Messages.getString("setup_status_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_status_item_name_lore", player)));
 
-        InventoryUtils.addItem(inventory, 20, worldIcon.getIcon(WorldType.NORMAL), Messages.getString("setup_normal_world", player));
-        InventoryUtils.addItem(inventory, 21, worldIcon.getIcon(WorldType.FLAT), Messages.getString("setup_flat_world", player));
-        InventoryUtils.addItem(inventory, 22, worldIcon.getIcon(WorldType.NETHER), Messages.getString("setup_nether_world", player));
-        InventoryUtils.addItem(inventory, 23, worldIcon.getIcon(WorldType.END), Messages.getString("setup_end_world", player));
-        InventoryUtils.addItem(inventory, 24, worldIcon.getIcon(WorldType.VOID), Messages.getString("setup_void_world", player));
-        InventoryUtils.addItem(inventory, 25, worldIcon.getIcon(WorldType.IMPORTED), Messages.getString("setup_imported_world", player));
+        inventory.setItem(20, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.NORMAL), Messages.getString("setup_normal_world", player)));
+        inventory.setItem(21, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.FLAT), Messages.getString("setup_flat_world", player)));
+        inventory.setItem(22, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.NETHER), Messages.getString("setup_nether_world", player)));
+        inventory.setItem(23, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.END), Messages.getString("setup_end_world", player)));
+        inventory.setItem(24, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.VOID), Messages.getString("setup_void_world", player)));
+        inventory.setItem(25, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.IMPORTED), Messages.getString("setup_imported_world", player)));
 
-        InventoryUtils.addItem(inventory, 29, worldIcon.getIcon(WorldStatus.NOT_STARTED), Messages.getString("status_not_started", player));
-        InventoryUtils.addItem(inventory, 30, worldIcon.getIcon(WorldStatus.IN_PROGRESS), Messages.getString("status_in_progress", player));
-        InventoryUtils.addItem(inventory, 31, worldIcon.getIcon(WorldStatus.ALMOST_FINISHED), Messages.getString("status_almost_finished", player));
-        InventoryUtils.addItem(inventory, 32, worldIcon.getIcon(WorldStatus.FINISHED), Messages.getString("status_finished", player));
-        InventoryUtils.addItem(inventory, 33, worldIcon.getIcon(WorldStatus.ARCHIVE), Messages.getString("status_archive", player));
-        InventoryUtils.addItem(inventory, 34, worldIcon.getIcon(WorldStatus.HIDDEN), Messages.getString("status_hidden", player));
+        inventory.setItem(29, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.NOT_STARTED), Messages.getString("status_not_started", player)));
+        inventory.setItem(30, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.IN_PROGRESS), Messages.getString("status_in_progress", player)));
+        inventory.setItem(31, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.ALMOST_FINISHED), Messages.getString("status_almost_finished", player)));
+        inventory.setItem(32, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.FINISHED), Messages.getString("status_finished", player)));
+        inventory.setItem(33, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.ARCHIVE), Messages.getString("status_archive", player)));
+        inventory.setItem(34, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.HIDDEN), Messages.getString("status_hidden", player)));
 
         return inventory;
     }

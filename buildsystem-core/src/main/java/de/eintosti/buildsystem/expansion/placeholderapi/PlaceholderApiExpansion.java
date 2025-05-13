@@ -17,15 +17,17 @@
  */
 package de.eintosti.buildsystem.expansion.placeholderapi;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.player.settings.Settings;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldService;
-import de.eintosti.buildsystem.world.builder.Builders;
-import de.eintosti.buildsystem.world.data.WorldData;
-import de.eintosti.buildsystem.world.storage.WorldStorage;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.builder.BuildersImpl;
+import de.eintosti.buildsystem.world.data.WorldDataImpl;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import java.util.Locale;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
@@ -36,11 +38,11 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
 
     private static final String SETTINGS_KEY = "settings";
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final SettingsManager settingsManager;
-    private final WorldStorage worldStorage;
+    private final WorldStorageImpl worldStorage;
 
-    public PlaceholderApiExpansion(BuildSystem plugin) {
+    public PlaceholderApiExpansion(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.settingsManager = plugin.getSettingsManager();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
@@ -129,7 +131,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
      */
     @Nullable
     private String parseSettingsPlaceholder(Player player, String identifier) {
-        Settings settings = settingsManager.getSettings(player);
+        SettingsImpl settings = settingsManager.getSettings(player);
         String settingIdentifier = identifier.split("_")[1];
 
         switch (settingIdentifier.toLowerCase(Locale.ROOT)) {
@@ -162,7 +164,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "spawnteleport":
                 return String.valueOf(settings.isSpawnTeleport());
             case "opentrapdoors":
-                return String.valueOf(settings.isTrapDoor());
+                return String.valueOf(settings.isOpenTrapDoors());
             default:
                 return null;
         }
@@ -200,7 +202,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "blockplacement":
                 return String.valueOf(worldData.blockPlacement().get());
             case "builders":
-                return builders.getBuildersInfo(player);
+                return builders.asPlaceholder(player);
             case "buildersenabled":
                 return String.valueOf(worldData.buildersEnabled().get());
             case "creation":
@@ -234,11 +236,11 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "spawn":
                 return worldData.customSpawn().get();
             case "status":
-                return worldData.status().get().getName(player);
+                return Messages.getString(worldData.status().get().getKey(), player);
             case "time":
                 return buildWorld.getWorldTime();
             case "type":
-                return buildWorld.getType().getName(player);
+                return Messages.getString(buildWorld.getType().getKey(), player);
             case "world":
                 return buildWorld.getName();
             default:

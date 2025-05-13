@@ -20,3 +20,4 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
+include("buildsystem-api")

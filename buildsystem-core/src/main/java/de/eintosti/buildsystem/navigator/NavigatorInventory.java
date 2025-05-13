@@ -17,16 +17,16 @@
  */
 package de.eintosti.buildsystem.navigator;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 
 public abstract class NavigatorInventory {
 
-    protected final BuildSystem plugin;
+    protected final BuildSystemPlugin plugin;
 
-    protected NavigatorInventory(BuildSystem plugin) {
+    protected NavigatorInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
     }
 
