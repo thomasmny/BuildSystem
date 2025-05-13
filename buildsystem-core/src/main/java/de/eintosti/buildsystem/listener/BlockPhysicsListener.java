@@ -21,7 +21,8 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.version.util.DirectionUtil;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.WorldService;
+import de.eintosti.buildsystem.world.storage.WorldStorage;
 import java.util.List;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -45,18 +46,17 @@ import org.bukkit.metadata.MetadataValue;
 
 public class BlockPhysicsListener implements Listener {
 
-    private final WorldManager worldManager;
+    private final WorldStorage worldStorage;
 
     public BlockPhysicsListener(BuildSystem plugin) {
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler
     public void onBlockPhysics(BlockPhysicsEvent event) {
         Block block = event.getBlock();
-        String worldName = block.getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(block.getWorld());
         if (buildWorld == null || buildWorld.getData().physics().get()) {
             return;
         }
@@ -86,8 +86,7 @@ public class BlockPhysicsListener implements Listener {
 
     @EventHandler
     public void onLeavesDecay(LeavesDecayEvent event) {
-        String worldName = event.getBlock().getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(event.getBlock().getWorld());
         if (buildWorld != null && !buildWorld.getData().physics().get()) {
             event.setCancelled(true);
         }
@@ -95,8 +94,7 @@ public class BlockPhysicsListener implements Listener {
 
     @EventHandler
     public void onBlockFade(BlockFadeEvent event) {
-        String worldName = event.getBlock().getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(event.getBlock().getWorld());
         if (buildWorld != null && !buildWorld.getData().physics().get()) {
             event.setCancelled(true);
         }
@@ -104,8 +102,7 @@ public class BlockPhysicsListener implements Listener {
 
     @EventHandler
     public void onBlockForm(BlockFormEvent event) {
-        String worldName = event.getBlock().getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(event.getBlock().getWorld());
         if (buildWorld != null && !buildWorld.getData().physics().get()) {
             event.setCancelled(true);
         }
@@ -113,8 +110,7 @@ public class BlockPhysicsListener implements Listener {
 
     @EventHandler
     public void onBlockFromTo(BlockFromToEvent event) {
-        String worldName = event.getBlock().getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(event.getBlock().getWorld());
         if (buildWorld != null && !buildWorld.getData().physics().get()) {
             event.setCancelled(true);
         }
@@ -122,8 +118,7 @@ public class BlockPhysicsListener implements Listener {
 
     @EventHandler
     public void onBlockGrow(BlockGrowEvent event) {
-        String worldName = event.getBlock().getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(event.getBlock().getWorld());
         if (buildWorld != null && !buildWorld.getData().physics().get()) {
             event.setCancelled(true);
         }
@@ -131,8 +126,7 @@ public class BlockPhysicsListener implements Listener {
 
     @EventHandler
     public void onBlockSpread(BlockSpreadEvent event) {
-        String worldName = event.getBlock().getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(event.getBlock().getWorld());
         if (buildWorld != null && !buildWorld.getData().physics().get()) {
             event.setCancelled(true);
         }
@@ -140,8 +134,7 @@ public class BlockPhysicsListener implements Listener {
 
     @EventHandler
     public void onEntityChangeBlock(EntityChangeBlockEvent event) {
-        String worldName = event.getBlock().getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(event.getBlock().getWorld());
         if (buildWorld == null || buildWorld.getData().physics().get()) {
             return;
         }
@@ -173,8 +166,7 @@ public class BlockPhysicsListener implements Listener {
 
     @EventHandler
     public void onBlockExplode(BlockExplodeEvent event) {
-        String worldName = event.getBlock().getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(event.getBlock().getWorld());
         if (buildWorld != null && !buildWorld.getData().explosions().get()) {
             event.setCancelled(true);
         }
@@ -187,7 +179,7 @@ public class BlockPhysicsListener implements Listener {
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(world.getName());
+        BuildWorld buildWorld = worldStorage.getBuildWorld(world);
         if (buildWorld != null && !buildWorld.getData().explosions().get()) {
             event.setCancelled(true);
         }

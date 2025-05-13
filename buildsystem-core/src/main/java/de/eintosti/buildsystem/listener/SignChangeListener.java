@@ -40,10 +40,12 @@ public class SignChangeListener implements Listener {
 
         for (int i = 0; i < event.getLines().length; i++) {
             String line = event.getLine(i);
-            if (line != null) {
-                String coloredLine = ChatColor.translateAlternateColorCodes('&', ColorAPI.process(line));
-                event.setLine(i, coloredLine);
+            if (line == null) {
+                continue;
             }
+
+            String coloredLine = ChatColor.translateAlternateColorCodes('&', ColorAPI.process(line));
+            event.setLine(i, coloredLine);
         }
     }
 }

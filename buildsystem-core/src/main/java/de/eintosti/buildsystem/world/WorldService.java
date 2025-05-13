@@ -50,7 +50,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.Nullable;
 
-public class WorldManager {
+public class WorldService {
 
     private static boolean importingAllWorlds = false;
 
@@ -60,16 +60,12 @@ public class WorldManager {
     private final WorldStorage worldStorage;
     private final FolderStorage folderStorage;
 
-    private final WorldOperationManager worldOperationManager;
-
-    public WorldManager(BuildSystem plugin) {
+    public WorldService(BuildSystem plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
 
         this.worldStorage = new WorldStorageFactory(plugin).createStorage();
         this.folderStorage = new FolderStorageFactory(plugin).createStorage();
-
-        this.worldOperationManager = new WorldOperationManager(plugin);
     }
 
     public WorldStorage getWorldStorage() {

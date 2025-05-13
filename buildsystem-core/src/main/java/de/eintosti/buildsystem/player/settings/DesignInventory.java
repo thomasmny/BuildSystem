@@ -72,10 +72,10 @@ public class DesignInventory implements Listener {
 
     private void fillGuiWithGlass(Inventory inventory, Player player) {
         for (int i = 0; i <= 8; i++) {
-            InventoryUtils.addGlassPane(inventory, player, i);
+            InventoryUtils.addGlassPane(player, inventory, i);
         }
         for (int i = 27; i <= 35; i++) {
-            InventoryUtils.addGlassPane(inventory, player, i);
+            InventoryUtils.addGlassPane(player, inventory, i);
         }
     }
 
@@ -93,7 +93,7 @@ public class DesignInventory implements Listener {
 
         itemStack.setItemMeta(itemMeta);
         if (settings.getDesignColor() == color) {
-            itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.getEnchant(), 1);
+            itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.get(), 1);
         }
 
         inventory.setItem(position, itemStack);

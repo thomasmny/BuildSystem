@@ -38,7 +38,7 @@ public class SetCreatorSubCommand implements SubCommand {
 
     public SetCreatorSubCommand(BuildSystem plugin, String worldName) {
         this.plugin = plugin;
-        this.buildWorld = plugin.getWorldManager().getWorldStorage().getBuildWorld(worldName);
+        this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
     }
 
     @Override
@@ -64,7 +64,7 @@ public class SetCreatorSubCommand implements SubCommand {
             if (!creatorName.equalsIgnoreCase("-")) {
                 creator = Builder.of(UUIDFetcher.getUUID(creatorName), creatorName);
             }
-            buildWorld.getBuilderManager().setCreator(creator);
+            buildWorld.getBuilders().setCreator(creator);
 
             plugin.getPlayerManager().forceUpdateSidebar(buildWorld);
             XSound.ENTITY_PLAYER_LEVELUP.play(player);

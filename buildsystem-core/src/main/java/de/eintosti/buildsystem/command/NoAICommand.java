@@ -42,7 +42,7 @@ public class NoAICommand implements CommandExecutor {
 
     public NoAICommand(BuildSystem plugin) {
         this.plugin = plugin;
-        this.worldStorage = plugin.getWorldManager().getWorldStorage();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getCommand("noai").setExecutor(this);
     }
 
