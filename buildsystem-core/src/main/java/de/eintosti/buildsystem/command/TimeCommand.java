@@ -20,7 +20,8 @@ package de.eintosti.buildsystem.command;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.config.ConfigValues;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.BuildWorld;
+import de.eintosti.buildsystem.world.util.WorldPermissions;
 import java.util.AbstractMap;
 import java.util.Locale;
 import org.bukkit.Bukkit;
@@ -35,12 +36,10 @@ public class TimeCommand implements CommandExecutor {
 
     private final BuildSystem plugin;
     private final ConfigValues configValues;
-    private final WorldManager worldManager;
 
     public TimeCommand(BuildSystem plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
-        this.worldManager = plugin.getWorldManager();
         plugin.getCommand("day").setExecutor(this);
         plugin.getCommand("night").setExecutor(this);
     }
@@ -55,29 +54,27 @@ public class TimeCommand implements CommandExecutor {
         Player player = (Player) sender;
         String worldName = args.length == 0 ? player.getWorld().getName() : args[0];
         World world = Bukkit.getWorld(worldName);
+        if (world == null) {
+            Messages.sendMessage(player, "day_unknown_world");
+            return true;
+        }
+
+        BuildWorld buildWorld = plugin.getWorldManager().getWorldStorage().getBuildWorld(world);
+        WorldPermissions permissions = WorldPermissions.of(buildWorld);
 
         switch (label.toLowerCase(Locale.ROOT)) {
             case "day": {
-                if (!worldManager.isPermitted(player, "buildsystem.day", worldName)) {
+                if (!permissions.canPerformCommand(player, "buildsystem.day")) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
 
                 switch (args.length) {
-                    case 0: {
+                    case 0:
+                    case 1:
                         world.setTime(configValues.getNoonTime());
                         Messages.sendMessage(player, "day_set", new AbstractMap.SimpleEntry<>("%world%", world.getName()));
                         break;
-                    }
-                    case 1: {
-                        if (world == null) {
-                            Messages.sendMessage(player, "day_unknown_world");
-                            return true;
-                        }
-                        world.setTime(configValues.getNoonTime());
-                        Messages.sendMessage(player, "day_set", new AbstractMap.SimpleEntry<>("%world%", world.getName()));
-                        break;
-                    }
                     default:
                         Messages.sendMessage(player, "day_usage");
                         break;
@@ -86,26 +83,17 @@ public class TimeCommand implements CommandExecutor {
             }
 
             case "night": {
-                if (!worldManager.isPermitted(player, "buildsystem.night", worldName)) {
+                if (!permissions.canPerformCommand(player, "buildsystem.night")) {
                     plugin.sendPermissionMessage(player);
                     return true;
                 }
 
                 switch (args.length) {
-                    case 0: {
+                    case 0:
+                    case 1:
                         world.setTime(configValues.getNightTime());
                         Messages.sendMessage(player, "night_set", new AbstractMap.SimpleEntry<>("%world%", world.getName()));
                         break;
-                    }
-                    case 1: {
-                        if (world == null) {
-                            Messages.sendMessage(player, "night_unknown_world");
-                            return true;
-                        }
-                        world.setTime(configValues.getNightTime());
-                        Messages.sendMessage(player, "night_set", new AbstractMap.SimpleEntry<>("%world%", world.getName()));
-                        break;
-                    }
                     default:
                         Messages.sendMessage(player, "night_usage");
                         break;

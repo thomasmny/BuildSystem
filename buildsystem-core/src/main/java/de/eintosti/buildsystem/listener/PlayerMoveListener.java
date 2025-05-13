@@ -21,7 +21,7 @@ import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.navigator.settings.NavigatorType;
 import de.eintosti.buildsystem.player.PlayerManager;
 import de.eintosti.buildsystem.player.settings.Settings;
-import de.eintosti.buildsystem.settings.SettingsManager;
+import de.eintosti.buildsystem.player.settings.SettingsManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;

@@ -21,7 +21,7 @@ import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.SpawnManager;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.storage.WorldStorage;
 import java.util.AbstractMap;
 import java.util.Locale;
 import org.bukkit.Location;
@@ -36,12 +36,12 @@ public class SpawnCommand implements CommandExecutor {
 
     private final BuildSystem plugin;
     private final SpawnManager spawnManager;
-    private final WorldManager worldManager;
+    private final WorldStorage worldStorage;
 
     public SpawnCommand(BuildSystem plugin) {
         this.plugin = plugin;
         this.spawnManager = plugin.getSpawnManager();
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldManager().getWorldStorage();
         plugin.getCommand("spawn").setExecutor(this);
     }
 
@@ -73,8 +73,12 @@ public class SpawnCommand implements CommandExecutor {
                     case "set":
                         Location playerLocation = player.getLocation();
                         World bukkitWorld = playerLocation.getWorld();
-                        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
+                        if (bukkitWorld == null) {
+                            Messages.sendMessage(player, "spawn_world_not_imported");
+                            return true;
+                        }
 
+                        BuildWorld buildWorld = worldStorage.getBuildWorld(bukkitWorld);
                         if (buildWorld == null) {
                             Messages.sendMessage(player, "spawn_world_not_imported");
                             return true;

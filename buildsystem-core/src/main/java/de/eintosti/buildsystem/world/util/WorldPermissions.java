@@ -32,8 +32,12 @@ public class WorldPermissions {
 
     private final BuildWorld buildWorld;
 
-    public WorldPermissions(@Nullable BuildWorld buildWorld) {
+    private WorldPermissions(@Nullable BuildWorld buildWorld) {
         this.buildWorld = buildWorld;
+    }
+
+    public static WorldPermissions of(@Nullable BuildWorld buildWorld) {
+        return new WorldPermissions(buildWorld);
     }
 
     /**
@@ -73,16 +77,19 @@ public class WorldPermissions {
     }
 
     /**
-     * Checks if the given player can modify the world.
+     * Not every player can always modify the {@link BuildWorld} they are in.
      * <p>
-     * A player can modify the world if:
+     * Reasons an interaction could be cancelled:
      * <ul>
-     *   <li>They have the admin permission, {@link #hasAdminPermission(Player)}</li>
-     *   <li>They can bypass building restrictions, {@link #canBypassBuildRestriction(Player)}</li>
-     *   <li>The given additional check doesn't fail</li>
-     *   <li>They are the creator of the world</li>
-     *   <li>All players (not only builders) can modify the world</li>
-     *   <li>They are a builder of the world</li>
+     *     <li>The world has its {@link WorldStatus} set to archive;</li>
+     *     <li>The world has a setting enabled which disallows certain events;</li>
+     *     <li>The world only allows {@link Builder}s to build and the player is not such a builder or the creator of the world.</li>
+     * </ul>
+     * <p>
+     * However, a player can override these reasons if:
+     * <ul>
+     *     <li>They have the admin permission, {@link #hasAdminPermission(Player)}</li>
+     *     <li>They can bypass building restrictions, {@link #canBypassBuildRestriction(Player)}</li>
      * </ul>
      *
      * @param player          The player to check
