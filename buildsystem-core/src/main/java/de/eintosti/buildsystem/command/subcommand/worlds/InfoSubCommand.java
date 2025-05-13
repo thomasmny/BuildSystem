@@ -23,9 +23,9 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
 import de.eintosti.buildsystem.world.builder.Builder;
 import de.eintosti.buildsystem.world.data.WorldData;
+import de.eintosti.buildsystem.world.util.WorldPermissions;
 import java.util.AbstractMap;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -33,17 +33,16 @@ import org.bukkit.entity.Player;
 public class InfoSubCommand implements SubCommand {
 
     private final BuildSystem plugin;
-    private final String worldName;
+    private final BuildWorld buildWorld;
 
     public InfoSubCommand(BuildSystem plugin, String worldName) {
         this.plugin = plugin;
-        this.worldName = worldName;
+        this.buildWorld = plugin.getWorldManager().getWorldStorage().getBuildWorld(worldName);
     }
 
     @Override
     public void execute(Player player, String[] args) {
-        WorldManager worldManager = plugin.getWorldManager();
-        if (!worldManager.isPermitted(player, getArgument().getPermission(), worldName)) {
+        if (!WorldPermissions.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
             plugin.sendPermissionMessage(player);
             return;
         }
@@ -53,7 +52,6 @@ public class InfoSubCommand implements SubCommand {
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
             Messages.sendMessage(player, "worlds_info_unknown_world");
             return;
@@ -68,7 +66,7 @@ public class InfoSubCommand implements SubCommand {
                 new AbstractMap.SimpleEntry<>("%type%", buildWorld.getType().getName(player)),
                 new AbstractMap.SimpleEntry<>("%private%", worldData.privateWorld().get()),
                 new AbstractMap.SimpleEntry<>("%builders_enabled%", worldData.buildersEnabled().get()),
-                new AbstractMap.SimpleEntry<>("%builders%", buildWorld.getBuildersInfo(player)),
+                new AbstractMap.SimpleEntry<>("%builders%", buildWorld.getBuilderManager().getBuildersInfo(player)),
                 new AbstractMap.SimpleEntry<>("%block_breaking%", worldData.blockBreaking().get()),
                 new AbstractMap.SimpleEntry<>("%block_placement%", worldData.blockPlacement().get()),
                 new AbstractMap.SimpleEntry<>("%status%", worldData.status().get().getName(player)),

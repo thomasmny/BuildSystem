@@ -24,7 +24,7 @@ import org.bukkit.event.player.PlayerEvent;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Thrown when a player's inventory is cleared.
+ * Called when a player's inventory is cleared.
  */
 public class PlayerInventoryClearEvent extends PlayerEvent {
 
@@ -41,6 +41,11 @@ public class PlayerInventoryClearEvent extends PlayerEvent {
         return HANDLERS;
     }
 
+    /**
+     * Gets all slots containing a navigator item in a player's inventory.
+     *
+     * @return A list of slot numbers containing navigator items
+     */
     public List<Integer> getNavigatorSlots() {
         return navigatorSlots;
     }
