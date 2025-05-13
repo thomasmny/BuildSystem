@@ -35,9 +35,13 @@ public class WorldLoader {
     private final BuildSystem plugin;
     private final BuildWorld buildWorld;
 
-    public WorldLoader(BuildWorld buildWorld) {
+    private WorldLoader(BuildWorld buildWorld) {
         this.plugin = JavaPlugin.getPlugin(BuildSystem.class);
         this.buildWorld = buildWorld;
+    }
+
+    public static WorldLoader of(BuildWorld buildWorld) {
+        return new WorldLoader(buildWorld);
     }
 
     public void loadForPlayer(Player player) {

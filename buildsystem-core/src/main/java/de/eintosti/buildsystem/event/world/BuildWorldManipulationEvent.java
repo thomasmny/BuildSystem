@@ -20,14 +20,16 @@ package de.eintosti.buildsystem.event.world;
 import de.eintosti.buildsystem.world.BuildWorld;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * This event reduces duplicated code.
- * <p>It will be called when</p>
+ * <p>
+ * It will be called when:
  * <ul>
  *     <li>Breaking Blocks</li>
  *     <li>Placing Blocks</li>
- *     <li>Other modification related stuff</li>
+ *     <li>Other modification-related stuff</li>
  * </ul>
  * Cancelling this event will affect the parent-Event, which has caused the ManipulationEvent to fire.
  * <p>Expect the manipulation event to be cancelled at {@link org.bukkit.event.EventPriority#LOW} if the player is not allowed to interact with the world.</p>
@@ -40,7 +42,7 @@ public class BuildWorldManipulationEvent extends BuildWorldEvent implements Canc
     private final Cancellable parentEvent;
     private final Player player;
 
-    public BuildWorldManipulationEvent(Cancellable parentEvent, Player player, BuildWorld buildWorld) {
+    public BuildWorldManipulationEvent(Cancellable parentEvent, @NotNull Player player, @NotNull BuildWorld buildWorld) {
         super(buildWorld);
         this.parentEvent = parentEvent;
         this.player = player;
@@ -69,9 +71,8 @@ public class BuildWorldManipulationEvent extends BuildWorldEvent implements Canc
         return parentEvent;
     }
 
+    @NotNull
     public Player getPlayer() {
         return player;
     }
-
-
 }

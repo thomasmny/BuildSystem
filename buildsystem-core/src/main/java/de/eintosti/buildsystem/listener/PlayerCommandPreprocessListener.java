@@ -22,7 +22,7 @@ import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
-import de.eintosti.buildsystem.settings.SettingsManager;
+import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;

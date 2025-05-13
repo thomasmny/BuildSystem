@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.world.util;
 import com.cryptomorin.xseries.messages.Titles;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.world.BuildWorld;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
@@ -36,20 +35,20 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class WorldTeleporter {
 
     private final BuildSystem plugin;
-    private final ConfigValues configValues;
-
     private final BuildWorld buildWorld;
 
-    public WorldTeleporter(BuildWorld buildWorld) {
+    private WorldTeleporter(BuildWorld buildWorld) {
         this.plugin = JavaPlugin.getPlugin(BuildSystem.class);
-        this.configValues = plugin.getConfigValues();
-
         this.buildWorld = buildWorld;
+    }
+
+    public static WorldTeleporter of(BuildWorld buildWorld) {
+        return new WorldTeleporter(buildWorld);
     }
 
     public void teleport(Player player) {
         boolean hadToLoad = false;
-        if (configValues.isUnloadWorlds() && !buildWorld.isLoaded()) {
+        if (plugin.getConfigValues().isUnloadWorlds() && !buildWorld.isLoaded()) {
             buildWorld.load(player);
             hadToLoad = true;
         }

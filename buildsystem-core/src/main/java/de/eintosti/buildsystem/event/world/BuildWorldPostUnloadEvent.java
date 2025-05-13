@@ -18,13 +18,14 @@
 package de.eintosti.buildsystem.event.world;
 
 import de.eintosti.buildsystem.world.BuildWorld;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Called after a {@link BuildWorld} has unloaded.
  */
 public class BuildWorldPostUnloadEvent extends BuildWorldEvent {
 
-    public BuildWorldPostUnloadEvent(BuildWorld buildWorld) {
+    public BuildWorldPostUnloadEvent(@NotNull BuildWorld buildWorld) {
         super(buildWorld);
     }
 }

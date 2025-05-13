@@ -23,7 +23,7 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.util.WorldPermissions;
 import java.util.AbstractMap;
 import org.bukkit.entity.Player;
 
@@ -37,14 +37,12 @@ public class RemoveSpawnSubCommand implements SubCommand {
 
     @Override
     public void execute(Player player, String[] args) {
-        WorldManager worldManager = plugin.getWorldManager();
-        String playerWorldName = player.getWorld().getName();
-        if (!worldManager.isPermitted(player, getArgument().getPermission(), playerWorldName)) {
+        BuildWorld buildWorld = plugin.getWorldManager().getWorldStorage().getBuildWorld(player.getWorld());
+        if (!WorldPermissions.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
             plugin.sendPermissionMessage(player);
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
         if (buildWorld == null) {
             Messages.sendMessage(player, "worlds_removespawn_world_not_imported");
             return;

@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.event.world;
 
 import de.eintosti.buildsystem.world.BuildWorld;
 import org.bukkit.event.Cancellable;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Called when a {@link BuildWorld} is unloaded.
@@ -27,7 +28,7 @@ public class BuildWorldUnloadEvent extends BuildWorldEvent implements Cancellabl
 
     private boolean cancelled = false;
 
-    public BuildWorldUnloadEvent(BuildWorld buildWorld) {
+    public BuildWorldUnloadEvent(@NotNull BuildWorld buildWorld) {
         super(buildWorld);
     }
 
