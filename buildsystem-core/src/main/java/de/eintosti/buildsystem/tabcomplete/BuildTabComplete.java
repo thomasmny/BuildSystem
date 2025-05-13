@@ -17,7 +17,7 @@
  */
 package de.eintosti.buildsystem.tabcomplete;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.Bukkit;
@@ -29,7 +29,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class BuildTabComplete extends ArgumentSorter implements TabCompleter {
 
-    public BuildTabComplete(BuildSystem plugin) {
+    public BuildTabComplete(BuildSystemPlugin plugin) {
         plugin.getCommand("build").setTabCompleter(this);
     }
 

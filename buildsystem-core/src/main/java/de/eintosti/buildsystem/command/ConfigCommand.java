@@ -17,7 +17,7 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import java.util.Locale;
 import org.bukkit.command.Command;
@@ -27,9 +27,9 @@ import org.jetbrains.annotations.NotNull;
 
 public class ConfigCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
-    public ConfigCommand(BuildSystem plugin) {
+    public ConfigCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         plugin.getCommand("config").setExecutor(this);
     }

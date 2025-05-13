@@ -18,29 +18,30 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.PlayerChatInput;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.util.WorldPermissions;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import org.bukkit.entity.Player;
 
 public class RenameSubCommand implements SubCommand {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final BuildWorld buildWorld;
 
-    public RenameSubCommand(BuildSystem plugin, String worldName) {
+    public RenameSubCommand(BuildSystemPlugin plugin, String worldName) {
         this.plugin = plugin;
         this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
     }
 
     @Override
     public void execute(Player player, String[] args) {
-        if (!WorldPermissions.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
+        if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
             plugin.sendPermissionMessage(player);
             return;
         }

@@ -18,11 +18,11 @@
 package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.player.BuildPlayer;
-import de.eintosti.buildsystem.player.CachedValues;
-import de.eintosti.buildsystem.player.PlayerManager;
+import de.eintosti.buildsystem.api.player.BuildPlayer;
+import de.eintosti.buildsystem.api.player.CachedValues;
+import de.eintosti.buildsystem.api.player.PlayerService;
 import java.util.AbstractMap;
 import java.util.UUID;
 import org.bukkit.Bukkit;
@@ -35,12 +35,12 @@ import org.jetbrains.annotations.NotNull;
 
 public class BuildCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
-    private final PlayerManager playerManager;
+    private final BuildSystemPlugin plugin;
+    private final PlayerService playerService;
 
-    public BuildCommand(BuildSystem plugin) {
+    public BuildCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.playerManager = plugin.getPlayerManager();
+        this.playerService = plugin.getPlayerService();
         plugin.getCommand("build").setExecutor(this);
     }
 
@@ -90,10 +90,10 @@ public class BuildCommand implements CommandExecutor {
 
     private void toggleBuildMode(Player target, Player sender, boolean self) {
         UUID targetUuid = target.getUniqueId();
-        BuildPlayer buildPlayer = playerManager.getBuildPlayer(targetUuid);
+        BuildPlayer buildPlayer = playerService.getPlayerStorage().getBuildPlayer(targetUuid);
         CachedValues cachedValues = buildPlayer.getCachedValues();
 
-        if (playerManager.getBuildModePlayers().remove(targetUuid)) {
+        if (playerService.getBuildModePlayers().remove(targetUuid)) {
             cachedValues.resetGameModeIfPresent(target);
             cachedValues.resetInventoryIfPresent(target);
 
@@ -106,7 +106,7 @@ public class BuildCommand implements CommandExecutor {
                 Messages.sendMessage(target, "build_deactivated_other_target", new AbstractMap.SimpleEntry<>("%sender%", sender.getName()));
             }
         } else {
-            playerManager.getBuildModePlayers().add(targetUuid);
+            playerService.getBuildModePlayers().add(targetUuid);
             cachedValues.saveGameMode(target.getGameMode());
             cachedValues.saveInventory(target.getInventory().getContents());
             target.setGameMode(GameMode.CREATIVE);

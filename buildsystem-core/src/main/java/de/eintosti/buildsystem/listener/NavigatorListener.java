@@ -21,20 +21,18 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.inventory.XInventoryView;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
-import de.eintosti.buildsystem.navigator.settings.NavigatorInventoryType;
-import de.eintosti.buildsystem.navigator.settings.NavigatorType;
-import de.eintosti.buildsystem.player.CachedValues;
-import de.eintosti.buildsystem.player.PlayerManager;
-import de.eintosti.buildsystem.player.settings.Settings;
+import de.eintosti.buildsystem.api.navigator.settings.NavigatorInventoryType;
+import de.eintosti.buildsystem.player.CachedValuesImpl;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.data.WorldStatus;
-import de.eintosti.buildsystem.world.storage.WorldStorage;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -59,20 +57,20 @@ public class NavigatorListener implements Listener {
     private static final double MAX_HEIGHT = 2.074631929397583;
     private static final double MIN_HEIGHT = 1.4409877061843872;
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final ConfigValues configValues;
 
     private final ArmorStandManager armorStandManager;
-    private final PlayerManager playerManager;
+    private final PlayerServiceImpl playerManager;
     private final SettingsManager settingsManager;
     private final WorldStorage worldStorage;
 
-    public NavigatorListener(BuildSystem plugin) {
+    public NavigatorListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
 
         this.armorStandManager = plugin.getArmorStandManager();
-        this.playerManager = plugin.getPlayerManager();
+        this.playerManager = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsManager();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
 
@@ -123,7 +121,7 @@ public class NavigatorListener implements Listener {
     }
 
     private void openNavigator(Player player) {
-        Settings settings = settingsManager.getSettings(player);
+        SettingsImpl settings = settingsManager.getSettings(player);
         if (settings.getNavigatorType() == NavigatorType.OLD) {
             plugin.getNavigatorInventory().openInventory(player);
             XSound.BLOCK_CHEST_OPEN.play(player);
@@ -144,7 +142,7 @@ public class NavigatorListener implements Listener {
     }
 
     private void summonNewNavigator(Player player) {
-        CachedValues cachedValues = playerManager.getBuildPlayer(player).getCachedValues();
+        CachedValuesImpl cachedValues = playerManager.getBuildPlayer(player).getCachedValues();
         cachedValues.saveWalkSpeed(player.getWalkSpeed());
         cachedValues.saveFlySpeed(player.getFlySpeed());
 
