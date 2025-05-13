@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.tabcomplete;
 
 import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.WorldService;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.command.Command;
@@ -29,10 +29,10 @@ import org.jetbrains.annotations.NotNull;
 
 public class PhysicsTabComplete extends ArgumentSorter implements TabCompleter {
 
-    private final WorldManager worldManager;
+    private final WorldService worldService;
 
     public PhysicsTabComplete(BuildSystem plugin) {
-        this.worldManager = plugin.getWorldManager();
+        this.worldService = plugin.getWorldService();
         plugin.getCommand("physics").setTabCompleter(this);
     }
 
@@ -46,7 +46,7 @@ public class PhysicsTabComplete extends ArgumentSorter implements TabCompleter {
         Player player = (Player) sender;
 
         if (args.length == 1) {
-            worldManager.getBuildWorlds().forEach(world -> {
+            worldService.getBuildWorlds().forEach(world -> {
                 if (player.hasPermission("buildsystem.physics")) {
                     String worldName = world.getName();
                     addArgument(args[0], worldName, arrayList);

@@ -38,7 +38,7 @@ public class TopCommand implements CommandExecutor {
 
     public TopCommand(BuildSystem plugin) {
         this.plugin = plugin;
-        this.worldStorage = plugin.getWorldManager().getWorldStorage();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getCommand("top").setExecutor(this);
     }
 

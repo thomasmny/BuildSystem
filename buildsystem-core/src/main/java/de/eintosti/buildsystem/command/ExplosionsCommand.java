@@ -39,7 +39,7 @@ public class ExplosionsCommand implements CommandExecutor {
 
     public ExplosionsCommand(BuildSystem plugin) {
         this.plugin = plugin;
-        this.worldStorage = plugin.getWorldManager().getWorldStorage();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getCommand("explosions").setExecutor(this);
     }
 

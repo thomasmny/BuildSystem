@@ -55,7 +55,7 @@ public class EntityDamageListener implements Listener {
         Location teleportLoc = player.getLocation().clone().add(0, 200, 0);
 
         if (configValues.isTeleportToMapSpawn()) {
-            BuildWorld buildWorld = plugin.getWorldManager().getBuildWorld(player.getWorld());
+            BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld());
             if (buildWorld != null) {
                 Location spawn = buildWorld.getData().getCustomSpawnLocation();
                 if (spawn != null) {

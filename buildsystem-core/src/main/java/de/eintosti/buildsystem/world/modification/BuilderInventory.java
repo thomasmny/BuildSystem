@@ -87,7 +87,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
     }
 
     private void addBuilderAddItem(Inventory inventory, BuildWorld buildWorld, Player player) {
-        if (buildWorld.getBuilderManager().isCreator(player) || player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
+        if (buildWorld.getBuilders().isCreator(player) || player.hasPermission(BuildSystem.ADMIN_PERMISSION)) {
             InventoryUtils.addSkull(inventory, 22, Messages.getString("worldeditor_builders_add_builder_item", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716"));
         } else {
             InventoryUtils.addGlassPane(player, inventory, 22);
@@ -159,7 +159,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         ItemStack itemStack = event.getCurrentItem();
         Material material = itemStack.getType();
         if (material != XMaterial.PLAYER_HEAD.get()) {
-            if (plugin.getWorldManager().isPermitted(player, WorldsArgument.EDIT.getPermission(), buildWorld.getName())) {
+            if (plugin.getWorldService().isPermitted(player, WorldsArgument.EDIT.getPermission(), buildWorld.getName())) {
                 XSound.BLOCK_CHEST_OPEN.play(player);
                 plugin.getEditInventory().openInventory(player, buildWorld);
             }
