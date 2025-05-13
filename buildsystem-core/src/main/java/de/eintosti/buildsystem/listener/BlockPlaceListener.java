@@ -18,12 +18,12 @@
 package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.version.customblocks.CustomBlock;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldService;
-import de.eintosti.buildsystem.world.storage.WorldStorage;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.entity.Player;
@@ -35,12 +35,12 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class BlockPlaceListener implements Listener {
 
-    private final BuildSystem plugin;
-    private final WorldStorage worldStorage;
+    private final BuildSystemPlugin plugin;
+    private final WorldStorageImpl worldStorage;
 
     private final Map<String, String> blockLookup;
 
-    public BlockPlaceListener(BuildSystem plugin) {
+    public BlockPlaceListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.worldStorage = plugin.getWorldService().getWorldStorage();
         this.blockLookup = initBlockLookup();

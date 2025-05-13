@@ -21,12 +21,12 @@ import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.inventory.XInventoryView;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.player.BuildPlayer;
-import de.eintosti.buildsystem.player.PlayerManager;
+import de.eintosti.buildsystem.player.BuildPlayerImpl;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.BuildWorld;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
 import java.util.AbstractMap;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -42,12 +42,12 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class StatusInventory implements Listener {
 
-    private final BuildSystem plugin;
-    private final PlayerManager playerManager;
+    private final BuildSystemPlugin plugin;
+    private final PlayerServiceImpl playerManager;
 
-    public StatusInventory(BuildSystem plugin) {
+    public StatusInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.playerManager = plugin.getPlayerManager();
+        this.playerManager = plugin.getPlayerService();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -99,7 +99,7 @@ public class StatusInventory implements Listener {
         itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         itemStack.setItemMeta(itemMeta);
 
-        BuildWorld cachedWorld = playerManager.getBuildPlayer(player).getCachedWorld();
+        BuildWorldImpl cachedWorld = playerManager.getBuildPlayer(player).getCachedWorld();
         if (cachedWorld != null && cachedWorld.getData().status().get() == status) {
             itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.get(), 1);
         }
@@ -131,7 +131,7 @@ public class StatusInventory implements Listener {
             return;
         }
 
-        BuildPlayer buildPlayer = playerManager.getBuildPlayer(player);
+        BuildPlayerImpl buildPlayer = playerManager.getBuildPlayer(player);
         BuildWorld buildWorld = buildPlayer.getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();

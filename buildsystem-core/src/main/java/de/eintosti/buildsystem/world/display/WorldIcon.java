@@ -18,10 +18,10 @@
 package de.eintosti.buildsystem.world.display;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.SetupConfig;
-import de.eintosti.buildsystem.world.data.WorldStatus;
-import de.eintosti.buildsystem.world.data.WorldType;
 import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
@@ -34,44 +34,44 @@ public class WorldIcon {
 
     private final SetupConfig setupConfig;
 
-    private final Map<WorldType, XMaterial> typeIcons;
-    private final Map<WorldStatus, XMaterial> statusIcons;
+    private final Map<BuildWorldType, XMaterial> typeIcons;
+    private final Map<BuildWorldStatus, XMaterial> statusIcons;
 
-    public WorldIcon(BuildSystem plugin) {
+    public WorldIcon(BuildSystemPlugin plugin) {
         this.setupConfig = new SetupConfig(plugin);
 
         this.typeIcons = loadTypeIcons();
         this.statusIcons = loadStatusIcons();
     }
 
-    private Map<WorldType, XMaterial> loadTypeIcons() {
+    private Map<BuildWorldType, XMaterial> loadTypeIcons() {
         return Optional
-                .ofNullable(this.setupConfig.loadIcons("type", type -> WorldType.valueOf(type.toUpperCase(Locale.ROOT))))
+                .ofNullable(this.setupConfig.loadIcons("type", type -> BuildWorldType.valueOf(type.toUpperCase(Locale.ROOT))))
                 .orElseGet(() -> {
-                    Map<WorldType, XMaterial> defaults = new EnumMap<>(WorldType.class);
-                    defaults.put(WorldType.NORMAL, XMaterial.OAK_LOG);
-                    defaults.put(WorldType.FLAT, XMaterial.GRASS_BLOCK);
-                    defaults.put(WorldType.NETHER, XMaterial.NETHERRACK);
-                    defaults.put(WorldType.END, XMaterial.END_STONE);
-                    defaults.put(WorldType.VOID, XMaterial.GLASS);
-                    defaults.put(WorldType.CUSTOM, XMaterial.FILLED_MAP);
-                    defaults.put(WorldType.TEMPLATE, XMaterial.FILLED_MAP);
-                    defaults.put(WorldType.IMPORTED, XMaterial.FURNACE);
+                    Map<BuildWorldType, XMaterial> defaults = new EnumMap<>(BuildWorldType.class);
+                    defaults.put(BuildWorldType.NORMAL, XMaterial.OAK_LOG);
+                    defaults.put(BuildWorldType.FLAT, XMaterial.GRASS_BLOCK);
+                    defaults.put(BuildWorldType.NETHER, XMaterial.NETHERRACK);
+                    defaults.put(BuildWorldType.END, XMaterial.END_STONE);
+                    defaults.put(BuildWorldType.VOID, XMaterial.GLASS);
+                    defaults.put(BuildWorldType.CUSTOM, XMaterial.FILLED_MAP);
+                    defaults.put(BuildWorldType.TEMPLATE, XMaterial.FILLED_MAP);
+                    defaults.put(BuildWorldType.IMPORTED, XMaterial.FURNACE);
                     return defaults;
                 });
     }
 
-    private Map<WorldStatus, XMaterial> loadStatusIcons() {
+    private Map<BuildWorldStatus, XMaterial> loadStatusIcons() {
         return Optional
-                .ofNullable(this.setupConfig.loadIcons("status", status -> WorldStatus.valueOf(status.toUpperCase(Locale.ROOT))))
+                .ofNullable(this.setupConfig.loadIcons("status", status -> BuildWorldStatus.valueOf(status.toUpperCase(Locale.ROOT))))
                 .orElseGet(() -> {
-                    Map<WorldStatus, XMaterial> defaults = new EnumMap<>(WorldStatus.class);
-                    defaults.put(WorldStatus.NOT_STARTED, XMaterial.RED_DYE);
-                    defaults.put(WorldStatus.IN_PROGRESS, XMaterial.ORANGE_DYE);
-                    defaults.put(WorldStatus.ALMOST_FINISHED, XMaterial.LIME_DYE);
-                    defaults.put(WorldStatus.FINISHED, XMaterial.GREEN_DYE);
-                    defaults.put(WorldStatus.ARCHIVE, XMaterial.CYAN_DYE);
-                    defaults.put(WorldStatus.HIDDEN, XMaterial.BONE_MEAL);
+                    Map<BuildWorldStatus, XMaterial> defaults = new EnumMap<>(BuildWorldStatus.class);
+                    defaults.put(BuildWorldStatus.NOT_STARTED, XMaterial.RED_DYE);
+                    defaults.put(BuildWorldStatus.IN_PROGRESS, XMaterial.ORANGE_DYE);
+                    defaults.put(BuildWorldStatus.ALMOST_FINISHED, XMaterial.LIME_DYE);
+                    defaults.put(BuildWorldStatus.FINISHED, XMaterial.GREEN_DYE);
+                    defaults.put(BuildWorldStatus.ARCHIVE, XMaterial.CYAN_DYE);
+                    defaults.put(BuildWorldStatus.HIDDEN, XMaterial.BONE_MEAL);
                     return defaults;
                 });
     }
@@ -82,7 +82,7 @@ public class WorldIcon {
      * @param type The world type
      * @return The material to use as an icon
      */
-    public XMaterial getIcon(WorldType type) {
+    public XMaterial getIcon(BuildWorldType type) {
         return this.typeIcons.get(type);
     }
 
@@ -92,7 +92,7 @@ public class WorldIcon {
      * @param status The world status
      * @return The material to use as an icon
      */
-    public XMaterial getIcon(WorldStatus status) {
+    public XMaterial getIcon(BuildWorldStatus status) {
         return this.statusIcons.get(status);
     }
 
@@ -102,7 +102,7 @@ public class WorldIcon {
      * @param type     The world type
      * @param material The material to use as an icon
      */
-    public void setIcon(WorldType type, XMaterial material) {
+    public void setIcon(BuildWorldType type, XMaterial material) {
         this.typeIcons.put(type, material);
         this.setupConfig.saveIcon("type", type, material);
     }
@@ -113,7 +113,7 @@ public class WorldIcon {
      * @param status   The world status
      * @param material The material to use as an icon
      */
-    public void setIcon(WorldStatus status, XMaterial material) {
+    public void setIcon(BuildWorldStatus status, XMaterial material) {
         this.statusIcons.put(status, material);
         this.setupConfig.saveIcon("status", status, material);
     }

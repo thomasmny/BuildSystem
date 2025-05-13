@@ -17,7 +17,7 @@
  */
 package de.eintosti.buildsystem.listener;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import java.util.List;
@@ -32,9 +32,9 @@ import org.bukkit.event.inventory.InventoryType;
 
 public class InventoryCreativeListener implements Listener {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
-    public InventoryCreativeListener(BuildSystem plugin) {
+    public InventoryCreativeListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }

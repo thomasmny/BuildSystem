@@ -19,7 +19,9 @@ package de.eintosti.buildsystem.world;
 
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.Titles;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.config.SpawnConfig;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
@@ -30,16 +32,16 @@ import org.bukkit.entity.Player;
 
 public class SpawnManager {
 
-    private final BuildSystem plugin;
-    private final WorldService worldService;
+    private final BuildSystemPlugin plugin;
+    private final WorldStorage worldStorage;
     private final SpawnConfig spawnConfig;
 
     private String spawnName;
     private Location spawn;
 
-    public SpawnManager(BuildSystem plugin) {
+    public SpawnManager(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.worldService = plugin.getWorldService();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         this.spawnConfig = new SpawnConfig(plugin);
     }
 
@@ -48,10 +50,10 @@ public class SpawnManager {
             return false;
         }
 
-        BuildWorld buildWorld = worldService.getBuildWorld(spawnName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(spawnName);
         if (buildWorld != null) {
             if (!buildWorld.isLoaded()) {
-                buildWorld.load(player);
+                buildWorld.getLoader().loadForPlayer(player);
             }
         }
 
@@ -95,8 +97,7 @@ public class SpawnManager {
     public void load() {
         FileConfiguration configuration = spawnConfig.getFile();
         String string = configuration.getString("spawn");
-
-        if (string == null || string.trim().equals("")) {
+        if (string == null || string.trim().isEmpty()) {
             return;
         }
 
@@ -112,14 +113,13 @@ public class SpawnManager {
         float yaw = Float.parseFloat(parts[4]);
         float pitch = Float.parseFloat(parts[5]);
 
-        BuildWorld buildWorld = worldService.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (buildWorld == null) {
-            plugin.getLogger()
-                    .warning("Could load spawn world \"" + worldName + "\". Please check logs for possible errors.");
+            plugin.getLogger().warning("Could load spawn world \"" + worldName + "\". Please check logs for possible errors.");
             return;
         }
 
-        buildWorld.load();
+        buildWorld.getLoader().load();
         this.spawnName = worldName;
         this.spawn = new Location(Bukkit.getWorld(worldName), x, y, z, yaw, pitch);
     }

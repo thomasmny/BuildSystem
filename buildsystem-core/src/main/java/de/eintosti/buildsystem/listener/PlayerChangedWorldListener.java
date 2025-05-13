@@ -18,17 +18,15 @@
 package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
-import de.eintosti.buildsystem.player.CachedValues;
-import de.eintosti.buildsystem.player.PlayerManager;
+import de.eintosti.buildsystem.player.CachedValuesImpl;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.data.WorldStatus;
-import de.eintosti.buildsystem.world.data.WorldType;
-import de.eintosti.buildsystem.world.storage.WorldStorage;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,19 +49,19 @@ public class PlayerChangedWorldListener implements Listener {
     private final ConfigValues configValues;
 
     private final ArmorStandManager armorStandManager;
-    private final PlayerManager playerManager;
+    private final PlayerServiceImpl playerManager;
     private final SettingsManager settingsManager;
-    private final WorldStorage worldStorage;
+    private final WorldStorageImpl worldStorage;
 
     private final Map<UUID, GameMode> playerGamemode;
     private final Map<UUID, ItemStack[]> playerInventory;
     private final Map<UUID, ItemStack[]> playerArmor;
 
-    public PlayerChangedWorldListener(BuildSystem plugin) {
+    public PlayerChangedWorldListener(BuildSystemPlugin plugin) {
         this.configValues = plugin.getConfigValues();
 
         this.armorStandManager = plugin.getArmorStandManager();
-        this.playerManager = plugin.getPlayerManager();
+        this.playerManager = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsManager();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
 
@@ -81,12 +79,12 @@ public class PlayerChangedWorldListener implements Listener {
 
         event.getPlayer().setAllowFlight(true);
 
-        BuildWorld oldWorld = worldStorage.getBuildWorld(event.getFrom());
+        BuildWorldImpl oldWorld = worldStorage.getBuildWorld(event.getFrom());
         if (oldWorld != null && configValues.isUnloadWorlds()) {
             oldWorld.getUnloader().resetUnloadTask();
         }
 
-        BuildWorld newWorld = worldStorage.getBuildWorld(worldName);
+        BuildWorldImpl newWorld = worldStorage.getBuildWorld(worldName);
         if (newWorld != null && !newWorld.getData().physics().get() && player.hasPermission("buildsystem.physics.message")) {
             Messages.sendMessage(player, "physics_deactivated_in_world", new AbstractMap.SimpleEntry<>("%world%", newWorld.getName()));
         }
@@ -114,7 +112,7 @@ public class PlayerChangedWorldListener implements Listener {
             return;
         }
 
-        CachedValues cachedValues = playerManager.getBuildPlayer(playerUuid).getCachedValues();
+        CachedValuesImpl cachedValues = playerManager.getBuildPlayer(playerUuid).getCachedValues();
         cachedValues.resetGameModeIfPresent(player);
         cachedValues.resetInventoryIfPresent(player);
         XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);

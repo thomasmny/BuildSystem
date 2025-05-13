@@ -18,11 +18,11 @@
 package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.version.util.DirectionUtil;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldService;
-import de.eintosti.buildsystem.world.storage.WorldStorage;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import java.util.List;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -46,9 +46,9 @@ import org.bukkit.metadata.MetadataValue;
 
 public class BlockPhysicsListener implements Listener {
 
-    private final WorldStorage worldStorage;
+    private final WorldStorageImpl worldStorage;
 
-    public BlockPhysicsListener(BuildSystem plugin) {
+    public BlockPhysicsListener(BuildSystemPlugin plugin) {
         this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
