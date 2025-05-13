@@ -23,23 +23,22 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.util.WorldPermissions;
 import org.bukkit.entity.Player;
 
 public class BuildersSubCommand implements SubCommand {
 
     private final BuildSystem plugin;
-    private final String worldName;
+    private final BuildWorld buildWorld;
 
     public BuildersSubCommand(BuildSystem plugin, String worldName) {
         this.plugin = plugin;
-        this.worldName = worldName;
+        this.buildWorld = plugin.getWorldManager().getWorldStorage().getBuildWorld(worldName);
     }
 
     @Override
     public void execute(Player player, String[] args) {
-        WorldManager worldManager = plugin.getWorldManager();
-        if (!worldManager.isPermitted(player, getArgument().getPermission(), worldName)) {
+        if (!WorldPermissions.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
             plugin.sendPermissionMessage(player);
             return;
         }
@@ -49,7 +48,6 @@ public class BuildersSubCommand implements SubCommand {
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
             Messages.sendMessage(player, "worlds_builders_unknown_world");
             return;

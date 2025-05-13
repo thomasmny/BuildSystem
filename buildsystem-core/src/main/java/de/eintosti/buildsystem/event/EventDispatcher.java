@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.event;
 
 import de.eintosti.buildsystem.event.world.BuildWorldManipulationEvent;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.storage.WorldStorage;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -31,13 +31,15 @@ import org.bukkit.event.Cancellable;
  */
 public class EventDispatcher {
 
-    private final WorldManager worldManager;
+    private final WorldStorage worldStorage;
 
     /**
-     * @param worldManager the world manager used to retrieve build world information
+     * Creates a new {@link EventDispatcher} instance.
+     *
+     * @param worldStorage The world storage used to retrieve {@link BuildWorld} information
      */
-    public EventDispatcher(WorldManager worldManager) {
-        this.worldManager = worldManager;
+    public EventDispatcher(WorldStorage worldStorage) {
+        this.worldStorage = worldStorage;
     }
 
     /**
@@ -46,7 +48,7 @@ public class EventDispatcher {
      *
      * <p>This method checks if:</p>
      * <ol>
-     *   <li>The parent event is not already cancelled</li>
+     *   <li>The parent event is not yet cancelled</li>
      *   <li>The player is in a valid build world</li>
      * </ol>
      * <p>
@@ -60,12 +62,12 @@ public class EventDispatcher {
         if (parentEvent.isCancelled()) {
             return;
         }
-        BuildWorld world = worldManager.getBuildWorld(player.getWorld().getName());
+
+        BuildWorld world = worldStorage.getBuildWorld(player.getWorld());
         if (world == null) {
             return;
         }
+
         Bukkit.getPluginManager().callEvent(new BuildWorldManipulationEvent(parentEvent, player, world));
     }
-
-
 }

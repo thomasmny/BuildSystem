@@ -23,24 +23,23 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.util.WorldPermissions;
 import java.util.AbstractMap;
 import org.bukkit.entity.Player;
 
 public class UnimportSubCommand implements SubCommand {
 
     private final BuildSystem plugin;
-    private final String worldName;
+    private final BuildWorld buildWorld;
 
     public UnimportSubCommand(BuildSystem plugin, String worldName) {
         this.plugin = plugin;
-        this.worldName = worldName;
+        this.buildWorld = plugin.getWorldManager().getWorldStorage().getBuildWorld(worldName);
     }
 
     @Override
     public void execute(Player player, String[] args) {
-        WorldManager worldManager = plugin.getWorldManager();
-        if (!worldManager.isPermitted(player, getArgument().getPermission(), worldName)) {
+        if (!WorldPermissions.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
             plugin.sendPermissionMessage(player);
             return;
         }
@@ -50,13 +49,12 @@ public class UnimportSubCommand implements SubCommand {
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
             Messages.sendMessage(player, "worlds_unimport_unknown_world");
             return;
         }
 
-        worldManager.unimportWorld(player, buildWorld, true);
+        plugin.getWorldManager().unimportWorld(player, buildWorld, true);
         Messages.sendMessage(player, "worlds_unimport_finished",
                 new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName())
         );

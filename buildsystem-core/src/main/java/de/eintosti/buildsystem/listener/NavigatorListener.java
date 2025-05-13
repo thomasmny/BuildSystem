@@ -30,13 +30,12 @@ import de.eintosti.buildsystem.navigator.settings.NavigatorType;
 import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.PlayerManager;
 import de.eintosti.buildsystem.player.settings.Settings;
-import de.eintosti.buildsystem.settings.SettingsManager;
+import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
 import de.eintosti.buildsystem.world.data.WorldStatus;
+import de.eintosti.buildsystem.world.storage.WorldStorage;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -64,20 +63,18 @@ public class NavigatorListener implements Listener {
     private final ConfigValues configValues;
 
     private final ArmorStandManager armorStandManager;
-    private final InventoryUtils inventoryUtils;
     private final PlayerManager playerManager;
     private final SettingsManager settingsManager;
-    private final WorldManager worldManager;
+    private final WorldStorage worldStorage;
 
     public NavigatorListener(BuildSystem plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
 
         this.armorStandManager = plugin.getArmorStandManager();
-        this.inventoryUtils = plugin.getInventoryUtil();
         this.playerManager = plugin.getPlayerManager();
         this.settingsManager = plugin.getSettingsManager();
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldManager().getWorldStorage();
 
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -142,8 +139,8 @@ public class NavigatorListener implements Listener {
         summonNewNavigator(player);
 
         String findItemName = Messages.getString("navigator_item", player);
-        ItemStack replaceItem = inventoryUtils.getItemStack(XMaterial.BARRIER, Messages.getString("barrier_item", player));
-        inventoryUtils.replaceItem(player, findItemName, configValues.getNavigatorItem(), replaceItem);
+        ItemStack replaceItem = InventoryUtils.createItem(XMaterial.BARRIER, Messages.getString("barrier_item", player));
+        InventoryUtils.replaceItem(player, findItemName, configValues.getNavigatorItem(), replaceItem);
     }
 
     private void summonNewNavigator(Player player) {
@@ -279,8 +276,7 @@ public class NavigatorListener implements Listener {
      * @param cancellable The event to cancel
      */
     private void disableArchivedWorlds(Player player, Cancellable cancellable) {
-        World bukkitWorld = player.getWorld();
-        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
+        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
         if (buildWorld == null || buildWorld.getData().status().get() != WorldStatus.ARCHIVE) {
             return;
         }

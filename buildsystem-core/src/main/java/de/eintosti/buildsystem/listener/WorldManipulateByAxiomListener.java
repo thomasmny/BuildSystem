@@ -31,15 +31,15 @@ public class WorldManipulateByAxiomListener implements Listener {
 
     private final EventDispatcher dispatcher;
 
-
     /**
+     * Creates a new {@link WorldManipulateByAxiomListener} instance.
+     *
      * @param plugin plugin to register.
      */
     public WorldManipulateByAxiomListener(@NotNull BuildSystem plugin) {
-        this.dispatcher = new EventDispatcher(plugin.getWorldManager());
+        this.dispatcher = new EventDispatcher(plugin.getWorldManager().getWorldStorage());
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
-
 
     @EventHandler()
     public void onWorldModification(AxiomModifyWorldEvent event) {

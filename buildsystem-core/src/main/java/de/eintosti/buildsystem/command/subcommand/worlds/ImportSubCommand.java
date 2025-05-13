@@ -24,7 +24,6 @@ import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.UUIDFetcher;
-import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;
 import de.eintosti.buildsystem.world.builder.Builder;
 import de.eintosti.buildsystem.world.data.WorldType;
@@ -60,8 +59,7 @@ public class ImportSubCommand implements SubCommand {
         }
 
         WorldManager worldManager = plugin.getWorldManager();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
-        if (buildWorld != null) {
+        if (worldManager.getWorldStorage().worldExists(worldName)) {
             Messages.sendMessage(player, "worlds_import_world_is_imported");
             return;
         }
@@ -74,8 +72,8 @@ public class ImportSubCommand implements SubCommand {
         }
 
         String invalidChar = Arrays.stream(worldName.split(""))
-                .filter(c -> c.matches("[^A-Za-z\\d/_-]")
-                        || c.matches(plugin.getConfigValues().getInvalidNameCharacters())
+                .filter(c ->
+                        c.matches("[^A-Za-z\\d/_-]") || c.matches(plugin.getConfigValues().getInvalidNameCharacters())
                 )
                 .findFirst()
                 .orElse(null);

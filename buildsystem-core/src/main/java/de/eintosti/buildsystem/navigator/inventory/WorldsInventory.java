@@ -58,17 +58,17 @@ public class WorldsInventory extends FilteredWorldsInventory {
 
     private void addWorldCreateItem(Inventory inventory, Player player) {
         if (player.hasPermission("buildsystem.create.public")) {
-            InventoryUtils.addSkull(inventory, 49, Messages.getString("world_navigator_create_world", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716"));
+            inventory.setItem(49, InventoryUtils.createSkull(Messages.getString("world_navigator_create_world", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716")));
         } else {
-            InventoryUtils.addGlassPane(inventory, player, 49);
+            InventoryUtils.addGlassPane(player, inventory, 49);
         }
     }
 
     private void addFolderCreateItem(Inventory inventory, Player player) {
         if (player.hasPermission("buildsystem.folder.create")) {
-            InventoryUtils.addSkull(inventory, 48, Messages.getString("world_navigator_create_folder", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"));
+            inventory.setItem(48, InventoryUtils.createSkull(Messages.getString("world_navigator_create_folder", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158")));
         } else {
-            InventoryUtils.addGlassPane(inventory, player, 48);
+            InventoryUtils.addGlassPane(player, inventory, 48);
         }
     }
 
@@ -89,8 +89,7 @@ public class WorldsInventory extends FilteredWorldsInventory {
                 }
 
                 // Check if folder with same name exists
-                if (plugin.getWorldManager().getRootFolders().stream()
-                        .anyMatch(folder -> folder.getName().equalsIgnoreCase(folderName))) {
+                if (plugin.getWorldManager().getFolderStorage().folderExists(folderName)) {
                     Messages.sendMessage(player, "folder_already_exists");
                     return;
                 }
@@ -98,7 +97,8 @@ public class WorldsInventory extends FilteredWorldsInventory {
                 Folder newFolder = new Folder(folderName);
                 plugin.getWorldManager().addFolder(newFolder);
                 Messages.sendMessage(player, "folder_created",
-                        new AbstractMap.SimpleEntry<>("%folder%", folderName));
+                        new AbstractMap.SimpleEntry<>("%folder%", folderName)
+                );
                 openInventory(player);
             });
         }
