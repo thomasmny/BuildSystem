@@ -18,13 +18,10 @@
 package de.eintosti.buildsystem.tabcomplete;
 
 import com.google.common.collect.Lists;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldService;
-import de.eintosti.buildsystem.world.builder.Builder;
-import de.eintosti.buildsystem.world.data.WorldType;
-import de.eintosti.buildsystem.world.generator.Generator;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,9 +40,9 @@ import org.jetbrains.annotations.NotNull;
 
 public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
 
-    private final WorldService worldService;
+    private final WorldServiceImpl worldService;
 
-    public WorldsTabComplete(BuildSystem plugin) {
+    public WorldsTabComplete(BuildSystemPlugin plugin) {
         this.worldService = plugin.getWorldService();
         plugin.getCommand("worlds").setTabCompleter(this);
     }

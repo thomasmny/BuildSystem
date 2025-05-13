@@ -20,7 +20,7 @@ package de.eintosti.buildsystem.player;
 import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.version.customblocks.CustomBlock;
@@ -36,9 +36,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class BlocksInventory implements Listener {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
-    public BlocksInventory(BuildSystem plugin) {
+    public BlocksInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }

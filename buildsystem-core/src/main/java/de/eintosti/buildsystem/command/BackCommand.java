@@ -18,10 +18,13 @@
 package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.player.BuildPlayer;
-import de.eintosti.buildsystem.player.PlayerManager;
+import de.eintosti.buildsystem.api.player.BuildPlayer;
+import de.eintosti.buildsystem.api.storage.PlayerStorage;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.player.BuildPlayerImpl;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import io.papermc.lib.PaperLib;
 import java.util.UUID;
 import org.bukkit.Location;
@@ -33,12 +36,12 @@ import org.jetbrains.annotations.NotNull;
 
 public class BackCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
-    private final PlayerManager playerManager;
+    private final BuildSystemPlugin plugin;
+    private final PlayerStorage playerStorage;
 
-    public BackCommand(BuildSystem plugin) {
+    public BackCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.playerManager = plugin.getPlayerManager();
+        this.playerStorage = plugin.getPlayerService().getPlayerStorage();
         plugin.getCommand("back").setExecutor(this);
     }
 
@@ -66,7 +69,7 @@ public class BackCommand implements CommandExecutor {
 
     private void teleportBack(Player player) {
         UUID playerUuid = player.getUniqueId();
-        BuildPlayer buildPlayer = playerManager.getBuildPlayer(playerUuid);
+        BuildPlayer buildPlayer = playerStorage.getBuildPlayer(playerUuid);
         Location previousLocation = buildPlayer.getPreviousLocation();
 
         if (previousLocation == null) {

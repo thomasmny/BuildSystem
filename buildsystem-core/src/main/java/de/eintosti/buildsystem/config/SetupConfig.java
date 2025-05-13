@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.config;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -30,7 +30,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class SetupConfig extends ConfigurationFile {
 
-    public SetupConfig(BuildSystem plugin) {
+    public SetupConfig(BuildSystemPlugin plugin) {
         super(plugin, "setup.yml");
     }
 

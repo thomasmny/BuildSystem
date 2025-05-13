@@ -17,13 +17,15 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.util.EntityAIManager;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.data.WorldData;
-import de.eintosti.buildsystem.world.storage.WorldStorage;
-import de.eintosti.buildsystem.world.util.WorldPermissions;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.data.WorldDataImpl;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.AbstractMap;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -37,10 +39,10 @@ import org.jetbrains.annotations.NotNull;
 
 public class NoAICommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
-    private final WorldStorage worldStorage;
+    private final BuildSystemPlugin plugin;
+    private final WorldStorageImpl worldStorage;
 
-    public NoAICommand(BuildSystem plugin) {
+    public NoAICommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getCommand("noai").setExecutor(this);
@@ -56,7 +58,7 @@ public class NoAICommand implements CommandExecutor {
         Player player = (Player) sender;
         String worldName = args.length == 0 ? player.getWorld().getName() : args[0];
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
-        if (!WorldPermissions.of(buildWorld).canPerformCommand(player, "buildsystem.noai")) {
+        if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, "buildsystem.noai")) {
             plugin.sendPermissionMessage(player);
             return true;
         }

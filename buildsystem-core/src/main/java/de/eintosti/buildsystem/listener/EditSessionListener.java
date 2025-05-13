@@ -23,22 +23,21 @@ import com.sk89q.worldedit.event.extent.EditSessionEvent;
 import com.sk89q.worldedit.extension.platform.Actor;
 import com.sk89q.worldedit.extent.NullExtent;
 import com.sk89q.worldedit.util.eventbus.Subscribe;
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldService;
-import de.eintosti.buildsystem.world.builder.Builders;
-import de.eintosti.buildsystem.world.data.WorldStatus;
-import de.eintosti.buildsystem.world.storage.WorldStorage;
-import de.eintosti.buildsystem.world.util.WorldPermissions;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 
 public class EditSessionListener implements Listener {
 
-    private final WorldStorage worldStorage;
+    private final WorldStorageImpl worldStorage;
 
-    public EditSessionListener(BuildSystem plugin) {
+    public EditSessionListener(BuildSystemPlugin plugin) {
         this.worldStorage = plugin.getWorldService().getWorldStorage();
         WorldEdit.getInstance().getEventBus().register(this);
     }
@@ -78,11 +77,11 @@ public class EditSessionListener implements Listener {
      * @return {@code true} if the edit was cancelled, otherwise {@code false}
      */
     private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, EditSessionEvent event) {
-        if (WorldPermissions.of(buildWorld).canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.archive")) {
+        if (WorldPermissionsImpl.of(buildWorld).canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.archive")) {
             return false;
         }
 
-        if (buildWorld.getData().status().get() == WorldStatus.ARCHIVE) {
+        if (buildWorld.getData().status().get() == BuildWorldStatus.ARCHIVE) {
             event.setExtent(new NullExtent());
             return true;
         }
@@ -99,7 +98,7 @@ public class EditSessionListener implements Listener {
      * @return {@code true} if the edit was cancelled, otherwise {@code false}
      */
     private boolean disableNonBuilders(BuildWorld buildWorld, Player player, EditSessionEvent event) {
-        if (WorldPermissions.of(buildWorld).canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.builders")) {
+        if (WorldPermissionsImpl.of(buildWorld).canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.builders")) {
             return false;
         }
 

@@ -19,11 +19,10 @@ package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.inventory.XInventoryView;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.data.WorldStatus;
-import de.eintosti.buildsystem.world.data.WorldType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -33,10 +32,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class InventoryCloseListener implements Listener {
 
-    private final InventoryUtils inventoryUtils;
-
-    public InventoryCloseListener(BuildSystem plugin) {
-        this.inventoryUtils = plugin.getInventoryUtil();
+    public InventoryCloseListener(BuildSystemPlugin plugin) {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -56,15 +52,15 @@ public class InventoryCloseListener implements Listener {
         ItemStack endCreateItem = inventory.getItem(14);
         ItemStack voidCreateItem = inventory.getItem(15);
 
-        inventoryUtils.setCreateItem(WorldType.NORMAL,
+        InventoryUtils.setCreateItem(BuildWorldType.NORMAL,
                 normalCreateItem != null ? XMaterial.matchXMaterial(normalCreateItem) : null);
-        inventoryUtils.setCreateItem(WorldType.FLAT,
+        InventoryUtils.setCreateItem(BuildWorldType.FLAT,
                 flatCreateItem != null ? XMaterial.matchXMaterial(flatCreateItem) : null);
-        inventoryUtils.setCreateItem(WorldType.NETHER,
+        InventoryUtils.setCreateItem(BuildWorldType.NETHER,
                 netherCreateItem != null ? XMaterial.matchXMaterial(netherCreateItem) : null);
-        inventoryUtils.setCreateItem(WorldType.END,
+        InventoryUtils.setCreateItem(BuildWorldType.END,
                 endCreateItem != null ? XMaterial.matchXMaterial(endCreateItem) : null);
-        inventoryUtils.setCreateItem(WorldType.VOID,
+        InventoryUtils.setCreateItem(BuildWorldType.VOID,
                 voidCreateItem != null ? XMaterial.matchXMaterial(voidCreateItem) : null);
 
         ItemStack normalDefaultItem = inventory.getItem(20);
@@ -74,17 +70,17 @@ public class InventoryCloseListener implements Listener {
         ItemStack voidDefaultItem = inventory.getItem(24);
         ItemStack importedDefaultItem = inventory.getItem(25);
 
-        inventoryUtils.setDefaultItem(WorldType.NORMAL,
+        InventoryUtils.setDefaultItem(BuildWorldType.NORMAL,
                 normalDefaultItem != null ? XMaterial.matchXMaterial(normalDefaultItem) : null);
-        inventoryUtils.setDefaultItem(WorldType.FLAT,
+        InventoryUtils.setDefaultItem(BuildWorldType.FLAT,
                 flatDefaultItem != null ? XMaterial.matchXMaterial(flatDefaultItem) : null);
-        inventoryUtils.setDefaultItem(WorldType.NETHER,
+        InventoryUtils.setDefaultItem(BuildWorldType.NETHER,
                 netherDefaultItem != null ? XMaterial.matchXMaterial(netherDefaultItem) : null);
-        inventoryUtils.setDefaultItem(WorldType.END,
+        InventoryUtils.setDefaultItem(BuildWorldType.END,
                 endDefaultItem != null ? XMaterial.matchXMaterial(endDefaultItem) : null);
-        inventoryUtils.setDefaultItem(WorldType.VOID,
+        InventoryUtils.setDefaultItem(BuildWorldType.VOID,
                 voidDefaultItem != null ? XMaterial.matchXMaterial(voidDefaultItem) : null);
-        inventoryUtils.setDefaultItem(WorldType.IMPORTED,
+        InventoryUtils.setDefaultItem(BuildWorldType.IMPORTED,
                 importedDefaultItem != null ? XMaterial.matchXMaterial(importedDefaultItem) : null);
 
         ItemStack notStartedStatusItem = inventory.getItem(29);
@@ -94,17 +90,17 @@ public class InventoryCloseListener implements Listener {
         ItemStack archiveStatusItem = inventory.getItem(33);
         ItemStack hiddenStatusItem = inventory.getItem(34);
 
-        inventoryUtils.setStatusItem(WorldStatus.NOT_STARTED,
+        InventoryUtils.setStatusItem(WorldStatus.NOT_STARTED,
                 notStartedStatusItem != null ? XMaterial.matchXMaterial(notStartedStatusItem) : null);
-        inventoryUtils.setStatusItem(WorldStatus.IN_PROGRESS,
+        InventoryUtils.setStatusItem(WorldStatus.IN_PROGRESS,
                 inProgressStatusItem != null ? XMaterial.matchXMaterial(inProgressStatusItem) : null);
-        inventoryUtils.setStatusItem(WorldStatus.ALMOST_FINISHED,
+        InventoryUtils.setStatusItem(WorldStatus.ALMOST_FINISHED,
                 almostFinishedStatusItem != null ? XMaterial.matchXMaterial(almostFinishedStatusItem) : null);
-        inventoryUtils.setStatusItem(WorldStatus.FINISHED,
+        InventoryUtils.setStatusItem(WorldStatus.FINISHED,
                 finishedStatusItem != null ? XMaterial.matchXMaterial(finishedStatusItem) : null);
-        inventoryUtils.setStatusItem(WorldStatus.ARCHIVE,
+        InventoryUtils.setStatusItem(WorldStatus.ARCHIVE,
                 archiveStatusItem != null ? XMaterial.matchXMaterial(archiveStatusItem) : null);
-        inventoryUtils.setStatusItem(WorldStatus.HIDDEN,
+        InventoryUtils.setStatusItem(WorldStatus.HIDDEN,
                 hiddenStatusItem != null ? XMaterial.matchXMaterial(hiddenStatusItem) : null);
     }
 }
