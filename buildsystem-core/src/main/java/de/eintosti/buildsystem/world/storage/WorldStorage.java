@@ -109,26 +109,40 @@ public abstract class WorldStorage implements Storage<BuildWorld> {
     }
 
     /**
-     * Checks if a world exists in the {@link BuildWorld} map.
+     * Checks if a {@link BuildWorld} with the given name (case-insensitive) exists.
      *
      * @param worldName The name of the world to check
-     * @return {@code true} if the world exists in the map, {@code false} otherwise
+     * @return {@code true} if the world exists, {@code false} otherwise
      */
     public boolean worldExists(String worldName) {
         return worldExists(worldName, false);
     }
 
     /**
+     * Checks if a {@link BuildWorld} with the given name exists.
+     *
+     * @param worldName     The name of the world to check
+     * @param caseSensitive Whether to check the name case-sensitive or not
+     * @return {@code true} if the world exists, {@code false} otherwise
+     */
+    public boolean worldExists(String worldName, boolean caseSensitive) {
+        if (caseSensitive) {
+            return buildWorlds.containsKey(worldName);
+        } else {
+            return buildWorlds.keySet().stream().anyMatch(name -> name.equalsIgnoreCase(worldName));
+        }
+    }
+
+    /**
      * Checks if a world exists in the {@link BuildWorld} map and optionally checks if the world folder exists on disk.
      *
-     * @param worldName   The name of the world to check
-     * @param checkFolder Whether to check if the world folder exists on disk
+     * @param worldName The name of the world to check
      * @return {@code true} if the world exists in the map or on disk, {@code false} otherwise
      */
-    public boolean worldExists(String worldName, boolean checkFolder) {
+    public boolean worldAndFolderExist(String worldName) {
         boolean worldExists = this.buildWorlds.containsKey(worldName);
-        if (!worldExists || !checkFolder) {
-            return worldExists;
+        if (!worldExists) {
+            return false;
         }
 
         File worldFile = new File(Bukkit.getWorldContainer(), worldName);

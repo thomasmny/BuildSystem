@@ -20,7 +20,7 @@ package de.eintosti.buildsystem.expansion.placeholderapi;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.player.settings.Settings;
-import de.eintosti.buildsystem.settings.SettingsManager;
+import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldManager;
 import de.eintosti.buildsystem.world.data.WorldData;

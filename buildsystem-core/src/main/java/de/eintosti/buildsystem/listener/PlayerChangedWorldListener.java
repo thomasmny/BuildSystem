@@ -24,11 +24,11 @@ import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.PlayerManager;
-import de.eintosti.buildsystem.settings.SettingsManager;
+import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
 import de.eintosti.buildsystem.world.data.WorldStatus;
 import de.eintosti.buildsystem.world.data.WorldType;
+import de.eintosti.buildsystem.world.storage.WorldStorage;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,7 +53,7 @@ public class PlayerChangedWorldListener implements Listener {
     private final ArmorStandManager armorStandManager;
     private final PlayerManager playerManager;
     private final SettingsManager settingsManager;
-    private final WorldManager worldManager;
+    private final WorldStorage worldStorage;
 
     private final Map<UUID, GameMode> playerGamemode;
     private final Map<UUID, ItemStack[]> playerInventory;
@@ -65,7 +65,7 @@ public class PlayerChangedWorldListener implements Listener {
         this.armorStandManager = plugin.getArmorStandManager();
         this.playerManager = plugin.getPlayerManager();
         this.settingsManager = plugin.getSettingsManager();
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldManager().getWorldStorage();
 
         this.playerGamemode = new HashMap<>();
         this.playerInventory = new HashMap<>();
@@ -81,14 +81,13 @@ public class PlayerChangedWorldListener implements Listener {
 
         event.getPlayer().setAllowFlight(true);
 
-        BuildWorld oldWorld = worldManager.getBuildWorld(event.getFrom().getName());
+        BuildWorld oldWorld = worldStorage.getBuildWorld(event.getFrom());
         if (oldWorld != null && configValues.isUnloadWorlds()) {
             oldWorld.resetUnloadTask();
         }
 
-        BuildWorld newWorld = worldManager.getBuildWorld(worldName);
-        if (newWorld != null && !newWorld.getData().physics().get()
-                && player.hasPermission("buildsystem.physics.message")) {
+        BuildWorld newWorld = worldStorage.getBuildWorld(worldName);
+        if (newWorld != null && !newWorld.getData().physics().get() && player.hasPermission("buildsystem.physics.message")) {
             Messages.sendMessage(player, "physics_deactivated_in_world", new AbstractMap.SimpleEntry<>("%world%", newWorld.getName()));
         }
 
@@ -140,8 +139,7 @@ public class PlayerChangedWorldListener implements Listener {
 
     @SuppressWarnings("deprecation")
     private void checkWorldStatus(Player player) {
-        String worldName = player.getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
         if (buildWorld == null) {
             return;
         }

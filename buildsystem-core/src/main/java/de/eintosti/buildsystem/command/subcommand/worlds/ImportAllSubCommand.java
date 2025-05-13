@@ -70,7 +70,7 @@ public class ImportAllSubCommand implements SubCommand {
                 return false;
             }
 
-            return worldManager.getBuildWorld(name) == null;
+            return !worldManager.getWorldStorage().worldExists(name);
         });
 
         if (directories == null || directories.length == 0) {
