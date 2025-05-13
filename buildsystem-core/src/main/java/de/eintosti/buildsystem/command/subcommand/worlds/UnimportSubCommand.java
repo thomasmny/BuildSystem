@@ -34,7 +34,7 @@ public class UnimportSubCommand implements SubCommand {
 
     public UnimportSubCommand(BuildSystem plugin, String worldName) {
         this.plugin = plugin;
-        this.buildWorld = plugin.getWorldManager().getWorldStorage().getBuildWorld(worldName);
+        this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
     }
 
     @Override
@@ -54,7 +54,7 @@ public class UnimportSubCommand implements SubCommand {
             return;
         }
 
-        plugin.getWorldManager().unimportWorld(player, buildWorld, true);
+        plugin.getWorldService().unimportWorld(player, buildWorld, true);
         Messages.sendMessage(player, "worlds_unimport_finished",
                 new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName())
         );

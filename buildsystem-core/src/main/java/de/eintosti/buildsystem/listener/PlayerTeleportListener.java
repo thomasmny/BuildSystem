@@ -21,7 +21,9 @@ import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.player.PlayerManager;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.WorldService;
+import de.eintosti.buildsystem.world.storage.WorldStorage;
+import de.eintosti.buildsystem.world.util.WorldPermissions;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -33,11 +35,11 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 public class PlayerTeleportListener implements Listener {
 
     private final PlayerManager playerManager;
-    private final WorldManager worldManager;
+    private final WorldStorage worldStorage;
 
     public PlayerTeleportListener(BuildSystem plugin) {
         this.playerManager = plugin.getPlayerManager();
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -59,17 +61,19 @@ public class PlayerTeleportListener implements Listener {
             return;
         }
 
-        String worldName = to.getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(toWorld);
         if (buildWorld == null) {
             return;
         }
 
-        if (!Bukkit.getWorlds().get(0).equals(Bukkit.getWorld(worldName))) {
-            if (!worldManager.canEnter(player, buildWorld)) {
-                Messages.sendMessage(player, "worlds_tp_entry_forbidden");
-                event.setCancelled(true);
-            }
+        // Users can always teleport to the main server world
+        if (Bukkit.getWorlds().get(0).equals(toWorld)) {
+            return;
+        }
+
+        if (!WorldPermissions.of(buildWorld).canEnter(player)) {
+            Messages.sendMessage(player, "worlds_tp_entry_forbidden");
+            event.setCancelled(true);
         }
     }
 }

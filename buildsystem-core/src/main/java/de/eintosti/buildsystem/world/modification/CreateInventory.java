@@ -26,7 +26,7 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.navigator.inventory.FilteredWorldsInventory.Visibility;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.PaginatedInventory;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.WorldService;
 import de.eintosti.buildsystem.world.data.WorldType;
 import java.io.File;
 import java.io.FileFilter;
@@ -46,7 +46,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
     private static final int MAX_TEMPLATES = 5;
 
     private final BuildSystem plugin;
-    private final WorldManager worldManager;
+    private final WorldService worldService;
     private final InventoryUtils inventoryUtils;
 
     private int numTemplates = 0;
@@ -56,7 +56,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
     public CreateInventory(BuildSystem plugin) {
         this.plugin = plugin;
         this.inventoryUtils = plugin.getInventoryUtil();
-        this.worldManager = plugin.getWorldManager();
+        this.worldService = plugin.getWorldService();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -101,7 +101,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
 
     private void addPageItem(Inventory inventory, Page currentPage, Page page, ItemStack itemStack) {
         if (currentPage == page) {
-            itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.getEnchant(), 1);
+            itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.get(), 1);
         }
         inventory.setItem(page.getSlot(), itemStack);
     }
@@ -236,14 +236,14 @@ public class CreateInventory extends PaginatedInventory implements Listener {
                     return;
                 }
 
-                worldManager.startWorldNameInput(player, worldType, null, createPrivateWorld);
+                worldService.startWorldNameInput(player, worldType, null, createPrivateWorld);
                 XSound.ENTITY_CHICKEN_EGG.play(player);
                 break;
             }
 
             case GENERATOR: {
                 if (slot == 31) {
-                    worldManager.startWorldNameInput(player, WorldType.CUSTOM, null, createPrivateWorld);
+                    worldService.startWorldNameInput(player, WorldType.CUSTOM, null, createPrivateWorld);
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                 }
                 break;
@@ -258,7 +258,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
                 XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
                 switch (xMaterial) {
                     case FILLED_MAP:
-                        worldManager.startWorldNameInput(player, WorldType.TEMPLATE, itemStack.getItemMeta()
+                        worldService.startWorldNameInput(player, WorldType.TEMPLATE, itemStack.getItemMeta()
                                 .getDisplayName(), createPrivateWorld);
                         break;
                     case PLAYER_HEAD:
@@ -291,7 +291,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         public static Page getCurrentPage(Inventory inventory) {
             for (Page page : Page.values()) {
                 ItemStack itemStack = inventory.getItem(page.getSlot());
-                if (itemStack != null && itemStack.containsEnchantment(XEnchantment.UNBREAKING.getEnchant())) {
+                if (itemStack != null && itemStack.containsEnchantment(XEnchantment.UNBREAKING.get())) {
                     return page;
                 }
             }

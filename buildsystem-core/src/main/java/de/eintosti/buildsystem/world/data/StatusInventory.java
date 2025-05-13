@@ -101,7 +101,7 @@ public class StatusInventory implements Listener {
 
         BuildWorld cachedWorld = playerManager.getBuildPlayer(player).getCachedWorld();
         if (cachedWorld != null && cachedWorld.getData().status().get() == status) {
-            itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.getEnchant(), 1);
+            itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.get(), 1);
         }
 
         inventory.setItem(position, itemStack);
