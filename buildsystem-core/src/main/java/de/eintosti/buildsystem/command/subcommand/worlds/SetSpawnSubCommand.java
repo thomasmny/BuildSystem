@@ -17,29 +17,30 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.util.WorldPermissions;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.AbstractMap;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public class SetSpawnSubCommand implements SubCommand {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
-    public SetSpawnSubCommand(BuildSystem plugin) {
+    public SetSpawnSubCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
     }
 
     @Override
     public void execute(Player player, String[] args) {
         BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld());
-        if (!WorldPermissions.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
+        if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
             plugin.sendPermissionMessage(player);
             return;
         }

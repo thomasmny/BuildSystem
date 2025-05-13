@@ -17,13 +17,13 @@
  */
 package de.eintosti.buildsystem.listener;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.player.BuildPlayer;
-import de.eintosti.buildsystem.player.CachedValues;
-import de.eintosti.buildsystem.player.LogoutLocation;
-import de.eintosti.buildsystem.player.PlayerManager;
-import de.eintosti.buildsystem.player.settings.Settings;
+import de.eintosti.buildsystem.player.BuildPlayerImpl;
+import de.eintosti.buildsystem.player.CachedValuesImpl;
+import de.eintosti.buildsystem.player.LogoutLocationImpl;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import java.util.AbstractMap;
 import org.bukkit.Bukkit;
@@ -35,13 +35,13 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class PlayerQuitListener implements Listener {
 
-    private final BuildSystem plugin;
-    private final PlayerManager playerManager;
+    private final BuildSystemPlugin plugin;
+    private final PlayerServiceImpl playerManager;
     private final SettingsManager settingsManager;
 
-    public PlayerQuitListener(BuildSystem plugin) {
+    public PlayerQuitListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.playerManager = plugin.getPlayerManager();
+        this.playerManager = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -60,7 +60,7 @@ public class PlayerQuitListener implements Listener {
         Player player = event.getPlayer();
         playerManager.closeNavigator(player);
 
-        Settings settings = settingsManager.getSettings(player);
+        SettingsImpl settings = settingsManager.getSettings(player);
         if (settings.isNoClip()) {
             plugin.getNoClipManager().stopNoClip(player.getUniqueId());
         }
@@ -73,13 +73,13 @@ public class PlayerQuitListener implements Listener {
             player.getInventory().clear();
         }
 
-        BuildPlayer buildPlayer = playerManager.getBuildPlayer(player);
-        buildPlayer.setLogoutLocation(new LogoutLocation(
+        BuildPlayerImpl buildPlayer = playerManager.getBuildPlayer(player);
+        buildPlayer.setLogoutLocation(new LogoutLocationImpl(
                 player.getWorld().getName(),
                 player.getLocation()
         ));
 
-        CachedValues cachedValues = buildPlayer.getCachedValues();
+        CachedValuesImpl cachedValues = buildPlayer.getCachedValues();
         cachedValues.resetGameModeIfPresent(player);
         cachedValues.resetInventoryIfPresent(player);
         playerManager.getBuildModePlayers().remove(player.getUniqueId());

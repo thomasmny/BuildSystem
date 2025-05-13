@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.navigator;
 
 import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.navigator.settings.NavigatorInventoryType;
+import de.eintosti.buildsystem.api.navigator.settings.NavigatorInventoryType;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;

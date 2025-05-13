@@ -17,11 +17,13 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.util.WorldPermissions;
 import de.eintosti.buildsystem.config.ConfigValues;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.util.WorldPermissions;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.AbstractMap;
 import java.util.Locale;
 import org.bukkit.Bukkit;
@@ -34,10 +36,10 @@ import org.jetbrains.annotations.NotNull;
 
 public class TimeCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final ConfigValues configValues;
 
-    public TimeCommand(BuildSystem plugin) {
+    public TimeCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
         plugin.getCommand("day").setExecutor(this);
@@ -60,7 +62,7 @@ public class TimeCommand implements CommandExecutor {
         }
 
         BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(world);
-        WorldPermissions permissions = WorldPermissions.of(buildWorld);
+        WorldPermissions permissions = WorldPermissionsImpl.of(buildWorld);
 
         switch (label.toLowerCase(Locale.ROOT)) {
             case "day": {

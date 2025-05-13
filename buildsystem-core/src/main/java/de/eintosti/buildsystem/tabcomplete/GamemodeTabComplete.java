@@ -17,7 +17,7 @@
  */
 package de.eintosti.buildsystem.tabcomplete;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +32,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class GamemodeTabComplete extends ArgumentSorter implements TabCompleter {
 
-    public GamemodeTabComplete(BuildSystem plugin) {
+    public GamemodeTabComplete(BuildSystemPlugin plugin) {
         plugin.getCommand("gamemode").setTabCompleter(this);
     }
 

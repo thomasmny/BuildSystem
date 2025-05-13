@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.player.settings;
 
 import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import org.bukkit.Bukkit;
@@ -34,9 +34,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class DesignInventory implements Listener {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
-    public DesignInventory(BuildSystem plugin) {
+    public DesignInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -81,7 +81,7 @@ public class DesignInventory implements Listener {
 
     private void setItem(Player player, Inventory inventory, int position, XMaterial material, String key, DesignColor color) {
         SettingsManager settingsManager = plugin.getSettingsManager();
-        Settings settings = settingsManager.getSettings(player);
+        SettingsImpl settings = settingsManager.getSettings(player);
 
         String displayName = Messages.getString(key, player);
         ItemStack itemStack = InventoryUtils.createItem(material,
@@ -106,7 +106,7 @@ public class DesignInventory implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        Settings settings = plugin.getSettingsManager().getSettings(player);
+        SettingsImpl settings = plugin.getSettingsManager().getSettings(player);
         ItemStack itemStack = event.getCurrentItem();
         if (itemStack.getType().toString().contains("STAINED_GLASS_PANE")) {
             plugin.getSettingsInventory().openInventory(player);

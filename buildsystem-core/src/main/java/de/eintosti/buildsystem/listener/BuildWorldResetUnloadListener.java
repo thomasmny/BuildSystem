@@ -17,10 +17,10 @@
  */
 package de.eintosti.buildsystem.listener;
 
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldService;
-import de.eintosti.buildsystem.world.storage.WorldStorage;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -29,9 +29,9 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class BuildWorldResetUnloadListener implements Listener {
 
-    private final WorldStorage worldStorage;
+    private final WorldStorageImpl worldStorage;
 
-    public BuildWorldResetUnloadListener(BuildSystem plugin) {
+    public BuildWorldResetUnloadListener(BuildSystemPlugin plugin) {
         this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }

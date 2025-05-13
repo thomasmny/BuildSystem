@@ -20,22 +20,20 @@ package de.eintosti.buildsystem.navigator.inventory;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.navigator.settings.WorldDisplay;
-import de.eintosti.buildsystem.navigator.settings.WorldFilter;
-import de.eintosti.buildsystem.navigator.settings.WorldSort;
-import de.eintosti.buildsystem.player.settings.Settings;
+import de.eintosti.buildsystem.navigator.settings.WorldDisplayImpl;
+import de.eintosti.buildsystem.navigator.settings.WorldFilterImpl;
+import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.PaginatedInventory;
 import de.eintosti.buildsystem.util.PlayerChatInput;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldService;
-import de.eintosti.buildsystem.world.data.WorldData;
-import de.eintosti.buildsystem.world.data.WorldStatus;
-import de.eintosti.buildsystem.world.modification.CreateInventory;
-import de.eintosti.buildsystem.world.util.WorldPermissions;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
+import de.eintosti.buildsystem.world.data.WorldDataImpl;
+import de.eintosti.buildsystem.world.creation.CreateInventory;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,16 +50,16 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
 
     private static final int MAX_WORLDS = 36;
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final SettingsManager settingsManager;
-    private final WorldService worldService;
+    private final WorldServiceImpl worldService;
 
     private final String inventoryName;
     private final String noWorldsText;
     private final Visibility visibility;
     private final Set<WorldStatus> validStatus;
 
-    public FilteredWorldsInventory(BuildSystem plugin, String inventoryName, String noWorldsText, Visibility visibility, Set<WorldStatus> validStatus) {
+    public FilteredWorldsInventory(BuildSystemPlugin plugin, String inventoryName, String noWorldsText, Visibility visibility, Set<WorldStatus> validStatus) {
         this.plugin = plugin;
         this.settingsManager = plugin.getSettingsManager();
         this.worldService = plugin.getWorldService();
@@ -152,14 +150,14 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
     }
 
     private void addWorldSortItem(Inventory inventory, Player player) {
-        Settings settings = settingsManager.getSettings(player);
+        SettingsImpl settings = settingsManager.getSettings(player);
         WorldSort worldSort = settings.getWorldDisplay().getWorldSort();
         inventory.setItem(45, InventoryUtils.createItem(XMaterial.BOOK, Messages.getString("world_sort_title", player), worldSort.getItemLore(player)));
     }
 
     private void addWorldFilterItem(Inventory inventory, Player player) {
-        Settings settings = settingsManager.getSettings(player);
-        WorldFilter worldFilter = settings.getWorldDisplay().getWorldFilter();
+        SettingsImpl settings = settingsManager.getSettings(player);
+        WorldFilterImpl worldFilter = settings.getWorldDisplay().getWorldFilter();
 
         List<String> lore = new ArrayList<>();
         lore.add(Messages.getString(worldFilter.getMode().getLoreKey(), player, new AbstractMap.SimpleEntry<>("%text%", worldFilter.getText())));
@@ -184,7 +182,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
      * @return {@code true} if the world should be shown to the player in the navigator, {@code false} otherwise
      */
     private boolean isValidWorld(Player player, BuildWorld buildWorld) {
-        WorldData worldData = buildWorld.getData();
+        WorldDataImpl worldData = buildWorld.getData();
         if (!worldService.isCorrectVisibility(worldData.privateWorld().get(), visibility)) {
             return false;
         }
@@ -193,7 +191,7 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
             return false;
         }
 
-        if (!WorldPermissions.of(buildWorld).canEnter(player)) {
+        if (!WorldPermissionsImpl.of(buildWorld).canEnter(player)) {
             return false;
         }
 
@@ -212,8 +210,8 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         }
 
         Player player = (Player) event.getWhoClicked();
-        Settings settings = settingsManager.getSettings(player);
-        WorldDisplay worldDisplay = settings.getWorldDisplay();
+        SettingsImpl settings = settingsManager.getSettings(player);
+        WorldDisplayImpl worldDisplay = settings.getWorldDisplay();
 
         switch (event.getSlot()) {
             case 45:
@@ -224,10 +222,10 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
                 openInventory(player);
                 return;
             case 46:
-                WorldFilter worldFilter = worldDisplay.getWorldFilter();
-                WorldFilter.Mode currentMode = worldFilter.getMode();
+                WorldFilterImpl worldFilter = worldDisplay.getWorldFilter();
+                WorldFilterImpl.Mode currentMode = worldFilter.getMode();
                 if (event.isShiftClick()) {
-                    worldFilter.setMode(WorldFilter.Mode.NONE);
+                    worldFilter.setMode(WorldFilterImpl.Mode.NONE);
                     worldFilter.setText("");
                     setInvIndex(player, 0);
                     openInventory(player);
@@ -263,24 +261,5 @@ public class FilteredWorldsInventory extends PaginatedInventory implements Liste
         }
 
         InventoryUtils.manageInventoryClick(event, player, itemStack);
-    }
-
-    /**
-     * The visibility settings for a {@link BuildWorld}.
-     */
-    public enum Visibility {
-        PRIVATE,
-        PUBLIC,
-        IGNORE;
-
-        /**
-         * Matches the visibility based on whether the world is private.
-         *
-         * @param isPrivateWorld Whether the world is private
-         * @return The corresponding visibility
-         */
-        public static Visibility matchVisibility(boolean isPrivateWorld) {
-            return isPrivateWorld ? PRIVATE : PUBLIC;
-        }
     }
 }

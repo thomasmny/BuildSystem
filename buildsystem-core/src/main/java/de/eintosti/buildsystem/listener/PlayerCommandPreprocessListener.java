@@ -18,18 +18,16 @@
 package de.eintosti.buildsystem.listener;
 
 import com.google.common.collect.Sets;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldService;
-import de.eintosti.buildsystem.world.builder.Builders;
-import de.eintosti.buildsystem.world.data.WorldStatus;
-import de.eintosti.buildsystem.world.storage.WorldStorage;
-import de.eintosti.buildsystem.world.util.WorldPermissions;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.builder.BuildersImpl;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.List;
 import java.util.Set;
 import org.bukkit.Bukkit;
@@ -219,12 +217,12 @@ public class PlayerCommandPreprocessListener implements Listener {
             "/vr--"
     );
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final ConfigValues configValues;
     private final SettingsManager settingsManager;
-    private final WorldStorage worldStorage;
+    private final WorldStorageImpl worldStorage;
 
-    public PlayerCommandPreprocessListener(BuildSystem plugin) {
+    public PlayerCommandPreprocessListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
 
@@ -277,7 +275,7 @@ public class PlayerCommandPreprocessListener implements Listener {
     }
 
     private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
-        if (WorldPermissions.of(buildWorld).canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.archive")) {
+        if (WorldPermissionsImpl.of(buildWorld).canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.archive")) {
             return false;
         }
 
@@ -290,11 +288,11 @@ public class PlayerCommandPreprocessListener implements Listener {
     }
 
     private void checkBuilders(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
-        if (WorldPermissions.of(buildWorld).canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.builders")) {
+        if (WorldPermissionsImpl.of(buildWorld).canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.builders")) {
             return;
         }
 
-        Builders builders = buildWorld.getBuilders();
+        BuildersImpl builders = buildWorld.getBuilders();
         if (builders.isCreator(player)) {
             return;
         }

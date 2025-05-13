@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import java.util.AbstractMap;
@@ -30,9 +30,9 @@ import org.jetbrains.annotations.NotNull;
 
 public class SkullCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
-    public SkullCommand(BuildSystem plugin) {
+    public SkullCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         plugin.getCommand("skull").setExecutor(this);
     }

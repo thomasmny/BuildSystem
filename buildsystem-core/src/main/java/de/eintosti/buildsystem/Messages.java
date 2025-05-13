@@ -42,7 +42,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class Messages {
 
-    private static final BuildSystem PLUGIN = JavaPlugin.getPlugin(BuildSystem.class);
+    private static final BuildSystemPlugin PLUGIN = JavaPlugin.getPlugin(BuildSystemPlugin.class);
     private static final Map<String, String> MESSAGES = new HashMap<>();
     private static final boolean PLACEHOLDER_API_ENABLED = Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null;
 

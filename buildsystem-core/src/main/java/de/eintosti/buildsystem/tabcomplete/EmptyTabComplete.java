@@ -17,7 +17,7 @@
  */
 package de.eintosti.buildsystem.tabcomplete;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.command.Command;
@@ -32,7 +32,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class EmptyTabComplete implements TabCompleter {
 
-    public EmptyTabComplete(BuildSystem plugin) {
+    public EmptyTabComplete(BuildSystemPlugin plugin) {
         plugin.getCommand("back").setTabCompleter(this);
         plugin.getCommand("blocks").setTabCompleter(this);
         plugin.getCommand("buildsystem").setTabCompleter(this);

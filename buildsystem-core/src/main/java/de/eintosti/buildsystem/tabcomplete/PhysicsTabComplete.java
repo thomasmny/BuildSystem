@@ -17,8 +17,8 @@
  */
 package de.eintosti.buildsystem.tabcomplete;
 
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.WorldService;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.command.Command;
@@ -29,9 +29,9 @@ import org.jetbrains.annotations.NotNull;
 
 public class PhysicsTabComplete extends ArgumentSorter implements TabCompleter {
 
-    private final WorldService worldService;
+    private final WorldServiceImpl worldService;
 
-    public PhysicsTabComplete(BuildSystem plugin) {
+    public PhysicsTabComplete(BuildSystemPlugin plugin) {
         this.worldService = plugin.getWorldService();
         plugin.getCommand("physics").setTabCompleter(this);
     }
