@@ -41,7 +41,7 @@ public class SpawnCommand implements CommandExecutor {
     public SpawnCommand(BuildSystem plugin) {
         this.plugin = plugin;
         this.spawnManager = plugin.getSpawnManager();
-        this.worldStorage = plugin.getWorldManager().getWorldStorage();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getCommand("spawn").setExecutor(this);
     }
 

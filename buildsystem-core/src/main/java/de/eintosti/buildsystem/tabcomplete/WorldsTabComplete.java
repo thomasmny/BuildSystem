@@ -21,7 +21,7 @@ import com.google.common.collect.Lists;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.WorldService;
 import de.eintosti.buildsystem.world.builder.Builder;
 import de.eintosti.buildsystem.world.data.WorldType;
 import de.eintosti.buildsystem.world.generator.Generator;
@@ -43,10 +43,10 @@ import org.jetbrains.annotations.NotNull;
 
 public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
 
-    private final WorldManager worldManager;
+    private final WorldService worldService;
 
     public WorldsTabComplete(BuildSystem plugin) {
-        this.worldManager = plugin.getWorldManager();
+        this.worldService = plugin.getWorldService();
         plugin.getCommand("worlds").setTabCompleter(this);
     }
 
@@ -85,26 +85,26 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                     case "setstatus":
                     case "tp":
                     case "unimport": {
-                        worldManager.getBuildWorlds().stream()
+                        worldService.getBuildWorlds().stream()
                                 .filter(world -> player.hasPermission(world.getData().permission().get())
                                         || world.getData()
                                         .permission().get().equalsIgnoreCase("-"))
-                                .filter(world -> worldManager.isPermitted(player,
+                                .filter(world -> worldService.isPermitted(player,
                                         "buildsystem." + args[0].toLowerCase(Locale.ROOT), world.getName()))
                                 .forEach(world -> addArgument(args[1], world.getName(), arrayList));
                         break;
                     }
 
                     case "delete": {
-                        worldManager.getBuildWorlds().stream()
-                                .filter(world -> worldManager.isPermitted(player,
+                        worldService.getBuildWorlds().stream()
+                                .filter(world -> worldService.isPermitted(player,
                                         "buildsystem." + args[0].toLowerCase(Locale.ROOT), world.getName()))
                                 .forEach(world -> addArgument(args[1], world.getName(), arrayList));
                         break;
                     }
 
                     case "addbuilder": {
-                        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+                        BuildWorld buildWorld = worldService.getBuildWorld(player.getWorld().getName());
                         Bukkit.getOnlinePlayers().stream()
                                 .filter(pl -> buildWorld != null && !buildWorld.isBuilder(pl)
                                         && !buildWorld.isCreator(pl))
@@ -113,7 +113,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                     }
 
                     case "removebuilder": {
-                        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+                        BuildWorld buildWorld = worldService.getBuildWorld(player.getWorld().getName());
                         if (buildWorld != null && buildWorld.isCreator(player)) {
                             for (Builder builder : buildWorld.getBuilders()) {
                                 addArgument(args[1], builder.getName(), arrayList);
@@ -139,7 +139,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                                 return false;
                             }
 
-                            return worldManager.getBuildWorld(name) == null;
+                            return worldService.getBuildWorld(name) == null;
                         });
 
                         if (directories == null || directories.length == 0) {

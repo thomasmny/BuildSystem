@@ -28,6 +28,7 @@ import de.eintosti.buildsystem.command.subcommand.worlds.SetPermissionSubCommand
 import de.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.navigator.inventory.FilteredWorldsInventory.Visibility;
+import de.eintosti.buildsystem.navigator.inventory.PrivateInventory;
 import de.eintosti.buildsystem.player.PlayerManager;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.world.BuildWorld;
@@ -39,6 +40,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Difficulty;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -165,7 +167,7 @@ public class EditInventory implements Listener {
 
         itemStack.setItemMeta(itemMeta);
         if (isEnabled) {
-            itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.getEnchant(), 1);
+            itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.get(), 1);
         }
 
         inventory.setItem(position, itemStack);
@@ -265,17 +267,39 @@ public class EditInventory implements Listener {
                 break;
         }
 
-        inventoryUtils.addItemStack(inventory, 39, xMaterial,
+        inventory.setItem(39, InventoryUtils.createItem(xMaterial,
                 Messages.getString("worldeditor_difficulty_item", player),
                 Messages.getStringList("worldeditor_difficulty_lore", player,
-                        new AbstractMap.SimpleEntry<>("%difficulty%", buildWorld.getDifficultyName(player))
+                        new AbstractMap.SimpleEntry<>("%difficulty%", getDifficultyName(buildWorld, player))
                 )
-        );
+        ));
+    }
+
+    /**
+     * Get the display name of a {@link Difficulty}.
+     *
+     * @param player The player to parse the placeholders against
+     * @return the difficulty's display name
+     * @see WorldData#difficulty()
+     */
+    private String getDifficultyName(BuildWorld buildWorld, Player player) {
+        switch (buildWorld.getData().difficulty().get()) {
+            case PEACEFUL:
+                return Messages.getString("difficulty_peaceful", player);
+            case EASY:
+                return Messages.getString("difficulty_easy", player);
+            case NORMAL:
+                return Messages.getString("difficulty_normal", player);
+            case HARD:
+                return Messages.getString("difficulty_hard", player);
+            default:
+                return "-";
+        }
     }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!inventoryUtils.checkIfValidClick(event, "worldeditor_title")) {
+        if (!InventoryUtils.isValidClick(event, "worldeditor_title")) {
             return;
         }
 

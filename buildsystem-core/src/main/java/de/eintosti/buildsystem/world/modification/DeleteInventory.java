@@ -98,7 +98,7 @@ public class DeleteInventory implements Listener {
         if (slot == 11) {
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
             player.closeInventory();
-            plugin.getWorldManager().deleteWorld(player, buildWorld);
+            plugin.getWorldService().deleteWorld(player, buildWorld);
         } else if (slot == 15) {
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
             player.closeInventory();

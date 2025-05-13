@@ -35,7 +35,7 @@ import de.eintosti.buildsystem.player.settings.DesignColor;
 import de.eintosti.buildsystem.player.settings.Settings;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.WorldService;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -145,15 +145,15 @@ public class PlayerManager {
      */
     public boolean canCreateWorld(Player player, Visibility visibility) {
         boolean showPrivateWorlds = visibility == Visibility.PRIVATE;
-        WorldManager worldManager = plugin.getWorldManager();
+        WorldService worldService = plugin.getWorldService();
 
         int maxWorldAmountConfig = configValues.getMaxWorldAmount(showPrivateWorlds);
-        if (maxWorldAmountConfig >= 0 && worldManager.getBuildWorlds().size() >= maxWorldAmountConfig) {
+        if (maxWorldAmountConfig >= 0 && worldService.getBuildWorlds().size() >= maxWorldAmountConfig) {
             return false;
         }
 
         int maxWorldAmountPlayer = getMaxWorlds(player, showPrivateWorlds);
-        return maxWorldAmountPlayer < 0 || worldManager.getBuildWorldsCreatedByPlayer(player, visibility).size() < maxWorldAmountPlayer;
+        return maxWorldAmountPlayer < 0 || worldService.getBuildWorldsCreatedByPlayer(player, visibility).size() < maxWorldAmountPlayer;
     }
 
     /**
@@ -273,8 +273,8 @@ public class PlayerManager {
         CachedValues cachedValues = buildPlayer.getCachedValues();
         cachedValues.resetWalkSpeedIfPresent(player);
         cachedValues.resetFlySpeedIfPresent(player);
-        player.removePotionEffect(XPotion.JUMP_BOOST.getPotionEffectType());
-        player.removePotionEffect(XPotion.BLINDNESS.getPotionEffectType());
+        player.removePotionEffect(XPotion.JUMP_BOOST.get());
+        player.removePotionEffect(XPotion.BLINDNESS.get());
 
         openNavigator.remove(player);
     }

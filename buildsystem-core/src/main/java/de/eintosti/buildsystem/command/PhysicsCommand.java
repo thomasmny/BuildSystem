@@ -39,7 +39,7 @@ public class PhysicsCommand implements CommandExecutor {
 
     public PhysicsCommand(BuildSystem plugin) {
         this.plugin = plugin;
-        this.worldStorage = plugin.getWorldManager().getWorldStorage();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getCommand("physics").setExecutor(this);
     }
 

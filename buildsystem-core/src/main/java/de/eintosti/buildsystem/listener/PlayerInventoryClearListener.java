@@ -32,12 +32,10 @@ import org.bukkit.inventory.PlayerInventory;
 public class PlayerInventoryClearListener implements Listener {
 
     private final BuildSystem plugin;
-    private final InventoryUtils inventoryUtils;
     private final SettingsManager settingsManager;
 
     public PlayerInventoryClearListener(BuildSystem plugin) {
         this.plugin = plugin;
-        this.inventoryUtils = plugin.getInventoryUtil();
         this.settingsManager = plugin.getSettingsManager();
 
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -52,7 +50,7 @@ public class PlayerInventoryClearListener implements Listener {
         }
 
         PlayerInventory playerInventory = player.getInventory();
-        ItemStack navigatorItem = inventoryUtils.getItemStack(
+        ItemStack navigatorItem = InventoryUtils.createItem(
                 plugin.getConfigValues().getNavigatorItem(), Messages.getString("navigator_item", player)
         );
         event.getNavigatorSlots().forEach(slot -> playerInventory.setItem(slot, navigatorItem));

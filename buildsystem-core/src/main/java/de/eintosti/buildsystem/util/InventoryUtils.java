@@ -93,30 +93,52 @@ public final class InventoryUtils {
     }
 
     /**
-     * Adds an ItemStack to the given inventory at the specified position.
+     * Creates a player skull ItemStack with the given display name and lore.
      *
-     * @param inventory   The inventory to add the item to
-     * @param position    The position to add the item at
-     * @param material    The material of the item
-     * @param displayName The display name of the item
-     * @param lore        The lore of the item
+     * @param displayName The display name of the skull
+     * @param profileable The profile to use for the skull
+     * @param lore        The lore of the skull
+     * @return The created skull ItemStack
      */
-    public static void addItem(Inventory inventory, int position, XMaterial material, String displayName, List<String> lore) {
-        ItemStack itemStack = createItem(material, displayName, lore);
-        inventory.setItem(position, itemStack);
+    public static ItemStack createSkull(String displayName, Profileable profileable, List<String> lore) {
+        ItemStack skull = XSkull.createItem()
+                .profile(profileable)
+                .lenient()
+                .apply();
+
+        ItemMeta itemMeta = skull.getItemMeta();
+        if (itemMeta == null) {
+            return skull;
+        }
+
+        itemMeta.setDisplayName(displayName);
+        itemMeta.setLore(lore);
+        skull.setItemMeta(itemMeta);
+
+        return skull;
     }
 
     /**
-     * Adds an ItemStack to the given inventory at the specified position.
+     * Creates a player skull ItemStack with the given display name and lore.
      *
-     * @param inventory   The inventory to add the item to
-     * @param position    The position to add the item at
-     * @param material    The material of the item
-     * @param displayName The display name of the item
-     * @param lore        The lore of the item as varargs
+     * @param displayName The display name of the skull
+     * @param profileable The profile to use for the skull
+     * @param lore        The lore of the skull as varargs
+     * @return The created skull ItemStack
      */
-    public static void addItem(Inventory inventory, int position, XMaterial material, String displayName, String... lore) {
-        addItem(inventory, position, material, displayName, Arrays.asList(lore));
+    public static ItemStack createSkull(String displayName, Profileable profileable, String... lore) {
+        return createSkull(displayName, profileable, Arrays.asList(lore));
+    }
+
+    /**
+     * Adds a glass pane to the given inventory at the specified position.
+     *
+     * @param player    The player viewing the inventory
+     * @param inventory The inventory to add the glass pane to
+     * @param position  The position to add the glass pane at
+     */
+    public static void addGlassPane(Player player, Inventory inventory, int position) {
+        inventory.setItem(position, createItem(getColoredGlassPane(player), " "));
     }
 
     /**
@@ -167,53 +189,43 @@ public final class InventoryUtils {
     }
 
     /**
-     * Adds a glass pane to the given inventory at the specified position.
+     * Adds a world item to the given inventory at the specified position.
      *
-     * @param player    The player viewing the inventory
-     * @param inventory The inventory to add the glass pane to
-     * @param position  The position to add the glass pane at
+     * @param inventory   The inventory to add the item to
+     * @param position    The position to add the item at
+     * @param buildWorld  The world to create the item for
+     * @param displayName The display name of the item
+     * @param lore        The lore of the item
      */
-    public static void addGlassPane(Player player, Inventory inventory, int position) {
-        XMaterial glassPane = getColoredGlassPane(player);
-        addItem(inventory, position, glassPane, " ");
-    }
-
-    /**
-     * Creates a player skull ItemStack with the given display name and lore.
-     *
-     * @param displayName The display name of the skull
-     * @param profileable The profile to use for the skull
-     * @param lore        The lore of the skull
-     * @return The created skull ItemStack
-     */
-    public static ItemStack createSkull(String displayName, Profileable profileable, List<String> lore) {
-        ItemStack skull = XSkull.createItem()
-                .profile(profileable)
-                .lenient()
-                .apply();
-
-        ItemMeta itemMeta = skull.getItemMeta();
-        if (itemMeta == null) {
-            return skull;
+    public static void addWorldItem(Inventory inventory, int position, BuildWorld buildWorld, String displayName, List<String> lore) {
+        XMaterial material = buildWorld.getData().material().get();
+        if (material != XMaterial.PLAYER_HEAD) {
+            inventory.setItem(position, createItem(material, displayName, lore));
+            return;
         }
 
-        itemMeta.setDisplayName(displayName);
-        itemMeta.setLore(lore);
-        skull.setItemMeta(itemMeta);
+        // Initially set a default head
+        inventory.setItem(position, createItem(XMaterial.PLAYER_HEAD, displayName, lore));
 
-        return skull;
-    }
-
-    /**
-     * Creates a player skull ItemStack with the given display name and lore.
-     *
-     * @param displayName The display name of the skull
-     * @param profileable The profile to use for the skull
-     * @param lore        The lore of the skull as varargs
-     * @return The created skull ItemStack
-     */
-    public static ItemStack createSkull(String displayName, Profileable profileable, String... lore) {
-        return createSkull(displayName, profileable, Arrays.asList(lore));
+        // Then try to set texture asynchronously
+        XSkull.createItem()
+                .profile(buildWorld.getData().privateWorld().get()
+                        ? buildWorld.asProfilable()
+                        : Profileable.username(buildWorld.getName())
+                )
+                .fallback(buildWorld.asProfilable())
+                .lenient()
+                .applyAsync()
+                .thenAcceptAsync(itemStack -> {
+                    ItemMeta itemMeta = itemStack.getItemMeta();
+                    if (itemMeta == null) {
+                        return;
+                    }
+                    itemMeta.setDisplayName(displayName);
+                    itemMeta.setLore(lore);
+                    itemStack.setItemMeta(itemMeta);
+                    inventory.setItem(position, itemStack);
+                });
     }
 
     /**
@@ -239,47 +251,7 @@ public final class InventoryUtils {
     }
 
     /**
-     * Adds a world item to the given inventory at the specified position.
-     *
-     * @param inventory   The inventory to add the item to
-     * @param position    The position to add the item at
-     * @param buildWorld  The world to create the item for
-     * @param displayName The display name of the item
-     * @param lore        The lore of the item
-     */
-    public static void addWorldItem(Inventory inventory, int position, BuildWorld buildWorld, String displayName, List<String> lore) {
-        XMaterial material = buildWorld.getData().material().get();
-        if (material != XMaterial.PLAYER_HEAD) {
-            addItem(inventory, position, material, displayName, lore);
-            return;
-        }
-
-        // Initially set default head
-        addItem(inventory, position, XMaterial.PLAYER_HEAD, displayName, lore);
-
-        // Then try to set texture asynchronously
-        XSkull.createItem()
-                .profile(buildWorld.getData().privateWorld().get()
-                        ? buildWorld.asProfilable()
-                        : Profileable.username(buildWorld.getName())
-                )
-                .fallback(buildWorld.asProfilable())
-                .lenient()
-                .applyAsync()
-                .thenAcceptAsync(itemStack -> {
-                    ItemMeta itemMeta = itemStack.getItemMeta();
-                    if (itemMeta == null) {
-                        return;
-                    }
-                    itemMeta.setDisplayName(displayName);
-                    itemMeta.setLore(lore);
-                    itemStack.setItemMeta(itemMeta);
-                    inventory.setItem(position, itemStack);
-                });
-    }
-
-    /**
-     * Checks if an item is a navigator item.
+     * Checks if an {@link ItemStack} is a navigator item.
      *
      * @param player    The player to check for
      * @param itemStack The item to check
@@ -334,7 +306,7 @@ public final class InventoryUtils {
     }
 
     /**
-     * Replaces an item in a player's inventory with another item.
+     * Replaces an {@link ItemStack} in a player's inventory with another {@link ItemStack}.
      *
      * @param player       The player whose inventory to modify
      * @param findItemName The name of the item to find
@@ -368,7 +340,7 @@ public final class InventoryUtils {
     }
 
     /**
-     * Fills an inventory with glass panes.
+     * Fills an {@link Inventory with glass panes.
      *
      * @param inventory   The inventory to fill
      * @param player      The player viewing the inventory
@@ -376,21 +348,18 @@ public final class InventoryUtils {
      * @param numOfPages  The total number of pages
      */
     public static void fillWithGlass(Inventory inventory, Player player, int currentPage, int numOfPages) {
-        // Fill bottom row
         for (int i = inventory.getSize() - 9; i < inventory.getSize(); i++) {
-            addGlassPane(inventory, player, i);
+            addGlassPane(player, inventory, i);
         }
 
-        // Add page indicator if multiple pages
         if (numOfPages > 1) {
-            String pageIndicator = Messages.getString("gui_page", player,
-                    new AbstractMap.SimpleEntry<>("page", String.valueOf(currentPage + 1)),
-                    new AbstractMap.SimpleEntry<>("maxPage", String.valueOf(numOfPages))
-            );
-            addGlassPane(inventory, player, inventory.getSize() - 5);
+            addGlassPane(player, inventory, inventory.getSize() - 5);
             ItemStack pageItem = inventory.getItem(inventory.getSize() - 5);
             ItemMeta meta = pageItem.getItemMeta();
-            meta.setDisplayName(pageIndicator);
+            meta.setDisplayName(Messages.getString("gui_page", player,
+                    new AbstractMap.SimpleEntry<>("page", String.valueOf(currentPage + 1)),
+                    new AbstractMap.SimpleEntry<>("maxPage", String.valueOf(numOfPages))
+            ));
             pageItem.setItemMeta(meta);
         }
     }

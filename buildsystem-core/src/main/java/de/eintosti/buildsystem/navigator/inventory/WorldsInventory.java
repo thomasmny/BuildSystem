@@ -89,13 +89,13 @@ public class WorldsInventory extends FilteredWorldsInventory {
                 }
 
                 // Check if folder with same name exists
-                if (plugin.getWorldManager().getFolderStorage().folderExists(folderName)) {
+                if (plugin.getWorldService().getFolderStorage().folderExists(folderName)) {
                     Messages.sendMessage(player, "folder_already_exists");
                     return;
                 }
 
                 Folder newFolder = new Folder(folderName);
-                plugin.getWorldManager().addFolder(newFolder);
+                plugin.getWorldService().getFolderStorage().addFolder(newFolder);
                 Messages.sendMessage(player, "folder_created",
                         new AbstractMap.SimpleEntry<>("%folder%", folderName)
                 );

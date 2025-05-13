@@ -25,8 +25,11 @@ import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.WorldService;
+import de.eintosti.buildsystem.world.builder.Builders;
 import de.eintosti.buildsystem.world.data.WorldStatus;
+import de.eintosti.buildsystem.world.storage.WorldStorage;
+import de.eintosti.buildsystem.world.util.WorldPermissions;
 import java.util.List;
 import java.util.Set;
 import org.bukkit.Bukkit;
@@ -218,17 +221,15 @@ public class PlayerCommandPreprocessListener implements Listener {
 
     private final BuildSystem plugin;
     private final ConfigValues configValues;
-    private final InventoryUtils inventoryUtils;
     private final SettingsManager settingsManager;
-    private final WorldManager worldManager;
+    private final WorldStorage worldStorage;
 
     public PlayerCommandPreprocessListener(BuildSystem plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
 
-        this.inventoryUtils = plugin.getInventoryUtil();
         this.settingsManager = plugin.getSettingsManager();
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
 
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -243,13 +244,13 @@ public class PlayerCommandPreprocessListener implements Listener {
         Player player = event.getPlayer();
 
         if (command.equalsIgnoreCase("/clear")) {
-            ItemStack navigatorItem = inventoryUtils.getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item", player));
+            ItemStack navigatorItem = InventoryUtils.createItem(configValues.getNavigatorItem(), Messages.getString("navigator_item", player));
             if (!player.getInventory().contains(navigatorItem)) {
                 return;
             }
 
             if (settingsManager.getSettings(player).isKeepNavigator()) {
-                List<Integer> navigatorSlots = inventoryUtils.getNavigatorSlots(player);
+                List<Integer> navigatorSlots = InventoryUtils.getNavigatorSlots(player);
                 Bukkit.getScheduler().runTaskLater(plugin, () -> {
                     PlayerInventoryClearEvent playerInventoryClearEvent = new PlayerInventoryClearEvent(player, navigatorSlots);
                     Bukkit.getServer().getPluginManager().callEvent(playerInventoryClearEvent);
@@ -263,7 +264,7 @@ public class PlayerCommandPreprocessListener implements Listener {
                 return;
             }
 
-            BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+            BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
             if (buildWorld == null) {
                 return;
             }
@@ -276,7 +277,7 @@ public class PlayerCommandPreprocessListener implements Listener {
     }
 
     private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
-        if (worldManager.canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.archive")) {
+        if (WorldPermissions.of(buildWorld).canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.archive")) {
             return false;
         }
 
@@ -289,15 +290,16 @@ public class PlayerCommandPreprocessListener implements Listener {
     }
 
     private void checkBuilders(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
-        if (worldManager.canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.builders")) {
+        if (WorldPermissions.of(buildWorld).canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.builders")) {
             return;
         }
 
-        if (buildWorld.isCreator(player)) {
+        Builders builders = buildWorld.getBuilders();
+        if (builders.isCreator(player)) {
             return;
         }
 
-        if (buildWorld.getData().buildersEnabled().get() && !buildWorld.isBuilder(player)) {
+        if (buildWorld.getData().buildersEnabled().get() && !builders.isBuilder(player)) {
             event.setCancelled(true);
             Messages.sendMessage(player, "command_not_builder");
         }

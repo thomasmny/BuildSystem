@@ -31,7 +31,7 @@ import org.bukkit.entity.Player;
 public class SpawnManager {
 
     private final BuildSystem plugin;
-    private final WorldManager worldManager;
+    private final WorldService worldService;
     private final SpawnConfig spawnConfig;
 
     private String spawnName;
@@ -39,7 +39,7 @@ public class SpawnManager {
 
     public SpawnManager(BuildSystem plugin) {
         this.plugin = plugin;
-        this.worldManager = plugin.getWorldManager();
+        this.worldService = plugin.getWorldService();
         this.spawnConfig = new SpawnConfig(plugin);
     }
 
@@ -48,7 +48,7 @@ public class SpawnManager {
             return false;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(spawnName);
+        BuildWorld buildWorld = worldService.getBuildWorld(spawnName);
         if (buildWorld != null) {
             if (!buildWorld.isLoaded()) {
                 buildWorld.load(player);
@@ -112,7 +112,7 @@ public class SpawnManager {
         float yaw = Float.parseFloat(parts[4]);
         float pitch = Float.parseFloat(parts[5]);
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldService.getBuildWorld(worldName);
         if (buildWorld == null) {
             plugin.getLogger()
                     .warning("Could load spawn world \"" + worldName + "\". Please check logs for possible errors.");

@@ -24,7 +24,8 @@ import de.eintosti.buildsystem.player.PlayerManager;
 import de.eintosti.buildsystem.player.settings.Settings;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.SpawnManager;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.WorldService;
+import de.eintosti.buildsystem.world.storage.WorldStorage;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -36,13 +37,13 @@ public class AsyncPlayerPreLoginListener implements Listener {
     private final BuildSystem plugin;
     private final PlayerManager playerManager;
     private final SpawnManager spawnManager;
-    private final WorldManager worldManager;
+    private final WorldStorage worldStorage;
 
     public AsyncPlayerPreLoginListener(BuildSystem plugin) {
         this.plugin = plugin;
         this.playerManager = plugin.getPlayerManager();
         this.spawnManager = plugin.getSpawnManager();
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -64,11 +65,11 @@ public class AsyncPlayerPreLoginListener implements Listener {
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(logoutLocation.getWorldName());
+        BuildWorld buildWorld = worldStorage.getBuildWorld(logoutLocation.getWorldName());
         if (buildWorld == null) {
             buildPlayer.setLogoutLocation(null);
         } else {
-            Bukkit.getScheduler().runTask(plugin, () -> buildWorld.load());
+            Bukkit.getScheduler().runTask(plugin, () -> buildWorld.getLoader().load());
         }
     }
 }
