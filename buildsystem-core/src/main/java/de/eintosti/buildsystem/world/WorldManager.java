@@ -216,8 +216,7 @@ public class WorldManager {
                 }
 
                 String invalidChar = Arrays.stream(worldName.split(""))
-                        .filter(c -> c.matches("[^A-Za-z\\d/_-]") || c.matches(plugin.getConfigValues()
-                                .getInvalidNameCharacters()))
+                        .filter(c -> c.matches("[^A-Za-z\\d/_-]") || c.matches(plugin.getConfigValues().getInvalidNameCharacters()))
                         .findFirst()
                         .orElse(null);
                 if (invalidChar != null) {
@@ -290,7 +289,7 @@ public class WorldManager {
      */
     public void renameWorld(Player player, BuildWorld buildWorld, String newName) {
         player.closeInventory();
-        if (worldStorage.worldExists(newName, true)) {
+        if (worldStorage.worldAndFolderExist(newName)) {
             Messages.sendMessage(player, "worlds_world_exists");
             XSound.ENTITY_ITEM_BREAK.play(player);
             return;

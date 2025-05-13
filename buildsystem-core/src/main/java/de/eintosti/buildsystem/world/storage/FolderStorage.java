@@ -50,4 +50,29 @@ public abstract class FolderStorage implements Storage<Folder> {
     public Collection<Folder> getFolders() {
         return Collections.unmodifiableCollection(folders.values());
     }
+
+    /**
+     * Checks if a {@link Folder} with the given name (case-insensitive) exists.
+     *
+     * @param folderName The name of the folder to check
+     * @return {@code true} if the folder exists, {@code false} otherwise
+     */
+    public boolean folderExists(String folderName) {
+        return folderExists(folderName, false);
+    }
+
+    /**
+     * Checks if a {@link Folder} with the given name exists.
+     *
+     * @param folderName    The name of the folder to check
+     * @param caseSensitive Whether to check the name case-sensitive or not
+     * @return {@code true} if the folder exists, {@code false} otherwise
+     */
+    public boolean folderExists(String folderName, boolean caseSensitive) {
+        if (caseSensitive) {
+            return folders.containsKey(folderName);
+        } else {
+            return folders.keySet().stream().anyMatch(name -> name.equalsIgnoreCase(folderName));
+        }
+    }
 }

@@ -23,7 +23,8 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.util.WorldPermissions;
+import de.eintosti.buildsystem.world.util.WorldTeleporter;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -48,8 +49,7 @@ public class TeleportSubCommand implements SubCommand {
             return;
         }
 
-        WorldManager worldManager = plugin.getWorldManager();
-        BuildWorld buildWorld = worldManager.getBuildWorld(args[1]);
+        BuildWorld buildWorld = plugin.getWorldManager().getWorldStorage().getBuildWorld(args[1]);
         if (buildWorld == null) {
             Messages.sendMessage(player, "worlds_tp_unknown_world");
             return;
@@ -61,12 +61,12 @@ public class TeleportSubCommand implements SubCommand {
             return;
         }
 
-        if (!worldManager.canEnter(player, buildWorld)) {
+        if (!WorldPermissions.of(buildWorld).canEnter(player)) {
             Messages.sendMessage(player, "worlds_tp_entry_forbidden");
             return;
         }
 
-        worldManager.teleport(player, buildWorld);
+        WorldTeleporter.of(buildWorld).teleport(player);
     }
 
     @Override
