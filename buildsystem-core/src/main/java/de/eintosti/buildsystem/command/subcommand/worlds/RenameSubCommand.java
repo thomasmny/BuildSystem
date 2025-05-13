@@ -35,7 +35,7 @@ public class RenameSubCommand implements SubCommand {
 
     public RenameSubCommand(BuildSystem plugin, String worldName) {
         this.plugin = plugin;
-        this.buildWorld = plugin.getWorldManager().getWorldStorage().getBuildWorld(worldName);
+        this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
     }
 
     @Override
@@ -57,7 +57,7 @@ public class RenameSubCommand implements SubCommand {
 
         new PlayerChatInput(plugin, player, "enter_world_name", input -> {
             player.closeInventory();
-            plugin.getWorldManager().renameWorld(player, buildWorld, input.trim());
+            plugin.getWorldService().renameWorld(player, buildWorld, input.trim());
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
         });
     }

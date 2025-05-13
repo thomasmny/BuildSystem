@@ -38,7 +38,7 @@ public class SetSpawnSubCommand implements SubCommand {
 
     @Override
     public void execute(Player player, String[] args) {
-        BuildWorld buildWorld = plugin.getWorldManager().getWorldStorage().getBuildWorld(player.getWorld());
+        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld());
         if (!WorldPermissions.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
             plugin.sendPermissionMessage(player);
             return;

@@ -40,7 +40,7 @@ public class RemoveBuilderSubCommand implements SubCommand {
 
     public RemoveBuilderSubCommand(BuildSystem plugin, String worldName) {
         this.plugin = plugin;
-        this.buildWorld = plugin.getWorldManager().getWorldStorage().getBuildWorld(worldName);
+        this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
         this.permissions = WorldPermissions.of(buildWorld);
     }
 

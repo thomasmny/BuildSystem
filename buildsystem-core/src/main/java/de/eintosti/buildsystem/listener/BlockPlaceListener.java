@@ -22,7 +22,8 @@ import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.version.customblocks.CustomBlock;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.WorldService;
+import de.eintosti.buildsystem.world.storage.WorldStorage;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.entity.Player;
@@ -35,13 +36,13 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class BlockPlaceListener implements Listener {
 
     private final BuildSystem plugin;
-    private final WorldManager worldManager;
+    private final WorldStorage worldStorage;
 
     private final Map<String, String> blockLookup;
 
     public BlockPlaceListener(BuildSystem plugin) {
         this.plugin = plugin;
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         this.blockLookup = initBlockLookup();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -63,7 +64,7 @@ public class BlockPlaceListener implements Listener {
         Player player = event.getPlayer();
         String worldName = player.getWorld().getName();
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         boolean isBuildWorld = buildWorld != null;
 
         ItemStack itemStack = event.getItemInHand();

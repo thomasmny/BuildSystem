@@ -21,35 +21,55 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.Messages;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Unmodifiable;
 
 public class Folder implements Displayable {
 
     private final String name;
-    private final List<Displayable> contents;
-    private final List<String> worlds;
+    private final List<String> worldNames;
 
     private XMaterial material;
 
     public Folder(String name) {
         this.name = name;
-        this.contents = new ArrayList<>();
-        this.worlds = new ArrayList<>();
+        this.worldNames = new ArrayList<>();
         this.material = XMaterial.CHEST;
     }
 
-    public Folder(String name, XMaterial material, List<String> worlds) {
+    public Folder(String name, XMaterial material, List<String> worldNames) {
         this.name = name;
-        this.contents = new ArrayList<>(); //TODO
-        this.worlds = worlds;
+        this.worldNames = worldNames;
         this.material = material;
     }
 
     @Override
     public String getName() {
         return name;
+    }
+
+    @Unmodifiable
+    public List<String> getWorlds() {
+        return Collections.unmodifiableList(worldNames);
+    }
+
+    public boolean containsWorld(String worldName) {
+        return worldNames.contains(worldName);
+    }
+
+    public void addWorld(String worldName) {
+        worldNames.add(worldName);
+    }
+
+    public void removeWorld(String worldName) {
+        worldNames.remove(worldName);
+    }
+
+    public int getWorldCount() {
+        return worldNames.size();
     }
 
     @Override
@@ -61,41 +81,25 @@ public class Folder implements Displayable {
         this.material = material;
     }
 
-    public List<String> getWorlds() {
-        return worlds;
-    }
-
     @Override
     public String getDisplayName(Player player) {
         return Messages.getString("folder_item_title", player,
-                new AbstractMap.SimpleEntry<>("%folder%", name));
+                new AbstractMap.SimpleEntry<>("%folder%", name)
+        );
     }
 
     @Override
     public List<String> getLore(Player player) {
         List<String> lore = new ArrayList<>();
         lore.add(Messages.getString("folder_item_contents", player,
-                new AbstractMap.SimpleEntry<>("%count%", String.valueOf(contents.size()))));
+                new AbstractMap.SimpleEntry<>("%count%", String.valueOf(getWorldCount())))
+        );
         return lore;
     }
 
     @Override
     public ItemStack asItemStack(Player player) {
-        ItemStack item = new ItemStack(getMaterial().parseMaterial());
-        item.setAmount(1);
-        return item;
-    }
-
-    public void addContent(de.eintosti.buildsystem.navigator.model.Displayable content) {
-        contents.add(content);
-    }
-
-    public void removeContent(de.eintosti.buildsystem.navigator.model.Displayable content) {
-        contents.remove(content);
-    }
-
-    public List<Displayable> getContents() {
-        return contents;
+        return getMaterial().parseItem();
     }
 
     @Override
@@ -103,9 +107,11 @@ public class Folder implements Displayable {
         if (this == o) {
             return true;
         }
+
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
+
         Folder folder = (Folder) o;
         return name.equals(folder.name);
     }

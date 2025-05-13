@@ -19,7 +19,8 @@ package de.eintosti.buildsystem.expansion.luckperms.calculators;
 
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.builder.Builders;
+import de.eintosti.buildsystem.world.storage.WorldStorage;
 import java.util.Locale;
 import net.luckperms.api.context.ContextCalculator;
 import net.luckperms.api.context.ContextConsumer;
@@ -33,15 +34,15 @@ public class RoleCalculator implements ContextCalculator<Player> {
 
     private static final String KEY = "buildsystem:role";
 
-    private final WorldManager worldManager;
+    private final WorldStorage worldStorage;
 
     public RoleCalculator(BuildSystem plugin) {
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
     }
 
     @Override
     public void calculate(@NonNull Player player, @NonNull ContextConsumer contextConsumer) {
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld());
+        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
         contextConsumer.accept(KEY, Role.matchRole(player, buildWorld).toString());
     }
 
@@ -76,9 +77,10 @@ public class RoleCalculator implements ContextCalculator<Player> {
                 return GUEST;
             }
 
-            if (buildWorld.isCreator(player)) {
+            Builders builders = buildWorld.getBuilders();
+            if (builders.isCreator(player)) {
                 return CREATOR;
-            } else if (buildWorld.isBuilder(player.getUniqueId())) {
+            } else if (builders.isBuilder(player.getUniqueId())) {
                 return BUILDER;
             } else {
                 return GUEST;

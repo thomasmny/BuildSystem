@@ -37,7 +37,7 @@ public class InfoSubCommand implements SubCommand {
 
     public InfoSubCommand(BuildSystem plugin, String worldName) {
         this.plugin = plugin;
-        this.buildWorld = plugin.getWorldManager().getWorldStorage().getBuildWorld(worldName);
+        this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
     }
 
     @Override
@@ -66,7 +66,7 @@ public class InfoSubCommand implements SubCommand {
                 new AbstractMap.SimpleEntry<>("%type%", buildWorld.getType().getName(player)),
                 new AbstractMap.SimpleEntry<>("%private%", worldData.privateWorld().get()),
                 new AbstractMap.SimpleEntry<>("%builders_enabled%", worldData.buildersEnabled().get()),
-                new AbstractMap.SimpleEntry<>("%builders%", buildWorld.getBuilderManager().getBuildersInfo(player)),
+                new AbstractMap.SimpleEntry<>("%builders%", buildWorld.getBuilders().getBuildersInfo(player)),
                 new AbstractMap.SimpleEntry<>("%block_breaking%", worldData.blockBreaking().get()),
                 new AbstractMap.SimpleEntry<>("%block_placement%", worldData.blockPlacement().get()),
                 new AbstractMap.SimpleEntry<>("%status%", worldData.status().get().getName(player)),

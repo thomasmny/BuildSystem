@@ -46,12 +46,10 @@ public class InventoryCloseListener implements Listener {
         if (!title.equals(Messages.getString("setup_title", (Player) event.getPlayer()))) {
             return;
         }
-        setNewItems(event);
+        saveItems(event.getInventory());
     }
 
-    private void setNewItems(InventoryCloseEvent event) {
-        Inventory inventory = event.getInventory();
-
+    private void saveItems(Inventory inventory) {
         ItemStack normalCreateItem = inventory.getItem(11);
         ItemStack flatCreateItem = inventory.getItem(12);
         ItemStack netherCreateItem = inventory.getItem(13);

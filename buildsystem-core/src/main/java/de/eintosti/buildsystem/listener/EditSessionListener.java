@@ -25,18 +25,21 @@ import com.sk89q.worldedit.extent.NullExtent;
 import com.sk89q.worldedit.util.eventbus.Subscribe;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.WorldService;
+import de.eintosti.buildsystem.world.builder.Builders;
 import de.eintosti.buildsystem.world.data.WorldStatus;
+import de.eintosti.buildsystem.world.storage.WorldStorage;
+import de.eintosti.buildsystem.world.util.WorldPermissions;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 
 public class EditSessionListener implements Listener {
 
-    private final WorldManager worldManager;
+    private final WorldStorage worldStorage;
 
     public EditSessionListener(BuildSystem plugin) {
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         WorldEdit.getInstance().getEventBus().register(this);
     }
 
@@ -52,7 +55,7 @@ public class EditSessionListener implements Listener {
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
         if (buildWorld == null) {
             return;
         }
@@ -75,7 +78,7 @@ public class EditSessionListener implements Listener {
      * @return {@code true} if the edit was cancelled, otherwise {@code false}
      */
     private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, EditSessionEvent event) {
-        if (worldManager.canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.archive")) {
+        if (WorldPermissions.of(buildWorld).canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.archive")) {
             return false;
         }
 
@@ -96,15 +99,16 @@ public class EditSessionListener implements Listener {
      * @return {@code true} if the edit was cancelled, otherwise {@code false}
      */
     private boolean disableNonBuilders(BuildWorld buildWorld, Player player, EditSessionEvent event) {
-        if (worldManager.canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.builders")) {
+        if (WorldPermissions.of(buildWorld).canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.builders")) {
             return false;
         }
 
-        if (buildWorld.isCreator(player)) {
+        Builders builders = buildWorld.getBuilders();
+        if (builders.isCreator(player)) {
             return false;
         }
 
-        if (buildWorld.getData().buildersEnabled().get() && !buildWorld.isBuilder(player)) {
+        if (buildWorld.getData().buildersEnabled().get() && !builders.isBuilder(player)) {
             event.setExtent(new NullExtent());
             return true;
         }

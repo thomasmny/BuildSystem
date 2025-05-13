@@ -37,7 +37,7 @@ public class SetItemSubCommand implements SubCommand {
 
     public SetItemSubCommand(BuildSystem plugin, String worldName) {
         this.plugin = plugin;
-        this.buildWorld = plugin.getWorldManager().getWorldStorage().getBuildWorld(worldName);
+        this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
     }
 
     @Override

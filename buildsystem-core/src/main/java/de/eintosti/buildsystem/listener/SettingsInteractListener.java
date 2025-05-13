@@ -30,10 +30,12 @@ import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import de.eintosti.buildsystem.version.util.DirectionUtil;
 import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
 import de.eintosti.buildsystem.world.builder.Builder;
+import de.eintosti.buildsystem.world.builder.Builders;
 import de.eintosti.buildsystem.world.data.WorldData;
 import de.eintosti.buildsystem.world.data.WorldStatus;
+import de.eintosti.buildsystem.world.storage.WorldStorage;
+import de.eintosti.buildsystem.world.util.WorldPermissions;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -69,7 +71,7 @@ public class SettingsInteractListener implements Listener {
     private final CustomBlocks customBlocks;
 
     private final SettingsManager settingsManager;
-    private final WorldManager worldManager;
+    private final WorldStorage worldStorage;
 
     private final Set<UUID> cachePlayers;
 
@@ -78,7 +80,7 @@ public class SettingsInteractListener implements Listener {
         this.customBlocks = plugin.getCustomBlocks();
 
         this.settingsManager = plugin.getSettingsManager();
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
 
         this.cachePlayers = new HashSet<>();
 
@@ -344,12 +346,12 @@ public class SettingsInteractListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        if (worldManager.canBypassBuildRestriction(player)) {
+        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld().getName());
+        if (buildWorld == null) {
             return true;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
-        if (buildWorld == null) {
+        if (WorldPermissions.of(buildWorld).canBypassBuildRestriction(player)) {
             return true;
         }
 
@@ -362,10 +364,11 @@ public class SettingsInteractListener implements Listener {
             return false;
         }
 
+        Builders builders = buildWorld.getBuilders();
         if (buildWorld.getData().buildersEnabled().get()
-                && !buildWorld.isBuilder(player)
+                && !builders.isBuilder(player)
                 && !player.hasPermission("buildsystem.bypass.builders")) {
-            return buildWorld.isCreator(player);
+            return builders.isCreator(player);
         }
 
         return true;

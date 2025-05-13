@@ -29,9 +29,10 @@ import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.world.BuildWorld;
 import de.eintosti.buildsystem.world.SpawnManager;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.WorldService;
 import de.eintosti.buildsystem.world.data.WorldData;
 import de.eintosti.buildsystem.world.data.WorldStatus;
+import de.eintosti.buildsystem.world.storage.WorldStorage;
 import io.papermc.lib.PaperLib;
 import java.util.AbstractMap;
 import org.bukkit.Bukkit;
@@ -52,7 +53,7 @@ public class PlayerJoinListener implements Listener {
     private final PlayerManager playerManager;
     private final SettingsManager settingsManager;
     private final SpawnManager spawnManager;
-    private final WorldManager worldManager;
+    private final WorldStorage worldStorage;
 
     public PlayerJoinListener(BuildSystem plugin) {
         this.plugin = plugin;
@@ -61,7 +62,7 @@ public class PlayerJoinListener implements Listener {
         this.playerManager = plugin.getPlayerManager();
         this.settingsManager = plugin.getSettingsManager();
         this.spawnManager = plugin.getSpawnManager();
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
 
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -88,7 +89,7 @@ public class PlayerJoinListener implements Listener {
         playerManager.giveNavigator(player);
 
         String worldName = player.getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (buildWorld != null) {
             WorldData worldData = buildWorld.getData();
             if (!worldData.physics().get() && player.hasPermission("buildsystem.physics.message")) {
@@ -128,7 +129,7 @@ public class PlayerJoinListener implements Listener {
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(logoutLocation.getWorldName());
+        BuildWorld buildWorld = worldStorage.getBuildWorld(logoutLocation.getWorldName());
         if (buildWorld == null) {
             return;
         }

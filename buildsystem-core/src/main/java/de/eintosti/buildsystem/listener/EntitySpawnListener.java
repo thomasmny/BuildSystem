@@ -20,7 +20,8 @@ package de.eintosti.buildsystem.listener;
 import de.eintosti.buildsystem.BuildSystem;
 import de.eintosti.buildsystem.util.EntityAIManager;
 import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.WorldService;
+import de.eintosti.buildsystem.world.storage.WorldStorage;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -30,10 +31,10 @@ import org.bukkit.event.entity.EntitySpawnEvent;
 
 public class EntitySpawnListener implements Listener {
 
-    private final WorldManager worldManager;
+    private final WorldStorage worldStorage;
 
     public EntitySpawnListener(BuildSystem plugin) {
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -44,7 +45,7 @@ public class EntitySpawnListener implements Listener {
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
+        BuildWorld buildWorld = worldStorage.getBuildWorld(bukkitWorld.getName());
         if (buildWorld == null || buildWorld.getData().mobAi().get()) {
             return;
         }

@@ -107,7 +107,7 @@ public class SettingsInventory implements Listener {
         itemStack.setItemMeta(itemMeta);
 
         if (enabled) {
-            itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.getEnchant(), 1);
+            itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.get(), 1);
         }
 
         inventory.setItem(position, itemStack);
@@ -128,7 +128,7 @@ public class SettingsInventory implements Listener {
         itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         itemMeta.setLore(Messages.getStringList("settings_change_design_lore", player));
         itemStack.setItemMeta(itemMeta);
-        itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.getEnchant(), 1);
+        itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.get(), 1);
 
         inventory.setItem(11, itemStack);
     }

@@ -74,7 +74,7 @@ public class NavigatorListener implements Listener {
         this.armorStandManager = plugin.getArmorStandManager();
         this.playerManager = plugin.getPlayerManager();
         this.settingsManager = plugin.getSettingsManager();
-        this.worldStorage = plugin.getWorldManager().getWorldStorage();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
 
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -150,8 +150,8 @@ public class NavigatorListener implements Listener {
 
         player.setWalkSpeed(0);
         player.setFlySpeed(0);
-        player.addPotionEffect(new PotionEffect(XPotion.BLINDNESS.getPotionEffectType(), Integer.MAX_VALUE, 0, false, false));
-        player.addPotionEffect(new PotionEffect(XPotion.JUMP_BOOST.getPotionEffectType(), Integer.MAX_VALUE, 250, false, false));
+        player.addPotionEffect(new PotionEffect(XPotion.BLINDNESS.get(), Integer.MAX_VALUE, 0, false, false));
+        player.addPotionEffect(new PotionEffect(XPotion.JUMP_BOOST.get(), Integer.MAX_VALUE, 250, false, false));
 
         armorStandManager.spawnArmorStands(player);
         playerManager.getOpenNavigator().add(player);
