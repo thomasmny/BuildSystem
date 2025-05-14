@@ -100,7 +100,7 @@ import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.builder.BuilderInventory;
 import de.eintosti.buildsystem.world.creation.CreateInventory;
 import de.eintosti.buildsystem.world.data.StatusInventory;
-import de.eintosti.buildsystem.world.display.WorldIcon;
+import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import de.eintosti.buildsystem.world.modification.DeleteInventory;
 import de.eintosti.buildsystem.world.modification.EditInventory;
 import de.eintosti.buildsystem.world.modification.GameRuleInventory;
@@ -155,7 +155,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     private ConfigValues configValues;
     private CustomBlocks customBlocks;
     private GameRules gameRules;
-    private WorldIcon worldIcon;
+    private CustomizableIcons customizableIcons;
 
     private LuckPermsExpansion luckPermsExpansion;
     private PlaceholderApiExpansion placeholderApiExpansion;
@@ -254,7 +254,7 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     private void initClasses() {
         this.configValues = new ConfigValues(this);
-        this.worldIcon = new WorldIcon(this);
+        this.customizableIcons = new CustomizableIcons(this);
 
         this.armorStandManager = new ArmorStandManager();
         this.playerService = new PlayerServiceImpl(this);
@@ -578,7 +578,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         return gameRules;
     }
 
-    public WorldIcon getWorldIcon() {
-        return worldIcon;
+    public CustomizableIcons getCustomizableIcons() {
+        return customizableIcons;
     }
 }
