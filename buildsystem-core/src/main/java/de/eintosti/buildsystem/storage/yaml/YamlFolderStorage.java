@@ -20,8 +20,8 @@ package de.eintosti.buildsystem.storage.yaml;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.world.display.FolderImpl;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
+import de.eintosti.buildsystem.world.display.FolderImpl;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,17 +42,17 @@ public class YamlFolderStorage extends FolderStorageImpl {
 
     private static final String FOLDERS_KEY = "folders";
 
-    private final File file;
-    private final FileConfiguration config;
+    private File file;
+    private FileConfiguration config;
 
     public YamlFolderStorage(BuildSystemPlugin plugin) {
         super(plugin);
-        this.file = new File(plugin.getDataFolder(), "folders.yml");
-        this.config = YamlConfiguration.loadConfiguration(file);
-        loadFile();
     }
 
-    public void loadFile() {
+    private void loadFile() {
+        this.file = new File(plugin.getDataFolder(), "folders.yml");
+        this.config = YamlConfiguration.loadConfiguration(file);
+
         if (!file.exists()) {
             config.options().copyDefaults(true);
             saveFile();
@@ -66,7 +66,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
         }
     }
 
-    public void saveFile() {
+    private void saveFile() {
         try {
             config.save(file);
         } catch (IOException e) {
@@ -97,6 +97,8 @@ public class YamlFolderStorage extends FolderStorageImpl {
 
     @Override
     public Collection<Folder> load() {
+        loadFile();
+
         ConfigurationSection section = config.getConfigurationSection(FOLDERS_KEY);
         if (section == null) {
             return new ArrayList<>();
