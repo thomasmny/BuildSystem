@@ -115,32 +115,37 @@ public class BuildersImpl implements Builders {
      * @return A list of formatted builder lines, each containing up to 3 builders
      */
     public List<String> formatBuildersForLore(Player player) {
-        String template = Messages.getString("world_item_builders_builder_template", player);
-        List<String> builderLines = new ArrayList<>();
+        final int buildersPerLine = 3;
+        String template = Messages.getString("world_item_builders_builder_template", player); // e.g., "&b%builder%&7, "
 
-        if (buildersByUuid.isEmpty()) {
-            builderLines.add(template.replace("%builder%", "-").trim());
-            return builderLines;
+        String[] templateParts = template.split("%builder%");
+        String prefix = templateParts.length > 0 ? templateParts[0] : "";
+        String suffix = templateParts.length > 1 ? templateParts[1] : "";
+
+        List<String> loreLines = new ArrayList<>();
+        Collection<Builder> allBuilders = buildersByUuid.values();
+
+        if (allBuilders.isEmpty()) {
+            loreLines.add((prefix + "-").trim());
+            return loreLines;
         }
 
-        StringBuilder line = new StringBuilder();
-        int count = 0;
+        List<String> currentLineBuilders = new ArrayList<>();
+        int index = 0;
 
-        for (Builder builder : buildersByUuid.values()) {
-            line.append(template.replace("%builder%", builder.getName()));
-            count++;
+        for (Builder builder : allBuilders) {
+            boolean isLastInLine = (index + 1) % buildersPerLine == 0 || (index + 1) == allBuilders.size();
+            String formattedBuilder = prefix + builder.getName() + (isLastInLine ? "" : suffix);
+            currentLineBuilders.add(formattedBuilder);
 
-            if (count == 3) {
-                builderLines.add(line.toString().trim());
-                line.setLength(0);
-                count = 0;
+            if (isLastInLine) {
+                loreLines.add(String.join("", currentLineBuilders).trim());
+                currentLineBuilders.clear();
             }
+
+            index++;
         }
 
-        if (line.length() > 0) {
-            builderLines.add(line.toString().trim());
-        }
-
-        return builderLines;
+        return loreLines;
     }
 } 
