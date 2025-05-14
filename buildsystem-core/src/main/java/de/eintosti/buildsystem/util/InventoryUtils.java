@@ -26,7 +26,6 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -39,6 +38,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Utility class for inventory-related operations. All methods are static and the class cannot be instantiated.
@@ -60,7 +60,7 @@ public final class InventoryUtils {
      * @param lore        The lore of the item
      * @return The created ItemStack
      */
-    public static ItemStack createItem(XMaterial material, String displayName, List<String> lore) {
+    public static ItemStack createItem(@NotNull XMaterial material, @NotNull String displayName, @NotNull List<String> lore) {
         ItemStack itemStack = material.parseItem();
         if (itemStack == null) {
             LOGGER.warning("Unknown material found (" + material + "). Defaulting to BEDROCK.");
@@ -340,27 +340,20 @@ public final class InventoryUtils {
     }
 
     /**
-     * Fills an {@link Inventory with glass panes.
+     * Fills the top and bottom rows of an {@link Inventory with glass panes.
      *
      * @param inventory   The inventory to fill
      * @param player      The player viewing the inventory
      * @param currentPage The current page number
      * @param numOfPages  The total number of pages
      */
-    public static void fillWithGlass(Inventory inventory, Player player, int currentPage, int numOfPages) {
-        for (int i = inventory.getSize() - 9; i < inventory.getSize(); i++) {
+    public static void fillWithGlass(Inventory inventory, Player player) {
+        for (int i = 0; i <= 8; i++) {
             addGlassPane(player, inventory, i);
         }
 
-        if (numOfPages > 1) {
-            addGlassPane(player, inventory, inventory.getSize() - 5);
-            ItemStack pageItem = inventory.getItem(inventory.getSize() - 5);
-            ItemMeta meta = pageItem.getItemMeta();
-            meta.setDisplayName(Messages.getString("gui_page", player,
-                    new AbstractMap.SimpleEntry<>("page", String.valueOf(currentPage + 1)),
-                    new AbstractMap.SimpleEntry<>("maxPage", String.valueOf(numOfPages))
-            ));
-            pageItem.setItemMeta(meta);
+        for (int i = 45; i <= 53; i++) {
+            addGlassPane(player, inventory, i);
         }
     }
 }
