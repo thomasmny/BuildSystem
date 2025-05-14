@@ -44,26 +44,25 @@ public class SetupInventory implements Listener {
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 45, Messages.getString("setup_title", player));
+        Inventory inventory = Bukkit.createInventory(null, 36, Messages.getString("setup_title", player));
         fillGuiWithGlass(player, inventory);
 
-        inventory.setItem(10, InventoryUtils.createSkull(Messages.getString("setup_create_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_create_item_lore", player)));
-        inventory.setItem(19, InventoryUtils.createSkull(Messages.getString("setup_default_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_default_item_lore", player)));
-        inventory.setItem(28, InventoryUtils.createSkull(Messages.getString("setup_status_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_status_item_name_lore", player)));
+        inventory.setItem(10, InventoryUtils.createSkull(Messages.getString("setup_default_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_default_item_lore", player)));
+        inventory.setItem(19, InventoryUtils.createSkull(Messages.getString("setup_status_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_status_item_name_lore", player)));
 
-        inventory.setItem(20, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.NORMAL), Messages.getString("setup_normal_world", player)));
-        inventory.setItem(21, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.FLAT), Messages.getString("setup_flat_world", player)));
-        inventory.setItem(22, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.NETHER), Messages.getString("setup_nether_world", player)));
-        inventory.setItem(23, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.END), Messages.getString("setup_end_world", player)));
-        inventory.setItem(24, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.VOID), Messages.getString("setup_void_world", player)));
-        inventory.setItem(25, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.IMPORTED), Messages.getString("setup_imported_world", player)));
+        inventory.setItem(11, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.NORMAL), Messages.getString("setup_normal_world", player)));
+        inventory.setItem(12, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.FLAT), Messages.getString("setup_flat_world", player)));
+        inventory.setItem(13, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.NETHER), Messages.getString("setup_nether_world", player)));
+        inventory.setItem(14, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.END), Messages.getString("setup_end_world", player)));
+        inventory.setItem(15, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.VOID), Messages.getString("setup_void_world", player)));
+        inventory.setItem(16, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.IMPORTED), Messages.getString("setup_imported_world", player)));
 
-        inventory.setItem(29, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.NOT_STARTED), Messages.getString("status_not_started", player)));
-        inventory.setItem(30, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.IN_PROGRESS), Messages.getString("status_in_progress", player)));
-        inventory.setItem(31, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.ALMOST_FINISHED), Messages.getString("status_almost_finished", player)));
-        inventory.setItem(32, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.FINISHED), Messages.getString("status_finished", player)));
-        inventory.setItem(33, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.ARCHIVE), Messages.getString("status_archive", player)));
-        inventory.setItem(34, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.HIDDEN), Messages.getString("status_hidden", player)));
+        inventory.setItem(20, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.NOT_STARTED), Messages.getString("status_not_started", player)));
+        inventory.setItem(21, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.IN_PROGRESS), Messages.getString("status_in_progress", player)));
+        inventory.setItem(22, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.ALMOST_FINISHED), Messages.getString("status_almost_finished", player)));
+        inventory.setItem(23, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.FINISHED), Messages.getString("status_finished", player)));
+        inventory.setItem(24, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.ARCHIVE), Messages.getString("status_archive", player)));
+        inventory.setItem(25, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.HIDDEN), Messages.getString("status_hidden", player)));
 
         return inventory;
     }
@@ -102,13 +101,13 @@ public class SetupInventory implements Listener {
                     return;
                 }
 
-                event.setCancelled(slot < 45 || slot > 80);
+                event.setCancelled(slot < 36 || slot > 80);
                 if (action != InventoryAction.SWAP_WITH_CURSOR) {
                     return;
                 }
 
-                if (!(slot >= 45 && slot <= 80)) {
-                    if ((slot >= 11 && slot <= 15) || (slot >= 20 && slot <= 25) || (slot >= 29 && slot <= 34)) {
+                if (!(slot >= 36 && slot <= 80)) {
+                    if ((slot >= 11 && slot <= 15) || (slot >= 20 && slot <= 25)) {
                         ItemStack itemStack = event.getCursor();
                         event.setCurrentItem(itemStack);
                         player.setItemOnCursor(null);
