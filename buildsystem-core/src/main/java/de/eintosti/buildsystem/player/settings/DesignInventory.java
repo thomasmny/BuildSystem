@@ -21,6 +21,8 @@ import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.player.settings.DesignColor;
+import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -81,11 +83,14 @@ public class DesignInventory implements Listener {
 
     private void setItem(Player player, Inventory inventory, int position, XMaterial material, String key, DesignColor color) {
         SettingsManager settingsManager = plugin.getSettingsManager();
-        SettingsImpl settings = settingsManager.getSettings(player);
+        Settings settings = settingsManager.getSettings(player);
 
         String displayName = Messages.getString(key, player);
         ItemStack itemStack = InventoryUtils.createItem(material,
-                settings.getDesignColor() == color ? "§a" + displayName : "§7" + displayName);
+                settings.getDesignColor() == color
+                        ? "§a" + displayName
+                        : "§7" + displayName
+        );
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta != null) {
             itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
@@ -106,7 +111,7 @@ public class DesignInventory implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        SettingsImpl settings = plugin.getSettingsManager().getSettings(player);
+        Settings settings = plugin.getSettingsManager().getSettings(player);
         ItemStack itemStack = event.getCurrentItem();
         if (itemStack.getType().toString().contains("STAINED_GLASS_PANE")) {
             plugin.getSettingsInventory().openInventory(player);

@@ -32,7 +32,6 @@ import de.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -111,7 +110,7 @@ public class EditInventory implements Listener {
                 Messages.getString("worldeditor_gamerules_item", player), Messages.getStringList("worldeditor_gamerules_lore", player)
         ));
         addDifficultyItem(player, inventory, buildWorld);
-        inventory.setItem(40, InventoryUtils.createItem(InventoryUtils.getStatusItem(worldData.status().get()), Messages.getString("worldeditor_status_item", player),
+        inventory.setItem(40, InventoryUtils.createItem(plugin.getWorldIcon().getIcon(worldData.status().get()), Messages.getString("worldeditor_status_item", player),
                 Messages.getStringList("worldeditor_status_lore", player,
                         new AbstractMap.SimpleEntry<>("%status%", Messages.getString(buildWorld.getData().status().get().getKey(), player))
                 )

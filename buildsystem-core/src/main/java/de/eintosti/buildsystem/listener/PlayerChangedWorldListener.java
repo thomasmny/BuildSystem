@@ -20,12 +20,14 @@ package de.eintosti.buildsystem.listener;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.player.CachedValues;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
-import de.eintosti.buildsystem.player.CachedValuesImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
-import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import java.util.AbstractMap;
 import java.util.HashMap;
@@ -79,12 +81,12 @@ public class PlayerChangedWorldListener implements Listener {
 
         event.getPlayer().setAllowFlight(true);
 
-        BuildWorldImpl oldWorld = worldStorage.getBuildWorld(event.getFrom());
+        BuildWorld oldWorld = worldStorage.getBuildWorld(event.getFrom());
         if (oldWorld != null && configValues.isUnloadWorlds()) {
             oldWorld.getUnloader().resetUnloadTask();
         }
 
-        BuildWorldImpl newWorld = worldStorage.getBuildWorld(worldName);
+        BuildWorld newWorld = worldStorage.getBuildWorld(worldName);
         if (newWorld != null && !newWorld.getData().physics().get() && player.hasPermission("buildsystem.physics.message")) {
             Messages.sendMessage(player, "physics_deactivated_in_world", new AbstractMap.SimpleEntry<>("%world%", newWorld.getName()));
         }
@@ -112,7 +114,7 @@ public class PlayerChangedWorldListener implements Listener {
             return;
         }
 
-        CachedValuesImpl cachedValues = playerManager.getBuildPlayer(playerUuid).getCachedValues();
+        CachedValues cachedValues = playerManager.getPlayerStorage().getBuildPlayer(playerUuid).getCachedValues();
         cachedValues.resetGameModeIfPresent(player);
         cachedValues.resetInventoryIfPresent(player);
         XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
@@ -120,8 +122,8 @@ public class PlayerChangedWorldListener implements Listener {
     }
 
     private void setGoldBlock(BuildWorld buildWorld) {
-        if (buildWorld == null || buildWorld.getType() != WorldType.VOID
-                || buildWorld.getData().status().get() != WorldStatus.NOT_STARTED) {
+        if (buildWorld == null || buildWorld.getType() != BuildWorldType.VOID
+                || buildWorld.getData().status().get() != BuildWorldStatus.NOT_STARTED) {
             return;
         }
 
@@ -162,7 +164,7 @@ public class PlayerChangedWorldListener implements Listener {
             this.playerArmor.remove(playerUUID);
         }
 
-        if (buildWorld.getData().status().get() == WorldStatus.ARCHIVE) {
+        if (buildWorld.getData().status().get() == BuildWorldStatus.ARCHIVE) {
             this.playerGamemode.put(playerUUID, player.getGameMode());
             this.playerInventory.put(playerUUID, playerInventory.getContents());
             this.playerArmor.put(playerUUID, playerInventory.getArmorContents());

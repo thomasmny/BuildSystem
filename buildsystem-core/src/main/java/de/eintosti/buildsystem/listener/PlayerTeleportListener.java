@@ -19,10 +19,9 @@ package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.world.BuildWorldImpl;
-import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
+import de.eintosti.buildsystem.api.storage.PlayerStorage;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -33,11 +32,11 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class PlayerTeleportListener implements Listener {
 
-    private final PlayerServiceImpl playerManager;
-    private final WorldStorageImpl worldStorage;
+    private final PlayerStorage playerStorage;
+    private final WorldStorage worldStorage;
 
     public PlayerTeleportListener(BuildSystemPlugin plugin) {
-        this.playerManager = plugin.getPlayerService();
+        this.playerStorage = plugin.getPlayerService().getPlayerStorage();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -47,7 +46,7 @@ public class PlayerTeleportListener implements Listener {
         Player player = event.getPlayer();
 
         if (event.getCause() != PlayerTeleportEvent.TeleportCause.UNKNOWN) {
-            playerManager.getBuildPlayer(player).setPreviousLocation(event.getFrom());
+            playerStorage.getBuildPlayer(player).setPreviousLocation(event.getFrom());
         }
 
         Location to = event.getTo();
@@ -70,7 +69,7 @@ public class PlayerTeleportListener implements Listener {
             return;
         }
 
-        if (!WorldPermissionsImpl.of(buildWorld).canEnter(player)) {
+        if (!buildWorld.getPermissions().canEnter(player)) {
             Messages.sendMessage(player, "worlds_tp_entry_forbidden");
             event.setCancelled(true);
         }

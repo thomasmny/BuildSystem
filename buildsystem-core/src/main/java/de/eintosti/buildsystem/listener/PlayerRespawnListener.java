@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.player.settings.SettingsImpl;
+import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.world.SpawnManager;
 import org.bukkit.entity.Player;
@@ -40,7 +40,7 @@ public class PlayerRespawnListener implements Listener {
     @EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();
-        SettingsImpl settings = settingsManager.getSettings(player);
+        Settings settings = settingsManager.getSettings(player);
 
         if (settings.isSpawnTeleport() && spawnManager.spawnExists()) {
             event.setRespawnLocation(spawnManager.getSpawn());

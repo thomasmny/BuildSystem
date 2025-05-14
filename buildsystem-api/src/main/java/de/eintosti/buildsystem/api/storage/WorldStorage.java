@@ -43,6 +43,7 @@ public interface WorldStorage extends Storage<BuildWorld> {
      * @param world The bukkit world object
      * @return The world object if one was found, {@code null} otherwise
      */
+    @Nullable
     BuildWorld getBuildWorld(World world);
 
     /**

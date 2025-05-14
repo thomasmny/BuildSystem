@@ -43,6 +43,7 @@ public class SpawnManager {
         this.plugin = plugin;
         this.worldStorage = plugin.getWorldService().getWorldStorage();
         this.spawnConfig = new SpawnConfig(plugin);
+        load();
     }
 
     public boolean teleport(Player player) {
@@ -94,7 +95,7 @@ public class SpawnManager {
         spawnConfig.saveSpawn(spawn);
     }
 
-    public void load() {
+    private void load() {
         FileConfiguration configuration = spawnConfig.getFile();
         String string = configuration.getString("spawn");
         if (string == null || string.trim().isEmpty()) {

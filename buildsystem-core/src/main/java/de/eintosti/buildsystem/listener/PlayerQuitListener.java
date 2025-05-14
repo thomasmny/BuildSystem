@@ -19,11 +19,11 @@ package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.player.BuildPlayerImpl;
-import de.eintosti.buildsystem.player.CachedValuesImpl;
+import de.eintosti.buildsystem.api.player.BuildPlayer;
+import de.eintosti.buildsystem.api.player.CachedValues;
+import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import java.util.AbstractMap;
 import org.bukkit.Bukkit;
@@ -60,7 +60,7 @@ public class PlayerQuitListener implements Listener {
         Player player = event.getPlayer();
         playerManager.closeNavigator(player);
 
-        SettingsImpl settings = settingsManager.getSettings(player);
+        Settings settings = settingsManager.getSettings(player);
         if (settings.isNoClip()) {
             plugin.getNoClipManager().stopNoClip(player.getUniqueId());
         }
@@ -73,13 +73,13 @@ public class PlayerQuitListener implements Listener {
             player.getInventory().clear();
         }
 
-        BuildPlayerImpl buildPlayer = playerManager.getBuildPlayer(player);
+        BuildPlayer buildPlayer = playerManager.getPlayerStorage().getBuildPlayer(player);
         buildPlayer.setLogoutLocation(new LogoutLocationImpl(
                 player.getWorld().getName(),
                 player.getLocation()
         ));
 
-        CachedValuesImpl cachedValues = buildPlayer.getCachedValues();
+        CachedValues cachedValues = buildPlayer.getCachedValues();
         cachedValues.resetGameModeIfPresent(player);
         cachedValues.resetInventoryIfPresent(player);
         playerManager.getBuildModePlayers().remove(player.getUniqueId());

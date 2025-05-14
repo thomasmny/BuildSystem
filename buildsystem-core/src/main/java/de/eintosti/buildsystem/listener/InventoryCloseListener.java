@@ -21,8 +21,9 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.inventory.XInventoryView;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
-import de.eintosti.buildsystem.util.InventoryUtils;
+import de.eintosti.buildsystem.world.display.WorldIcon;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -32,7 +33,10 @@ import org.bukkit.inventory.ItemStack;
 
 public class InventoryCloseListener implements Listener {
 
+    private final WorldIcon worldIcon;
+
     public InventoryCloseListener(BuildSystemPlugin plugin) {
+        this.worldIcon = plugin.getWorldIcon();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -52,16 +56,11 @@ public class InventoryCloseListener implements Listener {
         ItemStack endCreateItem = inventory.getItem(14);
         ItemStack voidCreateItem = inventory.getItem(15);
 
-        InventoryUtils.setCreateItem(BuildWorldType.NORMAL,
-                normalCreateItem != null ? XMaterial.matchXMaterial(normalCreateItem) : null);
-        InventoryUtils.setCreateItem(BuildWorldType.FLAT,
-                flatCreateItem != null ? XMaterial.matchXMaterial(flatCreateItem) : null);
-        InventoryUtils.setCreateItem(BuildWorldType.NETHER,
-                netherCreateItem != null ? XMaterial.matchXMaterial(netherCreateItem) : null);
-        InventoryUtils.setCreateItem(BuildWorldType.END,
-                endCreateItem != null ? XMaterial.matchXMaterial(endCreateItem) : null);
-        InventoryUtils.setCreateItem(BuildWorldType.VOID,
-                voidCreateItem != null ? XMaterial.matchXMaterial(voidCreateItem) : null);
+        worldIcon.setIcon(BuildWorldType.NORMAL, normalCreateItem != null ? XMaterial.matchXMaterial(normalCreateItem) : null);
+        worldIcon.setIcon(BuildWorldType.FLAT, flatCreateItem != null ? XMaterial.matchXMaterial(flatCreateItem) : null);
+        worldIcon.setIcon(BuildWorldType.NETHER, netherCreateItem != null ? XMaterial.matchXMaterial(netherCreateItem) : null);
+        worldIcon.setIcon(BuildWorldType.END, endCreateItem != null ? XMaterial.matchXMaterial(endCreateItem) : null);
+        worldIcon.setIcon(BuildWorldType.VOID, voidCreateItem != null ? XMaterial.matchXMaterial(voidCreateItem) : null);
 
         ItemStack normalDefaultItem = inventory.getItem(20);
         ItemStack flatDefaultItem = inventory.getItem(21);
@@ -70,18 +69,12 @@ public class InventoryCloseListener implements Listener {
         ItemStack voidDefaultItem = inventory.getItem(24);
         ItemStack importedDefaultItem = inventory.getItem(25);
 
-        InventoryUtils.setDefaultItem(BuildWorldType.NORMAL,
-                normalDefaultItem != null ? XMaterial.matchXMaterial(normalDefaultItem) : null);
-        InventoryUtils.setDefaultItem(BuildWorldType.FLAT,
-                flatDefaultItem != null ? XMaterial.matchXMaterial(flatDefaultItem) : null);
-        InventoryUtils.setDefaultItem(BuildWorldType.NETHER,
-                netherDefaultItem != null ? XMaterial.matchXMaterial(netherDefaultItem) : null);
-        InventoryUtils.setDefaultItem(BuildWorldType.END,
-                endDefaultItem != null ? XMaterial.matchXMaterial(endDefaultItem) : null);
-        InventoryUtils.setDefaultItem(BuildWorldType.VOID,
-                voidDefaultItem != null ? XMaterial.matchXMaterial(voidDefaultItem) : null);
-        InventoryUtils.setDefaultItem(BuildWorldType.IMPORTED,
-                importedDefaultItem != null ? XMaterial.matchXMaterial(importedDefaultItem) : null);
+        worldIcon.setIcon(BuildWorldType.NORMAL, normalDefaultItem != null ? XMaterial.matchXMaterial(normalDefaultItem) : null);
+        worldIcon.setIcon(BuildWorldType.FLAT, flatDefaultItem != null ? XMaterial.matchXMaterial(flatDefaultItem) : null);
+        worldIcon.setIcon(BuildWorldType.NETHER, netherDefaultItem != null ? XMaterial.matchXMaterial(netherDefaultItem) : null);
+        worldIcon.setIcon(BuildWorldType.END, endDefaultItem != null ? XMaterial.matchXMaterial(endDefaultItem) : null);
+        worldIcon.setIcon(BuildWorldType.VOID, voidDefaultItem != null ? XMaterial.matchXMaterial(voidDefaultItem) : null);
+        worldIcon.setIcon(BuildWorldType.IMPORTED, importedDefaultItem != null ? XMaterial.matchXMaterial(importedDefaultItem) : null);
 
         ItemStack notStartedStatusItem = inventory.getItem(29);
         ItemStack inProgressStatusItem = inventory.getItem(30);
@@ -90,17 +83,11 @@ public class InventoryCloseListener implements Listener {
         ItemStack archiveStatusItem = inventory.getItem(33);
         ItemStack hiddenStatusItem = inventory.getItem(34);
 
-        InventoryUtils.setStatusItem(WorldStatus.NOT_STARTED,
-                notStartedStatusItem != null ? XMaterial.matchXMaterial(notStartedStatusItem) : null);
-        InventoryUtils.setStatusItem(WorldStatus.IN_PROGRESS,
-                inProgressStatusItem != null ? XMaterial.matchXMaterial(inProgressStatusItem) : null);
-        InventoryUtils.setStatusItem(WorldStatus.ALMOST_FINISHED,
-                almostFinishedStatusItem != null ? XMaterial.matchXMaterial(almostFinishedStatusItem) : null);
-        InventoryUtils.setStatusItem(WorldStatus.FINISHED,
-                finishedStatusItem != null ? XMaterial.matchXMaterial(finishedStatusItem) : null);
-        InventoryUtils.setStatusItem(WorldStatus.ARCHIVE,
-                archiveStatusItem != null ? XMaterial.matchXMaterial(archiveStatusItem) : null);
-        InventoryUtils.setStatusItem(WorldStatus.HIDDEN,
-                hiddenStatusItem != null ? XMaterial.matchXMaterial(hiddenStatusItem) : null);
+        worldIcon.setIcon(BuildWorldStatus.NOT_STARTED, notStartedStatusItem != null ? XMaterial.matchXMaterial(notStartedStatusItem) : null);
+        worldIcon.setIcon(BuildWorldStatus.IN_PROGRESS, inProgressStatusItem != null ? XMaterial.matchXMaterial(inProgressStatusItem) : null);
+        worldIcon.setIcon(BuildWorldStatus.ALMOST_FINISHED, almostFinishedStatusItem != null ? XMaterial.matchXMaterial(almostFinishedStatusItem) : null);
+        worldIcon.setIcon(BuildWorldStatus.FINISHED, finishedStatusItem != null ? XMaterial.matchXMaterial(finishedStatusItem) : null);
+        worldIcon.setIcon(BuildWorldStatus.ARCHIVE, archiveStatusItem != null ? XMaterial.matchXMaterial(archiveStatusItem) : null);
+        worldIcon.setIcon(BuildWorldStatus.HIDDEN, hiddenStatusItem != null ? XMaterial.matchXMaterial(hiddenStatusItem) : null);
     }
 }

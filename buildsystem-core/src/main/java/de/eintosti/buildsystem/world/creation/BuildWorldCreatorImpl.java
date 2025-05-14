@@ -22,13 +22,13 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.BuildWorldCreator;
+import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
-import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import de.eintosti.buildsystem.world.creation.generator.voidgenerator.DeprecatedVoidGenerator;
 import de.eintosti.buildsystem.world.creation.generator.voidgenerator.ModernVoidGenerator;
 import dev.dewy.nbt.Nbt;
@@ -56,20 +56,20 @@ import org.jetbrains.annotations.Nullable;
 public class BuildWorldCreatorImpl implements BuildWorldCreator {
 
     private final BuildSystemPlugin plugin;
-    private final WorldServiceImpl worldService;
+    private final WorldStorageImpl worldStorage;
 
     private String worldName;
     private Builder creator;
     private boolean privateWorld = false;
     private BuildWorldType worldType = BuildWorldType.NORMAL;
-    private CustomGeneratorImpl customGenerator = null;
+    private CustomGenerator customGenerator = null;
     private long creationDate = System.currentTimeMillis();
     private String template = null;
     private Difficulty difficulty;
 
     public BuildWorldCreatorImpl(BuildSystemPlugin plugin, @NotNull String name) {
         this.plugin = plugin;
-        this.worldService = plugin.getWorldService();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
 
         setName(name);
         setDifficulty(plugin.getConfigValues().getWorldDifficulty());
@@ -85,27 +85,32 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
         setPrivate(buildWorld.getData().privateWorld().get());
     }
 
+    @Override
     public BuildWorldCreatorImpl setName(String name) {
         this.worldName = name;
         return this;
     }
 
+    @Override
     public BuildWorldCreatorImpl setCreator(Builder creator) {
         this.creator = creator;
         return this;
     }
 
+    @Override
     public BuildWorldCreatorImpl setTemplate(String template) {
         this.template = ChatColor.stripColor(template);
         return this;
     }
 
+    @Override
     public BuildWorldCreatorImpl setType(BuildWorldType type) {
         this.worldType = type;
         return this;
     }
 
-    public BuildWorldCreatorImpl setCustomGenerator(CustomGeneratorImpl customGenerator) {
+    @Override
+    public BuildWorldCreatorImpl setCustomGenerator(CustomGenerator customGenerator) {
         this.customGenerator = customGenerator;
         return this;
     }
@@ -132,18 +137,20 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
      * @param player The player who is creating the world
      */
     public void createWorld(Player player) {
-        switch (worldType) {
-            case TEMPLATE:
-                createTemplateWorld(player);
-                break;
-            default:
-                createPredefinedOrCustomWorld(player);
-                break;
+        if (worldStorage.worldAndFolderExist(worldName)) {
+            Messages.sendMessage(player, "worlds_world_exists");
+            return;
+        }
+
+        if (worldType == BuildWorldType.TEMPLATE) {
+            createTemplateWorld(player);
+        } else {
+            createPredefinedOrCustomWorld(player);
         }
     }
 
     private BuildWorldImpl createBuildWorldObject(Player player) {
-        BuildWorld buildWorld = new BuildWorldImpl(
+        BuildWorldImpl buildWorld = new BuildWorldImpl(
                 worldName,
                 creator == null ? Builder.of(player) : creator,
                 worldType,
@@ -161,16 +168,12 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
      * @param player The player who is creating the world
      */
     private void createPredefinedOrCustomWorld(Player player) {
-        if (worldService.worldExists(player, worldName)) {
-            return;
-        }
-
         BuildWorld buildWorld = createBuildWorldObject(player);
-        worldService.addBuildWorld(buildWorld);
+        worldStorage.addBuildWorld(buildWorld);
 
         Messages.sendMessage(player, "worlds_world_creation_started",
                 new AbstractMap.SimpleEntry<>("%world%", worldName),
-                new AbstractMap.SimpleEntry<>("%type%", worldType.getName(player))
+                new AbstractMap.SimpleEntry<>("%type%", Messages.getString(worldType.getKey(), player))
         );
         finishPreparationsAndGenerate(buildWorld);
         teleportAfterCreation(player);
@@ -185,7 +188,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
      */
     public void importWorld(Player player, boolean teleport) {
         BuildWorld buildWorld = createBuildWorldObject(player);
-        worldService.addBuildWorld(buildWorld);
+        worldStorage.addBuildWorld(buildWorld);
         finishPreparationsAndGenerate(buildWorld);
         if (teleport) {
             teleportAfterCreation(player);
@@ -198,10 +201,6 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
      * @param player The player who is creating the world
      */
     private void createTemplateWorld(Player player) {
-        if (worldService.worldExists(player, worldName)) {
-            return;
-        }
-
         File worldFile = new File(Bukkit.getWorldContainer(), worldName);
         File templateFile = new File(plugin.getDataFolder() + File.separator + "templates" + File.separator + template);
         if (!templateFile.exists()) {
@@ -210,7 +209,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
         }
 
         BuildWorld buildWorld = createBuildWorldObject(player);
-        worldService.addBuildWorld(buildWorld);
+        worldStorage.addBuildWorld(buildWorld);
 
         Messages.sendMessage(player, "worlds_template_creation_started",
                 new AbstractMap.SimpleEntry<>("%world%", worldName),
@@ -409,12 +408,12 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
             return;
         }
 
-        BuildWorld buildWorld = worldService.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (buildWorld == null) {
             return;
         }
 
-        buildWorld.manageUnload();
-        worldService.teleport(player, buildWorld);
+        buildWorld.getUnloader().manageUnload();
+        buildWorld.getTeleporter().teleport(player);
     }
 }
