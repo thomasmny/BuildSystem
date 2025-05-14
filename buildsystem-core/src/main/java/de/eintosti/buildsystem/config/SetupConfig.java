@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.config;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.world.display.CustomizableIcons.IconType;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -34,24 +35,24 @@ public class SetupConfig extends ConfigurationFile {
         super(plugin, "setup.yml");
     }
 
-    public <T extends Enum<?>> void saveIcons(String key, Map<T, XMaterial> typeIcons) {
-        typeIcons.forEach((type, material) -> getFile().set("setup." + key + "." + type.name().toLowerCase(Locale.ROOT), material.name()));
+    public <T extends Enum<?>> void saveIcons(IconType iconType, Map<T, XMaterial> typeIcons) {
+        typeIcons.forEach((type, material) -> getFile().set("setup." + iconType.getKey() + "." + type.name().toLowerCase(Locale.ROOT), material.name()));
         saveFile();
     }
 
-    public <T extends Enum<?>> void saveIcon(String key, T type, XMaterial material) {
-        getFile().set("setup." + key + "." + type.name().toLowerCase(Locale.ROOT), material.name());
+    public <T extends Enum<?>> void saveIcon(IconType iconType, T type, XMaterial material) {
+        getFile().set("setup." + iconType.getKey() + "." + type.name().toLowerCase(Locale.ROOT), material.name());
         saveFile();
     }
 
     @Nullable
-    public <T> Map<T, XMaterial> loadIcons(String key, Function<String, T> mapper) {
+    public <T> Map<T, XMaterial> loadIcons(IconType iconType, Function<String, T> mapper) {
         FileConfiguration configuration = getFile();
         if (configuration == null) {
             return null;
         }
 
-        ConfigurationSection configurationSection = configuration.getConfigurationSection("setup." + key);
+        ConfigurationSection configurationSection = configuration.getConfigurationSection("setup." + iconType.getKey());
         if (configurationSection == null) {
             return null;
         }
@@ -64,7 +65,7 @@ public class SetupConfig extends ConfigurationFile {
         Map<T, XMaterial> icons = new HashMap<>();
 
         for (String type : types) {
-            String materialString = configuration.getString("setup." + key + "." + type);
+            String materialString = configuration.getString("setup." + iconType.getKey() + "." + type);
             if (materialString == null) {
                 continue;
             }
