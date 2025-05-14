@@ -31,7 +31,6 @@ import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.PaginatedInventory;
 import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.util.UUIDFetcher;
-import de.eintosti.buildsystem.world.BuildWorldImpl;
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.UUID;
@@ -43,7 +42,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 public class BuilderInventory extends PaginatedInventory implements Listener {
 
@@ -65,35 +63,38 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         addCreatorInfoItem(inventory, buildWorld.getBuilders(), player);
         addBuilderAddItem(inventory, buildWorld, player);
 
-        InventoryUtils.addSkull(inventory, 18, Messages.getString("gui_previous_page", player), Profileable.detect("f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2"));
-        InventoryUtils.addSkull(inventory, 26, Messages.getString("gui_next_page", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"));
+        inventory.setItem(18, InventoryUtils.createSkull(Messages.getString("gui_previous_page", player), Profileable.detect("f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2")));
+        inventory.setItem(26, InventoryUtils.createSkull(Messages.getString("gui_next_page", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158")));
 
         return inventory;
     }
 
     private void addCreatorInfoItem(Inventory inventory, Builders builders, Player player) {
+        ItemStack creatorInfoItem;
         Builder creator = builders.getCreator();
-        if (creator == null || creator.getName().equalsIgnoreCase("-")) {
-            InventoryUtils.addItem(inventory, 4, XMaterial.BARRIER, Messages.getString("worldeditor_builders_no_creator_item", player));
+
+        if (!builders.hasCreator()) {
+            creatorInfoItem = InventoryUtils.createItem(XMaterial.BARRIER,
+                    Messages.getString("worldeditor_builders_no_creator_item", player)
+            );
         } else {
-            InventoryUtils.addSkull(
-                    inventory,
-                    4,
-                    Messages.getString("worldeditor_builders_creator_item", player),
-                    Profileable.of(creator.getUniqueId()),
+            creatorInfoItem = InventoryUtils.createSkull(Messages.getString("worldeditor_builders_creator_item", player), Profileable.of(creator.getUniqueId()),
                     Messages.getString("worldeditor_builders_creator_lore", player,
-                            new AbstractMap.SimpleEntry<>("%creator%", builders.getCreator().getName())
+                            new AbstractMap.SimpleEntry<>("%creator%", builders.getCreator())
                     )
             );
         }
+        inventory.setItem(4, creatorInfoItem);
     }
 
     private void addBuilderAddItem(Inventory inventory, BuildWorld buildWorld, Player player) {
+        ItemStack builderAddItem;
         if (buildWorld.getBuilders().isCreator(player) || player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)) {
-            InventoryUtils.addSkull(inventory, 22, Messages.getString("worldeditor_builders_add_builder_item", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716"));
+            builderAddItem = InventoryUtils.createSkull(Messages.getString("worldeditor_builders_add_builder_item", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716"));
         } else {
-            InventoryUtils.addGlassPane(player, inventory, 22);
+            builderAddItem = InventoryUtils.getColoredGlassPane(player).parseItem();
         }
+        inventory.setItem(22, builderAddItem);
     }
 
     private void addItems(BuildWorld buildWorld, Player player) {
@@ -108,15 +109,13 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
 
         int columnSkull = 9, maxColumnSkull = 17;
         for (Builder builder : builders) {
-            InventoryUtils.addSkull(
-                    inventory,
-                    columnSkull++,
+            inventory.setItem(columnSkull++, InventoryUtils.createSkull(
                     Messages.getString("worldeditor_builders_builder_item", player,
                             new AbstractMap.SimpleEntry<>("%builder%", builder.getName())
                     ),
                     Profileable.username(builder.getName()),
                     Messages.getStringList("worldeditor_builders_builder_lore", player)
-            );
+            ));
 
             if (columnSkull > maxColumnSkull) {
                 columnSkull = 9;
@@ -151,17 +150,18 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        BuildWorld buildWorld = plugin.getPlayerService().getBuildPlayer(player).getCachedWorld();
+        BuildWorld buildWorld = plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();
             Messages.sendMessage(player, "worlds_addbuilder_error");
+            plugin.getLogger().warning("Could not find cached world for " + player.getName());
             return;
         }
 
         ItemStack itemStack = event.getCurrentItem();
         Material material = itemStack.getType();
         if (material != XMaterial.PLAYER_HEAD.get()) {
-            if (plugin.getWorldService().isPermitted(player, WorldsArgument.EDIT.getPermission(), buildWorld.getName())) {
+            if (buildWorld.getPermissions().canPerformCommand(player, WorldsArgument.EDIT.getPermission())) {
                 XSound.BLOCK_CHEST_OPEN.play(player);
                 plugin.getEditInventory().openInventory(player, buildWorld);
             }
@@ -185,20 +185,21 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
                 }
                 break;
             default:
-                if (slot == 4) {
-                    return;
-                }
-
-                ItemMeta itemMeta = itemStack.getItemMeta();
-                if (itemMeta == null || !itemMeta.hasDisplayName() || !event.isShiftClick()) {
+                if (slot == 4 || !event.isShiftClick()) {
                     return;
                 }
 
                 String template = Messages.getString("worldeditor_builders_builder_item", player, new AbstractMap.SimpleEntry<>("%builder%", ""));
-                String builderName = StringUtils.difference(template, itemMeta.getDisplayName());
+                String builderName = StringUtils.difference(template, itemStack.getItemMeta().getDisplayName());
                 UUID builderId = UUIDFetcher.getUUID(builderName);
-                buildWorld.removeBuilder(builderId);
+                if (builderId == null) {
+                    player.closeInventory();
+                    Messages.sendMessage(player, "worlds_removebuilder_error");
+                    plugin.getLogger().warning("Could not find UUID for " + builderName);
+                    return;
+                }
 
+                buildWorld.getBuilders().removeBuilder(builderId);
                 XSound.ENTITY_ENDERMAN_TELEPORT.play(player);
                 Messages.sendMessage(player, "worlds_removebuilder_removed", new AbstractMap.SimpleEntry<>("%builder%", builderName));
         }

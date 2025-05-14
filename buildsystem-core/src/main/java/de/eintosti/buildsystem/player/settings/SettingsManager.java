@@ -25,9 +25,7 @@ import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.version.util.MinecraftVersion;
-import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
-import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import fr.mrmicky.fastboard.FastBoard;
 import java.util.AbstractMap;
 import java.util.HashMap;
@@ -55,11 +53,11 @@ public class SettingsManager {
         this.boards = new HashMap<>();
     }
 
-    public SettingsImpl getSettings(UUID uuid) {
+    public Settings getSettings(UUID uuid) {
         return plugin.getPlayerService().getPlayerStorage().getBuildPlayer(uuid).getSettings();
     }
 
-    public SettingsImpl getSettings(Player player) {
+    public Settings getSettings(Player player) {
         return getSettings(player.getUniqueId());
     }
 
@@ -88,7 +86,7 @@ public class SettingsManager {
             return;
         }
 
-        SettingsImpl settings = getSettings(player);
+        Settings settings = getSettings(player);
         FastBoard board = new FastBoard(player);
         this.boards.put(player.getUniqueId(), board);
 
