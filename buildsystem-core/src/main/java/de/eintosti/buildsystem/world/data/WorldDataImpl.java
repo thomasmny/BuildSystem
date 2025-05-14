@@ -18,8 +18,8 @@
 package de.eintosti.buildsystem.world.data;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.config.ConfigValues;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,12 +56,13 @@ public class WorldDataImpl implements WorldData {
 
     private String worldName;
 
-    public WorldDataImpl(String worldName, ConfigValues configValues, boolean privateWorld) {
+    public WorldDataImpl(String worldName, boolean privateWorld, XMaterial material, ConfigValues configValues) {
         this.customSpawn.set(null);
         this.permission.set(configValues.getDefaultPermission(privateWorld).replace("%world%", worldName));
         this.project.set("-");
 
         this.difficulty.set(configValues.getWorldDifficulty());
+        this.material.set(material);
         this.status.set(BuildWorldStatus.NOT_STARTED);
 
         this.blockBreaking.set(configValues.isWorldBlockBreaking());

@@ -34,7 +34,7 @@ public final class MaterialUtils {
      * are considered interactable though may not perform any additional functionality. Note that the interactability of some materials may be dependent on their state as well.
      * This method will return true if there is at least one state in which additional interact handling is performed for the material.
      *
-     * @param xMaterial The material to check
+     * @param material The material to check
      * @return {@code true} if this material can be interacted with.
      */
     public static boolean isInteractable(XMaterial material) {

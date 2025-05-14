@@ -19,16 +19,20 @@ package de.eintosti.buildsystem.navigator.inventory;
 
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.util.InventoryUtils;
+import java.util.Set;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
-public class ArchiveInventory extends FilteredWorldsInventory {
+public class ArchivedWorldsInventory extends FilteredWorldsInventory {
 
-    public ArchiveInventory(BuildSystemPlugin plugin) {
-        super(plugin, "archive_title", "archive_no_worlds", Visibility.IGNORE,
-                Sets.newHashSet(WorldStatus.ARCHIVE)
-        );
+    private static final Visibility VISIBILITY = Visibility.IGNORE;
+    private static final Set<BuildWorldStatus> VALID_STATUS = Sets.newHashSet(BuildWorldStatus.ARCHIVE);
+
+    public ArchivedWorldsInventory(BuildSystemPlugin plugin) {
+        super(plugin, "archive_title", "archive_no_worlds", VISIBILITY, VALID_STATUS);
     }
 
     @Override

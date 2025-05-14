@@ -40,9 +40,9 @@ body:
     id: server-info
     attributes:
       label: Server Info
-      description: "Minecraft version: (e.g. 1.18.2), Server version (e.g. Spigot, Paper), Plugin version (e.g. 2.17.1)"
+      description: "Minecraft version: (e.g. 1.21.4), Server version (e.g. Spigot, Paper), Plugin version (e.g. 2.17.1)"
       render: shell
-      placeholder: "Minecraft version 1.18.2 on the server version Paper-386 with the Plugin version 2.17.1 "
+      placeholder: "Minecraft version 1.21.4 on the server version Paper-386 with the Plugin version 2.17.1"
     validations:
       required: true
   - type: textarea
