@@ -19,9 +19,12 @@ package de.eintosti.buildsystem.tabcomplete;
 
 import com.google.common.collect.Lists;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.api.world.creation.generator.Generator;
+import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.world.BuildWorldImpl;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,10 +43,10 @@ import org.jetbrains.annotations.NotNull;
 
 public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
 
-    private final WorldServiceImpl worldService;
+    private final WorldStorage worldStorage;
 
     public WorldsTabComplete(BuildSystemPlugin plugin) {
-        this.worldService = plugin.getWorldService();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getCommand("worlds").setTabCompleter(this);
     }
 
@@ -82,38 +85,44 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                     case "setstatus":
                     case "tp":
                     case "unimport": {
-                        worldService.getBuildWorlds().stream()
-                                .filter(world -> player.hasPermission(world.getData().permission().get())
-                                        || world.getData()
-                                        .permission().get().equalsIgnoreCase("-"))
-                                .filter(world -> worldService.isPermitted(player,
-                                        "buildsystem." + args[0].toLowerCase(Locale.ROOT), world.getName()))
+                        worldStorage.getBuildWorlds().stream()
+                                .filter(world -> {
+                                    String permission = world.getData().permission().get();
+                                    return player.hasPermission(permission) || permission.equalsIgnoreCase("-");
+                                })
+                                .filter(world -> world.getPermissions().canPerformCommand(player, "buildsystem." + args[0].toLowerCase(Locale.ROOT)))
                                 .forEach(world -> addArgument(args[1], world.getName(), arrayList));
                         break;
                     }
 
                     case "delete": {
-                        worldService.getBuildWorlds().stream()
-                                .filter(world -> worldService.isPermitted(player,
-                                        "buildsystem." + args[0].toLowerCase(Locale.ROOT), world.getName()))
+                        worldStorage.getBuildWorlds().stream()
+                                .filter(world -> world.getPermissions().canPerformCommand(player, "buildsystem." + args[0].toLowerCase(Locale.ROOT)))
                                 .forEach(world -> addArgument(args[1], world.getName(), arrayList));
                         break;
                     }
 
                     case "addbuilder": {
-                        BuildWorld buildWorld = worldService.getBuildWorld(player.getWorld().getName());
+                        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld().getName());
+                        if (buildWorld == null) {
+                            break;
+                        }
+                        Builders builders = buildWorld.getBuilders();
                         Bukkit.getOnlinePlayers().stream()
-                                .filter(pl -> buildWorld != null && !buildWorld.isBuilder(pl)
-                                        && !buildWorld.isCreator(pl))
+                                .filter(pl -> !builders.isBuilder(pl) && !builders.isCreator(pl))
                                 .forEach(pl -> addArgument(args[1], pl.getName(), arrayList));
                         break;
                     }
 
                     case "removebuilder": {
-                        BuildWorld buildWorld = worldService.getBuildWorld(player.getWorld().getName());
-                        if (buildWorld != null && buildWorld.isCreator(player)) {
-                            for (Builder builder : buildWorld.getBuilders()) {
-                                addArgument(args[1], builder.getName(), arrayList);
+                        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld().getName());
+                        if (buildWorld == null) {
+                            break;
+                        }
+                        Builders builders = buildWorld.getBuilders();
+                        if (builders.isCreator(player)) {
+                            for (String builderName : builders.getBuilderNames()) {
+                                addArgument(args[1], builderName, arrayList);
                             }
                         }
                         break;
@@ -136,7 +145,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                                 return false;
                             }
 
-                            return worldService.getBuildWorld(name) == null;
+                            return worldStorage.worldExists(name);
                         });
 
                         if (directories == null || directories.length == 0) {
@@ -161,9 +170,10 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                 Map<String, List<String>> arguments = new HashMap<String, List<String>>() {{
                     put("-g", Arrays.stream(Generator.values()).filter(generator -> generator != Generator.CUSTOM)
                             .map(Enum::name)
-                            .collect(Collectors.toList()));
+                            .collect(Collectors.toList())
+                    );
                     put("-c", Lists.newArrayList());
-                    put("-t", Arrays.stream(WorldType.values()).map(Enum::name).collect(Collectors.toList()));
+                    put("-t", Arrays.stream(BuildWorldType.values()).map(Enum::name).collect(Collectors.toList()));
                 }};
 
                 if (args.length % 2 == 1) {

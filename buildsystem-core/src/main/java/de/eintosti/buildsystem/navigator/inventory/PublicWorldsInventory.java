@@ -21,25 +21,31 @@ import com.cryptomorin.xseries.profiles.objects.Profileable;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.world.display.FolderImpl;
 import java.util.AbstractMap;
+import java.util.Set;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-public class WorldsInventory extends FilteredWorldsInventory {
+public class PublicWorldsInventory extends FilteredWorldsInventory {
+
+    private static final Visibility VISIBILITY = Visibility.PUBLIC;
+    private static final Set<BuildWorldStatus> VALID_STATUS = Sets.newHashSet(
+            BuildWorldStatus.NOT_STARTED, BuildWorldStatus.IN_PROGRESS, BuildWorldStatus.ALMOST_FINISHED, BuildWorldStatus.FINISHED
+    );
 
     private final BuildSystemPlugin plugin;
     private final PlayerServiceImpl playerManager;
 
-    public WorldsInventory(BuildSystemPlugin plugin) {
-        super(plugin, "world_navigator_title", "world_navigator_no_worlds", Visibility.PUBLIC,
-                Sets.newHashSet(WorldStatus.NOT_STARTED, WorldStatus.IN_PROGRESS, WorldStatus.ALMOST_FINISHED, WorldStatus.FINISHED)
-        );
+    public PublicWorldsInventory(BuildSystemPlugin plugin) {
+        super(plugin, "world_navigator_title", "world_navigator_no_worlds", VISIBILITY, VALID_STATUS);
 
         this.plugin = plugin;
         this.playerManager = plugin.getPlayerService();

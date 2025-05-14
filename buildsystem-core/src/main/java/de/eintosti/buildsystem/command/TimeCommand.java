@@ -22,8 +22,6 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.util.WorldPermissions;
 import de.eintosti.buildsystem.config.ConfigValues;
-import de.eintosti.buildsystem.world.BuildWorldImpl;
-import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.AbstractMap;
 import java.util.Locale;
 import org.bukkit.Bukkit;
@@ -62,7 +60,7 @@ public class TimeCommand implements CommandExecutor {
         }
 
         BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(world);
-        WorldPermissions permissions = WorldPermissionsImpl.of(buildWorld);
+        WorldPermissions permissions = buildWorld.getPermissions();
 
         switch (label.toLowerCase(Locale.ROOT)) {
             case "day": {

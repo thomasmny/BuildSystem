@@ -22,14 +22,14 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
-import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
-import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
-import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -166,12 +166,12 @@ public class YamlWorldStorage extends WorldStorageImpl {
 
         return new BuildWorldImpl(
                 worldName,
-                creator,
                 worldType,
                 worldData,
+                creator,
+                builders,
                 creationDate,
-                customGenerator,
-                builders
+                customGenerator
         );
     }
 

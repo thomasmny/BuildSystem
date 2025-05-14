@@ -19,16 +19,18 @@ package de.eintosti.buildsystem.world;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
-import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.util.WorldPermissions;
 import de.eintosti.buildsystem.api.world.util.WorldTeleporter;
+import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.builder.BuildersImpl;
-import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.util.WorldLoaderImpl;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
@@ -36,16 +38,19 @@ import de.eintosti.buildsystem.world.util.WorldTeleporterImpl;
 import de.eintosti.buildsystem.world.util.WorldUnloaderImpl;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
 public final class BuildWorldImpl implements BuildWorld {
+
+    private static final BuildSystemPlugin PLUGIN = JavaPlugin.getPlugin(BuildSystemPlugin.class);
 
     private String name;
     private boolean loaded;
@@ -53,35 +58,78 @@ public final class BuildWorldImpl implements BuildWorld {
     private final BuildWorldType worldType;
     private final WorldDataImpl worldData;
     private final BuildersImpl builders;
-    private final CustomGeneratorImpl customGenerator;
+    private final CustomGenerator customGenerator;
     private final long creationDate;
 
     private final WorldLoaderImpl worldLoader;
     private final WorldUnloaderImpl worldUnloader;
 
+//    public BuildWorldImpl(
+//            String name,
+//            Builder creator,
+//            BuildWorldType worldType,
+//            long creationDate,
+//            boolean privateWorld,
+//            CustomGenerator customGenerator,
+//            List<Builder> builders
+//    ) {
+//        BuildSystemPlugin plugin = JavaPlugin.getPlugin(BuildSystemPlugin.class);
+//
+//        this.name = name;
+//        this.worldType = worldType;
+//        this.worldData = new WorldDataImpl(name, plugin.getConfigValues(), privateWorld);
+//        this.creationDate = creationDate;
+//        this.customGenerator = customGenerator;
+//        this.builders = new BuildersImpl(creator, builders);
+//
+//        this.worldLoader = WorldLoaderImpl.of(this);
+//        this.worldUnloader = WorldUnloaderImpl.of(this);
+//        this.worldUnloader.manageUnload();
+//    }
+
     public BuildWorldImpl(
             String name,
             Builder creator,
             BuildWorldType worldType,
-            WorldDataImpl worldData,
             long creationDate,
-            CustomGeneratorImpl customGenerator,
-            List<Builder> builders
+            boolean privateWorld,
+            CustomGenerator customGenerator
+    ) {
+        this(
+                name,
+                worldType,
+                new WorldDataImpl(
+                        name,
+                        privateWorld,
+                        privateWorld ? XMaterial.PLAYER_HEAD : PLUGIN.getWorldIcon().getIcon(worldType),
+                        PLUGIN.getConfigValues()
+                ),
+                creator,
+                new ArrayList<>(),
+                creationDate,
+                customGenerator
+        );
+    }
+
+    public BuildWorldImpl(
+            String name,
+            BuildWorldType worldType,
+            WorldDataImpl worldData,
+            Builder creator,
+            List<Builder> builders,
+            long creationDate,
+            CustomGenerator customGenerator
     ) {
         this.name = name;
         this.worldType = worldType;
         this.worldData = worldData;
+        this.builders = new BuildersImpl(creator, builders);
         this.creationDate = creationDate;
         this.customGenerator = customGenerator;
-        this.builders = new BuildersImpl(creator, builders);
 
         this.worldLoader = WorldLoaderImpl.of(this);
         this.worldUnloader = WorldUnloaderImpl.of(this);
         this.worldUnloader.manageUnload();
-    }
-
-    public BuildWorldImpl(String name, WorldDataImpl worldData) {
-        this(name, null, BuildWorldType.NORMAL, worldData, System.currentTimeMillis(), null, Collections.emptyList());
     }
 
     /**
@@ -119,13 +167,48 @@ public final class BuildWorldImpl implements BuildWorld {
 
     @Override
     public List<String> getLore(Player player) {
+        @SuppressWarnings("unchecked")
+        Map.Entry<String, Object>[] placeholders = new Map.Entry[]{
+                new AbstractMap.SimpleEntry<>("%status%", Messages.getString(worldData.status().get().getKey(), player)),
+                new AbstractMap.SimpleEntry<>("%project%", worldData.project().get()),
+                new AbstractMap.SimpleEntry<>("%permission%", worldData.permission().get()),
+                new AbstractMap.SimpleEntry<>("%creator%", builders.hasCreator() ? builders.getCreator().getName() : "-"),
+                new AbstractMap.SimpleEntry<>("%creation%", Messages.formatDate(getCreationDate())),
+                new AbstractMap.SimpleEntry<>("%lastedited%", Messages.formatDate(worldData.lastEdited().get())),
+                new AbstractMap.SimpleEntry<>("%lastloaded%", Messages.formatDate(worldData.lastLoaded().get())),
+                new AbstractMap.SimpleEntry<>("%lastunloaded%", Messages.formatDate(worldData.lastUnloaded().get()))
+        };
+
+        List<String> messageList = getPermissions().canPerformCommand(player, WorldsTabComplete.WorldsArgument.EDIT.getPermission())
+                ? Messages.getStringList("world_item_lore_edit", player, placeholders)
+                : Messages.getStringList("world_item_lore_normal", player, placeholders);
+
         List<String> lore = new ArrayList<>();
-        lore.add(Messages.getString("world_item_creator", player,
-                new AbstractMap.SimpleEntry<>("%creator%", builders.hasCreator() ? builders.getCreator().getName() : "N/A"))
-        );
-        lore.add(Messages.getString("world_item_type", player,
-                new AbstractMap.SimpleEntry<>("%type%", Messages.getString(getType().getKey(), player)))
-        );
+
+        // Replace %builders% placeholder
+        for (String line : messageList) {
+            if (!line.contains("%builders%")) {
+                lore.add(line);
+                continue;
+            }
+
+            List<String> builderLines = builders.formatBuildersForLore(player);
+            if (builderLines.isEmpty()) {
+                continue;
+            }
+
+            // Replace the placeholder in the first line only
+            lore.add(line.replace("%builders%", builderLines.get(0).trim()));
+
+            // Add any additional lines
+            for (int i = 1; i < builderLines.size(); i++) {
+                String builderLine = builderLines.get(i).trim();
+                if (!builderLine.isEmpty()) {
+                    lore.add(builderLine);
+                }
+            }
+        }
+
         return lore;
     }
 
@@ -158,7 +241,7 @@ public final class BuildWorldImpl implements BuildWorld {
 
     @Override
     @Nullable
-    public CustomGeneratorImpl getCustomGenerator() {
+    public CustomGenerator getCustomGenerator() {
         return customGenerator;
     }
 

@@ -71,13 +71,13 @@ public class NavigatorInventory implements Listener {
 
         switch (event.getSlot()) {
             case 11:
-                plugin.getWorldsInventory().openInventory(player);
+                plugin.getPublicWorldsInventory().openInventory(player);
                 break;
             case 12:
-                plugin.getArchiveInventory().openInventory(player);
+                plugin.getArchivedWorldsInventory().openInventory(player);
                 break;
             case 13:
-                plugin.getPrivateInventory().openInventory(player);
+                plugin.getPrivateWorldsInventory().openInventory(player);
                 break;
             case 15:
                 if (!player.hasPermission("buildsystem.settings")) {
