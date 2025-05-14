@@ -105,7 +105,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
     }
 
     private void addPredefinedWorldItem(Player player, Inventory inventory, int position, BuildWorldType worldType, String displayName) {
-        XMaterial material = plugin.getWorldIcon().getIcon(worldType);
+        XMaterial material = plugin.getCustomizableIcons().getIcon(worldType);
 
         if (!player.hasPermission("buildsystem.create.type." + worldType.name().toLowerCase(Locale.ROOT))) {
             material = XMaterial.BARRIER;

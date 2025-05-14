@@ -101,7 +101,7 @@ public final class BuildWorldImpl implements BuildWorld {
                 new WorldDataImpl(
                         name,
                         privateWorld,
-                        privateWorld ? XMaterial.PLAYER_HEAD : PLUGIN.getWorldIcon().getIcon(worldType),
+                        privateWorld ? XMaterial.PLAYER_HEAD : PLUGIN.getCustomizableIcons().getIcon(worldType),
                         PLUGIN.getConfigValues()
                 ),
                 creator,
