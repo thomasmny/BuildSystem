@@ -19,8 +19,8 @@ package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
-import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import org.bukkit.entity.Player;
@@ -44,7 +44,7 @@ public class PlayerInventoryClearListener implements Listener {
     @EventHandler
     public void onPlayerInventoryClear(PlayerInventoryClearEvent event) {
         Player player = event.getPlayer();
-        SettingsImpl settings = settingsManager.getSettings(player);
+        Settings settings = settingsManager.getSettings(player);
         if (!settings.isKeepNavigator() || !player.hasPermission("buildsystem.navigator.item")) {
             return;
         }

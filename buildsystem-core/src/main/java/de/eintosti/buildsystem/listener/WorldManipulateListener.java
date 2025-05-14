@@ -24,10 +24,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.event.EventDispatcher;
 import de.eintosti.buildsystem.event.world.BuildWorldManipulationEvent;
-import de.eintosti.buildsystem.world.BuildWorldImpl;
-import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -114,7 +111,7 @@ public class WorldManipulateListener implements Listener {
         WorldData worldData = buildWorld.getData();
 
         Cancellable parentEvent = event.getParentEvent();
-        boolean canModify = WorldPermissionsImpl.of(buildWorld).canModify(player, () -> getRelatedWorldSetting(parentEvent, worldData).get());
+        boolean canModify = buildWorld.getPermissions().canModify(player, () -> getRelatedWorldSetting(parentEvent, worldData).get());
         if (!canModify) {
             parentEvent.setCancelled(true);
             denyPlayerInteraction(event);

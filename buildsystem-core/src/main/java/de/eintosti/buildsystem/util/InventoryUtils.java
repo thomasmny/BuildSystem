@@ -24,8 +24,8 @@ import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
+import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -148,7 +148,7 @@ public final class InventoryUtils {
      * @return The colored glass pane material
      */
     public static XMaterial getColoredGlassPane(Player player) {
-        SettingsImpl settings = plugin.getSettingsManager().getSettings(player);
+        Settings settings = plugin.getSettingsManager().getSettings(player);
         DesignColor color = settings.getDesignColor();
 
         switch (color) {

@@ -28,7 +28,6 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -74,10 +73,10 @@ public class EditSessionListener implements Listener {
      * @param buildWorld The build world
      * @param player     The player
      * @param event      The EditSessionEvent
-     * @return {@code true} if the edit was cancelled, otherwise {@code false}
+     * @return {@code true} if the edit was canceled, otherwise {@code false}
      */
     private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, EditSessionEvent event) {
-        if (WorldPermissionsImpl.of(buildWorld).canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.archive")) {
+        if (buildWorld.getPermissions().canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.archive")) {
             return false;
         }
 
@@ -95,10 +94,10 @@ public class EditSessionListener implements Listener {
      * @param buildWorld The build world
      * @param player     The player
      * @param event      The EditSessionEvent
-     * @return {@code true} if the edit was cancelled, otherwise {@code false}
+     * @return {@code true} if the edit was canceled, otherwise {@code false}
      */
     private boolean disableNonBuilders(BuildWorld buildWorld, Player player, EditSessionEvent event) {
-        if (WorldPermissionsImpl.of(buildWorld).canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.builders")) {
+        if (buildWorld.getPermissions().canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.builders")) {
             return false;
         }
 
