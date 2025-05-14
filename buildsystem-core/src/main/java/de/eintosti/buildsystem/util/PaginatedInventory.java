@@ -49,9 +49,9 @@ public abstract class PaginatedInventory {
      * Attempts to go to the previous page of an inventory.
      *
      * @param player        The player
-     * @param numObjects    The amount of objects to display on the page
-     * @param maxNumObjects The maximum amount of objects per page
-     * @return {@code true} if the index was decremented (i.e. the page was changed), otherwise {@code false}.
+     * @param numObjects    The number of objects to display on the page
+     * @param maxNumObjects The maximum number of objects per page
+     * @return {@code true} if the index was decremented (i.e., the page was changed), otherwise {@code false}.
      */
     public boolean decrementInv(Player player, int numObjects, int maxNumObjects) {
         int numOfPages = (numObjects / maxNumObjects) + (numObjects % maxNumObjects == 0 ? 0 : 1);
@@ -72,8 +72,8 @@ public abstract class PaginatedInventory {
      * Attempts to go to the next page of an inventory.
      *
      * @param player        The player
-     * @param numObjects    The amount of objects to display on the page
-     * @param maxNumObjects The maximum amount of objects per page
+     * @param numObjects    The number of objects to display on the page
+     * @param maxNumObjects The maximum number of objects per page
      * @return {@code true} if the index was incremented (i.e. the page was changed), otherwise {@code false}.
      */
     public boolean incrementInv(Player player, int numObjects, int maxNumObjects) {

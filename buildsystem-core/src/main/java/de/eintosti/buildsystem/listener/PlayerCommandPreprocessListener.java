@@ -20,14 +20,14 @@ package de.eintosti.buildsystem.listener;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
-import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.BuildWorldImpl;
-import de.eintosti.buildsystem.world.builder.BuildersImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
+import de.eintosti.buildsystem.util.InventoryUtils;
 import java.util.List;
 import java.util.Set;
 import org.bukkit.Bukkit;
@@ -275,11 +275,11 @@ public class PlayerCommandPreprocessListener implements Listener {
     }
 
     private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
-        if (WorldPermissionsImpl.of(buildWorld).canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.archive")) {
+        if (buildWorld.getPermissions().canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.archive")) {
             return false;
         }
 
-        if (buildWorld.getData().status().get() == WorldStatus.ARCHIVE) {
+        if (buildWorld.getData().status().get() == BuildWorldStatus.ARCHIVE) {
             event.setCancelled(true);
             Messages.sendMessage(player, "command_archive_world");
             return true;
@@ -288,11 +288,11 @@ public class PlayerCommandPreprocessListener implements Listener {
     }
 
     private void checkBuilders(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
-        if (WorldPermissionsImpl.of(buildWorld).canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.builders")) {
+        if (buildWorld.getPermissions().canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.builders")) {
             return;
         }
 
-        BuildersImpl builders = buildWorld.getBuilders();
+        Builders builders = buildWorld.getBuilders();
         if (builders.isCreator(player)) {
             return;
         }

@@ -19,18 +19,21 @@ package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.player.BuildPlayer;
+import de.eintosti.buildsystem.api.player.LogoutLocation;
+import de.eintosti.buildsystem.api.player.settings.Settings;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.config.ConfigValues;
-import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.util.UpdateChecker;
-import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.SpawnManager;
-import de.eintosti.buildsystem.world.data.WorldDataImpl;
-import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import io.papermc.lib.PaperLib;
 import java.util.AbstractMap;
 import org.bukkit.Bukkit;
@@ -80,7 +83,7 @@ public class PlayerJoinListener implements Listener {
         Player player = event.getPlayer();
         UUIDFetcher.cacheUser(player.getUniqueId(), player.getName());
 
-        BuildPlayerImpl buildPlayer = playerManager.createBuildPlayer(player);
+        BuildPlayer buildPlayer = playerManager.getPlayerStorage().createBuildPlayer(player);
         manageHidePlayer(player, buildPlayer);
         manageSettings(player, buildPlayer.getSettings());
         teleportToCorrectLocation(player, buildPlayer);
@@ -89,12 +92,12 @@ public class PlayerJoinListener implements Listener {
         String worldName = player.getWorld().getName();
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (buildWorld != null) {
-            WorldDataImpl worldData = buildWorld.getData();
+            WorldData worldData = buildWorld.getData();
             if (!worldData.physics().get() && player.hasPermission("buildsystem.physics.message")) {
                 Messages.sendMessage(player, "physics_deactivated_in_world", new AbstractMap.SimpleEntry<>("%world%", worldName));
             }
 
-            if (configValues.isArchiveVanish() && worldData.status().get() == WorldStatus.ARCHIVE) {
+            if (configValues.isArchiveVanish() && worldData.status().get() == BuildWorldStatus.ARCHIVE) {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, false, false), false);
                 Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
             }
@@ -116,13 +119,13 @@ public class PlayerJoinListener implements Listener {
      * @param player      The player to teleport
      * @param buildPlayer The build-player for the given player
      */
-    private void teleportToCorrectLocation(Player player, BuildPlayerImpl buildPlayer) {
+    private void teleportToCorrectLocation(Player player, BuildPlayer buildPlayer) {
         if (buildPlayer.getSettings().isSpawnTeleport() && spawnManager.spawnExists()) {
             spawnManager.teleport(player);
             return;
         }
 
-        LogoutLocationImpl logoutLocation = buildPlayer.getLogoutLocation();
+        LogoutLocation logoutLocation = buildPlayer.getLogoutLocation();
         if (logoutLocation == null) {
             return;
         }
@@ -142,7 +145,7 @@ public class PlayerJoinListener implements Listener {
     }
 
     @SuppressWarnings("deprecation")
-    private void manageHidePlayer(Player player, BuildPlayerImpl buildPlayer) {
+    private void manageHidePlayer(Player player, BuildPlayer buildPlayer) {
         // Hide all players to player
         if (buildPlayer.getSettings().isHidePlayers()) {
             Bukkit.getOnlinePlayers().forEach(player::hidePlayer);
@@ -163,7 +166,7 @@ public class PlayerJoinListener implements Listener {
      * @param player   The player to activate the features for
      * @param settings The player's settings
      */
-    private void manageSettings(Player player, SettingsImpl settings) {
+    private void manageSettings(Player player, Settings settings) {
         if (settings.isNoClip()) {
             plugin.getNoClipManager().startNoClip(player);
         }

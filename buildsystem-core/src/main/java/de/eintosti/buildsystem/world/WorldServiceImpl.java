@@ -20,28 +20,35 @@ package de.eintosti.buildsystem.world;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.navigator.settings.WorldDisplay;
+import de.eintosti.buildsystem.api.navigator.settings.WorldFilter;
+import de.eintosti.buildsystem.api.navigator.settings.WorldSort;
+import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.WorldService;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigValues;
-import de.eintosti.buildsystem.util.FileUtils;
-import de.eintosti.buildsystem.util.PlayerChatInput;
-import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl;
-import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.factory.FolderStorageFactory;
 import de.eintosti.buildsystem.storage.factory.WorldStorageFactory;
+import de.eintosti.buildsystem.util.FileUtils;
+import de.eintosti.buildsystem.util.PlayerChatInput;
+import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl;
+import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import io.papermc.lib.PaperLib;
 import java.io.File;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -78,6 +85,49 @@ public class WorldServiceImpl implements WorldService {
     @Override
     public FolderStorageImpl getFolderStorage() {
         return folderStorage;
+    }
+
+    /**
+     * Gets the worlds in the order they are to be displayed. First, the {@link WorldFilter} is applied. Then, the list of worlds is sorted using the {@link WorldSort}.
+     *
+     * @param settings The settings that provide the sorting method
+     * @return The list of sorted worlds
+     */
+    public List<BuildWorld> getDisplayOrder(Settings settings) {
+        WorldDisplay worldDisplay = settings.getWorldDisplay();
+        Comparator<BuildWorld> comparator;
+
+        switch (worldDisplay.getWorldSort()) {
+            case OLDEST_FIRST:
+                comparator = Comparator.comparingLong(BuildWorld::getCreationDate);
+                break;
+            case NEWEST_FIRST:
+                comparator = Comparator.comparingLong(BuildWorld::getCreationDate).reversed();
+                break;
+            case PROJECT_A_TO_Z:
+                comparator = Comparator.comparing((BuildWorld buildWorld) -> buildWorld.getData().project().get().toLowerCase(Locale.ROOT));
+                break;
+            case PROJECT_Z_TO_A:
+                comparator = Comparator.comparing((BuildWorld buildWorld) -> buildWorld.getData().project().get().toLowerCase(Locale.ROOT)).reversed();
+                break;
+            case STATUS_NOT_STARTED:
+                comparator = Comparator.comparingInt((BuildWorld buildWorld) -> buildWorld.getData().status().get().getStage());
+                break;
+            case STATUS_FINISHED:
+                comparator = Comparator.comparingInt((BuildWorld buildWorld) -> buildWorld.getData().status().get().getStage()).reversed();
+                break;
+            case NAME_Z_TO_A:
+                comparator = Comparator.comparing((BuildWorld buildWorld) -> buildWorld.getName().toLowerCase(Locale.ROOT)).reversed();
+                break;
+            default: // NAME_A_TO_Z
+                comparator = Comparator.comparing((BuildWorld buildWorld) -> buildWorld.getName().toLowerCase(Locale.ROOT));
+                break;
+        }
+
+        return worldStorage.getBuildWorlds().stream()
+                .filter(worldDisplay.getWorldFilter().apply())
+                .sorted(comparator)
+                .collect(Collectors.toList());
     }
 
     public void startWorldNameInput(Player player, BuildWorldType worldType, @Nullable String template, boolean privateWorld) {
@@ -239,11 +289,11 @@ public class WorldServiceImpl implements WorldService {
     }
 
     /**
-     * Unimport an existing {@link BuildWorldImpl}. In comparison to {@link #deleteWorld(Player, BuildWorldImpl)}, unimporting a world does not delete the world's directory.
+     * Unimport an existing {@link BuildWorldImpl}. In comparison to {@link #deleteWorld(Player, BuildWorld)}, unimporting a world does not delete the world's directory.
      *
      * @param player     The player unloading the world
      * @param buildWorld The build world object
-     * @param save       Should the world be saved before unimporting?
+     * @param save       Whether to save the world before unloading
      */
     public void unimportWorld(Player player, BuildWorld buildWorld, boolean save) {
         buildWorld.getUnloader().forceUnload(save);
