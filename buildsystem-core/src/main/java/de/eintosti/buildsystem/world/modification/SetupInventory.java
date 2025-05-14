@@ -23,7 +23,7 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.display.WorldIcon;
+import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -36,10 +36,10 @@ import org.bukkit.inventory.ItemStack;
 
 public class SetupInventory implements Listener {
 
-    private final WorldIcon worldIcon;
+    private final CustomizableIcons worldIcon;
 
     public SetupInventory(BuildSystemPlugin plugin) {
-        this.worldIcon = plugin.getWorldIcon();
+        this.worldIcon = plugin.getCustomizableIcons();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
