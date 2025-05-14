@@ -27,16 +27,16 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Manages the default icons for different world types.
+ * User-customizable icons for different areas of the plugin.
  */
-public class WorldIcon {
+public class CustomizableIcons {
 
     private final SetupConfig setupConfig;
 
     private final Map<BuildWorldType, XMaterial> typeIcons;
     private final Map<BuildWorldStatus, XMaterial> statusIcons;
 
-    public WorldIcon(BuildSystemPlugin plugin) {
+    public CustomizableIcons(BuildSystemPlugin plugin) {
         this.setupConfig = new SetupConfig(plugin);
 
         this.typeIcons = loadTypeIcons();
@@ -86,21 +86,17 @@ public class WorldIcon {
     }
 
     /**
-     * Gets the icon for a specific world type.
+     * Gets the icon for a specific {@link BuildWorldType}.
      *
      * @param type The world type
      * @return The material to use as an icon
      */
     public XMaterial getIcon(BuildWorldType type) {
-        if (!this.typeIcons.containsKey(type)) {
-            System.out.println("WorldIcon: No icon found for type " + type.name());
-            return XMaterial.BARRIER;
-        }
         return this.typeIcons.get(type);
     }
 
     /**
-     * Gets the icon for a specific world status.
+     * Gets the icon for a specific {@link BuildWorldStatus}.
      *
      * @param status The world status
      * @return The material to use as an icon
@@ -110,7 +106,7 @@ public class WorldIcon {
     }
 
     /**
-     * Sets a custom icon for a world type.
+     * Sets a custom icon for a {@link BuildWorldType}.
      *
      * @param type     The world type
      * @param material The material to use as an icon
@@ -121,7 +117,7 @@ public class WorldIcon {
     }
 
     /**
-     * Sets a custom icon for a world status.
+     * Sets a custom icon for a {@link BuildWorldStatus}.
      *
      * @param status   The world status
      * @param material The material to use as an icon
