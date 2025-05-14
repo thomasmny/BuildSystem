@@ -84,9 +84,7 @@ public abstract class FilteredWorldsInventory extends PaginatedInventory impleme
 
     protected Inventory createInventory(Player player) {
         Inventory inventory = Bukkit.createInventory(null, 54, Messages.getString(inventoryName, player));
-
-        int numOfPages = (numOfWorlds(player) / MAX_WORLDS) + (numOfWorlds(player) % MAX_WORLDS == 0 ? 0 : 1);
-        InventoryUtils.fillWithGlass(inventory, player, getInvIndex(player), numOfPages);
+        InventoryUtils.fillWithGlass(inventory, player);
 
         addWorldSortItem(inventory, player);
         addWorldFilterItem(inventory, player);
