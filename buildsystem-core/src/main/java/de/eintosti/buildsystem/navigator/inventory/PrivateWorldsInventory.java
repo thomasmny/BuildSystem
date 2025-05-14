@@ -21,19 +21,25 @@ import com.cryptomorin.xseries.profiles.objects.Profileable;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.InventoryUtils;
+import java.util.Set;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
-public class PrivateInventory extends FilteredWorldsInventory {
+public class PrivateWorldsInventory extends FilteredWorldsInventory {
+
+    private static final Visibility VISIBILITY = Visibility.PRIVATE;
+    private static final Set<BuildWorldStatus> VALID_STATUS = Sets.newHashSet(
+            BuildWorldStatus.NOT_STARTED, BuildWorldStatus.IN_PROGRESS, BuildWorldStatus.ALMOST_FINISHED, BuildWorldStatus.FINISHED
+    );
 
     private final PlayerServiceImpl playerManager;
 
-    public PrivateInventory(BuildSystemPlugin plugin) {
-        super(plugin, "private_title", "private_no_worlds", Visibility.PRIVATE,
-                Sets.newHashSet(WorldStatus.NOT_STARTED, WorldStatus.IN_PROGRESS, WorldStatus.ALMOST_FINISHED, WorldStatus.FINISHED)
-        );
+    public PrivateWorldsInventory(BuildSystemPlugin plugin) {
+        super(plugin, "private_title", "private_no_worlds", VISIBILITY, VALID_STATUS);
         this.playerManager = plugin.getPlayerService();
     }
 

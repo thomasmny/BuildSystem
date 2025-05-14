@@ -24,6 +24,9 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Interface for managing builders in a {@link de.eintosti.buildsystem.api.world.BuildWorld}.
+ */
 public interface Builders {
 
     /**

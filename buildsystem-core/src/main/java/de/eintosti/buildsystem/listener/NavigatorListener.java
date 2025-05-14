@@ -23,14 +23,16 @@ import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.inventory.XInventoryView;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.navigator.settings.NavigatorInventoryType;
+import de.eintosti.buildsystem.api.navigator.settings.NavigatorType;
+import de.eintosti.buildsystem.api.player.CachedValues;
+import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
-import de.eintosti.buildsystem.api.navigator.settings.NavigatorInventoryType;
-import de.eintosti.buildsystem.player.CachedValuesImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import org.bukkit.Material;
@@ -61,7 +63,7 @@ public class NavigatorListener implements Listener {
     private final ConfigValues configValues;
 
     private final ArmorStandManager armorStandManager;
-    private final PlayerServiceImpl playerManager;
+    private final PlayerServiceImpl playerService;
     private final SettingsManager settingsManager;
     private final WorldStorage worldStorage;
 
@@ -70,7 +72,7 @@ public class NavigatorListener implements Listener {
         this.configValues = plugin.getConfigValues();
 
         this.armorStandManager = plugin.getArmorStandManager();
-        this.playerManager = plugin.getPlayerService();
+        this.playerService = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsManager();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
 
@@ -96,7 +98,7 @@ public class NavigatorListener implements Listener {
 
         if (isCloseNavigatorItem(player, itemStack)) {
             event.setCancelled(true);
-            playerManager.closeNavigator(player);
+            playerService.closeNavigator(player);
             return;
         }
 
@@ -106,8 +108,7 @@ public class NavigatorListener implements Listener {
         }
 
         XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-        if (xMaterial != configValues.getNavigatorItem()
-                || !itemMeta.getDisplayName().equals(Messages.getString("navigator_item", player))) {
+        if (xMaterial != configValues.getNavigatorItem() || !itemMeta.getDisplayName().equals(Messages.getString("navigator_item", player))) {
             return;
         }
 
@@ -121,7 +122,7 @@ public class NavigatorListener implements Listener {
     }
 
     private void openNavigator(Player player) {
-        SettingsImpl settings = settingsManager.getSettings(player);
+        Settings settings = settingsManager.getSettings(player);
         if (settings.getNavigatorType() == NavigatorType.OLD) {
             plugin.getNavigatorInventory().openInventory(player);
             XSound.BLOCK_CHEST_OPEN.play(player);
@@ -129,7 +130,7 @@ public class NavigatorListener implements Listener {
         }
 
         // NEW
-        if (playerManager.getOpenNavigator().contains(player)) {
+        if (playerService.getOpenNavigator().contains(player)) {
             Messages.sendMessage(player, "worlds_navigator_open");
             return;
         }
@@ -142,7 +143,7 @@ public class NavigatorListener implements Listener {
     }
 
     private void summonNewNavigator(Player player) {
-        CachedValuesImpl cachedValues = playerManager.getBuildPlayer(player).getCachedValues();
+        CachedValues cachedValues = playerService.getPlayerStorage().getBuildPlayer(player).getCachedValues();
         cachedValues.saveWalkSpeed(player.getWalkSpeed());
         cachedValues.saveFlySpeed(player.getFlySpeed());
 
@@ -152,7 +153,7 @@ public class NavigatorListener implements Listener {
         player.addPotionEffect(new PotionEffect(XPotion.JUMP_BOOST.get(), Integer.MAX_VALUE, 250, false, false));
 
         armorStandManager.spawnArmorStands(player);
-        playerManager.getOpenNavigator().add(player);
+        playerService.getOpenNavigator().add(player);
     }
 
     /**
@@ -167,13 +168,13 @@ public class NavigatorListener implements Listener {
 
         disableArchivedWorlds(player, event);
 
-        if (!playerManager.getOpenNavigator().contains(player) || entity.getType() != EntityType.ARMOR_STAND) {
+        if (!playerService.getOpenNavigator().contains(player) || entity.getType() != EntityType.ARMOR_STAND) {
             return;
         }
 
         if (isCloseNavigatorItem(player, player.getItemInHand())) {
             event.setCancelled(true);
-            playerManager.closeNavigator(player);
+            playerService.closeNavigator(player);
             return;
         }
 
@@ -197,15 +198,15 @@ public class NavigatorListener implements Listener {
             switch (inventoryType) {
                 case NAVIGATOR:
                     XSound.BLOCK_CHEST_OPEN.play(player);
-                    plugin.getWorldsInventory().openInventory(player);
+                    plugin.getPublicWorldsInventory().openInventory(player);
                     break;
                 case ARCHIVE:
                     XSound.BLOCK_CHEST_OPEN.play(player);
-                    plugin.getArchiveInventory().openInventory(player);
+                    plugin.getArchivedWorldsInventory().openInventory(player);
                     break;
                 case PRIVATE:
                     XSound.BLOCK_CHEST_OPEN.play(player);
-                    plugin.getPrivateInventory().openInventory(player);
+                    plugin.getPrivateWorldsInventory().openInventory(player);
                     break;
             }
         }
@@ -234,7 +235,7 @@ public class NavigatorListener implements Listener {
     @EventHandler
     public void preventBarrierDrop(PlayerDropItemEvent event) {
         Player player = event.getPlayer();
-        if (!playerManager.getOpenNavigator().contains(player)) {
+        if (!playerService.getOpenNavigator().contains(player)) {
             return;
         }
 
@@ -275,11 +276,11 @@ public class NavigatorListener implements Listener {
      */
     private void disableArchivedWorlds(Player player, Cancellable cancellable) {
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
-        if (buildWorld == null || buildWorld.getData().status().get() != WorldStatus.ARCHIVE) {
+        if (buildWorld == null || buildWorld.getData().status().get() != BuildWorldStatus.ARCHIVE) {
             return;
         }
 
-        if (playerManager.isInBuildMode(player)) {
+        if (playerService.isInBuildMode(player)) {
             cancellable.setCancelled(true);
         }
     }

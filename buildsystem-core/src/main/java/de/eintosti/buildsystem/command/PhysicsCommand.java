@@ -53,7 +53,7 @@ public class PhysicsCommand implements CommandExecutor {
         Player player = (Player) sender;
         String worldName = args.length == 0 ? player.getWorld().getName() : args[0];
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
-        if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, "buildsystem.physics")) {
+        if (WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, "buildsystem.physics")) {
             plugin.sendPermissionMessage(player);
             return true;
         }

@@ -23,9 +23,6 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
-import de.eintosti.buildsystem.world.BuildWorldImpl;
-import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
-import de.eintosti.buildsystem.world.util.WorldTeleporterImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -62,12 +59,12 @@ public class TeleportSubCommand implements SubCommand {
             return;
         }
 
-        if (!WorldPermissionsImpl.of(buildWorld).canEnter(player)) {
+        if (!buildWorld.getPermissions().canEnter(player)) {
             Messages.sendMessage(player, "worlds_tp_entry_forbidden");
             return;
         }
 
-        WorldTeleporterImpl.of(buildWorld).teleport(player);
+        buildWorld.getTeleporter().teleport(player);
     }
 
     @Override

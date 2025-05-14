@@ -19,14 +19,11 @@ package de.eintosti.buildsystem.expansion.placeholderapi;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.WorldData;
-import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
-import de.eintosti.buildsystem.world.BuildWorldImpl;
-import de.eintosti.buildsystem.world.builder.BuildersImpl;
-import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import java.util.Locale;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
@@ -127,11 +124,11 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
      *
      * @param player     A Player.
      * @param identifier A String containing the identifier/value.
-     * @return possibly-null String of the requested identifier.
+     * @return possibly null String of the requested identifier.
      */
     @Nullable
     private String parseSettingsPlaceholder(Player player, String identifier) {
-        SettingsImpl settings = settingsManager.getSettings(player);
+        Settings settings = settingsManager.getSettings(player);
         String settingIdentifier = identifier.split("_")[1];
 
         switch (settingIdentifier.toLowerCase(Locale.ROOT)) {

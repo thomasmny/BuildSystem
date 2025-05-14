@@ -21,10 +21,8 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
-import de.eintosti.buildsystem.util.EntityAIManager;
-import de.eintosti.buildsystem.world.BuildWorldImpl;
-import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.util.EntityAIManager;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.AbstractMap;
 import org.bukkit.Bukkit;
@@ -58,7 +56,7 @@ public class NoAICommand implements CommandExecutor {
         Player player = (Player) sender;
         String worldName = args.length == 0 ? player.getWorld().getName() : args[0];
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
-        if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, "buildsystem.noai")) {
+        if (WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, "buildsystem.noai")) {
             plugin.sendPermissionMessage(player);
             return true;
         }

@@ -23,7 +23,8 @@ import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.navigator.inventory.FilteredWorldsInventory.Visibility;
+import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.PaginatedInventory;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -67,11 +68,11 @@ public class CreateInventory extends PaginatedInventory implements Listener {
 
         switch (page) {
             case PREDEFINED:
-                addPredefinedWorldItem(player, inventory, 29, WorldType.NORMAL, Messages.getString("create_normal_world", player));
-                addPredefinedWorldItem(player, inventory, 30, WorldType.FLAT, Messages.getString("create_flat_world", player));
-                addPredefinedWorldItem(player, inventory, 31, WorldType.NETHER, Messages.getString("create_nether_world", player));
-                addPredefinedWorldItem(player, inventory, 32, WorldType.END, Messages.getString("create_end_world", player));
-                addPredefinedWorldItem(player, inventory, 33, WorldType.VOID, Messages.getString("create_void_world", player));
+                addPredefinedWorldItem(player, inventory, 29, BuildWorldType.NORMAL, Messages.getString("create_normal_world", player));
+                addPredefinedWorldItem(player, inventory, 30, BuildWorldType.FLAT, Messages.getString("create_flat_world", player));
+                addPredefinedWorldItem(player, inventory, 31, BuildWorldType.NETHER, Messages.getString("create_nether_world", player));
+                addPredefinedWorldItem(player, inventory, 32, BuildWorldType.END, Messages.getString("create_end_world", player));
+                addPredefinedWorldItem(player, inventory, 33, BuildWorldType.VOID, Messages.getString("create_void_world", player));
                 break;
             case GENERATOR:
                 inventory.setItem(31, InventoryUtils.createSkull(Messages.getString("create_generators_create_world", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716")));
@@ -103,8 +104,8 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         inventory.setItem(page.getSlot(), itemStack);
     }
 
-    private void addPredefinedWorldItem(Player player, Inventory inventory, int position, WorldType worldType, String displayName) {
-        XMaterial material = InventoryUtils.getCreateItem(worldType);
+    private void addPredefinedWorldItem(Player player, Inventory inventory, int position, BuildWorldType worldType, String displayName) {
+        XMaterial material = plugin.getWorldIcon().getIcon(worldType);
 
         if (!player.hasPermission("buildsystem.create.type." + worldType.name().toLowerCase(Locale.ROOT))) {
             material = XMaterial.BARRIER;
@@ -213,28 +214,27 @@ public class CreateInventory extends PaginatedInventory implements Listener {
 
         switch (Page.getCurrentPage(inventory)) {
             case PREDEFINED: {
-                WorldType worldType = null;
+                BuildWorldType worldType = null;
 
                 switch (slot) {
                     case 29:
-                        worldType = WorldType.NORMAL;
+                        worldType = BuildWorldType.NORMAL;
                         break;
                     case 30:
-                        worldType = WorldType.FLAT;
+                        worldType = BuildWorldType.FLAT;
                         break;
                     case 31:
-                        worldType = WorldType.NETHER;
+                        worldType = BuildWorldType.NETHER;
                         break;
                     case 32:
-                        worldType = WorldType.END;
+                        worldType = BuildWorldType.END;
                         break;
                     case 33:
-                        worldType = WorldType.VOID;
+                        worldType = BuildWorldType.VOID;
                         break;
                 }
 
-                if (worldType == null || !player.hasPermission(
-                        "buildsystem.create.type." + worldType.name().toLowerCase(Locale.ROOT))) {
+                if (worldType == null || !player.hasPermission("buildsystem.create.type." + worldType.name().toLowerCase(Locale.ROOT))) {
                     XSound.ENTITY_ITEM_BREAK.play(player);
                     return;
                 }
@@ -246,7 +246,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
 
             case GENERATOR: {
                 if (slot == 31) {
-                    worldService.startWorldNameInput(player, WorldType.CUSTOM, null, createPrivateWorld);
+                    worldService.startWorldNameInput(player, BuildWorldType.CUSTOM, null, createPrivateWorld);
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                 }
                 break;
@@ -261,8 +261,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
                 XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
                 switch (xMaterial) {
                     case FILLED_MAP:
-                        worldService.startWorldNameInput(player, WorldType.TEMPLATE, itemStack.getItemMeta()
-                                .getDisplayName(), createPrivateWorld);
+                        worldService.startWorldNameInput(player, BuildWorldType.TEMPLATE, itemStack.getItemMeta().getDisplayName(), createPrivateWorld);
                         break;
                     case PLAYER_HEAD:
                         if (slot == 38 && !decrementInv(player, numTemplates, MAX_TEMPLATES)) {

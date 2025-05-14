@@ -18,8 +18,9 @@
 package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.navigator.settings.NavigatorType;
+import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -48,7 +49,7 @@ public class PlayerMoveListener implements Listener {
             return;
         }
 
-        SettingsImpl settings = settingsManager.getSettings(player);
+        Settings settings = settingsManager.getSettings(player);
         if (!settings.getNavigatorType().equals(NavigatorType.NEW)) {
             return;
         }
