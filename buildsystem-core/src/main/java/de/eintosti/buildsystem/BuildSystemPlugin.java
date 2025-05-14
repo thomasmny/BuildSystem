@@ -70,17 +70,15 @@ import de.eintosti.buildsystem.listener.WeatherChangeListener;
 import de.eintosti.buildsystem.listener.WorldManipulateByAxiomListener;
 import de.eintosti.buildsystem.listener.WorldManipulateListener;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
-import de.eintosti.buildsystem.navigator.inventory.ArchiveInventory;
+import de.eintosti.buildsystem.navigator.inventory.ArchivedWorldsInventory;
 import de.eintosti.buildsystem.navigator.inventory.NavigatorInventory;
-import de.eintosti.buildsystem.navigator.inventory.PrivateInventory;
-import de.eintosti.buildsystem.navigator.inventory.WorldsInventory;
+import de.eintosti.buildsystem.navigator.inventory.PrivateWorldsInventory;
+import de.eintosti.buildsystem.navigator.inventory.PublicWorldsInventory;
 import de.eintosti.buildsystem.player.BlocksInventory;
-import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.DesignInventory;
 import de.eintosti.buildsystem.player.settings.NoClipManager;
-import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsInventory;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.player.settings.SpeedInventory;
@@ -99,10 +97,10 @@ import de.eintosti.buildsystem.version.gamerules.GameRules;
 import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import de.eintosti.buildsystem.world.SpawnManager;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
-import de.eintosti.buildsystem.world.data.StatusInventory;
-import de.eintosti.buildsystem.world.display.WorldIcon;
 import de.eintosti.buildsystem.world.builder.BuilderInventory;
 import de.eintosti.buildsystem.world.creation.CreateInventory;
+import de.eintosti.buildsystem.world.data.StatusInventory;
+import de.eintosti.buildsystem.world.display.WorldIcon;
 import de.eintosti.buildsystem.world.modification.DeleteInventory;
 import de.eintosti.buildsystem.world.modification.EditInventory;
 import de.eintosti.buildsystem.world.modification.GameRuleInventory;
@@ -138,7 +136,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     private SpawnManager spawnManager;
     private WorldServiceImpl worldService;
 
-    private ArchiveInventory archiveInventory;
+    private ArchivedWorldsInventory archivedWorldsInventory;
     private BlocksInventory blocksInventory;
     private BuilderInventory builderInventory;
     private CreateInventory createInventory;
@@ -147,12 +145,12 @@ public class BuildSystemPlugin extends JavaPlugin {
     private EditInventory editInventory;
     private GameRuleInventory gameRuleInventory;
     private NavigatorInventory navigatorInventory;
-    private PrivateInventory privateInventory;
+    private PrivateWorldsInventory privateWorldsInventory;
     private SettingsInventory settingsInventory;
     private SetupInventory setupInventory;
     private SpeedInventory speedInventory;
     private StatusInventory statusInventory;
-    private WorldsInventory worldsInventory;
+    private PublicWorldsInventory publicWorldsInventory;
 
     private ConfigValues configValues;
     private CustomBlocks customBlocks;
@@ -187,9 +185,6 @@ public class BuildSystemPlugin extends JavaPlugin {
         registerExpansions();
 
         performUpdateCheck();
-
-        playerService.load();
-        spawnManager.load();
 
         this.api = new BuildSystemApi(this);
         this.api.register();
@@ -229,6 +224,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         saveBuildConfig();
 
         unregisterExpansions();
+        this.api.unregister();
 
         Bukkit.getConsoleSender().sendMessage(String.format(Locale.ROOT,
                 "%sBuildSystem » Plugin %sdisabled%s!",
@@ -267,7 +263,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         this.settingsManager = new SettingsManager(this);
         this.spawnManager = new SpawnManager(this);
 
-        this.archiveInventory = new ArchiveInventory(this);
+        this.archivedWorldsInventory = new ArchivedWorldsInventory(this);
         this.blocksInventory = new BlocksInventory(this);
         this.builderInventory = new BuilderInventory(this);
         this.createInventory = new CreateInventory(this);
@@ -276,12 +272,12 @@ public class BuildSystemPlugin extends JavaPlugin {
         this.editInventory = new EditInventory(this);
         this.gameRuleInventory = new GameRuleInventory(this);
         this.navigatorInventory = new NavigatorInventory(this);
-        this.privateInventory = new PrivateInventory(this);
+        this.privateWorldsInventory = new PrivateWorldsInventory(this);
+        this.publicWorldsInventory = new PublicWorldsInventory(this);
         this.settingsInventory = new SettingsInventory(this);
         this.setupInventory = new SetupInventory(this);
         this.speedInventory = new SpeedInventory(this);
         this.statusInventory = new StatusInventory(this);
-        this.worldsInventory = new WorldsInventory(this);
     }
 
     private void registerCommands() {
@@ -510,8 +506,8 @@ public class BuildSystemPlugin extends JavaPlugin {
         return worldService;
     }
 
-    public ArchiveInventory getArchiveInventory() {
-        return archiveInventory;
+    public ArchivedWorldsInventory getArchivedWorldsInventory() {
+        return archivedWorldsInventory;
     }
 
     public BlocksInventory getBlocksInventory() {
@@ -546,8 +542,12 @@ public class BuildSystemPlugin extends JavaPlugin {
         return navigatorInventory;
     }
 
-    public PrivateInventory getPrivateInventory() {
-        return privateInventory;
+    public PrivateWorldsInventory getPrivateWorldsInventory() {
+        return privateWorldsInventory;
+    }
+
+    public PublicWorldsInventory getPublicWorldsInventory() {
+        return publicWorldsInventory;
     }
 
     public SettingsInventory getSettingsInventory() {
@@ -564,10 +564,6 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     public StatusInventory getStatusInventory() {
         return statusInventory;
-    }
-
-    public WorldsInventory getWorldsInventory() {
-        return worldsInventory;
     }
 
     public ConfigValues getConfigValues() {

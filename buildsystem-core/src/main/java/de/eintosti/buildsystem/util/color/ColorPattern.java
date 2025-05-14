@@ -15,26 +15,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.navigator;
+package de.eintosti.buildsystem.util.color;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
-import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.Inventory;
+/**
+ * Represents a color pattern which can be applied to a String.
+ */
+public interface ColorPattern {
 
-public abstract class NavigatorInventory {
-
-    protected final BuildSystemPlugin plugin;
-
-    protected NavigatorInventory(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-    }
-
-    protected abstract Inventory createInventory(Player player);
-
-    public abstract void handleClick(InventoryClickEvent event);
-
-    public void openInventory(Player player) {
-        player.openInventory(createInventory(player));
-    }
-} 
+    /**
+     * Applies this pattern to the provided String. Output might be the same as the input if this pattern is not present.
+     *
+     * @param string The String to which this pattern should be applied to
+     * @return The new String with the applied pattern
+     */
+    String process(String string);
+}

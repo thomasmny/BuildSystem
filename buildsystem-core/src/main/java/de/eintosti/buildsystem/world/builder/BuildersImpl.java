@@ -3,6 +3,7 @@ package de.eintosti.buildsystem.world.builder;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +38,7 @@ public class BuildersImpl implements Builders {
 
     @Override
     public boolean hasCreator() {
-        return creator != null;
+        return creator != null && !creator.getName().equals("-");
     }
 
     @Override
@@ -105,5 +106,41 @@ public class BuildersImpl implements Builders {
         }
 
         return string.substring(0, string.length() - 1);
+    }
+
+    /**
+     * Formats the builders for the lore of the world item.
+     *
+     * @param player The player to display the lore to
+     * @return A list of formatted builder lines, each containing up to 3 builders
+     */
+    public List<String> formatBuildersForLore(Player player) {
+        String template = Messages.getString("world_item_builders_builder_template", player);
+        List<String> builderLines = new ArrayList<>();
+
+        if (buildersByUuid.isEmpty()) {
+            builderLines.add(template.replace("%builder%", "-").trim());
+            return builderLines;
+        }
+
+        StringBuilder line = new StringBuilder();
+        int count = 0;
+
+        for (Builder builder : buildersByUuid.values()) {
+            line.append(template.replace("%builder%", builder.getName()));
+            count++;
+
+            if (count == 3) {
+                builderLines.add(line.toString().trim());
+                line.setLength(0);
+                count = 0;
+            }
+        }
+
+        if (line.length() > 0) {
+            builderLines.add(line.toString().trim());
+        }
+
+        return builderLines;
     }
 } 

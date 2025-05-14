@@ -7,8 +7,8 @@
 * [Introduction](#introduction)
 * [Links and Contacts](#links-and-contacts)
 * [Features](#features)
-* [Screenshots](#screenshots)
 * [Statistics](#statistics)
+* [Developer API](#developer-api)
 * [Contributing](#contributing)
     * [To compile...](#to-compile)
     * [Then you will find...](#then-you-will-find)
@@ -79,47 +79,44 @@ building can start!
     - Night vision
     - Disable interactions with certain blocks
 
-## Screenshots
-
-### Navigator
-
-![Screenshot](.github/images/navigator.png)
-
-### World Navigator
-
-![Screenshot](.github/images/worlds.png)
-
-### Create predefined worlds
-
-![Screenshot](.github/images/predefined_worlds.png)
-
-### Create worlds with the help of custom templates
-
-![Screenshot](.github/images/templates.png)
-
-### Receive secret blocks
-
-![Screenshot](.github/images/blocks.png)
-
-### Change which status each world has
-
-![Screenshot](.github/images/status.png)
-
-### Per player settings
-
-![Screenshot](.github/images/settings.png)
-
-### Change the default items
-
-![Screenshot](.github/images/setup.png)
-
-### Custom scoreboard
-
-![Screenshot](.github/images/scoreboard.png)
-
 ## Statistics
 
 ![Graph](https://bstats.org/signatures/bukkit/BuildSystem.svg)
+
+## Developer API
+
+**Maven:**
+
+```xml
+
+<repository>
+    <id>eintosti-releases</id>
+    <url>https://repo.eintosti.de/releases</url>
+</repository>
+```
+
+```xml
+
+<dependency>
+    <groupId>de.eintosti</groupId>
+    <artifactId>buildsystem-api</artifactId>
+    <version>version</version>
+</dependency>
+ ```
+
+**Or alternatively, with Gradle:**
+
+```kotlin
+repositories {
+    maven {
+        url = uri("https://repo.eintosti.de/releases")
+    }
+}
+
+dependencies {
+    compileOnly("de.eintosti:buildsystem-api:version")
+}
+```
 
 ## Contributing
 
