@@ -150,42 +150,8 @@ public final class InventoryUtils {
     public static XMaterial getColoredGlassPane(Player player) {
         Settings settings = plugin.getSettingsManager().getSettings(player);
         DesignColor color = settings.getDesignColor();
-
-        switch (color) {
-            case RED:
-                return XMaterial.RED_STAINED_GLASS_PANE;
-            case ORANGE:
-                return XMaterial.ORANGE_STAINED_GLASS_PANE;
-            case YELLOW:
-                return XMaterial.YELLOW_STAINED_GLASS_PANE;
-            case PINK:
-                return XMaterial.PINK_STAINED_GLASS_PANE;
-            case MAGENTA:
-                return XMaterial.MAGENTA_STAINED_GLASS_PANE;
-            case PURPLE:
-                return XMaterial.PURPLE_STAINED_GLASS_PANE;
-            case BROWN:
-                return XMaterial.BROWN_STAINED_GLASS_PANE;
-            case LIME:
-                return XMaterial.LIME_STAINED_GLASS_PANE;
-            case GREEN:
-                return XMaterial.GREEN_STAINED_GLASS_PANE;
-            case BLUE:
-                return XMaterial.BLUE_STAINED_GLASS_PANE;
-            case CYAN:
-                return XMaterial.CYAN_STAINED_GLASS_PANE;
-            case LIGHT_BLUE:
-                return XMaterial.LIGHT_BLUE_STAINED_GLASS_PANE;
-            case WHITE:
-                return XMaterial.WHITE_STAINED_GLASS_PANE;
-            case GRAY:
-                return XMaterial.GRAY_STAINED_GLASS_PANE;
-            case LIGHT_GRAY:
-                return XMaterial.LIGHT_GRAY_STAINED_GLASS_PANE;
-            case BLACK:
-            default:
-                return XMaterial.BLACK_STAINED_GLASS_PANE;
-        }
+        String paneItemName = color.name() + "_STAINED_GLASS_PANE";
+        return XMaterial.matchXMaterial(paneItemName).orElse(XMaterial.BLACK_STAINED_GLASS_PANE);
     }
 
     /**

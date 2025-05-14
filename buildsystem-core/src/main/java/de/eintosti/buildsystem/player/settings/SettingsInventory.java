@@ -23,6 +23,7 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.navigator.settings.NavigatorType;
+import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.util.InventoryUtils;
@@ -121,7 +122,9 @@ public class SettingsInventory implements Listener {
     }
 
     private void addDesignItem(Inventory inventory, Player player) {
-        ItemStack itemStack = InventoryUtils.createItem(InventoryUtils.getColoredGlassPane(player), Messages.getString("settings_change_design_item", player));
+        DesignColor color = plugin.getSettingsManager().getSettings(player).getDesignColor();
+        XMaterial material = XMaterial.matchXMaterial(color.name() + "_STAINED_GLASS").orElse(XMaterial.BLACK_STAINED_GLASS);
+        ItemStack itemStack = InventoryUtils.createItem(material, Messages.getString("settings_change_design_item", player));
         ItemMeta itemMeta = itemStack.getItemMeta();
 
         itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);

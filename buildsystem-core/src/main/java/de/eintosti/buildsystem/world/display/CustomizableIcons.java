@@ -44,8 +44,6 @@ public class CustomizableIcons {
     }
 
     private Map<BuildWorldType, XMaterial> loadTypeIcons() {
-        String key = "type";
-
         Map<BuildWorldType, XMaterial> typeIcons = new EnumMap<>(BuildWorldType.class);
         typeIcons.put(BuildWorldType.NORMAL, XMaterial.OAK_LOG);
         typeIcons.put(BuildWorldType.FLAT, XMaterial.GRASS_BLOCK);
@@ -56,18 +54,16 @@ public class CustomizableIcons {
         typeIcons.put(BuildWorldType.TEMPLATE, XMaterial.FILLED_MAP);
         typeIcons.put(BuildWorldType.IMPORTED, XMaterial.FURNACE);
 
-        Map<BuildWorldType, XMaterial> loadedIcons = this.setupConfig.loadIcons(key, type -> BuildWorldType.valueOf(type.toUpperCase(Locale.ROOT)));
+        Map<BuildWorldType, XMaterial> loadedIcons = this.setupConfig.loadIcons(IconType.TYPE, type -> BuildWorldType.valueOf(type.toUpperCase(Locale.ROOT)));
         if (loadedIcons != null) {
             typeIcons.putAll(loadedIcons);
         }
 
-        setupConfig.saveIcons(key, typeIcons);
+        setupConfig.saveIcons(IconType.TYPE, typeIcons);
         return typeIcons;
     }
 
     private Map<BuildWorldStatus, XMaterial> loadStatusIcons() {
-        String key = "status";
-
         Map<BuildWorldStatus, XMaterial> statusIcon = new EnumMap<>(BuildWorldStatus.class);
         statusIcon.put(BuildWorldStatus.NOT_STARTED, XMaterial.RED_DYE);
         statusIcon.put(BuildWorldStatus.IN_PROGRESS, XMaterial.ORANGE_DYE);
@@ -76,12 +72,12 @@ public class CustomizableIcons {
         statusIcon.put(BuildWorldStatus.ARCHIVE, XMaterial.CYAN_DYE);
         statusIcon.put(BuildWorldStatus.HIDDEN, XMaterial.BONE_MEAL);
 
-        Map<BuildWorldStatus, XMaterial> loadedIcons = this.setupConfig.loadIcons(key, type -> BuildWorldStatus.valueOf(type.toUpperCase(Locale.ROOT)));
+        Map<BuildWorldStatus, XMaterial> loadedIcons = this.setupConfig.loadIcons(IconType.STATUS, type -> BuildWorldStatus.valueOf(type.toUpperCase(Locale.ROOT)));
         if (loadedIcons != null) {
             statusIcon.putAll(loadedIcons);
         }
 
-        setupConfig.saveIcons(key, statusIcon);
+        setupConfig.saveIcons(IconType.STATUS, statusIcon);
         return statusIcon;
     }
 
@@ -113,7 +109,7 @@ public class CustomizableIcons {
      */
     public void setIcon(BuildWorldType type, XMaterial material) {
         this.typeIcons.put(type, material);
-        this.setupConfig.saveIcon("type", type, material);
+        this.setupConfig.saveIcon(IconType.TYPE, type, material);
     }
 
     /**
@@ -124,6 +120,15 @@ public class CustomizableIcons {
      */
     public void setIcon(BuildWorldStatus status, XMaterial material) {
         this.statusIcons.put(status, material);
-        this.setupConfig.saveIcon("status", status, material);
+        this.setupConfig.saveIcon(IconType.STATUS, status, material);
+    }
+
+    public enum IconType {
+        TYPE,
+        STATUS;
+
+        public String getKey() {
+            return name().toLowerCase(Locale.ROOT);
+        }
     }
 }
