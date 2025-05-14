@@ -86,7 +86,7 @@ public class StatusInventory implements Listener {
     }
 
     private void addStatusItem(Player player, Inventory inventory, int position, BuildWorldStatus status) {
-        XMaterial material = plugin.getWorldIcon().getIcon(status);
+        XMaterial material = plugin.getCustomizableIcons().getIcon(status);
         String displayName = Messages.getString(status.getKey(), player);
 
         if (!player.hasPermission(status.getPermission())) {
