@@ -34,6 +34,11 @@ public class SetupConfig extends ConfigurationFile {
         super(plugin, "setup.yml");
     }
 
+    public <T extends Enum<?>> void saveIcons(String key, Map<T, XMaterial> typeIcons) {
+        typeIcons.forEach((type, material) -> getFile().set("setup." + key + "." + type.name().toLowerCase(Locale.ROOT), material.name()));
+        saveFile();
+    }
+
     public <T extends Enum<?>> void saveIcon(String key, T type, XMaterial material) {
         getFile().set("setup." + key + "." + type.name().toLowerCase(Locale.ROOT), material.name());
         saveFile();

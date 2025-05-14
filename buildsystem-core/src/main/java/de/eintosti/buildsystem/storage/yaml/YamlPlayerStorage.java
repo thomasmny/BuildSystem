@@ -28,6 +28,7 @@ import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.navigator.settings.WorldDisplayImpl;
 import de.eintosti.buildsystem.navigator.settings.WorldFilterImpl;
+import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
@@ -52,17 +53,17 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
 
     private static final String PLAYERS_KEY = "players";
 
-    private final File file;
-    private final FileConfiguration config;
+    private File file;
+    private FileConfiguration config;
 
     public YamlPlayerStorage(BuildSystemPlugin plugin) {
         super(plugin);
-        this.file = new File(plugin.getDataFolder(), "players.yml");
-        this.config = YamlConfiguration.loadConfiguration(file);
-        loadFile();
     }
 
-    public void loadFile() {
+    private void loadFile() {
+        this.file = new File(plugin.getDataFolder(), "players.yml");
+        this.config = YamlConfiguration.loadConfiguration(file);
+
         if (!file.exists()) {
             config.options().copyDefaults(true);
             saveFile();
@@ -76,7 +77,7 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
         }
     }
 
-    public void saveFile() {
+    private void saveFile() {
         try {
             config.save(file);
         } catch (IOException e) {
@@ -145,6 +146,8 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
 
     @Override
     public Collection<BuildPlayer> load() {
+        loadFile();
+
         ConfigurationSection section = config.getConfigurationSection(PLAYERS_KEY);
         if (section == null) {
             return new ArrayList<>();
@@ -164,9 +167,9 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
         final String path = PLAYERS_KEY + "." + playerUuid;
 
         UUID uuid = UUID.fromString(playerUuid);
-        Settings settings = loadSettings(config, path + ".settings");
+        Settings settings = loadSettings(config, path + ".settings.");
 
-        BuildPlayer buildPlayer = createBuildPlayer(uuid, settings);
+        BuildPlayer buildPlayer = new BuildPlayerImpl(uuid, settings);
         buildPlayer.setLogoutLocation(loadLogoutLocation(config, "players." + playerUuid + ".logout-location"));
         return buildPlayer;
     }
@@ -196,7 +199,7 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
     private SettingsImpl loadSettings(FileConfiguration configuration, String pathPrefix) {
         NavigatorType navigatorType = NavigatorType.valueOf(configuration.getString(pathPrefix + "type"));
         DesignColor glassColor = DesignColor.matchColor(configuration.getString(pathPrefix + "glass"));
-        WorldDisplayImpl worldDisplay = loadWorldDisplay(configuration, pathPrefix + "world-display.");
+        WorldDisplayImpl worldDisplay = loadWorldDisplay(configuration, pathPrefix + "world-display");
         boolean clearInventory = configuration.getBoolean(pathPrefix + "clear-inventory", false);
         boolean disableInteract = configuration.getBoolean(pathPrefix + "disable-interact", false);
         boolean hidePlayers = configuration.getBoolean(pathPrefix + "hide-players", false);
