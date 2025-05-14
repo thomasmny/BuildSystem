@@ -58,17 +58,17 @@ public class YamlWorldStorage extends WorldStorageImpl {
 
     private static final String WORLDS_KEY = "worlds";
 
-    private final File file;
-    private final FileConfiguration config;
+    private File file;
+    private FileConfiguration config;
 
     public YamlWorldStorage(BuildSystemPlugin plugin) {
         super(plugin);
-        this.file = new File(plugin.getDataFolder(), "worlds.yml");
-        this.config = YamlConfiguration.loadConfiguration(file);
-        loadFile();
     }
 
-    public void loadFile() {
+    private void loadFile() {
+        this.file = new File(plugin.getDataFolder(), "worlds.yml");
+        this.config = YamlConfiguration.loadConfiguration(file);
+
         if (!file.exists()) {
             config.options().copyDefaults(true);
             saveFile();
@@ -82,7 +82,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
         }
     }
 
-    public void saveFile() {
+    private void saveFile() {
         try {
             config.save(file);
         } catch (IOException e) {
@@ -136,6 +136,8 @@ public class YamlWorldStorage extends WorldStorageImpl {
 
     @Override
     public Collection<BuildWorld> load() {
+        loadFile();
+
         ConfigurationSection section = config.getConfigurationSection(WORLDS_KEY);
         if (section == null) {
             return new ArrayList<>();
