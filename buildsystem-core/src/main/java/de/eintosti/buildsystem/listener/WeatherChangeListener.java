@@ -17,7 +17,7 @@
  */
 package de.eintosti.buildsystem.listener;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.config.ConfigValues;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -29,7 +29,7 @@ public class WeatherChangeListener implements Listener {
 
     private final ConfigValues configValues;
 
-    public WeatherChangeListener(BuildSystem plugin) {
+    public WeatherChangeListener(BuildSystemPlugin plugin) {
         this.configValues = plugin.getConfigValues();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }

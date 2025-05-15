@@ -17,9 +17,9 @@
  */
 package de.eintosti.buildsystem.util;
 
-import org.bukkit.Bukkit;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import org.bukkit.Bukkit;
 
 /**
  * Utility class to determine the mode in which the server is running. The server can be in one of the following modes:
@@ -44,14 +44,19 @@ public final class ServerModeChecker {
         try {
             Class<?> CLASS_GlobalConfiguration = Class.forName("io.papermc.paper.configuration.GlobalConfiguration");
             Class<?> CLASS_Proxies = Class.forName("io.papermc.paper.configuration.GlobalConfiguration$Proxies");
+
             Field FIELD_instance = CLASS_GlobalConfiguration.getDeclaredField("instance");
             FIELD_instance.setAccessible(true);
+
             Field FIELD_proxies = CLASS_GlobalConfiguration.getDeclaredField("proxies");
             FIELD_proxies.setAccessible(true);
+
             Method METHOD_isProxyOnlineMode = CLASS_Proxies.getDeclaredMethod("isProxyOnlineMode");
             METHOD_isProxyOnlineMode.setAccessible(true);
+
             Object OBJECT_instance = FIELD_instance.get(null);
             Object OBJECT_proxies = FIELD_proxies.get(OBJECT_instance);
+
             boolean isOnline = (boolean) METHOD_isProxyOnlineMode.invoke(OBJECT_proxies);
             return isOnline ? ServerMode.ONLINE : ServerMode.OFFLINE;
         } catch (Exception e) {

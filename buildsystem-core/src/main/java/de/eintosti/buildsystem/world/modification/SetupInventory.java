@@ -18,11 +18,12 @@
 package de.eintosti.buildsystem.world.modification;
 
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.data.WorldStatus;
-import de.eintosti.buildsystem.world.data.WorldType;
+import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -35,42 +36,33 @@ import org.bukkit.inventory.ItemStack;
 
 public class SetupInventory implements Listener {
 
-    private final BuildSystem plugin;
-    private final InventoryUtils inventoryUtils;
+    private final CustomizableIcons worldIcon;
 
-    public SetupInventory(BuildSystem plugin) {
-        this.plugin = plugin;
-        this.inventoryUtils = plugin.getInventoryUtil();
+    public SetupInventory(BuildSystemPlugin plugin) {
+        this.worldIcon = plugin.getCustomizableIcons();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 45, Messages.getString("setup_title", player));
+        Inventory inventory = Bukkit.createInventory(null, 36, Messages.getString("setup_title", player));
         fillGuiWithGlass(player, inventory);
 
-        inventoryUtils.addSkull(inventory, 10, Messages.getString("setup_create_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_create_item_lore", player));
-        inventoryUtils.addSkull(inventory, 19, Messages.getString("setup_default_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_default_item_lore", player));
-        inventoryUtils.addSkull(inventory, 28, Messages.getString("setup_status_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_status_item_name_lore", player));
+        inventory.setItem(10, InventoryUtils.createSkull(Messages.getString("setup_default_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_default_item_lore", player)));
+        inventory.setItem(19, InventoryUtils.createSkull(Messages.getString("setup_status_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_status_item_name_lore", player)));
 
-        inventoryUtils.addItemStack(inventory, 11, inventoryUtils.getCreateItem(WorldType.NORMAL), Messages.getString("setup_normal_world", player));
-        inventoryUtils.addItemStack(inventory, 12, inventoryUtils.getCreateItem(WorldType.FLAT), Messages.getString("setup_flat_world", player));
-        inventoryUtils.addItemStack(inventory, 13, inventoryUtils.getCreateItem(WorldType.NETHER), Messages.getString("setup_nether_world", player));
-        inventoryUtils.addItemStack(inventory, 14, inventoryUtils.getCreateItem(WorldType.END), Messages.getString("setup_end_world", player));
-        inventoryUtils.addItemStack(inventory, 15, inventoryUtils.getCreateItem(WorldType.VOID), Messages.getString("setup_void_world", player));
+        inventory.setItem(11, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.NORMAL), Messages.getString("setup_normal_world", player)));
+        inventory.setItem(12, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.FLAT), Messages.getString("setup_flat_world", player)));
+        inventory.setItem(13, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.NETHER), Messages.getString("setup_nether_world", player)));
+        inventory.setItem(14, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.END), Messages.getString("setup_end_world", player)));
+        inventory.setItem(15, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.VOID), Messages.getString("setup_void_world", player)));
+        inventory.setItem(16, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldType.IMPORTED), Messages.getString("setup_imported_world", player)));
 
-        inventoryUtils.addItemStack(inventory, 20, inventoryUtils.getDefaultItem(WorldType.NORMAL), Messages.getString("setup_normal_world", player));
-        inventoryUtils.addItemStack(inventory, 21, inventoryUtils.getDefaultItem(WorldType.FLAT), Messages.getString("setup_flat_world", player));
-        inventoryUtils.addItemStack(inventory, 22, inventoryUtils.getDefaultItem(WorldType.NETHER), Messages.getString("setup_nether_world", player));
-        inventoryUtils.addItemStack(inventory, 23, inventoryUtils.getDefaultItem(WorldType.END), Messages.getString("setup_end_world", player));
-        inventoryUtils.addItemStack(inventory, 24, inventoryUtils.getDefaultItem(WorldType.VOID), Messages.getString("setup_void_world", player));
-        inventoryUtils.addItemStack(inventory, 25, inventoryUtils.getDefaultItem(WorldType.IMPORTED), Messages.getString("setup_imported_world", player));
-
-        inventoryUtils.addItemStack(inventory, 29, inventoryUtils.getStatusItem(WorldStatus.NOT_STARTED), Messages.getString("status_not_started", player));
-        inventoryUtils.addItemStack(inventory, 30, inventoryUtils.getStatusItem(WorldStatus.IN_PROGRESS), Messages.getString("status_in_progress", player));
-        inventoryUtils.addItemStack(inventory, 31, inventoryUtils.getStatusItem(WorldStatus.ALMOST_FINISHED), Messages.getString("status_almost_finished", player));
-        inventoryUtils.addItemStack(inventory, 32, inventoryUtils.getStatusItem(WorldStatus.FINISHED), Messages.getString("status_finished", player));
-        inventoryUtils.addItemStack(inventory, 33, inventoryUtils.getStatusItem(WorldStatus.ARCHIVE), Messages.getString("status_archive", player));
-        inventoryUtils.addItemStack(inventory, 34, inventoryUtils.getStatusItem(WorldStatus.HIDDEN), Messages.getString("status_hidden", player));
+        inventory.setItem(20, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.NOT_STARTED), Messages.getString("status_not_started", player)));
+        inventory.setItem(21, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.IN_PROGRESS), Messages.getString("status_in_progress", player)));
+        inventory.setItem(22, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.ALMOST_FINISHED), Messages.getString("status_almost_finished", player)));
+        inventory.setItem(23, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.FINISHED), Messages.getString("status_finished", player)));
+        inventory.setItem(24, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.ARCHIVE), Messages.getString("status_archive", player)));
+        inventory.setItem(25, InventoryUtils.createItem(worldIcon.getIcon(BuildWorldStatus.HIDDEN), Messages.getString("status_hidden", player)));
 
         return inventory;
     }
@@ -81,13 +73,13 @@ public class SetupInventory implements Listener {
 
     private void fillGuiWithGlass(Player player, Inventory inventory) {
         for (int i = 0; i <= 44; i++) {
-            inventoryUtils.addGlassPane(plugin, player, inventory, i);
+            InventoryUtils.addGlassPane(player, inventory, i);
         }
     }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!inventoryUtils.checkIfValidClick(event, "setup_title")) {
+        if (!InventoryUtils.isValidClick(event, "setup_title")) {
             return;
         }
 
@@ -109,13 +101,13 @@ public class SetupInventory implements Listener {
                     return;
                 }
 
-                event.setCancelled(slot < 45 || slot > 80);
+                event.setCancelled(slot < 36 || slot > 80);
                 if (action != InventoryAction.SWAP_WITH_CURSOR) {
                     return;
                 }
 
-                if (!(slot >= 45 && slot <= 80)) {
-                    if ((slot >= 11 && slot <= 15) || (slot >= 20 && slot <= 25) || (slot >= 29 && slot <= 34)) {
+                if (!(slot >= 36 && slot <= 80)) {
+                    if ((slot >= 11 && slot <= 15) || (slot >= 20 && slot <= 25)) {
                         ItemStack itemStack = event.getCursor();
                         event.setCurrentItem(itemStack);
                         player.setItemOnCursor(null);

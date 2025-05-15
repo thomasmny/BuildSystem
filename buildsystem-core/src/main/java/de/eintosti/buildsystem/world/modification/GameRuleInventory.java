@@ -20,11 +20,12 @@ package de.eintosti.buildsystem.world.modification;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.version.gamerules.GameRules;
-import de.eintosti.buildsystem.world.BuildWorld;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
 import java.util.Arrays;
 import java.util.UUID;
 import org.bukkit.Bukkit;
@@ -37,12 +38,10 @@ import org.bukkit.inventory.Inventory;
 
 public class GameRuleInventory implements Listener {
 
-    private final BuildSystem plugin;
-    private final InventoryUtils inventoryUtils;
+    private final BuildSystemPlugin plugin;
 
-    public GameRuleInventory(BuildSystem plugin) {
+    public GameRuleInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.inventoryUtils = plugin.getInventoryUtil();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -58,7 +57,7 @@ public class GameRuleInventory implements Listener {
     private void fillGuiWithGlass(Player player, Inventory inventory) {
         for (int i = 0; i < inventory.getSize(); i++) {
             if (!isValidSlot(i)) {
-                inventoryUtils.addGlassPane(plugin, player, inventory, i);
+                InventoryUtils.addGlassPane(player, inventory, i);
             }
         }
 
@@ -68,15 +67,15 @@ public class GameRuleInventory implements Listener {
         int invIndex = gameRules.getInvIndex(playerUUID);
 
         if (numGameRules > 1 && invIndex > 0) {
-            inventoryUtils.addSkull(inventory, 36, Messages.getString("gui_previous_page", player), Profileable.detect("f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2"));
+            inventory.setItem(36, InventoryUtils.createSkull(Messages.getString("gui_previous_page", player), Profileable.detect("f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2")));
         } else {
-            inventoryUtils.addGlassPane(plugin, player, inventory, 36);
+            InventoryUtils.addGlassPane(player, inventory, 36);
         }
 
         if (numGameRules > 1 && invIndex < (numGameRules - 1)) {
-            inventoryUtils.addSkull(inventory, 44, Messages.getString("gui_next_page", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"));
+            inventory.setItem(44, InventoryUtils.createSkull(Messages.getString("gui_next_page", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158")));
         } else {
-            inventoryUtils.addGlassPane(plugin, player, inventory, 44);
+            InventoryUtils.addGlassPane(player, inventory, 44);
         }
     }
 
@@ -86,12 +85,12 @@ public class GameRuleInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!inventoryUtils.checkIfValidClick(event, "worldeditor_gamerules_title")) {
+        if (!InventoryUtils.isValidClick(event, "worldeditor_gamerules_title")) {
             return;
         }
 
         Player player = (Player) event.getWhoClicked();
-        BuildWorld buildWorld = plugin.getPlayerManager().getBuildPlayer(player).getCachedWorld();
+        BuildWorld buildWorld = plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();
             Messages.sendMessage(player, "worlds_edit_error");

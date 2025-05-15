@@ -17,33 +17,33 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builder;
+import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.Builder;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldData;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.AbstractMap;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public class InfoSubCommand implements SubCommand {
 
-    private final BuildSystem plugin;
-    private final String worldName;
+    private final BuildSystemPlugin plugin;
+    private final BuildWorld buildWorld;
 
-    public InfoSubCommand(BuildSystem plugin, String worldName) {
+    public InfoSubCommand(BuildSystemPlugin plugin, String worldName) {
         this.plugin = plugin;
-        this.worldName = worldName;
+        this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
     }
 
     @Override
     public void execute(Player player, String[] args) {
-        WorldManager worldManager = plugin.getWorldManager();
-        if (!worldManager.isPermitted(player, getArgument().getPermission(), worldName)) {
+        if (WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
             plugin.sendPermissionMessage(player);
             return;
         }
@@ -53,25 +53,25 @@ public class InfoSubCommand implements SubCommand {
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
             Messages.sendMessage(player, "worlds_info_unknown_world");
             return;
         }
 
         //TODO: Print information about the custom generator?
+        Builders builders = buildWorld.getBuilders();
         WorldData worldData = buildWorld.getData();
         Messages.sendMessage(player, "world_info",
                 new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()),
-                new AbstractMap.SimpleEntry<>("%creator%", getCreator(buildWorld)),
+                new AbstractMap.SimpleEntry<>("%creator%", getCreator(builders)),
                 new AbstractMap.SimpleEntry<>("%item%", worldData.material().get().name()),
-                new AbstractMap.SimpleEntry<>("%type%", buildWorld.getType().getName(player)),
+                new AbstractMap.SimpleEntry<>("%type%", Messages.getString(buildWorld.getType().getKey(), player)),
                 new AbstractMap.SimpleEntry<>("%private%", worldData.privateWorld().get()),
                 new AbstractMap.SimpleEntry<>("%builders_enabled%", worldData.buildersEnabled().get()),
-                new AbstractMap.SimpleEntry<>("%builders%", buildWorld.getBuildersInfo(player)),
+                new AbstractMap.SimpleEntry<>("%builders%", builders.asPlaceholder(player)),
                 new AbstractMap.SimpleEntry<>("%block_breaking%", worldData.blockBreaking().get()),
                 new AbstractMap.SimpleEntry<>("%block_placement%", worldData.blockPlacement().get()),
-                new AbstractMap.SimpleEntry<>("%status%", worldData.status().get().getName(player)),
+                new AbstractMap.SimpleEntry<>("%status%", Messages.getString(worldData.status().get().getKey(), player)),
                 new AbstractMap.SimpleEntry<>("%project%", worldData.project().get()),
                 new AbstractMap.SimpleEntry<>("%permission%", worldData.permission().get()),
                 new AbstractMap.SimpleEntry<>("%time%", buildWorld.getWorldTime()),
@@ -86,8 +86,8 @@ public class InfoSubCommand implements SubCommand {
         );
     }
 
-    private String getCreator(BuildWorld buildWorld) {
-        Builder creator = buildWorld.getCreator();
+    private String getCreator(Builders builders) {
+        Builder creator = builders.getCreator();
         if (creator == null) {
             return "-";
         }

@@ -17,9 +17,12 @@
  */
 package de.eintosti.buildsystem.expansion.luckperms.calculators;
 
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.builder.BuildersImpl;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import java.util.Locale;
 import net.luckperms.api.context.ContextCalculator;
 import net.luckperms.api.context.ContextConsumer;
@@ -33,15 +36,15 @@ public class RoleCalculator implements ContextCalculator<Player> {
 
     private static final String KEY = "buildsystem:role";
 
-    private final WorldManager worldManager;
+    private final WorldStorageImpl worldStorage;
 
-    public RoleCalculator(BuildSystem plugin) {
-        this.worldManager = plugin.getWorldManager();
+    public RoleCalculator(BuildSystemPlugin plugin) {
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
     }
 
     @Override
     public void calculate(@NonNull Player player, @NonNull ContextConsumer contextConsumer) {
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld());
+        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
         contextConsumer.accept(KEY, Role.matchRole(player, buildWorld).toString());
     }
 
@@ -57,17 +60,17 @@ public class RoleCalculator implements ContextCalculator<Player> {
 
     private enum Role {
         /**
-         * The creator of a {@link BuildWorld}.
+         * The creator of a {@link BuildWorldImpl}.
          */
         CREATOR,
 
         /**
-         * A player which has been added to the list of trusted players and is therefore allowed to build in a {@link BuildWorld}.
+         * A player which has been added to the list of trusted players and is therefore allowed to build in a {@link BuildWorldImpl}.
          */
         BUILDER,
 
         /**
-         * A player which is neither the {@link #CREATOR} nor a {@link #BUILDER} in a {@link BuildWorld}.
+         * A player which is neither the {@link #CREATOR} nor a {@link #BUILDER} in a {@link BuildWorldImpl}.
          */
         GUEST;
 
@@ -76,9 +79,10 @@ public class RoleCalculator implements ContextCalculator<Player> {
                 return GUEST;
             }
 
-            if (buildWorld.isCreator(player)) {
+            Builders builders = buildWorld.getBuilders();
+            if (builders.isCreator(player)) {
                 return CREATOR;
-            } else if (buildWorld.isBuilder(player.getUniqueId())) {
+            } else if (builders.isBuilder(player.getUniqueId())) {
                 return BUILDER;
             } else {
                 return GUEST;

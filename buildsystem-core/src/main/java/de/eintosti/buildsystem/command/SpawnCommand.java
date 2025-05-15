@@ -17,11 +17,12 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.SpawnManager;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import java.util.AbstractMap;
 import java.util.Locale;
 import org.bukkit.Location;
@@ -34,14 +35,14 @@ import org.jetbrains.annotations.NotNull;
 
 public class SpawnCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final SpawnManager spawnManager;
-    private final WorldManager worldManager;
+    private final WorldStorageImpl worldStorage;
 
-    public SpawnCommand(BuildSystem plugin) {
+    public SpawnCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.spawnManager = plugin.getSpawnManager();
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getCommand("spawn").setExecutor(this);
     }
 
@@ -73,8 +74,12 @@ public class SpawnCommand implements CommandExecutor {
                     case "set":
                         Location playerLocation = player.getLocation();
                         World bukkitWorld = playerLocation.getWorld();
-                        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
+                        if (bukkitWorld == null) {
+                            Messages.sendMessage(player, "spawn_world_not_imported");
+                            return true;
+                        }
 
+                        BuildWorld buildWorld = worldStorage.getBuildWorld(bukkitWorld);
                         if (buildWorld == null) {
                             Messages.sendMessage(player, "spawn_world_not_imported");
                             return true;

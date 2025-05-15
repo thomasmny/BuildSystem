@@ -21,19 +21,21 @@ import com.cryptomorin.xseries.XBlock;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XTag;
 import com.google.common.collect.Sets;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.player.settings.Settings;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builder;
+import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.config.ConfigValues;
-import de.eintosti.buildsystem.settings.Settings;
-import de.eintosti.buildsystem.settings.SettingsManager;
+import de.eintosti.buildsystem.player.settings.SettingsManager;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.MaterialUtils;
 import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
 import de.eintosti.buildsystem.version.util.DirectionUtil;
 import de.eintosti.buildsystem.version.util.MinecraftVersion;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.Builder;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldData;
-import de.eintosti.buildsystem.world.data.WorldStatus;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -69,16 +71,16 @@ public class SettingsInteractListener implements Listener {
     private final CustomBlocks customBlocks;
 
     private final SettingsManager settingsManager;
-    private final WorldManager worldManager;
+    private final WorldStorageImpl worldStorage;
 
     private final Set<UUID> cachePlayers;
 
-    public SettingsInteractListener(BuildSystem plugin) {
+    public SettingsInteractListener(BuildSystemPlugin plugin) {
         this.configValues = plugin.getConfigValues();
         this.customBlocks = plugin.getCustomBlocks();
 
         this.settingsManager = plugin.getSettingsManager();
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
 
         this.cachePlayers = new HashSet<>();
 
@@ -107,7 +109,7 @@ public class SettingsInteractListener implements Listener {
         }
 
         Settings settings = settingsManager.getSettings(player);
-        if (!settings.isTrapDoor()) {
+        if (!settings.isOpenTrapDoors()) {
             return;
         }
 
@@ -319,11 +321,11 @@ public class SettingsInteractListener implements Listener {
     }
 
     /**
-     * Not every player can always interact with the {@link BuildWorld} they are in.
+     * Not every player can always interact with the {@link BuildWorldImpl} they are in.
      * <p>
-     * Reasons an interaction could be cancelled:
+     * Reasons an interaction could be canceled:
      * <ul>
-     *   <li>The world has its {@link WorldStatus} set to archived</li>
+     *   <li>The world has its {@link BuildWorldStatus} set to archived</li>
      *   <li>The world has a setting enabled which disallows certain events</li>
      *   <li>The world only allows {@link Builder}s to build and the player is not such a builder</li>
      * </ul>
@@ -344,17 +346,17 @@ public class SettingsInteractListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        if (worldManager.canBypassBuildRestriction(player)) {
-            return true;
-        }
-
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld().getName());
         if (buildWorld == null) {
             return true;
         }
 
+        if (buildWorld.getPermissions().canBypassBuildRestriction(player)) {
+            return true;
+        }
+
         WorldData worldData = buildWorld.getData();
-        if (worldData.status().get() == WorldStatus.ARCHIVE && !player.hasPermission("buildsystem.bypass.archive")) {
+        if (worldData.status().get() == BuildWorldStatus.ARCHIVE && !player.hasPermission("buildsystem.bypass.archive")) {
             return false;
         }
 
@@ -362,10 +364,11 @@ public class SettingsInteractListener implements Listener {
             return false;
         }
 
+        Builders builders = buildWorld.getBuilders();
         if (buildWorld.getData().buildersEnabled().get()
-                && !buildWorld.isBuilder(player)
+                && !builders.isBuilder(player)
                 && !player.hasPermission("buildsystem.bypass.builders")) {
-            return buildWorld.isCreator(player);
+            return builders.isCreator(player);
         }
 
         return true;
