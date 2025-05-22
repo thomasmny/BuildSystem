@@ -163,7 +163,7 @@ public class SettingsManager {
         WorldData worldData = buildWorld.getData();
         switch (input) {
             case "%status%":
-                return Messages.getString(worldData.status().get().getKey(), player);
+                return Messages.getString(worldData.status().get().getMessageKey(), player);
             case "%permission%":
                 return worldData.permission().get();
             case "%project%":

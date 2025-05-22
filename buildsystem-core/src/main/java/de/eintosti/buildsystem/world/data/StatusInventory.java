@@ -87,7 +87,7 @@ public class StatusInventory implements Listener {
 
     private void addStatusItem(Player player, Inventory inventory, int position, BuildWorldStatus status) {
         XMaterial material = plugin.getCustomizableIcons().getIcon(status);
-        String displayName = Messages.getString(status.getKey(), player);
+        String displayName = Messages.getString(status.getMessageKey(), player);
 
         if (!player.hasPermission(status.getPermission())) {
             material = XMaterial.BARRIER;
@@ -161,7 +161,7 @@ public class StatusInventory implements Listener {
         XSound.ENTITY_CHICKEN_EGG.play(player);
         Messages.sendMessage(player, "worlds_setstatus_set",
                 new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()),
-                new AbstractMap.SimpleEntry<>("%status%", Messages.getString(status.getKey(), player))
+                new AbstractMap.SimpleEntry<>("%status%", Messages.getString(status.getMessageKey(), player))
         );
     }
 
