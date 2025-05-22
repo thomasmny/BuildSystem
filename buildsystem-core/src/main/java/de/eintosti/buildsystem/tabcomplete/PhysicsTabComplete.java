@@ -17,8 +17,8 @@
  */
 package de.eintosti.buildsystem.tabcomplete;
 
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.command.Command;
@@ -29,29 +29,26 @@ import org.jetbrains.annotations.NotNull;
 
 public class PhysicsTabComplete extends ArgumentSorter implements TabCompleter {
 
-    private final WorldManager worldManager;
+    private final WorldStorage worldStorage;
 
-    public PhysicsTabComplete(BuildSystem plugin) {
-        this.worldManager = plugin.getWorldManager();
+    public PhysicsTabComplete(BuildSystemPlugin plugin) {
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getCommand("physics").setTabCompleter(this);
     }
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         ArrayList<String> arrayList = new ArrayList<>();
-
         if (!(sender instanceof Player)) {
             return arrayList;
         }
+
         Player player = (Player) sender;
 
         if (args.length == 1) {
-            worldManager.getBuildWorlds().forEach(world -> {
-                if (player.hasPermission("buildsystem.physics")) {
-                    String worldName = world.getName();
-                    addArgument(args[0], worldName, arrayList);
-                }
-            });
+            worldStorage.getBuildWorlds().stream()
+                    .filter(world -> world.getPermissions().canPerformCommand(player, "buildsystem.physics"))
+                    .forEach(world -> addArgument(args[0], world.getName(), arrayList));
         }
 
         return arrayList;

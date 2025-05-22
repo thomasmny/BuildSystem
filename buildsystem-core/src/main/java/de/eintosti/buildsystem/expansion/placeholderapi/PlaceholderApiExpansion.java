@@ -17,13 +17,14 @@
  */
 package de.eintosti.buildsystem.expansion.placeholderapi;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.settings.Settings;
-import de.eintosti.buildsystem.settings.SettingsManager;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldData;
+import de.eintosti.buildsystem.api.player.settings.Settings;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.player.settings.SettingsManager;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import java.util.Locale;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
@@ -34,14 +35,14 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
 
     private static final String SETTINGS_KEY = "settings";
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final SettingsManager settingsManager;
-    private final WorldManager worldManager;
+    private final WorldStorageImpl worldStorage;
 
-    public PlaceholderApiExpansion(BuildSystem plugin) {
+    public PlaceholderApiExpansion(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.settingsManager = plugin.getSettingsManager();
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
     }
 
     /**
@@ -123,7 +124,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
      *
      * @param player     A Player.
      * @param identifier A String containing the identifier/value.
-     * @return possibly-null String of the requested identifier.
+     * @return possibly null String of the requested identifier.
      */
     @Nullable
     private String parseSettingsPlaceholder(Player player, String identifier) {
@@ -160,7 +161,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "spawnteleport":
                 return String.valueOf(settings.isSpawnTeleport());
             case "opentrapdoors":
-                return String.valueOf(settings.isTrapDoor());
+                return String.valueOf(settings.isOpenTrapDoors());
             default:
                 return null;
         }
@@ -185,11 +186,12 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             identifier = splitString[0];
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (buildWorld == null) {
             return "-";
         }
 
+        Builders builders = buildWorld.getBuilders();
         WorldData worldData = buildWorld.getData();
         switch (identifier.toLowerCase(Locale.ROOT)) {
             case "blockbreaking":
@@ -197,15 +199,15 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "blockplacement":
                 return String.valueOf(worldData.blockPlacement().get());
             case "builders":
-                return buildWorld.getBuildersInfo(player);
+                return builders.asPlaceholder(player);
             case "buildersenabled":
                 return String.valueOf(worldData.buildersEnabled().get());
             case "creation":
                 return Messages.formatDate(buildWorld.getCreationDate());
             case "creator":
-                return buildWorld.hasCreator() ? buildWorld.getCreator().getName() : "-";
+                return builders.hasCreator() ? builders.getCreator().getName() : "-";
             case "creatorid":
-                return buildWorld.hasCreator() ? String.valueOf(buildWorld.getCreator().getUniqueId()) : "-";
+                return builders.hasCreator() ? String.valueOf(builders.getCreator().getUniqueId()) : "-";
             case "explosions":
                 return String.valueOf(worldData.explosions().get());
             case "lastedited":
@@ -231,11 +233,11 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "spawn":
                 return worldData.customSpawn().get();
             case "status":
-                return worldData.status().get().getName(player);
+                return Messages.getString(worldData.status().get().getMessageKey(), player);
             case "time":
                 return buildWorld.getWorldTime();
             case "type":
-                return buildWorld.getType().getName(player);
+                return Messages.getString(buildWorld.getType().getMessageKey(), player);
             case "world":
                 return buildWorld.getName();
             default:

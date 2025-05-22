@@ -19,11 +19,11 @@ package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.inventory.XInventoryView;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.data.WorldStatus;
-import de.eintosti.buildsystem.world.data.WorldType;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -33,10 +33,10 @@ import org.bukkit.inventory.ItemStack;
 
 public class InventoryCloseListener implements Listener {
 
-    private final InventoryUtils inventoryUtils;
+    private final CustomizableIcons worldIcon;
 
-    public InventoryCloseListener(BuildSystem plugin) {
-        this.inventoryUtils = plugin.getInventoryUtil();
+    public InventoryCloseListener(BuildSystemPlugin plugin) {
+        this.worldIcon = plugin.getCustomizableIcons();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -46,28 +46,21 @@ public class InventoryCloseListener implements Listener {
         if (!title.equals(Messages.getString("setup_title", (Player) event.getPlayer()))) {
             return;
         }
-        setNewItems(event);
+        saveItems(event.getInventory());
     }
 
-    private void setNewItems(InventoryCloseEvent event) {
-        Inventory inventory = event.getInventory();
-
+    private void saveItems(Inventory inventory) {
         ItemStack normalCreateItem = inventory.getItem(11);
         ItemStack flatCreateItem = inventory.getItem(12);
         ItemStack netherCreateItem = inventory.getItem(13);
         ItemStack endCreateItem = inventory.getItem(14);
         ItemStack voidCreateItem = inventory.getItem(15);
 
-        inventoryUtils.setCreateItem(WorldType.NORMAL,
-                normalCreateItem != null ? XMaterial.matchXMaterial(normalCreateItem) : null);
-        inventoryUtils.setCreateItem(WorldType.FLAT,
-                flatCreateItem != null ? XMaterial.matchXMaterial(flatCreateItem) : null);
-        inventoryUtils.setCreateItem(WorldType.NETHER,
-                netherCreateItem != null ? XMaterial.matchXMaterial(netherCreateItem) : null);
-        inventoryUtils.setCreateItem(WorldType.END,
-                endCreateItem != null ? XMaterial.matchXMaterial(endCreateItem) : null);
-        inventoryUtils.setCreateItem(WorldType.VOID,
-                voidCreateItem != null ? XMaterial.matchXMaterial(voidCreateItem) : null);
+        worldIcon.setIcon(BuildWorldType.NORMAL, normalCreateItem != null ? XMaterial.matchXMaterial(normalCreateItem) : null);
+        worldIcon.setIcon(BuildWorldType.FLAT, flatCreateItem != null ? XMaterial.matchXMaterial(flatCreateItem) : null);
+        worldIcon.setIcon(BuildWorldType.NETHER, netherCreateItem != null ? XMaterial.matchXMaterial(netherCreateItem) : null);
+        worldIcon.setIcon(BuildWorldType.END, endCreateItem != null ? XMaterial.matchXMaterial(endCreateItem) : null);
+        worldIcon.setIcon(BuildWorldType.VOID, voidCreateItem != null ? XMaterial.matchXMaterial(voidCreateItem) : null);
 
         ItemStack normalDefaultItem = inventory.getItem(20);
         ItemStack flatDefaultItem = inventory.getItem(21);
@@ -76,18 +69,12 @@ public class InventoryCloseListener implements Listener {
         ItemStack voidDefaultItem = inventory.getItem(24);
         ItemStack importedDefaultItem = inventory.getItem(25);
 
-        inventoryUtils.setDefaultItem(WorldType.NORMAL,
-                normalDefaultItem != null ? XMaterial.matchXMaterial(normalDefaultItem) : null);
-        inventoryUtils.setDefaultItem(WorldType.FLAT,
-                flatDefaultItem != null ? XMaterial.matchXMaterial(flatDefaultItem) : null);
-        inventoryUtils.setDefaultItem(WorldType.NETHER,
-                netherDefaultItem != null ? XMaterial.matchXMaterial(netherDefaultItem) : null);
-        inventoryUtils.setDefaultItem(WorldType.END,
-                endDefaultItem != null ? XMaterial.matchXMaterial(endDefaultItem) : null);
-        inventoryUtils.setDefaultItem(WorldType.VOID,
-                voidDefaultItem != null ? XMaterial.matchXMaterial(voidDefaultItem) : null);
-        inventoryUtils.setDefaultItem(WorldType.IMPORTED,
-                importedDefaultItem != null ? XMaterial.matchXMaterial(importedDefaultItem) : null);
+        worldIcon.setIcon(BuildWorldType.NORMAL, normalDefaultItem != null ? XMaterial.matchXMaterial(normalDefaultItem) : null);
+        worldIcon.setIcon(BuildWorldType.FLAT, flatDefaultItem != null ? XMaterial.matchXMaterial(flatDefaultItem) : null);
+        worldIcon.setIcon(BuildWorldType.NETHER, netherDefaultItem != null ? XMaterial.matchXMaterial(netherDefaultItem) : null);
+        worldIcon.setIcon(BuildWorldType.END, endDefaultItem != null ? XMaterial.matchXMaterial(endDefaultItem) : null);
+        worldIcon.setIcon(BuildWorldType.VOID, voidDefaultItem != null ? XMaterial.matchXMaterial(voidDefaultItem) : null);
+        worldIcon.setIcon(BuildWorldType.IMPORTED, importedDefaultItem != null ? XMaterial.matchXMaterial(importedDefaultItem) : null);
 
         ItemStack notStartedStatusItem = inventory.getItem(29);
         ItemStack inProgressStatusItem = inventory.getItem(30);
@@ -96,17 +83,11 @@ public class InventoryCloseListener implements Listener {
         ItemStack archiveStatusItem = inventory.getItem(33);
         ItemStack hiddenStatusItem = inventory.getItem(34);
 
-        inventoryUtils.setStatusItem(WorldStatus.NOT_STARTED,
-                notStartedStatusItem != null ? XMaterial.matchXMaterial(notStartedStatusItem) : null);
-        inventoryUtils.setStatusItem(WorldStatus.IN_PROGRESS,
-                inProgressStatusItem != null ? XMaterial.matchXMaterial(inProgressStatusItem) : null);
-        inventoryUtils.setStatusItem(WorldStatus.ALMOST_FINISHED,
-                almostFinishedStatusItem != null ? XMaterial.matchXMaterial(almostFinishedStatusItem) : null);
-        inventoryUtils.setStatusItem(WorldStatus.FINISHED,
-                finishedStatusItem != null ? XMaterial.matchXMaterial(finishedStatusItem) : null);
-        inventoryUtils.setStatusItem(WorldStatus.ARCHIVE,
-                archiveStatusItem != null ? XMaterial.matchXMaterial(archiveStatusItem) : null);
-        inventoryUtils.setStatusItem(WorldStatus.HIDDEN,
-                hiddenStatusItem != null ? XMaterial.matchXMaterial(hiddenStatusItem) : null);
+        worldIcon.setIcon(BuildWorldStatus.NOT_STARTED, notStartedStatusItem != null ? XMaterial.matchXMaterial(notStartedStatusItem) : null);
+        worldIcon.setIcon(BuildWorldStatus.IN_PROGRESS, inProgressStatusItem != null ? XMaterial.matchXMaterial(inProgressStatusItem) : null);
+        worldIcon.setIcon(BuildWorldStatus.ALMOST_FINISHED, almostFinishedStatusItem != null ? XMaterial.matchXMaterial(almostFinishedStatusItem) : null);
+        worldIcon.setIcon(BuildWorldStatus.FINISHED, finishedStatusItem != null ? XMaterial.matchXMaterial(finishedStatusItem) : null);
+        worldIcon.setIcon(BuildWorldStatus.ARCHIVE, archiveStatusItem != null ? XMaterial.matchXMaterial(archiveStatusItem) : null);
+        worldIcon.setIcon(BuildWorldStatus.HIDDEN, hiddenStatusItem != null ? XMaterial.matchXMaterial(hiddenStatusItem) : null);
     }
 }

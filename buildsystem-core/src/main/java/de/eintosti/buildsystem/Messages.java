@@ -42,10 +42,9 @@ import org.jetbrains.annotations.Nullable;
 
 public class Messages {
 
-    private static final BuildSystem PLUGIN = JavaPlugin.getPlugin(BuildSystem.class);
+    private static final BuildSystemPlugin PLUGIN = JavaPlugin.getPlugin(BuildSystemPlugin.class);
     private static final Map<String, String> MESSAGES = new HashMap<>();
-    private static final boolean PLACEHOLDER_API_ENABLED =
-            Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null;
+    private static final boolean PLACEHOLDER_API_ENABLED = Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null;
 
     private static YamlConfiguration config;
 
@@ -483,13 +482,6 @@ public class Messages {
         addSpacer(sb, "");
         addSpacer(sb, "# Setup");
         setMessage(sb, "setup_title", "&3» &8Setup");
-        setMessage(sb, "setup_create_item_name", "&bCreate World Item");
-        setMessage(sb, "setup_create_item_lore", Arrays.asList(
-                "&7The item which is shown",
-                "&7when you create a world.",
-                "", "&7&nTo change&7:",
-                "&8» &7&oDrag new item onto old one"
-        ));
         setMessage(sb, "setup_default_item_name", "&bDefault Item");
         setMessage(sb, "setup_default_item_lore", Arrays.asList(
                 "&7The item which a world",

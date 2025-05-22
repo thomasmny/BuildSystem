@@ -17,16 +17,16 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.builder.Builder;
+import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.UUIDFetcher;
-import de.eintosti.buildsystem.world.Builder;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.generator.Generator;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
 import java.util.Locale;
 import java.util.UUID;
@@ -35,9 +35,9 @@ import org.bukkit.entity.Player;
 
 public class ImportAllSubCommand implements SubCommand {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
-    public ImportAllSubCommand(BuildSystem plugin) {
+    public ImportAllSubCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -53,8 +53,8 @@ public class ImportAllSubCommand implements SubCommand {
             return;
         }
 
-        WorldManager worldManager = plugin.getWorldManager();
-        if (worldManager.isImportingAllWorlds()) {
+        WorldServiceImpl worldService = plugin.getWorldService();
+        if (worldService.isImportingAllWorlds()) {
             Messages.sendMessage(player, "worlds_importall_already_started");
             return;
         }
@@ -70,7 +70,7 @@ public class ImportAllSubCommand implements SubCommand {
                 return false;
             }
 
-            return worldManager.getBuildWorld(name) == null;
+            return !worldService.getWorldStorage().worldExists(name);
         });
 
         if (directories == null || directories.length == 0) {
@@ -108,7 +108,7 @@ public class ImportAllSubCommand implements SubCommand {
             creator = Builder.of(creatorId, creatorArg);
         }
 
-        worldManager.importWorlds(player, directories, generator, creator);
+        worldService.importWorlds(player, directories, generator, creator);
     }
 
     @Override

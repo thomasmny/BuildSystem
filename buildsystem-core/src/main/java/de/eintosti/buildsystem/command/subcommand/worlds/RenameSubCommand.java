@@ -18,30 +18,28 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.PlayerChatInput;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
 import org.bukkit.entity.Player;
 
 public class RenameSubCommand implements SubCommand {
 
-    private final BuildSystem plugin;
-    private final String worldName;
+    private final BuildSystemPlugin plugin;
+    private final BuildWorld buildWorld;
 
-    public RenameSubCommand(BuildSystem plugin, String worldName) {
+    public RenameSubCommand(BuildSystemPlugin plugin, String worldName) {
         this.plugin = plugin;
-        this.worldName = worldName;
+        this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
     }
 
     @Override
     public void execute(Player player, String[] args) {
-        WorldManager worldManager = plugin.getWorldManager();
-        if (!worldManager.isPermitted(player, getArgument().getPermission(), worldName)) {
+        if (!buildWorld.getPermissions().canPerformCommand(player, getArgument().getPermission())) {
             plugin.sendPermissionMessage(player);
             return;
         }
@@ -51,7 +49,6 @@ public class RenameSubCommand implements SubCommand {
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
             Messages.sendMessage(player, "worlds_rename_unknown_world");
             return;
@@ -59,9 +56,8 @@ public class RenameSubCommand implements SubCommand {
 
         new PlayerChatInput(plugin, player, "enter_world_name", input -> {
             player.closeInventory();
-            worldManager.renameWorld(player, buildWorld, input.trim());
+            plugin.getWorldService().renameWorld(player, buildWorld, input.trim());
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
-            player.closeInventory();
         });
     }
 

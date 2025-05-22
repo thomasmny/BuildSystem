@@ -18,29 +18,62 @@
 package de.eintosti.buildsystem.config;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.data.WorldStatus;
-import de.eintosti.buildsystem.world.data.WorldType;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.world.display.CustomizableIcons.IconType;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.jetbrains.annotations.Nullable;
 
 public class SetupConfig extends ConfigurationFile {
 
-    public SetupConfig(BuildSystem plugin) {
+    public SetupConfig(BuildSystemPlugin plugin) {
         super(plugin, "setup.yml");
     }
 
-    public void saveCreateItem(WorldType worldType, XMaterial material) {
-        getFile().set("setup.type." + worldType.name().toLowerCase(Locale.ROOT) + ".create", material.name());
+    public <T extends Enum<?>> void saveIcons(IconType iconType, Map<T, XMaterial> typeIcons) {
+        typeIcons.forEach((type, material) -> getFile().set("setup." + iconType.getKey() + "." + type.name().toLowerCase(Locale.ROOT), material.name()));
         saveFile();
     }
 
-    public void saveDefaultItem(WorldType worldType, XMaterial material) {
-        getFile().set("setup.type." + worldType.name().toLowerCase(Locale.ROOT) + ".default", material.name());
+    public <T extends Enum<?>> void saveIcon(IconType iconType, T type, XMaterial material) {
+        getFile().set("setup." + iconType.getKey() + "." + type.name().toLowerCase(Locale.ROOT), material.name());
         saveFile();
     }
 
-    public void saveStatusItem(WorldStatus worldStatus, XMaterial material) {
-        getFile().set("setup.status." + worldStatus.name().toLowerCase(Locale.ROOT), material.name());
-        saveFile();
+    @Nullable
+    public <T> Map<T, XMaterial> loadIcons(IconType iconType, Function<String, T> mapper) {
+        FileConfiguration configuration = getFile();
+        if (configuration == null) {
+            return null;
+        }
+
+        ConfigurationSection configurationSection = configuration.getConfigurationSection("setup." + iconType.getKey());
+        if (configurationSection == null) {
+            return null;
+        }
+
+        Set<String> types = configurationSection.getKeys(false);
+        if (types.isEmpty()) {
+            return null;
+        }
+
+        Map<T, XMaterial> icons = new HashMap<>();
+
+        for (String type : types) {
+            String materialString = configuration.getString("setup." + iconType.getKey() + "." + type);
+            if (materialString == null) {
+                continue;
+            }
+
+            T mappedKey = mapper.apply(type);
+            XMaterial.matchXMaterial(materialString).ifPresent(material -> icons.put(mappedKey, material));
+        }
+
+        return icons;
     }
 }

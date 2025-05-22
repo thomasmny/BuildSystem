@@ -121,7 +121,7 @@ public final class FileUtils {
      * Gets the creation date of a file.
      *
      * @param file The file to be checked
-     * @return The amount of milliseconds that have passed since {@code January 1, 1970 UTC}, until the file was created
+     * @return The number of milliseconds that have passed since {@code January 1, 1970 UTC}, until the file was created
      */
     public static long getDirectoryCreation(File file) {
         long creation = System.currentTimeMillis();

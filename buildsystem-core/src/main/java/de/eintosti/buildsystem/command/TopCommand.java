@@ -18,9 +18,11 @@
 package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.world.util.WorldTeleporterImpl;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -31,12 +33,12 @@ import org.jetbrains.annotations.NotNull;
 
 public class TopCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
-    private final WorldManager worldManager;
+    private final BuildSystemPlugin plugin;
+    private final WorldStorageImpl worldStorage;
 
-    public TopCommand(BuildSystem plugin) {
+    public TopCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getCommand("top").setExecutor(this);
     }
 
@@ -63,13 +65,14 @@ public class TopCommand implements CommandExecutor {
     }
 
     private void sendToTop(Player player) {
+        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
+
         Location playerLocation = player.getLocation();
         Location blockLocation = player.getWorld()
                 .getHighestBlockAt(playerLocation.getBlockX(), playerLocation.getBlockZ())
                 .getLocation();
 
-        boolean failed = !worldManager.isSafeLocation(blockLocation)
-                || blockLocation.getBlock().getY() < playerLocation.getBlock().getY();
+        boolean failed = !WorldTeleporterImpl.of(buildWorld).isSafeLocation(blockLocation) || blockLocation.getBlock().getY() < playerLocation.getBlock().getY();
         if (failed) {
             Messages.sendMessage(player, "top_failed");
             return;

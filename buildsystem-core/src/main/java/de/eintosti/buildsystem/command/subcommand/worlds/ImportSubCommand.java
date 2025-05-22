@@ -17,18 +17,17 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.builder.Builder;
+import de.eintosti.buildsystem.api.world.creation.generator.Generator;
+import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.UUIDFetcher;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.Builder;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldType;
-import de.eintosti.buildsystem.world.generator.Generator;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
 import java.util.AbstractMap;
 import java.util.Arrays;
@@ -39,10 +38,10 @@ import org.bukkit.entity.Player;
 
 public class ImportSubCommand implements SubCommand {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final String worldName;
 
-    public ImportSubCommand(BuildSystem plugin, String worldName) {
+    public ImportSubCommand(BuildSystemPlugin plugin, String worldName) {
         this.plugin = plugin;
         this.worldName = worldName;
     }
@@ -59,9 +58,8 @@ public class ImportSubCommand implements SubCommand {
             return;
         }
 
-        WorldManager worldManager = plugin.getWorldManager();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
-        if (buildWorld != null) {
+        WorldServiceImpl worldService = plugin.getWorldService();
+        if (worldService.getWorldStorage().worldExists(worldName)) {
             Messages.sendMessage(player, "worlds_import_world_is_imported");
             return;
         }
@@ -74,8 +72,8 @@ public class ImportSubCommand implements SubCommand {
         }
 
         String invalidChar = Arrays.stream(worldName.split(""))
-                .filter(c -> c.matches("[^A-Za-z\\d/_-]")
-                        || c.matches(plugin.getConfigValues().getInvalidNameCharacters())
+                .filter(c ->
+                        c.matches("[^A-Za-z\\d/_-]") || c.matches(plugin.getConfigValues().getInvalidNameCharacters())
                 )
                 .findFirst()
                 .orElse(null);
@@ -90,7 +88,7 @@ public class ImportSubCommand implements SubCommand {
         Builder creator = null;
         Generator generator = Generator.VOID;
         String generatorName = null;
-        WorldType worldType = WorldType.IMPORTED;
+        BuildWorldType worldType = BuildWorldType.IMPORTED;
 
         if (args.length != 2) {
             ArgumentParser parser = new ArgumentParser(args);
@@ -130,7 +128,7 @@ public class ImportSubCommand implements SubCommand {
                     return;
                 }
                 try {
-                    worldType = WorldType.valueOf(worldTypeArg.toUpperCase(Locale.ROOT));
+                    worldType = BuildWorldType.valueOf(worldTypeArg.toUpperCase(Locale.ROOT));
                 } catch (IllegalArgumentException ignored) {
 
                 }
@@ -140,7 +138,7 @@ public class ImportSubCommand implements SubCommand {
         Messages.sendMessage(player, "worlds_import_started",
                 new AbstractMap.SimpleEntry<>("%world%", worldName)
         );
-        if (worldManager.importWorld(player, worldName, creator, worldType, generator, generatorName, true)) {
+        if (worldService.importWorld(player, worldName, creator, worldType, generator, generatorName, true)) {
             Messages.sendMessage(player, "worlds_import_finished");
         }
     }
