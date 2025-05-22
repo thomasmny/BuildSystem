@@ -17,6 +17,9 @@
  */
 package de.eintosti.buildsystem.api.player.settings;
 
+/**
+ * A {@link DesignColor} is the color which glass panes are tinted to in different menus.
+ */
 public enum DesignColor {
     RED,
     ORANGE,
@@ -35,6 +38,12 @@ public enum DesignColor {
     LIGHT_GRAY,
     BLACK;
 
+    /**
+     * Gets the {@link DesignColor} from a string.
+     *
+     * @param colorName The name of the color
+     * @return The {@link DesignColor} or {@link DesignColor#BLACK} if the color does not exist
+     */
     public static DesignColor matchColor(String colorName) {
         try {
             return valueOf(colorName);
