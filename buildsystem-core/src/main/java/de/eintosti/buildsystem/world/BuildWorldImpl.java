@@ -169,7 +169,7 @@ public final class BuildWorldImpl implements BuildWorld {
     public List<String> getLore(Player player) {
         @SuppressWarnings("unchecked")
         Map.Entry<String, Object>[] placeholders = new Map.Entry[]{
-                new AbstractMap.SimpleEntry<>("%status%", Messages.getString(worldData.status().get().getKey(), player)),
+                new AbstractMap.SimpleEntry<>("%status%", Messages.getString(worldData.status().get().getMessageKey(), player)),
                 new AbstractMap.SimpleEntry<>("%project%", worldData.project().get()),
                 new AbstractMap.SimpleEntry<>("%permission%", worldData.permission().get()),
                 new AbstractMap.SimpleEntry<>("%creator%", builders.hasCreator() ? builders.getCreator().getName() : "-"),
