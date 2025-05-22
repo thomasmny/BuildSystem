@@ -233,11 +233,11 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "spawn":
                 return worldData.customSpawn().get();
             case "status":
-                return Messages.getString(worldData.status().get().getKey(), player);
+                return Messages.getString(worldData.status().get().getMessageKey(), player);
             case "time":
                 return buildWorld.getWorldTime();
             case "type":
-                return Messages.getString(buildWorld.getType().getKey(), player);
+                return Messages.getString(buildWorld.getType().getMessageKey(), player);
             case "world":
                 return buildWorld.getName();
             default:
