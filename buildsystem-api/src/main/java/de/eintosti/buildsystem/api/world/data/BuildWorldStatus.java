@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.api.world.data;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
-
 import java.util.Locale;
 import org.jetbrains.annotations.ApiStatus.Internal;
 
@@ -52,15 +51,15 @@ public enum BuildWorldStatus {
     ARCHIVE("status_archive", 5),
 
     /**
-     * Represents a world that is not shown in the navigator.
+     * Represents a world not shown in the navigator.
      */
     HIDDEN("status_hidden", 6);
 
-    private final String key;
+    private final String messageKey;
     private final int stage;
 
-    BuildWorldStatus(String key, int stage) {
-        this.key = key;
+    BuildWorldStatus(String messageKey, int stage) {
+        this.messageKey = messageKey;
         this.stage = stage;
     }
 
@@ -70,8 +69,8 @@ public enum BuildWorldStatus {
      * @return The type's display name
      */
     @Internal
-    public String getKey() {
-        return key;
+    public String getMessageKey() {
+        return messageKey;
     }
 
     /**

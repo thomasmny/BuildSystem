@@ -112,7 +112,7 @@ public class EditInventory implements Listener {
         addDifficultyItem(player, inventory, buildWorld);
         inventory.setItem(40, InventoryUtils.createItem(plugin.getCustomizableIcons().getIcon(worldData.status().get()), Messages.getString("worldeditor_status_item", player),
                 Messages.getStringList("worldeditor_status_lore", player,
-                        new AbstractMap.SimpleEntry<>("%status%", Messages.getString(buildWorld.getData().status().get().getKey(), player))
+                        new AbstractMap.SimpleEntry<>("%status%", Messages.getString(buildWorld.getData().status().get().getMessageKey(), player))
                 )
         ));
         inventory.setItem(41, InventoryUtils.createItem(XMaterial.ANVIL, Messages.getString("worldeditor_project_item", player),

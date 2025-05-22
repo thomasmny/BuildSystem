@@ -61,15 +61,15 @@ public enum WorldSort {
      */
     OLDEST_FIRST("world_sort_date_oldest");
 
-    private final String key;
+    private final String messageKey;
 
-    WorldSort(String key) {
-        this.key = key;
+    WorldSort(String messageKey) {
+        this.messageKey = messageKey;
     }
 
     @Internal
-    public String getKey() {
-        return key;
+    public String getMessageKey() {
+        return messageKey;
     }
 
     public static WorldSort matchWorldSort(String type) {
@@ -84,47 +84,5 @@ public enum WorldSort {
         }
 
         return NAME_A_TO_Z;
-    }
-
-    public WorldSort getNext() {
-        switch (this) {
-            default: // NAME_A_TO_Z
-                return NAME_Z_TO_A;
-            case NAME_Z_TO_A:
-                return PROJECT_A_TO_Z;
-            case PROJECT_A_TO_Z:
-                return PROJECT_Z_TO_A;
-            case PROJECT_Z_TO_A:
-                return STATUS_NOT_STARTED;
-            case STATUS_NOT_STARTED:
-                return STATUS_FINISHED;
-            case STATUS_FINISHED:
-                return NEWEST_FIRST;
-            case NEWEST_FIRST:
-                return OLDEST_FIRST;
-            case OLDEST_FIRST:
-                return NAME_A_TO_Z;
-        }
-    }
-
-    public WorldSort getPrevious() {
-        switch (this) {
-            default: // NAME_A_TO_Z
-                return OLDEST_FIRST;
-            case NAME_Z_TO_A:
-                return NAME_A_TO_Z;
-            case PROJECT_A_TO_Z:
-                return NAME_Z_TO_A;
-            case PROJECT_Z_TO_A:
-                return PROJECT_A_TO_Z;
-            case STATUS_NOT_STARTED:
-                return PROJECT_Z_TO_A;
-            case STATUS_FINISHED:
-                return STATUS_NOT_STARTED;
-            case NEWEST_FIRST:
-                return STATUS_FINISHED;
-            case OLDEST_FIRST:
-                return NEWEST_FIRST;
-        }
     }
 }

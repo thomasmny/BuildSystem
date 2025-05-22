@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.api.world.data;
 
 import org.bukkit.World.Environment;
 import org.jetbrains.annotations.ApiStatus.Internal;
+import org.jetbrains.annotations.Nullable;
 
 public enum BuildWorldType {
 
@@ -72,19 +73,20 @@ public enum BuildWorldType {
      */
     UNKNOWN(null);
 
-    private final String key;
+    private final String messageKey;
 
-    BuildWorldType(String key) {
-        this.key = key;
+    BuildWorldType(String messageKey) {
+        this.messageKey = messageKey;
     }
 
     /**
-     * Get the display name of the {@link BuildWorldType}.
+     * Get the message key for the {@link BuildWorldType}'s display name.
      *
-     * @return The type's display name
+     * @return The type's display name message key, or {@code null} for {@link #IMPORTED} and {@link #UNKNOWN}
      */
     @Internal
-    public String getKey() {
-        return key;
+    @Nullable
+    public String getMessageKey() {
+        return messageKey;
     }
 }

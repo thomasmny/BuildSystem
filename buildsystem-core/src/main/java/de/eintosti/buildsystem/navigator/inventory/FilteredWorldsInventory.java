@@ -45,6 +45,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -160,7 +161,7 @@ public abstract class FilteredWorldsInventory extends PaginatedInventory impleme
     private void addWorldSortItem(Inventory inventory, Player player) {
         Settings settings = settingsManager.getSettings(player);
         WorldSort worldSort = settings.getWorldDisplay().getWorldSort();
-        inventory.setItem(45, InventoryUtils.createItem(XMaterial.BOOK, Messages.getString("world_sort_title", player), Messages.getString(worldSort.getKey(), player)));
+        inventory.setItem(45, InventoryUtils.createItem(XMaterial.BOOK, Messages.getString("world_sort_title", player), Messages.getString(worldSort.getMessageKey(), player)));
     }
 
     private void addWorldFilterItem(Inventory inventory, Player player) {
@@ -223,9 +224,8 @@ public abstract class FilteredWorldsInventory extends PaginatedInventory impleme
 
         switch (event.getSlot()) {
             case 45:
-                WorldSort newSort = event.isLeftClick()
-                        ? worldDisplay.getWorldSort().getNext()
-                        : worldDisplay.getWorldSort().getPrevious();
+                Function<WorldSort, WorldSort> newSortFunction = event.isLeftClick() ? this::getNextSort : this::getPreviousSort;
+                WorldSort newSort = newSortFunction.apply(worldDisplay.getWorldSort());
                 worldDisplay.setWorldSort(newSort);
                 openInventory(player);
                 return;
@@ -269,6 +269,48 @@ public abstract class FilteredWorldsInventory extends PaginatedInventory impleme
         }
 
         manageInventoryClick(event, player, itemStack);
+    }
+
+    private WorldSort getNextSort(WorldSort sort) {
+        switch (sort) {
+            case NEWEST_FIRST:
+                return WorldSort.OLDEST_FIRST;
+            case OLDEST_FIRST:
+                return WorldSort.NAME_A_TO_Z;
+            case PROJECT_A_TO_Z:
+                return WorldSort.PROJECT_Z_TO_A;
+            case PROJECT_Z_TO_A:
+                return WorldSort.STATUS_NOT_STARTED;
+            case STATUS_NOT_STARTED:
+                return WorldSort.STATUS_FINISHED;
+            case STATUS_FINISHED:
+                return WorldSort.NEWEST_FIRST;
+            case NAME_Z_TO_A:
+                return WorldSort.PROJECT_A_TO_Z;
+            default: // NAME_A_TO_Z
+                return WorldSort.NAME_Z_TO_A;
+        }
+    }
+
+    public WorldSort getPreviousSort(WorldSort sort) {
+        switch (sort) {
+            case NEWEST_FIRST:
+                return WorldSort.STATUS_FINISHED;
+            case OLDEST_FIRST:
+                return WorldSort.NEWEST_FIRST;
+            case PROJECT_A_TO_Z:
+                return WorldSort.NAME_Z_TO_A;
+            case PROJECT_Z_TO_A:
+                return WorldSort.PROJECT_A_TO_Z;
+            case STATUS_NOT_STARTED:
+                return WorldSort.PROJECT_Z_TO_A;
+            case STATUS_FINISHED:
+                return WorldSort.STATUS_NOT_STARTED;
+            case NAME_Z_TO_A:
+                return WorldSort.NAME_A_TO_Z;
+            default: // NAME_A_TO_Z
+                return WorldSort.OLDEST_FIRST;
+        }
     }
 
     /**

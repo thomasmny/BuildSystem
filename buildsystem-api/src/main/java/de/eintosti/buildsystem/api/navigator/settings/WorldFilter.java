@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.api.navigator.settings;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.util.function.Predicate;
+import org.jetbrains.annotations.ApiStatus.Internal;
 
 public interface WorldFilter {
 
@@ -34,6 +35,7 @@ public interface WorldFilter {
             this.loreKey = loreKey;
         }
 
+        @Internal
         public String getLoreKey() {
             return loreKey;
         }
