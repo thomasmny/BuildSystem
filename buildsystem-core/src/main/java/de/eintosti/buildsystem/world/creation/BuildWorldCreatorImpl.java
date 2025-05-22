@@ -173,7 +173,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
 
         Messages.sendMessage(player, "worlds_world_creation_started",
                 new AbstractMap.SimpleEntry<>("%world%", worldName),
-                new AbstractMap.SimpleEntry<>("%type%", Messages.getString(worldType.getKey(), player))
+                new AbstractMap.SimpleEntry<>("%type%", Messages.getString(worldType.getMessageKey(), player))
         );
         finishPreparationsAndGenerate(buildWorld);
         teleportAfterCreation(player);
