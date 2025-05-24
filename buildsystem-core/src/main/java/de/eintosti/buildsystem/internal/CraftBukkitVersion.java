@@ -69,6 +69,7 @@ public enum CraftBukkitVersion {
     v1_21_R1(3953, CustomBlocks_1_20_R1.class, GameRules_1_13_R1.class),
     v1_21_R2(4082, CustomBlocks_1_20_R1.class, GameRules_1_13_R1.class),
     v1_21_R3(4189, CustomBlocks_1_20_R1.class, GameRules_1_13_R1.class),
+    v1_21_R4(4325, CustomBlocks_1_20_R1.class, GameRules_1_13_R1.class),
     UNKNOWN;
 
     private final int dataVersion;
@@ -163,8 +164,10 @@ public enum CraftBukkitVersion {
                     return v1_21_R1;
                 } else if (patch <= 3) {
                     return v1_21_R2;
-                } else {
+                } else if (patch == 4) {
                     return v1_21_R3;
+                } else {
+                    return v1_21_R4;
                 }
             default:
                 if (Boolean.getBoolean("Paper.ignoreWorldDataVersion")) {
