@@ -17,14 +17,14 @@
  */
 package de.eintosti.buildsystem.listener;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.player.BuildPlayer;
-import de.eintosti.buildsystem.player.CachedValues;
-import de.eintosti.buildsystem.player.LogoutLocation;
-import de.eintosti.buildsystem.player.PlayerManager;
-import de.eintosti.buildsystem.settings.Settings;
-import de.eintosti.buildsystem.settings.SettingsManager;
+import de.eintosti.buildsystem.api.player.BuildPlayer;
+import de.eintosti.buildsystem.api.player.CachedValues;
+import de.eintosti.buildsystem.api.player.settings.Settings;
+import de.eintosti.buildsystem.player.LogoutLocationImpl;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.player.settings.SettingsManager;
 import java.util.AbstractMap;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -35,13 +35,13 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class PlayerQuitListener implements Listener {
 
-    private final BuildSystem plugin;
-    private final PlayerManager playerManager;
+    private final BuildSystemPlugin plugin;
+    private final PlayerServiceImpl playerManager;
     private final SettingsManager settingsManager;
 
-    public PlayerQuitListener(BuildSystem plugin) {
+    public PlayerQuitListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.playerManager = plugin.getPlayerManager();
+        this.playerManager = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -73,8 +73,8 @@ public class PlayerQuitListener implements Listener {
             player.getInventory().clear();
         }
 
-        BuildPlayer buildPlayer = playerManager.getBuildPlayer(player);
-        buildPlayer.setLogoutLocation(new LogoutLocation(
+        BuildPlayer buildPlayer = playerManager.getPlayerStorage().getBuildPlayer(player);
+        buildPlayer.setLogoutLocation(new LogoutLocationImpl(
                 player.getWorld().getName(),
                 player.getLocation()
         ));

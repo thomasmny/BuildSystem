@@ -17,9 +17,9 @@
  */
 package de.eintosti.buildsystem.listener;
 
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.settings.Settings;
-import de.eintosti.buildsystem.settings.SettingsManager;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.player.settings.Settings;
+import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.world.SpawnManager;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -31,7 +31,7 @@ public class PlayerRespawnListener implements Listener {
     private final SettingsManager settingsManager;
     private final SpawnManager spawnManager;
 
-    public PlayerRespawnListener(BuildSystem plugin) {
+    public PlayerRespawnListener(BuildSystemPlugin plugin) {
         this.settingsManager = plugin.getSettingsManager();
         this.spawnManager = plugin.getSpawnManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);

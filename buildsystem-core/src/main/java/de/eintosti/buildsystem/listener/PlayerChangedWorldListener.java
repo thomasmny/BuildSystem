@@ -18,17 +18,17 @@
 package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.player.CachedValues;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
-import de.eintosti.buildsystem.player.CachedValues;
-import de.eintosti.buildsystem.player.PlayerManager;
-import de.eintosti.buildsystem.settings.SettingsManager;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldStatus;
-import de.eintosti.buildsystem.world.data.WorldType;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.player.settings.SettingsManager;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,21 +51,21 @@ public class PlayerChangedWorldListener implements Listener {
     private final ConfigValues configValues;
 
     private final ArmorStandManager armorStandManager;
-    private final PlayerManager playerManager;
+    private final PlayerServiceImpl playerManager;
     private final SettingsManager settingsManager;
-    private final WorldManager worldManager;
+    private final WorldStorageImpl worldStorage;
 
     private final Map<UUID, GameMode> playerGamemode;
     private final Map<UUID, ItemStack[]> playerInventory;
     private final Map<UUID, ItemStack[]> playerArmor;
 
-    public PlayerChangedWorldListener(BuildSystem plugin) {
+    public PlayerChangedWorldListener(BuildSystemPlugin plugin) {
         this.configValues = plugin.getConfigValues();
 
         this.armorStandManager = plugin.getArmorStandManager();
-        this.playerManager = plugin.getPlayerManager();
+        this.playerManager = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsManager();
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
 
         this.playerGamemode = new HashMap<>();
         this.playerInventory = new HashMap<>();
@@ -81,14 +81,13 @@ public class PlayerChangedWorldListener implements Listener {
 
         event.getPlayer().setAllowFlight(true);
 
-        BuildWorld oldWorld = worldManager.getBuildWorld(event.getFrom().getName());
+        BuildWorld oldWorld = worldStorage.getBuildWorld(event.getFrom());
         if (oldWorld != null && configValues.isUnloadWorlds()) {
-            oldWorld.resetUnloadTask();
+            oldWorld.getUnloader().resetUnloadTask();
         }
 
-        BuildWorld newWorld = worldManager.getBuildWorld(worldName);
-        if (newWorld != null && !newWorld.getData().physics().get()
-                && player.hasPermission("buildsystem.physics.message")) {
+        BuildWorld newWorld = worldStorage.getBuildWorld(worldName);
+        if (newWorld != null && !newWorld.getData().physics().get() && player.hasPermission("buildsystem.physics.message")) {
             Messages.sendMessage(player, "physics_deactivated_in_world", new AbstractMap.SimpleEntry<>("%world%", newWorld.getName()));
         }
 
@@ -115,7 +114,7 @@ public class PlayerChangedWorldListener implements Listener {
             return;
         }
 
-        CachedValues cachedValues = playerManager.getBuildPlayer(playerUuid).getCachedValues();
+        CachedValues cachedValues = playerManager.getPlayerStorage().getBuildPlayer(playerUuid).getCachedValues();
         cachedValues.resetGameModeIfPresent(player);
         cachedValues.resetInventoryIfPresent(player);
         XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
@@ -123,8 +122,8 @@ public class PlayerChangedWorldListener implements Listener {
     }
 
     private void setGoldBlock(BuildWorld buildWorld) {
-        if (buildWorld == null || buildWorld.getType() != WorldType.VOID
-                || buildWorld.getData().status().get() != WorldStatus.NOT_STARTED) {
+        if (buildWorld == null || buildWorld.getType() != BuildWorldType.VOID
+                || buildWorld.getData().status().get() != BuildWorldStatus.NOT_STARTED) {
             return;
         }
 
@@ -140,8 +139,7 @@ public class PlayerChangedWorldListener implements Listener {
 
     @SuppressWarnings("deprecation")
     private void checkWorldStatus(Player player) {
-        String worldName = player.getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
         if (buildWorld == null) {
             return;
         }
@@ -166,7 +164,7 @@ public class PlayerChangedWorldListener implements Listener {
             this.playerArmor.remove(playerUUID);
         }
 
-        if (buildWorld.getData().status().get() == WorldStatus.ARCHIVE) {
+        if (buildWorld.getData().status().get() == BuildWorldStatus.ARCHIVE) {
             this.playerGamemode.put(playerUUID, player.getGameMode());
             this.playerInventory.put(playerUUID, playerInventory.getContents());
             this.playerArmor.put(playerUUID, playerInventory.getArmorContents());

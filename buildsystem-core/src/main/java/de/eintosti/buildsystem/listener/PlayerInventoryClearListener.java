@@ -17,11 +17,11 @@
  */
 package de.eintosti.buildsystem.listener;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
-import de.eintosti.buildsystem.settings.Settings;
-import de.eintosti.buildsystem.settings.SettingsManager;
+import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -31,13 +31,11 @@ import org.bukkit.inventory.PlayerInventory;
 
 public class PlayerInventoryClearListener implements Listener {
 
-    private final BuildSystem plugin;
-    private final InventoryUtils inventoryUtils;
+    private final BuildSystemPlugin plugin;
     private final SettingsManager settingsManager;
 
-    public PlayerInventoryClearListener(BuildSystem plugin) {
+    public PlayerInventoryClearListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.inventoryUtils = plugin.getInventoryUtil();
         this.settingsManager = plugin.getSettingsManager();
 
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -52,7 +50,7 @@ public class PlayerInventoryClearListener implements Listener {
         }
 
         PlayerInventory playerInventory = player.getInventory();
-        ItemStack navigatorItem = inventoryUtils.getItemStack(
+        ItemStack navigatorItem = InventoryUtils.createItem(
                 plugin.getConfigValues().getNavigatorItem(), Messages.getString("navigator_item", player)
         );
         event.getNavigatorSlots().forEach(slot -> playerInventory.setItem(slot, navigatorItem));

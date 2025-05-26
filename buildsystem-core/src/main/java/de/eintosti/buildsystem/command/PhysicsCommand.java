@@ -17,11 +17,12 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.AbstractMap;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -33,12 +34,12 @@ import org.jetbrains.annotations.NotNull;
 
 public class PhysicsCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
-    private final WorldManager worldManager;
+    private final BuildSystemPlugin plugin;
+    private final WorldStorageImpl worldStorage;
 
-    public PhysicsCommand(BuildSystem plugin) {
+    public PhysicsCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getCommand("physics").setExecutor(this);
     }
 
@@ -51,7 +52,8 @@ public class PhysicsCommand implements CommandExecutor {
 
         Player player = (Player) sender;
         String worldName = args.length == 0 ? player.getWorld().getName() : args[0];
-        if (!worldManager.isPermitted(player, "buildsystem.physics", worldName)) {
+        BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
+        if (WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, "buildsystem.physics")) {
             plugin.sendPermissionMessage(player);
             return true;
         }
@@ -62,8 +64,8 @@ public class PhysicsCommand implements CommandExecutor {
                 break;
             case 1:
                 //TODO: Check each world for permission individually?
-                if (args[0].equalsIgnoreCase("all") && worldManager.getBuildWorld("all") == null) {
-                    worldManager.getBuildWorlds().forEach(buildWorld -> buildWorld.getData().physics().set(true));
+                if (args[0].equalsIgnoreCase("all") && !worldStorage.worldExists("all")) {
+                    worldStorage.getBuildWorlds().forEach(world -> world.getData().physics().set(true));
                     Messages.sendMessage(player, "physics_activated_all");
                 } else {
                     togglePhysics(player, Bukkit.getWorld(args[0]));
@@ -82,7 +84,7 @@ public class PhysicsCommand implements CommandExecutor {
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
+        BuildWorld buildWorld = worldStorage.getBuildWorld(bukkitWorld.getName());
         if (buildWorld == null) {
             Messages.sendMessage(player, "physics_world_not_imported");
             return;
