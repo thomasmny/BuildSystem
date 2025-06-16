@@ -105,6 +105,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
     public @NotNull Map<String, Object> serializeWorld(BuildWorld buildWorld) {
         Map<String, Object> world = new HashMap<>();
 
+        world.put("uuid", buildWorld.getUniqueId().toString());
         Builders builders = buildWorld.getBuilders();
         if (builders.getCreator() != null) {
             world.put("creator", builders.getCreator().toString());
@@ -154,6 +155,9 @@ public class YamlWorldStorage extends WorldStorageImpl {
     }
 
     private BuildWorldImpl loadWorld(String worldName) {
+        UUID uuid = config.isString("worlds." + worldName + ".uuid")
+                ? UUID.fromString(config.getString("worlds." + worldName + ".uuid"))
+                : UUID.randomUUID(); // Generate a new UUID if not present
         Builder creator = parseCreator(worldName);
         BuildWorldType worldType = config.isString("worlds." + worldName + ".type")
                 ? BuildWorldType.valueOf(config.getString("worlds." + worldName + ".type"))
@@ -167,6 +171,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
         CustomGeneratorImpl customGenerator = new CustomGeneratorImpl(generatorName, parseChunkGenerator(worldName, generatorName));
 
         return new BuildWorldImpl(
+                uuid,
                 worldName,
                 worldType,
                 worldData,

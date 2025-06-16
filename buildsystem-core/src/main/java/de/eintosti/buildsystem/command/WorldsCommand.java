@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.BuildersSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.DeleteSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.EditSubCommand;
+import de.eintosti.buildsystem.command.subcommand.worlds.FolderSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.HelpSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.ImportAllSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.ImportSubCommand;
@@ -102,6 +103,10 @@ public class WorldsCommand implements CommandExecutor {
             }
             case EDIT: {
                 subCommand = new EditSubCommand(plugin, worldName);
+                break;
+            }
+            case FOLDER: {
+                subCommand = new FolderSubCommand(plugin);
                 break;
             }
             case HELP: {

@@ -197,6 +197,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
         BUILDERS("builders", "buildsystem.builders"),
         DELETE("delete", "buildsystem.delete"),
         EDIT("edit", "buildsystem.edit"),
+        FOLDER("folder", "buildsystem.folder"),
         HELP("help", "buildsystem.help.worlds"),
         IMPORT("import", "buildsystem.import"),
         IMPORT_ALL("importAll", "buildsystem.import.all"),

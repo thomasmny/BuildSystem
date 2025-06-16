@@ -17,22 +17,47 @@
  */
 package de.eintosti.buildsystem.api.world.display;
 
-import com.cryptomorin.xseries.XMaterial;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.util.List;
+import java.util.UUID;
 import org.jetbrains.annotations.Unmodifiable;
 
 public interface Folder extends Displayable {
 
+    /**
+     * Gets a list of all world UUIDs in this folder.
+     *
+     * @return An unmodifiable list of world UUIDs
+     */
     @Unmodifiable
-    List<String> getWorlds();
+    List<UUID> getWorldUUIDs();
 
-    boolean containsWorld(String worldName);
+    /**
+     * Gets whether this folder contains the specific {@link BuildWorld}.
+     *
+     * @param buildWorld The world to check
+     * @return {@code true} if the folder contains the world, {@code false} otherwise
+     */
+    boolean containsWorld(BuildWorld buildWorld);
 
-    void addWorld(String worldName);
+    /**
+     * Adds a {@link BuildWorld} to this folder.
+     *
+     * @param buildWorld The world to add
+     */
+    void addWorld(BuildWorld buildWorld);
 
-    void removeWorld(String worldName);
+    /**
+     * Removes a {@link BuildWorld} from this folder.
+     *
+     * @param buildWorld The world to remove
+     */
+    void removeWorld(BuildWorld buildWorld);
 
+    /**
+     * Gets the number of worlds in this folder.
+     *
+     * @return The number of worlds in this folder
+     */
     int getWorldCount();
-
-    void setMaterial(XMaterial material);
 } 

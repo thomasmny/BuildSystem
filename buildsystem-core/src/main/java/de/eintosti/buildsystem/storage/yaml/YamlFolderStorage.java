@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import org.bukkit.configuration.ConfigurationSection;
@@ -89,8 +90,8 @@ public class YamlFolderStorage extends FolderStorageImpl {
     public @NotNull Map<String, Object> serializeFolder(Folder folder) {
         Map<String, Object> serializedFolder = new HashMap<>();
 
-        serializedFolder.put("material", folder.getMaterial().name());
-        serializedFolder.put("worlds", folder.getWorlds());
+        serializedFolder.put("material", folder.getIcon().name());
+        serializedFolder.put("worlds", folder.getWorldUUIDs().stream().map(UUID::toString).collect(Collectors.toList()));
 
         return serializedFolder;
     }
@@ -119,9 +120,10 @@ public class YamlFolderStorage extends FolderStorageImpl {
 
         XMaterial defaultMaterial = XMaterial.CHEST;
         XMaterial material = XMaterial.matchXMaterial(config.getString(path + ".material", defaultMaterial.name())).orElse(defaultMaterial);
-        List<String> worlds = config.getStringList(path + ".worlds");
+        List<UUID> worlds = config.getStringList(path + ".worlds").stream().map(UUID::fromString).collect(Collectors.toList());
 
         return new FolderImpl(
+                this,
                 folderName,
                 material,
                 worlds

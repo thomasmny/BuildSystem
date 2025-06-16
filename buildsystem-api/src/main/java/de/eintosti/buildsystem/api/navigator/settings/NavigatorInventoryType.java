@@ -19,8 +19,8 @@ package de.eintosti.buildsystem.api.navigator.settings;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
-import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.WorldData;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jetbrains.annotations.Nullable;
@@ -45,7 +45,7 @@ public enum NavigatorInventoryType {
     ARCHIVE("§6World Archive"),
 
     /**
-     * The navigator inventory which contains all private {@link }s that can only be modified by the world's creator and all players who have been added as a {@link Builder}.
+     * The navigator inventory which contains all private {@link BuildWorld}s that can only be modified by the world's creator and all players who have been added as a {@link Builder}.
      *
      * @see WorldData#privateWorld()
      */

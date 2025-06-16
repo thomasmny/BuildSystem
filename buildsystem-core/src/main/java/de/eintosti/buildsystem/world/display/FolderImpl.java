@@ -19,67 +19,77 @@ package de.eintosti.buildsystem.world.display;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.api.world.display.Displayable;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Unmodifiable;
 
 public class FolderImpl implements Folder {
 
+    private final FolderStorageImpl folderStorage;
+
     private final String name;
-    private final List<String> worldNames;
+    private final List<UUID> worlds;
 
     private XMaterial material;
 
-    public FolderImpl(String name) {
-        this.name = name;
-        this.worldNames = new ArrayList<>();
-        this.material = XMaterial.CHEST;
+    public FolderImpl(FolderStorageImpl folderStorage, String name) {
+        this(folderStorage, name, XMaterial.CHEST, new ArrayList<>());
     }
 
-    public FolderImpl(String name, XMaterial material, List<String> worldNames) {
+    public FolderImpl(FolderStorageImpl folderStorage, String name, XMaterial material, List<UUID> worlds) {
+        this.folderStorage = folderStorage;
         this.name = name;
-        this.worldNames = worldNames;
+        this.worlds = worlds;
         this.material = material;
     }
 
     @Override
     public String getName() {
-        return name;
-    }
-
-    @Unmodifiable
-    public List<String> getWorlds() {
-        return Collections.unmodifiableList(worldNames);
-    }
-
-    public boolean containsWorld(String worldName) {
-        return worldNames.contains(worldName);
-    }
-
-    public void addWorld(String worldName) {
-        worldNames.add(worldName);
-    }
-
-    public void removeWorld(String worldName) {
-        worldNames.remove(worldName);
-    }
-
-    public int getWorldCount() {
-        return worldNames.size();
+        return this.name;
     }
 
     @Override
-    public XMaterial getMaterial() {
-        return material;
+    @Unmodifiable
+    public List<UUID> getWorldUUIDs() {
+        return Collections.unmodifiableList(this.worlds);
     }
 
-    public void setMaterial(XMaterial material) {
+    @Override
+    public boolean containsWorld(BuildWorld buildWorld) {
+        return this.worlds.contains(buildWorld.getUniqueId());
+    }
+
+    @Override
+    public void addWorld(BuildWorld buildWorld) {
+        this.worlds.add(buildWorld.getUniqueId());
+        this.folderStorage.assignWorldToFolder(buildWorld, this.name);
+    }
+
+    @Override
+    public void removeWorld(BuildWorld buildWorld) {
+        this.worlds.remove(buildWorld.getUniqueId());
+        this.folderStorage.unassignWorldToFolder(buildWorld);
+    }
+
+    @Override
+    public int getWorldCount() {
+        return this.worlds.size();
+    }
+
+    @Override
+    public XMaterial getIcon() {
+        return this.material;
+    }
+
+    @Override
+    public void setIcon(XMaterial material) {
         this.material = material;
     }
 
@@ -93,15 +103,10 @@ public class FolderImpl implements Folder {
     @Override
     public List<String> getLore(Player player) {
         List<String> lore = new ArrayList<>();
-        lore.add(Messages.getString("folder_item_contents", player,
-                new AbstractMap.SimpleEntry<>("%count%", String.valueOf(getWorldCount())))
+        lore.add(Messages.getString("folder_item_lore", player,
+                new AbstractMap.SimpleEntry<>("%worlds%", String.valueOf(getWorldCount())))
         );
         return lore;
-    }
-
-    @Override
-    public ItemStack asItemStack(Player player) {
-        return getMaterial().parseItem();
     }
 
     @Override

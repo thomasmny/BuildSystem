@@ -36,13 +36,10 @@ public class PublicWorldsInventory extends FilteredWorldsInventory {
             BuildWorldStatus.NOT_STARTED, BuildWorldStatus.IN_PROGRESS, BuildWorldStatus.ALMOST_FINISHED, BuildWorldStatus.FINISHED
     );
 
-    private final BuildSystemPlugin plugin;
     private final PlayerServiceImpl playerManager;
 
     public PublicWorldsInventory(BuildSystemPlugin plugin) {
         super(plugin, "world_navigator_title", "world_navigator_no_worlds", VISIBILITY, VALID_STATUS);
-
-        this.plugin = plugin;
         this.playerManager = plugin.getPlayerService();
     }
 
@@ -52,6 +49,7 @@ public class PublicWorldsInventory extends FilteredWorldsInventory {
         if (playerManager.canCreateWorld(player, super.getVisibility())) {
             addWorldCreateItem(inventory, player);
         }
+        addFolderCreateItem(inventory, player);
         return inventory;
     }
 
@@ -60,6 +58,14 @@ public class PublicWorldsInventory extends FilteredWorldsInventory {
             inventory.setItem(49, InventoryUtils.createSkull(Messages.getString("world_navigator_create_world", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716")));
         } else {
             InventoryUtils.addGlassPane(player, inventory, 49);
+        }
+    }
+
+    private void addFolderCreateItem(Inventory inventory, Player player) {
+        if (player.hasPermission("buildsystem.create.folder")) {
+            inventory.setItem(50, InventoryUtils.createSkull(Messages.getString("world_navigator_create_folder", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716")));
+        } else {
+            InventoryUtils.addGlassPane(player, inventory, 50);
         }
     }
 }

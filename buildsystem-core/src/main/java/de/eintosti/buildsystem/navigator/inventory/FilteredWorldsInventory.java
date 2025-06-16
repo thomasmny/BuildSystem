@@ -31,8 +31,12 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.display.Displayable;
+import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
+import de.eintosti.buildsystem.storage.FolderStorageImpl;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.PaginatedInventory;
@@ -43,9 +47,13 @@ import de.eintosti.buildsystem.world.creation.CreateInventory;
 import de.eintosti.buildsystem.world.modification.EditInventory;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -62,7 +70,8 @@ public abstract class FilteredWorldsInventory extends PaginatedInventory impleme
     private final BuildSystemPlugin plugin;
     private final PlayerServiceImpl playerService;
     private final SettingsManager settingsManager;
-    private final WorldServiceImpl worldService;
+    private final FolderStorageImpl folderStorage;
+    private final WorldStorageImpl worldStorage;
 
     private final String inventoryName;
     private final String noWorldsText;
@@ -73,7 +82,9 @@ public abstract class FilteredWorldsInventory extends PaginatedInventory impleme
         this.plugin = plugin;
         this.playerService = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsManager();
-        this.worldService = plugin.getWorldService();
+        WorldServiceImpl worldService = plugin.getWorldService();
+        this.folderStorage = worldService.getFolderStorage();
+        this.worldStorage = worldService.getWorldStorage();
 
         this.inventoryName = inventoryName;
         this.noWorldsText = noWorldsText;
@@ -97,15 +108,17 @@ public abstract class FilteredWorldsInventory extends PaginatedInventory impleme
     }
 
     /**
-     * Gets the number of worlds that are to be displayed in the inventory.
+     * Gets the number of {@link Displayable} objects that are to be displayed in the inventory.
      *
      * @param player The player to show the inventory to
-     * @return The number of worlds
+     * @return The number of displayable objects
      */
-    private int numOfWorlds(Player player) {
-        return (int) worldService.getWorldStorage().getBuildWorlds().stream()
+    private int calculateNumObjects(Player player) {
+        int numFolders = folderStorage.getFolders().size();
+        int numWorlds = (int) worldStorage.getBuildWorlds().stream()
                 .filter(buildWorld -> isValidWorld(player, buildWorld))
                 .count();
+        return numFolders + numWorlds;
     }
 
     /**
@@ -127,52 +140,86 @@ public abstract class FilteredWorldsInventory extends PaginatedInventory impleme
     }
 
     private void addWorlds(Player player) {
-        int numWorlds = numOfWorlds(player);
-        int numInventories = numWorlds % MAX_WORLDS == 0
-                ? Math.max(numWorlds, 1)
-                : numWorlds + 1;
+        int numObjects = calculateNumObjects(player);
+        int numInventories = numObjects % MAX_WORLDS == 0
+                ? Math.max(numObjects, 1)
+                : numObjects + 1;
 
         inventories = new Inventory[numInventories];
         Inventory inventory = createInventory(player);
 
         int index = 0;
         inventories[index] = inventory;
-        if (numWorlds == 0) {
+        if (numObjects == 0) {
             inventory.setItem(22, InventoryUtils.createSkull(Messages.getString(noWorldsText, player), Profileable.detect("2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6")));
             return;
         }
 
-        int columnWorld = 9, maxColumnWorld = 44;
-        for (BuildWorld buildWorld : worldService.getDisplayOrder(plugin.getSettingsManager().getSettings(player))) {
-            if (isValidWorld(player, buildWorld)) {
-                String displayName = Messages.getString("world_item_title", player, new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
-                List<String> lore = buildWorld.getLore(player);
-                InventoryUtils.addWorldItem(inventory, columnWorld++, buildWorld, displayName, lore);
-            }
+        int columnObject = 9, maxColumnObject = 44;
+        for (Displayable displayable : collectDisplayables(player)) {
+            inventory.setItem(columnObject++, displayable.asItemStack(player));
 
-            if (columnWorld > maxColumnWorld) {
-                columnWorld = 9;
+            if (columnObject > maxColumnObject) {
+                columnObject = 9;
                 inventory = createInventory(player);
                 inventories[++index] = inventory;
             }
         }
     }
 
-    private void addWorldSortItem(Inventory inventory, Player player) {
+    /**
+     * Collects all {@link Displayable} items (i.e. {@link Folder}s and {@link BuildWorld}s) that should be shown to the player.
+     * <p>
+     * The method applies the following logic:
+     * <ul>
+     *     <li>Fetches all {@link BuildWorld}s visible to the player based on world access rights and filter settings.</li>
+     *     <li>Sorts the filtered worlds according to the player's selected sort order.</li>
+     *     <li>If a world is assigned to a {@link Folder}, it is excluded from display and the folder is shown instead.</li>
+     *     <li>If a world is not assigned to any folder, it is displayed directly.</li>
+     *     <li>All folders are listed first, followed by all standalone worlds.</li>
+     * </ul>
+     * This ensures that:
+     * <ul>
+     *     <li>Worlds are never shown twice (both directly and via their folder).</li>
+     *     <li>Folder grouping takes display priority over individual worlds.</li>
+     * </ul>
+     *
+     * @param player The player for whom to collect displayable items
+     * @return A list of {@link Displayable} items to be presented in the UI, sorted with folders first.
+     */
+    private List<Displayable> collectDisplayables(Player player) {
         Settings settings = settingsManager.getSettings(player);
-        WorldSort worldSort = settings.getWorldDisplay().getWorldSort();
-        inventory.setItem(45, InventoryUtils.createItem(XMaterial.BOOK, Messages.getString("world_sort_title", player), Messages.getString(worldSort.getMessageKey(), player)));
+        WorldDisplay worldDisplay = settings.getWorldDisplay();
+
+        List<BuildWorld> buildWorlds = worldStorage.getBuildWorlds().stream()
+                .filter(buildWorld -> isValidWorld(player, buildWorld))
+                .filter(worldDisplay.getWorldFilter().apply())
+                .sorted(createDisplayOrderComparator(worldDisplay.getWorldSort()))
+                .collect(Collectors.toList());
+
+        List<Folder> folders = collectFolders(buildWorlds);
+        List<BuildWorld> standaloneWorlds = buildWorlds.stream()
+                .filter(world -> !this.folderStorage.isAssignedToAnyFolder(world))
+                .collect(Collectors.toList());
+
+        List<Displayable> displayables = new ArrayList<>();
+        displayables.addAll(folders);
+        displayables.addAll(standaloneWorlds);
+        return displayables;
     }
 
-    private void addWorldFilterItem(Inventory inventory, Player player) {
-        Settings settings = settingsManager.getSettings(player);
-        WorldFilter worldFilter = settings.getWorldDisplay().getWorldFilter();
-
-        List<String> lore = new ArrayList<>();
-        lore.add(Messages.getString(worldFilter.getMode().getLoreKey(), player, new AbstractMap.SimpleEntry<>("%text%", worldFilter.getText())));
-        lore.addAll(Messages.getStringList("world_filter_lore", player));
-
-        inventory.setItem(46, InventoryUtils.createItem(XMaterial.HOPPER, Messages.getString("world_filter_title", player), lore));
+    /**
+     * Collects all {@link Folder}s that contain a {@link BuildWorld} from the given list.
+     *
+     * @param buildWorlds The list of build worlds to check for folders
+     * @return A list of folders that contain a build world
+     */
+    private List<Folder> collectFolders(List<BuildWorld> buildWorlds) {
+        return buildWorlds.stream()
+                .map(this.folderStorage::getAssignedFolder)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     /**
@@ -192,7 +239,7 @@ public abstract class FilteredWorldsInventory extends PaginatedInventory impleme
      */
     private boolean isValidWorld(Player player, BuildWorld buildWorld) {
         WorldData worldData = buildWorld.getData();
-        if (!worldService.getWorldStorage().isCorrectVisibility(worldData.privateWorld().get(), visibility)) {
+        if (!worldStorage.isCorrectVisibility(worldData.privateWorld().get(), visibility)) {
             return false;
         }
 
@@ -205,6 +252,60 @@ public abstract class FilteredWorldsInventory extends PaginatedInventory impleme
         }
 
         return Bukkit.getWorld(buildWorld.getName()) != null || !buildWorld.isLoaded();
+    }
+
+    /**
+     * Creates a comparator which sorts the {@link BuildWorld}s in the order they are to be displayed.
+     *
+     * @param worldSort The order in which the worlds are to be sorted
+     * @return The comparator
+     */
+    private Comparator<BuildWorld> createDisplayOrderComparator(WorldSort worldSort) {
+        Comparator<BuildWorld> comparator;
+        switch (worldSort) {
+            case OLDEST_FIRST:
+                comparator = Comparator.comparingLong(BuildWorld::getCreationDate);
+                break;
+            case NEWEST_FIRST:
+                comparator = Comparator.comparingLong(BuildWorld::getCreationDate).reversed();
+                break;
+            case PROJECT_A_TO_Z:
+                comparator = Comparator.comparing((BuildWorld buildWorld) -> buildWorld.getData().project().get().toLowerCase(Locale.ROOT));
+                break;
+            case PROJECT_Z_TO_A:
+                comparator = Comparator.comparing((BuildWorld buildWorld) -> buildWorld.getData().project().get().toLowerCase(Locale.ROOT)).reversed();
+                break;
+            case STATUS_NOT_STARTED:
+                comparator = Comparator.comparingInt((BuildWorld buildWorld) -> buildWorld.getData().status().get().getStage());
+                break;
+            case STATUS_FINISHED:
+                comparator = Comparator.comparingInt((BuildWorld buildWorld) -> buildWorld.getData().status().get().getStage()).reversed();
+                break;
+            case NAME_Z_TO_A:
+                comparator = Comparator.comparing((BuildWorld buildWorld) -> buildWorld.getName().toLowerCase(Locale.ROOT)).reversed();
+                break;
+            default: // NAME_A_TO_Z
+                comparator = Comparator.comparing((BuildWorld buildWorld) -> buildWorld.getName().toLowerCase(Locale.ROOT));
+                break;
+        }
+        return comparator;
+    }
+
+    private void addWorldSortItem(Inventory inventory, Player player) {
+        Settings settings = settingsManager.getSettings(player);
+        WorldSort worldSort = settings.getWorldDisplay().getWorldSort();
+        inventory.setItem(45, InventoryUtils.createItem(XMaterial.BOOK, Messages.getString("world_sort_title", player), Messages.getString(worldSort.getMessageKey(), player)));
+    }
+
+    private void addWorldFilterItem(Inventory inventory, Player player) {
+        Settings settings = settingsManager.getSettings(player);
+        WorldFilter worldFilter = settings.getWorldDisplay().getWorldFilter();
+
+        List<String> lore = new ArrayList<>();
+        lore.add(Messages.getString(worldFilter.getMode().getLoreKey(), player, new AbstractMap.SimpleEntry<>("%text%", worldFilter.getText())));
+        lore.addAll(Messages.getStringList("world_filter_lore", player));
+
+        inventory.setItem(46, InventoryUtils.createItem(XMaterial.HOPPER, Messages.getString("world_filter_title", player), lore));
     }
 
     @EventHandler
@@ -256,13 +357,26 @@ public abstract class FilteredWorldsInventory extends PaginatedInventory impleme
                     return;
                 }
                 break;
+            case 50:
+                if (itemStack.getType() == XMaterial.PLAYER_HEAD.get()) {
+                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    player.closeInventory();
+                    new PlayerChatInput(plugin, player, "enter_folder_name", input -> {
+                        Folder folder = folderStorage.createFolder(input.trim());
+                        Messages.sendMessage(player, "worlds_folder_created",
+                                new AbstractMap.SimpleEntry<>("%folder%", folder.getName())
+                        );
+                    });
+                    return;
+                }
+                break;
             case 52:
-                if (decrementInv(player, numOfWorlds(player), MAX_WORLDS)) {
+                if (decrementInv(player, calculateNumObjects(player), MAX_WORLDS)) {
                     openInventory(player);
                 }
                 return;
             case 53:
-                if (incrementInv(player, numOfWorlds(player), MAX_WORLDS)) {
+                if (incrementInv(player, calculateNumObjects(player), MAX_WORLDS)) {
                     openInventory(player);
                 }
                 return;
@@ -340,7 +454,7 @@ public abstract class FilteredWorldsInventory extends PaginatedInventory impleme
         }
 
         if (slot >= 9 && slot <= 44) {
-            BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(getWorldName(player, displayName));
+            BuildWorld buildWorld = worldStorage.getBuildWorld(getWorldName(player, displayName));
             manageWorldItemClick(event, player, itemMeta, buildWorld);
             return;
         }
@@ -404,7 +518,7 @@ public abstract class FilteredWorldsInventory extends PaginatedInventory impleme
     private void performNonEditClick(Player player, ItemMeta itemMeta) {
         playerService.closeNavigator(player);
         String worldName = getWorldName(player, itemMeta.getDisplayName());
-        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (buildWorld == null) {
             plugin.getLogger().warning("Could not find world " + worldName);
             return;
