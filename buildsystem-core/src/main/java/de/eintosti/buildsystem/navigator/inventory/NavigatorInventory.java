@@ -63,21 +63,20 @@ public class NavigatorInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!InventoryUtils.isValidClick(event, "old_navigator_title")) {
+        Player player = (Player) event.getWhoClicked();
+        if (!InventoryUtils.isValidClick(event, Messages.getString("old_navigator_title", player))) {
             return;
         }
 
-        Player player = (Player) event.getWhoClicked();
-
         switch (event.getSlot()) {
             case 11:
-                plugin.getPublicWorldsInventory().openInventory(player);
+                new PublicWorldsInventory(plugin, player).openInventory();
                 break;
             case 12:
-                plugin.getArchivedWorldsInventory().openInventory(player);
+                new ArchivedWorldsInventory(plugin, player).openInventory();
                 break;
             case 13:
-                plugin.getPrivateWorldsInventory().openInventory(player);
+                new PrivateWorldsInventory(plugin, player).openInventory();
                 break;
             case 15:
                 if (!player.hasPermission("buildsystem.settings")) {

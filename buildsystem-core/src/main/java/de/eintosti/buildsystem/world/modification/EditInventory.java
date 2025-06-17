@@ -294,7 +294,8 @@ public class EditInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!InventoryUtils.isValidClick(event, "worldeditor_title")) {
+        Player player = (Player) event.getWhoClicked();
+        if (!InventoryUtils.isValidClick(event, Messages.getString("worldeditor_title", player))) {
             return;
         }
 
@@ -303,7 +304,6 @@ public class EditInventory implements Listener {
             return;
         }
 
-        Player player = (Player) event.getWhoClicked();
         BuildWorld buildWorld = plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();

@@ -180,11 +180,11 @@ public class CreateInventory extends PaginatedInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!InventoryUtils.isValidClick(event, "create_title")) {
+        Player player = (Player) event.getWhoClicked();
+        if (!InventoryUtils.isValidClick(event, Messages.getString("create_title", player))) {
             return;
         }
 
-        Player player = (Player) event.getWhoClicked();
         CreateInventory.Page newPage = null;
 
         switch (event.getSlot()) {

@@ -17,55 +17,51 @@
  */
 package de.eintosti.buildsystem.navigator.inventory;
 
-import com.cryptomorin.xseries.profiles.objects.Profileable;
-import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
-import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.util.InventoryUtils;
-import java.util.Set;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
+import org.jetbrains.annotations.NotNull;
 
-public class PublicWorldsInventory extends FilteredWorldsInventory {
+/**
+ * An inventory class specifically for displaying and managing public {@link BuildWorld}s.
+ */
+public class PublicWorldsInventory extends CreatableWorldsInventory {
 
-    private static final Visibility VISIBILITY = Visibility.PUBLIC;
-    private static final Set<BuildWorldStatus> VALID_STATUS = Sets.newHashSet(
-            BuildWorldStatus.NOT_STARTED, BuildWorldStatus.IN_PROGRESS, BuildWorldStatus.ALMOST_FINISHED, BuildWorldStatus.FINISHED
-    );
-
-    private final PlayerServiceImpl playerManager;
-
-    public PublicWorldsInventory(BuildSystemPlugin plugin) {
-        super(plugin, "world_navigator_title", "world_navigator_no_worlds", VISIBILITY, VALID_STATUS);
-        this.playerManager = plugin.getPlayerService();
+    /**
+     * Constructs a new {@link PublicWorldsInventory} instance.
+     *
+     * @param plugin The plugin instance
+     * @param player The player for whom this inventory is created
+     */
+    public PublicWorldsInventory(@NotNull BuildSystemPlugin plugin, @NotNull Player player) {
+        super(
+                plugin,
+                player,
+                Messages.getString("world_navigator_title", player),
+                Messages.getString("world_navigator_no_worlds", player),
+                Visibility.PUBLIC
+        );
     }
 
+    /**
+     * Returns the permission string required to create a private world.
+     *
+     * @return The permission string: "buildsystem.create.private".
+     */
     @Override
-    protected Inventory createInventory(Player player) {
-        Inventory inventory = super.createInventory(player);
-        if (playerManager.canCreateWorld(player, super.getVisibility())) {
-            addWorldCreateItem(inventory, player);
-        }
-        addFolderCreateItem(inventory, player);
-        return inventory;
+    protected @NotNull String getWorldCreationPermission() {
+        return "buildsystem.create.public";
     }
 
-    private void addWorldCreateItem(Inventory inventory, Player player) {
-        if (player.hasPermission("buildsystem.create.public")) {
-            inventory.setItem(49, InventoryUtils.createSkull(Messages.getString("world_navigator_create_world", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716")));
-        } else {
-            InventoryUtils.addGlassPane(player, inventory, 49);
-        }
-    }
-
-    private void addFolderCreateItem(Inventory inventory, Player player) {
-        if (player.hasPermission("buildsystem.create.folder")) {
-            inventory.setItem(50, InventoryUtils.createSkull(Messages.getString("world_navigator_create_folder", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716")));
-        } else {
-            InventoryUtils.addGlassPane(player, inventory, 50);
-        }
+    /**
+     * Returns the message key for the title of the "create public world" item.
+     *
+     * @return The message key: "world_navigator_create_world".
+     */
+    @Override
+    protected @NotNull String getWorldCreationItemTitleKey() {
+        return "world_navigator_create_world";
     }
 }

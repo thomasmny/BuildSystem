@@ -80,11 +80,11 @@ public class DeleteInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!InventoryUtils.isValidClick(event, "delete_title")) {
+        Player player = (Player) event.getWhoClicked();
+        if (!InventoryUtils.isValidClick(event, Messages.getString("delete_title", player))) {
             return;
         }
 
-        Player player = (Player) event.getWhoClicked();
         BuildWorld buildWorld = plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
             Messages.sendMessage(player, "worlds_delete_error");

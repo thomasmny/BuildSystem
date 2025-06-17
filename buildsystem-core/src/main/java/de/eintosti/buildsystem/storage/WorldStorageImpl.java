@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -64,6 +65,15 @@ public abstract class WorldStorageImpl implements WorldStorage {
     @Nullable
     public BuildWorld getBuildWorld(World world) {
         return getBuildWorld(world.getName());
+    }
+
+    @Override
+    @Nullable
+    public BuildWorld getBuildWorld(UUID uuid) {
+        return buildWorlds.values().stream()
+                .filter(buildWorld -> buildWorld.getUniqueId().equals(uuid))
+                .findFirst()
+                .orElse(null);
     }
 
     @Override

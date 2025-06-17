@@ -24,7 +24,6 @@ import de.eintosti.buildsystem.api.event.world.BuildWorldLoadEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostLoadEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.util.WorldLoader;
-import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl;
 import java.util.AbstractMap;
 import org.bukkit.Bukkit;

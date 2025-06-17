@@ -197,13 +197,13 @@ public final class InventoryUtils {
     /**
      * Checks if a click event is valid for the given inventory title.
      *
-     * @param event    The click event to check
-     * @param titleKey The key of the inventory title
+     * @param event         The click event to check
+     * @param expectedTitle The expected inventory title
      * @return true if the click is valid, false otherwise
      */
-    public static boolean isValidClick(InventoryClickEvent event, String titleKey) {
-        String title = XInventoryView.of(event.getView()).getTitle();
-        if (!title.equals(Messages.getString(titleKey, (Player) event.getWhoClicked()))) {
+    public static boolean isValidClick(InventoryClickEvent event, String expectedTitle) {
+        String viewTitle = XInventoryView.of(event.getView()).getTitle();
+        if (!viewTitle.equals(expectedTitle)) {
             return false;
         }
 

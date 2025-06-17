@@ -106,11 +106,11 @@ public class DesignInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!InventoryUtils.isValidClick(event, "design_title")) {
+        Player player = (Player) event.getWhoClicked();
+        if (!InventoryUtils.isValidClick(event, Messages.getString("design_title", player))) {
             return;
         }
 
-        Player player = (Player) event.getWhoClicked();
         Settings settings = plugin.getSettingsManager().getSettings(player);
         ItemStack itemStack = event.getCurrentItem();
         if (itemStack.getType().toString().contains("STAINED_GLASS_PANE")) {

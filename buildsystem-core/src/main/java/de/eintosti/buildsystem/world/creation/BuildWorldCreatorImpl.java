@@ -131,8 +131,8 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
     }
 
     /**
-     * Depending on the {@link BuildWorldImpl}'s {@link BuildWorldType}, the corresponding {@link World} will be generated in a different way. Then, if the creation of the world was
-     * successful and the config is set accordingly, the player is teleported to the world.
+     * Depending on the {@link BuildWorldImpl}'s {@link BuildWorldType}, the corresponding {@link World} will be generated in a different way. Then, if the creation of the world
+     * was successful and the config is set accordingly, the player is teleported to the world.
      *
      * @param player The player who is creating the world
      */

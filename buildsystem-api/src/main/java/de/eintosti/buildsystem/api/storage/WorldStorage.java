@@ -21,6 +21,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
@@ -45,6 +46,15 @@ public interface WorldStorage extends Storage<BuildWorld> {
      */
     @Nullable
     BuildWorld getBuildWorld(World world);
+
+    /**
+     * Gets the {@link BuildWorld} by the given {@link UUID}.
+     *
+     * @param uuid The build world's unique identifier
+     * @return The world object if one was found, {@code null} otherwise
+     */
+    @Nullable
+    BuildWorld getBuildWorld(UUID uuid);
 
     /**
      * Gets a list of all {@link BuildWorld}s.

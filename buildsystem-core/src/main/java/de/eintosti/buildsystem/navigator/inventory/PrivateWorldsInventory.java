@@ -17,46 +17,51 @@
  */
 package de.eintosti.buildsystem.navigator.inventory;
 
-import com.cryptomorin.xseries.profiles.objects.Profileable;
-import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
-import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.util.InventoryUtils;
-import java.util.Set;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
+import org.jetbrains.annotations.NotNull;
 
-public class PrivateWorldsInventory extends FilteredWorldsInventory {
+/**
+ * An inventory class specifically for displaying and managing private {@link BuildWorld}s.
+ */
+public class PrivateWorldsInventory extends CreatableWorldsInventory {
 
-    private static final Visibility VISIBILITY = Visibility.PRIVATE;
-    private static final Set<BuildWorldStatus> VALID_STATUS = Sets.newHashSet(
-            BuildWorldStatus.NOT_STARTED, BuildWorldStatus.IN_PROGRESS, BuildWorldStatus.ALMOST_FINISHED, BuildWorldStatus.FINISHED
-    );
-
-    private final PlayerServiceImpl playerManager;
-
-    public PrivateWorldsInventory(BuildSystemPlugin plugin) {
-        super(plugin, "private_title", "private_no_worlds", VISIBILITY, VALID_STATUS);
-        this.playerManager = plugin.getPlayerService();
+    /**
+     * Constructs a new {@link PrivateWorldsInventory} instance.
+     *
+     * @param plugin The plugin instance
+     * @param player The player for whom this inventory is created
+     */
+    public PrivateWorldsInventory(@NotNull BuildSystemPlugin plugin, @NotNull Player player) {
+        super(
+                plugin,
+                player,
+                Messages.getString("private_title", player),
+                Messages.getString("private_no_worlds", player),
+                Visibility.PRIVATE
+        );
     }
 
+    /**
+     * Returns the permission string required to create a private world.
+     *
+     * @return The permission string: "buildsystem.create.private".
+     */
     @Override
-    protected Inventory createInventory(Player player) {
-        Inventory inventory = super.createInventory(player);
-        if (playerManager.canCreateWorld(player, super.getVisibility())) {
-            addWorldCreateItem(inventory, player);
-        }
-        return inventory;
+    protected @NotNull String getWorldCreationPermission() {
+        return "buildsystem.create.private";
     }
 
-    private void addWorldCreateItem(Inventory inventory, Player player) {
-        if (player.hasPermission("buildsystem.create.private")) {
-            inventory.setItem(49, InventoryUtils.createSkull(Messages.getString("private_create_world", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716")));
-        } else {
-            InventoryUtils.addGlassPane(player, inventory, 49);
-        }
+    /**
+     * Returns the message key for the title of the "create private world" item.
+     *
+     * @return The message key: "private_create_world".
+     */
+    @Override
+    protected @NotNull String getWorldCreationItemTitleKey() {
+        return "private_create_world";
     }
 }

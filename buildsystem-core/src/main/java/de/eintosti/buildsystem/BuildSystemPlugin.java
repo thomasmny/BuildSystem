@@ -70,10 +70,7 @@ import de.eintosti.buildsystem.listener.WeatherChangeListener;
 import de.eintosti.buildsystem.listener.WorldManipulateByAxiomListener;
 import de.eintosti.buildsystem.listener.WorldManipulateListener;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
-import de.eintosti.buildsystem.navigator.inventory.ArchivedWorldsInventory;
 import de.eintosti.buildsystem.navigator.inventory.NavigatorInventory;
-import de.eintosti.buildsystem.navigator.inventory.PrivateWorldsInventory;
-import de.eintosti.buildsystem.navigator.inventory.PublicWorldsInventory;
 import de.eintosti.buildsystem.player.BlocksInventory;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
@@ -136,7 +133,6 @@ public class BuildSystemPlugin extends JavaPlugin {
     private SpawnManager spawnManager;
     private WorldServiceImpl worldService;
 
-    private ArchivedWorldsInventory archivedWorldsInventory;
     private BlocksInventory blocksInventory;
     private BuilderInventory builderInventory;
     private CreateInventory createInventory;
@@ -145,12 +141,10 @@ public class BuildSystemPlugin extends JavaPlugin {
     private EditInventory editInventory;
     private GameRuleInventory gameRuleInventory;
     private NavigatorInventory navigatorInventory;
-    private PrivateWorldsInventory privateWorldsInventory;
     private SettingsInventory settingsInventory;
     private SetupInventory setupInventory;
     private SpeedInventory speedInventory;
     private StatusInventory statusInventory;
-    private PublicWorldsInventory publicWorldsInventory;
 
     private ConfigValues configValues;
     private CustomBlocks customBlocks;
@@ -263,7 +257,6 @@ public class BuildSystemPlugin extends JavaPlugin {
         this.settingsManager = new SettingsManager(this);
         this.spawnManager = new SpawnManager(this);
 
-        this.archivedWorldsInventory = new ArchivedWorldsInventory(this);
         this.blocksInventory = new BlocksInventory(this);
         this.builderInventory = new BuilderInventory(this);
         this.createInventory = new CreateInventory(this);
@@ -272,8 +265,6 @@ public class BuildSystemPlugin extends JavaPlugin {
         this.editInventory = new EditInventory(this);
         this.gameRuleInventory = new GameRuleInventory(this);
         this.navigatorInventory = new NavigatorInventory(this);
-        this.privateWorldsInventory = new PrivateWorldsInventory(this);
-        this.publicWorldsInventory = new PublicWorldsInventory(this);
         this.settingsInventory = new SettingsInventory(this);
         this.setupInventory = new SetupInventory(this);
         this.speedInventory = new SpeedInventory(this);
@@ -506,10 +497,6 @@ public class BuildSystemPlugin extends JavaPlugin {
         return worldService;
     }
 
-    public ArchivedWorldsInventory getArchivedWorldsInventory() {
-        return archivedWorldsInventory;
-    }
-
     public BlocksInventory getBlocksInventory() {
         return blocksInventory;
     }
@@ -540,14 +527,6 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     public NavigatorInventory getNavigatorInventory() {
         return navigatorInventory;
-    }
-
-    public PrivateWorldsInventory getPrivateWorldsInventory() {
-        return privateWorldsInventory;
-    }
-
-    public PublicWorldsInventory getPublicWorldsInventory() {
-        return publicWorldsInventory;
     }
 
     public SettingsInventory getSettingsInventory() {
