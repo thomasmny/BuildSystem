@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.api.world.display;
 import com.cryptomorin.xseries.XMaterial;
 import java.util.List;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -74,9 +75,12 @@ public interface Displayable {
     default ItemStack asItemStack(Player player) {
         ItemStack itemStack = getIcon().parseItem();
         ItemMeta itemMeta = itemStack.getItemMeta();
+
         itemMeta.setDisplayName(getDisplayName(player));
         itemMeta.setLore(getLore(player));
+        itemMeta.addItemFlags(ItemFlag.values());
         itemStack.setItemMeta(itemMeta);
+
         return itemStack;
     }
 } 

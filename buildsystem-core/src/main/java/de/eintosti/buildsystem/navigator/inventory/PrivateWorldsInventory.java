@@ -19,9 +19,9 @@ package de.eintosti.buildsystem.navigator.inventory;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.api.navigator.settings.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 

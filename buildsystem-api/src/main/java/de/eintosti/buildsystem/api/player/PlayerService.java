@@ -50,8 +50,7 @@ public interface PlayerService {
     boolean isInBuildMode(Player player);
 
     /**
-     * Gets whether the given player is allowed to create a new {@link BuildWorld}.<br>
-     * This depends on the following factors:
+     * Gets whether the given player is allowed to create a new {@link BuildWorld}.<br> This depends on the following factors:
      * <ul>
      *  <li>Is the maximum number of worlds set by the config less than the amount of existing worlds?</li>
      *  <li>Is the maximum number of worlds created by the player less than the amount of worlds said player is allowed to create?</li>
@@ -66,8 +65,7 @@ public interface PlayerService {
     /**
      * Returns the maximum amount of {@link BuildWorld}s a player can create.
      * <p>
-     * If the player has the permission {@code buildsystem.admin}, unlimited worlds can be created.
-     * Otherwise, there are two different permissions to set said amount:
+     * If the player has the permission {@code buildsystem.admin}, unlimited worlds can be created. Otherwise, there are two different permissions to set said amount:
      * <p>
      * To set the maximum of...
      * <ul>

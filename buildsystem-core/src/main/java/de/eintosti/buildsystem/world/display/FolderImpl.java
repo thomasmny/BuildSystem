@@ -19,9 +19,9 @@ package de.eintosti.buildsystem.world.display;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.api.navigator.settings.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import java.util.AbstractMap;
 import java.util.ArrayList;

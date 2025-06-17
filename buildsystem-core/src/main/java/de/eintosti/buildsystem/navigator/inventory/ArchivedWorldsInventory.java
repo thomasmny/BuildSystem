@@ -23,9 +23,9 @@ import com.cryptomorin.xseries.profiles.objects.Profileable;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.api.navigator.settings.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -59,9 +59,7 @@ public class ArchivedWorldsInventory extends DisplayablesInventory {
 
     private void addFolderCreateItem(Inventory inventory, Player player) {
         if (player.hasPermission("buildsystem.create.folder")) {
-            inventory.setItem(50, InventoryUtils.createSkull(Messages.getString("world_navigator_create_folder", player), Profileable.detect(CREATE_FOLDER_PROFILE)));
-        } else {
-            InventoryUtils.addGlassPane(player, inventory, 49);
+            inventory.setItem(49, InventoryUtils.createSkull(Messages.getString("world_navigator_create_folder", player), Profileable.detect(CREATE_FOLDER_PROFILE)));
         }
     }
 }

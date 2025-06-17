@@ -268,6 +268,7 @@ public class Messages {
         setMessage(sb, "worlds_folder_unknown_world", "%prefix% &cUnknown world.");
         setMessage(sb, "worlds_folder_world_already_in_folder", "%prefix% &c%world% is already contained within %folder%.");
         setMessage(sb, "worlds_folder_world_already_in_another_folder", "%prefix% &c%world% is already contained within another folder.");
+        setMessage(sb, "worlds_folder_world_category_mismatch", "%prefix% &cThe folder's category (%folder_category%) does not match the world's category (%world_category%).");
         setMessage(sb, "worlds_folder_world_not_in_folder", "%prefix% &c%world% is not contained within %folder%.");
         setMessage(sb, "worlds_folder_world_added_to_folder", "%prefix% &b%world% &7was &aadded &7to &b%folder%&7.");
         setMessage(sb, "worlds_folder_world_removed_from_folder", "%prefix% &b%world% &7was &cremoved &7from &b%folder%&7.");

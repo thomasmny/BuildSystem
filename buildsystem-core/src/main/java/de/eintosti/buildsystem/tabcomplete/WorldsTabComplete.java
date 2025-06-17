@@ -19,12 +19,18 @@ package de.eintosti.buildsystem.tabcomplete;
 
 import com.google.common.collect.Lists;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.WorldService;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.display.Displayable;
+import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.util.StringCleaner;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,9 +50,12 @@ import org.jetbrains.annotations.NotNull;
 public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
 
     private final WorldStorage worldStorage;
+    private final FolderStorage folderStorage;
 
     public WorldsTabComplete(BuildSystemPlugin plugin) {
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+        WorldService worldService = plugin.getWorldService();
+        this.worldStorage = worldService.getWorldStorage();
+        this.folderStorage = worldService.getFolderStorage();
         plugin.getCommand("worlds").setTabCompleter(this);
     }
 
@@ -121,19 +130,15 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                         }
                         Builders builders = buildWorld.getBuilders();
                         if (builders.isCreator(player)) {
-                            for (String builderName : builders.getBuilderNames()) {
-                                addArgument(args[1], builderName, arrayList);
-                            }
+                            builders.getBuilderNames().forEach(builderName -> addArgument(args[1], builderName, arrayList));
                         }
                         break;
                     }
 
                     case "import": {
                         String[] directories = Bukkit.getWorldContainer().list((dir, name) -> {
-                            for (String charString : name.split("")) {
-                                if (charString.matches("[^A-Za-z0-9/_-]")) {
-                                    return false;
-                                }
+                            if (StringCleaner.hasInvalidNameCharacters(name)) {
+                                return false;
                             }
 
                             File worldFolder = new File(dir, name);
@@ -157,34 +162,66 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                         }
                         break;
                     }
+
+                    case "folder": {
+                        folderStorage.getFolders().stream()
+                                .map(Displayable::getName)
+                                .forEach(folderName -> addArgument(args[1], folderName, arrayList));
+                        break;
+                    }
                 }
                 return arrayList;
             }
 
             default:
-                // Add arguments to /worlds import
-                if (!args[0].equalsIgnoreCase("import")) {
-                    return arrayList;
-                }
+                switch (args[0].toLowerCase(Locale.ROOT)) {
+                    case "import": {
+                        Map<String, List<String>> arguments = new HashMap<String, List<String>>() {{
+                            put("-g", Arrays.stream(Generator.values()).filter(generator -> generator != Generator.CUSTOM)
+                                    .map(Enum::name)
+                                    .collect(Collectors.toList())
+                            );
+                            put("-c", Lists.newArrayList());
+                            put("-t", Arrays.stream(BuildWorldType.values()).map(Enum::name).collect(Collectors.toList()));
+                        }};
 
-                Map<String, List<String>> arguments = new HashMap<String, List<String>>() {{
-                    put("-g", Arrays.stream(Generator.values()).filter(generator -> generator != Generator.CUSTOM)
-                            .map(Enum::name)
-                            .collect(Collectors.toList())
-                    );
-                    put("-c", Lists.newArrayList());
-                    put("-t", Arrays.stream(BuildWorldType.values()).map(Enum::name).collect(Collectors.toList()));
-                }};
+                        if (args.length % 2 == 1) {
+                            arguments.keySet().stream()
+                                    .filter(key -> !Lists.newArrayList(args).contains(key))
+                                    .forEach(argument -> addArgument(args[args.length - 1], argument, arrayList));
+                        } else {
+                            List<String> values = arguments.get(args[args.length - 2]);
+                            if (values != null) {
+                                for (String argument : values) {
+                                    addArgument(args[args.length - 1], argument, arrayList);
+                                }
+                            }
+                        }
+                        break;
+                    }
 
-                if (args.length % 2 == 1) {
-                    arguments.keySet().stream()
-                            .filter(key -> !Lists.newArrayList(args).contains(key))
-                            .forEach(argument -> addArgument(args[args.length - 1], argument, arrayList));
-                } else {
-                    List<String> values = arguments.get(args[args.length - 2]);
-                    if (values != null) {
-                        for (String argument : values) {
-                            addArgument(args[args.length - 1], argument, arrayList);
+                    case "folder": {
+                        switch (args.length) {
+                            case 3:
+                                arrayList.addAll(Arrays.asList("add", "remove"));
+                                break;
+                            case 4:
+                                Folder folder = folderStorage.getFolder(args[1]);
+                                if (folder == null) {
+                                    return arrayList;
+                                }
+                                worldStorage.getBuildWorlds().stream()
+                                        .filter(world -> NavigatorCategory.of(world) == folder.getCategory())
+                                        .filter(world -> {
+                                            if (args[2].equalsIgnoreCase("add")) {
+                                                return !folderStorage.isAssignedToAnyFolder(world);
+                                            } else if (args[2].equalsIgnoreCase("remove")) {
+                                                return folder.containsWorld(world);
+                                            }
+                                            return false;
+                                        })
+                                        .forEach(world -> addArgument(args[3], world.getName(), arrayList));
+                                break;
                         }
                     }
                 }

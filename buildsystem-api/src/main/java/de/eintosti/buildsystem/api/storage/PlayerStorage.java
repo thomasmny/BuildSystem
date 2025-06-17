@@ -34,7 +34,7 @@ public interface PlayerStorage extends Storage<BuildPlayer> {
     /**
      * Creates a new {@link BuildPlayer} with the given uuid and settings.
      *
-     * @param uuid The uuid of the player
+     * @param uuid     The uuid of the player
      * @param settings The settings of the player
      * @return The created build-player
      */

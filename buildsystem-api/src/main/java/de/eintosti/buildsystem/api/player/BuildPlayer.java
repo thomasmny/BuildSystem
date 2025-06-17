@@ -17,9 +17,9 @@
  */
 package de.eintosti.buildsystem.api.player;
 
-import de.eintosti.buildsystem.api.navigator.settings.NavigatorCategory;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import org.bukkit.Location;

@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete.WorldsArgument;
@@ -75,6 +76,14 @@ public class FolderSubCommand implements SubCommand {
 
                 if (folderStorage.isAssignedToAnyFolder(buildWorld)) {
                     Messages.sendMessage(player, "worlds_folder_world_already_in_another_folder", worldPlaceholder);
+                    return;
+                }
+
+                if (folder.getCategory() != NavigatorCategory.of(buildWorld)) {
+                    Messages.sendMessage(player, "worlds_folder_world_category_mismatch",
+                            new AbstractMap.SimpleEntry<>("%folder_category%", folder.getCategory().name()),
+                            new AbstractMap.SimpleEntry<>("%world_category%", NavigatorCategory.of(buildWorld).name())
+                    );
                     return;
                 }
 

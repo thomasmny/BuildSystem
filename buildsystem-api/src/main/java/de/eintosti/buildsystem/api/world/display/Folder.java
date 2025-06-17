@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.api.world.display;
 
-import de.eintosti.buildsystem.api.navigator.settings.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.util.List;
 import java.util.UUID;
