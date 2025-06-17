@@ -203,7 +203,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                     case "folder": {
                         switch (args.length) {
                             case 3:
-                                Arrays.asList("add", "remove", "setPermission", "setItem").forEach(arg -> addArgument(arg, arg, arrayList));
+                                Arrays.asList("add", "remove", "delete", "setPermission", "setItem").forEach(arg -> addArgument(arg, arg, arrayList));
                                 break;
                             case 4:
                                 if (!args[2].equalsIgnoreCase("add") && !args[2].equalsIgnoreCase("remove")) {

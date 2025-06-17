@@ -85,6 +85,11 @@ public abstract class FolderStorageImpl implements FolderStorage {
     }
 
     @Override
+    public void removeFolder(Folder folder) {
+        removeFolder(folder.getName());
+    }
+
+    @Override
     public boolean folderExists(String folderName) {
         return folderExists(folderName, false);
     }
@@ -127,11 +132,11 @@ public abstract class FolderStorageImpl implements FolderStorage {
     }
 
     /**
-     * Removes the mapping of a {@link BuildWorld} to its assigned {@link Folder}.
+     * Removes the mapping of a {@link BuildWorld} from its assigned {@link Folder}.
      *
      * @param buildWorld The world to unassign
      */
-    public void unassignWorldToFolder(BuildWorld buildWorld) {
+    public void unassignWorldFromFolder(BuildWorld buildWorld) {
         this.worldToFolderMap.remove(buildWorld.getUniqueId());
     }
 

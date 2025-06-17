@@ -263,7 +263,7 @@ public class Messages {
         setMessage(sb, "worlds_edit_unknown_world", "%prefix% &cUnknown world.");
         setMessage(sb, "worlds_edit_error", "%prefix% &cError: Please try again.");
         addSpacer(sb, "");
-        setMessage(sb, "worlds_folder_usage", "%prefix% &7Usage: &b/worlds folder <folder> <add|remove> <world>");
+        setMessage(sb, "worlds_folder_usage", "%prefix% &7Usage: &b/worlds folder <folder> <add|remove|delete|setPermission|setItem> [<world>]");
         setMessage(sb, "worlds_folder_unknown_folder", "%prefix% &cUnknown folder.");
         setMessage(sb, "worlds_folder_unknown_world", "%prefix% &cUnknown world.");
         setMessage(sb, "worlds_folder_world_already_in_folder", "%prefix% &c%world% is already contained within %folder%.");
@@ -276,6 +276,8 @@ public class Messages {
         setMessage(sb, "worlds_folder_creation_invalid_characters", "%prefix% &7&oRemoved invalid characters from folder name.");
         setMessage(sb, "worlds_folder_creation_name_bank", "%prefix% &cThe folder name cannot be blank.");
         setMessage(sb, "worlds_folder_created", "%prefix% &7The folder &b%folder% &7was &asuccessfully &7created.");
+        setMessage(sb, "worlds_folder_not_empty", "%prefix% &cThe folder %folder% is not empty.");
+        setMessage(sb, "worlds_folder_deleted", "%prefix% &7The folder &b%folder% &7was &asuccessfully &7deleted.");
         setMessage(sb, "worlds_folder_permission_set", "%prefix% &b%folder%&7's permission was successfully changed.");
         setMessage(sb, "worlds_folder_item_set", "%prefix% &b%folder%&7's item was successfully changed.");
         addSpacer(sb, "");

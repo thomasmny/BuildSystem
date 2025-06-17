@@ -21,6 +21,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl;
@@ -89,12 +90,13 @@ public abstract class WorldStorageImpl implements WorldStorage {
 
     @Override
     public void removeBuildWorld(BuildWorld buildWorld) {
-        removeBuildWorld(buildWorld.getName());
-    }
+        this.buildWorlds.remove(buildWorld.getName());
 
-    @Override
-    public void removeBuildWorld(String name) {
-        buildWorlds.remove(name);
+        // Also remove world from any folder it may be in
+        Folder assignedFolder = plugin.getWorldService().getFolderStorage().getAssignedFolder(buildWorld);
+        if (assignedFolder != null) {
+            assignedFolder.removeWorld(buildWorld);
+        }
     }
 
     @Override
@@ -105,9 +107,9 @@ public abstract class WorldStorageImpl implements WorldStorage {
     @Override
     public boolean worldExists(String worldName, boolean caseSensitive) {
         if (caseSensitive) {
-            return buildWorlds.containsKey(worldName);
+            return this.buildWorlds.containsKey(worldName);
         } else {
-            return buildWorlds.keySet().stream().anyMatch(name -> name.equalsIgnoreCase(worldName));
+            return this.buildWorlds.keySet().stream().anyMatch(name -> name.equalsIgnoreCase(worldName));
         }
     }
 

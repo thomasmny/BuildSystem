@@ -76,11 +76,18 @@ public interface FolderStorage extends Storage<Folder> {
     Folder createFolder(String folderName, NavigatorCategory category, @Nullable Folder parent);
 
     /**
-     * Removes a folder and all of its worlds from the world-to-folder mapping.
+     * Removes the {@link Folder} with the given name.
      *
-     * @param folderName the name of the folder to remove
+     * @param folderName The name of the folder to remove
      */
     void removeFolder(String folderName);
+
+    /**
+     * Removes the given {@link Folder}.
+     *
+     * @param folder The folder to remove
+     */
+    void removeFolder(Folder folder);
 
     /**
      * Checks if a {@link Folder} with the given name (case-insensitive) exists.

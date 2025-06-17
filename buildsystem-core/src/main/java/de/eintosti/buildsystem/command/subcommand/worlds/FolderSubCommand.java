@@ -41,10 +41,12 @@ public class FolderSubCommand implements SubCommand {
 
     private final BuildSystemPlugin plugin;
     private final WorldServiceImpl worldService;
+    private final FolderStorage folderStorage;
 
     public FolderSubCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.worldService = plugin.getWorldService();
+        this.folderStorage = worldService.getFolderStorage();
     }
 
     @Override
@@ -59,8 +61,7 @@ public class FolderSubCommand implements SubCommand {
         String folderName = args[1];
         String operation = args.length > 2 ? args[2].toLowerCase(Locale.ROOT) : "";
 
-        FolderStorage folderStorage = worldService.getFolderStorage();
-        Folder folder = folderStorage.getFolder(folderName);
+        Folder folder = this.folderStorage.getFolder(folderName);
         if (folder == null) {
             Messages.sendMessage(player, "worlds_folder_unknown_folder");
             return;
@@ -84,6 +85,11 @@ public class FolderSubCommand implements SubCommand {
 
             case "setitem": {
                 handleIconChange(player, folder);
+                break;
+            }
+
+            case "delete": {
+                handleDeletion(player, folder);
                 break;
             }
 
@@ -111,7 +117,7 @@ public class FolderSubCommand implements SubCommand {
                     return;
                 }
 
-                if (worldService.getFolderStorage().isAssignedToAnyFolder(buildWorld)) {
+                if (folderStorage.isAssignedToAnyFolder(buildWorld)) {
                     Messages.sendMessage(player, "worlds_folder_world_already_in_another_folder", worldPlaceholder);
                     return;
                 }
@@ -141,7 +147,7 @@ public class FolderSubCommand implements SubCommand {
     }
 
     private void handlePermissionInput(Player player, Folder folder) {
-        new PlayerChatInput(plugin, player, "enter_world_permission", input -> {
+        new PlayerChatInput(this.plugin, player, "enter_world_permission", input -> {
             folder.setPermission(input.trim());
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
@@ -162,6 +168,21 @@ public class FolderSubCommand implements SubCommand {
         Messages.sendMessage(player, "worlds_folder_item_set",
                 new AbstractMap.SimpleEntry<>("%folder%", folder.getName())
         );
+    }
+
+    private void handleDeletion(Player player, Folder folder) {
+        if (folder.getWorldCount() > 0) {
+            Messages.sendMessage(player, "worlds_folder_not_empty",
+                    new AbstractMap.SimpleEntry<>("%folder%", folder.getName())
+            );
+            return;
+        }
+
+        this.folderStorage.removeFolder(folder);
+        Messages.sendMessage(player, "worlds_folder_deleted",
+                new AbstractMap.SimpleEntry<>("%folder%", folder.getName())
+        );
+        XSound.ENTITY_PLAYER_LEVELUP.play(player);
     }
 
     @Override

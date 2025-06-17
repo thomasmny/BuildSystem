@@ -84,13 +84,6 @@ public interface WorldStorage extends Storage<BuildWorld> {
     void removeBuildWorld(BuildWorld buildWorld);
 
     /**
-     * Removes a {@link BuildWorld} from the world map.
-     *
-     * @param name The name of the {@link BuildWorld} to remove
-     */
-    void removeBuildWorld(String name);
-
-    /**
      * Checks if a {@link BuildWorld} with the given name (case-insensitive) exists.
      *
      * @param worldName The name of the world to check

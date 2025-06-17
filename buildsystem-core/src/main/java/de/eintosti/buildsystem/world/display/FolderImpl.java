@@ -106,7 +106,7 @@ public class FolderImpl implements Folder {
     @Override
     public void removeWorld(BuildWorld buildWorld) {
         this.worlds.remove(buildWorld.getUniqueId());
-        this.folderStorage.unassignWorldToFolder(buildWorld);
+        this.folderStorage.unassignWorldFromFolder(buildWorld);
     }
 
     @Override
@@ -165,16 +165,16 @@ public class FolderImpl implements Folder {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object other) {
+        if (this == other) {
             return true;
         }
 
-        if (o == null || getClass() != o.getClass()) {
+        if (other == null || getClass() != other.getClass()) {
             return false;
         }
 
-        FolderImpl folder = (FolderImpl) o;
+        FolderImpl folder = (FolderImpl) other;
         return name.equals(folder.name);
     }
 
