@@ -217,6 +217,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
         return folderStorage.getFolders().stream()
                 .filter(folder -> folder.getCategory() == this.category)
                 .filter(folder -> !folder.hasParent())
+                .filter(folder -> folder.canView(this.player))
                 .collect(Collectors.toList());
     }
 
@@ -589,7 +590,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
      * @param buildWorld The BuildWorld associated with the clicked item.
      */
     private void manageWorldItemClick(@NotNull InventoryClickEvent event, @NotNull BuildWorld buildWorld) {
-        if (event.isLeftClick() || buildWorld.getPermissions().canPerformCommand(player, WorldsTabComplete.WorldsArgument.EDIT.getPermission())) {
+        if (event.isLeftClick() || !buildWorld.getPermissions().canPerformCommand(player, WorldsTabComplete.WorldsArgument.EDIT.getPermission())) {
             performNonEditClick(buildWorld);
             return;
         }

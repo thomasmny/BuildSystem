@@ -54,6 +54,8 @@ public class FolderSubCommand implements SubCommand {
             return;
         }
 
+        //TODO: Permissions check
+
         String folderName = args[1];
         String operation = args.length > 2 ? args[2].toLowerCase(Locale.ROOT) : "";
 
