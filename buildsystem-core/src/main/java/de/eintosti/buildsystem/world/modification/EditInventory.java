@@ -146,7 +146,7 @@ public class EditInventory implements Listener {
         if (material == XMaterial.PLAYER_HEAD) {
             InventoryUtils.addWorldItem(inventory, 4, buildWorld, displayName, new ArrayList<>());
         } else {
-            inventory.setItem(29, InventoryUtils.createItem(material, displayName));
+            inventory.setItem(4, InventoryUtils.createItem(material, displayName));
         }
     }
 
