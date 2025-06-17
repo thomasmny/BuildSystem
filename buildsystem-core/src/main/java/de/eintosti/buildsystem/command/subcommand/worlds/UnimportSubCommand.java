@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.AbstractMap;
 import org.bukkit.entity.Player;
 
@@ -38,7 +39,7 @@ public class UnimportSubCommand implements SubCommand {
 
     @Override
     public void execute(Player player, String[] args) {
-        if (!buildWorld.getPermissions().canPerformCommand(player, getArgument().getPermission())) {
+        if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
             plugin.sendPermissionMessage(player);
             return;
         }
