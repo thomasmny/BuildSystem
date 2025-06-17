@@ -17,7 +17,7 @@
  */
 package de.eintosti.buildsystem.player;
 
-import de.eintosti.buildsystem.api.navigator.settings.NavigatorInventoryType;
+import de.eintosti.buildsystem.api.navigator.settings.NavigatorCategory;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.CachedValues;
 import de.eintosti.buildsystem.api.player.LogoutLocation;
@@ -27,10 +27,6 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import org.bukkit.Location;
 
-/**
- * @author einTosti
- * @since 2.21.0
- */
 public class BuildPlayerImpl implements BuildPlayer {
 
     private final UUID uuid;
@@ -40,7 +36,7 @@ public class BuildPlayerImpl implements BuildPlayer {
     private BuildWorld cachedWorld;
     private LogoutLocation logoutLocation;
     private Location previousLocation;
-    private NavigatorInventoryType lastLookedAt;
+    private NavigatorCategory lastLookedAt;
 
     public BuildPlayerImpl(UUID uuid, Settings settings) {
         this.uuid = uuid;
@@ -98,12 +94,12 @@ public class BuildPlayerImpl implements BuildPlayer {
 
     @Override
     @Nullable
-    public NavigatorInventoryType getLastLookedAt() {
+    public NavigatorCategory getLastLookedAt() {
         return lastLookedAt;
     }
 
     @Override
-    public void setLastLookedAt(NavigatorInventoryType type) {
+    public void setLastLookedAt(NavigatorCategory type) {
         this.lastLookedAt = type;
     }
 }

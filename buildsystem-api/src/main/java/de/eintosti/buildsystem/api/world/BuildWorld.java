@@ -32,6 +32,9 @@ import org.bukkit.Difficulty;
 import org.bukkit.World;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * @since 3.0.0
+ */
 public interface BuildWorld extends Displayable {
 
     /**

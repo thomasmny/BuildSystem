@@ -23,7 +23,7 @@ import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.inventory.XInventoryView;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.api.navigator.settings.NavigatorInventoryType;
+import de.eintosti.buildsystem.api.navigator.settings.NavigatorCategory;
 import de.eintosti.buildsystem.api.navigator.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.CachedValues;
 import de.eintosti.buildsystem.api.player.settings.Settings;
@@ -193,13 +193,13 @@ public class NavigatorListener implements Listener {
                 return;
             }
 
-            NavigatorInventoryType inventoryType = NavigatorInventoryType.matchInventoryType(player, customName);
+            NavigatorCategory inventoryType = ArmorStandManager.matchNavigatorCategory(player, customName);
             if (inventoryType == null) {
                 return;
             }
 
             switch (inventoryType) {
-                case NAVIGATOR:
+                case PUBLIC:
                     XSound.BLOCK_CHEST_OPEN.play(player);
                     new PublicWorldsInventory(plugin, player).openInventory();
                     break;

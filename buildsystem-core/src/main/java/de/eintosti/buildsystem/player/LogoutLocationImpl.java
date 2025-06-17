@@ -21,10 +21,6 @@ import de.eintosti.buildsystem.api.player.LogoutLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
-/**
- * @author einTosti
- * @since 2.21.0
- */
 public class LogoutLocationImpl implements LogoutLocation {
 
     private final String worldName;

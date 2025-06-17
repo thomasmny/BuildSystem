@@ -24,9 +24,6 @@ import org.bukkit.block.Biome;
 
 /**
  * The {@link VoidGenerator} that is used for servers which run on Spigot 1.13-1.16.
- *
- * @author einTosti
- * @since 2.18.2
  */
 @SuppressWarnings("deprecation")
 public class DeprecatedVoidGenerator extends VoidGenerator {

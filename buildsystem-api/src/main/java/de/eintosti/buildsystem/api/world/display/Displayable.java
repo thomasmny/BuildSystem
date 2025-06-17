@@ -25,6 +25,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 /**
  * Represents an object that can be displayed in an inventory.
+ *
+ * @since 3.0.0
  */
 public interface Displayable {
 

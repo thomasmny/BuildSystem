@@ -6,6 +6,7 @@ import com.cryptomorin.xseries.messages.Titles;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.navigator.settings.NavigatorCategory;
 import de.eintosti.buildsystem.api.navigator.settings.WorldDisplay;
 import de.eintosti.buildsystem.api.navigator.settings.WorldFilter;
 import de.eintosti.buildsystem.api.navigator.settings.WorldSort;
@@ -24,6 +25,7 @@ import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.PaginatedInventory;
 import de.eintosti.buildsystem.util.PlayerChatInput;
+import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.CreateInventory;
@@ -33,7 +35,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -71,8 +72,9 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
     protected final WorldStorageImpl worldStorage;
 
     protected final Player player;
+    protected final NavigatorCategory category;
     protected final Visibility requiredVisibility;
-    private final Set<BuildWorldStatus> validStatuses;
+    protected final Set<BuildWorldStatus> validStatuses;
     private final String inventoryTitle;
     private final String noWorldsMessage;
 
@@ -82,16 +84,18 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
     /**
      * Constructs a new {@link DisplayablesInventory} for a specific player.
      *
-     * @param plugin             The plugin instance.
-     * @param player             The player for whom this inventory is created.
-     * @param inventoryTitle     The inventory's title.
-     * @param noWorldsMessage    The "no worlds" message.
-     * @param requiredVisibility The required visibility for worlds to be displayed.
-     * @param validStatuses      The set of valid statuses for worlds to be displayed.
+     * @param plugin             The plugin instance
+     * @param player             The player for whom this inventory is created
+     * @param category           The category of the inventory, used for organizing folders
+     * @param inventoryTitle     The inventory's title
+     * @param noWorldsMessage    The "no worlds" message
+     * @param requiredVisibility The required visibility for worlds to be displayed
+     * @param validStatuses      The set of valid statuses for worlds to be displayed
      */
     protected DisplayablesInventory(
             @NotNull BuildSystemPlugin plugin,
             @NotNull Player player,
+            @NotNull NavigatorCategory category,
             @NotNull String inventoryTitle,
             @Nullable String noWorldsMessage,
             @NotNull Visibility requiredVisibility,
@@ -99,6 +103,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
     ) {
         this.plugin = plugin;
         this.player = player;
+        this.category = category;
         this.inventoryTitle = inventoryTitle;
         this.noWorldsMessage = noWorldsMessage;
         this.requiredVisibility = requiredVisibility;
@@ -125,8 +130,8 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
      *
      * @return A new inventory instance.
      */
-    protected @NotNull Inventory createBaseInventoryPage() {
-        Inventory inventory = Bukkit.createInventory(player, 54, this.inventoryTitle);
+    protected @NotNull Inventory createBaseInventoryPage(String inventoryTitle) {
+        Inventory inventory = Bukkit.createInventory(player, 54, inventoryTitle);
         InventoryUtils.fillWithGlass(inventory, player);
 
         addWorldSortItem(inventory);
@@ -149,7 +154,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
         this.generatedInventories = new Inventory[numPages];
 
         for (int pageIndex = 0; pageIndex < numPages; pageIndex++) {
-            Inventory currentPage = createBaseInventoryPage();
+            Inventory currentPage = createBaseInventoryPage(this.inventoryTitle);
             this.generatedInventories[pageIndex] = currentPage;
 
             if (numDisplayableObjects == 0 && this.noWorldsMessage != null) {
@@ -190,12 +195,10 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
      * @return A list of {@link Displayable} items to be presented in the UI, sorted with folders first.
      */
     protected @NotNull List<Displayable> collectDisplayables() {
-        Settings settings = settingsManager.getSettings(player);
-        WorldDisplay worldDisplay = settings.getWorldDisplay();
+        WorldDisplay worldDisplay = settingsManager.getSettings(player).getWorldDisplay();
 
-        Collection<BuildWorld> filteredWorlds = filterWorlds(collectWorlds(), worldDisplay);
-        Collection<Folder> folders = collectFolders(filteredWorlds);
-        List<BuildWorld> standaloneWorlds = filteredWorlds.stream()
+        Collection<Folder> folders = collectFolders();
+        List<BuildWorld> standaloneWorlds = filterWorlds(collectWorlds(), worldDisplay).stream()
                 .filter(world -> !folderStorage.isAssignedToAnyFolder(world))
                 .collect(Collectors.toList());
 
@@ -203,6 +206,18 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
         displayables.addAll(folders);
         displayables.addAll(standaloneWorlds);
         return displayables;
+    }
+
+    /**
+     * Collects all {@link Folder}s that belong to the specified category and do not have a parent folder.
+     *
+     * @return A collection of root folders in the specified category
+     */
+    protected Collection<Folder> collectFolders() {
+        return folderStorage.getFolders().stream()
+                .filter(folder -> folder.getCategory() == this.category)
+                .filter(folder -> !folder.hasParent())
+                .collect(Collectors.toList());
     }
 
     /**
@@ -224,20 +239,6 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
                 .filter(this::isWorldValidForDisplay)
                 .filter(worldDisplay.getWorldFilter().apply())
                 .sorted(createDisplayOrderComparator(worldDisplay.getWorldSort()))
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Collects all {@link Folder}s that contain a {@link BuildWorld} from the given collection.
-     *
-     * @param buildWorlds The collection of build worlds to check for folders
-     * @return A collection of folders that contain a build world
-     */
-    private Collection<Folder> collectFolders(Collection<BuildWorld> buildWorlds) {
-        return buildWorlds.stream()
-                .map(this.folderStorage::getAssignedFolder)
-                .filter(Objects::nonNull)
-                .distinct()
                 .collect(Collectors.toList());
     }
 
@@ -359,14 +360,29 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
                     return;
                 }
                 break;
-            case 50: // Create folder
+            case 49: // Create folder (archive)
+            case 50: // Create folder (not archive)
                 if (clickedItem.getType() == XMaterial.PLAYER_HEAD.get()) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     player.closeInventory(); // Close to allow chat input
                     new PlayerChatInput(plugin, player, "enter_folder_name", input -> {
-                        Folder folder = folderStorage.createFolder(input.trim());
+                        if (StringCleaner.hasInvalidNameCharacters(input)) {
+                            Messages.sendMessage(player, "worlds_folder_creation_invalid_characters");
+                        }
+
+                        String sanitizedName = StringCleaner.sanitize(input);
+                        if (sanitizedName.isEmpty()) {
+                            Messages.sendMessage(player, "worlds_folder_creation_name_bank");
+                            return;
+                        }
+
+                        if (folderStorage.folderExists(sanitizedName)) {
+                            Messages.sendMessage(player, "worlds_folder_exists");
+                            return;
+                        }
+
+                        Folder folder = createFolder(sanitizedName);
                         Messages.sendMessage(player, "worlds_folder_created", new AbstractMap.SimpleEntry<>("%folder%", folder.getName()));
-                        // Reopen inventory after chat input is done
                         openInventory();
                     });
                     return;
@@ -390,6 +406,10 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
             XSound.BLOCK_CHEST_OPEN.play(player);
             returnToPreviousInventory();
         }
+    }
+
+    protected Folder createFolder(String folderName) {
+        return folderStorage.createFolder(folderName, category);
     }
 
     /**
@@ -454,7 +474,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
 
         Folder folder = parseFolder(displayName);
         if (folder != null) {
-            new FolderContentInventory(plugin, player, folder, this, requiredVisibility, validStatuses).openInventory();
+            new FolderContentInventory(plugin, player, category, folder, this, requiredVisibility, validStatuses).openInventory();
             return;
         }
 

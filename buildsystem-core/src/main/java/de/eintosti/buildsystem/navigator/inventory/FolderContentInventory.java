@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.navigator.inventory;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.navigator.settings.NavigatorCategory;
 import de.eintosti.buildsystem.api.navigator.settings.WorldDisplay;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
@@ -29,9 +30,11 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
 
 public class FolderContentInventory extends DisplayablesInventory {
@@ -42,6 +45,7 @@ public class FolderContentInventory extends DisplayablesInventory {
     public FolderContentInventory(
             @NotNull BuildSystemPlugin plugin,
             @NotNull Player player,
+            @NotNull NavigatorCategory category,
             @NotNull Folder folder,
             @NotNull DisplayablesInventory parentInventory,
             @NotNull Visibility requiredVisibility,
@@ -50,6 +54,7 @@ public class FolderContentInventory extends DisplayablesInventory {
         super(
                 plugin,
                 player,
+                category,
                 Messages.getString("folder_title", player, new SimpleEntry<>("%folder%", folder.getName())),
                 null,
                 requiredVisibility,
@@ -60,17 +65,42 @@ public class FolderContentInventory extends DisplayablesInventory {
     }
 
     @Override
+    protected @NotNull Inventory createBaseInventoryPage(String inventoryTitle) {
+        return this.parentInventory.createBaseInventoryPage(inventoryTitle);
+    }
+
+    @Override
     protected @NotNull List<Displayable> collectDisplayables() {
-        WorldDisplay worldDisplay = settingsManager.getSettings(player).getWorldDisplay();
+        WorldDisplay worldDisplay = this.settingsManager.getSettings(this.player).getWorldDisplay();
+
+        Collection<Folder> folders = collectFolders();
         Collection<BuildWorld> buildWorlds = filterWorlds(collectWorlds(), worldDisplay);
-        return new ArrayList<>(buildWorlds);
+
+        List<Displayable> displayables = new ArrayList<>();
+        displayables.addAll(folders);
+        displayables.addAll(buildWorlds);
+        return displayables;
+    }
+
+    @Override
+    protected Collection<Folder> collectFolders() {
+        return folderStorage.getFolders().stream()
+                .filter(folder -> folder.getCategory() == this.category)
+                .filter(folder -> Objects.equals(folder.getParent(), this.folder))
+                .collect(Collectors.toList());
     }
 
     @Override
     protected Collection<BuildWorld> collectWorlds() {
-        return folder.getWorldUUIDs().stream()
-                .map(worldStorage::getBuildWorld)
+        return this.folder.getWorldUUIDs().stream()
+                .map(this.worldStorage::getBuildWorld)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    protected Folder createFolder(String folderName) {
+        return this.folderStorage.createFolder(folderName, this.category, this.folder);
     }
 
     @Override

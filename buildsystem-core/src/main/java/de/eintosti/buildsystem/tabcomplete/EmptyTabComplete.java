@@ -25,11 +25,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * The tab completer which is used for commands which do not have any arguments.
- *
- * @author einTosti
- */
 public class EmptyTabComplete implements TabCompleter {
 
     public EmptyTabComplete(BuildSystemPlugin plugin) {

@@ -27,6 +27,11 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
+/**
+ * Interface for managing the storage of {@link BuildWorld} objects.
+ *
+ * @since 3.0.0
+ */
 public interface WorldStorage extends Storage<BuildWorld> {
 
     /**

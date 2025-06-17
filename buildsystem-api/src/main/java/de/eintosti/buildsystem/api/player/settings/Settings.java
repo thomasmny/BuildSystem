@@ -19,11 +19,17 @@ package de.eintosti.buildsystem.api.player.settings;
 
 import de.eintosti.buildsystem.api.navigator.settings.NavigatorType;
 import de.eintosti.buildsystem.api.navigator.settings.WorldDisplay;
+import de.eintosti.buildsystem.api.player.BuildPlayer;
 import org.bukkit.GameMode;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.ApiStatus.Internal;
 
+/**
+ * Different settings a {@link BuildPlayer} can modify for themselves.
+ *
+ * @since 3.0.0
+ */
 public interface Settings {
 
     /**

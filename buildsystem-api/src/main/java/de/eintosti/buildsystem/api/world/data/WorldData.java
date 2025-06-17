@@ -24,6 +24,9 @@ import org.bukkit.Difficulty;
 import org.bukkit.Location;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * @since 3.0.0
+ */
 public interface WorldData {
 
     /**

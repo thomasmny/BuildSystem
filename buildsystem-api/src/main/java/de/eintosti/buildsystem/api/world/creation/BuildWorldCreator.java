@@ -19,14 +19,19 @@ package de.eintosti.buildsystem.api.world.creation;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
-import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
+import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import org.bukkit.Difficulty;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Represents a creator for a {@link BuildWorld}.
+ *
+ * @since 3.0.0
+ */
 public interface BuildWorldCreator {
 
     /**
@@ -71,15 +76,33 @@ public interface BuildWorldCreator {
      */
     BuildWorldCreator setCustomGenerator(CustomGenerator customGenerator);
 
+    /**
+     * Sets whether the world should be private or not.
+     *
+     * @param privateWorld Whether the world should be private
+     * @return The world creator object
+     */
     BuildWorldCreator setPrivate(boolean privateWorld);
 
+    /**
+     * Sets the difficulty of the world.
+     *
+     * @param difficulty The difficulty
+     * @return The world creator object
+     */
     BuildWorldCreator setDifficulty(Difficulty difficulty);
 
+    /**
+     * Sets the creation date of the world.
+     *
+     * @param creationDate The creation date in milliseconds since epoch
+     * @return The world creator object
+     */
     BuildWorldCreator setCreationDate(long creationDate);
 
     /**
-     * Depending on the {@link BuildWorld}'s {@link BuildWorldType}, the corresponding {@link World} will be generated in a different way.
-     * Then, if the creation of the world was successful and the config is set accordingly, the player is teleported to the world.
+     * Depending on the {@link BuildWorld}'s {@link BuildWorldType}, the corresponding {@link World} will be generated in a different way. Then, if the creation of the world was
+     * successful and the config is set accordingly, the player is teleported to the world.
      *
      * @param player The player who is creating the world
      */

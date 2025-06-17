@@ -32,13 +32,13 @@ import de.eintosti.buildsystem.storage.factory.FolderStorageFactory;
 import de.eintosti.buildsystem.storage.factory.WorldStorageFactory;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.PlayerChatInput;
+import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import io.papermc.lib.PaperLib;
 import java.io.File;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -83,16 +83,11 @@ public class WorldServiceImpl implements WorldService {
     public void startWorldNameInput(Player player, BuildWorldType worldType, @Nullable String template, boolean privateWorld) {
         player.closeInventory();
         new PlayerChatInput(plugin, player, "enter_world_name", input -> {
-            boolean hasInvalidChar = Arrays.stream(input.split("")).anyMatch(c -> c.matches("[^A-Za-z\\d/_-]") || c.matches(configValues.getInvalidNameCharacters()));
-            if (hasInvalidChar) {
+            if (StringCleaner.hasInvalidNameCharacters(input)) {
                 Messages.sendMessage(player, "worlds_world_creation_invalid_characters");
             }
 
-            String worldName = input
-                    .replaceAll("[^A-Za-z\\d/_-]", "")
-                    .replaceAll(configValues.getInvalidNameCharacters(), "")
-                    .replace(" ", "_")
-                    .trim();
+            String worldName = StringCleaner.sanitize(input);
             if (worldName.isEmpty()) {
                 Messages.sendMessage(player, "worlds_world_creation_name_bank");
                 return;
@@ -215,10 +210,7 @@ public class WorldServiceImpl implements WorldService {
                     return;
                 }
 
-                String invalidChar = Arrays.stream(worldName.split(""))
-                        .filter(c -> c.matches("[^A-Za-z\\d/_-]") || c.matches(plugin.getConfigValues().getInvalidNameCharacters()))
-                        .findFirst()
-                        .orElse(null);
+                String invalidChar = StringCleaner.firstInvalidChar(worldName);
                 if (invalidChar != null) {
                     Messages.sendMessage(player, "worlds_importall_invalid_character",
                             new AbstractMap.SimpleEntry<>("%world%", worldName),
@@ -301,16 +293,11 @@ public class WorldServiceImpl implements WorldService {
             return;
         }
 
-        boolean hasInvalidChar = Arrays.stream(newName.split("")).anyMatch(c -> c.matches("[^A-Za-z\\d/_-]") || c.matches(configValues.getInvalidNameCharacters()));
-        if (hasInvalidChar) {
+        if (StringCleaner.hasInvalidNameCharacters(newName)) {
             Messages.sendMessage(player, "worlds_world_creation_invalid_characters");
         }
-        String parsedNewName = newName
-                .replaceAll("[^A-Za-z\\d/_-]", "")
-                .replaceAll(configValues.getInvalidNameCharacters(), "")
-                .replace(" ", "_")
-                .trim();
-        if (parsedNewName.isEmpty()) {
+        String sanitizedNewName = StringCleaner.sanitize(newName);
+        if (sanitizedNewName.isEmpty()) {
             Messages.sendMessage(player, "worlds_world_creation_name_bank");
             return;
         }
@@ -335,11 +322,11 @@ public class WorldServiceImpl implements WorldService {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> this.worldStorage.delete(oldName));
 
         File oldWorldFile = new File(Bukkit.getWorldContainer(), oldName);
-        File newWorldFile = new File(Bukkit.getWorldContainer(), parsedNewName);
+        File newWorldFile = new File(Bukkit.getWorldContainer(), sanitizedNewName);
         FileUtils.copy(oldWorldFile, newWorldFile);
         FileUtils.deleteDirectory(oldWorldFile);
 
-        buildWorld.setName(parsedNewName);
+        buildWorld.setName(sanitizedNewName);
         this.worldStorage.addBuildWorld(buildWorld);
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> this.worldStorage.save(buildWorld));
 
@@ -367,7 +354,7 @@ public class WorldServiceImpl implements WorldService {
 
         Messages.sendMessage(player, "worlds_rename_set",
                 new AbstractMap.SimpleEntry<>("%oldName%", oldName),
-                new AbstractMap.SimpleEntry<>("%newName%", parsedNewName)
+                new AbstractMap.SimpleEntry<>("%newName%", sanitizedNewName)
         );
     }
 

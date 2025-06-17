@@ -271,6 +271,9 @@ public class Messages {
         setMessage(sb, "worlds_folder_world_not_in_folder", "%prefix% &c%world% is not contained within %folder%.");
         setMessage(sb, "worlds_folder_world_added_to_folder", "%prefix% &b%world% &7was &aadded &7to &b%folder%&7.");
         setMessage(sb, "worlds_folder_world_removed_from_folder", "%prefix% &b%world% &7was &cremoved &7from &b%folder%&7.");
+        setMessage(sb, "worlds_folder_exists", "%prefix% &cThis folder already exists.");
+        setMessage(sb, "worlds_folder_creation_invalid_characters", "%prefix% &7&oRemoved invalid characters from folder name.");
+        setMessage(sb, "worlds_folder_creation_name_bank", "%prefix% &cThe folder name cannot be blank.");
         setMessage(sb, "worlds_folder_created", "%prefix% &7The folder &b%folder% &7was &asuccessfully &7created.");
         addSpacer(sb, "");
         setMessage(sb, "worlds_help_usage", "%prefix% &7Usage: &b/worlds help [page]");

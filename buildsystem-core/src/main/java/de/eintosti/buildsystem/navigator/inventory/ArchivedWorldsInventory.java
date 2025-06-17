@@ -17,9 +17,13 @@
  */
 package de.eintosti.buildsystem.navigator.inventory;
 
+import static de.eintosti.buildsystem.navigator.inventory.CreatableWorldsInventory.CREATE_FOLDER_PROFILE;
+
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.navigator.settings.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.util.InventoryUtils;
@@ -33,6 +37,7 @@ public class ArchivedWorldsInventory extends DisplayablesInventory {
         super(
                 plugin,
                 player,
+                NavigatorCategory.ARCHIVE,
                 Messages.getString("archive_title", player),
                 Messages.getString("archive_no_worlds", player),
                 Visibility.IGNORE,
@@ -40,10 +45,23 @@ public class ArchivedWorldsInventory extends DisplayablesInventory {
         );
     }
 
+    /**
+     * Overrides the base method to include the "create folder" item in the inventory page layout.
+     *
+     * @return A newly created {@link Inventory} page with common base items and creation options
+     */
     @Override
-    protected @NotNull Inventory createBaseInventoryPage() {
-        Inventory inventory = super.createBaseInventoryPage();
-        InventoryUtils.addGlassPane(player, inventory, 49);
+    protected @NotNull Inventory createBaseInventoryPage(String inventoryTitle) {
+        Inventory inventory = super.createBaseInventoryPage(inventoryTitle);
+        addFolderCreateItem(inventory, player);
         return inventory;
+    }
+
+    private void addFolderCreateItem(Inventory inventory, Player player) {
+        if (player.hasPermission("buildsystem.create.folder")) {
+            inventory.setItem(50, InventoryUtils.createSkull(Messages.getString("world_navigator_create_folder", player), Profileable.detect(CREATE_FOLDER_PROFILE)));
+        } else {
+            InventoryUtils.addGlassPane(player, inventory, 49);
+        }
     }
 }

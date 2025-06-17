@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.storage;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.navigator.settings.NavigatorCategory;
 import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.display.Folder;
@@ -30,6 +31,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 public abstract class FolderStorageImpl implements FolderStorage {
@@ -59,8 +61,13 @@ public abstract class FolderStorageImpl implements FolderStorage {
     }
 
     @Override
-    public Folder createFolder(String folderName) {
-        Folder folder = new FolderImpl(this, folderName);
+    public Folder createFolder(String folderName, NavigatorCategory category) {
+        return createFolder(folderName, category, null);
+    }
+
+    @Override
+    public Folder createFolder(String folderName, NavigatorCategory category, @Nullable Folder parent) {
+        Folder folder = new FolderImpl(this, folderName, category, parent);
         foldersByName.put(folderName, folder);
         return folder;
     }

@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.world.display;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.navigator.settings.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
@@ -28,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 public class FolderImpl implements Folder {
@@ -35,17 +37,21 @@ public class FolderImpl implements Folder {
     private final FolderStorageImpl folderStorage;
 
     private final String name;
+    private final NavigatorCategory category;
     private final List<UUID> worlds;
 
+    private Folder parent;
     private XMaterial material;
 
-    public FolderImpl(FolderStorageImpl folderStorage, String name) {
-        this(folderStorage, name, XMaterial.CHEST, new ArrayList<>());
+    public FolderImpl(FolderStorageImpl folderStorage, String name, NavigatorCategory category, @Nullable Folder parent) {
+        this(folderStorage, name, category, parent, XMaterial.CHEST, new ArrayList<>());
     }
 
-    public FolderImpl(FolderStorageImpl folderStorage, String name, XMaterial material, List<UUID> worlds) {
+    public FolderImpl(FolderStorageImpl folderStorage, String name, NavigatorCategory category, Folder parent, XMaterial material, List<UUID> worlds) {
         this.folderStorage = folderStorage;
         this.name = name;
+        this.category = category;
+        this.parent = parent;
         this.worlds = worlds;
         this.material = material;
     }
@@ -53,6 +59,27 @@ public class FolderImpl implements Folder {
     @Override
     public String getName() {
         return this.name;
+    }
+
+    @Override
+    public NavigatorCategory getCategory() {
+        return this.category;
+    }
+
+    @Override
+    @Nullable
+    public Folder getParent() {
+        return this.parent;
+    }
+
+    @Override
+    public boolean hasParent() {
+        return this.parent != null;
+    }
+
+    @Override
+    public void setParent(@Nullable Folder parent) {
+        this.parent = parent;
     }
 
     @Override

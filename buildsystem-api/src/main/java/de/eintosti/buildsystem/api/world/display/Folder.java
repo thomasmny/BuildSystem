@@ -17,12 +17,46 @@
  */
 package de.eintosti.buildsystem.api.world.display;
 
+import de.eintosti.buildsystem.api.navigator.settings.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.util.List;
 import java.util.UUID;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
+/**
+ * @since 3.0.0
+ */
 public interface Folder extends Displayable {
+
+    /**
+     * Gets the category in which the {@link Folder} is displayed.
+     *
+     * @return The folder category
+     */
+    NavigatorCategory getCategory();
+
+    /**
+     * Gets the folder's parent {@link Folder}.
+     *
+     * @return The parent folder, or {@code null} if this is a root folder
+     */
+    @Nullable
+    Folder getParent();
+
+    /**
+     * Gets whether this folder has a parent {@link Folder}.
+     *
+     * @return {@code true} if this folder has a parent, {@code false} otherwise
+     */
+    boolean hasParent();
+
+    /**
+     * Sets the folder's parent {@link Folder}.
+     *
+     * @param parent The parent folder to set, or {@code null} to remove the parent
+     */
+    void setParent(@Nullable Folder parent);
 
     /**
      * Gets a list of all world UUIDs in this folder.
@@ -60,4 +94,4 @@ public interface Folder extends Displayable {
      * @return The number of worlds in this folder
      */
     int getWorldCount();
-} 
+}

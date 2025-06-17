@@ -17,12 +17,18 @@
  */
 package de.eintosti.buildsystem.api.storage;
 
+import de.eintosti.buildsystem.api.navigator.settings.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import java.util.Collection;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
+/**
+ * Interface for managing the storage of {@link Folder} objects.
+ *
+ * @since 3.0.0
+ */
 public interface FolderStorage extends Storage<Folder> {
 
     /**
@@ -53,11 +59,21 @@ public interface FolderStorage extends Storage<Folder> {
     Folder getFolder(String folderName, boolean caseSensitive);
 
     /**
-     * Creates a new {@link Folder} with the given name and adds it to the folder storage.
+     * Creates a new {@link Folder} with the given name.
      *
      * @param folderName The name folder to create
+     * @param category   The category in which the folder should be displayed
      */
-    Folder createFolder(String folderName);
+    Folder createFolder(String folderName, NavigatorCategory category);
+
+    /**
+     * Creates a new nested {@link Folder} with the given name.
+     *
+     * @param folderName The name folder to create
+     * @param category   The category in which the folder should be displayed
+     * @param parent     The parent folder, or {@code null} if this is a top-level folder
+     */
+    Folder createFolder(String folderName, NavigatorCategory category, @Nullable Folder parent);
 
     /**
      * Removes a folder and all of its worlds from the world-to-folder mapping.

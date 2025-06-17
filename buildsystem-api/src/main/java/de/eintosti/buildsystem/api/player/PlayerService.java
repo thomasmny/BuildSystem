@@ -18,16 +18,17 @@
 package de.eintosti.buildsystem.api.player;
 
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
-import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
-import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Unmodifiable;
-
-import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
+import org.bukkit.entity.Player;
 
+/**
+ * Service for managing {@link BuildPlayer}.
+ *
+ * @since 3.0.0
+ */
 public interface PlayerService {
 
     PlayerStorage getPlayerStorage();

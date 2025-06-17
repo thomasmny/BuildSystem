@@ -21,6 +21,7 @@ import com.cryptomorin.xseries.profiles.objects.Profileable;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.navigator.settings.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
@@ -46,8 +47,8 @@ public abstract class CreatableWorldsInventory extends DisplayablesInventory {
             BuildWorldStatus.FINISHED
     );
 
-    private static final String CREATE_WORLD_PROFILE = "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716";
-    private static final String CREATE_FOLDER_PROFILE = "69b861aabb316c4ed73b4e5428305782e735565ba2a053912e1efd834fa5a6f";
+    static final String CREATE_WORLD_PROFILE = "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716";
+    static final String CREATE_FOLDER_PROFILE = "69b861aabb316c4ed73b4e5428305782e735565ba2a053912e1efd834fa5a6f";
 
     private final PlayerServiceImpl playerService;
 
@@ -63,22 +64,23 @@ public abstract class CreatableWorldsInventory extends DisplayablesInventory {
     protected CreatableWorldsInventory(
             @NotNull BuildSystemPlugin plugin,
             @NotNull Player player,
+            @NotNull NavigatorCategory category,
             @NotNull String inventoryTitle,
             @Nullable String noWorldsMessage,
             @NotNull Visibility requiredVisibility
     ) {
-        super(plugin, player, inventoryTitle, noWorldsMessage, requiredVisibility, VALID_STATUSES);
+        super(plugin, player, category, inventoryTitle, noWorldsMessage, requiredVisibility, VALID_STATUSES);
         this.playerService = plugin.getPlayerService();
     }
 
     /**
      * Overrides the base method to include the "create world" and "create folder" items in the inventory page layout.
      *
-     * @return A newly created {@link Inventory} page with common base items and creation options.
+     * @return A newly created {@link Inventory} page with common base items and creation options
      */
     @Override
-    protected @NotNull Inventory createBaseInventoryPage() {
-        Inventory inventory = super.createBaseInventoryPage();
+    protected @NotNull Inventory createBaseInventoryPage(String inventoryTitle) {
+        Inventory inventory = super.createBaseInventoryPage(inventoryTitle);
         addWorldCreateItem(inventory, player);
         addFolderCreateItem(inventory, player);
         return inventory;
@@ -108,14 +110,14 @@ public abstract class CreatableWorldsInventory extends DisplayablesInventory {
      * Gets the specific permission string required for a player to create a {@link BuildWorld} of the type managed by this inventory (e.g., {@code buildsystem.create.private},
      * {@code buildsystem.create.public}).
      *
-     * @return The permission string for creating a world of this inventory's type.
+     * @return The permission string for creating a world of this inventory's type
      */
     protected abstract @NotNull String getWorldCreationPermission();
 
     /**
      * Gets the message key the title of the "create world" item.
      *
-     * @return The message key for the "create world" item's title.
+     * @return The message key for the "create world" item's title
      */
     protected abstract @NotNull String getWorldCreationItemTitleKey();
 }
