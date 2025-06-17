@@ -276,6 +276,8 @@ public class Messages {
         setMessage(sb, "worlds_folder_creation_invalid_characters", "%prefix% &7&oRemoved invalid characters from folder name.");
         setMessage(sb, "worlds_folder_creation_name_bank", "%prefix% &cThe folder name cannot be blank.");
         setMessage(sb, "worlds_folder_created", "%prefix% &7The folder &b%folder% &7was &asuccessfully &7created.");
+        setMessage(sb, "worlds_folder_permission_set", "%prefix% &b%folder%&7's permission was successfully changed.");
+        setMessage(sb, "worlds_folder_item_set", "%prefix% &b%folder%&7's item was successfully changed.");
         addSpacer(sb, "");
         setMessage(sb, "worlds_help_usage", "%prefix% &7Usage: &b/worlds help [page]");
         setMessage(sb, "worlds_help_invalid_page", "%prefix% &cInvalid page.");
@@ -468,6 +470,8 @@ public class Messages {
         setMessage(sb, "folder_title", "&3» &8%folder%");
         setMessage(sb, "folder_item_title", "&3&l%folder%");
         setMessage(sb, "folder_item_lore", Arrays.asList(
+                "&7Permission&8: &b%permission%",
+                "",
                 "&7Worlds&8: &b%worlds%"
         ));
         setMessage(sb, "world_item_builders_builder_template", "&b%builder%&7, ");

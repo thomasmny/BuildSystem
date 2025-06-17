@@ -22,7 +22,9 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.api.world.util.WorldPermissions;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,18 +44,20 @@ public class FolderImpl implements Folder {
 
     private Folder parent;
     private XMaterial material;
+    private String permission;
 
     public FolderImpl(FolderStorageImpl folderStorage, String name, NavigatorCategory category, @Nullable Folder parent) {
-        this(folderStorage, name, category, parent, XMaterial.CHEST, new ArrayList<>());
+        this(folderStorage, name, category, parent, XMaterial.CHEST, "-", new ArrayList<>());
     }
 
-    public FolderImpl(FolderStorageImpl folderStorage, String name, NavigatorCategory category, Folder parent, XMaterial material, List<UUID> worlds) {
+    public FolderImpl(FolderStorageImpl folderStorage, String name, NavigatorCategory category, Folder parent, XMaterial material, String permission, List<UUID> worlds) {
         this.folderStorage = folderStorage;
         this.name = name;
         this.category = category;
         this.parent = parent;
         this.worlds = worlds;
         this.material = material;
+        this.permission = permission;
     }
 
     @Override
@@ -121,6 +125,31 @@ public class FolderImpl implements Folder {
     }
 
     @Override
+    public String getPermission() {
+        return this.permission;
+    }
+
+    @Override
+    public void setPermission(String permission) {
+        this.permission = permission;
+    }
+
+    @Override
+    public boolean canView(Player player) {
+        // We can pass null as a world since we are only checking for bypass permissions
+        WorldPermissions permissions = WorldPermissionsImpl.of(null);
+        if (permissions.hasAdminPermission(player) || permissions.canBypassViewPermission(player)) {
+            return true;
+        }
+
+        if (this.permission.equals("-")) {
+            return true;
+        }
+
+        return player.hasPermission(permission);
+    }
+
+    @Override
     public String getDisplayName(Player player) {
         return Messages.getString("folder_item_title", player,
                 new AbstractMap.SimpleEntry<>("%folder%", name)
@@ -129,11 +158,10 @@ public class FolderImpl implements Folder {
 
     @Override
     public List<String> getLore(Player player) {
-        List<String> lore = new ArrayList<>();
-        lore.add(Messages.getString("folder_item_lore", player,
+        return new ArrayList<>(Messages.getStringList("folder_item_lore", player,
+                new AbstractMap.SimpleEntry<>("%permission%", permission),
                 new AbstractMap.SimpleEntry<>("%worlds%", String.valueOf(getWorldCount())))
         );
-        return lore;
     }
 
     @Override

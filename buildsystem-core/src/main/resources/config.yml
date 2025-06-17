@@ -62,3 +62,5 @@ world:
       - world_nether
       - worth_the_end
   void-block: true
+folder:
+  override-permissions: true

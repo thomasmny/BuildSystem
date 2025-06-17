@@ -95,8 +95,8 @@ public class YamlFolderStorage extends FolderStorageImpl {
         serializedFolder.put("category", folder.getCategory().name());
         serializedFolder.put("parent", folder.hasParent() ? folder.getParent().getName() : null);
         serializedFolder.put("material", folder.getIcon().name());
-        serializedFolder.put("worlds",
-                folder.getWorldUUIDs().stream().map(UUID::toString).collect(Collectors.toList()));
+        serializedFolder.put("permission", folder.getPermission());
+        serializedFolder.put("worlds", folder.getWorldUUIDs().stream().map(UUID::toString).collect(Collectors.toList()));
 
         return serializedFolder;
     }
@@ -141,6 +141,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
         NavigatorCategory category = NavigatorCategory.valueOf(config.getString(path + ".category"));
         XMaterial defaultMaterial = XMaterial.CHEST;
         XMaterial material = XMaterial.matchXMaterial(config.getString(path + ".material", defaultMaterial.name())).orElse(defaultMaterial);
+        String permission = config.getString(path + ".permission", "-");
         List<UUID> worlds = config.getStringList(path + ".worlds").stream().map(UUID::fromString).collect(Collectors.toList());
 
         return new FolderImpl(
@@ -149,6 +150,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
                 category,
                 null, // Parent will be set in second pass
                 material,
+                permission,
                 worlds);
     }
 

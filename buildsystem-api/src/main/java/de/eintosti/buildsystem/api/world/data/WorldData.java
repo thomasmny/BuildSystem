@@ -48,7 +48,7 @@ public interface WorldData {
     /**
      * Gets the permission needed to enter the {@link BuildWorld}.
      *
-     * @return The permission
+     * @return The permission, or '{@code -}' if no permission is required
      */
     Type<String> permission();
 

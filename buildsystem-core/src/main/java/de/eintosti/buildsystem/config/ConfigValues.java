@@ -72,6 +72,7 @@ public class ConfigValues {
     private boolean[] worldBuildersEnabled;
     private boolean saveFromDeath;
     private boolean teleportToMapSpawn;
+    private boolean folderOverridePermissions;
 
     private int sunriseTime;
     private int noonTime;
@@ -163,6 +164,9 @@ public class ConfigValues {
         this.maxPrivateWorldAmount = config.getInt("world.max-amount.private", -1);
 
         this.voidBlock = config.getBoolean("world.void-block", true);
+
+        // Folder
+        this.folderOverridePermissions = config.getBoolean("folder.override-permissions", true);
     }
 
     /**
@@ -374,5 +378,9 @@ public class ConfigValues {
 
     public String getInvalidNameCharacters() {
         return invalidNameCharacters;
+    }
+
+    public boolean isFolderOverridePermissions() {
+        return folderOverridePermissions;
     }
 }

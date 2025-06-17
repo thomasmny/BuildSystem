@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.api.world.display;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.util.List;
 import java.util.UUID;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -93,4 +94,26 @@ public interface Folder extends Displayable {
      * @return The number of worlds in this folder
      */
     int getWorldCount();
+
+    /**
+     * Gets the permission required to access this folder.
+     *
+     * @return The permission, or '{@code -}' if no permission is required
+     */
+    String getPermission();
+
+    /**
+     * Sets the permission required to access this folder.
+     *
+     * @param permission The permission to set, or '{@code -}' to remove the permission
+     */
+    void setPermission(String permission);
+
+    /**
+     * Gets whether the folder is visible to the specified player.
+     *
+     * @param player The player to check
+     * @return {@code true} if the player can view the folder, {@code false} otherwise
+     */
+    boolean canView(Player player);
 }

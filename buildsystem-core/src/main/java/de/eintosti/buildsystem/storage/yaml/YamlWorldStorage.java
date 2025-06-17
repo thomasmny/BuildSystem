@@ -209,7 +209,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
         return new WorldDataImpl(
                 worldName, customSpawn, permission, project, difficulty, material, worldStatus, blockBreaking,
                 blockInteractions, blockPlacement, buildersEnabled, explosions, mobAi, physics, privateWorld,
-                lastLoaded, lastUnloaded, lastEdited
+                lastLoaded, lastUnloaded, lastEdited, plugin.getConfigValues()
         );
     }
 
