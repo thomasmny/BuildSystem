@@ -53,7 +53,6 @@ public abstract class WorldStorageImpl implements WorldStorage {
         this.logger = plugin.getLogger();
 
         this.buildWorlds = load().stream().collect(Collectors.toMap(BuildWorld::getName, Function.identity()));
-        this.loadWorlds();
     }
 
     @Override
@@ -158,7 +157,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
         }
     }
 
-    private void loadWorlds() {
+    public void loadWorlds() {
         boolean loadAllWorlds = !plugin.getConfigValues().isUnloadWorlds();
         if (loadAllWorlds) {
             logger.info("*** All worlds will be loaded now ***");

@@ -160,6 +160,10 @@ public class BuildSystemPlugin extends JavaPlugin {
     public void onLoad() {
         createTemplateFolder();
         Messages.createMessageFile();
+
+        if (!findCraftBukkitVersion()) {
+            this.setEnabled(false);
+        }
     }
 
     @Override
@@ -168,10 +172,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         this.saveConfig();
 
         initClasses();
-        if (!initVersionedClasses()) {
-            this.setEnabled(false);
-            return;
-        }
+        initVersionedClasses();
 
         registerCommands();
         registerTabCompleter();
@@ -226,11 +227,8 @@ public class BuildSystemPlugin extends JavaPlugin {
         ));
     }
 
-    private boolean initVersionedClasses() {
+    private boolean findCraftBukkitVersion() {
         MinecraftVersion minecraftVersion = MinecraftVersion.getCurrent();
-        if (minecraftVersion == null) {
-            return false;
-        }
 
         this.craftBukkitVersion = CraftBukkitVersion.matchCraftBukkitVersion(minecraftVersion);
         if (craftBukkitVersion == CraftBukkitVersion.UNKNOWN) {
@@ -241,8 +239,6 @@ public class BuildSystemPlugin extends JavaPlugin {
         }
 
         getLogger().info(String.format(Locale.ROOT, "Detected server version: %s (%s)", minecraftVersion, craftBukkitVersion.name()));
-        this.customBlocks = craftBukkitVersion.initCustomBlocks();
-        this.gameRules = craftBukkitVersion.initGameRules();
         return true;
     }
 
@@ -253,7 +249,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         this.armorStandManager = new ArmorStandManager();
         this.playerService = new PlayerServiceImpl(this);
         this.noClipManager = new NoClipManager(this);
-        this.worldService = new WorldServiceImpl(this);
+        (this.worldService = new WorldServiceImpl(this)).init();
         this.settingsManager = new SettingsManager(this);
         this.spawnManager = new SpawnManager(this);
 
@@ -269,6 +265,11 @@ public class BuildSystemPlugin extends JavaPlugin {
         this.setupInventory = new SetupInventory(this);
         this.speedInventory = new SpeedInventory(this);
         this.statusInventory = new StatusInventory(this);
+    }
+
+    private void initVersionedClasses() {
+        this.customBlocks = craftBukkitVersion.initCustomBlocks();
+        this.gameRules = craftBukkitVersion.initGameRules();
     }
 
     private void registerCommands() {

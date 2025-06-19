@@ -70,6 +70,10 @@ public class WorldServiceImpl implements WorldService {
         this.folderStorage = new FolderStorageFactory(plugin).createStorage();
     }
 
+    public void init() {
+        this.worldStorage.loadWorlds();
+    }
+
     @Override
     public WorldStorageImpl getWorldStorage() {
         return worldStorage;

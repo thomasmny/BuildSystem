@@ -19,13 +19,13 @@ package de.eintosti.buildsystem.world.creation;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.BuildWorldCreator;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigValues;
-import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
@@ -56,7 +56,7 @@ import org.jetbrains.annotations.Nullable;
 public class BuildWorldCreatorImpl implements BuildWorldCreator {
 
     private final BuildSystemPlugin plugin;
-    private final WorldStorageImpl worldStorage;
+    private final WorldStorage worldStorage;
 
     private String worldName;
     private Builder creator;
