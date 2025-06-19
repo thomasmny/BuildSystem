@@ -17,10 +17,10 @@
  */
 package de.eintosti.buildsystem.player.settings;
 
-import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.navigator.settings.NavigatorType;
-import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.navigator.settings.WorldDisplay;
+import de.eintosti.buildsystem.api.player.settings.DesignColor;
+import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.navigator.settings.WorldDisplayImpl;
 import org.bukkit.scheduler.BukkitTask;
 

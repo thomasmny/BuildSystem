@@ -19,6 +19,9 @@ package de.eintosti.buildsystem.api.world.util;
 
 import org.bukkit.entity.Player;
 
+/**
+ * @since 3.0.0
+ */
 public interface WorldLoader {
 
     void loadForPlayer(Player player);

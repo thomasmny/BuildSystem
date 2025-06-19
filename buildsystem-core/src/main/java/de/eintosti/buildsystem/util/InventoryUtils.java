@@ -155,23 +155,23 @@ public final class InventoryUtils {
     }
 
     /**
-     * Adds a world item to the given inventory at the specified position.
+     * Adds a world item to the given inventory at the specified slot.
      *
      * @param inventory   The inventory to add the item to
-     * @param position    The position to add the item at
+     * @param slot        The slot to add the item at
      * @param buildWorld  The world to create the item for
      * @param displayName The display name of the item
      * @param lore        The lore of the item
      */
-    public static void addWorldItem(Inventory inventory, int position, BuildWorld buildWorld, String displayName, List<String> lore) {
+    public static void addWorldItem(Inventory inventory, int slot, BuildWorld buildWorld, String displayName, List<String> lore) {
         XMaterial material = buildWorld.getData().material().get();
         if (material != XMaterial.PLAYER_HEAD) {
-            inventory.setItem(position, createItem(material, displayName, lore));
+            inventory.setItem(slot, createItem(material, displayName, lore));
             return;
         }
 
         // Initially set a default head
-        inventory.setItem(position, createItem(XMaterial.PLAYER_HEAD, displayName, lore));
+        inventory.setItem(slot, createItem(XMaterial.PLAYER_HEAD, displayName, lore));
 
         // Then try to set texture asynchronously
         XSkull.createItem()
@@ -190,20 +190,20 @@ public final class InventoryUtils {
                     itemMeta.setDisplayName(displayName);
                     itemMeta.setLore(lore);
                     itemStack.setItemMeta(itemMeta);
-                    inventory.setItem(position, itemStack);
+                    inventory.setItem(slot, itemStack);
                 });
     }
 
     /**
      * Checks if a click event is valid for the given inventory title.
      *
-     * @param event    The click event to check
-     * @param titleKey The key of the inventory title
+     * @param event         The click event to check
+     * @param expectedTitle The expected inventory title
      * @return true if the click is valid, false otherwise
      */
-    public static boolean isValidClick(InventoryClickEvent event, String titleKey) {
-        String title = XInventoryView.of(event.getView()).getTitle();
-        if (!title.equals(Messages.getString(titleKey, (Player) event.getWhoClicked()))) {
+    public static boolean isValidClick(InventoryClickEvent event, String expectedTitle) {
+        String viewTitle = XInventoryView.of(event.getView()).getTitle();
+        if (!viewTitle.equals(expectedTitle)) {
             return false;
         }
 

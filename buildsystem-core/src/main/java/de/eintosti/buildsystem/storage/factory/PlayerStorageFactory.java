@@ -19,8 +19,6 @@ package de.eintosti.buildsystem.storage.factory;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
-import de.eintosti.buildsystem.storage.FolderStorageImpl;
-import de.eintosti.buildsystem.storage.yaml.YamlFolderStorage;
 import de.eintosti.buildsystem.storage.yaml.YamlPlayerStorage;
 
 /**

@@ -28,6 +28,7 @@ import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.UUIDFetcher;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.AbstractMap;
 import java.util.UUID;
 import org.bukkit.Bukkit;
@@ -42,7 +43,7 @@ public class RemoveBuilderSubCommand implements SubCommand {
     public RemoveBuilderSubCommand(BuildSystemPlugin plugin, String worldName) {
         this.plugin = plugin;
         this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
-        this.permissions = buildWorld.getPermissions();
+        this.permissions = WorldPermissionsImpl.of(buildWorld);
     }
 
     @Override

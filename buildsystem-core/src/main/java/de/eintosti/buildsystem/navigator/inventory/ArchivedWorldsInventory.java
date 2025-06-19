@@ -17,28 +17,49 @@
  */
 package de.eintosti.buildsystem.navigator.inventory;
 
+import static de.eintosti.buildsystem.navigator.inventory.CreatableWorldsInventory.CREATE_FOLDER_PROFILE;
+
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import java.util.Set;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.jetbrains.annotations.NotNull;
 
-public class ArchivedWorldsInventory extends FilteredWorldsInventory {
+public class ArchivedWorldsInventory extends DisplayablesInventory {
 
-    private static final Visibility VISIBILITY = Visibility.IGNORE;
-    private static final Set<BuildWorldStatus> VALID_STATUS = Sets.newHashSet(BuildWorldStatus.ARCHIVE);
-
-    public ArchivedWorldsInventory(BuildSystemPlugin plugin) {
-        super(plugin, "archive_title", "archive_no_worlds", VISIBILITY, VALID_STATUS);
+    public ArchivedWorldsInventory(BuildSystemPlugin plugin, Player player) {
+        super(
+                plugin,
+                player,
+                NavigatorCategory.ARCHIVE,
+                Messages.getString("archive_title", player),
+                Messages.getString("archive_no_worlds", player),
+                Visibility.IGNORE,
+                Sets.newHashSet(BuildWorldStatus.ARCHIVE)
+        );
     }
 
+    /**
+     * Overrides the base method to include the "create folder" item in the inventory page layout.
+     *
+     * @return A newly created {@link Inventory} page with common base items and creation options
+     */
     @Override
-    protected Inventory createInventory(Player player) {
-        Inventory inventory = super.createInventory(player);
-        InventoryUtils.addGlassPane(player, inventory, 49);
+    protected @NotNull Inventory createBaseInventoryPage(String inventoryTitle) {
+        Inventory inventory = super.createBaseInventoryPage(inventoryTitle);
+        addFolderCreateItem(inventory, player);
         return inventory;
+    }
+
+    private void addFolderCreateItem(Inventory inventory, Player player) {
+        if (player.hasPermission("buildsystem.create.folder")) {
+            inventory.setItem(49, InventoryUtils.createSkull(Messages.getString("world_navigator_create_folder", player), Profileable.detect(CREATE_FOLDER_PROFILE)));
+        }
     }
 }

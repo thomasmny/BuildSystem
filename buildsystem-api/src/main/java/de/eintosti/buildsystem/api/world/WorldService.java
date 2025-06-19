@@ -20,6 +20,9 @@ package de.eintosti.buildsystem.api.world;
 import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 
+/**
+ * @since 3.0.0
+ */
 public interface WorldService {
 
     WorldStorage getWorldStorage();
