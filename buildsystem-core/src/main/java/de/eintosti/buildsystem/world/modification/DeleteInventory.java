@@ -51,7 +51,7 @@ public class DeleteInventory implements Listener {
                 Messages.getString("delete_world_name", player, new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName())),
                 Messages.getStringList("delete_world_name_lore", player))
         );
-        inventory.setItem(14, InventoryUtils.createItem(XMaterial.RED_DYE,
+        inventory.setItem(15, InventoryUtils.createItem(XMaterial.RED_DYE,
                 Messages.getString("delete_world_cancel", player))
         );
 
@@ -101,7 +101,6 @@ public class DeleteInventory implements Listener {
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
             player.closeInventory();
             Messages.sendMessage(player, "worlds_delete_canceled", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
-
         }
     }
 }
