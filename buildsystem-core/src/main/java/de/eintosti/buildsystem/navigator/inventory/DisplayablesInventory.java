@@ -120,7 +120,9 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
      * Opens the inventory for the associated player.
      */
     public void openInventory() {
-        initializeInventories();
+        if (this.generatedInventories == null) {
+            initializeInventories();
+        }
         player.openInventory(generatedInventories[getInvIndex(player)]);
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -391,12 +393,12 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
                 break;
             case 52: // Previous page
                 if (decrementInv(player, cachedDisplayables.size(), MAX_WORLDS_PER_PAGE)) {
-                    player.openInventory(generatedInventories[getInvIndex(player)]);
+                    openInventory();
                 }
                 return;
             case 53: // Next page
                 if (incrementInv(player, cachedDisplayables.size(), MAX_WORLDS_PER_PAGE)) {
-                    player.openInventory(generatedInventories[getInvIndex(player)]);
+                    openInventory();
                 }
                 return;
         }
