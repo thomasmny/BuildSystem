@@ -269,6 +269,11 @@ public class WorldServiceImpl implements WorldService {
             return;
         }
 
+        Folder assignedFolder = this.folderStorage.getAssignedFolder(buildWorld);
+        if (assignedFolder != null) {
+            assignedFolder.removeWorld(buildWorld);
+        }
+
         Messages.sendMessage(player, "worlds_delete_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
         removePlayersFromWorld(worldName, Messages.getString("worlds_delete_players_world", player));
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
