@@ -73,6 +73,7 @@ public class ConfigValues {
     private boolean saveFromDeath;
     private boolean teleportToMapSpawn;
     private boolean folderOverridePermissions;
+    private boolean folderOverrideProjects;
 
     private int sunriseTime;
     private int noonTime;
@@ -167,6 +168,7 @@ public class ConfigValues {
 
         // Folder
         this.folderOverridePermissions = config.getBoolean("folder.override-permissions", true);
+        this.folderOverrideProjects = config.getBoolean("folder.override-projects", false);
     }
 
     /**
@@ -382,5 +384,9 @@ public class ConfigValues {
 
     public boolean isFolderOverridePermissions() {
         return folderOverridePermissions;
+    }
+
+    public boolean isFolderOverrideProjects() {
+        return folderOverrideProjects;
     }
 }

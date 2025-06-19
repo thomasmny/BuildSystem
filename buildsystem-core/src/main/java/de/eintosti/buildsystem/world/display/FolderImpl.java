@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -46,12 +47,23 @@ public class FolderImpl implements Folder {
     private Folder parent;
     private XMaterial material;
     private String permission;
+    private String project;
 
     public FolderImpl(FolderStorageImpl folderStorage, String name, NavigatorCategory category, @Nullable Folder parent) {
-        this(folderStorage, name, System.currentTimeMillis(), category, parent, XMaterial.CHEST, "-", new ArrayList<>());
+        this(folderStorage, name, System.currentTimeMillis(), category, parent, XMaterial.CHEST, "-", "-", new ArrayList<>());
     }
 
-    public FolderImpl(FolderStorageImpl folderStorage, String name, long creation, NavigatorCategory category, Folder parent, XMaterial material, String permission, List<UUID> worlds) {
+    public FolderImpl(
+            @NotNull FolderStorageImpl folderStorage,
+            @NotNull String name,
+            long creation,
+            @NotNull NavigatorCategory category,
+            @Nullable Folder parent,
+            @NotNull XMaterial material,
+            @NotNull String permission,
+            @NotNull String project,
+            @NotNull List<@NotNull UUID> worlds
+    ) {
         this.folderStorage = folderStorage;
         this.name = name;
         this.creation = creation;
@@ -60,6 +72,7 @@ public class FolderImpl implements Folder {
         this.worlds = worlds;
         this.material = material;
         this.permission = permission;
+        this.project = project;
     }
 
     @Override
@@ -117,6 +130,18 @@ public class FolderImpl implements Folder {
     }
 
     @Override
+    public String getDisplayName(Player player) {
+        return Messages.getString("folder_item_title", player,
+                new AbstractMap.SimpleEntry<>("%folder%", name)
+        );
+    }
+
+    @Override
+    public long getCreation() {
+        return creation;
+    }
+
+    @Override
     public XMaterial getIcon() {
         return this.material;
     }
@@ -137,6 +162,16 @@ public class FolderImpl implements Folder {
     }
 
     @Override
+    public String getProject() {
+        return project;
+    }
+
+    @Override
+    public void setProject(String project) {
+        this.project = project;
+    }
+
+    @Override
     public boolean canView(Player player) {
         // We can pass null as a world since we are only checking for bypass permissions
         WorldPermissions permissions = WorldPermissionsImpl.of(null);
@@ -148,25 +183,14 @@ public class FolderImpl implements Folder {
             return true;
         }
 
-        return player.hasPermission(permission);
-    }
-
-    @Override
-    public String getDisplayName(Player player) {
-        return Messages.getString("folder_item_title", player,
-                new AbstractMap.SimpleEntry<>("%folder%", name)
-        );
-    }
-
-    @Override
-    public long getCreation() {
-        return creation;
+        return player.hasPermission(this.permission);
     }
 
     @Override
     public List<String> getLore(Player player) {
         return new ArrayList<>(Messages.getStringList("folder_item_lore", player,
-                new AbstractMap.SimpleEntry<>("%permission%", permission),
+                new AbstractMap.SimpleEntry<>("%permission%", this.permission),
+                new AbstractMap.SimpleEntry<>("%project%", this.project),
                 new AbstractMap.SimpleEntry<>("%worlds%", String.valueOf(getWorldCount())))
         );
     }
@@ -189,4 +213,4 @@ public class FolderImpl implements Folder {
     public int hashCode() {
         return name.hashCode();
     }
-} 
+}

@@ -110,6 +110,20 @@ public interface Folder extends Displayable {
     void setPermission(String permission);
 
     /**
+     * Gets the project description of the {@link Folder}.
+     *
+     * @return The project description
+     */
+    String getProject();
+
+    /**
+     * Sets the project description of the {@link Folder}.
+     *
+     * @param project The project description
+     */
+    void setProject(String project);
+
+    /**
      * Gets whether the folder is visible to the specified player.
      *
      * @param player The player to check

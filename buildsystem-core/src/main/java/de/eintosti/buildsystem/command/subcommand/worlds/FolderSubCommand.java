@@ -83,6 +83,11 @@ public class FolderSubCommand implements SubCommand {
                 break;
             }
 
+            case "setproject": {
+                handleProjectInput(player, folder);
+                break;
+            }
+
             case "setitem": {
                 handleIconChange(player, folder);
                 break;
@@ -152,6 +157,17 @@ public class FolderSubCommand implements SubCommand {
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
             Messages.sendMessage(player, "worlds_folder_permission_set",
+                    new AbstractMap.SimpleEntry<>("%folder%", folder.getName())
+            );
+        });
+    }
+
+    private void handleProjectInput(Player player, Folder folder) {
+        new PlayerChatInput(this.plugin, player, "enter_world_project", input -> {
+            folder.setProject(input.trim());
+
+            XSound.ENTITY_PLAYER_LEVELUP.play(player);
+            Messages.sendMessage(player, "worlds_folder_project_set",
                     new AbstractMap.SimpleEntry<>("%folder%", folder.getName())
             );
         });

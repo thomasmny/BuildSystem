@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.world.data;
 
 import com.cryptomorin.xseries.XMaterial;
+import com.google.common.base.Function;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.WorldService;
@@ -166,16 +167,25 @@ public class WorldDataImpl implements WorldData {
         );
     }
 
+    @Nullable
+    private Type<String> getOverrideValue(Function<Folder, String> valueProvider) {
+        WorldService worldService = JavaPlugin.getPlugin(BuildSystemPlugin.class).getWorldService();
+        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(worldName);
+        if (buildWorld != null) {
+            Folder assignedFolder = worldService.getFolderStorage().getAssignedFolder(buildWorld);
+            if (assignedFolder != null) {
+                return new TypeImpl<>(valueProvider.apply(assignedFolder));
+            }
+        }
+        return null;
+    }
+
     @Override
     public Type<String> permission() {
         if (configValues.isFolderOverridePermissions()) {
-            WorldService worldService = JavaPlugin.getPlugin(BuildSystemPlugin.class).getWorldService();
-            BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(worldName);
-            if (buildWorld != null) {
-                Folder assignedFolder = worldService.getFolderStorage().getAssignedFolder(buildWorld);
-                if (assignedFolder != null) {
-                    return new TypeImpl<>(assignedFolder.getPermission());
-                }
+            Type<String> assignedFolderPermission = getOverrideValue(Folder::getPermission);
+            if (assignedFolderPermission != null) {
+                return assignedFolderPermission;
             }
         }
         return permission;
@@ -183,6 +193,12 @@ public class WorldDataImpl implements WorldData {
 
     @Override
     public Type<String> project() {
+        if (configValues.isFolderOverrideProjects()) {
+            Type<String> assignedFolderProject = getOverrideValue(Folder::getProject);
+            if (assignedFolderProject != null) {
+                return assignedFolderProject;
+            }
+        }
         return project;
     }
 

@@ -64,3 +64,4 @@ world:
   void-block: true
 folder:
   override-permissions: true
+  override-projects: false

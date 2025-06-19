@@ -288,6 +288,8 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
                 comparator = Comparator.comparing((Displayable displayable) -> {
                     if (displayable instanceof BuildWorld) {
                         return ((BuildWorld) displayable).getData().project().get().toLowerCase(Locale.ROOT);
+                    } else if (displayable instanceof Folder) {
+                        return ((Folder) displayable).getProject().toLowerCase(Locale.ROOT);
                     } else {
                         return "";
                     }
@@ -297,6 +299,8 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
                 comparator = Comparator.comparing((Displayable displayable) -> {
                     if (displayable instanceof BuildWorld) {
                         return ((BuildWorld) displayable).getData().project().get().toLowerCase(Locale.ROOT);
+                    } else if (displayable instanceof Folder) {
+                        return ((Folder) displayable).getProject().toLowerCase(Locale.ROOT);
                     } else {
                         return "";
                     }

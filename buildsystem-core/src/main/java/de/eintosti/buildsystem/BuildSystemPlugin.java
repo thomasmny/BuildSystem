@@ -358,6 +358,7 @@ public class BuildSystemPlugin extends JavaPlugin {
             }
         }));
         metrics.addCustomChart(new SimplePie("folder_override_permissions", () -> String.valueOf(configValues.isFolderOverridePermissions())));
+        metrics.addCustomChart(new SimplePie("folder_override_projects", () -> String.valueOf(configValues.isFolderOverrideProjects())));
     }
 
     private void registerExpansions() {

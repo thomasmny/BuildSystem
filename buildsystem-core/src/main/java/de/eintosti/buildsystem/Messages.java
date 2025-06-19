@@ -263,7 +263,7 @@ public class Messages {
         setMessage(sb, "worlds_edit_unknown_world", "%prefix% &cUnknown world.");
         setMessage(sb, "worlds_edit_error", "%prefix% &cError: Please try again.");
         addSpacer(sb, "");
-        setMessage(sb, "worlds_folder_usage", "%prefix% &7Usage: &b/worlds folder <folder> <add|remove|delete|setPermission|setItem> [<world>]");
+        setMessage(sb, "worlds_folder_usage", "%prefix% &7Usage: &b/worlds folder <folder> <add|remove|delete|setPermission|setProject|setItem> [<world>]");
         setMessage(sb, "worlds_folder_unknown_folder", "%prefix% &cUnknown folder.");
         setMessage(sb, "worlds_folder_unknown_world", "%prefix% &cUnknown world.");
         setMessage(sb, "worlds_folder_world_already_in_folder", "%prefix% &c%world% is already contained within %folder%.");
@@ -279,6 +279,7 @@ public class Messages {
         setMessage(sb, "worlds_folder_not_empty", "%prefix% &cThe folder %folder% is not empty.");
         setMessage(sb, "worlds_folder_deleted", "%prefix% &7The folder &b%folder% &7was &asuccessfully &7deleted.");
         setMessage(sb, "worlds_folder_permission_set", "%prefix% &b%folder%&7's permission was successfully changed.");
+        setMessage(sb, "worlds_folder_project_set", "%prefix% &b%folder%&7's project was successfully changed.");
         setMessage(sb, "worlds_folder_item_set", "%prefix% &b%folder%&7's item was successfully changed.");
         addSpacer(sb, "");
         setMessage(sb, "worlds_help_usage", "%prefix% &7Usage: &b/worlds help [page]");
@@ -472,6 +473,7 @@ public class Messages {
         setMessage(sb, "folder_title", "&3» &8%folder%");
         setMessage(sb, "folder_item_title", "&3&l%folder%");
         setMessage(sb, "folder_item_lore", Arrays.asList(
+                "&7Project&8: &b%project%",
                 "&7Permission&8: &b%permission%",
                 "",
                 "&7Worlds&8: &b%worlds%"
