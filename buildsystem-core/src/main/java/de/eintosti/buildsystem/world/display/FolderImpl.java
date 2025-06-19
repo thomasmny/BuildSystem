@@ -39,6 +39,7 @@ public class FolderImpl implements Folder {
     private final FolderStorageImpl folderStorage;
 
     private final String name;
+    private final long creation;
     private final NavigatorCategory category;
     private final List<UUID> worlds;
 
@@ -47,12 +48,13 @@ public class FolderImpl implements Folder {
     private String permission;
 
     public FolderImpl(FolderStorageImpl folderStorage, String name, NavigatorCategory category, @Nullable Folder parent) {
-        this(folderStorage, name, category, parent, XMaterial.CHEST, "-", new ArrayList<>());
+        this(folderStorage, name, System.currentTimeMillis(), category, parent, XMaterial.CHEST, "-", new ArrayList<>());
     }
 
-    public FolderImpl(FolderStorageImpl folderStorage, String name, NavigatorCategory category, Folder parent, XMaterial material, String permission, List<UUID> worlds) {
+    public FolderImpl(FolderStorageImpl folderStorage, String name, long creation, NavigatorCategory category, Folder parent, XMaterial material, String permission, List<UUID> worlds) {
         this.folderStorage = folderStorage;
         this.name = name;
+        this.creation = creation;
         this.category = category;
         this.parent = parent;
         this.worlds = worlds;
@@ -154,6 +156,11 @@ public class FolderImpl implements Folder {
         return Messages.getString("folder_item_title", player,
                 new AbstractMap.SimpleEntry<>("%folder%", name)
         );
+    }
+
+    @Override
+    public long getCreation() {
+        return creation;
     }
 
     @Override

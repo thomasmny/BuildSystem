@@ -48,6 +48,13 @@ public interface Displayable {
     String getDisplayName(Player player);
 
     /**
+     * Gets the creation timestamp of the displayable.
+     *
+     * @return The number of milliseconds that have passed since {@code January 1, 1970 UTC}, until the displayable was created.
+     */
+    long getCreation();
+
+    /**
      * Gets the material to display this item with.
      *
      * @return The material

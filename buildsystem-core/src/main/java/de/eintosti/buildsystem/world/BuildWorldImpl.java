@@ -62,7 +62,7 @@ public final class BuildWorldImpl implements BuildWorld {
     private final WorldDataImpl worldData;
     private final BuildersImpl builders;
     private final CustomGenerator customGenerator;
-    private final long creationDate;
+    private final long creation;
 
     private final WorldLoaderImpl worldLoader;
     private final WorldUnloaderImpl worldUnloader;
@@ -71,7 +71,7 @@ public final class BuildWorldImpl implements BuildWorld {
             String name,
             Builder creator,
             BuildWorldType worldType,
-            long creationDate,
+            long creation,
             boolean privateWorld,
             CustomGenerator customGenerator
     ) {
@@ -87,7 +87,7 @@ public final class BuildWorldImpl implements BuildWorld {
                 ),
                 creator,
                 new ArrayList<>(),
-                creationDate,
+                creation,
                 customGenerator
         );
     }
@@ -99,7 +99,7 @@ public final class BuildWorldImpl implements BuildWorld {
             WorldDataImpl worldData,
             Builder creator,
             List<Builder> builders,
-            long creationDate,
+            long creation,
             CustomGenerator customGenerator
     ) {
         this.uuid = uuid;
@@ -107,7 +107,7 @@ public final class BuildWorldImpl implements BuildWorld {
         this.worldType = worldType;
         this.worldData = worldData;
         this.builders = new BuildersImpl(creator, builders);
-        this.creationDate = creationDate;
+        this.creation = creation;
         this.customGenerator = customGenerator;
 
         this.worldLoader = WorldLoaderImpl.of(this);
@@ -166,7 +166,7 @@ public final class BuildWorldImpl implements BuildWorld {
                 new AbstractMap.SimpleEntry<>("%project%", worldData.project().get()),
                 new AbstractMap.SimpleEntry<>("%permission%", worldData.permission().get()),
                 new AbstractMap.SimpleEntry<>("%creator%", builders.hasCreator() ? builders.getCreator().getName() : "-"),
-                new AbstractMap.SimpleEntry<>("%creation%", Messages.formatDate(getCreationDate())),
+                new AbstractMap.SimpleEntry<>("%creation%", Messages.formatDate(getCreation())),
                 new AbstractMap.SimpleEntry<>("%lastedited%", Messages.formatDate(worldData.lastEdited().get())),
                 new AbstractMap.SimpleEntry<>("%lastloaded%", Messages.formatDate(worldData.lastLoaded().get())),
                 new AbstractMap.SimpleEntry<>("%lastunloaded%", Messages.formatDate(worldData.lastUnloaded().get()))
@@ -232,8 +232,8 @@ public final class BuildWorldImpl implements BuildWorld {
     }
 
     @Override
-    public long getCreationDate() {
-        return creationDate;
+    public long getCreation() {
+        return creation;
     }
 
     @Override

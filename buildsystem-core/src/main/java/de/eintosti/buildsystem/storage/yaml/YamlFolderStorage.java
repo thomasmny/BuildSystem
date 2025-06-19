@@ -92,6 +92,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
     public @NotNull Map<String, Object> serializeFolder(Folder folder) {
         Map<String, Object> serializedFolder = new HashMap<>();
 
+        serializedFolder.put("creation", folder.getCreation());
         serializedFolder.put("category", folder.getCategory().name());
         serializedFolder.put("parent", folder.hasParent() ? folder.getParent().getName() : null);
         serializedFolder.put("material", folder.getIcon().name());
@@ -138,6 +139,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
     private Folder loadFolder(String folderName) {
         final String path = FOLDERS_KEY + "." + folderName;
 
+        long creation = config.getLong(path + ".creation", System.currentTimeMillis());
         NavigatorCategory category = NavigatorCategory.valueOf(config.getString(path + ".category"));
         XMaterial defaultMaterial = XMaterial.CHEST;
         XMaterial material = XMaterial.matchXMaterial(config.getString(path + ".material", defaultMaterial.name())).orElse(defaultMaterial);
@@ -147,6 +149,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
         return new FolderImpl(
                 this,
                 folderName,
+                creation,
                 category,
                 null, // Parent will be set in second pass
                 material,

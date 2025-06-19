@@ -112,7 +112,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
         }
         world.put("type", buildWorld.getType().name());
         world.put("data", serializeWorldData(buildWorld.getData()));
-        world.put("date", buildWorld.getCreationDate());
+        world.put("date", buildWorld.getCreation());
         world.put("builders", serializeBuilders(builders.getAllBuilders()));
         if (buildWorld.getCustomGenerator() != null) {
             world.put("chunk-generator", buildWorld.getCustomGenerator().getName());

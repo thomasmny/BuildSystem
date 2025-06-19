@@ -142,9 +142,9 @@ public interface BuildWorldCreator {
     /**
      * Generates the underlying Bukkit {@link World} and applies post-generation settings.
      *
-     * @param buildWorld   The build world to generate.
-     * @param checkVersion If true, verify that the world's data version is compatible.
-     * @return The generated {@link World}, or null if generation failed.
+     * @param buildWorld   The build world to generate
+     * @param checkVersion If true, verify that the world's data version is compatible
+     * @return The generated {@link World}, or {@code null} if generation failed.
      */
     @Nullable
     World generateBukkitWorld(BuildWorld buildWorld, boolean checkVersion);

@@ -207,6 +207,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
         List<Displayable> displayables = new ArrayList<>();
         displayables.addAll(folders);
         displayables.addAll(standaloneWorlds);
+        displayables.sort(createDisplayOrderComparator(worldDisplay.getWorldSort()));
         return displayables;
     }
 
@@ -241,7 +242,6 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
         return buildWorlds.stream()
                 .filter(this::isWorldValidForDisplay)
                 .filter(worldDisplay.getWorldFilter().apply())
-                .sorted(createDisplayOrderComparator(worldDisplay.getWorldSort()))
                 .collect(Collectors.toList());
     }
 
@@ -269,37 +269,62 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
     }
 
     /**
-     * Creates a comparator for sorting {@link BuildWorld}s based on the specified {@link WorldSort} order.
+     * Creates a comparator for sorting {@link Displayable}s based on the specified {@link WorldSort} order.
      *
      * @param worldSort The desired sorting order.
      * @return The comparator
      */
-    private @NotNull Comparator<BuildWorld> createDisplayOrderComparator(@NotNull WorldSort worldSort) {
-        Comparator<BuildWorld> comparator;
+    @NotNull
+    protected Comparator<Displayable> createDisplayOrderComparator(@NotNull WorldSort worldSort) {
+        Comparator<Displayable> comparator;
         switch (worldSort) {
             case OLDEST_FIRST:
-                comparator = Comparator.comparingLong(BuildWorld::getCreationDate);
+                comparator = Comparator.comparingLong(Displayable::getCreation);
                 break;
             case NEWEST_FIRST:
-                comparator = Comparator.comparingLong(BuildWorld::getCreationDate).reversed();
+                comparator = Comparator.comparingLong(Displayable::getCreation).reversed();
                 break;
             case PROJECT_A_TO_Z:
-                comparator = Comparator.comparing((BuildWorld buildWorld) -> buildWorld.getData().project().get().toLowerCase(Locale.ROOT));
+                comparator = Comparator.comparing((Displayable displayable) -> {
+                    if (displayable instanceof BuildWorld) {
+                        return ((BuildWorld) displayable).getData().project().get().toLowerCase(Locale.ROOT);
+                    } else {
+                        return "";
+                    }
+                });
                 break;
             case PROJECT_Z_TO_A:
-                comparator = Comparator.comparing((BuildWorld buildWorld) -> buildWorld.getData().project().get().toLowerCase(Locale.ROOT)).reversed();
+                comparator = Comparator.comparing((Displayable displayable) -> {
+                    if (displayable instanceof BuildWorld) {
+                        return ((BuildWorld) displayable).getData().project().get().toLowerCase(Locale.ROOT);
+                    } else {
+                        return "";
+                    }
+                }).reversed();
                 break;
             case STATUS_NOT_STARTED:
-                comparator = Comparator.comparingInt((BuildWorld buildWorld) -> buildWorld.getData().status().get().getStage());
+                comparator = Comparator.comparingInt((Displayable displayable) -> {
+                    if (displayable instanceof BuildWorld) {
+                        return ((BuildWorld) displayable).getData().status().get().getStage();
+                    } else {
+                        return BuildWorldStatus.FINISHED.getStage();
+                    }
+                });
                 break;
             case STATUS_FINISHED:
-                comparator = Comparator.comparingInt((BuildWorld buildWorld) -> buildWorld.getData().status().get().getStage()).reversed();
+                comparator = Comparator.comparingInt((Displayable displayable) -> {
+                    if (displayable instanceof BuildWorld) {
+                        return ((BuildWorld) displayable).getData().status().get().getStage();
+                    } else {
+                        return BuildWorldStatus.FINISHED.getStage();
+                    }
+                }).reversed();
                 break;
             case NAME_Z_TO_A:
-                comparator = Comparator.comparing((BuildWorld buildWorld) -> buildWorld.getName().toLowerCase(Locale.ROOT)).reversed();
+                comparator = Comparator.comparing((Displayable displayable) -> displayable.getName().toLowerCase(Locale.ROOT)).reversed();
                 break;
             default: // NAME_A_TO_Z
-                comparator = Comparator.comparing((BuildWorld buildWorld) -> buildWorld.getName().toLowerCase(Locale.ROOT));
+                comparator = Comparator.comparing((Displayable displayable) -> displayable.getName().toLowerCase(Locale.ROOT));
                 break;
         }
         return comparator;

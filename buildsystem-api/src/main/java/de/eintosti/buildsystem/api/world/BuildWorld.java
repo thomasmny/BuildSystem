@@ -78,13 +78,6 @@ public interface BuildWorld extends Displayable {
     WorldData getData();
 
     /**
-     * Gets the creation date of the world.
-     *
-     * @return The number of milliseconds that have passed since {@code January 1, 1970 UTC}, until the world was created.
-     */
-    long getCreationDate();
-
-    /**
      * Gets the custom chunk generator used to generate the world.
      *
      * @return The custom chunk generator used to generate the world.
