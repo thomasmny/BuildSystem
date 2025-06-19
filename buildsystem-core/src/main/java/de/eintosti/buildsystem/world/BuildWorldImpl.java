@@ -30,6 +30,7 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.util.WorldPermissions;
 import de.eintosti.buildsystem.api.world.util.WorldTeleporter;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.world.builder.BuildersImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.util.WorldLoaderImpl;
@@ -45,6 +46,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
@@ -201,6 +203,15 @@ public final class BuildWorldImpl implements BuildWorld {
         }
 
         return lore;
+    }
+
+    @Override
+    public void addToInventory(Inventory inventory, int slot, Player player) {
+        if (getIcon() == XMaterial.PLAYER_HEAD) {
+            InventoryUtils.addWorldItem(inventory, slot, this, getDisplayName(player), getLore(player));
+            return;
+        }
+        BuildWorld.super.addToInventory(inventory, slot, player);
     }
 
     @Override

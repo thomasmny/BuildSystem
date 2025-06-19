@@ -172,7 +172,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
                 if (currentSlot > LAST_WORLD_SLOT) {
                     break;
                 }
-                currentPage.setItem(currentSlot++, this.cachedDisplayables.get(i).asItemStack(player));
+                this.cachedDisplayables.get(i).addToInventory(currentPage, currentSlot++, player);
             }
         }
     }

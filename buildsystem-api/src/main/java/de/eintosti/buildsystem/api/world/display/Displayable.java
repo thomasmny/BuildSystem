@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.api.world.display;
 import com.cryptomorin.xseries.XMaterial;
 import java.util.List;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -83,4 +84,15 @@ public interface Displayable {
 
         return itemStack;
     }
-} 
+
+    /**
+     * Adds this displayable to an {@link Inventory} at the given slot.
+     *
+     * @param inventory The inventory to add the item to
+     * @param slot      The slot in the inventory to add the item
+     * @param player    The player viewing the inventory
+     */
+    default void addToInventory(Inventory inventory, int slot, Player player) {
+        inventory.setItem(slot, asItemStack(player));
+    }
+}
