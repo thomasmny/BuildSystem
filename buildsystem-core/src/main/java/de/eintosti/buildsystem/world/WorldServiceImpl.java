@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.api.world.WorldService;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -84,7 +85,7 @@ public class WorldServiceImpl implements WorldService {
         return folderStorage;
     }
 
-    public void startWorldNameInput(Player player, BuildWorldType worldType, @Nullable String template, boolean privateWorld) {
+    public void startWorldNameInput(Player player, BuildWorldType worldType, @Nullable String template, boolean privateWorld, @Nullable Folder folder) {
         player.closeInventory();
         new PlayerChatInput(plugin, player, "enter_world_name", input -> {
             if (StringCleaner.hasInvalidNameCharacters(input)) {
@@ -98,14 +99,14 @@ public class WorldServiceImpl implements WorldService {
             }
 
             if (worldType == BuildWorldType.CUSTOM) {
-                startCustomGeneratorInput(player, worldName, template, privateWorld);
+                startCustomGeneratorInput(player, worldName, template, privateWorld, folder);
             } else {
-                createWorld(player, worldName, worldType, null, template, privateWorld);
+                createWorld(player, worldName, worldType, null, template, privateWorld, folder);
             }
         });
     }
 
-    private void startCustomGeneratorInput(Player player, String worldName, String template, boolean privateWorld) {
+    private void startCustomGeneratorInput(Player player, String worldName, String template, boolean privateWorld, Folder folder) {
         new PlayerChatInput(plugin, player, "enter_generator_name", input -> {
             String[] generatorInfo = input.split(":");
             if (generatorInfo.length == 1) {
@@ -121,16 +122,17 @@ public class WorldServiceImpl implements WorldService {
 
             CustomGeneratorImpl customGenerator = new CustomGeneratorImpl(generatorInfo[0], chunkGenerator);
             plugin.getLogger().info("Using custom world generator: " + customGenerator.getName());
-            createWorld(player, worldName, BuildWorldType.CUSTOM, customGenerator, template, privateWorld);
+            createWorld(player, worldName, BuildWorldType.CUSTOM, customGenerator, template, privateWorld, folder);
         });
     }
 
-    private void createWorld(Player player, String worldName, BuildWorldType worldType, CustomGeneratorImpl customGenerator, String template, boolean privateWorld) {
+    private void createWorld(Player player, String worldName, BuildWorldType worldType, CustomGeneratorImpl customGenerator, String template, boolean privateWorld, Folder folder) {
         new BuildWorldCreatorImpl(plugin, worldName)
                 .setType(worldType)
                 .setTemplate(template)
                 .setPrivate(privateWorld)
                 .setCustomGenerator(customGenerator)
+                .setFolder(folder)
                 .createWorld(player);
     }
 
@@ -170,7 +172,7 @@ public class WorldServiceImpl implements WorldService {
                 .setPrivate(false)
                 .setCreationDate(FileUtils.getDirectoryCreation(new File(Bukkit.getWorldContainer(), worldName)));
 
-        if (worldCreator.isHigherVersion()) {
+        if (worldCreator.isDataVersionTooHigh()) {
             String key = single ? "import" : "importall";
             Messages.sendMessage(player, "worlds_" + key + "_newer_version",
                     new AbstractMap.SimpleEntry<>("%world%", worldName)
@@ -334,7 +336,7 @@ public class WorldServiceImpl implements WorldService {
         this.worldStorage.addBuildWorld(buildWorld);
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> this.worldStorage.save(buildWorld));
 
-        World newWorld = new BuildWorldCreatorImpl(plugin, buildWorld).generateBukkitWorld(false);
+        World newWorld = new BuildWorldCreatorImpl(plugin, sanitizedNewName).generateBukkitWorld(buildWorld, false);
         Location spawnLocation = oldWorld.getSpawnLocation();
         spawnLocation.setWorld(newWorld);
 

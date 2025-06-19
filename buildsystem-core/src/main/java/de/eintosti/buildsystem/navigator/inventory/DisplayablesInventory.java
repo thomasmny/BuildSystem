@@ -359,7 +359,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
             case 48: // Create world
                 if (clickedItem.getType() == XMaterial.PLAYER_HEAD.get()) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
-                    plugin.getCreateInventory().openInventory(player, CreateInventory.Page.PREDEFINED, requiredVisibility);
+                    beginWorldCreation();
                     return;
                 }
                 break;
@@ -411,19 +411,23 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
         }
     }
 
+    protected void beginWorldCreation() {
+        this.plugin.getCreateInventory().openInventory(this.player, CreateInventory.Page.PREDEFINED, this.requiredVisibility, null);
+    }
+
     protected Folder createFolder(String folderName) {
-        return folderStorage.createFolder(folderName, category);
+        return this.folderStorage.createFolder(folderName, this.category);
     }
 
     /**
      * Sends the player back to the previous inventory.
      */
     protected void returnToPreviousInventory() {
-        plugin.getNavigatorInventory().openInventory(player);
+        this.plugin.getNavigatorInventory().openInventory(this.player);
     }
 
     /**
-     * Handles clicks on the filter item, managing mode changes and text input.
+     * Handles clicks on the filter item, managing mode changes, and text input.
      *
      * @param event        The InventoryClickEvent.
      * @param worldDisplay The player's WorldDisplay settings.

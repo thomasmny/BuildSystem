@@ -73,8 +73,9 @@ public class WorldLoaderImpl implements WorldLoader {
             return;
         }
 
-        plugin.getLogger().info("*** Loading world \"" + buildWorld.getName() + "\" ***");
-        World world = new BuildWorldCreatorImpl(plugin, buildWorld).generateBukkitWorld();
+        String worldName = buildWorld.getName();
+        plugin.getLogger().info("*** Loading world \"" + worldName + "\" ***");
+        World world = new BuildWorldCreatorImpl(plugin, worldName).generateBukkitWorld(buildWorld);
         if (world == null) {
             return;
         }

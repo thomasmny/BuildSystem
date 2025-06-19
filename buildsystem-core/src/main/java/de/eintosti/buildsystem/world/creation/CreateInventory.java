@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.PaginatedInventory;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -40,6 +41,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 public class CreateInventory extends PaginatedInventory implements Listener {
 
@@ -50,6 +52,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
 
     private int numTemplates = 0;
     private Visibility visibility;
+    private Folder folder;
     private boolean createPrivateWorld;
 
     public CreateInventory(BuildSystemPlugin plugin) {
@@ -85,9 +88,10 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         return inventory;
     }
 
-    public void openInventory(Player player, Page page, Visibility visibility) {
+    public void openInventory(Player player, Page page, Visibility visibility, @Nullable Folder folder) {
         this.visibility = visibility;
         this.createPrivateWorld = visibility == Visibility.PRIVATE;
+        this.folder = folder;
 
         if (page == Page.TEMPLATES) {
             addTemplates(player, page);
@@ -116,8 +120,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
     }
 
     private void addTemplates(Player player, Page page) {
-        File[] templateFiles = new File(plugin.getDataFolder() + File.separator + "templates")
-                .listFiles(new TemplateFilter());
+        File[] templateFiles = new File(plugin.getDataFolder() + File.separator + "templates").listFiles(new TemplateFilter());
 
         int columnTemplate = 29, maxColumnTemplate = 33;
         int fileLength = templateFiles != null ? templateFiles.length : 0;
@@ -200,7 +203,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         }
 
         if (newPage != null) {
-            openInventory(player, newPage, this.visibility);
+            openInventory(player, newPage, this.visibility, this.folder);
             XSound.ENTITY_CHICKEN_EGG.play(player);
             return;
         }
@@ -239,14 +242,14 @@ public class CreateInventory extends PaginatedInventory implements Listener {
                     return;
                 }
 
-                worldService.startWorldNameInput(player, worldType, null, createPrivateWorld);
+                worldService.startWorldNameInput(player, worldType, null, this.createPrivateWorld, this.folder);
                 XSound.ENTITY_CHICKEN_EGG.play(player);
                 break;
             }
 
             case GENERATOR: {
                 if (slot == 31) {
-                    worldService.startWorldNameInput(player, BuildWorldType.CUSTOM, null, createPrivateWorld);
+                    worldService.startWorldNameInput(player, BuildWorldType.CUSTOM, null, this.createPrivateWorld, this.folder);
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                 }
                 break;
@@ -261,7 +264,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
                 XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
                 switch (xMaterial) {
                     case FILLED_MAP:
-                        worldService.startWorldNameInput(player, BuildWorldType.TEMPLATE, itemStack.getItemMeta().getDisplayName(), createPrivateWorld);
+                        this.worldService.startWorldNameInput(player, BuildWorldType.TEMPLATE, itemStack.getItemMeta().getDisplayName(), this.createPrivateWorld, this.folder);
                         break;
                     case PLAYER_HEAD:
                         if (slot == 38 && !decrementInv(player, numTemplates, MAX_TEMPLATES)) {
@@ -269,7 +272,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
                         } else if (slot == 42 && !incrementInv(player, numTemplates, MAX_TEMPLATES)) {
                             return;
                         }
-                        openInventory(player, CreateInventory.Page.TEMPLATES, visibility);
+                        openInventory(player, CreateInventory.Page.TEMPLATES, this.visibility, this.folder);
                         break;
                     default:
                         return;

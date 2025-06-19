@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.world.creation.CreateInventory;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -97,6 +98,11 @@ public class FolderContentInventory extends DisplayablesInventory {
                 .map(this.worldStorage::getBuildWorld)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    protected void beginWorldCreation() {
+        plugin.getCreateInventory().openInventory(this.player, CreateInventory.Page.PREDEFINED, this.requiredVisibility, this.folder);
     }
 
     @Override

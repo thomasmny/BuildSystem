@@ -443,7 +443,7 @@ public class Messages {
         addSpacer(sb, "# World Navigator");
         setMessage(sb, "world_navigator_title", "&3» &8World Navigator");
         setMessage(sb, "world_navigator_no_worlds", "&c&nNo worlds available");
-        setMessage(sb, "world_navigator_create_world", "&bCreate a public World");
+        setMessage(sb, "world_navigator_create_world", "&bCreate a Public World");
         setMessage(sb, "world_navigator_create_folder", "&bCreate a Folder");
         setMessage(sb, "world_item_title", "&3&l%world%");
         setMessage(sb, "world_item_lore_normal", Arrays.asList(
@@ -505,7 +505,7 @@ public class Messages {
         addSpacer(sb, "# Private Worlds");
         setMessage(sb, "private_title", "&3» &8Private Worlds");
         setMessage(sb, "private_no_worlds", "&c&nNo worlds available");
-        setMessage(sb, "private_create_world", "&bCreate a private World");
+        setMessage(sb, "private_create_world", "&bCreate a Private World");
         addSpacer(sb, "");
         addSpacer(sb, "# Setup");
         setMessage(sb, "setup_title", "&3» &8Setup");
