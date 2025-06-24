@@ -133,9 +133,9 @@ public class WorldManipulateListener implements Listener {
     }
 
     private void denyPlayerInteraction(Event event) {
-        if (event instanceof PlayerInteractEvent) {
-            ((PlayerInteractEvent) event).setUseItemInHand(Event.Result.DENY);
-            ((PlayerInteractEvent) event).setUseInteractedBlock(Event.Result.DENY);
+        if (event instanceof PlayerInteractEvent interactEvent) {
+            interactEvent.setUseItemInHand(Event.Result.DENY);
+            interactEvent.setUseInteractedBlock(Event.Result.DENY);
         }
     }
 

@@ -22,7 +22,7 @@ import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import java.util.AbstractMap;
+import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -32,10 +32,7 @@ import org.bukkit.inventory.Inventory;
 
 public class SpeedInventory implements Listener {
 
-    private final BuildSystemPlugin plugin;
-
     public SpeedInventory(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -101,10 +98,10 @@ public class SpeedInventory implements Listener {
     private void setSpeed(Player player, float speed, int num) {
         if (player.isFlying()) {
             player.setFlySpeed(speed - 0.1f);
-            Messages.sendMessage(player, "speed_set_flying", new AbstractMap.SimpleEntry<>("%speed%", num));
+            Messages.sendMessage(player, "speed_set_flying", Map.entry("%speed%", num));
         } else {
             player.setWalkSpeed(speed);
-            Messages.sendMessage(player, "speed_set_walking", new AbstractMap.SimpleEntry<>("%speed%", num));
+            Messages.sendMessage(player, "speed_set_walking", Map.entry("%speed%", num));
         }
     }
 }

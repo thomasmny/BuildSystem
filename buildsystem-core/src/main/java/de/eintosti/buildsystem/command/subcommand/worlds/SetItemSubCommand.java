@@ -25,7 +25,7 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
-import java.util.AbstractMap;
+import java.util.Map;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -65,7 +65,7 @@ public class SetItemSubCommand implements SubCommand {
 
         buildWorld.getData().material().set(XMaterial.matchXMaterial(itemStack));
         Messages.sendMessage(player, "worlds_setitem_set",
-                new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName())
+                Map.entry("%world%", buildWorld.getName())
         );
     }
 

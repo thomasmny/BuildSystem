@@ -1,4 +1,3 @@
-import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.compile.JavaCompile
@@ -12,7 +11,6 @@ fun Project.applyCommonConfiguration() {
     version = rootProject.version
 
     repositories {
-        mavenLocal()
         mavenCentral()
         maven {
             name = "Spigot"
@@ -26,13 +24,11 @@ fun Project.applyCommonConfiguration() {
             name = "OSS Sonatype Snapshots"
             url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
         }
+        mavenLocal()
     }
 
     plugins.withId("java") {
         the<JavaPluginExtension>().apply {
-            sourceCompatibility = JavaVersion.VERSION_1_8
-            targetCompatibility = JavaVersion.VERSION_1_8
-
             toolchain {
                 languageVersion.set(JavaLanguageVersion.of(21))
             }

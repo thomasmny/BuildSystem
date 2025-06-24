@@ -35,7 +35,7 @@ import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.world.SpawnManager;
 import io.papermc.lib.PaperLib;
-import java.util.AbstractMap;
+import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -72,7 +72,7 @@ public class PlayerJoinListener implements Listener {
     public void sendPlayerJoinMessage(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         String message = plugin.getConfigValues().isJoinQuitMessages()
-                ? Messages.getString("player_join", player, new AbstractMap.SimpleEntry<>("%player%", player.getName()))
+                ? Messages.getString("player_join", player, Map.entry("%player%", player.getName()))
                 : null;
         event.setJoinMessage(message);
     }
@@ -94,7 +94,7 @@ public class PlayerJoinListener implements Listener {
         if (buildWorld != null) {
             WorldData worldData = buildWorld.getData();
             if (!worldData.physics().get() && player.hasPermission("buildsystem.physics.message")) {
-                Messages.sendMessage(player, "physics_deactivated_in_world", new AbstractMap.SimpleEntry<>("%world%", worldName));
+                Messages.sendMessage(player, "physics_deactivated_in_world", Map.entry("%world%", worldName));
             }
 
             if (configValues.isArchiveVanish() && worldData.status().get() == BuildWorldStatus.ARCHIVE) {
@@ -130,14 +130,14 @@ public class PlayerJoinListener implements Listener {
             return;
         }
 
-        BuildWorld buildWorld = worldStorage.getBuildWorld(logoutLocation.getWorldName());
+        BuildWorld buildWorld = worldStorage.getBuildWorld(logoutLocation.worldName());
         if (buildWorld == null) {
             return;
         }
 
         int delay = buildWorld.isLoaded() ? 0 : 20;
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            Location location = logoutLocation.getLocation();
+            Location location = logoutLocation.location();
             if (location != null) {
                 PaperLib.teleportAsync(player, location);
             }

@@ -23,7 +23,7 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.CachedValues;
 import de.eintosti.buildsystem.api.player.PlayerService;
-import java.util.AbstractMap;
+import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -46,12 +46,11 @@ public class BuildCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             plugin.getLogger().warning(Messages.getString("sender_not_player", null));
             return true;
         }
 
-        Player player = (Player) sender;
         if (!player.hasPermission("buildsystem.build")) {
             Messages.sendPermissionError(player);
             return true;
@@ -102,8 +101,8 @@ public class BuildCommand implements CommandExecutor {
                 Messages.sendMessage(target, "build_deactivated_self");
             } else {
                 XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(sender);
-                Messages.sendMessage(sender, "build_deactivated_other_sender", new AbstractMap.SimpleEntry<>("%target%", target.getName()));
-                Messages.sendMessage(target, "build_deactivated_other_target", new AbstractMap.SimpleEntry<>("%sender%", sender.getName()));
+                Messages.sendMessage(sender, "build_deactivated_other_sender", Map.entry("%target%", target.getName()));
+                Messages.sendMessage(target, "build_deactivated_other_target", Map.entry("%sender%", sender.getName()));
             }
         } else {
             playerService.getBuildModePlayers().add(targetUuid);
@@ -116,8 +115,8 @@ public class BuildCommand implements CommandExecutor {
                 Messages.sendMessage(target, "build_activated_self");
             } else {
                 XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(sender);
-                Messages.sendMessage(sender, "build_activated_other_sender", new AbstractMap.SimpleEntry<>("%target%", target.getName()));
-                Messages.sendMessage(target, "build_activated_other_target", new AbstractMap.SimpleEntry<>("%sender%", sender.getName()));
+                Messages.sendMessage(sender, "build_activated_other_sender", Map.entry("%target%", target.getName()));
+                Messages.sendMessage(target, "build_activated_other_target", Map.entry("%sender%", sender.getName()));
             }
         }
     }

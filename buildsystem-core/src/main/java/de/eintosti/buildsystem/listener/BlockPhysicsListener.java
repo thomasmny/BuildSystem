@@ -60,8 +60,7 @@ public class BlockPhysicsListener implements Listener {
             return;
         }
 
-        XMaterial xMaterial = XMaterial.matchXMaterial(block.getType());
-        switch (xMaterial) {
+        switch (XMaterial.matchXMaterial(block.getType())) {
             case REDSTONE_BLOCK:
                 for (BlockFace blockFace : DirectionUtil.BLOCK_SIDES) {
                     if (isCustomRedstoneLamp(block.getRelative(blockFace))) {
