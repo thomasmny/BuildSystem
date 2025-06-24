@@ -19,8 +19,8 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import java.util.AbstractMap;
 import java.util.Locale;
+import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
@@ -40,12 +40,11 @@ public class GamemodeCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             plugin.getLogger().warning(Messages.getString("sender_not_player", null));
             return true;
         }
 
-        Player player = (Player) sender;
         if (args.length == 0) {
             sendUsageMessage(player);
             return true;
@@ -105,7 +104,7 @@ public class GamemodeCommand implements CommandExecutor {
         }
 
         player.setGameMode(gameMode);
-        Messages.sendMessage(player, "gamemode_set_self", new AbstractMap.SimpleEntry<>("%gamemode%", gameModeName));
+        Messages.sendMessage(player, "gamemode_set_self", Map.entry("%gamemode%", gameModeName));
     }
 
     private void setTargetGamemode(Player player, String[] args, GameMode gameMode, String gameModeName) {
@@ -121,10 +120,10 @@ public class GamemodeCommand implements CommandExecutor {
         }
 
         target.setGameMode(gameMode);
-        Messages.sendMessage(target, "gamemode_set_self", new AbstractMap.SimpleEntry<>("%gamemode%", gameModeName));
+        Messages.sendMessage(target, "gamemode_set_self", Map.entry("%gamemode%", gameModeName));
         Messages.sendMessage(player, "gamemode_set_other",
-                new AbstractMap.SimpleEntry<>("%target%", target.getName()),
-                new AbstractMap.SimpleEntry<>("%gamemode%", gameModeName)
+                Map.entry("%target%", target.getName()),
+                Map.entry("%gamemode%", gameModeName)
         );
     }
 }

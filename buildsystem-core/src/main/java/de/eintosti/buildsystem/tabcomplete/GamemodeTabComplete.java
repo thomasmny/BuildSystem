@@ -39,44 +39,25 @@ public class GamemodeTabComplete extends ArgumentSorter implements TabCompleter 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         ArrayList<String> arrayList = new ArrayList<>();
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             return arrayList;
         }
 
-        Player player = (Player) sender;
         if (args.length == 1) {
             Arrays.stream(GameMode.values())
                     .map(gameMode -> gameMode.name().toLowerCase(Locale.ROOT))
                     .filter(gameModeName -> player.hasPermission(String.format("buildsystem.gamemode.%s", gameModeName)))
                     .forEach(gameModeName -> addArgument(args[0], gameModeName, arrayList));
         } else if (args.length == 2) {
-            String gameModeName;
-            switch (args[0].toLowerCase(Locale.ROOT)) {
-                case "survival":
-                case "s":
-                case "0":
-                    gameModeName = GameMode.SURVIVAL.name().toLowerCase(Locale.ROOT);
-                    break;
-                case "creative":
-                case "c":
-                case "1":
-                    gameModeName = GameMode.CREATIVE.name().toLowerCase(Locale.ROOT);
-                    break;
-                case "adventure":
-                case "a":
-                case "2":
-                    gameModeName = GameMode.ADVENTURE.name().toLowerCase(Locale.ROOT);
-                    break;
-                case "spectator":
-                case "sp":
-                case "3":
-                    gameModeName = GameMode.SPECTATOR.name().toLowerCase(Locale.ROOT);
-                    break;
-                default:
-                    return arrayList;
-            }
+            String gameModeName = switch (args[0].toLowerCase(Locale.ROOT)) {
+                case "survival", "s", "0" -> GameMode.SURVIVAL.name().toLowerCase(Locale.ROOT);
+                case "creative", "c", "1" -> GameMode.CREATIVE.name().toLowerCase(Locale.ROOT);
+                case "adventure", "a", "2" -> GameMode.ADVENTURE.name().toLowerCase(Locale.ROOT);
+                case "spectator", "sp", "3" -> GameMode.SPECTATOR.name().toLowerCase(Locale.ROOT);
+                default -> null;
+            };
 
-            if (player.hasPermission(String.format("buildsystem.gamemode.%s.other", gameModeName))) {
+            if (gameModeName != null && player.hasPermission(String.format("buildsystem.gamemode.%s.other", gameModeName))) {
                 Bukkit.getOnlinePlayers().forEach(pl -> addArgument(args[1], pl.getName(), arrayList));
             }
         }

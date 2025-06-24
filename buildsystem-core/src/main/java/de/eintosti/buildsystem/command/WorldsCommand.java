@@ -60,11 +60,10 @@ public class WorldsCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             plugin.getLogger().warning(Messages.getString("sender_not_player", null));
             return true;
         }
-        Player player = (Player) sender;
 
         if (args.length == 0) {
             if (!player.hasPermission("buildsystem.navigator")) {
@@ -83,100 +82,33 @@ public class WorldsCommand implements CommandExecutor {
             return true;
         }
 
-        // Most command use the structure /worlds <argument> <world> <...> which is why we assume that args[1] is the world name
+        // Most commands use the structure /worlds <argument> <world> <...> which is why we assume that args[1] is the world name
         // Make sure to change if this is not the case for any specific command
         String worldName = args.length >= 2 ? args[1] : player.getWorld().getName();
 
-        SubCommand subCommand;
-        switch (argument) {
-            case ADD_BUILDER: {
-                subCommand = new AddBuilderSubCommand(plugin, player.getWorld().getName());
-                break;
-            }
-            case BUILDERS: {
-                subCommand = new BuildersSubCommand(plugin, worldName);
-                break;
-            }
-            case DELETE: {
-                subCommand = new DeleteSubCommand(plugin, worldName);
-                break;
-            }
-            case EDIT: {
-                subCommand = new EditSubCommand(plugin, worldName);
-                break;
-            }
-            case FOLDER: {
-                subCommand = new FolderSubCommand(plugin);
-                break;
-            }
-            case HELP: {
-                subCommand = new HelpSubCommand(plugin);
-                break;
-            }
-            case IMPORT_ALL: {
-                subCommand = new ImportAllSubCommand(plugin);
-                break;
-            }
-            case IMPORT: {
-                subCommand = new ImportSubCommand(plugin, worldName);
-                break;
-            }
-            case INFO: {
-                subCommand = new InfoSubCommand(plugin, worldName);
-                break;
-            }
-            case ITEM: {
-                subCommand = new ItemSubCommand(plugin);
-                break;
-            }
-            case REMOVE_BUILDER: {
-                subCommand = new RemoveBuilderSubCommand(plugin, player.getWorld().getName());
-                break;
-            }
-            case REMOVE_SPAWN: {
-                subCommand = new RemoveSpawnSubCommand(plugin);
-                break;
-            }
-            case RENAME: {
-                subCommand = new RenameSubCommand(plugin, worldName);
-                break;
-            }
-            case SET_CREATOR: {
-                subCommand = new SetCreatorSubCommand(plugin, worldName);
-                break;
-            }
-            case SET_ITEM: {
-                subCommand = new SetItemSubCommand(plugin, worldName);
-                break;
-            }
-            case SET_PERMISSION: {
-                subCommand = new SetPermissionSubCommand(plugin, worldName);
-                break;
-            }
-            case SET_PROJECT: {
-                subCommand = new SetProjectSubCommand(plugin, worldName);
-                break;
-            }
-            case SET_SPAWN: {
-                subCommand = new SetSpawnSubCommand(plugin);
-                break;
-            }
-            case SET_STATUS: {
-                subCommand = new SetStatusSubCommand(plugin, worldName);
-                break;
-            }
-            case TP: {
-                subCommand = new TeleportSubCommand(plugin);
-                break;
-            }
-            case UNIMPORT: {
-                subCommand = new UnimportSubCommand(plugin, worldName);
-                break;
-            }
-            default: {
-                throw new IllegalArgumentException("Could not find subcommand: " + argument.getName());
-            }
-        }
+        SubCommand subCommand = switch (argument) {
+            case ADD_BUILDER -> new AddBuilderSubCommand(plugin, player.getWorld().getName());
+            case BUILDERS -> new BuildersSubCommand(plugin, worldName);
+            case DELETE -> new DeleteSubCommand(plugin, worldName);
+            case EDIT -> new EditSubCommand(plugin, worldName);
+            case FOLDER -> new FolderSubCommand(plugin);
+            case HELP -> new HelpSubCommand();
+            case IMPORT_ALL -> new ImportAllSubCommand(plugin);
+            case IMPORT -> new ImportSubCommand(plugin, worldName);
+            case INFO -> new InfoSubCommand(plugin, worldName);
+            case ITEM -> new ItemSubCommand(plugin);
+            case REMOVE_BUILDER -> new RemoveBuilderSubCommand(plugin, player.getWorld().getName());
+            case REMOVE_SPAWN -> new RemoveSpawnSubCommand(plugin);
+            case RENAME -> new RenameSubCommand(plugin, worldName);
+            case SET_CREATOR -> new SetCreatorSubCommand(plugin, worldName);
+            case SET_ITEM -> new SetItemSubCommand(plugin, worldName);
+            case SET_PERMISSION -> new SetPermissionSubCommand(plugin, worldName);
+            case SET_PROJECT -> new SetProjectSubCommand(plugin, worldName);
+            case SET_SPAWN -> new SetSpawnSubCommand(plugin);
+            case SET_STATUS -> new SetStatusSubCommand(plugin, worldName);
+            case TP -> new TeleportSubCommand(plugin);
+            case UNIMPORT -> new UnimportSubCommand(plugin, worldName);
+        };
         subCommand.execute(player, args);
         return true;
     }
