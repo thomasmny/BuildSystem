@@ -19,6 +19,12 @@ package de.eintosti.buildsystem.api.storage;
 
 import java.util.Collection;
 
+/**
+ * A generic interface for storage operations.
+ *
+ * @param <T> The type of objects to be stored
+ * @since 3.0.0
+ */
 public interface Storage<T> {
 
     /**

@@ -137,11 +137,11 @@ public class SettingsInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!InventoryUtils.isValidClick(event, "settings_title")) {
+        Player player = (Player) event.getWhoClicked();
+        if (!InventoryUtils.isValidClick(event, Messages.getString("settings_title", player))) {
             return;
         }
 
-        Player player = (Player) event.getWhoClicked();
         Settings settings = settingsManager.getSettings(player);
 
         switch (event.getSlot()) {

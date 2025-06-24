@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.api.world.builder;
 
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -25,7 +26,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Interface for managing builders in a {@link de.eintosti.buildsystem.api.world.BuildWorld}.
+ * Interface for managing builders in a {@link BuildWorld}.
+ *
+ * @since 3.0.0
  */
 public interface Builders {
 

@@ -18,10 +18,18 @@
 package de.eintosti.buildsystem.api.storage;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import java.util.Collection;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
+/**
+ * Interface for managing the storage of {@link Folder} objects.
+ *
+ * @since 3.0.0
+ */
 public interface FolderStorage extends Storage<Folder> {
 
     /**
@@ -33,18 +41,56 @@ public interface FolderStorage extends Storage<Folder> {
     Collection<Folder> getFolders();
 
     /**
-     * Adds a {@link Folder} and updates the world-to-folder mapping for all worlds contained in the folder.
+     * Gets a {@link Folder} by its name (case-insensitive).
      *
-     * @param folder the folder to add
+     * @param folderName The name of the folder to retrieve
+     * @return The folder if it exists, or {@code null} if it does not
      */
-    void addFolder(Folder folder);
+    @Nullable
+    Folder getFolder(String folderName);
 
     /**
-     * Removes a folder and all of its worlds from the world-to-folder mapping.
+     * Gets a {@link Folder} by its name.
      *
-     * @param folderName the name of the folder to remove
+     * @param folderName    The name of the folder to retrieve
+     * @param caseSensitive Whether to check the name case-sensitive or not
+     * @return The folder if it exists, or {@code null} if it does not
+     */
+    @Nullable
+    Folder getFolder(String folderName, boolean caseSensitive);
+
+    /**
+     * Creates a new {@link Folder} with the given name.
+     *
+     * @param folderName The name folder to create
+     * @param category   The category in which the folder should be displayed
+     * @param creator    The builder who created the folder
+     */
+    Folder createFolder(String folderName, NavigatorCategory category, Builder creator);
+
+    /**
+     * Creates a new nested {@link Folder} with the given name.
+     *
+     * @param folderName The name folder to create
+     * @param category   The category in which the folder should be displayed
+     * @param parent     The parent folder, or {@code null} if this is a top-level folder
+     * @param creator    The builder who created the folder
+     */
+    Folder createFolder(String folderName, NavigatorCategory category, @Nullable Folder parent, Builder creator);
+
+    /**
+     * Removes the {@link Folder} with the given name.
+     *
+     * @param folderName The name of the folder to remove
      */
     void removeFolder(String folderName);
+
+    /**
+     * Removes the given {@link Folder}.
+     *
+     * @param folder The folder to remove
+     */
+    void removeFolder(Folder folder);
 
     /**
      * Checks if a {@link Folder} with the given name (case-insensitive) exists.
@@ -64,26 +110,19 @@ public interface FolderStorage extends Storage<Folder> {
     boolean folderExists(String folderName, boolean caseSensitive);
 
     /**
-     * Adds a {@link BuildWorld} to the specified {@link Folder} and updates the folder and world-to-folder mappings.
-     *
-     * @param worldName  the name of the world to add
-     * @param folderName the name of the folder to add the world to
-     */
-    void addWorldToFolder(String worldName, String folderName);
-
-    /**
-     * Removes a world from the specified {@link Folder} and updates the world-to-folder mapping.
-     *
-     * @param worldName  the name of the world to remove
-     * @param folderName the name of the folder to remove the world from
-     */
-    void removeWorldFromFolder(String worldName, String folderName);
-
-    /**
      * Checks whether the given {@link BuildWorld} is assigned to any {@link Folder}.
      *
-     * @param buildWorld the build world to check
+     * @param buildWorld The world to check
      * @return {@code true} if the world is in any folder; {@code false} otherwise
      */
-    boolean isWorldInAnyFolder(BuildWorld buildWorld);
+    boolean isAssignedToAnyFolder(BuildWorld buildWorld);
+
+    /**
+     * Gets the {@link Folder} that contains the specified {@link BuildWorld}.
+     *
+     * @param buildWorld The world to check
+     * @return The folder containing the world, or {@code null} if the world is not in any folder
+     */
+    @Nullable
+    Folder getAssignedFolder(BuildWorld buildWorld);
 }

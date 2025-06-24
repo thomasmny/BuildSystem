@@ -25,7 +25,7 @@ paperlib = { group = "io.papermc", name = "paperlib", version.ref = "paperlib" }
 luckperms = { group = "net.luckperms", name = "api", version.ref = "luckperms" }
 placeholderapi = { group = "me.clip", name = "placeholderapi", version.ref = "placeholderapi" }
 worldedit = { group = "com.sk89q.worldedit", name = "worldedit-core", version.ref = "worldedit" }
-axiompaper= {group = "maven.modrinth.workaround", name = "axiom-paper-plugin", version.ref="axiompaper"}
+axiompaper = { group = "maven.modrinth.workaround", name = "axiom-paper-plugin", version.ref = "axiompaper" }
 
 # Third Party
 annotations = { group = "org.jetbrains", name = "annotations", version.ref = "annotations" }

@@ -65,7 +65,7 @@ public class TimeCommand implements CommandExecutor {
         switch (label.toLowerCase(Locale.ROOT)) {
             case "day": {
                 if (!permissions.canPerformCommand(player, "buildsystem.day")) {
-                    plugin.sendPermissionMessage(player);
+                    Messages.sendPermissionError(player);
                     return true;
                 }
 
@@ -84,7 +84,7 @@ public class TimeCommand implements CommandExecutor {
 
             case "night": {
                 if (!permissions.canPerformCommand(player, "buildsystem.night")) {
-                    plugin.sendPermissionMessage(player);
+                    Messages.sendPermissionError(player);
                     return true;
                 }
 

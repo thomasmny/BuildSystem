@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;

@@ -79,11 +79,11 @@ public class SetupInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!InventoryUtils.isValidClick(event, "setup_title")) {
+        Player player = (Player) event.getWhoClicked();
+        if (!InventoryUtils.isValidClick(event, Messages.getString("setup_title", player))) {
             return;
         }
 
-        Player player = (Player) event.getWhoClicked();
         InventoryAction action = event.getAction();
         InventoryType type = event.getInventory().getType();
         int slot = event.getRawSlot();

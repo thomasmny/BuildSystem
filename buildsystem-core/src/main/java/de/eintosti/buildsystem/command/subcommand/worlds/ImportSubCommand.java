@@ -26,11 +26,11 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.ArgumentParser;
+import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
 import java.util.AbstractMap;
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.UUID;
 import org.bukkit.Bukkit;
@@ -49,7 +49,7 @@ public class ImportSubCommand implements SubCommand {
     @Override
     public void execute(Player player, String[] args) {
         if (!hasPermission(player)) {
-            plugin.sendPermissionMessage(player);
+            Messages.sendPermissionError(player);
             return;
         }
 
@@ -71,12 +71,7 @@ public class ImportSubCommand implements SubCommand {
             return;
         }
 
-        String invalidChar = Arrays.stream(worldName.split(""))
-                .filter(c ->
-                        c.matches("[^A-Za-z\\d/_-]") || c.matches(plugin.getConfigValues().getInvalidNameCharacters())
-                )
-                .findFirst()
-                .orElse(null);
+        String invalidChar = StringCleaner.firstInvalidChar(worldName);
         if (invalidChar != null) {
             Messages.sendMessage(player, "worlds_import_invalid_character",
                     new AbstractMap.SimpleEntry<>("%world%", worldName),

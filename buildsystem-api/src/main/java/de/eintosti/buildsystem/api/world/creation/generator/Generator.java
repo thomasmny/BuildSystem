@@ -17,6 +17,13 @@
  */
 package de.eintosti.buildsystem.api.world.creation.generator;
 
+import de.eintosti.buildsystem.api.world.BuildWorld;
+
+/**
+ * Different kinds of world generators that can be used for a {@link BuildWorld}.
+ *
+ * @since 3.0.0
+ */
 public enum Generator {
 
     /**
