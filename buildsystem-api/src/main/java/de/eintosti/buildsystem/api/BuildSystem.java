@@ -24,6 +24,8 @@ import de.eintosti.buildsystem.api.world.WorldService;
 
 /**
  * The BuildSystem API.
+ *
+ * @since 3.0.0
  */
 public interface BuildSystem {
 

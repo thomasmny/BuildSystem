@@ -21,6 +21,9 @@ import org.bukkit.World.Environment;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * @since 3.0.0
+ */
 public enum BuildWorldType {
 
     /**

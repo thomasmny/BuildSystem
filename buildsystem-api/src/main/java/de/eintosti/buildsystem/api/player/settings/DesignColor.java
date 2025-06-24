@@ -19,6 +19,8 @@ package de.eintosti.buildsystem.api.player.settings;
 
 /**
  * A {@link DesignColor} is the color which glass panes are tinted to in different menus.
+ *
+ * @since 3.0.0
  */
 public enum DesignColor {
     RED,

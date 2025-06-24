@@ -22,6 +22,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.ApiStatus.Internal;
 
+/**
+ * Interface for managing cached values of a player.
+ *
+ * @since 3.0.0
+ */
 @Internal
 public interface CachedValues {
 

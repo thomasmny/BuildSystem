@@ -24,7 +24,6 @@ import de.eintosti.buildsystem.api.event.world.BuildWorldLoadEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostLoadEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.util.WorldLoader;
-import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl;
 import java.util.AbstractMap;
 import org.bukkit.Bukkit;
@@ -74,8 +73,9 @@ public class WorldLoaderImpl implements WorldLoader {
             return;
         }
 
-        plugin.getLogger().info("*** Loading world \"" + buildWorld.getName() + "\" ***");
-        World world = new BuildWorldCreatorImpl(plugin, buildWorld).generateBukkitWorld();
+        String worldName = buildWorld.getName();
+        plugin.getLogger().info("*** Loading world \"" + worldName + "\" ***");
+        World world = new BuildWorldCreatorImpl(plugin, worldName).generateBukkitWorld(buildWorld);
         if (world == null) {
             return;
         }

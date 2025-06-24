@@ -19,6 +19,11 @@ package de.eintosti.buildsystem.api.navigator.settings;
 
 import org.jetbrains.annotations.ApiStatus.Internal;
 
+/**
+ * Represents the sorting options for worlds in the navigator.
+ *
+ * @since 3.0.0
+ */
 public enum WorldSort {
 
     /**

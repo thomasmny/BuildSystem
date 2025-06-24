@@ -23,14 +23,15 @@ import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.ActionBar;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.api.navigator.settings.NavigatorInventoryType;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.CachedValues;
 import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.factory.PlayerStorageFactory;
@@ -54,8 +55,8 @@ import org.jetbrains.annotations.Nullable;
 
 public class PlayerServiceImpl implements PlayerService {
 
-    private static final double MIN_HEIGHT = -0.16453003708696978;
-    private static final double MAX_HEIGHT = 0.16481381407766063;
+    private static final double MIN_LOOK_HEIGHT = -0.16453003708696978;
+    private static final double MAX_LOOK_HEIGHT = 0.16481381407766063;
 
     private final BuildSystemPlugin plugin;
     private final ConfigValues configValues;
@@ -261,9 +262,9 @@ public class PlayerServiceImpl implements PlayerService {
 
             BuildPlayer buildPlayer = playerStorage.getBuildPlayer(player.getUniqueId());
             double lookedPosition = player.getEyeLocation().getDirection().getY();
-            if (lookedPosition >= MIN_HEIGHT && lookedPosition <= MAX_HEIGHT) {
-                NavigatorInventoryType inventoryType = NavigatorInventoryType.matchInventoryType(player, getEntityName(player));
-                NavigatorInventoryType lastLookedAt = buildPlayer.getLastLookedAt();
+            if (lookedPosition >= MIN_LOOK_HEIGHT && lookedPosition <= MAX_LOOK_HEIGHT) {
+                NavigatorCategory inventoryType = ArmorStandManager.matchNavigatorCategory(player, getEntityName(player));
+                NavigatorCategory lastLookedAt = buildPlayer.getLastLookedAt();
 
                 if (lastLookedAt == null || lastLookedAt != inventoryType) {
                     buildPlayer.setLastLookedAt(inventoryType);
@@ -322,7 +323,7 @@ public class PlayerServiceImpl implements PlayerService {
         return entity.getCustomName();
     }
 
-    private void sendTypeInfo(Player player, NavigatorInventoryType inventoryType) {
+    private void sendTypeInfo(Player player, NavigatorCategory inventoryType) {
         if (inventoryType == null) {
             ActionBar.clearActionBar(player);
             return;

@@ -17,14 +17,13 @@
  */
 package de.eintosti.buildsystem.api.player;
 
-import de.eintosti.buildsystem.api.navigator.settings.NavigatorInventoryType;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import java.util.UUID;
 import javax.annotation.Nullable;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-
-import java.util.UUID;
 import org.jetbrains.annotations.ApiStatus.Internal;
 
 public interface BuildPlayer {
@@ -110,19 +109,19 @@ public interface BuildPlayer {
     void setPreviousLocation(Location location);
 
     /**
-     * Gets the {@link NavigatorInventoryType} the player last looked at.
+     * Gets the {@link NavigatorCategory} the player last looked at.
      *
      * @return The last looked navigator inventory type
      */
     @Internal
     @Nullable
-    NavigatorInventoryType getLastLookedAt();
+    NavigatorCategory getLastLookedAt();
 
     /**
-     * Sets the {@link NavigatorInventoryType} the player last looked at.
+     * Sets the {@link NavigatorCategory} the player last looked at.
      *
      * @param type The last looked navigator inventory type
      */
     @Internal
-    void setLastLookedAt(NavigatorInventoryType type);
+    void setLastLookedAt(NavigatorCategory type);
 }

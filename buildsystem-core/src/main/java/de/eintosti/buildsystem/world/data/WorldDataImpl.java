@@ -18,18 +18,26 @@
 package de.eintosti.buildsystem.world.data;
 
 import com.cryptomorin.xseries.XMaterial;
+import com.google.common.base.Function;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.WorldService;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.config.ConfigValues;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class WorldDataImpl implements WorldData {
+
+    private final ConfigValues configValues;
 
     private final Map<String, Type<?>> data = new HashMap<>();
 
@@ -57,28 +65,27 @@ public class WorldDataImpl implements WorldData {
     private String worldName;
 
     public WorldDataImpl(String worldName, boolean privateWorld, XMaterial material, ConfigValues configValues) {
-        this.customSpawn.set(null);
-        this.permission.set(configValues.getDefaultPermission(privateWorld).replace("%world%", worldName));
-        this.project.set("-");
-
-        this.difficulty.set(configValues.getWorldDifficulty());
-        this.material.set(material);
-        this.status.set(BuildWorldStatus.NOT_STARTED);
-
-        this.blockBreaking.set(configValues.isWorldBlockBreaking());
-        this.blockInteractions.set(configValues.isWorldBlockInteractions());
-        this.blockPlacement.set(configValues.isWorldBlockPlacement());
-        this.buildersEnabled.set(configValues.isWorldBuildersEnabled(privateWorld));
-        this.explosions.set(configValues.isWorldExplosions());
-        this.mobAi.set(configValues.isWorldMobAi());
-        this.physics.set(configValues.isWorldPhysics());
-        this.privateWorld.set(privateWorld);
-
-        this.lastEdited.set((long) -1);
-        this.lastLoaded.set((long) -1);
-        this.lastUnloaded.set((long) -1);
-
-        this.worldName = worldName;
+        this(
+                worldName,
+                null,
+                configValues.getDefaultPermission(privateWorld).replace("%world%", worldName),
+                "-",
+                configValues.getWorldDifficulty(),
+                material,
+                BuildWorldStatus.NOT_STARTED,
+                configValues.isWorldBlockBreaking(),
+                configValues.isWorldBlockInteractions(),
+                configValues.isWorldBlockPlacement(),
+                configValues.isWorldBuildersEnabled(privateWorld),
+                configValues.isWorldExplosions(),
+                configValues.isWorldMobAi(),
+                configValues.isWorldPhysics(),
+                privateWorld,
+                -1L,
+                -1L,
+                -1L,
+                configValues
+        );
     }
 
     public WorldDataImpl(
@@ -99,7 +106,8 @@ public class WorldDataImpl implements WorldData {
             boolean privateWorld,
             long lastLoaded,
             long lastUnloaded,
-            long lastEdited
+            long lastEdited,
+            ConfigValues configValues
     ) {
         this.customSpawn.set(customSpawn);
         this.permission.set(permission);
@@ -123,6 +131,7 @@ public class WorldDataImpl implements WorldData {
         this.lastUnloaded.set(lastUnloaded);
 
         this.worldName = worldName;
+        this.configValues = configValues;
     }
 
     public <T> Type<T> register(@NotNull String key) {
@@ -158,13 +167,38 @@ public class WorldDataImpl implements WorldData {
         );
     }
 
+    @Nullable
+    private Type<String> getOverrideValue(Function<Folder, String> valueProvider) {
+        WorldService worldService = JavaPlugin.getPlugin(BuildSystemPlugin.class).getWorldService();
+        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(worldName);
+        if (buildWorld != null) {
+            Folder assignedFolder = worldService.getFolderStorage().getAssignedFolder(buildWorld);
+            if (assignedFolder != null) {
+                return new TypeImpl<>(valueProvider.apply(assignedFolder));
+            }
+        }
+        return null;
+    }
+
     @Override
     public Type<String> permission() {
+        if (configValues.isFolderOverridePermissions()) {
+            Type<String> assignedFolderPermission = getOverrideValue(Folder::getPermission);
+            if (assignedFolderPermission != null) {
+                return assignedFolderPermission;
+            }
+        }
         return permission;
     }
 
     @Override
     public Type<String> project() {
+        if (configValues.isFolderOverrideProjects()) {
+            Type<String> assignedFolderProject = getOverrideValue(Folder::getProject);
+            if (assignedFolderProject != null) {
+                return assignedFolderProject;
+            }
+        }
         return project;
     }
 
@@ -250,6 +284,14 @@ public class WorldDataImpl implements WorldData {
     public static class TypeImpl<T> implements Type<T> {
 
         private T value;
+
+        public TypeImpl() {
+            this.value = null;
+        }
+
+        public TypeImpl(T value) {
+            this.value = value;
+        }
 
         @Override
         public T get() {

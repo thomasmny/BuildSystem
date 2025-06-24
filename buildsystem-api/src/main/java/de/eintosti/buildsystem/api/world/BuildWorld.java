@@ -20,17 +20,21 @@ package de.eintosti.buildsystem.api.world;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
-import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.util.WorldLoader;
 import de.eintosti.buildsystem.api.world.util.WorldPermissions;
 import de.eintosti.buildsystem.api.world.util.WorldTeleporter;
 import de.eintosti.buildsystem.api.world.util.WorldUnloader;
+import java.util.UUID;
 import org.bukkit.Difficulty;
 import org.bukkit.World;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * @since 3.0.0
+ */
 public interface BuildWorld extends Displayable {
 
     /**
@@ -42,7 +46,16 @@ public interface BuildWorld extends Displayable {
     World getWorld();
 
     /**
-     * Set the name of the world.
+     * Gets the unique identifier of the world.
+     * <p>
+     * Not equivalent to {@link World#getUID()}.
+     *
+     * @return The uuid of the world
+     */
+    UUID getUniqueId();
+
+    /**
+     * Sets the name of the world.
      *
      * @param name The name to set to
      */
@@ -51,7 +64,7 @@ public interface BuildWorld extends Displayable {
     Profileable asProfilable();
 
     /**
-     * Get world's type.
+     * Gets the world's type.
      *
      * @return The {@link BuildWorldType} of the world
      */
@@ -65,14 +78,7 @@ public interface BuildWorld extends Displayable {
     WorldData getData();
 
     /**
-     * Get the creation date of the world.
-     *
-     * @return The number of milliseconds that have passed since {@code January 1, 1970 UTC}, until the world was created.
-     */
-    long getCreationDate();
-
-    /**
-     * Get the custom chunk generator used to generate the world.
+     * Gets the custom chunk generator used to generate the world.
      *
      * @return The custom chunk generator used to generate the world.
      */
@@ -85,48 +91,58 @@ public interface BuildWorld extends Displayable {
     void cycleDifficulty();
 
     /**
-     * Get a list of all builders who can modify the world.
+     * Gets a list of all builders who can modify the world.
      *
      * @return the list of all builders
      */
     Builders getBuilders();
 
     /**
-     * Get the time in the {@link World} linked to the build world.
+     * Gets the time in the {@link World} linked to the build world.
      *
      * @return The world time
      */
     String getWorldTime();
 
     /**
-     * Get whether the world is currently loaded, allowing a player to enter it.
+     * Gets whether the world is currently loaded, allowing a player to enter it.
      *
      * @return {@code true} if the world is loaded, otherwise {@code false}
      */
     boolean isLoaded();
 
     /**
-     * Set whether the world is currently loaded, allowing a player to enter it.
+     * Sets whether the world is currently loaded, allowing a player to enter it.
      *
      * @param loaded {@code true} if the world is loaded, otherwise {@code false}
      */
     void setLoaded(boolean loaded);
 
     /**
-     * Get the {@link WorldLoader} used to load the world.
+     * Gets the {@link WorldLoader} used to load the world.
      *
      * @return The {@link WorldLoader} used to load the world
      */
     WorldLoader getLoader();
 
     /**
-     * Get the {@link WorldUnloader} used to unload the world.
+     * Gets the {@link WorldUnloader} used to unload the world.
      *
      * @return The {@link WorldUnloader} used to unload the world
      */
     WorldUnloader getUnloader();
 
+    /**
+     * Gets the {@link WorldTeleporter} used to teleport players to the world.
+     *
+     * @return The {@link WorldTeleporter} used to teleport players to the world
+     */
     WorldTeleporter getTeleporter();
 
+    /**
+     * Gets the {@link WorldPermissions} associated with the world.
+     *
+     * @return The {@link WorldPermissions} for the world
+     */
     WorldPermissions getPermissions();
 }

@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -60,31 +61,6 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
         super(plugin);
     }
 
-    private void loadFile() {
-        this.file = new File(plugin.getDataFolder(), "players.yml");
-        this.config = YamlConfiguration.loadConfiguration(file);
-
-        if (!file.exists()) {
-            config.options().copyDefaults(true);
-            saveFile();
-            return;
-        }
-
-        try {
-            config.load(file);
-        } catch (IOException | InvalidConfigurationException e) {
-            logger.log(Level.SEVERE, "Could not load players.yml file", e);
-        }
-    }
-
-    private void saveFile() {
-        try {
-            config.save(file);
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not save players.yml file", e);
-        }
-    }
-
     @Override
     public void save(BuildPlayer buildPlayer) {
         config.set(PLAYERS_KEY + "." + buildPlayer.getUniqueId().toString(), serializePlayer(buildPlayer));
@@ -95,6 +71,14 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
     public void save(Collection<BuildPlayer> players) {
         players.forEach(player -> config.set(PLAYERS_KEY + "." + player.getUniqueId().toString(), serializePlayer(player)));
         saveFile();
+    }
+
+    private void saveFile() {
+        try {
+            config.save(file);
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Could not save players.yml file", e);
+        }
     }
 
     public @NotNull Map<String, Object> serializePlayer(BuildPlayer player) {
@@ -146,21 +130,35 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
 
     @Override
     public Collection<BuildPlayer> load() {
-        loadFile();
+        Set<String> players = loadPlayerKeys();
+
+        return players.stream()
+                .map(this::loadPlayer)
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    private Set<String> loadPlayerKeys() {
+        this.file = new File(plugin.getDataFolder(), "players.yml");
+        this.config = YamlConfiguration.loadConfiguration(file);
+
+        if (!file.exists()) {
+            config.options().copyDefaults(true);
+            saveFile();
+            return new HashSet<>();
+        }
+
+        try {
+            config.load(file);
+        } catch (IOException | InvalidConfigurationException e) {
+            logger.log(Level.SEVERE, "Could not load players.yml file", e);
+        }
 
         ConfigurationSection section = config.getConfigurationSection(PLAYERS_KEY);
         if (section == null) {
-            return new ArrayList<>();
+            return new HashSet<>();
         }
 
-        Set<String> folders = section.getKeys(false);
-        if (folders.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        return folders.stream()
-                .map(this::loadPlayer)
-                .collect(Collectors.toCollection(ArrayList::new));
+        return section.getKeys(false);
     }
 
     private BuildPlayer loadPlayer(String playerUuid) {
