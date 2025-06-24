@@ -150,7 +150,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                                 return false;
                             }
 
-                            return worldStorage.worldExists(name);
+                            return !worldStorage.worldExists(name);
                         });
 
                         if (directories == null || directories.length == 0) {
