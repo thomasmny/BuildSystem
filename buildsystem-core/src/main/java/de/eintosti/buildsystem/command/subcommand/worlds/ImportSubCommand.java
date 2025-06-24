@@ -30,8 +30,8 @@ import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
-import java.util.AbstractMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -74,8 +74,8 @@ public class ImportSubCommand implements SubCommand {
         String invalidChar = StringCleaner.firstInvalidChar(worldName);
         if (invalidChar != null) {
             Messages.sendMessage(player, "worlds_import_invalid_character",
-                    new AbstractMap.SimpleEntry<>("%world%", worldName),
-                    new AbstractMap.SimpleEntry<>("%char%", invalidChar)
+                    Map.entry("%world%", worldName),
+                    Map.entry("%char%", invalidChar)
             );
             return;
         }
@@ -131,7 +131,7 @@ public class ImportSubCommand implements SubCommand {
         }
 
         Messages.sendMessage(player, "worlds_import_started",
-                new AbstractMap.SimpleEntry<>("%world%", worldName)
+                Map.entry("%world%", worldName)
         );
         if (worldService.importWorld(player, worldName, creator, worldType, generator, generatorName, true)) {
             Messages.sendMessage(player, "worlds_import_finished");

@@ -81,7 +81,7 @@ public class FolderContentInventory extends DisplayablesInventory {
         List<Displayable> displayables = new ArrayList<>();
         displayables.addAll(folders);
         displayables.addAll(buildWorlds);
-        displayables.sort(createDisplayOrderComparator(worldDisplay.getWorldSort()));
+        displayables.sort(worldDisplay.getWorldSort().getComparator());
         return displayables;
     }
 

@@ -37,11 +37,10 @@ public class FoodLevelChangeListener implements Listener {
 
     @EventHandler
     public void onFoodLevelChangeEvent(FoodLevelChangeEvent event) {
-        if (!(event.getEntity() instanceof Player)) {
+        if (!(event.getEntity() instanceof Player player)) {
             return;
         }
 
-        Player player = (Player) event.getEntity();
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
         if (buildWorld != null && buildWorld.getData().status().get() == BuildWorldStatus.ARCHIVE) {
             event.setCancelled(true);

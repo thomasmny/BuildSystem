@@ -25,7 +25,7 @@ import de.eintosti.buildsystem.api.event.world.BuildWorldPostLoadEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.util.WorldLoader;
 import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl;
-import java.util.AbstractMap;
+import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -54,7 +54,7 @@ public class WorldLoaderImpl implements WorldLoader {
         player.closeInventory();
         Titles.sendTitle(player, 5, 70, 20, " ",
                 Messages.getString("loading_world", player,
-                        new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName())
+                        Map.entry("%world%", buildWorld.getName())
                 )
         );
 

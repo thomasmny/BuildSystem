@@ -24,6 +24,9 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiConsumer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -33,10 +36,27 @@ import org.bukkit.inventory.ItemStack;
 
 public class InventoryCloseListener implements Listener {
 
-    private final CustomizableIcons worldIcon;
+    private static final Map<BuildWorldType, Integer> CREATE_ITEM_SLOTS = Map.of(
+            BuildWorldType.NORMAL, 11,
+            BuildWorldType.FLAT, 12,
+            BuildWorldType.NETHER, 13,
+            BuildWorldType.END, 14,
+            BuildWorldType.VOID, 15
+    );
+
+    private static final Map<BuildWorldStatus, Integer> STATUS_ITEM_SLOTS = Map.of(
+            BuildWorldStatus.NOT_STARTED, 29,
+            BuildWorldStatus.IN_PROGRESS, 30,
+            BuildWorldStatus.ALMOST_FINISHED, 31,
+            BuildWorldStatus.FINISHED, 32,
+            BuildWorldStatus.ARCHIVE, 33,
+            BuildWorldStatus.HIDDEN, 34
+    );
+
+    private final CustomizableIcons icons;
 
     public InventoryCloseListener(BuildSystemPlugin plugin) {
-        this.worldIcon = plugin.getCustomizableIcons();
+        this.icons = plugin.getCustomizableIcons();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -46,48 +66,26 @@ public class InventoryCloseListener implements Listener {
         if (!title.equals(Messages.getString("setup_title", (Player) event.getPlayer()))) {
             return;
         }
-        saveItems(event.getInventory());
+
+        Inventory inventory = event.getInventory();
+        processIconMapping(inventory, CREATE_ITEM_SLOTS, icons::setIcon);
+        processIconMapping(inventory, STATUS_ITEM_SLOTS, icons::setIcon);
     }
 
-    private void saveItems(Inventory inventory) {
-        ItemStack normalCreateItem = inventory.getItem(11);
-        ItemStack flatCreateItem = inventory.getItem(12);
-        ItemStack netherCreateItem = inventory.getItem(13);
-        ItemStack endCreateItem = inventory.getItem(14);
-        ItemStack voidCreateItem = inventory.getItem(15);
+    /**
+     * A generic helper method that iterates over a map of Enum-to-Slot, extracts the {@link ItemStack}, and sets the corresponding icon.
+     *
+     * @param inventory   The inventory to get items from
+     * @param slotMapping A map from an Enum constant to its inventory slot index
+     * @param <T>         The type of the Enum (e.g., {@link BuildWorldType}, {@link BuildWorldStatus})
+     */
+    private <T extends Enum<T>> void processIconMapping(Inventory inventory, Map<T, Integer> slotMapping, BiConsumer<T, XMaterial> setter) {
+        slotMapping.forEach((enumConstant, slot) -> {
+            XMaterial material = Optional.ofNullable(inventory.getItem(slot))
+                    .map(XMaterial::matchXMaterial)
+                    .orElse(null);
 
-        worldIcon.setIcon(BuildWorldType.NORMAL, normalCreateItem != null ? XMaterial.matchXMaterial(normalCreateItem) : null);
-        worldIcon.setIcon(BuildWorldType.FLAT, flatCreateItem != null ? XMaterial.matchXMaterial(flatCreateItem) : null);
-        worldIcon.setIcon(BuildWorldType.NETHER, netherCreateItem != null ? XMaterial.matchXMaterial(netherCreateItem) : null);
-        worldIcon.setIcon(BuildWorldType.END, endCreateItem != null ? XMaterial.matchXMaterial(endCreateItem) : null);
-        worldIcon.setIcon(BuildWorldType.VOID, voidCreateItem != null ? XMaterial.matchXMaterial(voidCreateItem) : null);
-
-        ItemStack normalDefaultItem = inventory.getItem(20);
-        ItemStack flatDefaultItem = inventory.getItem(21);
-        ItemStack netherDefaultItem = inventory.getItem(22);
-        ItemStack endDefaultItem = inventory.getItem(23);
-        ItemStack voidDefaultItem = inventory.getItem(24);
-        ItemStack importedDefaultItem = inventory.getItem(25);
-
-        worldIcon.setIcon(BuildWorldType.NORMAL, normalDefaultItem != null ? XMaterial.matchXMaterial(normalDefaultItem) : null);
-        worldIcon.setIcon(BuildWorldType.FLAT, flatDefaultItem != null ? XMaterial.matchXMaterial(flatDefaultItem) : null);
-        worldIcon.setIcon(BuildWorldType.NETHER, netherDefaultItem != null ? XMaterial.matchXMaterial(netherDefaultItem) : null);
-        worldIcon.setIcon(BuildWorldType.END, endDefaultItem != null ? XMaterial.matchXMaterial(endDefaultItem) : null);
-        worldIcon.setIcon(BuildWorldType.VOID, voidDefaultItem != null ? XMaterial.matchXMaterial(voidDefaultItem) : null);
-        worldIcon.setIcon(BuildWorldType.IMPORTED, importedDefaultItem != null ? XMaterial.matchXMaterial(importedDefaultItem) : null);
-
-        ItemStack notStartedStatusItem = inventory.getItem(29);
-        ItemStack inProgressStatusItem = inventory.getItem(30);
-        ItemStack almostFinishedStatusItem = inventory.getItem(31);
-        ItemStack finishedStatusItem = inventory.getItem(32);
-        ItemStack archiveStatusItem = inventory.getItem(33);
-        ItemStack hiddenStatusItem = inventory.getItem(34);
-
-        worldIcon.setIcon(BuildWorldStatus.NOT_STARTED, notStartedStatusItem != null ? XMaterial.matchXMaterial(notStartedStatusItem) : null);
-        worldIcon.setIcon(BuildWorldStatus.IN_PROGRESS, inProgressStatusItem != null ? XMaterial.matchXMaterial(inProgressStatusItem) : null);
-        worldIcon.setIcon(BuildWorldStatus.ALMOST_FINISHED, almostFinishedStatusItem != null ? XMaterial.matchXMaterial(almostFinishedStatusItem) : null);
-        worldIcon.setIcon(BuildWorldStatus.FINISHED, finishedStatusItem != null ? XMaterial.matchXMaterial(finishedStatusItem) : null);
-        worldIcon.setIcon(BuildWorldStatus.ARCHIVE, archiveStatusItem != null ? XMaterial.matchXMaterial(archiveStatusItem) : null);
-        worldIcon.setIcon(BuildWorldStatus.HIDDEN, hiddenStatusItem != null ? XMaterial.matchXMaterial(hiddenStatusItem) : null);
+            setter.accept(enumConstant, material);
+        });
     }
 }

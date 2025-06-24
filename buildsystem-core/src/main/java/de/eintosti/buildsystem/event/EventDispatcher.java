@@ -27,8 +27,6 @@ import org.bukkit.event.Cancellable;
 
 /**
  * Manages the dispatching of custom events related to build world manipulations.
- *
- * @since TODO
  */
 public class EventDispatcher {
 
@@ -64,11 +62,11 @@ public class EventDispatcher {
             return;
         }
 
-        BuildWorld world = worldStorage.getBuildWorld(player.getWorld());
-        if (world == null) {
+        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
+        if (buildWorld == null) {
             return;
         }
 
-        Bukkit.getPluginManager().callEvent(new BuildWorldManipulationEvent(parentEvent, player, world));
+        Bukkit.getPluginManager().callEvent(new BuildWorldManipulationEvent(parentEvent, player, buildWorld));
     }
 }

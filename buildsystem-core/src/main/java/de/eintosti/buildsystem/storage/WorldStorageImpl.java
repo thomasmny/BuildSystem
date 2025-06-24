@@ -145,16 +145,11 @@ public abstract class WorldStorageImpl implements WorldStorage {
      * @return {@code true} if the world's visibility is equal to the given visibility, otherwise {@code false}
      */
     public boolean isCorrectVisibility(boolean privateWorld, Visibility visibility) {
-        switch (visibility) {
-            case PRIVATE:
-                return privateWorld;
-            case PUBLIC:
-                return !privateWorld;
-            case IGNORE:
-                return true;
-            default:
-                return false;
-        }
+        return switch (visibility) {
+            case PRIVATE -> privateWorld;
+            case PUBLIC -> !privateWorld;
+            case IGNORE -> true;
+        };
     }
 
     public void loadWorlds() {

@@ -25,7 +25,7 @@ import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
-import java.util.AbstractMap;
+import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -50,7 +50,7 @@ public class PlayerQuitListener implements Listener {
     public void sendPlayerQuitMessage(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         String message = plugin.getConfigValues().isJoinQuitMessages()
-                ? Messages.getString("player_quit", player, new AbstractMap.SimpleEntry<>("%player%", player.getName()))
+                ? Messages.getString("player_quit", player, Map.entry("%player%", player.getName()))
                 : null;
         event.setQuitMessage(message);
     }
