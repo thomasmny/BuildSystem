@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.storage.yaml;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
@@ -28,8 +29,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -52,31 +55,6 @@ public class YamlFolderStorage extends FolderStorageImpl {
         super(plugin);
     }
 
-    private void loadFile() {
-        this.file = new File(plugin.getDataFolder(), "folders.yml");
-        this.config = YamlConfiguration.loadConfiguration(file);
-
-        if (!file.exists()) {
-            config.options().copyDefaults(true);
-            saveFile();
-            return;
-        }
-
-        try {
-            config.load(file);
-        } catch (IOException | InvalidConfigurationException e) {
-            logger.log(Level.SEVERE, "Could not load folders.yml file", e);
-        }
-    }
-
-    private void saveFile() {
-        try {
-            config.save(file);
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not save folders.yml file", e);
-        }
-    }
-
     @Override
     public void save(Folder folder) {
         config.set(FOLDERS_KEY + "." + folder.getName(), serializeFolder(folder));
@@ -89,9 +67,18 @@ public class YamlFolderStorage extends FolderStorageImpl {
         saveFile();
     }
 
+    private void saveFile() {
+        try {
+            config.save(file);
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Could not save folders.yml file", e);
+        }
+    }
+
     public @NotNull Map<String, Object> serializeFolder(Folder folder) {
         Map<String, Object> serializedFolder = new HashMap<>();
 
+        serializedFolder.put("creator", folder.getCreator().toString());
         serializedFolder.put("creation", folder.getCreation());
         serializedFolder.put("category", folder.getCategory().name());
         serializedFolder.put("parent", folder.hasParent() ? folder.getParent().getName() : null);
@@ -105,17 +92,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
 
     @Override
     public Collection<Folder> load() {
-        loadFile();
-
-        ConfigurationSection section = config.getConfigurationSection(FOLDERS_KEY);
-        if (section == null) {
-            return new ArrayList<>();
-        }
-
-        Set<String> folders = section.getKeys(false);
-        if (folders.isEmpty()) {
-            return new ArrayList<>();
-        }
+        Set<String> folders = loadFolderKeys();
 
         // First pass: Create all folders without parent references
         Map<String, Folder> loadedFolders = folders.stream()
@@ -137,9 +114,34 @@ public class YamlFolderStorage extends FolderStorageImpl {
         return new ArrayList<>(loadedFolders.values());
     }
 
+    private Set<String> loadFolderKeys() {
+        this.file = new File(plugin.getDataFolder(), "folders.yml");
+        this.config = YamlConfiguration.loadConfiguration(file);
+
+        if (!file.exists()) {
+            config.options().copyDefaults(true);
+            saveFile();
+            return new HashSet<>();
+        }
+
+        try {
+            config.load(file);
+        } catch (IOException | InvalidConfigurationException e) {
+            logger.log(Level.SEVERE, "Could not load folders.yml file", e);
+        }
+
+        ConfigurationSection section = config.getConfigurationSection(FOLDERS_KEY);
+        if (section == null) {
+            return new HashSet<>();
+        }
+
+        return section.getKeys(false);
+    }
+
     private Folder loadFolder(String folderName) {
         final String path = FOLDERS_KEY + "." + folderName;
 
+        Builder creator = Objects.requireNonNull(Builder.deserialize(path + ".creator"), "Creator cannot be null for folder: " + folderName);
         long creation = config.getLong(path + ".creation", System.currentTimeMillis());
         NavigatorCategory category = NavigatorCategory.valueOf(config.getString(path + ".category"));
         XMaterial defaultMaterial = XMaterial.CHEST;
@@ -154,6 +156,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
                 creation,
                 category,
                 null, // Parent will be set in second pass
+                creator,
                 material,
                 permission,
                 project,

@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.api.world.display;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builder;
 import java.util.List;
 import java.util.UUID;
 import org.bukkit.entity.Player;
@@ -28,6 +29,13 @@ import org.jetbrains.annotations.Unmodifiable;
  * @since 3.0.0
  */
 public interface Folder extends Displayable {
+
+    /**
+     * Gets the {@link Builder} who created the folder.
+     *
+     * @return The creator of the folder
+     */
+    Builder getCreator();
 
     /**
      * Gets the category in which the {@link Folder} is displayed.

@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.api.storage;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import java.util.Collection;
@@ -63,8 +64,9 @@ public interface FolderStorage extends Storage<Folder> {
      *
      * @param folderName The name folder to create
      * @param category   The category in which the folder should be displayed
+     * @param creator    The builder who created the folder
      */
-    Folder createFolder(String folderName, NavigatorCategory category);
+    Folder createFolder(String folderName, NavigatorCategory category, Builder creator);
 
     /**
      * Creates a new nested {@link Folder} with the given name.
@@ -72,8 +74,9 @@ public interface FolderStorage extends Storage<Folder> {
      * @param folderName The name folder to create
      * @param category   The category in which the folder should be displayed
      * @param parent     The parent folder, or {@code null} if this is a top-level folder
+     * @param creator    The builder who created the folder
      */
-    Folder createFolder(String folderName, NavigatorCategory category, @Nullable Folder parent);
+    Folder createFolder(String folderName, NavigatorCategory category, @Nullable Folder parent, Builder creator);
 
     /**
      * Removes the {@link Folder} with the given name.

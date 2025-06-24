@@ -11,6 +11,7 @@ import de.eintosti.buildsystem.api.navigator.settings.WorldFilter;
 import de.eintosti.buildsystem.api.navigator.settings.WorldSort;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
@@ -445,7 +446,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
     }
 
     protected Folder createFolder(String folderName) {
-        return this.folderStorage.createFolder(folderName, this.category);
+        return this.folderStorage.createFolder(folderName, this.category, Builder.of(this.player));
     }
 
     /**

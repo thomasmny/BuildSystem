@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.world.display;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.util.WorldPermissions;
@@ -40,6 +41,7 @@ public class FolderImpl implements Folder {
     private final FolderStorageImpl folderStorage;
 
     private final String name;
+    private final Builder creator;
     private final long creation;
     private final NavigatorCategory category;
     private final List<UUID> worlds;
@@ -49,8 +51,8 @@ public class FolderImpl implements Folder {
     private String permission;
     private String project;
 
-    public FolderImpl(FolderStorageImpl folderStorage, String name, NavigatorCategory category, @Nullable Folder parent) {
-        this(folderStorage, name, System.currentTimeMillis(), category, parent, XMaterial.CHEST, "-", "-", new ArrayList<>());
+    public FolderImpl(FolderStorageImpl folderStorage, String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
+        this(folderStorage, name, System.currentTimeMillis(), category, parent, creator, XMaterial.CHEST, "-", "-", new ArrayList<>());
     }
 
     public FolderImpl(
@@ -59,6 +61,7 @@ public class FolderImpl implements Folder {
             long creation,
             @NotNull NavigatorCategory category,
             @Nullable Folder parent,
+            @NotNull Builder creator,
             @NotNull XMaterial material,
             @NotNull String permission,
             @NotNull String project,
@@ -69,10 +72,16 @@ public class FolderImpl implements Folder {
         this.creation = creation;
         this.category = category;
         this.parent = parent;
+        this.creator = creator;
         this.worlds = worlds;
         this.material = material;
         this.permission = permission;
         this.project = project;
+    }
+
+    @Override
+    public Builder getCreator() {
+        return this.creator;
     }
 
     @Override

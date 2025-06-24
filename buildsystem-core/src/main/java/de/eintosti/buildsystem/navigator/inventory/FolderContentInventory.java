@@ -21,6 +21,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.navigator.settings.WorldDisplay;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Displayable;
@@ -108,7 +109,7 @@ public class FolderContentInventory extends DisplayablesInventory {
 
     @Override
     protected Folder createFolder(String folderName) {
-        return this.folderStorage.createFolder(folderName, this.category, this.folder);
+        return this.folderStorage.createFolder(folderName, this.category, this.folder, Builder.of(this.player));
     }
 
     @Override

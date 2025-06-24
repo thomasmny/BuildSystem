@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -65,31 +66,6 @@ public class YamlWorldStorage extends WorldStorageImpl {
         super(plugin);
     }
 
-    private void loadFile() {
-        this.file = new File(plugin.getDataFolder(), "worlds.yml");
-        this.config = YamlConfiguration.loadConfiguration(file);
-
-        if (!file.exists()) {
-            config.options().copyDefaults(true);
-            saveFile();
-            return;
-        }
-
-        try {
-            config.load(file);
-        } catch (IOException | InvalidConfigurationException e) {
-            logger.log(Level.SEVERE, "Could not load worlds.yml file", e);
-        }
-    }
-
-    private void saveFile() {
-        try {
-            config.save(file);
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not save worlds.yml file", e);
-        }
-    }
-
     @Override
     public void save(BuildWorld buildWorld) {
         config.set(WORLDS_KEY + "." + buildWorld.getName(), serializeWorld(buildWorld));
@@ -100,6 +76,14 @@ public class YamlWorldStorage extends WorldStorageImpl {
     public void save(Collection<BuildWorld> buildWorlds) {
         buildWorlds.forEach(buildWorld -> config.set(WORLDS_KEY + "." + buildWorld.getName(), serializeWorld(buildWorld)));
         saveFile();
+    }
+
+    private void saveFile() {
+        try {
+            config.save(file);
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Could not save worlds.yml file", e);
+        }
     }
 
     public @NotNull Map<String, Object> serializeWorld(BuildWorld buildWorld) {
@@ -137,21 +121,35 @@ public class YamlWorldStorage extends WorldStorageImpl {
 
     @Override
     public Collection<BuildWorld> load() {
-        loadFile();
-
-        ConfigurationSection section = config.getConfigurationSection(WORLDS_KEY);
-        if (section == null) {
-            return new ArrayList<>();
-        }
-
-        Set<String> worlds = section.getKeys(false);
-        if (worlds.isEmpty()) {
-            return new ArrayList<>();
-        }
+        Set<String> worlds = loadWorldKeys();
 
         return worlds.stream()
                 .map(this::loadWorld)
                 .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    private Set<String> loadWorldKeys() {
+        this.file = new File(plugin.getDataFolder(), "worlds.yml");
+        this.config = YamlConfiguration.loadConfiguration(file);
+
+        if (!file.exists()) {
+            config.options().copyDefaults(true);
+            saveFile();
+            return new HashSet<>();
+        }
+
+        try {
+            config.load(file);
+        } catch (IOException | InvalidConfigurationException e) {
+            logger.log(Level.SEVERE, "Could not load worlds.yml file", e);
+        }
+
+        ConfigurationSection section = config.getConfigurationSection(WORLDS_KEY);
+        if (section == null) {
+            return new HashSet<>();
+        }
+
+        return section.getKeys(false);
     }
 
     private BuildWorldImpl loadWorld(String worldName) {
