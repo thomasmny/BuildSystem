@@ -49,8 +49,8 @@ building can start!
 * Powerful navigator which allows for an overview of all worlds. Extra GUIs for:
     - **_Not Started_**, **_In Progress_**, **_Almost Finished_** and **_Finished_** maps
     - Maps that have been put to the **_Archive_**
-  - **_Private_** player maps: Each player can create their own map, if a map with their name
-    doesn't exist
+    - **_Private_** player maps: Each player can create their own map, if a map with their name
+      doesn't exist
 * **Create worlds with ease**: When creating a world, choose from:
     - **_Predefined worlds_** _or_
     - **_Custom generators_** provided by 3rd party plugins _or_

@@ -31,12 +31,12 @@ public interface CustomGenerator {
      *
      * @return The name
      */
-    String getName();
+    String name();
 
     /**
      * Gets the chunk generator.
      *
      * @return The chunk generator
      */
-    ChunkGenerator getChunkGenerator();
+    ChunkGenerator chunkGenerator();
 }

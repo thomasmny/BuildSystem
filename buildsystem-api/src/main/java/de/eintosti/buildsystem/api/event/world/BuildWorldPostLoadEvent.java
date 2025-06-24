@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.api.event.world;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.ApiStatus.Internal;
 
 /**
  * Called after a {@link BuildWorld} has loaded.
@@ -27,7 +27,7 @@ import org.jetbrains.annotations.ApiStatus;
  */
 public class BuildWorldPostLoadEvent extends BuildWorldEvent {
 
-    @ApiStatus.Internal
+    @Internal
     public BuildWorldPostLoadEvent(BuildWorld buildWorld) {
         super(buildWorld);
     }

@@ -24,7 +24,6 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.world.display.FolderImpl;
-import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -51,7 +50,7 @@ public abstract class FolderStorageImpl implements FolderStorage {
                 .collect(Collectors.toMap(Folder::getName, Function.identity()));
         this.worldToFolderMap = this.foldersByName.values().stream()
                 .flatMap(folder -> folder.getWorldUUIDs().stream()
-                        .map(world -> new AbstractMap.SimpleEntry<>(world, folder.getName())))
+                        .map(world -> Map.entry(world, folder.getName())))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 

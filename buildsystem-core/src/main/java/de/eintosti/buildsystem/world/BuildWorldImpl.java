@@ -37,7 +37,6 @@ import de.eintosti.buildsystem.world.util.WorldLoaderImpl;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import de.eintosti.buildsystem.world.util.WorldTeleporterImpl;
 import de.eintosti.buildsystem.world.util.WorldUnloaderImpl;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -154,23 +153,23 @@ public final class BuildWorldImpl implements BuildWorld {
     @Override
     public String getDisplayName(Player player) {
         return Messages.getString("world_item_title", player,
-                new AbstractMap.SimpleEntry<>("%world%", this.name)
+                Map.entry("%world%", this.name)
         );
     }
 
     @Override
     public List<String> getLore(Player player) {
         @SuppressWarnings("unchecked")
-        Map.Entry<String, Object>[] placeholders = new Map.Entry[]{
-                new AbstractMap.SimpleEntry<>("%status%", Messages.getString(worldData.status().get().getMessageKey(), player)),
-                new AbstractMap.SimpleEntry<>("%project%", worldData.project().get()),
-                new AbstractMap.SimpleEntry<>("%permission%", worldData.permission().get()),
-                new AbstractMap.SimpleEntry<>("%creator%", builders.hasCreator() ? builders.getCreator().getName() : "-"),
-                new AbstractMap.SimpleEntry<>("%creation%", Messages.formatDate(getCreation())),
-                new AbstractMap.SimpleEntry<>("%lastedited%", Messages.formatDate(worldData.lastEdited().get())),
-                new AbstractMap.SimpleEntry<>("%lastloaded%", Messages.formatDate(worldData.lastLoaded().get())),
-                new AbstractMap.SimpleEntry<>("%lastunloaded%", Messages.formatDate(worldData.lastUnloaded().get()))
-        };
+        Map.Entry<String, Object>[] placeholders = List.of(
+                Map.entry("%status%", Messages.getString(Messages.getMessageKey(worldData.status().get()), player)),
+                Map.entry("%project%", worldData.project().get()),
+                Map.entry("%permission%", worldData.permission().get()),
+                Map.entry("%creator%", builders.hasCreator() ? builders.getCreator().getName() : "-"),
+                Map.entry("%creation%", Messages.formatDate(getCreation())),
+                Map.entry("%lastedited%", Messages.formatDate(worldData.lastEdited().get())),
+                Map.entry("%lastloaded%", Messages.formatDate(worldData.lastLoaded().get())),
+                Map.entry("%lastunloaded%", Messages.formatDate(worldData.lastUnloaded().get()))
+        ).toArray(Map.Entry[]::new);
 
         List<String> messageList = getPermissions().canPerformCommand(player, WorldsTabComplete.WorldsArgument.EDIT.getPermission())
                 ? Messages.getStringList("world_item_lore_edit", player, placeholders)
@@ -191,7 +190,7 @@ public final class BuildWorldImpl implements BuildWorld {
             }
 
             // Replace the placeholder in the first line only
-            lore.add(line.replace("%builders%", builderLines.get(0).trim()));
+            lore.add(line.replace("%builders%", builderLines.getFirst().trim()));
 
             // Add any additional lines
             for (int i = 1; i < builderLines.size(); i++) {
