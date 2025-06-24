@@ -20,12 +20,10 @@ repositories {
         name = "PlaceholderAPI"
         url = uri("https://repo.extendedclip.com/content/repositories/placeholderapi/")
     }
-
     maven {
         name = "Modrinth"
         url = uri("https://api.modrinth.com/maven")
     }
-
     modrinthMavenWorkaround(
         "axiom-paper-plugin",
         "4.0.1-1.21.1",

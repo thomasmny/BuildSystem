@@ -384,15 +384,9 @@ public class BuildSystemPlugin extends JavaPlugin {
 
                     UpdateChecker.UpdateReason reason = result.getReason();
                     switch (reason) {
-                        case COULD_NOT_CONNECT:
-                        case INVALID_JSON:
-                        case UNAUTHORIZED_QUERY:
-                        case UNKNOWN_ERROR:
-                        case UNSUPPORTED_VERSION_SCHEME:
-                            Bukkit.getConsoleSender().sendMessage(ChatColor.RED +
-                                    "[BuildSystem] Could not check for a new version of BuildSystem. Reason: " + reason
-                            );
-                            break;
+                        case COULD_NOT_CONNECT, INVALID_JSON, UNAUTHORIZED_QUERY, UNKNOWN_ERROR, UNSUPPORTED_VERSION_SCHEME -> Bukkit.getConsoleSender().sendMessage(
+                                ChatColor.RED + "[BuildSystem] Could not check for a new version of BuildSystem. Reason: " + reason
+                        );
                     }
                 }
         );

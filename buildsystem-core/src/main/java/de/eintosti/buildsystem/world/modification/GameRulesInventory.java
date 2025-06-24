@@ -45,9 +45,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class GameRulesInventory extends PaginatedInventory implements Listener {
 
-    private static final int[] SLOTS = new int[]{
-            11, 12, 13, 14, 15, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33
-    };
+    private static final int[] SLOTS = {11, 12, 13, 14, 15, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33};
 
     private final BuildSystemPlugin plugin;
     private int numGameRules = 0;
@@ -75,11 +73,8 @@ public class GameRulesInventory extends PaginatedInventory implements Listener {
         int columnGameRule = 0, maxColumnGameRule = 14;
         setNumGameRules(world);
 
-        int numInventories = numGameRules % SLOTS.length == 0
-                ? Math.max(numGameRules, 1)
-                : numGameRules + 1;
-
-        inventories = new Inventory[numInventories];
+        int numPages = numGameRules == 0 ? 1 : (int) Math.ceil((double) numGameRules / SLOTS.length);
+        inventories = new Inventory[numPages];
         Inventory inventory = createInventory(player);
 
         int index = 0;

@@ -62,42 +62,36 @@ public class TimeCommand implements CommandExecutor {
         WorldPermissions permissions = buildWorld.getPermissions();
 
         switch (label.toLowerCase(Locale.ROOT)) {
-            case "day": {
+            case "day" -> {
                 if (!permissions.canPerformCommand(player, "buildsystem.day")) {
                     Messages.sendPermissionError(player);
                     return true;
                 }
 
                 switch (args.length) {
-                    case 0:
-                    case 1:
+                    case 0, 1 -> {
                         world.setTime(configValues.getNoonTime());
                         Messages.sendMessage(player, "day_set", Map.entry("%world%", world.getName()));
-                        break;
-                    default:
-                        Messages.sendMessage(player, "day_usage");
-                        break;
+                    }
+                    default -> Messages.sendMessage(player, "day_usage");
                 }
-                break;
             }
 
-            case "night": {
+            case "night" -> {
                 if (!permissions.canPerformCommand(player, "buildsystem.night")) {
                     Messages.sendPermissionError(player);
                     return true;
                 }
 
                 switch (args.length) {
-                    case 0:
-                    case 1:
+                    case 0, 1 -> {
                         world.setTime(configValues.getNightTime());
                         Messages.sendMessage(player, "night_set", Map.entry("%world%", world.getName()));
-                        break;
-                    default:
+                    }
+                    default -> {
                         Messages.sendMessage(player, "night_usage");
-                        break;
+                    }
                 }
-                break;
             }
         }
         return true;

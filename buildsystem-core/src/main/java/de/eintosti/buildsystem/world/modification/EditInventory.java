@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Difficulty;
@@ -50,6 +51,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 public class EditInventory implements Listener {
 
@@ -134,19 +136,22 @@ public class EditInventory implements Listener {
     }
 
     private void fillGuiWithGlass(Player player, Inventory inventory) {
-        for (int i = 0; i < inventory.getSize(); i++) {
-            InventoryUtils.addGlassPane(player, inventory, i);
-        }
+        IntStream.range(0, inventory.getSize()).forEach(i -> InventoryUtils.addGlassPane(player, inventory, i));
     }
 
     private void addBuildWorldInfoItem(Player player, Inventory inventory, BuildWorld buildWorld) {
-        String displayName = Messages.getString("worldeditor_world_item", player, Map.entry("%world%", buildWorld.getName()));
+        String worldName = buildWorld.getName();
+        String displayName = Messages.getString("worldeditor_world_item", player, Map.entry("%world%", worldName));
         XMaterial material = buildWorld.getData().material().get();
 
         if (material == XMaterial.PLAYER_HEAD) {
             InventoryUtils.addWorldItem(inventory, 4, buildWorld, displayName, new ArrayList<>());
         } else {
-            inventory.setItem(4, InventoryUtils.createItem(material, displayName));
+            ItemStack itemStack = InventoryUtils.createItem(material, displayName);
+            ItemMeta itemMeta = itemStack.getItemMeta();
+            itemMeta.getPersistentDataContainer().set(InventoryUtils.DISPLAYABLE_NAME_KEY, PersistentDataType.STRING, worldName);
+            itemStack.setItemMeta(itemMeta);
+            inventory.setItem(4, itemStack);
         }
     }
 
@@ -154,11 +159,9 @@ public class EditInventory implements Listener {
         ItemStack itemStack = material.parseItem();
         ItemMeta itemMeta = itemStack.getItemMeta();
 
-        if (itemMeta != null) {
-            itemMeta.setDisplayName(Messages.getString(displayNameKey, player));
-            itemMeta.setLore(Messages.getStringList(loreKey, player));
-            itemMeta.addItemFlags(ItemFlag.values());
-        }
+        itemMeta.setDisplayName(Messages.getString(displayNameKey, player));
+        itemMeta.setLore(Messages.getStringList(loreKey, player));
+        itemMeta.addItemFlags(ItemFlag.values());
 
         itemStack.setItemMeta(itemMeta);
         if (isEnabled) {
@@ -171,22 +174,25 @@ public class EditInventory implements Listener {
     private void addTimeItem(Player player, Inventory inventory, BuildWorld buildWorld) {
         World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
 
-        XMaterial xMaterial = XMaterial.WHITE_STAINED_GLASS;
-        String value = Messages.getString("worldeditor_time_lore_unknown", player);
-
+        XMaterial xMaterial;
+        String value;
         switch (getWorldTime(bukkitWorld)) {
-            case SUNRISE:
+            case SUNRISE -> {
                 xMaterial = XMaterial.ORANGE_STAINED_GLASS;
                 value = Messages.getString("worldeditor_time_lore_sunrise", player);
-                break;
-            case NOON:
+            }
+            case NOON -> {
                 xMaterial = XMaterial.YELLOW_STAINED_GLASS;
                 value = Messages.getString("worldeditor_time_lore_noon", player);
-                break;
-            case NIGHT:
+            }
+            case NIGHT -> {
                 xMaterial = XMaterial.BLUE_STAINED_GLASS;
                 value = Messages.getString("worldeditor_time_lore_night", player);
-                break;
+            }
+            default -> {
+                xMaterial = XMaterial.WHITE_STAINED_GLASS;
+                value = Messages.getString("worldeditor_time_lore_unknown", player);
+            }
         }
 
         inventory.setItem(23, InventoryUtils.createItem(xMaterial, Messages.getString("worldeditor_time_item", player),
@@ -289,7 +295,8 @@ public class EditInventory implements Listener {
             return;
         }
 
-        BuildWorld buildWorld = plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player).getCachedWorld();
+        String worldName = event.getInventory().getItem(4).getItemMeta().getPersistentDataContainer().get(InventoryUtils.DISPLAYABLE_NAME_KEY, PersistentDataType.STRING);
+        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
         if (buildWorld == null) {
             player.closeInventory();
             Messages.sendMessage(player, "worlds_edit_error");
@@ -298,38 +305,37 @@ public class EditInventory implements Listener {
 
         WorldData worldData = buildWorld.getData();
         switch (event.getSlot()) {
-            case 20:
+            case 20 -> {
                 if (hasPermission(player, "buildsystem.edit.breaking")) {
                     worldData.blockBreaking().set(!worldData.blockBreaking().get());
                 }
-                break;
-            case 21:
+            }
+            case 21 -> {
                 if (hasPermission(player, "buildsystem.edit.placement")) {
                     worldData.blockPlacement().set(!worldData.blockPlacement().get());
                 }
-                break;
-            case 22:
+            }
+            case 22 -> {
                 if (hasPermission(player, "buildsystem.edit.physics")) {
                     worldData.physics().set(!worldData.physics().get());
                 }
-                break;
-            case 23:
+            }
+            case 23 -> {
                 if (hasPermission(player, "buildsystem.edit.time")) {
                     changeTime(player, buildWorld);
                 }
-                break;
-            case 24:
+            }
+            case 24 -> {
                 if (hasPermission(player, "buildsystem.edit.explosions")) {
                     worldData.explosions().set(!worldData.explosions().get());
                 }
-                break;
-
-            case 29:
+            }
+            case 29 -> {
                 if (hasPermission(player, "buildsystem.edit.entities")) {
                     removeEntities(player, buildWorld);
                 }
-                return;
-            case 30:
+            }
+            case 30 -> {
                 if (itemStack.getType() == XMaterial.BARRIER.get()) {
                     XSound.ENTITY_ITEM_BREAK.play(player);
                     return;
@@ -343,29 +349,27 @@ public class EditInventory implements Listener {
                     return;
                 }
                 worldData.buildersEnabled().set(!worldData.buildersEnabled().get());
-                break;
-            case 31:
+            }
+            case 31 -> {
                 if (hasPermission(player, "buildsystem.edit.mobai")) {
                     worldData.mobAi().set(!worldData.mobAi().get());
                 }
-                break;
-            case 32:
+            }
+            case 32 -> {
                 if (itemStack.getType() == XMaterial.BARRIER.get()) {
                     XSound.ENTITY_ITEM_BREAK.play(player);
                     return;
                 }
-                if (!hasPermission(player, "buildsystem.edit.visibility")) {
-                    return;
+                if (hasPermission(player, "buildsystem.edit.visibility")) {
+                    worldData.privateWorld().set(!worldData.privateWorld().get());
                 }
-                worldData.privateWorld().set(!worldData.privateWorld().get());
-                break;
-            case 33:
+            }
+            case 33 -> {
                 if (hasPermission(player, "buildsystem.edit.interactions")) {
                     worldData.blockInteractions().set(!worldData.blockInteractions().get());
                 }
-                break;
-
-            case 38:
+            }
+            case 38 -> {
                 if (hasPermission(player, "buildsystem.edit.gamerules")) {
                     XSound.BLOCK_CHEST_OPEN.play(player);
                     GameRulesInventory gameRulesInventory = plugin.getGameRulesInventory();
@@ -373,33 +377,37 @@ public class EditInventory implements Listener {
                     gameRulesInventory.openInventory(player, buildWorld);
                 }
                 return;
-            case 39:
+            }
+            case 39 -> {
                 if (hasPermission(player, "buildsystem.edit.difficulty")) {
                     buildWorld.cycleDifficulty();
                     buildWorld.getWorld().setDifficulty(buildWorld.getData().difficulty().get());
                 }
-                break;
-            case 40:
+            }
+            case 40 -> {
                 if (hasPermission(player, "buildsystem.edit.status")) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     plugin.getStatusInventory().openInventory(player);
                 }
                 return;
-            case 41:
+            }
+            case 41 -> {
                 if (hasPermission(player, "buildsystem.edit.project")) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     new SetProjectSubCommand(plugin, buildWorld.getName()).getProjectInput(player, buildWorld, false);
                 }
                 return;
-            case 42:
+            }
+            case 42 -> {
                 if (hasPermission(player, "buildsystem.edit.permission")) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     new SetPermissionSubCommand(plugin, buildWorld.getName()).getPermissionInput(player, buildWorld, false);
                 }
                 return;
-
-            default:
+            }
+            default -> {
                 return;
+            }
         }
 
         XSound.ENTITY_CHICKEN_EGG.play(player);
@@ -422,19 +430,13 @@ public class EditInventory implements Listener {
             return;
         }
 
-        Time time = getWorldTime(bukkitWorld);
-        switch (time) {
-            case SUNRISE:
-                bukkitWorld.setTime(configValues.getNoonTime());
-                break;
-            case NOON:
-                bukkitWorld.setTime(configValues.getNightTime());
-                break;
-            case NIGHT:
-                bukkitWorld.setTime(configValues.getSunriseTime());
-                break;
-        }
+        int time = switch (getWorldTime(bukkitWorld)) {
+            case UNKNOWN, SUNRISE -> configValues.getNoonTime();
+            case NOON -> configValues.getNightTime();
+            case NIGHT -> configValues.getSunriseTime();
+        };
 
+        bukkitWorld.setTime(time);
         openInventory(player, buildWorld);
     }
 

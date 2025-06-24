@@ -29,30 +29,34 @@ import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete.WorldsArgument;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.PaginatedInventory;
-import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 public class BuilderInventory extends PaginatedInventory implements Listener {
 
     private static final int MAX_BUILDERS = 9;
 
     private final BuildSystemPlugin plugin;
+    private final NamespacedKey builderNameKey;
 
     private int numBuilders = 0;
 
     public BuilderInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
+        this.builderNameKey = new NamespacedKey(plugin, "builder_name");
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -109,13 +113,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
 
         int columnSkull = 9, maxColumnSkull = 17;
         for (Builder builder : builders) {
-            inventory.setItem(columnSkull++, InventoryUtils.createSkull(
-                    Messages.getString("worldeditor_builders_builder_item", player,
-                            Map.entry("%builder%", builder.getName())
-                    ),
-                    Profileable.username(builder.getName()),
-                    Messages.getStringList("worldeditor_builders_builder_lore", player)
-            ));
+            inventory.setItem(columnSkull++, createBuilderItem(builder, player));
 
             if (columnSkull > maxColumnSkull) {
                 columnSkull = 9;
@@ -123,6 +121,20 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
                 inventories[++index] = inventory;
             }
         }
+    }
+
+    private ItemStack createBuilderItem(Builder builder, Player player) {
+        ItemStack itemStack = InventoryUtils.createSkull(
+                Messages.getString("worldeditor_builders_builder_item", player,
+                        Map.entry("%builder%", builder.getName())
+                ),
+                Profileable.username(builder.getName()),
+                Messages.getStringList("worldeditor_builders_builder_lore", player)
+        );
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        itemMeta.getPersistentDataContainer().set(this.builderNameKey, PersistentDataType.STRING, builder.getName());
+        itemStack.setItemMeta(itemMeta);
+        return itemStack;
     }
 
     public void openInventory(BuildWorld buildWorld, Player player) {
@@ -189,8 +201,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
                     return;
                 }
 
-                String template = Messages.getString("worldeditor_builders_builder_item", player, Map.entry("%builder%", ""));
-                String builderName = StringUtils.difference(template, itemStack.getItemMeta().getDisplayName());
+                String builderName = itemStack.getItemMeta().getPersistentDataContainer().get(this.builderNameKey, PersistentDataType.STRING);
                 UUID builderId = UUIDFetcher.getUUID(builderName);
                 if (builderId == null) {
                     player.closeInventory();

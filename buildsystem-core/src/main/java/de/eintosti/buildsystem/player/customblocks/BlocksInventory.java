@@ -107,70 +107,30 @@ public class BlocksInventory implements Listener {
         }
 
         switch (event.getSlot()) {
-            case 1:
-                giveCustomBlock(player, CustomBlock.FULL_OAK_BARCH);
-                break;
-            case 2:
-                giveCustomBlock(player, CustomBlock.FULL_SPRUCE_BARCH);
-                break;
-            case 3:
-                giveCustomBlock(player, CustomBlock.FULL_BIRCH_BARCH);
-                break;
-            case 4:
-                giveCustomBlock(player, CustomBlock.FULL_JUNGLE_BARCH);
-                break;
-            case 5:
-                giveCustomBlock(player, CustomBlock.FULL_ACACIA_BARCH);
-                break;
-            case 6:
-                giveCustomBlock(player, CustomBlock.FULL_DARK_OAK_BARCH);
-                break;
+            case 1 -> giveCustomBlock(player, CustomBlock.FULL_OAK_BARCH);
+            case 2 -> giveCustomBlock(player, CustomBlock.FULL_SPRUCE_BARCH);
+            case 3 -> giveCustomBlock(player, CustomBlock.FULL_BIRCH_BARCH);
+            case 4 -> giveCustomBlock(player, CustomBlock.FULL_JUNGLE_BARCH);
+            case 5 -> giveCustomBlock(player, CustomBlock.FULL_ACACIA_BARCH);
+            case 6 -> giveCustomBlock(player, CustomBlock.FULL_DARK_OAK_BARCH);
 
-            case 10:
-                giveCustomBlock(player, CustomBlock.RED_MUSHROOM);
-                break;
-            case 11:
-                giveCustomBlock(player, CustomBlock.BROWN_MUSHROOM);
-                break;
-            case 12:
-                giveCustomBlock(player, CustomBlock.FULL_MUSHROOM_STEM);
-                break;
-            case 13:
-                giveCustomBlock(player, CustomBlock.MUSHROOM_STEM);
-                break;
-            case 14:
-                giveCustomBlock(player, CustomBlock.MUSHROOM_BLOCK);
-                break;
+            case 10 -> giveCustomBlock(player, CustomBlock.RED_MUSHROOM);
+            case 11 -> giveCustomBlock(player, CustomBlock.BROWN_MUSHROOM);
+            case 12 -> giveCustomBlock(player, CustomBlock.FULL_MUSHROOM_STEM);
+            case 13 -> giveCustomBlock(player, CustomBlock.MUSHROOM_STEM);
+            case 14 -> giveCustomBlock(player, CustomBlock.MUSHROOM_BLOCK);
 
-            case 19:
-                giveCustomBlock(player, CustomBlock.SMOOTH_STONE);
-                break;
-            case 20:
-                giveCustomBlock(player, CustomBlock.DOUBLE_STONE_SLAB);
-                break;
-            case 21:
-                giveCustomBlock(player, CustomBlock.SMOOTH_SANDSTONE);
-                break;
-            case 22:
-                giveCustomBlock(player, CustomBlock.SMOOTH_RED_SANDSTONE);
-                break;
+            case 19 -> giveCustomBlock(player, CustomBlock.SMOOTH_STONE);
+            case 20 -> giveCustomBlock(player, CustomBlock.DOUBLE_STONE_SLAB);
+            case 21 -> giveCustomBlock(player, CustomBlock.SMOOTH_SANDSTONE);
+            case 22 -> giveCustomBlock(player, CustomBlock.SMOOTH_RED_SANDSTONE);
 
-            case 28:
-                giveCustomBlock(player, CustomBlock.POWERED_REDSTONE_LAMP);
-                break;
-            case 29:
-                giveCustomBlock(player, CustomBlock.BURNING_FURNACE);
-                break;
-            case 30:
-                giveCustomBlock(player, CustomBlock.PISTON_HEAD);
-                break;
-            case 31:
-                giveCustomBlock(player, CustomBlock.COMMAND_BLOCK);
-                break;
-            case 32:
-                giveCustomBlock(player, InventoryUtils.createItem(XMaterial.BARRIER, Messages.getString(CustomBlock.BARRIER.getKey(), player)));
-                break;
-            case 33:
+            case 28 -> giveCustomBlock(player, CustomBlock.POWERED_REDSTONE_LAMP);
+            case 29 -> giveCustomBlock(player, CustomBlock.BURNING_FURNACE);
+            case 30 -> giveCustomBlock(player, CustomBlock.PISTON_HEAD);
+            case 31 -> giveCustomBlock(player, CustomBlock.COMMAND_BLOCK);
+            case 32 -> giveCustomBlock(player, InventoryUtils.createItem(XMaterial.BARRIER, Messages.getString(CustomBlock.BARRIER.getKey(), player)));
+            case 33 -> {
                 ItemStack itemStack = InventoryUtils.createItem(XMaterial.ITEM_FRAME, Messages.getString(CustomBlock.INVISIBLE_ITEM_FRAME.getKey(), player));
                 ItemMeta itemMeta = itemStack.getItemMeta();
                 itemMeta.addEnchant(XEnchantment.UNBREAKING.get(), 1, true);
@@ -179,23 +139,13 @@ public class BlocksInventory implements Listener {
                 );
                 itemStack.setItemMeta(itemMeta);
                 giveCustomBlock(player, itemStack);
-                break;
+            }
 
-            case 37:
-                giveCustomBlock(player, CustomBlock.MOB_SPAWNER);
-                break;
-            case 38:
-                giveCustomBlock(player, CustomBlock.NETHER_PORTAL);
-                break;
-            case 39:
-                giveCustomBlock(player, CustomBlock.END_PORTAL);
-                break;
-            case 40:
-                giveCustomBlock(player, CustomBlock.DRAGON_EGG);
-                break;
-            case 41:
-                giveCustomBlock(player, InventoryUtils.createItem(XMaterial.DEBUG_STICK, Messages.getString(CustomBlock.DEBUG_STICK.getKey(), player)));
-                break;
+            case 37 -> giveCustomBlock(player, CustomBlock.MOB_SPAWNER);
+            case 38 -> giveCustomBlock(player, CustomBlock.NETHER_PORTAL);
+            case 39 -> giveCustomBlock(player, CustomBlock.END_PORTAL);
+            case 40 -> giveCustomBlock(player, CustomBlock.DRAGON_EGG);
+            case 41 -> giveCustomBlock(player, InventoryUtils.createItem(XMaterial.DEBUG_STICK, Messages.getString(CustomBlock.DEBUG_STICK.getKey(), player)));
         }
     }
 

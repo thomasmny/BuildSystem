@@ -118,14 +118,8 @@ public class SettingsInteractListener implements Listener {
 
         event.setCancelled(true);
         switch (material) {
-            case IRON_TRAPDOOR:
-                customBlocksManager.toggleIronTrapdoor(event);
-                break;
-            case IRON_DOOR:
-                customBlocksManager.toggleIronDoor(event);
-                break;
-            default:
-                break;
+            case IRON_TRAPDOOR -> customBlocksManager.toggleIronTrapdoor(event);
+            case IRON_DOOR -> customBlocksManager.toggleIronDoor(event);
         }
     }
 
@@ -214,24 +208,21 @@ public class SettingsInteractListener implements Listener {
         boolean isHangingSign = XTag.HANGING_SIGNS.isTagged(xMaterial);
 
         switch (blockFace) {
-            case UP:
+            case UP -> {
                 if (isHangingSign) {
                     return;
                 }
                 adjacent.setType(material);
                 customBlocksManager.rotateBlock(adjacent, DirectionUtil.getPlayerDirection(player).getOppositeFace());
-                break;
-            case DOWN:
+            }
+            case DOWN -> {
                 if (!isHangingSign) {
                     return;
                 }
                 adjacent.setType(material);
                 customBlocksManager.rotateBlock(adjacent, getHangingSignDirection(event));
-                break;
-            case NORTH:
-            case EAST:
-            case SOUTH:
-            case WEST:
+            }
+            case NORTH, EAST, SOUTH, WEST -> {
                 String woodType = xMaterial.name()
                         .replace("_HANGING", "") // Replace hanging if present
                         .replace("_SIGN", ""); // Get wood type
@@ -239,9 +230,7 @@ public class SettingsInteractListener implements Listener {
                 BlockFace facing = isHangingSign ? getHangingSignDirection(event) : blockFace;
                 XMaterial.matchXMaterial(woodType + block).ifPresent(value -> adjacent.setType(value.get()));
                 customBlocksManager.rotateBlock(adjacent, facing);
-                break;
-            default:
-                break;
+            }
         }
     }
 

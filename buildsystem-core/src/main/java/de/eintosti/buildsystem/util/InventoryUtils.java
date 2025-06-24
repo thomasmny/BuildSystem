@@ -26,11 +26,15 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import java.util.ArrayList;
+import de.eintosti.buildsystem.api.world.display.Displayable.DisplayableType;
 import java.util.Arrays;
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -38,6 +42,8 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -45,8 +51,11 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class InventoryUtils {
 
-    private static final BuildSystemPlugin plugin = BuildSystemPlugin.getPlugin(BuildSystemPlugin.class);
-    private static final Logger LOGGER = plugin.getLogger();
+    private static final BuildSystemPlugin PLUGIN = BuildSystemPlugin.getPlugin(BuildSystemPlugin.class);
+    private static final Logger LOGGER = PLUGIN.getLogger();
+
+    public final static NamespacedKey DISPLAYABLE_NAME_KEY = new NamespacedKey(PLUGIN, "displayable_name");
+    public final static NamespacedKey DISPLAYABLE_TYPE_KEY = new NamespacedKey(PLUGIN, "displayable_type");
 
     private InventoryUtils() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -148,7 +157,7 @@ public final class InventoryUtils {
      * @return The colored glass pane material
      */
     public static XMaterial getColoredGlassPane(Player player) {
-        Settings settings = plugin.getSettingsManager().getSettings(player);
+        Settings settings = PLUGIN.getSettingsManager().getSettings(player);
         DesignColor color = settings.getDesignColor();
         String paneItemName = color.name() + "_STAINED_GLASS_PANE";
         return XMaterial.matchXMaterial(paneItemName).orElse(XMaterial.BLACK_STAINED_GLASS_PANE);
@@ -171,7 +180,9 @@ public final class InventoryUtils {
         }
 
         // Initially set a default head
-        inventory.setItem(slot, createItem(XMaterial.PLAYER_HEAD, displayName, lore));
+        ItemStack defaultHead = createItem(XMaterial.PLAYER_HEAD, displayName, lore);
+        storeWorldInformation(defaultHead, buildWorld);
+        inventory.setItem(slot, defaultHead);
 
         // Then try to set texture asynchronously
         XSkull.createItem()
@@ -190,8 +201,17 @@ public final class InventoryUtils {
                     itemMeta.setDisplayName(displayName);
                     itemMeta.setLore(lore);
                     itemStack.setItemMeta(itemMeta);
+                    storeWorldInformation(itemStack, buildWorld);
                     inventory.setItem(slot, itemStack);
                 });
+    }
+
+    private static void storeWorldInformation(ItemStack itemStack, BuildWorld buildWorld) {
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
+        pdc.set(DISPLAYABLE_TYPE_KEY, PersistentDataType.STRING, DisplayableType.BUILD_WORLD.name());
+        pdc.set(DISPLAYABLE_NAME_KEY, PersistentDataType.STRING, buildWorld.getName());
+        itemStack.setItemMeta(itemMeta);
     }
 
     /**
@@ -224,7 +244,7 @@ public final class InventoryUtils {
      * @return true if the item is a navigator, false otherwise
      */
     public static boolean isNavigator(Player player, ItemStack itemStack) {
-        if (itemStack == null || itemStack.getType() != plugin.getConfigValues().getNavigatorItem().get()) {
+        if (itemStack == null || itemStack.getType() != PLUGIN.getConfigValues().getNavigatorItem().get()) {
             return false;
         }
 
@@ -244,16 +264,10 @@ public final class InventoryUtils {
      */
     public static List<Integer> getNavigatorSlots(Player player) {
         PlayerInventory playerInventory = player.getInventory();
-        List<Integer> navigatorSlots = new ArrayList<>();
-
-        for (int i = 0; i < playerInventory.getSize(); i++) {
-            ItemStack currentItem = playerInventory.getItem(i);
-            if (isNavigator(player, currentItem)) {
-                navigatorSlots.add(i);
-            }
-        }
-
-        return navigatorSlots;
+        return IntStream.range(0, playerInventory.getSize())
+                .filter(i -> isNavigator(player, playerInventory.getItem(i)))
+                .boxed()
+                .collect(Collectors.toList());
     }
 
     /**
@@ -263,12 +277,8 @@ public final class InventoryUtils {
      * @return true if the inventory contains a navigator, false otherwise
      */
     public static boolean hasNavigator(Player player) {
-        for (ItemStack itemStack : player.getInventory().getContents()) {
-            if (isNavigator(player, itemStack)) {
-                return true;
-            }
-        }
-        return false;
+        return Arrays.stream(player.getInventory().getContents())
+                .anyMatch(itemStack -> isNavigator(player, itemStack));
     }
 
     /**
@@ -282,18 +292,21 @@ public final class InventoryUtils {
     public static void replaceItem(Player player, String findItemName, XMaterial findItemType, ItemStack replaceItem) {
         PlayerInventory inventory = player.getInventory();
 
-        // First try to find the item to replace
-        for (int i = 0; i < inventory.getSize(); i++) {
-            ItemStack currentItem = inventory.getItem(i);
-            if (currentItem == null || currentItem.getType() != findItemType.get()) {
-                continue;
-            }
+        OptionalInt slot = IntStream.range(0, inventory.getSize())
+                .filter(i -> {
+                    ItemStack currentItem = inventory.getItem(i);
+                    if (currentItem == null || currentItem.getType() != findItemType.get()) {
+                        return false;
+                    }
 
-            ItemMeta itemMeta = currentItem.getItemMeta();
-            if (itemMeta != null && itemMeta.getDisplayName().equals(findItemName)) {
-                inventory.setItem(i, replaceItem);
-                return;
-            }
+                    ItemMeta itemMeta = currentItem.getItemMeta();
+                    return itemMeta != null && itemMeta.getDisplayName().equals(findItemName);
+                })
+                .findFirst();
+
+        if (slot.isPresent()) {
+            inventory.setItem(slot.getAsInt(), replaceItem);
+            return;
         }
 
         // If item not found, try to put in slot 8 or add to inventory
@@ -306,20 +319,13 @@ public final class InventoryUtils {
     }
 
     /**
-     * Fills the top and bottom rows of an {@link Inventory with glass panes.
+     * Fills the top and bottom rows of an {@link Inventory} with glass panes.
      *
-     * @param inventory   The inventory to fill
-     * @param player      The player viewing the inventory
-     * @param currentPage The current page number
-     * @param numOfPages  The total number of pages
+     * @param inventory The inventory to fill
+     * @param player    The player viewing the inventory
      */
     public static void fillWithGlass(Inventory inventory, Player player) {
-        for (int i = 0; i <= 8; i++) {
-            addGlassPane(player, inventory, i);
-        }
-
-        for (int i = 45; i <= 53; i++) {
-            addGlassPane(player, inventory, i);
-        }
+        IntStream.rangeClosed(0, 8).forEach(i -> addGlassPane(player, inventory, i));
+        IntStream.rangeClosed(45, 53).forEach(i -> addGlassPane(player, inventory, i));
     }
 }

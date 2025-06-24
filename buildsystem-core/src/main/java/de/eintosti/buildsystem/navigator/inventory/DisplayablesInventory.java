@@ -38,7 +38,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -66,9 +65,6 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
     private static final String PREVIOUS_PAGE_SKULL_PROFILE = "86971dd881dbaf4fd6bcaa93614493c612f869641ed59d1c9363a3666a5fa6";
     private static final String NEXT_PAGE_SKULL_PROFILE = "f32ca66056b72863e98f7f32bd7d94c7a0d796af691c9ac3a9136331352288f9";
     private static final String NO_WORLDS_SKULL_PROFILE = "2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6";
-
-    private final NamespacedKey typeKey;
-    private final NamespacedKey nameKey;
 
     protected final BuildSystemPlugin plugin;
     protected final PlayerServiceImpl playerService;
@@ -106,9 +102,6 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
             @NotNull Visibility requiredVisibility,
             @NotNull Set<@NotNull BuildWorldStatus> validStatuses
     ) {
-        this.typeKey = new NamespacedKey(plugin, "displayable_type");
-        this.nameKey = new NamespacedKey(plugin, "displayable_name");
-
         this.plugin = plugin;
         this.player = player;
         this.category = category;
@@ -456,8 +449,8 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
         }
 
         PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
-        String displayableType = pdc.get(typeKey, PersistentDataType.STRING);
-        String displayableName = pdc.get(nameKey, PersistentDataType.STRING);
+        String displayableType = pdc.get(InventoryUtils.DISPLAYABLE_TYPE_KEY, PersistentDataType.STRING);
+        String displayableName = pdc.get(InventoryUtils.DISPLAYABLE_NAME_KEY, PersistentDataType.STRING);
         if (displayableType == null || displayableName == null) {
             return;
         }

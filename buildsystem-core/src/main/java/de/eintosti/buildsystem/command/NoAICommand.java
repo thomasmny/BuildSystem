@@ -58,15 +58,9 @@ public class NoAICommand implements CommandExecutor {
         }
 
         switch (args.length) {
-            case 0:
-                toggleAI(player, player.getWorld());
-                break;
-            case 1:
-                toggleAI(player, Bukkit.getWorld(args[0]));
-                break;
-            default:
-                Messages.sendMessage(player, "noai_usage");
-                break;
+            case 0 -> toggleAI(player, player.getWorld());
+            case 1 -> toggleAI(player, Bukkit.getWorld(args[0]));
+            default -> Messages.sendMessage(player, "noai_usage");
         }
 
         return true;

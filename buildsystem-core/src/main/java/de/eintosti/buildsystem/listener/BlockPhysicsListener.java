@@ -61,22 +61,22 @@ public class BlockPhysicsListener implements Listener {
         }
 
         switch (XMaterial.matchXMaterial(block.getType())) {
-            case REDSTONE_BLOCK:
+            case REDSTONE_BLOCK -> {
                 for (BlockFace blockFace : DirectionUtil.BLOCK_SIDES) {
                     if (isCustomRedstoneLamp(block.getRelative(blockFace))) {
                         event.setCancelled(false);
                         return;
                     }
                 }
-                break;
-            case REDSTONE_LAMP:
+            }
+            case REDSTONE_LAMP -> {
                 for (BlockFace blockFace : DirectionUtil.BLOCK_SIDES) {
                     if (block.getRelative(blockFace).getType() == XMaterial.REDSTONE_BLOCK.get()) {
                         event.setCancelled(false);
                         return;
                     }
                 }
-                break;
+            }
         }
 
         event.setCancelled(true);
