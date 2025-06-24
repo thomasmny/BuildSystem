@@ -43,7 +43,7 @@ public class SetItemSubCommand implements SubCommand {
     @Override
     public void execute(Player player, String[] args) {
         if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
-            plugin.sendPermissionMessage(player);
+            Messages.sendPermissionError(player);
             return;
         }
 

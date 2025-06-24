@@ -56,8 +56,6 @@ public class FolderSubCommand implements SubCommand {
             return;
         }
 
-        //TODO: Permissions check
-
         String folderName = args[1];
         String operation = args.length > 2 ? args[2].toLowerCase(Locale.ROOT) : "";
 
@@ -117,6 +115,11 @@ public class FolderSubCommand implements SubCommand {
 
         switch (operation) {
             case "add":
+                if (!player.hasPermission("buildsystem.folder.add")) {
+                    Messages.sendPermissionError(player);
+                    return;
+                }
+
                 if (folder.containsWorld(buildWorld)) {
                     Messages.sendMessage(player, "worlds_folder_world_already_in_folder", folderPlaceholder, worldPlaceholder);
                     return;
@@ -140,6 +143,11 @@ public class FolderSubCommand implements SubCommand {
                 break;
 
             case "remove":
+                if (!player.hasPermission("buildsystem.folder.remove")) {
+                    Messages.sendPermissionError(player);
+                    return;
+                }
+
                 if (!folder.containsWorld(buildWorld)) {
                     Messages.sendMessage(player, "worlds_folder_world_not_in_folder", folderPlaceholder, worldPlaceholder);
                     return;
@@ -152,6 +160,11 @@ public class FolderSubCommand implements SubCommand {
     }
 
     private void handlePermissionInput(Player player, Folder folder) {
+        if (!player.hasPermission("buildsystem.folder.setpermission")) {
+            Messages.sendPermissionError(player);
+            return;
+        }
+
         new PlayerChatInput(this.plugin, player, "enter_world_permission", input -> {
             folder.setPermission(input.trim());
 
@@ -163,6 +176,11 @@ public class FolderSubCommand implements SubCommand {
     }
 
     private void handleProjectInput(Player player, Folder folder) {
+        if (!player.hasPermission("buildsystem.folder.setproject")) {
+            Messages.sendPermissionError(player);
+            return;
+        }
+
         new PlayerChatInput(this.plugin, player, "enter_world_project", input -> {
             folder.setProject(input.trim());
 
@@ -174,6 +192,11 @@ public class FolderSubCommand implements SubCommand {
     }
 
     private void handleIconChange(Player player, Folder folder) {
+        if (!player.hasPermission("buildsystem.folder.setitem")) {
+            Messages.sendPermissionError(player);
+            return;
+        }
+
         ItemStack itemStack = player.getItemInHand();
         if (itemStack.getType() == Material.AIR) {
             Messages.sendMessage(player, "worlds_setitem_hand_empty");
@@ -187,6 +210,11 @@ public class FolderSubCommand implements SubCommand {
     }
 
     private void handleDeletion(Player player, Folder folder) {
+        if (!player.hasPermission("buildsystem.folder.delete")) {
+            Messages.sendPermissionError(player);
+            return;
+        }
+
         if (folder.getWorldCount() > 0) {
             Messages.sendMessage(player, "worlds_folder_not_empty",
                     new AbstractMap.SimpleEntry<>("%folder%", folder.getName())

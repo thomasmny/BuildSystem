@@ -51,7 +51,7 @@ public class BackCommand implements CommandExecutor {
 
         Player player = (Player) sender;
         if (!player.hasPermission("buildsystem.back")) {
-            plugin.sendPermissionMessage(player);
+            Messages.sendPermissionError(player);
             return true;
         }
 

@@ -931,6 +931,10 @@ public class Messages {
         return MESSAGES.get("prefix");
     }
 
+    public static void sendPermissionError(CommandSender sender) {
+        Messages.sendMessage(sender, "no_permissions");
+    }
+
     @SafeVarargs
     public static void sendMessage(CommandSender sender, String key, Map.Entry<String, Object>... placeholders) {
         Player player = sender instanceof Player ? (Player) sender : null;

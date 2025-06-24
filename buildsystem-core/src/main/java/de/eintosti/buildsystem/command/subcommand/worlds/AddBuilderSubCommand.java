@@ -50,7 +50,7 @@ public class AddBuilderSubCommand implements SubCommand {
     @Override
     public void execute(Player player, String[] args) {
         if (!permissions.canPerformCommand(player, getArgument().getPermission())) {
-            plugin.sendPermissionMessage(player);
+            Messages.sendPermissionError(player);
             return;
         }
 

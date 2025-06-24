@@ -112,7 +112,6 @@ import org.bstats.charts.AdvancedPie;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.ServicePriority;
@@ -441,10 +440,6 @@ public class BuildSystemPlugin extends JavaPlugin {
         worldService.save();
         playerService.save();
         spawnManager.save();
-    }
-
-    public void sendPermissionMessage(CommandSender sender) {
-        Messages.sendMessage(sender, "no_permissions");
     }
 
     /**

@@ -39,7 +39,7 @@ public class RemoveSpawnSubCommand implements SubCommand {
     public void execute(Player player, String[] args) {
         BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld());
         if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
-            plugin.sendPermissionMessage(player);
+            Messages.sendPermissionError(player);
             return;
         }
 

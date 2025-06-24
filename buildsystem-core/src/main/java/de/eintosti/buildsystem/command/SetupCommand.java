@@ -43,7 +43,7 @@ public class SetupCommand implements CommandExecutor {
 
         Player player = (Player) sender;
         if (!player.hasPermission("buildsystem.setup")) {
-            plugin.sendPermissionMessage(player);
+            Messages.sendPermissionError(player);
             return true;
         }
 

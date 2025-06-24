@@ -425,7 +425,7 @@ public class EditInventory implements Listener {
             return true;
         }
         player.closeInventory();
-        plugin.sendPermissionMessage(player);
+        Messages.sendPermissionError(player);
         XSound.ENTITY_ITEM_BREAK.play(player);
         return false;
     }

@@ -116,7 +116,7 @@ public class NavigatorListener implements Listener {
         }
 
         if (!player.hasPermission("buildsystem.navigator.item")) {
-            plugin.sendPermissionMessage(player);
+            Messages.sendPermissionError(player);
             return;
         }
 

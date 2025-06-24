@@ -46,7 +46,7 @@ public class SkullCommand implements CommandExecutor {
 
         Player player = (Player) sender;
         if (!player.hasPermission("buildsystem.skull")) {
-            plugin.sendPermissionMessage(player);
+            Messages.sendPermissionError(player);
             return true;
         }
 
