@@ -203,7 +203,17 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                     case "folder": {
                         switch (args.length) {
                             case 3:
-                                Arrays.asList("add", "remove", "delete", "setPermission", "setProject", "setItem").forEach(arg -> addArgument(args[2], arg, arrayList));
+                                Map<String, String> subCommands = new HashMap<String, String>() {{
+                                    put("add", "buildsystem.folder.add");
+                                    put("remove", "buildsystem.folder.remove");
+                                    put("delete", "buildsystem.folder.delete");
+                                    put("setPermission", "buildsystem.folder.setpermission");
+                                    put("setProject", "buildsystem.folder.setproject");
+                                    put("setItem", "buildsystem.folder.setitem");
+                                }};
+                                subCommands.entrySet().stream()
+                                        .filter(entry -> player.hasPermission(entry.getKey()))
+                                        .forEach(entry -> addArgument(args[2], entry.getKey(), arrayList));
                                 break;
                             case 4:
                                 if (!args[2].equalsIgnoreCase("add") && !args[2].equalsIgnoreCase("remove")) {
