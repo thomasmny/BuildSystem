@@ -141,7 +141,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
     private Folder loadFolder(String folderName) {
         final String path = FOLDERS_KEY + "." + folderName;
 
-        Builder creator = Objects.requireNonNull(Builder.deserialize(path + ".creator"), "Creator cannot be null for folder: " + folderName);
+        Builder creator = Objects.requireNonNull(Builder.deserialize(config.getString(path + ".creator")), "Creator cannot be null for folder: " + folderName);
         long creation = config.getLong(path + ".creation", System.currentTimeMillis());
         NavigatorCategory category = NavigatorCategory.valueOf(config.getString(path + ".category"));
         XMaterial defaultMaterial = XMaterial.CHEST;
