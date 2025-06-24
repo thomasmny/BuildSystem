@@ -369,7 +369,7 @@ public class EditInventory implements Listener {
                 if (hasPermission(player, "buildsystem.edit.gamerules")) {
                     XSound.BLOCK_CHEST_OPEN.play(player);
                     GameRulesInventory gameRulesInventory = plugin.getGameRulesInventory();
-                    gameRulesInventory.resetInvIndex(player.getUniqueId());
+                    gameRulesInventory.resetInvIndex(player);
                     gameRulesInventory.openInventory(player, buildWorld);
                 }
                 return;

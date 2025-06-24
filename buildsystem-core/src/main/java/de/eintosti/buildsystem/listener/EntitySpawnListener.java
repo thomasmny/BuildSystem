@@ -18,8 +18,8 @@
 package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
@@ -28,7 +28,7 @@ import org.bukkit.event.entity.EntitySpawnEvent;
 
 public class EntitySpawnListener implements Listener {
 
-    private final WorldStorageImpl worldStorage;
+    private final WorldStorage worldStorage;
 
     public EntitySpawnListener(BuildSystemPlugin plugin) {
         this.worldStorage = plugin.getWorldService().getWorldStorage();

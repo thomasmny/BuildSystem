@@ -25,11 +25,9 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.util.InventoryUtils;
+import de.eintosti.buildsystem.util.PaginatedInventory;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -45,21 +43,17 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class GameRulesInventory implements Listener {
+public class GameRulesInventory extends PaginatedInventory implements Listener {
 
     private static final int[] SLOTS = new int[]{
             11, 12, 13, 14, 15, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33
     };
 
     private final BuildSystemPlugin plugin;
-    private final Map<UUID, Integer> invIndex;
-
-    private Inventory[] inventories;
     private int numGameRules = 0;
 
     public GameRulesInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.invIndex = new HashMap<>();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -74,7 +68,7 @@ public class GameRulesInventory implements Listener {
 
     public Inventory getInventory(Player player, World world) {
         addGameRules(world, player);
-        return inventories[getInvIndex(player.getUniqueId())];
+        return inventories[getInvIndex(player)];
     }
 
     public void addGameRules(World world, Player player) {
@@ -150,7 +144,7 @@ public class GameRulesInventory implements Listener {
             }
         }
 
-        int invIndex = getInvIndex(player.getUniqueId());
+        int invIndex = getInvIndex(player);
 
         if (numGameRules > 1 && invIndex > 0) {
             inventory.setItem(36, InventoryUtils.createSkull(Messages.getString("gui_previous_page", player), Profileable.detect("f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2")));
@@ -187,16 +181,16 @@ public class GameRulesInventory implements Listener {
             case PLAYER_HEAD:
                 int slot = event.getSlot();
                 if (slot == 36) {
-                    decrementInv(player);
+                    decrementInv(player, this.numGameRules, SLOTS.length);
                 } else if (slot == 44) {
-                    incrementInv(player);
+                    incrementInv(player, this.numGameRules, SLOTS.length);
                 }
+                openInventory(player, buildWorld);
                 break;
 
             case FILLED_MAP:
             case MAP:
-                World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
-                modifyGameRule(event, bukkitWorld);
+                modifyGameRule(event, buildWorld.getWorld());
                 break;
 
             default:
@@ -209,8 +203,7 @@ public class GameRulesInventory implements Listener {
         openInventory(player, buildWorld);
     }
 
-    @EventHandler
-    public void modifyGameRule(InventoryClickEvent event, World world) {
+    private void modifyGameRule(InventoryClickEvent event, World world) {
         int slot = event.getSlot();
         if (!isValidSlot(slot)) {
             return;
@@ -263,26 +256,5 @@ public class GameRulesInventory implements Listener {
     @SuppressWarnings("unchecked")
     private static GameRule<Integer> asIntegerRule(GameRule<?> rule) {
         return rule != null && rule.getType() == Integer.class ? (GameRule<Integer>) rule : null;
-    }
-
-    public void incrementInv(Player player) {
-        UUID playerUUID = player.getUniqueId();
-        invIndex.put(playerUUID, getInvIndex(playerUUID) + 1);
-    }
-
-    public void decrementInv(Player player) {
-        UUID playerUUID = player.getUniqueId();
-        invIndex.put(playerUUID, getInvIndex(playerUUID) - 1);
-    }
-
-    public int getInvIndex(UUID uuid) {
-        if (!invIndex.containsKey(uuid)) {
-            resetInvIndex(uuid);
-        }
-        return invIndex.get(uuid);
-    }
-
-    public void resetInvIndex(UUID uuid) {
-        invIndex.put(uuid, 0);
     }
 }

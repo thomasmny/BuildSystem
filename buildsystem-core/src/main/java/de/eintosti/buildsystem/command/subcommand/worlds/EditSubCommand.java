@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
-import com.cryptomorin.xseries.messages.Titles;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -60,7 +59,7 @@ public class EditSubCommand implements SubCommand {
             plugin.getEditInventory().openInventory(player, buildWorld);
         } else {
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-            Titles.sendTitle(player, 5, 70, 20, " ", Messages.getString("world_not_loaded", player));
+            player.sendTitle(" ", Messages.getString("world_not_loaded", player), 5, 70, 20);
         }
     }
 

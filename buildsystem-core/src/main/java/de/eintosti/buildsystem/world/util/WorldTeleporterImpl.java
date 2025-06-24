@@ -17,7 +17,7 @@
  */
 package de.eintosti.buildsystem.world.util;
 
-import com.cryptomorin.xseries.messages.Titles;
+import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -26,7 +26,6 @@ import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -99,8 +98,8 @@ public class WorldTeleporterImpl implements WorldTeleporter {
                     return;
                 }
 
-                Titles.clearTitle(player);
-                player.playSound(player, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
+                player.resetTitle();
+                XSound.ENTITY_ENDERMAN_TELEPORT.play(player);
 
                 if (!finalLocation.clone().add(0, -1, 0).getBlock().getType().isSolid()) {
                     player.setFlying(player.getAllowFlight());

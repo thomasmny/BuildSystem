@@ -345,7 +345,6 @@ public class BuildSystemPlugin extends JavaPlugin {
 
         if (pluginManager.getPlugin("AxiomPaper") != null) {
             new WorldManipulateByAxiomListener(this);
-            getLogger().info("Axiom build-world manipulation prevention has been enabled.");
         }
 
         boolean isWorldEdit = pluginManager.getPlugin("WorldEdit") != null
