@@ -21,6 +21,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl;
@@ -30,6 +31,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -51,7 +53,6 @@ public abstract class WorldStorageImpl implements WorldStorage {
         this.logger = plugin.getLogger();
 
         this.buildWorlds = load().stream().collect(Collectors.toMap(BuildWorld::getName, Function.identity()));
-        this.loadWorlds();
     }
 
     @Override
@@ -67,6 +68,15 @@ public abstract class WorldStorageImpl implements WorldStorage {
     }
 
     @Override
+    @Nullable
+    public BuildWorld getBuildWorld(UUID uuid) {
+        return buildWorlds.values().stream()
+                .filter(buildWorld -> buildWorld.getUniqueId().equals(uuid))
+                .findFirst()
+                .orElse(null);
+    }
+
+    @Override
     @Unmodifiable
     public Collection<BuildWorld> getBuildWorlds() {
         return Collections.unmodifiableCollection(buildWorlds.values());
@@ -79,12 +89,13 @@ public abstract class WorldStorageImpl implements WorldStorage {
 
     @Override
     public void removeBuildWorld(BuildWorld buildWorld) {
-        removeBuildWorld(buildWorld.getName());
-    }
+        this.buildWorlds.remove(buildWorld.getName());
 
-    @Override
-    public void removeBuildWorld(String name) {
-        buildWorlds.remove(name);
+        // Also remove world from any folder it may be in
+        Folder assignedFolder = plugin.getWorldService().getFolderStorage().getAssignedFolder(buildWorld);
+        if (assignedFolder != null) {
+            assignedFolder.removeWorld(buildWorld);
+        }
     }
 
     @Override
@@ -95,9 +106,9 @@ public abstract class WorldStorageImpl implements WorldStorage {
     @Override
     public boolean worldExists(String worldName, boolean caseSensitive) {
         if (caseSensitive) {
-            return buildWorlds.containsKey(worldName);
+            return this.buildWorlds.containsKey(worldName);
         } else {
-            return buildWorlds.keySet().stream().anyMatch(name -> name.equalsIgnoreCase(worldName));
+            return this.buildWorlds.keySet().stream().anyMatch(name -> name.equalsIgnoreCase(worldName));
         }
     }
 
@@ -146,7 +157,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
         }
     }
 
-    private void loadWorlds() {
+    public void loadWorlds() {
         boolean loadAllWorlds = !plugin.getConfigValues().isUnloadWorlds();
         if (loadAllWorlds) {
             logger.info("*** All worlds will be loaded now ***");
@@ -181,7 +192,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
             return LoadResult.NOT_BLACKLISTED;
         }
 
-        World world = new BuildWorldCreatorImpl(plugin, buildWorld).generateBukkitWorld();
+        World world = new BuildWorldCreatorImpl(plugin, worldName).generateBukkitWorld(buildWorld);
         if (world == null) {
             return LoadResult.FAILED;
         }

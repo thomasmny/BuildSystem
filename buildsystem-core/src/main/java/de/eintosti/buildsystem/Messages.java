@@ -78,6 +78,7 @@ public class Messages {
         setMessage(sb, "loading_world", "&7Loading &b%world%&7...");
         setMessage(sb, "world_not_loaded", "&cWorld is not loaded!");
         setMessage(sb, "enter_world_name", "&7Enter &bWorld Name");
+        setMessage(sb, "enter_folder_name", "&7Enter &bFolder Name");
         setMessage(sb, "enter_generator_name", "&7Enter &bGenerator Name");
         setMessage(sb, "enter_world_creator", "&7Enter &bWorld Creator");
         setMessage(sb, "enter_world_permission", "&7Enter &bPermission");
@@ -262,6 +263,25 @@ public class Messages {
         setMessage(sb, "worlds_edit_unknown_world", "%prefix% &cUnknown world.");
         setMessage(sb, "worlds_edit_error", "%prefix% &cError: Please try again.");
         addSpacer(sb, "");
+        setMessage(sb, "worlds_folder_usage", "%prefix% &7Usage: &b/worlds folder <folder> <add|remove|delete|setPermission|setProject|setItem> [<world>]");
+        setMessage(sb, "worlds_folder_unknown_folder", "%prefix% &cUnknown folder.");
+        setMessage(sb, "worlds_folder_unknown_world", "%prefix% &cUnknown world.");
+        setMessage(sb, "worlds_folder_world_already_in_folder", "%prefix% &c%world% is already contained within %folder%.");
+        setMessage(sb, "worlds_folder_world_already_in_another_folder", "%prefix% &c%world% is already contained within another folder.");
+        setMessage(sb, "worlds_folder_world_category_mismatch", "%prefix% &cThe folder's category (%folder_category%) does not match the world's category (%world_category%).");
+        setMessage(sb, "worlds_folder_world_not_in_folder", "%prefix% &c%world% is not contained within %folder%.");
+        setMessage(sb, "worlds_folder_world_added_to_folder", "%prefix% &b%world% &7was &aadded &7to &b%folder%&7.");
+        setMessage(sb, "worlds_folder_world_removed_from_folder", "%prefix% &b%world% &7was &cremoved &7from &b%folder%&7.");
+        setMessage(sb, "worlds_folder_exists", "%prefix% &cThis folder already exists.");
+        setMessage(sb, "worlds_folder_creation_invalid_characters", "%prefix% &7&oRemoved invalid characters from folder name.");
+        setMessage(sb, "worlds_folder_creation_name_bank", "%prefix% &cThe folder name cannot be blank.");
+        setMessage(sb, "worlds_folder_created", "%prefix% &7The folder &b%folder% &7was &asuccessfully &7created.");
+        setMessage(sb, "worlds_folder_not_empty", "%prefix% &cThe folder %folder% is not empty.");
+        setMessage(sb, "worlds_folder_deleted", "%prefix% &7The folder &b%folder% &7was &asuccessfully &7deleted.");
+        setMessage(sb, "worlds_folder_permission_set", "%prefix% &b%folder%&7's permission was successfully changed.");
+        setMessage(sb, "worlds_folder_project_set", "%prefix% &b%folder%&7's project was successfully changed.");
+        setMessage(sb, "worlds_folder_item_set", "%prefix% &b%folder%&7's item was successfully changed.");
+        addSpacer(sb, "");
         setMessage(sb, "worlds_help_usage", "%prefix% &7Usage: &b/worlds help [page]");
         setMessage(sb, "worlds_help_invalid_page", "%prefix% &cInvalid page.");
         setMessage(sb, "worlds_help_title_with_page", "%prefix% &7&nWorlds Help:&8 (&7%page%/%max%&8)");
@@ -424,7 +444,8 @@ public class Messages {
         addSpacer(sb, "# World Navigator");
         setMessage(sb, "world_navigator_title", "&3» &8World Navigator");
         setMessage(sb, "world_navigator_no_worlds", "&c&nNo worlds available");
-        setMessage(sb, "world_navigator_create_world", "&bCreate World");
+        setMessage(sb, "world_navigator_create_world", "&bCreate a Public World");
+        setMessage(sb, "world_navigator_create_folder", "&bCreate a Folder");
         setMessage(sb, "world_item_title", "&3&l%world%");
         setMessage(sb, "world_item_lore_normal", Arrays.asList(
                 "&7Status&8: %status%",
@@ -448,6 +469,14 @@ public class Messages {
                 "",
                 "&8- &7&oLeft click&8: &7Teleport",
                 "&8- &7&oRight click&8: &7Edit"
+        ));
+        setMessage(sb, "folder_title", "&3» &8%folder%");
+        setMessage(sb, "folder_item_title", "&3&l%folder%");
+        setMessage(sb, "folder_item_lore", Arrays.asList(
+                "&7Project&8: &b%project%",
+                "&7Permission&8: &b%permission%",
+                "",
+                "&7Worlds&8: &b%worlds%"
         ));
         setMessage(sb, "world_item_builders_builder_template", "&b%builder%&7, ");
         setMessage(sb, "world_sort_title", "&bSort");
@@ -478,7 +507,7 @@ public class Messages {
         addSpacer(sb, "# Private Worlds");
         setMessage(sb, "private_title", "&3» &8Private Worlds");
         setMessage(sb, "private_no_worlds", "&c&nNo worlds available");
-        setMessage(sb, "private_create_world", "&bCreate a private world");
+        setMessage(sb, "private_create_world", "&bCreate a Private World");
         addSpacer(sb, "");
         addSpacer(sb, "# Setup");
         setMessage(sb, "setup_title", "&3» &8Setup");
@@ -900,6 +929,10 @@ public class Messages {
 
     private static String getPrefix() {
         return MESSAGES.get("prefix");
+    }
+
+    public static void sendPermissionError(CommandSender sender) {
+        Messages.sendMessage(sender, "no_permissions");
     }
 
     @SafeVarargs

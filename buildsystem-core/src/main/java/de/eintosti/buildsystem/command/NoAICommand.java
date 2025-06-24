@@ -57,7 +57,7 @@ public class NoAICommand implements CommandExecutor {
         String worldName = args.length == 0 ? player.getWorld().getName() : args[0];
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, "buildsystem.noai")) {
-            plugin.sendPermissionMessage(player);
+            Messages.sendPermissionError(player);
             return true;
         }
 

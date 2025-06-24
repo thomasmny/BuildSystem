@@ -25,7 +25,6 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.version.gamerules.GameRules;
-import de.eintosti.buildsystem.world.BuildWorldImpl;
 import java.util.Arrays;
 import java.util.UUID;
 import org.bukkit.Bukkit;
@@ -85,11 +84,11 @@ public class GameRuleInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!InventoryUtils.isValidClick(event, "worldeditor_gamerules_title")) {
+        Player player = (Player) event.getWhoClicked();
+        if (!InventoryUtils.isValidClick(event, Messages.getString("worldeditor_gamerules_title", player))) {
             return;
         }
 
-        Player player = (Player) event.getWhoClicked();
         BuildWorld buildWorld = plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();

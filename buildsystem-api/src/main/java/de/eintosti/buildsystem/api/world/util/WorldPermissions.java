@@ -21,6 +21,9 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import java.util.function.Supplier;
 import org.bukkit.entity.Player;
 
+/**
+ * @since 3.0.0
+ */
 public interface WorldPermissions {
 
     /**

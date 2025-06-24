@@ -21,11 +21,17 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
+/**
+ * Interface for managing the storage of {@link BuildWorld} objects.
+ *
+ * @since 3.0.0
+ */
 public interface WorldStorage extends Storage<BuildWorld> {
 
     /**
@@ -45,6 +51,15 @@ public interface WorldStorage extends Storage<BuildWorld> {
      */
     @Nullable
     BuildWorld getBuildWorld(World world);
+
+    /**
+     * Gets the {@link BuildWorld} by the given {@link UUID}.
+     *
+     * @param uuid The build world's unique identifier
+     * @return The world object if one was found, {@code null} otherwise
+     */
+    @Nullable
+    BuildWorld getBuildWorld(UUID uuid);
 
     /**
      * Gets a list of all {@link BuildWorld}s.
@@ -67,13 +82,6 @@ public interface WorldStorage extends Storage<BuildWorld> {
      * @param buildWorld The {@link BuildWorld} to remove
      */
     void removeBuildWorld(BuildWorld buildWorld);
-
-    /**
-     * Removes a {@link BuildWorld} from the world map.
-     *
-     * @param name The name of the {@link BuildWorld} to remove
-     */
-    void removeBuildWorld(String name);
 
     /**
      * Checks if a {@link BuildWorld} with the given name (case-insensitive) exists.

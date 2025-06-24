@@ -19,68 +19,123 @@ package de.eintosti.buildsystem.world.display;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.api.world.display.Displayable;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.api.world.util.WorldPermissions;
+import de.eintosti.buildsystem.storage.FolderStorageImpl;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 public class FolderImpl implements Folder {
 
+    private final FolderStorageImpl folderStorage;
+
     private final String name;
-    private final List<String> worldNames;
+    private final Builder creator;
+    private final long creation;
+    private final NavigatorCategory category;
+    private final List<UUID> worlds;
 
+    private Folder parent;
     private XMaterial material;
+    private String permission;
+    private String project;
 
-    public FolderImpl(String name) {
-        this.name = name;
-        this.worldNames = new ArrayList<>();
-        this.material = XMaterial.CHEST;
+    public FolderImpl(FolderStorageImpl folderStorage, String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
+        this(folderStorage, name, System.currentTimeMillis(), category, parent, creator, XMaterial.CHEST, "-", "-", new ArrayList<>());
     }
 
-    public FolderImpl(String name, XMaterial material, List<String> worldNames) {
+    public FolderImpl(
+            @NotNull FolderStorageImpl folderStorage,
+            @NotNull String name,
+            long creation,
+            @NotNull NavigatorCategory category,
+            @Nullable Folder parent,
+            @NotNull Builder creator,
+            @NotNull XMaterial material,
+            @NotNull String permission,
+            @NotNull String project,
+            @NotNull List<@NotNull UUID> worlds
+    ) {
+        this.folderStorage = folderStorage;
         this.name = name;
-        this.worldNames = worldNames;
+        this.creation = creation;
+        this.category = category;
+        this.parent = parent;
+        this.creator = creator;
+        this.worlds = worlds;
         this.material = material;
+        this.permission = permission;
+        this.project = project;
+    }
+
+    @Override
+    public Builder getCreator() {
+        return this.creator;
     }
 
     @Override
     public String getName() {
-        return name;
-    }
-
-    @Unmodifiable
-    public List<String> getWorlds() {
-        return Collections.unmodifiableList(worldNames);
-    }
-
-    public boolean containsWorld(String worldName) {
-        return worldNames.contains(worldName);
-    }
-
-    public void addWorld(String worldName) {
-        worldNames.add(worldName);
-    }
-
-    public void removeWorld(String worldName) {
-        worldNames.remove(worldName);
-    }
-
-    public int getWorldCount() {
-        return worldNames.size();
+        return this.name;
     }
 
     @Override
-    public XMaterial getMaterial() {
-        return material;
+    public NavigatorCategory getCategory() {
+        return this.category;
     }
 
-    public void setMaterial(XMaterial material) {
-        this.material = material;
+    @Override
+    @Nullable
+    public Folder getParent() {
+        return this.parent;
+    }
+
+    @Override
+    public boolean hasParent() {
+        return this.parent != null;
+    }
+
+    @Override
+    public void setParent(@Nullable Folder parent) {
+        this.parent = parent;
+    }
+
+    @Override
+    @Unmodifiable
+    public List<UUID> getWorldUUIDs() {
+        return Collections.unmodifiableList(this.worlds);
+    }
+
+    @Override
+    public boolean containsWorld(BuildWorld buildWorld) {
+        return this.worlds.contains(buildWorld.getUniqueId());
+    }
+
+    @Override
+    public void addWorld(BuildWorld buildWorld) {
+        this.worlds.add(buildWorld.getUniqueId());
+        this.folderStorage.assignWorldToFolder(buildWorld, this.name);
+    }
+
+    @Override
+    public void removeWorld(BuildWorld buildWorld) {
+        this.worlds.remove(buildWorld.getUniqueId());
+        this.folderStorage.unassignWorldFromFolder(buildWorld);
+    }
+
+    @Override
+    public int getWorldCount() {
+        return this.worlds.size();
     }
 
     @Override
@@ -91,30 +146,75 @@ public class FolderImpl implements Folder {
     }
 
     @Override
-    public List<String> getLore(Player player) {
-        List<String> lore = new ArrayList<>();
-        lore.add(Messages.getString("folder_item_contents", player,
-                new AbstractMap.SimpleEntry<>("%count%", String.valueOf(getWorldCount())))
-        );
-        return lore;
+    public long getCreation() {
+        return creation;
     }
 
     @Override
-    public ItemStack asItemStack(Player player) {
-        return getMaterial().parseItem();
+    public XMaterial getIcon() {
+        return this.material;
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public void setIcon(XMaterial material) {
+        this.material = material;
+    }
+
+    @Override
+    public String getPermission() {
+        return this.permission;
+    }
+
+    @Override
+    public void setPermission(String permission) {
+        this.permission = permission;
+    }
+
+    @Override
+    public String getProject() {
+        return project;
+    }
+
+    @Override
+    public void setProject(String project) {
+        this.project = project;
+    }
+
+    @Override
+    public boolean canView(Player player) {
+        // We can pass null as a world since we are only checking for bypass permissions
+        WorldPermissions permissions = WorldPermissionsImpl.of(null);
+        if (permissions.hasAdminPermission(player) || permissions.canBypassViewPermission(player)) {
             return true;
         }
 
-        if (o == null || getClass() != o.getClass()) {
+        if (this.permission.equals("-")) {
+            return true;
+        }
+
+        return player.hasPermission(this.permission);
+    }
+
+    @Override
+    public List<String> getLore(Player player) {
+        return new ArrayList<>(Messages.getStringList("folder_item_lore", player,
+                new AbstractMap.SimpleEntry<>("%permission%", this.permission),
+                new AbstractMap.SimpleEntry<>("%project%", this.project),
+                new AbstractMap.SimpleEntry<>("%worlds%", String.valueOf(getWorldCount())))
+        );
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+
+        if (other == null || getClass() != other.getClass()) {
             return false;
         }
 
-        FolderImpl folder = (FolderImpl) o;
+        FolderImpl folder = (FolderImpl) other;
         return name.equals(folder.name);
     }
 
@@ -122,4 +222,4 @@ public class FolderImpl implements Folder {
     public int hashCode() {
         return name.hashCode();
     }
-} 
+}

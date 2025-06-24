@@ -53,7 +53,7 @@ public class BuildCommand implements CommandExecutor {
 
         Player player = (Player) sender;
         if (!player.hasPermission("buildsystem.build")) {
-            plugin.sendPermissionMessage(player);
+            Messages.sendPermissionError(player);
             return true;
         }
 
@@ -65,7 +65,7 @@ public class BuildCommand implements CommandExecutor {
 
             case 1: {
                 if (!player.hasPermission("buildsystem.build.other")) {
-                    plugin.sendPermissionMessage(player);
+                    Messages.sendPermissionError(player);
                     return true;
                 }
 

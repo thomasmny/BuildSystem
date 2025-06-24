@@ -38,7 +38,7 @@ public class TeleportSubCommand implements SubCommand {
     @Override
     public void execute(Player player, String[] args) {
         if (!hasPermission(player)) {
-            plugin.sendPermissionMessage(player);
+            Messages.sendPermissionError(player);
             return;
         }
 

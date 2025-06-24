@@ -25,6 +25,8 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * Represents a {@link BuildWorld} related event.
+ *
+ * @since 3.0.0
  */
 public class BuildWorldEvent extends Event {
 

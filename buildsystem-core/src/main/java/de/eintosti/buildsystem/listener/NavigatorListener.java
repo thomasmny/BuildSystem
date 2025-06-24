@@ -23,15 +23,18 @@ import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.inventory.XInventoryView;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.api.navigator.settings.NavigatorInventoryType;
 import de.eintosti.buildsystem.api.navigator.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.CachedValues;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
+import de.eintosti.buildsystem.navigator.inventory.ArchivedWorldsInventory;
+import de.eintosti.buildsystem.navigator.inventory.PrivateWorldsInventory;
+import de.eintosti.buildsystem.navigator.inventory.PublicWorldsInventory;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.util.InventoryUtils;
@@ -113,7 +116,7 @@ public class NavigatorListener implements Listener {
         }
 
         if (!player.hasPermission("buildsystem.navigator.item")) {
-            plugin.sendPermissionMessage(player);
+            Messages.sendPermissionError(player);
             return;
         }
 
@@ -190,23 +193,23 @@ public class NavigatorListener implements Listener {
                 return;
             }
 
-            NavigatorInventoryType inventoryType = NavigatorInventoryType.matchInventoryType(player, customName);
+            NavigatorCategory inventoryType = ArmorStandManager.matchNavigatorCategory(player, customName);
             if (inventoryType == null) {
                 return;
             }
 
             switch (inventoryType) {
-                case NAVIGATOR:
+                case PUBLIC:
                     XSound.BLOCK_CHEST_OPEN.play(player);
-                    plugin.getPublicWorldsInventory().openInventory(player);
+                    new PublicWorldsInventory(plugin, player).openInventory();
                     break;
                 case ARCHIVE:
                     XSound.BLOCK_CHEST_OPEN.play(player);
-                    plugin.getArchivedWorldsInventory().openInventory(player);
+                    new ArchivedWorldsInventory(plugin, player).openInventory();
                     break;
                 case PRIVATE:
                     XSound.BLOCK_CHEST_OPEN.play(player);
-                    plugin.getPrivateWorldsInventory().openInventory(player);
+                    new PrivateWorldsInventory(plugin, player).openInventory();
                     break;
             }
         }

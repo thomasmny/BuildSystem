@@ -20,6 +20,11 @@ package de.eintosti.buildsystem.api.player;
 import org.bukkit.Location;
 import org.jetbrains.annotations.ApiStatus.Internal;
 
+/**
+ * Represents a player's logout location, which includes the world name and the location coordinates.
+ *
+ * @since 3.0.0
+ */
 @Internal
 public interface LogoutLocation {
 
