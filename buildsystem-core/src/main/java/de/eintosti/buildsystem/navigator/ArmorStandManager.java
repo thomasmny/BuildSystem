@@ -19,15 +19,27 @@ package de.eintosti.buildsystem.navigator;
 
 import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.api.navigator.settings.NavigatorInventoryType;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 public class ArmorStandManager {
+
+    public static final Map<NavigatorCategory, String> ARMOR_STAND_NAMES;
+
+    static {
+        ARMOR_STAND_NAMES = new EnumMap<>(NavigatorCategory.class);
+        ARMOR_STAND_NAMES.put(NavigatorCategory.PUBLIC, "§aWorld Navigator");
+        ARMOR_STAND_NAMES.put(NavigatorCategory.ARCHIVE, "§6World Archive");
+        ARMOR_STAND_NAMES.put(NavigatorCategory.PRIVATE, "§bPrivate Worlds");
+    }
 
     private static final float RADIUS = 2.2f;
     private static final float SPREAD = 90.0f;
@@ -36,6 +48,19 @@ public class ArmorStandManager {
 
     public ArmorStandManager() {
         this.armorStands = new HashMap<>();
+    }
+
+    @Nullable
+    public static NavigatorCategory matchNavigatorCategory(Player player, String customName) {
+        String typeName = customName.replace(player.getName() + " × ", "");
+
+        for (Entry<NavigatorCategory, String> entry : ArmorStandManager.ARMOR_STAND_NAMES.entrySet()) {
+            if (entry.getValue().equalsIgnoreCase(typeName)) {
+                return entry.getKey();
+            }
+        }
+
+        return null;
     }
 
     private Location calculatePosition(Player player, float angle) {
@@ -52,12 +77,12 @@ public class ArmorStandManager {
     }
 
     @SuppressWarnings("deprecation")
-    private ArmorStand spawnArmorStand(Player player, Location location, NavigatorInventoryType inventoryType, boolean customSkull, String skullUrl) {
+    private ArmorStand spawnArmorStand(Player player, Location location, NavigatorCategory inventoryType, boolean customSkull, String skullUrl) {
         location.setY(location.getY() - 0.1);
 
         ArmorStand armorStand = location.getWorld().spawn(location, ArmorStand.class);
         armorStand.setVisible(false);
-        armorStand.setCustomName(player.getName() + " × " + inventoryType.getArmorStandName());
+        armorStand.setCustomName(player.getName() + " × " + ARMOR_STAND_NAMES.get(inventoryType));
         armorStand.setCustomNameVisible(false);
         armorStand.setGravity(false);
         armorStand.setCanPickupItems(false);
@@ -79,17 +104,17 @@ public class ArmorStandManager {
 
     private ArmorStand spawnWorldNavigator(Player player) {
         Location navigatorLocation = calculatePosition(player, SPREAD / 2 * -1);
-        return spawnArmorStand(player, navigatorLocation, NavigatorInventoryType.NAVIGATOR, true, "d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622");
+        return spawnArmorStand(player, navigatorLocation, NavigatorCategory.PUBLIC, true, "d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622");
     }
 
     private ArmorStand spawnWorldArchive(Player player) {
         Location archiveLocation = calculatePosition(player, 0);
-        return spawnArmorStand(player, archiveLocation, NavigatorInventoryType.ARCHIVE, true, "7f6bf958abd78295eed6ffc293b1aa59526e80f54976829ea068337c2f5e8");
+        return spawnArmorStand(player, archiveLocation, NavigatorCategory.ARCHIVE, true, "7f6bf958abd78295eed6ffc293b1aa59526e80f54976829ea068337c2f5e8");
     }
 
     private ArmorStand spawnPrivateWorlds(Player player) {
         Location privateLocation = calculatePosition(player, SPREAD / 2);
-        return spawnArmorStand(player, privateLocation, NavigatorInventoryType.PRIVATE, false, player.getName());
+        return spawnArmorStand(player, privateLocation, NavigatorCategory.PRIVATE, false, player.getName());
     }
 
     public void removeArmorStands(Player player) {
@@ -105,8 +130,8 @@ public class ArmorStandManager {
                 continue;
             }
 
-            for (NavigatorInventoryType inventoryType : NavigatorInventoryType.values()) {
-                if (customName.equals(playerName + " × " + inventoryType.getArmorStandName())) {
+            for (NavigatorCategory inventoryType : NavigatorCategory.values()) {
+                if (customName.equals(playerName + " × " + ARMOR_STAND_NAMES.get(inventoryType))) {
                     armorStand.remove();
                     break;
                 }

@@ -171,7 +171,7 @@ public class SettingsManager {
             case "%creator%":
                 return builders.hasCreator() ? builders.getCreator().getName() : "-";
             case "%creation%":
-                return Messages.formatDate(buildWorld.getCreationDate());
+                return Messages.formatDate(buildWorld.getCreation());
             case "%lastedited%":
                 return Messages.formatDate(worldData.lastEdited().get());
             case "%lastloaded%":

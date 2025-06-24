@@ -100,11 +100,11 @@ public class BlocksInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!InventoryUtils.isValidClick(event, "blocks_title")) {
+        Player player = (Player) event.getWhoClicked();
+        if (!InventoryUtils.isValidClick(event, Messages.getString("blocks_title", player))) {
             return;
         }
 
-        Player player = (Player) event.getWhoClicked();
         switch (event.getSlot()) {
             case 1:
                 giveCustomBlock(player, CustomBlock.FULL_OAK_BARCH);

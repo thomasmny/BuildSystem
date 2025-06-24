@@ -22,9 +22,6 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
-import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.player.BuildPlayerImpl;
-import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import io.papermc.lib.PaperLib;
 import java.util.UUID;
 import org.bukkit.Location;
@@ -54,7 +51,7 @@ public class BackCommand implements CommandExecutor {
 
         Player player = (Player) sender;
         if (!player.hasPermission("buildsystem.back")) {
-            plugin.sendPermissionMessage(player);
+            Messages.sendPermissionError(player);
             return true;
         }
 

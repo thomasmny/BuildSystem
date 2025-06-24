@@ -17,11 +17,16 @@
  */
 package de.eintosti.buildsystem.api.world.builder;
 
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.UUID;
-
+/**
+ * A {@link Builder} represents a player allowed to build in a {@link BuildWorld}.
+ *
+ * @since 3.0.0
+ */
 public interface Builder {
 
     /**

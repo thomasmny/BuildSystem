@@ -19,6 +19,11 @@ package de.eintosti.buildsystem.api.world.builder;
 
 import java.util.UUID;
 
+/**
+ * Concrete implementation of the {@link Builder} interface.
+ *
+ * @since 3.0.0
+ */
 final class BuilderImpl implements Builder {
 
     static final String SEPARATOR = ",";

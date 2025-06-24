@@ -18,16 +18,17 @@
 package de.eintosti.buildsystem.api.player;
 
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
-import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
-import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Unmodifiable;
-
-import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
+import org.bukkit.entity.Player;
 
+/**
+ * Service for managing {@link BuildPlayer}.
+ *
+ * @since 3.0.0
+ */
 public interface PlayerService {
 
     PlayerStorage getPlayerStorage();
@@ -49,8 +50,7 @@ public interface PlayerService {
     boolean isInBuildMode(Player player);
 
     /**
-     * Gets whether the given player is allowed to create a new {@link BuildWorld}.<br>
-     * This depends on the following factors:
+     * Gets whether the given player is allowed to create a new {@link BuildWorld}.<br> This depends on the following factors:
      * <ul>
      *  <li>Is the maximum number of worlds set by the config less than the amount of existing worlds?</li>
      *  <li>Is the maximum number of worlds created by the player less than the amount of worlds said player is allowed to create?</li>
@@ -65,8 +65,7 @@ public interface PlayerService {
     /**
      * Returns the maximum amount of {@link BuildWorld}s a player can create.
      * <p>
-     * If the player has the permission {@code buildsystem.admin}, unlimited worlds can be created.
-     * Otherwise, there are two different permissions to set said amount:
+     * If the player has the permission {@code buildsystem.admin}, unlimited worlds can be created. Otherwise, there are two different permissions to set said amount:
      * <p>
      * To set the maximum of...
      * <ul>

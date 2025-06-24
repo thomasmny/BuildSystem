@@ -21,6 +21,9 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.util.Locale;
 import org.jetbrains.annotations.ApiStatus.Internal;
 
+/**
+ * @since 3.0.0
+ */
 public enum BuildWorldStatus {
 
     /**
@@ -83,8 +86,7 @@ public enum BuildWorldStatus {
     }
 
     /**
-     * Gets the stage in which the {@link BuildWorld} is currently in.
-     * A higher value means the world is further in development.
+     * Gets the stage in which the {@link BuildWorld} is currently in. A higher value means the world is further in development.
      *
      * @return the stage in which the world is currently in.
      */
