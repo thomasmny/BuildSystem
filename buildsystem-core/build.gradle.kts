@@ -35,9 +35,6 @@ repositories {
 
 dependencies {
     api(project(":buildsystem-api"))
-    project.project(":buildsystem-abstraction").subprojects.forEach {
-        implementation(project(it.path))
-    }
 
     compileOnly(libs.spigot)
     compileOnly(libs.authlib)
@@ -61,10 +58,6 @@ tasks {
     }
 
     shadowJar {
-        dependsOn(project.project(":buildsystem-abstraction").subprojects.map {
-            it.tasks.named("assemble")
-        })
-
         minimize()
         archiveFileName.set("${rootProject.name}-${project.version}.jar")
 

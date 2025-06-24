@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.player;
+package de.eintosti.buildsystem.player.customblocks;
 
 import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
@@ -23,9 +23,8 @@ import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.version.customblocks.CustomBlock;
-import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -33,6 +32,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 public class BlocksInventory implements Listener {
 
@@ -82,9 +82,7 @@ public class BlocksInventory implements Listener {
     }
 
     private void setCustomBlock(Inventory inventory, Player player, int position, CustomBlock customBlock) {
-        if (MinecraftVersion.getCurrent().isEqualOrHigherThan(customBlock.getVersion())) {
-            inventory.setItem(position, InventoryUtils.createSkull(Messages.getString(customBlock.getKey(), player), Profileable.detect(customBlock.getSkullUrl())));
-        }
+        inventory.setItem(position, InventoryUtils.createSkull(Messages.getString(customBlock.getKey(), player), Profileable.detect(customBlock.getSkullUrl())));
     }
 
     public void openInventory(Player player) {
@@ -100,7 +98,10 @@ public class BlocksInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        Player player = (Player) event.getWhoClicked();
+        if (!(event.getWhoClicked() instanceof Player player)) {
+            return;
+        }
+
         if (!InventoryUtils.isValidClick(event, Messages.getString("blocks_title", player))) {
             return;
         }
@@ -167,18 +168,17 @@ public class BlocksInventory implements Listener {
                 giveCustomBlock(player, CustomBlock.COMMAND_BLOCK);
                 break;
             case 32:
-                giveCustomBlock(player, CustomBlock.BARRIER, InventoryUtils.createItem(XMaterial.BARRIER, Messages.getString(CustomBlock.BARRIER.getKey(), player)));
+                giveCustomBlock(player, InventoryUtils.createItem(XMaterial.BARRIER, Messages.getString(CustomBlock.BARRIER.getKey(), player)));
                 break;
             case 33:
                 ItemStack itemStack = InventoryUtils.createItem(XMaterial.ITEM_FRAME, Messages.getString(CustomBlock.INVISIBLE_ITEM_FRAME.getKey(), player));
                 ItemMeta itemMeta = itemStack.getItemMeta();
                 itemMeta.addEnchant(XEnchantment.UNBREAKING.get(), 1, true);
-                // Inline imports to allow backwards compatibility
                 itemMeta.getPersistentDataContainer().set(
-                        new org.bukkit.NamespacedKey(plugin, "invisible-itemframe"), org.bukkit.persistence.PersistentDataType.BYTE, (byte) 1
+                        new NamespacedKey(plugin, "invisible-itemframe"), PersistentDataType.BYTE, (byte) 1
                 );
                 itemStack.setItemMeta(itemMeta);
-                giveCustomBlock(player, CustomBlock.INVISIBLE_ITEM_FRAME, itemStack);
+                giveCustomBlock(player, itemStack);
                 break;
 
             case 37:
@@ -194,18 +194,16 @@ public class BlocksInventory implements Listener {
                 giveCustomBlock(player, CustomBlock.DRAGON_EGG);
                 break;
             case 41:
-                giveCustomBlock(player, CustomBlock.DEBUG_STICK, InventoryUtils.createItem(XMaterial.DEBUG_STICK, Messages.getString(CustomBlock.DEBUG_STICK.getKey(), player)));
+                giveCustomBlock(player, InventoryUtils.createItem(XMaterial.DEBUG_STICK, Messages.getString(CustomBlock.DEBUG_STICK.getKey(), player)));
                 break;
         }
     }
 
-    private void giveCustomBlock(Player player, CustomBlock customBlock, ItemStack itemStack) {
-        if (MinecraftVersion.getCurrent().isEqualOrHigherThan(customBlock.getVersion())) {
-            player.getInventory().addItem(itemStack);
-        }
+    private void giveCustomBlock(Player player, CustomBlock customBlock) {
+        giveCustomBlock(player, InventoryUtils.createSkull(Messages.getString(customBlock.getKey(), player), Profileable.detect(customBlock.getSkullUrl())));
     }
 
-    private void giveCustomBlock(Player player, CustomBlock customBlock) {
-        giveCustomBlock(player, customBlock, InventoryUtils.createSkull(Messages.getString(customBlock.getKey(), player), Profileable.detect(customBlock.getSkullUrl())));
+    private void giveCustomBlock(Player player, ItemStack itemStack) {
+        player.getInventory().addItem(itemStack);
     }
 }

@@ -21,8 +21,8 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.player.customblocks.CustomBlock;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.version.customblocks.CustomBlock;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.entity.Player;
@@ -81,7 +81,7 @@ public class BlockPlaceListener implements Listener {
 
         String customBlockKey = blockLookup.get(itemMeta.getDisplayName());
         if (customBlockKey != null) {
-            plugin.getCustomBlocks().setBlock(event, customBlockKey);
+            plugin.getCustomBlocksManager().setBlock(event, customBlockKey);
         }
 
         if (isBuildWorld && hadToDisablePhysics) {

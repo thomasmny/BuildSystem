@@ -21,7 +21,7 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.version.util.DirectionUtil;
+import de.eintosti.buildsystem.util.DirectionUtil;
 import java.util.List;
 import org.bukkit.World;
 import org.bukkit.block.Block;
