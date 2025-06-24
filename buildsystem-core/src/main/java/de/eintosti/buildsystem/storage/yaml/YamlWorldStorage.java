@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -65,31 +66,6 @@ public class YamlWorldStorage extends WorldStorageImpl {
         super(plugin);
     }
 
-    private void loadFile() {
-        this.file = new File(plugin.getDataFolder(), "worlds.yml");
-        this.config = YamlConfiguration.loadConfiguration(file);
-
-        if (!file.exists()) {
-            config.options().copyDefaults(true);
-            saveFile();
-            return;
-        }
-
-        try {
-            config.load(file);
-        } catch (IOException | InvalidConfigurationException e) {
-            logger.log(Level.SEVERE, "Could not load worlds.yml file", e);
-        }
-    }
-
-    private void saveFile() {
-        try {
-            config.save(file);
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not save worlds.yml file", e);
-        }
-    }
-
     @Override
     public void save(BuildWorld buildWorld) {
         config.set(WORLDS_KEY + "." + buildWorld.getName(), serializeWorld(buildWorld));
@@ -102,16 +78,25 @@ public class YamlWorldStorage extends WorldStorageImpl {
         saveFile();
     }
 
+    private void saveFile() {
+        try {
+            config.save(file);
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Could not save worlds.yml file", e);
+        }
+    }
+
     public @NotNull Map<String, Object> serializeWorld(BuildWorld buildWorld) {
         Map<String, Object> world = new HashMap<>();
 
+        world.put("uuid", buildWorld.getUniqueId().toString());
         Builders builders = buildWorld.getBuilders();
         if (builders.getCreator() != null) {
             world.put("creator", builders.getCreator().toString());
         }
         world.put("type", buildWorld.getType().name());
         world.put("data", serializeWorldData(buildWorld.getData()));
-        world.put("date", buildWorld.getCreationDate());
+        world.put("date", buildWorld.getCreation());
         world.put("builders", serializeBuilders(builders.getAllBuilders()));
         if (buildWorld.getCustomGenerator() != null) {
             world.put("chunk-generator", buildWorld.getCustomGenerator().getName());
@@ -136,24 +121,41 @@ public class YamlWorldStorage extends WorldStorageImpl {
 
     @Override
     public Collection<BuildWorld> load() {
-        loadFile();
-
-        ConfigurationSection section = config.getConfigurationSection(WORLDS_KEY);
-        if (section == null) {
-            return new ArrayList<>();
-        }
-
-        Set<String> worlds = section.getKeys(false);
-        if (worlds.isEmpty()) {
-            return new ArrayList<>();
-        }
+        Set<String> worlds = loadWorldKeys();
 
         return worlds.stream()
                 .map(this::loadWorld)
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
+    private Set<String> loadWorldKeys() {
+        this.file = new File(plugin.getDataFolder(), "worlds.yml");
+        this.config = YamlConfiguration.loadConfiguration(file);
+
+        if (!file.exists()) {
+            config.options().copyDefaults(true);
+            saveFile();
+            return new HashSet<>();
+        }
+
+        try {
+            config.load(file);
+        } catch (IOException | InvalidConfigurationException e) {
+            logger.log(Level.SEVERE, "Could not load worlds.yml file", e);
+        }
+
+        ConfigurationSection section = config.getConfigurationSection(WORLDS_KEY);
+        if (section == null) {
+            return new HashSet<>();
+        }
+
+        return section.getKeys(false);
+    }
+
     private BuildWorldImpl loadWorld(String worldName) {
+        UUID uuid = config.isString("worlds." + worldName + ".uuid")
+                ? UUID.fromString(config.getString("worlds." + worldName + ".uuid"))
+                : UUID.randomUUID(); // Generate a new UUID if not present
         Builder creator = parseCreator(worldName);
         BuildWorldType worldType = config.isString("worlds." + worldName + ".type")
                 ? BuildWorldType.valueOf(config.getString("worlds." + worldName + ".type"))
@@ -167,6 +169,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
         CustomGeneratorImpl customGenerator = new CustomGeneratorImpl(generatorName, parseChunkGenerator(worldName, generatorName));
 
         return new BuildWorldImpl(
+                uuid,
                 worldName,
                 worldType,
                 worldData,
@@ -204,7 +207,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
         return new WorldDataImpl(
                 worldName, customSpawn, permission, project, difficulty, material, worldStatus, blockBreaking,
                 blockInteractions, blockPlacement, buildersEnabled, explosions, mobAi, physics, privateWorld,
-                lastLoaded, lastUnloaded, lastEdited
+                lastLoaded, lastUnloaded, lastEdited, plugin.getConfigValues()
         );
     }
 

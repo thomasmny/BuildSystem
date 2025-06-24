@@ -23,6 +23,8 @@ import org.jetbrains.annotations.ApiStatus;
 
 /**
  * Called when a {@link BuildWorld} is loaded.
+ *
+ * @since 3.0.0
  */
 public class BuildWorldLoadEvent extends BuildWorldEvent implements Cancellable {
 

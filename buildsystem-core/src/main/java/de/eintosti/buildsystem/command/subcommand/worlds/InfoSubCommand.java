@@ -43,8 +43,8 @@ public class InfoSubCommand implements SubCommand {
 
     @Override
     public void execute(Player player, String[] args) {
-        if (WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
-            plugin.sendPermissionMessage(player);
+        if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
+            Messages.sendPermissionError(player);
             return;
         }
 
@@ -75,7 +75,7 @@ public class InfoSubCommand implements SubCommand {
                 new AbstractMap.SimpleEntry<>("%project%", worldData.project().get()),
                 new AbstractMap.SimpleEntry<>("%permission%", worldData.permission().get()),
                 new AbstractMap.SimpleEntry<>("%time%", buildWorld.getWorldTime()),
-                new AbstractMap.SimpleEntry<>("%creation%", Messages.formatDate(buildWorld.getCreationDate())),
+                new AbstractMap.SimpleEntry<>("%creation%", Messages.formatDate(buildWorld.getCreation())),
                 new AbstractMap.SimpleEntry<>("%physics%", worldData.physics().get()),
                 new AbstractMap.SimpleEntry<>("%explosions%", worldData.explosions().get()),
                 new AbstractMap.SimpleEntry<>("%mobai%", worldData.mobAi().get()),

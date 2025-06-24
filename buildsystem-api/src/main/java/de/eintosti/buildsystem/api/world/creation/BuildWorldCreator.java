@@ -19,14 +19,20 @@ package de.eintosti.buildsystem.api.world.creation;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
-import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
+import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.display.Folder;
 import org.bukkit.Difficulty;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Represents a creator for a {@link BuildWorld}.
+ *
+ * @since 3.0.0
+ */
 public interface BuildWorldCreator {
 
     /**
@@ -71,37 +77,75 @@ public interface BuildWorldCreator {
      */
     BuildWorldCreator setCustomGenerator(CustomGenerator customGenerator);
 
+    /**
+     * Sets the folder in which the world should be created.
+     *
+     * @param folder The folder where the world should be created
+     * @return The world creator object
+     */
+    BuildWorldCreator setFolder(Folder folder);
+
+    /**
+     * Sets whether the world should be private or not.
+     *
+     * @param privateWorld Whether the world should be private
+     * @return The world creator object
+     */
     BuildWorldCreator setPrivate(boolean privateWorld);
 
+    /**
+     * Sets the difficulty of the world.
+     *
+     * @param difficulty The difficulty
+     * @return The world creator object
+     */
     BuildWorldCreator setDifficulty(Difficulty difficulty);
 
+    /**
+     * Sets the creation date of the world.
+     *
+     * @param creationDate The creation date in milliseconds since epoch
+     * @return The world creator object
+     */
     BuildWorldCreator setCreationDate(long creationDate);
 
     /**
-     * Depending on the {@link BuildWorld}'s {@link BuildWorldType}, the corresponding {@link World} will be generated in a different way.
-     * Then, if the creation of the world was successful and the config is set accordingly, the player is teleported to the world.
+     * Creates and generates a new {@link BuildWorld} using the settings configured in this builder.
+     * <p>
+     * This process includes creating the world files, registering the world with the plugin, and notifying the player of the progress.
      *
      * @param player The player who is creating the world
      */
     void createWorld(Player player);
 
     /**
-     * Imports an existing world as a {@link BuildWorld}.
+     * Imports an existing world directory as a new {@link BuildWorld}.
      *
      * @param player   The player who is importing the world
-     * @param teleport Should the player be teleported to the world after importing is finished
+     * @param teleport If true, the player will be teleported to the world after the import is finished
      */
     void importWorld(Player player, boolean teleport);
 
-    @Nullable
-    World generateBukkitWorld();
-
     /**
-     * Generate the {@link World} linked to a {@link BuildWorld}.
+     * Generates the underlying Bukkit {@link World} and applies post-generation settings.
+     * <p>
+     * Only generates the world if the world was not created in a newer Minecraft version that the server is running.
      *
-     * @param checkVersion Should the world version be checked
-     * @return The world object
+     * @param buildWorld The build world to generate
+     * @return The generated {@link World}, or {@code null} if generation failed
      */
     @Nullable
-    World generateBukkitWorld(boolean checkVersion);
+    default World generateBukkitWorld(BuildWorld buildWorld) {
+        return generateBukkitWorld(buildWorld, true);
+    }
+
+    /**
+     * Generates the underlying Bukkit {@link World} and applies post-generation settings.
+     *
+     * @param buildWorld   The build world to generate
+     * @param checkVersion If true, verify that the world's data version is compatible
+     * @return The generated {@link World}, or {@code null} if generation failed.
+     */
+    @Nullable
+    World generateBukkitWorld(BuildWorld buildWorld, boolean checkVersion);
 }

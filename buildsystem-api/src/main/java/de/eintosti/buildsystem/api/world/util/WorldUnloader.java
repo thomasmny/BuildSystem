@@ -17,6 +17,9 @@
  */
 package de.eintosti.buildsystem.api.world.util;
 
+/**
+ * @since 3.0.0
+ */
 public interface WorldUnloader {
 
     void manageUnload();

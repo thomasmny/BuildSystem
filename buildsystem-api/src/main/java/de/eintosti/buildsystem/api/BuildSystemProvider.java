@@ -22,6 +22,8 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * Provides static access to the {@link BuildSystem} API.
+ *
+ * @since 3.0.0
  */
 public class BuildSystemProvider {
 

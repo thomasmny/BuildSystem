@@ -22,6 +22,8 @@ import org.jetbrains.annotations.ApiStatus;
 
 /**
  * Called after a {@link BuildWorld} has unloaded.
+ *
+ * @since 3.0.0
  */
 public class BuildWorldPostUnloadEvent extends BuildWorldEvent {
 

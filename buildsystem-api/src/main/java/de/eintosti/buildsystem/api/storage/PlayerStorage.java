@@ -24,12 +24,17 @@ import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Unmodifiable;
 
+/**
+ * Interface for managing the storage of {@link BuildPlayer} objects.
+ *
+ * @since 3.0.0
+ */
 public interface PlayerStorage extends Storage<BuildPlayer> {
 
     /**
      * Creates a new {@link BuildPlayer} with the given uuid and settings.
      *
-     * @param uuid The uuid of the player
+     * @param uuid     The uuid of the player
      * @param settings The settings of the player
      * @return The created build-player
      */
