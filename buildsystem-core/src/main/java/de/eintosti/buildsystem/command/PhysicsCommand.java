@@ -23,7 +23,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
-import java.util.AbstractMap;
+import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -45,12 +45,11 @@ public class PhysicsCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             plugin.getLogger().warning(Messages.getString("sender_not_player", null));
             return true;
         }
 
-        Player player = (Player) sender;
         String worldName = args.length == 0 ? player.getWorld().getName() : args[0];
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, "buildsystem.physics")) {
@@ -93,10 +92,10 @@ public class PhysicsCommand implements CommandExecutor {
         WorldData worldData = buildWorld.getData();
         if (!worldData.physics().get()) {
             worldData.physics().set(true);
-            Messages.sendMessage(player, "physics_activated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+            Messages.sendMessage(player, "physics_activated", Map.entry("%world%", buildWorld.getName()));
         } else {
             worldData.physics().set(false);
-            Messages.sendMessage(player, "physics_deactivated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+            Messages.sendMessage(player, "physics_deactivated", Map.entry("%world%", buildWorld.getName()));
         }
     }
 }

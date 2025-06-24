@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -85,7 +84,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
         serializedFolder.put("material", folder.getIcon().name());
         serializedFolder.put("permission", folder.getPermission());
         serializedFolder.put("project", folder.getProject());
-        serializedFolder.put("worlds", folder.getWorldUUIDs().stream().map(UUID::toString).collect(Collectors.toList()));
+        serializedFolder.put("worlds", folder.getWorldUUIDs().stream().map(UUID::toString).toList());
 
         return serializedFolder;
     }
@@ -121,7 +120,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
         if (!file.exists()) {
             config.options().copyDefaults(true);
             saveFile();
-            return new HashSet<>();
+            return Set.of();
         }
 
         try {
@@ -132,7 +131,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
 
         ConfigurationSection section = config.getConfigurationSection(FOLDERS_KEY);
         if (section == null) {
-            return new HashSet<>();
+            return Set.of();
         }
 
         return section.getKeys(false);

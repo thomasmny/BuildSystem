@@ -24,7 +24,7 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.EntityAIManager;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
-import java.util.AbstractMap;
+import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -48,12 +48,11 @@ public class NoAICommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             plugin.getLogger().warning(Messages.getString("sender_not_player", null));
             return true;
         }
 
-        Player player = (Player) sender;
         String worldName = args.length == 0 ? player.getWorld().getName() : args[0];
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, "buildsystem.noai")) {
@@ -91,16 +90,16 @@ public class NoAICommand implements CommandExecutor {
         WorldData worldData = buildWorld.getData();
         if (worldData.mobAi().get()) {
             worldData.mobAi().set(false);
-            Messages.sendMessage(player, "noai_activated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+            Messages.sendMessage(player, "noai_activated", Map.entry("%world%", buildWorld.getName()));
         } else {
             worldData.mobAi().set(true);
-            Messages.sendMessage(player, "noai_deactivated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+            Messages.sendMessage(player, "noai_deactivated", Map.entry("%world%", buildWorld.getName()));
         }
 
         boolean mobAI = worldData.mobAi().get();
         for (Entity entity : bukkitWorld.getEntities()) {
-            if (entity instanceof LivingEntity) {
-                EntityAIManager.setAIEnabled((LivingEntity) entity, mobAI);
+            if (entity instanceof LivingEntity livingEntity) {
+                EntityAIManager.setAIEnabled(livingEntity, mobAI);
             }
         }
     }

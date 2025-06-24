@@ -31,8 +31,8 @@ import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.PaginatedInventory;
 import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.util.UUIDFetcher;
-import java.util.AbstractMap;
 import java.util.Collection;
+import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -80,7 +80,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         } else {
             creatorInfoItem = InventoryUtils.createSkull(Messages.getString("worldeditor_builders_creator_item", player), Profileable.of(creator.getUniqueId()),
                     Messages.getString("worldeditor_builders_creator_lore", player,
-                            new AbstractMap.SimpleEntry<>("%creator%", builders.getCreator())
+                            Map.entry("%creator%", builders.getCreator())
                     )
             );
         }
@@ -111,7 +111,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         for (Builder builder : builders) {
             inventory.setItem(columnSkull++, InventoryUtils.createSkull(
                     Messages.getString("worldeditor_builders_builder_item", player,
-                            new AbstractMap.SimpleEntry<>("%builder%", builder.getName())
+                            Map.entry("%builder%", builder.getName())
                     ),
                     Profileable.username(builder.getName()),
                     Messages.getStringList("worldeditor_builders_builder_lore", player)
@@ -189,7 +189,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
                     return;
                 }
 
-                String template = Messages.getString("worldeditor_builders_builder_item", player, new AbstractMap.SimpleEntry<>("%builder%", ""));
+                String template = Messages.getString("worldeditor_builders_builder_item", player, Map.entry("%builder%", ""));
                 String builderName = StringUtils.difference(template, itemStack.getItemMeta().getDisplayName());
                 UUID builderId = UUIDFetcher.getUUID(builderName);
                 if (builderId == null) {
@@ -201,7 +201,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
 
                 buildWorld.getBuilders().removeBuilder(builderId);
                 XSound.ENTITY_ENDERMAN_TELEPORT.play(player);
-                Messages.sendMessage(player, "worlds_removebuilder_removed", new AbstractMap.SimpleEntry<>("%builder%", builderName));
+                Messages.sendMessage(player, "worlds_removebuilder_removed", Map.entry("%builder%", builderName));
         }
 
         XSound.ENTITY_CHICKEN_EGG.play(player);

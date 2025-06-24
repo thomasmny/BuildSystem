@@ -263,12 +263,12 @@ public class PlayerServiceImpl implements PlayerService {
             BuildPlayer buildPlayer = playerStorage.getBuildPlayer(player.getUniqueId());
             double lookedPosition = player.getEyeLocation().getDirection().getY();
             if (lookedPosition >= MIN_LOOK_HEIGHT && lookedPosition <= MAX_LOOK_HEIGHT) {
-                NavigatorCategory inventoryType = ArmorStandManager.matchNavigatorCategory(player, getEntityName(player));
+                NavigatorCategory category = ArmorStandManager.matchNavigatorCategory(player, getEntityName(player));
                 NavigatorCategory lastLookedAt = buildPlayer.getLastLookedAt();
 
-                if (lastLookedAt == null || lastLookedAt != inventoryType) {
-                    buildPlayer.setLastLookedAt(inventoryType);
-                    sendTypeInfo(player, inventoryType);
+                if (lastLookedAt == null || lastLookedAt != category) {
+                    buildPlayer.setLastLookedAt(category);
+                    sendTypeInfo(player, category);
                 }
             } else {
                 ActionBar.clearActionBar(player);
@@ -323,24 +323,17 @@ public class PlayerServiceImpl implements PlayerService {
         return entity.getCustomName();
     }
 
-    private void sendTypeInfo(Player player, NavigatorCategory inventoryType) {
-        if (inventoryType == null) {
+    private void sendTypeInfo(Player player, NavigatorCategory category) {
+        if (category == null) {
             ActionBar.clearActionBar(player);
             return;
         }
 
-        String message;
-        switch (inventoryType) {
-            case ARCHIVE:
-                message = "new_navigator_world_archive";
-                break;
-            case PRIVATE:
-                message = "new_navigator_private_worlds";
-                break;
-            default:
-                message = "new_navigator_world_navigator";
-                break;
-        }
+        String message = switch (category) {
+            case PUBLIC -> "new_navigator_world_navigator";
+            case ARCHIVE -> "new_navigator_world_archive";
+            case PRIVATE -> "new_navigator_private_worlds";
+        };
 
         ActionBar.sendActionBar(player, Messages.getString(message, player));
         XSound.ENTITY_CHICKEN_EGG.play(player);

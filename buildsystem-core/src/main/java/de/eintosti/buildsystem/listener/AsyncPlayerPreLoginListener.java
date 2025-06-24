@@ -64,7 +64,7 @@ public class AsyncPlayerPreLoginListener implements Listener {
             return;
         }
 
-        BuildWorld buildWorld = worldStorage.getBuildWorld(logoutLocation.getWorldName());
+        BuildWorld buildWorld = worldStorage.getBuildWorld(logoutLocation.worldName());
         if (buildWorld == null) {
             buildPlayer.setLogoutLocation(null);
         } else {

@@ -27,7 +27,7 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
-import java.util.AbstractMap;
+import java.util.Map;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -62,27 +62,27 @@ public class InfoSubCommand implements SubCommand {
         Builders builders = buildWorld.getBuilders();
         WorldData worldData = buildWorld.getData();
         Messages.sendMessage(player, "world_info",
-                new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()),
-                new AbstractMap.SimpleEntry<>("%creator%", getCreator(builders)),
-                new AbstractMap.SimpleEntry<>("%item%", worldData.material().get().name()),
-                new AbstractMap.SimpleEntry<>("%type%", Messages.getString(buildWorld.getType().getMessageKey(), player)),
-                new AbstractMap.SimpleEntry<>("%private%", worldData.privateWorld().get()),
-                new AbstractMap.SimpleEntry<>("%builders_enabled%", worldData.buildersEnabled().get()),
-                new AbstractMap.SimpleEntry<>("%builders%", builders.asPlaceholder(player)),
-                new AbstractMap.SimpleEntry<>("%block_breaking%", worldData.blockBreaking().get()),
-                new AbstractMap.SimpleEntry<>("%block_placement%", worldData.blockPlacement().get()),
-                new AbstractMap.SimpleEntry<>("%status%", Messages.getString(worldData.status().get().getMessageKey(), player)),
-                new AbstractMap.SimpleEntry<>("%project%", worldData.project().get()),
-                new AbstractMap.SimpleEntry<>("%permission%", worldData.permission().get()),
-                new AbstractMap.SimpleEntry<>("%time%", buildWorld.getWorldTime()),
-                new AbstractMap.SimpleEntry<>("%creation%", Messages.formatDate(buildWorld.getCreation())),
-                new AbstractMap.SimpleEntry<>("%physics%", worldData.physics().get()),
-                new AbstractMap.SimpleEntry<>("%explosions%", worldData.explosions().get()),
-                new AbstractMap.SimpleEntry<>("%mobai%", worldData.mobAi().get()),
-                new AbstractMap.SimpleEntry<>("%custom_spawn%", getCustomSpawn(buildWorld)),
-                new AbstractMap.SimpleEntry<>("%lastedited%", Messages.formatDate(worldData.lastEdited().get())),
-                new AbstractMap.SimpleEntry<>("%lastloaded%", Messages.formatDate(worldData.lastLoaded().get())),
-                new AbstractMap.SimpleEntry<>("%lastunloaded%", Messages.formatDate(worldData.lastUnloaded().get()))
+                Map.entry("%world%", buildWorld.getName()),
+                Map.entry("%creator%", getCreator(builders)),
+                Map.entry("%item%", worldData.material().get().name()),
+                Map.entry("%type%", Messages.getString(Messages.getMessageKey(buildWorld.getType()), player)),
+                Map.entry("%private%", worldData.privateWorld().get()),
+                Map.entry("%builders_enabled%", worldData.buildersEnabled().get()),
+                Map.entry("%builders%", builders.asPlaceholder(player)),
+                Map.entry("%block_breaking%", worldData.blockBreaking().get()),
+                Map.entry("%block_placement%", worldData.blockPlacement().get()),
+                Map.entry("%status%", Messages.getString(Messages.getMessageKey(worldData.status().get()), player)),
+                Map.entry("%project%", worldData.project().get()),
+                Map.entry("%permission%", worldData.permission().get()),
+                Map.entry("%time%", buildWorld.getWorldTime()),
+                Map.entry("%creation%", Messages.formatDate(buildWorld.getCreation())),
+                Map.entry("%physics%", worldData.physics().get()),
+                Map.entry("%explosions%", worldData.explosions().get()),
+                Map.entry("%mobai%", worldData.mobAi().get()),
+                Map.entry("%custom_spawn%", getCustomSpawn(buildWorld)),
+                Map.entry("%lastedited%", Messages.formatDate(worldData.lastEdited().get())),
+                Map.entry("%lastloaded%", Messages.formatDate(worldData.lastLoaded().get())),
+                Map.entry("%lastunloaded%", Messages.formatDate(worldData.lastUnloaded().get()))
         );
     }
 

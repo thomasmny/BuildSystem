@@ -24,5 +24,5 @@ package de.eintosti.buildsystem.api.navigator.settings;
  */
 public enum NavigatorType {
     OLD,
-    NEW;
+    NEW
 }

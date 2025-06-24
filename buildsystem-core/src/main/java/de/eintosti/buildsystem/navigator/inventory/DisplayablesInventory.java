@@ -8,6 +8,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.navigator.settings.WorldDisplay;
 import de.eintosti.buildsystem.api.navigator.settings.WorldFilter;
+import de.eintosti.buildsystem.api.navigator.settings.WorldFilter.Mode;
 import de.eintosti.buildsystem.api.navigator.settings.WorldSort;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -22,20 +23,18 @@ import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete.WorldsArgument;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.PaginatedInventory;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
-import de.eintosti.buildsystem.world.creation.CreateInventory;
-import java.util.AbstractMap;
+import de.eintosti.buildsystem.world.creation.CreateInventory.Page;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -203,12 +202,12 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
         Collection<Folder> folders = collectFolders();
         List<BuildWorld> standaloneWorlds = filterWorlds(collectWorlds(), worldDisplay).stream()
                 .filter(world -> !folderStorage.isAssignedToAnyFolder(world))
-                .collect(Collectors.toList());
+                .toList();
 
         List<Displayable> displayables = new ArrayList<>();
         displayables.addAll(folders);
         displayables.addAll(standaloneWorlds);
-        displayables.sort(createDisplayOrderComparator(worldDisplay.getWorldSort()));
+        displayables.sort(worldDisplay.getWorldSort().getComparator());
         return displayables;
     }
 
@@ -270,72 +269,6 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
     }
 
     /**
-     * Creates a comparator for sorting {@link Displayable}s based on the specified {@link WorldSort} order.
-     *
-     * @param worldSort The desired sorting order.
-     * @return The comparator
-     */
-    @NotNull
-    protected Comparator<Displayable> createDisplayOrderComparator(@NotNull WorldSort worldSort) {
-        Comparator<Displayable> comparator;
-        switch (worldSort) {
-            case OLDEST_FIRST:
-                comparator = Comparator.comparingLong(Displayable::getCreation);
-                break;
-            case NEWEST_FIRST:
-                comparator = Comparator.comparingLong(Displayable::getCreation).reversed();
-                break;
-            case PROJECT_A_TO_Z:
-                comparator = Comparator.comparing((Displayable displayable) -> {
-                    if (displayable instanceof BuildWorld) {
-                        return ((BuildWorld) displayable).getData().project().get().toLowerCase(Locale.ROOT);
-                    } else if (displayable instanceof Folder) {
-                        return ((Folder) displayable).getProject().toLowerCase(Locale.ROOT);
-                    } else {
-                        return "";
-                    }
-                });
-                break;
-            case PROJECT_Z_TO_A:
-                comparator = Comparator.comparing((Displayable displayable) -> {
-                    if (displayable instanceof BuildWorld) {
-                        return ((BuildWorld) displayable).getData().project().get().toLowerCase(Locale.ROOT);
-                    } else if (displayable instanceof Folder) {
-                        return ((Folder) displayable).getProject().toLowerCase(Locale.ROOT);
-                    } else {
-                        return "";
-                    }
-                }).reversed();
-                break;
-            case STATUS_NOT_STARTED:
-                comparator = Comparator.comparingInt((Displayable displayable) -> {
-                    if (displayable instanceof BuildWorld) {
-                        return ((BuildWorld) displayable).getData().status().get().getStage();
-                    } else {
-                        return BuildWorldStatus.FINISHED.getStage();
-                    }
-                });
-                break;
-            case STATUS_FINISHED:
-                comparator = Comparator.comparingInt((Displayable displayable) -> {
-                    if (displayable instanceof BuildWorld) {
-                        return ((BuildWorld) displayable).getData().status().get().getStage();
-                    } else {
-                        return BuildWorldStatus.FINISHED.getStage();
-                    }
-                }).reversed();
-                break;
-            case NAME_Z_TO_A:
-                comparator = Comparator.comparing((Displayable displayable) -> displayable.getName().toLowerCase(Locale.ROOT)).reversed();
-                break;
-            default: // NAME_A_TO_Z
-                comparator = Comparator.comparing((Displayable displayable) -> displayable.getName().toLowerCase(Locale.ROOT));
-                break;
-        }
-        return comparator;
-    }
-
-    /**
      * Adds the world sorting item to the inventory.
      *
      * @param inventory The inventory to add the item to
@@ -343,7 +276,19 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
     private void addWorldSortItem(@NotNull Inventory inventory) {
         Settings settings = settingsManager.getSettings(player);
         WorldSort worldSort = settings.getWorldDisplay().getWorldSort();
-        inventory.setItem(45, InventoryUtils.createItem(XMaterial.BOOK, Messages.getString("world_sort_title", player), Messages.getString(worldSort.getMessageKey(), player)));
+
+        String messageKey = switch (worldSort) {
+            case NAME_A_TO_Z -> "world_sort_name_az";
+            case NAME_Z_TO_A -> "world_sort_name_za";
+            case PROJECT_A_TO_Z -> "world_sort_project_az";
+            case PROJECT_Z_TO_A -> "world_sort_project_za";
+            case STATUS_NOT_STARTED -> "world_sort_status_not_started";
+            case STATUS_FINISHED -> "world_sort_status_finished";
+            case NEWEST_FIRST -> "world_sort_date_newest";
+            case OLDEST_FIRST -> "world_sort_date_oldest";
+        };
+
+        inventory.setItem(45, InventoryUtils.createItem(XMaterial.BOOK, Messages.getString("world_sort_title", player), Messages.getString(messageKey, player)));
     }
 
     /**
@@ -355,8 +300,15 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
         Settings settings = settingsManager.getSettings(player);
         WorldFilter worldFilter = settings.getWorldDisplay().getWorldFilter();
 
+        String loreKey = switch (worldFilter.getMode()) {
+            case NONE -> "world_filter_mode_none";
+            case STARTS_WITH -> "world_filter_mode_starts_with";
+            case CONTAINS -> "world_filter_mode_contains";
+            case MATCHES -> "world_filter_mode_matches";
+        };
+
         List<String> lore = new ArrayList<>();
-        lore.add(Messages.getString(worldFilter.getMode().getLoreKey(), player, new AbstractMap.SimpleEntry<>("%text%", worldFilter.getText())));
+        lore.add(Messages.getString(loreKey, player, Map.entry("%text%", worldFilter.getText())));
         lore.addAll(Messages.getStringList("world_filter_lore", player));
 
         inventory.setItem(46, InventoryUtils.createItem(XMaterial.HOPPER, Messages.getString("world_filter_title", player), lore));
@@ -415,7 +367,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
                         }
 
                         Folder folder = createFolder(sanitizedName);
-                        Messages.sendMessage(player, "worlds_folder_created", new AbstractMap.SimpleEntry<>("%folder%", folder.getName()));
+                        Messages.sendMessage(player, "worlds_folder_created", Map.entry("%folder%", folder.getName()));
                         openInventory();
                     });
                     return;
@@ -442,7 +394,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
     }
 
     protected void beginWorldCreation() {
-        this.plugin.getCreateInventory().openInventory(this.player, CreateInventory.Page.PREDEFINED, this.requiredVisibility, null);
+        this.plugin.getCreateInventory().openInventory(this.player, Page.PREDEFINED, this.requiredVisibility, null);
     }
 
     protected Folder createFolder(String folderName) {
@@ -464,10 +416,10 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
      */
     private void handleFilterClick(@NotNull InventoryClickEvent event, @NotNull WorldDisplay worldDisplay) {
         WorldFilter worldFilter = worldDisplay.getWorldFilter();
-        WorldFilter.Mode currentMode = worldFilter.getMode();
+        Mode currentMode = worldFilter.getMode();
 
         if (event.isShiftClick()) {
-            worldFilter.setMode(WorldFilter.Mode.NONE);
+            worldFilter.setMode(Mode.NONE);
             worldFilter.setText("");
         } else if (event.isLeftClick()) {
             player.closeInventory();
@@ -548,24 +500,16 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
      * @return The next sort in the sequence
      */
     private WorldSort getNextSort(WorldSort currentSort) {
-        switch (currentSort) {
-            case NEWEST_FIRST:
-                return WorldSort.OLDEST_FIRST;
-            case OLDEST_FIRST:
-                return WorldSort.NAME_A_TO_Z;
-            case PROJECT_A_TO_Z:
-                return WorldSort.PROJECT_Z_TO_A;
-            case PROJECT_Z_TO_A:
-                return WorldSort.STATUS_NOT_STARTED;
-            case STATUS_NOT_STARTED:
-                return WorldSort.STATUS_FINISHED;
-            case STATUS_FINISHED:
-                return WorldSort.NEWEST_FIRST;
-            case NAME_Z_TO_A:
-                return WorldSort.PROJECT_A_TO_Z;
-            default: // NAME_A_TO_Z
-                return WorldSort.NAME_Z_TO_A;
-        }
+        return switch (currentSort) {
+            case NEWEST_FIRST -> WorldSort.OLDEST_FIRST;
+            case OLDEST_FIRST -> WorldSort.NAME_A_TO_Z;
+            case PROJECT_A_TO_Z -> WorldSort.PROJECT_Z_TO_A;
+            case PROJECT_Z_TO_A -> WorldSort.STATUS_NOT_STARTED;
+            case STATUS_NOT_STARTED -> WorldSort.STATUS_FINISHED;
+            case STATUS_FINISHED -> WorldSort.NEWEST_FIRST;
+            case NAME_A_TO_Z -> WorldSort.NAME_Z_TO_A;
+            case NAME_Z_TO_A -> WorldSort.PROJECT_A_TO_Z;
+        };
     }
 
     /**
@@ -575,24 +519,16 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
      * @return The previous sort in the sequence.
      */
     public WorldSort getPreviousSort(WorldSort currentSort) {
-        switch (currentSort) {
-            case NEWEST_FIRST:
-                return WorldSort.STATUS_FINISHED;
-            case OLDEST_FIRST:
-                return WorldSort.NEWEST_FIRST;
-            case PROJECT_A_TO_Z:
-                return WorldSort.NAME_Z_TO_A;
-            case PROJECT_Z_TO_A:
-                return WorldSort.PROJECT_A_TO_Z;
-            case STATUS_NOT_STARTED:
-                return WorldSort.PROJECT_Z_TO_A;
-            case STATUS_FINISHED:
-                return WorldSort.STATUS_NOT_STARTED;
-            case NAME_Z_TO_A:
-                return WorldSort.NAME_A_TO_Z;
-            default: // NAME_A_TO_Z
-                return WorldSort.OLDEST_FIRST;
-        }
+        return switch (currentSort) {
+            case NEWEST_FIRST -> WorldSort.STATUS_FINISHED;
+            case OLDEST_FIRST -> WorldSort.NEWEST_FIRST;
+            case PROJECT_A_TO_Z -> WorldSort.NAME_Z_TO_A;
+            case PROJECT_Z_TO_A -> WorldSort.PROJECT_A_TO_Z;
+            case STATUS_NOT_STARTED -> WorldSort.PROJECT_Z_TO_A;
+            case STATUS_FINISHED -> WorldSort.STATUS_NOT_STARTED;
+            case NAME_A_TO_Z -> WorldSort.OLDEST_FIRST;
+            case NAME_Z_TO_A -> WorldSort.NAME_A_TO_Z;
+        };
     }
 
     /**
@@ -602,7 +538,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
      * @return The extracted world.
      */
     private @Nullable BuildWorld parseWorld(@NotNull String displayName) {
-        String template = Messages.getString("world_item_title", player, new AbstractMap.SimpleEntry<>("%world%", ""));
+        String template = Messages.getString("world_item_title", player, Map.entry("%world%", ""));
         String worldName = StringUtils.difference(template, displayName);
         return worldStorage.getBuildWorld(worldName);
     }
@@ -614,7 +550,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
      * @return The extracted folder.
      */
     private @Nullable Folder parseFolder(@NotNull String displayName) {
-        String template = Messages.getString("folder_item_title", player, new AbstractMap.SimpleEntry<>("%folder%", ""));
+        String template = Messages.getString("folder_item_title", player, Map.entry("%folder%", ""));
         String folderName = StringUtils.difference(template, displayName);
         return folderStorage.getFolder(folderName);
     }
@@ -626,7 +562,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
      * @param buildWorld The BuildWorld associated with the clicked item.
      */
     private void manageWorldItemClick(@NotNull InventoryClickEvent event, @NotNull BuildWorld buildWorld) {
-        if (event.isLeftClick() || !buildWorld.getPermissions().canPerformCommand(player, WorldsTabComplete.WorldsArgument.EDIT.getPermission())) {
+        if (event.isLeftClick() || !buildWorld.getPermissions().canPerformCommand(player, WorldsArgument.EDIT.getPermission())) {
             performNonEditClick(buildWorld);
             return;
         }

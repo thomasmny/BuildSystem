@@ -26,7 +26,7 @@ import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
-import java.util.AbstractMap;
+import java.util.Map;
 import org.bukkit.entity.Player;
 
 public class SetProjectSubCommand implements SubCommand {
@@ -66,7 +66,7 @@ public class SetProjectSubCommand implements SubCommand {
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
             Messages.sendMessage(player, "worlds_setproject_set",
-                    new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName())
+                    Map.entry("%world%", buildWorld.getName())
             );
 
             if (closeInventory) {

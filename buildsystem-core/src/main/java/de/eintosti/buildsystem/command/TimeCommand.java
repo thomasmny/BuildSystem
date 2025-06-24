@@ -22,8 +22,8 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.util.WorldPermissions;
 import de.eintosti.buildsystem.config.ConfigValues;
-import java.util.AbstractMap;
 import java.util.Locale;
+import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -46,12 +46,11 @@ public class TimeCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             plugin.getLogger().warning(Messages.getString("sender_not_player", null));
             return true;
         }
 
-        Player player = (Player) sender;
         String worldName = args.length == 0 ? player.getWorld().getName() : args[0];
         World world = Bukkit.getWorld(worldName);
         if (world == null) {
@@ -73,7 +72,7 @@ public class TimeCommand implements CommandExecutor {
                     case 0:
                     case 1:
                         world.setTime(configValues.getNoonTime());
-                        Messages.sendMessage(player, "day_set", new AbstractMap.SimpleEntry<>("%world%", world.getName()));
+                        Messages.sendMessage(player, "day_set", Map.entry("%world%", world.getName()));
                         break;
                     default:
                         Messages.sendMessage(player, "day_usage");
@@ -92,7 +91,7 @@ public class TimeCommand implements CommandExecutor {
                     case 0:
                     case 1:
                         world.setTime(configValues.getNightTime());
-                        Messages.sendMessage(player, "night_set", new AbstractMap.SimpleEntry<>("%world%", world.getName()));
+                        Messages.sendMessage(player, "night_set", Map.entry("%world%", world.getName()));
                         break;
                     default:
                         Messages.sendMessage(player, "night_usage");

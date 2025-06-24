@@ -20,7 +20,7 @@ package de.eintosti.buildsystem.api.event.world;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -34,7 +34,7 @@ public class BuildWorldEvent extends Event {
 
     private final BuildWorld buildWorld;
 
-    @ApiStatus.Internal
+    @Internal
     public BuildWorldEvent(BuildWorld buildWorld) {
         this.buildWorld = buildWorld;
     }

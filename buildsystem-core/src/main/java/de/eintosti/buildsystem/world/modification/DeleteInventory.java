@@ -23,7 +23,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import java.util.AbstractMap;
+import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -48,7 +48,7 @@ public class DeleteInventory implements Listener {
                 Messages.getString("delete_world_confirm", player))
         );
         inventory.setItem(13, InventoryUtils.createItem(XMaterial.FILLED_MAP,
-                Messages.getString("delete_world_name", player, new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName())),
+                Messages.getString("delete_world_name", player, Map.entry("%world%", buildWorld.getName())),
                 Messages.getStringList("delete_world_name_lore", player))
         );
         inventory.setItem(15, InventoryUtils.createItem(XMaterial.RED_DYE,
@@ -100,7 +100,7 @@ public class DeleteInventory implements Listener {
         } else if (slot == 15) {
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
             player.closeInventory();
-            Messages.sendMessage(player, "worlds_delete_canceled", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+            Messages.sendMessage(player, "worlds_delete_canceled", Map.entry("%world%", buildWorld.getName()));
         }
     }
 }

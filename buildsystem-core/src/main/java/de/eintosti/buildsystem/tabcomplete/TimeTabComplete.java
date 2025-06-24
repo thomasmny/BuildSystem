@@ -41,11 +41,10 @@ public class TimeTabComplete extends ArgumentSorter implements TabCompleter {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         ArrayList<String> arrayList = new ArrayList<>();
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             return arrayList;
         }
 
-        Player player = (Player) sender;
         String labelLowerCase = label.toLowerCase(Locale.ROOT);
         switch (labelLowerCase) {
             case "day":

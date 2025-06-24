@@ -37,7 +37,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -144,7 +143,7 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
         if (!file.exists()) {
             config.options().copyDefaults(true);
             saveFile();
-            return new HashSet<>();
+            return Set.of();
         }
 
         try {
@@ -155,7 +154,7 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
 
         ConfigurationSection section = config.getConfigurationSection(PLAYERS_KEY);
         if (section == null) {
-            return new HashSet<>();
+            return Set.of();
         }
 
         return section.getKeys(false);

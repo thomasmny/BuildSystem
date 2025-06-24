@@ -36,20 +36,16 @@ public class BuildTabComplete extends ArgumentSorter implements TabCompleter {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         ArrayList<String> arrayList = new ArrayList<>();
-
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             return arrayList;
         }
-        Player player = (Player) sender;
 
         if (!player.hasPermission("buildsystem.build")) {
             return arrayList;
         }
 
-        if (args.length == 1) {
-            if (!player.hasPermission("buildsystem.build.other")) {
-                Bukkit.getOnlinePlayers().forEach(pl -> addArgument(args[0], pl.getName(), arrayList));
-            }
+        if (args.length == 1 && !player.hasPermission("buildsystem.build.other")) {
+            Bukkit.getOnlinePlayers().forEach(pl -> addArgument(args[0], pl.getName(), arrayList));
         }
 
         return arrayList;
