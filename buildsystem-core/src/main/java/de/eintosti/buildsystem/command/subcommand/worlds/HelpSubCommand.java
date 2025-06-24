@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.google.common.collect.Lists;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.PagedCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
@@ -30,11 +29,8 @@ import org.bukkit.entity.Player;
 
 public class HelpSubCommand extends PagedCommand implements SubCommand {
 
-    private final BuildSystemPlugin plugin;
-
-    public HelpSubCommand(BuildSystemPlugin plugin) {
+    public HelpSubCommand() {
         super("worlds_help_title_with_page", "worlds_help_permission");
-        this.plugin = plugin;
     }
 
     @Override

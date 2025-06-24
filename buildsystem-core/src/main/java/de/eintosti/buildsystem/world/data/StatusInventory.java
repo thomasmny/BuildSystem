@@ -28,7 +28,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import java.util.AbstractMap;
+import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -58,7 +58,7 @@ public class StatusInventory implements Listener {
             selectedWorldName = "N/A";
         }
 
-        String title = Messages.getString("status_title", player, new AbstractMap.SimpleEntry<>("%world%", selectedWorldName));
+        String title = Messages.getString("status_title", player, Map.entry("%world%", selectedWorldName));
         Inventory inventory = Bukkit.createInventory(null, 27, title);
         fillGuiWithGlass(player, inventory);
 
@@ -87,7 +87,7 @@ public class StatusInventory implements Listener {
 
     private void addStatusItem(Player player, Inventory inventory, int position, BuildWorldStatus status) {
         XMaterial material = plugin.getCustomizableIcons().getIcon(status);
-        String displayName = Messages.getString(status.getMessageKey(), player);
+        String displayName = Messages.getString(Messages.getMessageKey(status), player);
 
         if (!player.hasPermission(status.getPermission())) {
             material = XMaterial.BARRIER;
@@ -116,7 +116,7 @@ public class StatusInventory implements Listener {
             return;
         }
 
-        String statusTitle = Messages.getString("status_title", player, new AbstractMap.SimpleEntry<>("%world%", selectedWorldName));
+        String statusTitle = Messages.getString("status_title", player, Map.entry("%world%", selectedWorldName));
         if (!XInventoryView.of(event.getView()).getTitle().equals(statusTitle)) {
             return;
         }
@@ -160,8 +160,8 @@ public class StatusInventory implements Listener {
 
         XSound.ENTITY_CHICKEN_EGG.play(player);
         Messages.sendMessage(player, "worlds_setstatus_set",
-                new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()),
-                new AbstractMap.SimpleEntry<>("%status%", Messages.getString(status.getMessageKey(), player))
+                Map.entry("%world%", buildWorld.getName()),
+                Map.entry("%status%", Messages.getString(Messages.getMessageKey(status), player))
         );
     }
 
@@ -172,21 +172,14 @@ public class StatusInventory implements Listener {
      * @return The status which is represented by the item at the given slot
      */
     private BuildWorldStatus getStatusFromSlot(int slot) {
-        switch (slot) {
-            case 10:
-                return BuildWorldStatus.NOT_STARTED;
-            case 11:
-                return BuildWorldStatus.IN_PROGRESS;
-            case 12:
-                return BuildWorldStatus.ALMOST_FINISHED;
-            case 13:
-                return BuildWorldStatus.FINISHED;
-            case 14:
-                return BuildWorldStatus.ARCHIVE;
-            case 16:
-                return BuildWorldStatus.HIDDEN;
-            default:
-                throw new IllegalArgumentException("Slot " + slot + " does not correspond to status");
-        }
+        return switch (slot) {
+            case 10 -> BuildWorldStatus.NOT_STARTED;
+            case 11 -> BuildWorldStatus.IN_PROGRESS;
+            case 12 -> BuildWorldStatus.ALMOST_FINISHED;
+            case 13 -> BuildWorldStatus.FINISHED;
+            case 14 -> BuildWorldStatus.ARCHIVE;
+            case 16 -> BuildWorldStatus.HIDDEN;
+            default -> throw new IllegalArgumentException("Slot " + slot + " does not correspond to status");
+        };
     }
 }

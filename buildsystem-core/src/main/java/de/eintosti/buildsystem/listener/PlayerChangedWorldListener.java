@@ -29,7 +29,6 @@ import de.eintosti.buildsystem.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -88,7 +87,7 @@ public class PlayerChangedWorldListener implements Listener {
 
         BuildWorld newWorld = worldStorage.getBuildWorld(worldName);
         if (newWorld != null && !newWorld.getData().physics().get() && player.hasPermission("buildsystem.physics.message")) {
-            Messages.sendMessage(player, "physics_deactivated_in_world", new AbstractMap.SimpleEntry<>("%world%", newWorld.getName()));
+            Messages.sendMessage(player, "physics_deactivated_in_world", Map.entry("%world%", newWorld.getName()));
         }
 
         removeOldNavigator(player);

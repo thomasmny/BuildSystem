@@ -28,7 +28,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Furnace;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.Lightable;
 import org.bukkit.block.data.MultipleFacing;
@@ -37,7 +36,6 @@ import org.bukkit.block.data.Orientable;
 import org.bukkit.block.data.type.HangingSign;
 import org.bukkit.block.data.type.Sign;
 import org.bukkit.block.data.type.Slab;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -182,17 +180,20 @@ public class CustomBlocks_1_20_R1 implements CustomBlocks, Listener {
 
     @EventHandler
     public void onInvisibleItemFramePlacement(HangingPlaceEvent event) {
-        if (event.getEntity().getType() != EntityType.ITEM_FRAME) {
+        if (!(event.getEntity() instanceof ItemFrame itemFrame)) {
             return;
         }
 
         ItemStack itemStack = event.getItemStack();
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        if (!itemMeta.getPersistentDataContainer().has(this.invisibleFrameKey, PersistentDataType.BYTE)) {
+        if (itemStack == null) {
             return;
         }
 
-        ItemFrame itemFrame = (ItemFrame) event.getEntity();
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta == null || !itemMeta.getPersistentDataContainer().has(this.invisibleFrameKey, PersistentDataType.BYTE)) {
+            return;
+        }
+
         itemFrame.setVisible(false);
     }
 
@@ -217,8 +218,7 @@ public class CustomBlocks_1_20_R1 implements CustomBlocks, Listener {
                 }
                 adjacent.setType(material);
                 MultipleFacing multipleFacing = (MultipleFacing) adjacent.getBlockData();
-                Arrays.stream(DirectionUtil.BLOCK_SIDES)
-                        .forEach(blockFace -> multipleFacing.setFace(blockFace, blockFace == toPlace));
+                Arrays.stream(DirectionUtil.BLOCK_SIDES).forEach(blockFace -> multipleFacing.setFace(blockFace, blockFace == toPlace));
                 adjacent.setBlockData(multipleFacing);
                 break;
             default:
@@ -230,11 +230,10 @@ public class CustomBlocks_1_20_R1 implements CustomBlocks, Listener {
     @Override
     public void modifySlab(PlayerInteractEvent event) {
         Block block = event.getClickedBlock();
-        if (block == null || !(block.getBlockData() instanceof Slab)) {
+        if (block == null || !(block.getBlockData() instanceof Slab slab)) {
             return;
         }
 
-        Slab slab = (Slab) block.getBlockData();
         if (slab.getType() != Slab.Type.DOUBLE) {
             return;
         }
@@ -283,38 +282,30 @@ public class CustomBlocks_1_20_R1 implements CustomBlocks, Listener {
 
     @Override
     public void rotateBlock(Block block, Player player, BlockFace direction) {
-        BlockData blockData = block.getBlockData();
-
-        if (blockData instanceof Directional) {
-            Directional directional = (Directional) blockData;
-            directional.setFacing(direction);
-            block.setBlockData(directional);
-        } else if (blockData instanceof Orientable) {
-            Orientable orientable = (Orientable) blockData;
-            Axis axis;
-            switch (direction) {
-                case UP:
-                case DOWN:
-                    axis = Axis.Y;
-                    break;
-                case EAST:
-                case WEST:
-                    axis = Axis.X;
-                    break;
-                default:
-                    axis = Axis.Z;
-                    break;
+        switch (block.getBlockData()) {
+            case Directional directional -> {
+                directional.setFacing(direction);
+                block.setBlockData(directional);
             }
-            orientable.setAxis(axis);
-            block.setBlockData(orientable);
-        } else if (blockData instanceof Sign) {
-            Sign sign = (Sign) blockData;
-            sign.setRotation(direction);
-            block.setBlockData(sign);
-        } else if (blockData instanceof HangingSign) {
-            HangingSign hangingSign = (HangingSign) blockData;
-            hangingSign.setRotation(direction);
-            block.setBlockData(hangingSign);
+            case Orientable orientable -> {
+                Axis axis = switch (direction) {
+                    case UP, DOWN -> Axis.Y;
+                    case EAST, WEST -> Axis.X;
+                    default -> Axis.Z;
+                };
+                orientable.setAxis(axis);
+                block.setBlockData(orientable);
+            }
+            case Sign sign -> {
+                sign.setRotation(direction);
+                block.setBlockData(sign);
+            }
+            case HangingSign hangingSign -> {
+                hangingSign.setRotation(direction);
+                block.setBlockData(hangingSign);
+            }
+            default -> {
+            }
         }
     }
 }

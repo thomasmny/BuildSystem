@@ -35,7 +35,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -99,7 +98,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
         world.put("date", buildWorld.getCreation());
         world.put("builders", serializeBuilders(builders.getAllBuilders()));
         if (buildWorld.getCustomGenerator() != null) {
-            world.put("chunk-generator", buildWorld.getCustomGenerator().getName());
+            world.put("chunk-generator", buildWorld.getCustomGenerator().name());
         }
 
         return world;
@@ -116,7 +115,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
         for (Builder builder : builders) {
             builderList.append(";").append(builder.toString());
         }
-        return builderList.length() > 0 ? builderList.substring(1) : builderList.toString();
+        return !builderList.isEmpty() ? builderList.substring(1) : builderList.toString();
     }
 
     @Override
@@ -135,7 +134,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
         if (!file.exists()) {
             config.options().copyDefaults(true);
             saveFile();
-            return new HashSet<>();
+            return Set.of();
         }
 
         try {
@@ -146,7 +145,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
 
         ConfigurationSection section = config.getConfigurationSection(WORLDS_KEY);
         if (section == null) {
-            return new HashSet<>();
+            return Set.of();
         }
 
         return section.getKeys(false);

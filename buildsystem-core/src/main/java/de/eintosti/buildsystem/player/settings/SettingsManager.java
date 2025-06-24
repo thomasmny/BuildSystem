@@ -27,7 +27,6 @@ import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import fr.mrmicky.fastboard.FastBoard;
-import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -141,15 +140,15 @@ public class SettingsManager {
         BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(worldName);
 
         return new Map.Entry[]{
-                new AbstractMap.SimpleEntry<>("%world%", worldName),
-                new AbstractMap.SimpleEntry<>("%status%", parseWorldInformation(player, buildWorld, "%status%")),
-                new AbstractMap.SimpleEntry<>("%permission%", parseWorldInformation(player, buildWorld, "%permission%")),
-                new AbstractMap.SimpleEntry<>("%project%", parseWorldInformation(player, buildWorld, "%project%")),
-                new AbstractMap.SimpleEntry<>("%creator%", parseWorldInformation(player, buildWorld, "%creator%")),
-                new AbstractMap.SimpleEntry<>("%creation%", parseWorldInformation(player, buildWorld, "%creation%")),
-                new AbstractMap.SimpleEntry<>("%lastedited%", parseWorldInformation(player, buildWorld, "%lastedited%")),
-                new AbstractMap.SimpleEntry<>("%lastloaded%", parseWorldInformation(player, buildWorld, "%lastloaded%")),
-                new AbstractMap.SimpleEntry<>("%lastunloaded%", parseWorldInformation(player, buildWorld, "%lastunloaded%"))
+                Map.entry("%world%", worldName),
+                Map.entry("%status%", parseWorldInformation(player, buildWorld, "%status%")),
+                Map.entry("%permission%", parseWorldInformation(player, buildWorld, "%permission%")),
+                Map.entry("%project%", parseWorldInformation(player, buildWorld, "%project%")),
+                Map.entry("%creator%", parseWorldInformation(player, buildWorld, "%creator%")),
+                Map.entry("%creation%", parseWorldInformation(player, buildWorld, "%creation%")),
+                Map.entry("%lastedited%", parseWorldInformation(player, buildWorld, "%lastedited%")),
+                Map.entry("%lastloaded%", parseWorldInformation(player, buildWorld, "%lastloaded%")),
+                Map.entry("%lastunloaded%", parseWorldInformation(player, buildWorld, "%lastunloaded%"))
         };
     }
 
@@ -161,26 +160,17 @@ public class SettingsManager {
 
         Builders builders = buildWorld.getBuilders();
         WorldData worldData = buildWorld.getData();
-        switch (input) {
-            case "%status%":
-                return Messages.getString(worldData.status().get().getMessageKey(), player);
-            case "%permission%":
-                return worldData.permission().get();
-            case "%project%":
-                return worldData.project().get();
-            case "%creator%":
-                return builders.hasCreator() ? builders.getCreator().getName() : "-";
-            case "%creation%":
-                return Messages.formatDate(buildWorld.getCreation());
-            case "%lastedited%":
-                return Messages.formatDate(worldData.lastEdited().get());
-            case "%lastloaded%":
-                return Messages.formatDate(worldData.lastLoaded().get());
-            case "%lastunloaded%":
-                return Messages.formatDate(worldData.lastUnloaded().get());
-            default:
-                return "§f-";
-        }
+        return switch (input) {
+            case "%status%" -> Messages.getString(Messages.getMessageKey(worldData.status().get()), player);
+            case "%permission%" -> worldData.permission().get();
+            case "%project%" -> worldData.project().get();
+            case "%creator%" -> builders.hasCreator() ? builders.getCreator().getName() : "-";
+            case "%creation%" -> Messages.formatDate(buildWorld.getCreation());
+            case "%lastedited%" -> Messages.formatDate(worldData.lastEdited().get());
+            case "%lastloaded%" -> Messages.formatDate(worldData.lastLoaded().get());
+            case "%lastunloaded%" -> Messages.formatDate(worldData.lastUnloaded().get());
+            default -> "§f-";
+        };
     }
 
     private void stopScoreboard(Player player, Settings settings) {

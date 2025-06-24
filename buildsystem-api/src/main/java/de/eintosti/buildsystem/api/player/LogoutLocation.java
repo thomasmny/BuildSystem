@@ -28,7 +28,7 @@ import org.jetbrains.annotations.ApiStatus.Internal;
 @Internal
 public interface LogoutLocation {
 
-    String getWorldName();
+    String worldName();
 
-    Location getLocation();
+    Location location();
 }

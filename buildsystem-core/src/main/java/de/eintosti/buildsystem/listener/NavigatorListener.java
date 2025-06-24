@@ -33,6 +33,7 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.navigator.inventory.ArchivedWorldsInventory;
+import de.eintosti.buildsystem.navigator.inventory.DisplayablesInventory;
 import de.eintosti.buildsystem.navigator.inventory.PrivateWorldsInventory;
 import de.eintosti.buildsystem.navigator.inventory.PublicWorldsInventory;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
@@ -193,25 +194,19 @@ public class NavigatorListener implements Listener {
                 return;
             }
 
-            NavigatorCategory inventoryType = ArmorStandManager.matchNavigatorCategory(player, customName);
-            if (inventoryType == null) {
+            NavigatorCategory category = ArmorStandManager.matchNavigatorCategory(player, customName);
+            if (category == null) {
                 return;
             }
 
-            switch (inventoryType) {
-                case PUBLIC:
-                    XSound.BLOCK_CHEST_OPEN.play(player);
-                    new PublicWorldsInventory(plugin, player).openInventory();
-                    break;
-                case ARCHIVE:
-                    XSound.BLOCK_CHEST_OPEN.play(player);
-                    new ArchivedWorldsInventory(plugin, player).openInventory();
-                    break;
-                case PRIVATE:
-                    XSound.BLOCK_CHEST_OPEN.play(player);
-                    new PrivateWorldsInventory(plugin, player).openInventory();
-                    break;
-            }
+            DisplayablesInventory inventory = switch (category) {
+                case PUBLIC -> new PublicWorldsInventory(plugin, player);
+                case ARCHIVE -> new ArchivedWorldsInventory(plugin, player);
+                case PRIVATE -> new PrivateWorldsInventory(plugin, player);
+            };
+
+            XSound.BLOCK_CHEST_OPEN.play(player);
+            inventory.openInventory();
         }
     }
 

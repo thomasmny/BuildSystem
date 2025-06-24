@@ -20,7 +20,7 @@ package de.eintosti.buildsystem.command;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import java.util.AbstractMap;
+import java.util.Map;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -28,6 +28,8 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class SpeedCommand implements CommandExecutor {
+
+    private static final float INVALID_SPEED = -1.0f;
 
     private final BuildSystemPlugin plugin;
 
@@ -38,12 +40,11 @@ public class SpeedCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             plugin.getLogger().warning(Messages.getString("sender_not_player", null));
             return true;
         }
 
-        Player player = (Player) sender;
         if (!player.hasPermission("buildsystem.speed")) {
             Messages.sendPermissionError(player);
             return true;
@@ -56,26 +57,21 @@ public class SpeedCommand implements CommandExecutor {
                 break;
             case 1:
                 String speedString = args[0];
-                switch (speedString) {
-                    case "1":
-                        setSpeed(player, 0.2f, speedString);
-                        break;
-                    case "2":
-                        setSpeed(player, 0.4f, speedString);
-                        break;
-                    case "3":
-                        setSpeed(player, 0.6f, speedString);
-                        break;
-                    case "4":
-                        setSpeed(player, 0.8f, speedString);
-                        break;
-                    case "5":
-                        setSpeed(player, 1.0f, speedString);
-                        break;
-                    default:
-                        Messages.sendMessage(player, "speed_usage");
-                        break;
+                float speed = switch (speedString) {
+                    case "1" -> 0.2f;
+                    case "2" -> 0.4f;
+                    case "3" -> 0.6f;
+                    case "4" -> 0.8f;
+                    case "5" -> 1.0f;
+                    default -> INVALID_SPEED;
+                };
+
+                if (speed == INVALID_SPEED) {
+                    Messages.sendMessage(player, "speed_usage");
+                    return true;
                 }
+
+                setSpeed(player, speed, speedString);
                 break;
             default:
                 Messages.sendMessage(player, "speed_usage");
@@ -88,10 +84,10 @@ public class SpeedCommand implements CommandExecutor {
     private void setSpeed(Player player, float speed, String speedString) {
         if (player.isFlying()) {
             player.setFlySpeed(speed - 0.1f);
-            Messages.sendMessage(player, "speed_set_flying", new AbstractMap.SimpleEntry<>("%speed%", speedString));
+            Messages.sendMessage(player, "speed_set_flying", Map.entry("%speed%", speedString));
         } else {
             player.setWalkSpeed(speed);
-            Messages.sendMessage(player, "speed_set_walking", new AbstractMap.SimpleEntry<>("%speed%", speedString));
+            Messages.sendMessage(player, "speed_set_walking", Map.entry("%speed%", speedString));
         }
     }
 }

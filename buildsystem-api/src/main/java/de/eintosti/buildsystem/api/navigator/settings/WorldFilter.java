@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.api.navigator.settings;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.util.function.Predicate;
-import org.jetbrains.annotations.ApiStatus.Internal;
 
 /**
  * Interface for a world filter that restricts which {@link BuildWorld}s are shown to a user in the navigator.
@@ -29,33 +28,18 @@ import org.jetbrains.annotations.ApiStatus.Internal;
 public interface WorldFilter {
 
     enum Mode {
-        NONE("world_filter_mode_none"),
-        STARTS_WITH("world_filter_mode_starts_with"),
-        CONTAINS("world_filter_mode_contains"),
-        MATCHES("world_filter_mode_matches");
-
-        private final String loreKey;
-
-        Mode(String loreKey) {
-            this.loreKey = loreKey;
-        }
-
-        @Internal
-        public String getLoreKey() {
-            return loreKey;
-        }
+        NONE,
+        STARTS_WITH,
+        CONTAINS,
+        MATCHES;
 
         public Mode getNext() {
-            switch (this) {
-                case STARTS_WITH:
-                    return CONTAINS;
-                case CONTAINS:
-                    return MATCHES;
-                case MATCHES:
-                    return NONE;
-                default: // NONE
-                    return STARTS_WITH;
-            }
+            return switch (this) {
+                case NONE -> STARTS_WITH;
+                case STARTS_WITH -> CONTAINS;
+                case CONTAINS -> MATCHES;
+                case MATCHES -> NONE;
+            };
         }
     }
 

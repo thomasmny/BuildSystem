@@ -57,15 +57,11 @@ public class WorldFilterImpl implements WorldFilter {
 
     @Override
     public Predicate<BuildWorld> apply() {
-        switch (mode) {
-            case STARTS_WITH:
-                return buildWorld -> buildWorld.getName().startsWith(text);
-            case CONTAINS:
-                return buildWorld -> buildWorld.getName().contains(text);
-            case MATCHES:
-                return buildWorld -> buildWorld.getName().matches(text);
-            default:
-                return buildWorld -> true;
-        }
+        return switch (mode) {
+            case STARTS_WITH -> buildWorld -> buildWorld.getName().startsWith(text);
+            case CONTAINS -> buildWorld -> buildWorld.getName().contains(text);
+            case MATCHES -> buildWorld -> buildWorld.getName().matches(text);
+            default -> buildWorld -> true;
+        };
     }
 }

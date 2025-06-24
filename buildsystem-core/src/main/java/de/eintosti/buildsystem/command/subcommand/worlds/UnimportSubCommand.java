@@ -24,7 +24,7 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
-import java.util.AbstractMap;
+import java.util.Map;
 import org.bukkit.entity.Player;
 
 public class UnimportSubCommand implements SubCommand {
@@ -56,7 +56,7 @@ public class UnimportSubCommand implements SubCommand {
 
         plugin.getWorldService().unimportWorld(player, buildWorld, true);
         Messages.sendMessage(player, "worlds_unimport_finished",
-                new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName())
+                Map.entry("%world%", buildWorld.getName())
         );
     }
 

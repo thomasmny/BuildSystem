@@ -34,7 +34,6 @@ import de.eintosti.buildsystem.util.StringCleaner;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -62,11 +61,9 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         ArrayList<String> arrayList = new ArrayList<>();
-
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             return arrayList;
         }
-        Player player = (Player) sender;
 
         switch (args.length) {
             case 1: {
@@ -176,14 +173,11 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
             default:
                 switch (args[0].toLowerCase(Locale.ROOT)) {
                     case "import": {
-                        Map<String, List<String>> arguments = new HashMap<String, List<String>>() {{
-                            put("-g", Arrays.stream(Generator.values()).filter(generator -> generator != Generator.CUSTOM)
-                                    .map(Enum::name)
-                                    .collect(Collectors.toList())
-                            );
-                            put("-c", Lists.newArrayList());
-                            put("-t", Arrays.stream(BuildWorldType.values()).map(Enum::name).collect(Collectors.toList()));
-                        }};
+                        Map<String, List<String>> arguments = Map.of(
+                                "-g", Arrays.stream(Generator.values()).filter(generator -> generator != Generator.CUSTOM).map(Enum::name).collect(Collectors.toList()),
+                                "-c", Lists.newArrayList(),
+                                "-t", Arrays.stream(BuildWorldType.values()).map(Enum::name).collect(Collectors.toList())
+                        );
 
                         if (args.length % 2 == 1) {
                             arguments.keySet().stream()
@@ -203,14 +197,14 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                     case "folder": {
                         switch (args.length) {
                             case 3:
-                                Map<String, String> subCommands = new HashMap<String, String>() {{
-                                    put("add", "buildsystem.folder.add");
-                                    put("remove", "buildsystem.folder.remove");
-                                    put("delete", "buildsystem.folder.delete");
-                                    put("setPermission", "buildsystem.folder.setpermission");
-                                    put("setProject", "buildsystem.folder.setproject");
-                                    put("setItem", "buildsystem.folder.setitem");
-                                }};
+                                Map<String, String> subCommands = Map.of(
+                                        "add", "buildsystem.folder.add",
+                                        "remove", "buildsystem.folder.remove",
+                                        "delete", "buildsystem.folder.delete",
+                                        "setPermission", "buildsystem.folder.setpermission",
+                                        "setProject", "buildsystem.folder.setproject",
+                                        "setItem", "buildsystem.folder.setitem"
+                                );
                                 subCommands.entrySet().stream()
                                         .filter(entry -> player.hasPermission(entry.getKey()))
                                         .forEach(entry -> addArgument(args[2], entry.getKey(), arrayList));

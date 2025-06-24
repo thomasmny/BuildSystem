@@ -46,12 +46,12 @@ public class LogoutLocationImpl implements LogoutLocation {
     }
 
     @Override
-    public String getWorldName() {
+    public String worldName() {
         return worldName;
     }
 
     @Override
-    public Location getLocation() {
+    public Location location() {
         return new Location(Bukkit.getWorld(worldName), x, y, z, yaw, pitch);
     }
 

@@ -17,6 +17,8 @@
  */
 package de.eintosti.buildsystem;
 
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -997,6 +999,43 @@ public class Messages {
                 )
                 .map(ColorAPI::process)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Gets the message key for the {@link BuildWorldStatus}'s display name.
+     *
+     * @return The type's display name message key
+     */
+    public static String getMessageKey(BuildWorldStatus status) {
+        return switch (status) {
+            case NOT_STARTED -> "status_not_started";
+            case IN_PROGRESS -> "status_in_progress";
+            case ALMOST_FINISHED -> "status_almost_finished";
+            case FINISHED -> "status_finished";
+            case ARCHIVE -> "status_archive";
+            case HIDDEN -> "status_hidden";
+        };
+    }
+
+    /**
+     * Get the message key for the {@link BuildWorldType}'s display name.
+     *
+     * @return The type's display name message key, or {@code null} for {@link BuildWorldType#IMPORTED} and {@link BuildWorldType#UNKNOWN}
+     */
+    @Nullable
+    public static String getMessageKey(BuildWorldType type) {
+        return switch (type) {
+            case NORMAL -> "type_normal";
+            case FLAT -> "type_flat";
+            case NETHER -> "type_nether";
+            case END -> "type_end";
+            case VOID -> "type_void";
+            case TEMPLATE -> "type_template";
+            case PRIVATE -> "type_private";
+            case IMPORTED -> null; // No message key for imported worlds
+            case CUSTOM -> "type_custom";
+            case UNKNOWN -> null; // No message key for unknown worlds
+        };
     }
 
     @SafeVarargs

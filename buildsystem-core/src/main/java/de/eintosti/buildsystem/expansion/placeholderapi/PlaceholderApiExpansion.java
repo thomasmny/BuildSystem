@@ -76,8 +76,8 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
     }
 
     /**
-     * The placeholder identifier should go here. This is what tells PlaceholderAPI to call our onRequest method to obtain a value if a placeholder starts with our identifier. This
-     * must be unique and can not contain % or _
+     * The placeholder identifier should go here. This is what tells PlaceholderAPI to call our onRequest method to get a value if a placeholder starts with our identifier. This
+     * must be unique and cannot contain % or _
      *
      * @return The identifier in {@code %<identifier>_<value>%} as String.
      */
@@ -87,11 +87,11 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
     }
 
     /**
-     * This is the version of the expansion. You don't have to use numbers, since it is set as a String.
+     * This is the version of the expansion. You don't have to use numbers since it is set as a String.
      * <p>
      * For convenience do we return the version from the plugin.yml
      *
-     * @return The version as a String.
+     * @return The version as a string.
      */
     @Override
     public @NotNull String getVersion() {
@@ -99,12 +99,11 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
     }
 
     /**
-     * This is the method called when a placeholder with our identifier is found and needs a value. We specify the value identifier in this method. Since version 2.9.1 can you use
-     * OfflinePlayers in your requests.
+     * This is the method called when a placeholder with our identifier is found and needs a value. We specify the value identifier in this method.
      *
-     * @param player     A Player.
-     * @param identifier A String containing the identifier/value.
-     * @return possibly-null String of the requested identifier.
+     * @param player     The player for which the placeholder is requested.
+     * @param identifier The identifier of the placeholder
+     * @return The value of the placeholder as a string, or {@code null} if the identifier is not recognized.
      */
     @Override
     public String onPlaceholderRequest(Player player, @NotNull String identifier) {
@@ -120,62 +119,46 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
     }
 
     /**
-     * This is the method called when a placeholder with the identifier {@code %buildsystem_settings_<setting>%} is found
+     * This is the method called when a placeholder with the identifier {@code %buildsystem_settings_<setting>%} is found.
      *
-     * @param player     A Player.
-     * @param identifier A String containing the identifier/value.
-     * @return possibly null String of the requested identifier.
+     * @param player     The player for which the placeholder is requested
+     * @param identifier The identifier
+     * @return The requested setting as a string, or {@code null} if the setting is not recognized
      */
     @Nullable
     private String parseSettingsPlaceholder(Player player, String identifier) {
         Settings settings = settingsManager.getSettings(player);
         String settingIdentifier = identifier.split("_")[1];
 
-        switch (settingIdentifier.toLowerCase(Locale.ROOT)) {
-            case "navigatortype":
-                return settings.getNavigatorType().toString();
-            case "glasscolor":
-                return settings.getDesignColor().toString();
-            case "worldsort":
-                return settings.getWorldDisplay().getWorldSort().toString();
-            case "clearinventory":
-                return String.valueOf(settings.isClearInventory());
-            case "disableinteract":
-                return String.valueOf(settings.isDisableInteract());
-            case "hideplayers":
-                return String.valueOf(settings.isHidePlayers());
-            case "instantplacesigns":
-                return String.valueOf(settings.isInstantPlaceSigns());
-            case "keepnavigator":
-                return String.valueOf(settings.isKeepNavigator());
-            case "nightvision":
-                return String.valueOf(settings.isNightVision());
-            case "noclip":
-                return String.valueOf(settings.isNoClip());
-            case "placeplants":
-                return String.valueOf(settings.isPlacePlants());
-            case "scoreboard":
-                return String.valueOf(settings.isScoreboard());
-            case "slabbreaking":
-                return String.valueOf(settings.isSlabBreaking());
-            case "spawnteleport":
-                return String.valueOf(settings.isSpawnTeleport());
-            case "opentrapdoors":
-                return String.valueOf(settings.isOpenTrapDoors());
-            default:
-                return null;
-        }
+        return switch (settingIdentifier.toLowerCase(Locale.ROOT)) {
+            case "navigatortype" -> settings.getNavigatorType().toString();
+            case "glasscolor" -> settings.getDesignColor().toString();
+            case "worldsort" -> settings.getWorldDisplay().getWorldSort().toString();
+            case "clearinventory" -> String.valueOf(settings.isClearInventory());
+            case "disableinteract" -> String.valueOf(settings.isDisableInteract());
+            case "hideplayers" -> String.valueOf(settings.isHidePlayers());
+            case "instantplacesigns" -> String.valueOf(settings.isInstantPlaceSigns());
+            case "keepnavigator" -> String.valueOf(settings.isKeepNavigator());
+            case "nightvision" -> String.valueOf(settings.isNightVision());
+            case "noclip" -> String.valueOf(settings.isNoClip());
+            case "placeplants" -> String.valueOf(settings.isPlacePlants());
+            case "scoreboard" -> String.valueOf(settings.isScoreboard());
+            case "slabbreaking" -> String.valueOf(settings.isSlabBreaking());
+            case "spawnteleport" -> String.valueOf(settings.isSpawnTeleport());
+            case "opentrapdoors" -> String.valueOf(settings.isOpenTrapDoors());
+            default -> null;
+        };
     }
 
     /**
-     * This is the method called when a placeholder with the identifier needed for {@link PlaceholderApiExpansion#parseSettingsPlaceholder(Player, String)} is not found
+     * This is the method called when a placeholder with the identifier needed for {@link PlaceholderApiExpansion#parseSettingsPlaceholder(Player, String)} is not found.
      * <p>
      * The default layout for a world placeholder is {@code %buildsystem_<value>%}. If a world is not specified by using the format {@code %buildsystem_<value>_<world>%} then the
      * world the player is currently in will be used.
      *
-     * @param player     A Player.
-     * @param identifier A String containing the identifier/value.
-     * @return possibly-null String of the requested identifier.
+     * @param player     The player for which the placeholder is requested
+     * @param identifier The identifier
+     * @return The requested value as a string, or {@code null} if the identifier is not recognized or the world does not exist
      */
     @Nullable
     private String parseBuildWorldPlaceholder(Player player, String identifier) {
@@ -193,55 +176,31 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
 
         Builders builders = buildWorld.getBuilders();
         WorldData worldData = buildWorld.getData();
-        switch (identifier.toLowerCase(Locale.ROOT)) {
-            case "blockbreaking":
-                return String.valueOf(worldData.blockBreaking().get());
-            case "blockplacement":
-                return String.valueOf(worldData.blockPlacement().get());
-            case "builders":
-                return builders.asPlaceholder(player);
-            case "buildersenabled":
-                return String.valueOf(worldData.buildersEnabled().get());
-            case "creation":
-                return Messages.formatDate(buildWorld.getCreation());
-            case "creator":
-                return builders.hasCreator() ? builders.getCreator().getName() : "-";
-            case "creatorid":
-                return builders.hasCreator() ? String.valueOf(builders.getCreator().getUniqueId()) : "-";
-            case "explosions":
-                return String.valueOf(worldData.explosions().get());
-            case "lastedited":
-                return Messages.formatDate(worldData.lastEdited().get());
-            case "lastloaded":
-                return Messages.formatDate(worldData.lastLoaded().get());
-            case "lastunloaded":
-                return Messages.formatDate(worldData.lastUnloaded().get());
-            case "loaded":
-                return String.valueOf(buildWorld.isLoaded());
-            case "material":
-                return worldData.material().get().name();
-            case "mobai":
-                return String.valueOf(worldData.mobAi().get());
-            case "permission":
-                return worldData.permission().get();
-            case "private":
-                return String.valueOf(worldData.privateWorld().get());
-            case "project":
-                return worldData.project().get();
-            case "physics":
-                return String.valueOf(worldData.physics().get());
-            case "spawn":
-                return worldData.customSpawn().get();
-            case "status":
-                return Messages.getString(worldData.status().get().getMessageKey(), player);
-            case "time":
-                return buildWorld.getWorldTime();
-            case "type":
-                return Messages.getString(buildWorld.getType().getMessageKey(), player);
-            case "world":
-                return buildWorld.getName();
-            default:
-                return null;
-        }
+        return switch (identifier.toLowerCase(Locale.ROOT)) {
+            case "blockbreaking" -> String.valueOf(worldData.blockBreaking().get());
+            case "blockplacement" -> String.valueOf(worldData.blockPlacement().get());
+            case "builders" -> builders.asPlaceholder(player);
+            case "buildersenabled" -> String.valueOf(worldData.buildersEnabled().get());
+            case "creation" -> Messages.formatDate(buildWorld.getCreation());
+            case "creator" -> builders.hasCreator() ? builders.getCreator().getName() : "-";
+            case "creatorid" -> builders.hasCreator() ? String.valueOf(builders.getCreator().getUniqueId()) : "-";
+            case "explosions" -> String.valueOf(worldData.explosions().get());
+            case "lastedited" -> Messages.formatDate(worldData.lastEdited().get());
+            case "lastloaded" -> Messages.formatDate(worldData.lastLoaded().get());
+            case "lastunloaded" -> Messages.formatDate(worldData.lastUnloaded().get());
+            case "loaded" -> String.valueOf(buildWorld.isLoaded());
+            case "material" -> worldData.material().get().name();
+            case "mobai" -> String.valueOf(worldData.mobAi().get());
+            case "permission" -> worldData.permission().get();
+            case "private" -> String.valueOf(worldData.privateWorld().get());
+            case "project" -> worldData.project().get();
+            case "physics" -> String.valueOf(worldData.physics().get());
+            case "spawn" -> worldData.customSpawn().get();
+            case "status" -> Messages.getString(Messages.getMessageKey(worldData.status().get()), player);
+            case "time" -> buildWorld.getWorldTime();
+            case "type" -> Messages.getString(Messages.getMessageKey(buildWorld.getType()), player);
+            case "world" -> buildWorld.getName();
+            default -> null;
+        };
     }
 }

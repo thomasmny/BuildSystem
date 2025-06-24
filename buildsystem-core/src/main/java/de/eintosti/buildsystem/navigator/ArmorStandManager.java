@@ -77,12 +77,12 @@ public class ArmorStandManager {
     }
 
     @SuppressWarnings("deprecation")
-    private ArmorStand spawnArmorStand(Player player, Location location, NavigatorCategory inventoryType, boolean customSkull, String skullUrl) {
+    private ArmorStand spawnArmorStand(Player player, Location location, NavigatorCategory category, boolean customSkull, String skullUrl) {
         location.setY(location.getY() - 0.1);
 
         ArmorStand armorStand = location.getWorld().spawn(location, ArmorStand.class);
         armorStand.setVisible(false);
-        armorStand.setCustomName(player.getName() + " × " + ARMOR_STAND_NAMES.get(inventoryType));
+        armorStand.setCustomName(player.getName() + " × " + ARMOR_STAND_NAMES.get(category));
         armorStand.setCustomNameVisible(false);
         armorStand.setGravity(false);
         armorStand.setCanPickupItems(false);
@@ -130,8 +130,8 @@ public class ArmorStandManager {
                 continue;
             }
 
-            for (NavigatorCategory inventoryType : NavigatorCategory.values()) {
-                if (customName.equals(playerName + " × " + ARMOR_STAND_NAMES.get(inventoryType))) {
+            for (NavigatorCategory category : NavigatorCategory.values()) {
+                if (customName.equals(playerName + " × " + ARMOR_STAND_NAMES.get(category))) {
                     armorStand.remove();
                     break;
                 }

@@ -65,7 +65,7 @@ public class PlayerTeleportListener implements Listener {
         }
 
         // Users can always teleport to the main server world
-        if (Bukkit.getWorlds().get(0).equals(toWorld)) {
+        if (Bukkit.getWorlds().getFirst().equals(toWorld)) {
             return;
         }
 

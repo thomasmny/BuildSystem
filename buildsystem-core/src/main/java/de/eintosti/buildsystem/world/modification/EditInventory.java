@@ -33,9 +33,9 @@ import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.bukkit.Bukkit;
@@ -112,17 +112,17 @@ public class EditInventory implements Listener {
         addDifficultyItem(player, inventory, buildWorld);
         inventory.setItem(40, InventoryUtils.createItem(plugin.getCustomizableIcons().getIcon(worldData.status().get()), Messages.getString("worldeditor_status_item", player),
                 Messages.getStringList("worldeditor_status_lore", player,
-                        new AbstractMap.SimpleEntry<>("%status%", Messages.getString(buildWorld.getData().status().get().getMessageKey(), player))
+                        Map.entry("%status%", Messages.getString(Messages.getMessageKey(buildWorld.getData().status().get()), player))
                 )
         ));
         inventory.setItem(41, InventoryUtils.createItem(XMaterial.ANVIL, Messages.getString("worldeditor_project_item", player),
                 Messages.getStringList("worldeditor_project_lore", player,
-                        new AbstractMap.SimpleEntry<>("%project%", buildWorld.getData().project().get())
+                        Map.entry("%project%", buildWorld.getData().project().get())
                 )
         ));
         inventory.setItem(42, InventoryUtils.createItem(XMaterial.PAPER, Messages.getString("worldeditor_permission_item", player),
                 Messages.getStringList("worldeditor_permission_lore", player,
-                        new AbstractMap.SimpleEntry<>("%permission%", buildWorld.getData().permission().get())
+                        Map.entry("%permission%", buildWorld.getData().permission().get())
                 )
         ));
 
@@ -140,7 +140,7 @@ public class EditInventory implements Listener {
     }
 
     private void addBuildWorldInfoItem(Player player, Inventory inventory, BuildWorld buildWorld) {
-        String displayName = Messages.getString("worldeditor_world_item", player, new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+        String displayName = Messages.getString("worldeditor_world_item", player, Map.entry("%world%", buildWorld.getName()));
         XMaterial material = buildWorld.getData().material().get();
 
         if (material == XMaterial.PLAYER_HEAD) {
@@ -190,7 +190,7 @@ public class EditInventory implements Listener {
         }
 
         inventory.setItem(23, InventoryUtils.createItem(xMaterial, Messages.getString("worldeditor_time_item", player),
-                Messages.getStringList("worldeditor_time_lore", player, new AbstractMap.SimpleEntry<>("%time%", value))
+                Messages.getStringList("worldeditor_time_lore", player, Map.entry("%time%", value))
         ));
     }
 
@@ -246,26 +246,17 @@ public class EditInventory implements Listener {
     }
 
     private void addDifficultyItem(Player player, Inventory inventory, BuildWorld buildWorld) {
-        XMaterial xMaterial;
-        switch (buildWorld.getData().difficulty().get()) {
-            case EASY:
-                xMaterial = XMaterial.GOLDEN_HELMET;
-                break;
-            case NORMAL:
-                xMaterial = XMaterial.IRON_HELMET;
-                break;
-            case HARD:
-                xMaterial = XMaterial.DIAMOND_HELMET;
-                break;
-            default:
-                xMaterial = XMaterial.LEATHER_HELMET;
-                break;
-        }
+        XMaterial material = switch (buildWorld.getData().difficulty().get()) {
+            case EASY -> XMaterial.GOLDEN_HELMET;
+            case NORMAL -> XMaterial.IRON_HELMET;
+            case HARD -> XMaterial.DIAMOND_HELMET;
+            default -> XMaterial.LEATHER_HELMET;
+        };
 
-        inventory.setItem(39, InventoryUtils.createItem(xMaterial,
+        inventory.setItem(39, InventoryUtils.createItem(material,
                 Messages.getString("worldeditor_difficulty_item", player),
                 Messages.getStringList("worldeditor_difficulty_lore", player,
-                        new AbstractMap.SimpleEntry<>("%difficulty%", getDifficultyName(buildWorld, player))
+                        Map.entry("%difficulty%", getDifficultyName(buildWorld, player))
                 )
         ));
     }
@@ -274,22 +265,16 @@ public class EditInventory implements Listener {
      * Get the display name of a {@link Difficulty}.
      *
      * @param player The player to parse the placeholders against
-     * @return the difficulty's display name
+     * @return The difficulty's display name
      * @see WorldDataImpl#difficulty()
      */
     private String getDifficultyName(BuildWorld buildWorld, Player player) {
-        switch (buildWorld.getData().difficulty().get()) {
-            case PEACEFUL:
-                return Messages.getString("difficulty_peaceful", player);
-            case EASY:
-                return Messages.getString("difficulty_easy", player);
-            case NORMAL:
-                return Messages.getString("difficulty_normal", player);
-            case HARD:
-                return Messages.getString("difficulty_hard", player);
-            default:
-                return "-";
-        }
+        return switch (buildWorld.getData().difficulty().get()) {
+            case PEACEFUL -> Messages.getString("difficulty_peaceful", player);
+            case EASY -> Messages.getString("difficulty_easy", player);
+            case NORMAL -> Messages.getString("difficulty_normal", player);
+            case HARD -> Messages.getString("difficulty_hard", player);
+        };
     }
 
     @EventHandler
@@ -467,7 +452,7 @@ public class EditInventory implements Listener {
                 });
 
         player.closeInventory();
-        Messages.sendMessage(player, "worldeditor_butcher_removed", new AbstractMap.SimpleEntry<>("%amount%", entitiesRemoved.get()));
+        Messages.sendMessage(player, "worldeditor_butcher_removed", Map.entry("%amount%", entitiesRemoved.get()));
     }
 
     public enum Time {

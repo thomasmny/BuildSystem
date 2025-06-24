@@ -26,10 +26,10 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.util.WorldPermissions;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -141,7 +141,7 @@ public class FolderImpl implements Folder {
     @Override
     public String getDisplayName(Player player) {
         return Messages.getString("folder_item_title", player,
-                new AbstractMap.SimpleEntry<>("%folder%", name)
+                Map.entry("%folder%", name)
         );
     }
 
@@ -198,9 +198,9 @@ public class FolderImpl implements Folder {
     @Override
     public List<String> getLore(Player player) {
         return new ArrayList<>(Messages.getStringList("folder_item_lore", player,
-                new AbstractMap.SimpleEntry<>("%permission%", this.permission),
-                new AbstractMap.SimpleEntry<>("%project%", this.project),
-                new AbstractMap.SimpleEntry<>("%worlds%", String.valueOf(getWorldCount())))
+                Map.entry("%permission%", this.permission),
+                Map.entry("%project%", this.project),
+                Map.entry("%worlds%", String.valueOf(getWorldCount())))
         );
     }
 

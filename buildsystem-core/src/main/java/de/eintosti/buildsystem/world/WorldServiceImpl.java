@@ -38,9 +38,9 @@ import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import io.papermc.lib.PaperLib;
 import java.io.File;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.bukkit.Bukkit;
@@ -121,7 +121,7 @@ public class WorldServiceImpl implements WorldService {
             }
 
             CustomGeneratorImpl customGenerator = new CustomGeneratorImpl(generatorInfo[0], chunkGenerator);
-            plugin.getLogger().info("Using custom world generator: " + customGenerator.getName());
+            plugin.getLogger().info("Using custom world generator: " + customGenerator.name());
             createWorld(player, worldName, BuildWorldType.CUSTOM, customGenerator, template, privateWorld, folder);
         });
     }
@@ -175,7 +175,7 @@ public class WorldServiceImpl implements WorldService {
         if (worldCreator.isDataVersionTooHigh()) {
             String key = single ? "import" : "importall";
             Messages.sendMessage(player, "worlds_" + key + "_newer_version",
-                    new AbstractMap.SimpleEntry<>("%world%", worldName)
+                    Map.entry("%world%", worldName)
             );
             return false;
         }
@@ -189,10 +189,10 @@ public class WorldServiceImpl implements WorldService {
         int delay = configValues.getImportDelay();
 
         Messages.sendMessage(player, "worlds_importall_started",
-                new AbstractMap.SimpleEntry<>("%amount%", String.valueOf(worlds))
+                Map.entry("%amount%", String.valueOf(worlds))
         );
         Messages.sendMessage(player, "worlds_importall_delay",
-                new AbstractMap.SimpleEntry<>("%delay%", String.valueOf(delay))
+                Map.entry("%delay%", String.valueOf(delay))
         );
         importingAllWorlds = true;
 
@@ -211,7 +211,7 @@ public class WorldServiceImpl implements WorldService {
                 String worldName = worldList[i];
                 if (worldStorage.worldExists(worldName)) {
                     Messages.sendMessage(player, "worlds_importall_world_already_imported",
-                            new AbstractMap.SimpleEntry<>("%world%", worldName)
+                            Map.entry("%world%", worldName)
                     );
                     return;
                 }
@@ -219,14 +219,14 @@ public class WorldServiceImpl implements WorldService {
                 String invalidChar = StringCleaner.firstInvalidChar(worldName);
                 if (invalidChar != null) {
                     Messages.sendMessage(player, "worlds_importall_invalid_character",
-                            new AbstractMap.SimpleEntry<>("%world%", worldName),
-                            new AbstractMap.SimpleEntry<>("%char%", invalidChar)
+                            Map.entry("%world%", worldName),
+                            Map.entry("%char%", invalidChar)
                     );
                     return;
                 }
 
                 if (importWorld(player, worldName, creator, BuildWorldType.IMPORTED, generator, null, false)) {
-                    Messages.sendMessage(player, "worlds_importall_world_imported", new AbstractMap.SimpleEntry<>("%world%", worldName));
+                    Messages.sendMessage(player, "worlds_importall_world_imported", Map.entry("%world%", worldName));
                 }
             }
         }.runTaskTimer(plugin, 0, 20L * delay);
@@ -274,7 +274,7 @@ public class WorldServiceImpl implements WorldService {
             assignedFolder.removeWorld(buildWorld);
         }
 
-        Messages.sendMessage(player, "worlds_delete_started", new AbstractMap.SimpleEntry<>("%world%", worldName));
+        Messages.sendMessage(player, "worlds_delete_started", Map.entry("%world%", worldName));
         removePlayersFromWorld(worldName, Messages.getString("worlds_delete_players_world", player));
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             unimportWorld(player, buildWorld, false);
@@ -364,8 +364,8 @@ public class WorldServiceImpl implements WorldService {
         }
 
         Messages.sendMessage(player, "worlds_rename_set",
-                new AbstractMap.SimpleEntry<>("%oldName%", oldName),
-                new AbstractMap.SimpleEntry<>("%newName%", sanitizedNewName)
+                Map.entry("%oldName%", oldName),
+                Map.entry("%newName%", sanitizedNewName)
         );
     }
 
@@ -378,7 +378,7 @@ public class WorldServiceImpl implements WorldService {
         }
 
         SpawnManager spawnManager = plugin.getSpawnManager();
-        Location spawnLocation = Bukkit.getWorlds().get(0).getSpawnLocation().add(0.5, 0, 0.5);
+        Location spawnLocation = Bukkit.getWorlds().getFirst().getSpawnLocation().add(0.5, 0, 0.5);
 
         Bukkit.getOnlinePlayers().forEach(player -> {
             World playerWorld = player.getWorld();

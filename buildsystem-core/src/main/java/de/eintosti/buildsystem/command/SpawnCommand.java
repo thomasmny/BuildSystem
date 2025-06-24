@@ -22,8 +22,8 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.SpawnManager;
-import java.util.AbstractMap;
 import java.util.Locale;
+import java.util.Map;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -47,12 +47,10 @@ public class SpawnCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             plugin.getLogger().warning(Messages.getString("sender_not_player", null));
             return true;
         }
-
-        Player player = (Player) sender;
 
         switch (args.length) {
             case 0:
@@ -86,10 +84,10 @@ public class SpawnCommand implements CommandExecutor {
 
                         spawnManager.set(playerLocation, buildWorld.getName());
                         Messages.sendMessage(player, "spawn_set",
-                                new AbstractMap.SimpleEntry<>("%x%", round(playerLocation.getX())),
-                                new AbstractMap.SimpleEntry<>("%y%", round(playerLocation.getY())),
-                                new AbstractMap.SimpleEntry<>("%z%", round(playerLocation.getZ())),
-                                new AbstractMap.SimpleEntry<>("%world%", playerLocation.getWorld().getName())
+                                Map.entry("%x%", round(playerLocation.getX())),
+                                Map.entry("%y%", round(playerLocation.getY())),
+                                Map.entry("%z%", round(playerLocation.getZ())),
+                                Map.entry("%world%", playerLocation.getWorld().getName())
                         );
                         break;
                     case "remove":

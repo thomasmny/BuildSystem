@@ -20,21 +20,6 @@ package de.eintosti.buildsystem.world.creation.generator;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import org.bukkit.generator.ChunkGenerator;
 
-public class CustomGeneratorImpl implements CustomGenerator {
+public record CustomGeneratorImpl(String name, ChunkGenerator chunkGenerator) implements CustomGenerator {
 
-    private final String name;
-    private final ChunkGenerator chunkGenerator;
-
-    public CustomGeneratorImpl(String name, ChunkGenerator chunkGenerator) {
-        this.name = name;
-        this.chunkGenerator = chunkGenerator;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public ChunkGenerator getChunkGenerator() {
-        return chunkGenerator;
-    }
 }
