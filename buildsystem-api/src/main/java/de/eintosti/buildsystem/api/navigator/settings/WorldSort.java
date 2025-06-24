@@ -17,7 +17,12 @@
  */
 package de.eintosti.buildsystem.api.navigator.settings;
 
-import org.jetbrains.annotations.ApiStatus.Internal;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.display.Displayable;
+import de.eintosti.buildsystem.api.world.display.Folder;
+import java.util.Comparator;
+import java.util.Locale;
 
 /**
  * Represents the sorting options for worlds in the navigator.
@@ -29,52 +34,73 @@ public enum WorldSort {
     /**
      * Sort worlds by name in ascending order.
      */
-    NAME_A_TO_Z("world_sort_name_az"),
+    NAME_A_TO_Z(Comparator.comparing(WorldSort::getNameSortKey)),
 
     /**
      * Sort worlds by name in descending order.
      */
-    NAME_Z_TO_A("world_sort_name_za"),
+    NAME_Z_TO_A(NAME_A_TO_Z.getComparator().reversed()),
 
     /**
      * Sort worlds by project in ascending order.
      */
-    PROJECT_A_TO_Z("world_sort_project_az"),
+    PROJECT_A_TO_Z(Comparator.comparing(WorldSort::getProjectSortKey)),
 
     /**
      * Sort worlds by project in descending order.
      */
-    PROJECT_Z_TO_A("world_sort_project_za"),
+    PROJECT_Z_TO_A(PROJECT_A_TO_Z.getComparator().reversed()),
 
     /**
-     * Sort worlds by status ("Not Started" -> "Finished").
+     * Sort worlds by status ({@link BuildWorldStatus#NOT_STARTED} -> {@link BuildWorldStatus#FINISHED}).
      */
-    STATUS_NOT_STARTED("world_sort_status_not_started"),
+    STATUS_NOT_STARTED(Comparator.comparingInt(WorldSort::getStatusSortKey)),
 
     /**
-     * Sort worlds by status ("Finished" -> "Not Started").
+     * Sort worlds by status ({@link BuildWorldStatus#FINISHED} -> {@link BuildWorldStatus#NOT_STARTED}).
      */
-    STATUS_FINISHED("world_sort_status_finished"),
-
-    /**
-     * Sort worlds by creation date in descending order (newest first).
-     */
-    NEWEST_FIRST("world_sort_date_newest"),
+    STATUS_FINISHED(STATUS_NOT_STARTED.getComparator().reversed()),
 
     /**
      * Sort worlds by creation date in ascending order (oldest first).
      */
-    OLDEST_FIRST("world_sort_date_oldest");
+    OLDEST_FIRST(Comparator.comparingLong(Displayable::getCreation)),
 
-    private final String messageKey;
+    /**
+     * Sort worlds by creation date in descending order (newest first).
+     */
+    NEWEST_FIRST(OLDEST_FIRST.getComparator().reversed());
 
-    WorldSort(String messageKey) {
-        this.messageKey = messageKey;
+    private final Comparator<Displayable> comparator;
+
+    WorldSort(Comparator<Displayable> comparator) {
+        this.comparator = comparator;
     }
 
-    @Internal
-    public String getMessageKey() {
-        return messageKey;
+    /**
+     * Gets the pre-configured comparator for this sort order.
+     */
+    public Comparator<Displayable> getComparator() {
+        return this.comparator;
+    }
+
+    private static String getNameSortKey(Displayable displayable) {
+        return displayable.getName().toLowerCase(Locale.ROOT);
+    }
+
+    private static String getProjectSortKey(Displayable displayable) {
+        return switch (displayable) {
+            case BuildWorld world -> world.getData().project().get().toLowerCase(Locale.ROOT);
+            case Folder folder -> folder.getProject().toLowerCase(Locale.ROOT);
+            default -> "";
+        };
+    }
+
+    private static int getStatusSortKey(Displayable displayable) {
+        if (displayable instanceof BuildWorld buildWorld) {
+            return buildWorld.getData().status().get().getStage();
+        }
+        return BuildWorldStatus.FINISHED.getStage();
     }
 
     public static WorldSort matchWorldSort(String type) {

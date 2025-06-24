@@ -30,7 +30,7 @@ import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
-import java.util.AbstractMap;
+import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -106,7 +106,7 @@ public class AddBuilderSubCommand implements SubCommand {
         builders.addBuilder(builder);
         XSound.ENTITY_PLAYER_LEVELUP.play(player);
         Messages.sendMessage(player, "worlds_addbuilder_added",
-                new AbstractMap.SimpleEntry<>("%builder%", builderName)
+                Map.entry("%builder%", builderName)
         );
 
         if (closeInventory) {

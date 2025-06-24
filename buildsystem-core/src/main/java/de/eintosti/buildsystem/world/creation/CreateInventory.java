@@ -31,8 +31,8 @@ import de.eintosti.buildsystem.util.PaginatedInventory;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
 import java.io.FileFilter;
-import java.util.AbstractMap;
 import java.util.Locale;
+import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -147,7 +147,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         for (File templateFile : templateFiles) {
             inventory.setItem(columnTemplate++,
                     InventoryUtils.createItem(XMaterial.FILLED_MAP, Messages.getString("create_template", player,
-                            new AbstractMap.SimpleEntry<>("%template%", templateFile.getName()))
+                            Map.entry("%template%", templateFile.getName()))
                     )
             );
 
@@ -188,19 +188,12 @@ public class CreateInventory extends PaginatedInventory implements Listener {
             return;
         }
 
-        CreateInventory.Page newPage = null;
-
-        switch (event.getSlot()) {
-            case 12:
-                newPage = CreateInventory.Page.PREDEFINED;
-                break;
-            case 13:
-                newPage = CreateInventory.Page.GENERATOR;
-                break;
-            case 14:
-                newPage = CreateInventory.Page.TEMPLATES;
-                break;
-        }
+        CreateInventory.Page newPage = switch (event.getSlot()) {
+            case 12 -> Page.PREDEFINED;
+            case 13 -> Page.GENERATOR;
+            case 14 -> Page.TEMPLATES;
+            default -> null;
+        };
 
         if (newPage != null) {
             openInventory(player, newPage, this.visibility, this.folder);
@@ -217,25 +210,14 @@ public class CreateInventory extends PaginatedInventory implements Listener {
 
         switch (Page.getCurrentPage(inventory)) {
             case PREDEFINED: {
-                BuildWorldType worldType = null;
-
-                switch (slot) {
-                    case 29:
-                        worldType = BuildWorldType.NORMAL;
-                        break;
-                    case 30:
-                        worldType = BuildWorldType.FLAT;
-                        break;
-                    case 31:
-                        worldType = BuildWorldType.NETHER;
-                        break;
-                    case 32:
-                        worldType = BuildWorldType.END;
-                        break;
-                    case 33:
-                        worldType = BuildWorldType.VOID;
-                        break;
-                }
+                BuildWorldType worldType = switch (slot) {
+                    case 29 -> BuildWorldType.NORMAL;
+                    case 30 -> BuildWorldType.FLAT;
+                    case 31 -> BuildWorldType.NETHER;
+                    case 32 -> BuildWorldType.END;
+                    case 33 -> BuildWorldType.VOID;
+                    default -> null;
+                };
 
                 if (worldType == null || !player.hasPermission("buildsystem.create.type." + worldType.name().toLowerCase(Locale.ROOT))) {
                     XSound.ENTITY_ITEM_BREAK.play(player);

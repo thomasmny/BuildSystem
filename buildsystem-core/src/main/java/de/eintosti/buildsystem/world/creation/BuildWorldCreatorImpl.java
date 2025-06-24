@@ -38,8 +38,8 @@ import dev.dewy.nbt.tags.collection.CompoundTag;
 import dev.dewy.nbt.tags.primitive.IntTag;
 import java.io.File;
 import java.io.IOException;
-import java.util.AbstractMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -166,8 +166,8 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
      */
     private boolean createWorldFromGenerator(Player player) {
         Messages.sendMessage(player, "worlds_world_creation_started",
-                new AbstractMap.SimpleEntry<>("%world%", worldName),
-                new AbstractMap.SimpleEntry<>("%type%", Messages.getString(worldType.getMessageKey(), player))
+                Map.entry("%world%", worldName),
+                Map.entry("%type%", Messages.getString(Messages.getMessageKey(worldType), player))
         );
 
         BuildWorld buildWorld = createAndRegisterBuildWorld(player);
@@ -189,8 +189,8 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
         }
 
         Messages.sendMessage(player, "worlds_template_creation_started",
-                new AbstractMap.SimpleEntry<>("%world%", worldName),
-                new AbstractMap.SimpleEntry<>("%template%", template)
+                Map.entry("%world%", worldName),
+                Map.entry("%template%", template)
         );
 
         File worldFile = new File(Bukkit.getWorldContainer(), worldName);
@@ -276,7 +276,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
                 break;
             case CUSTOM:
                 if (customGenerator != null) {
-                    worldCreator.generator(customGenerator.getChunkGenerator());
+                    worldCreator.generator(customGenerator.chunkGenerator());
                 }
                 // Fall-through to NORMAL for default settings
             default: // NORMAL
