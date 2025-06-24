@@ -3,7 +3,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 applyCoreConfiguration()
 
 plugins {
-    `java-library`
+    id("java-library")
     id("com.gradleup.shadow") version "8.3.7"
 }
 
