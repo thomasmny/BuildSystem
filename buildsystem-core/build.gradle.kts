@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 applyCoreConfiguration()
 
 plugins {
@@ -36,7 +38,6 @@ dependencies {
 
     compileOnly(libs.spigot)
     compileOnly(libs.authlib)
-    compileOnly(libs.paperlib)
     compileOnly(libs.luckperms)
     compileOnly(libs.placeholderapi)
     compileOnly(libs.worldedit)
@@ -50,29 +51,25 @@ dependencies {
     implementation(libs.bstats)
 }
 
-tasks {
-    assemble {
-        dependsOn(shadowJar)
-    }
+tasks.named("assemble") {
+    dependsOn(tasks.named("shadowJar"))
+}
 
-    shadowJar {
-        minimize()
-        archiveFileName.set("${rootProject.name}-${project.version}.jar")
+tasks.named<ShadowJar>("shadowJar") {
+    minimize()
+    archiveFileName.set("${rootProject.name}-${project.name}-${project.version}.jar") // More explicit naming
 
-        val shadePath = "de.eintosti.buildsystem.util.external"
-        relocate("io.papermc.lib", "$shadePath.paperlib")
-        relocate("com.cryptomorin.xseries", "$shadePath.xseries")
-        relocate("fr.mrmicky.fastboard", "$shadePath.fastboard")
-        relocate("dev.dewy.nbt", "$shadePath.nbt")
-        relocate("org.bstats", "$shadePath.bstats")
-    }
+    val shadePath = "de.eintosti.buildsystem.util.external"
+    relocate("io.papermc.lib", "$shadePath.paperlib")
+    relocate("com.cryptomorin.xseries", "$shadePath.xseries")
+    relocate("fr.mrmicky.fastboard", "$shadePath.fastboard")
+    relocate("dev.dewy.nbt", "$shadePath.nbt")
+    relocate("org.bstats", "$shadePath.bstats")
+}
 
-    processResources {
-        from(sourceSets.main.get().resources.srcDirs) {
-            filesMatching("plugin.yml") {
-                expand("version" to project.version)
-            }
-            duplicatesStrategy = DuplicatesStrategy.INCLUDE
-        }
+tasks.processResources {
+    val props = mapOf("version" to project.version)
+    filesMatching("plugin.yml") {
+        expand(props)
     }
 }

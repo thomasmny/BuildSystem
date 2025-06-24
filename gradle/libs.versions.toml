@@ -10,7 +10,7 @@ placeholderapi = "2.11.6"
 axiompaper = "4.0.1-1.21.1"
 # Third Party
 annotations = "26.0.2"
-authlib = "1.5.25"
+authlib = "3.13.56"
 bstats = "3.1.0"
 fastboard = "2.1.5"
 nbt = "1.5.1"
