@@ -165,7 +165,7 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
         final String path = PLAYERS_KEY + "." + playerUuid;
 
         UUID uuid = UUID.fromString(playerUuid);
-        Settings settings = loadSettings(config, path + ".settings.");
+        Settings settings = loadSettings(config, path + ".settings");
 
         BuildPlayer buildPlayer = new BuildPlayerImpl(uuid, settings);
         buildPlayer.setLogoutLocation(loadLogoutLocation(config, "players." + playerUuid + ".logout-location"));
@@ -195,21 +195,21 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
     }
 
     private SettingsImpl loadSettings(FileConfiguration configuration, String pathPrefix) {
-        NavigatorType navigatorType = NavigatorType.valueOf(configuration.getString(pathPrefix + "type"));
-        DesignColor glassColor = DesignColor.matchColor(configuration.getString(pathPrefix + "glass"));
-        WorldDisplayImpl worldDisplay = loadWorldDisplay(configuration, pathPrefix + "world-display");
-        boolean clearInventory = configuration.getBoolean(pathPrefix + "clear-inventory", false);
-        boolean disableInteract = configuration.getBoolean(pathPrefix + "disable-interact", false);
-        boolean hidePlayers = configuration.getBoolean(pathPrefix + "hide-players", false);
-        boolean instantPlaceSigns = configuration.getBoolean(pathPrefix + "instant-place-signs", false);
-        boolean keepNavigator = configuration.getBoolean(pathPrefix + "keep-navigator", false);
-        boolean nightVision = configuration.getBoolean(pathPrefix + "nightvision", false);
-        boolean noClip = configuration.getBoolean(pathPrefix + "no-clip", false);
-        boolean placePlants = configuration.getBoolean(pathPrefix + "place-plants", false);
-        boolean scoreboard = configuration.getBoolean(pathPrefix + "scoreboard", true);
-        boolean slabBreaking = configuration.getBoolean(pathPrefix + "slab-breaking", false);
-        boolean spawnTeleport = configuration.getBoolean(pathPrefix + "spawn-teleport", true);
-        boolean trapDoor = configuration.getBoolean(pathPrefix + "trapdoor", false);
+        NavigatorType navigatorType = NavigatorType.valueOf(configuration.getString(pathPrefix + ".type"));
+        DesignColor glassColor = DesignColor.matchColor(configuration.getString(pathPrefix + ".glass"));
+        WorldDisplay worldDisplay = loadWorldDisplay(configuration, pathPrefix + ".world-display");
+        boolean clearInventory = configuration.getBoolean(pathPrefix + ".clear-inventory", false);
+        boolean disableInteract = configuration.getBoolean(pathPrefix + ".disable-interact", false);
+        boolean hidePlayers = configuration.getBoolean(pathPrefix + ".hide-players", false);
+        boolean instantPlaceSigns = configuration.getBoolean(pathPrefix + ".instant-place-signs", false);
+        boolean keepNavigator = configuration.getBoolean(pathPrefix + ".keep-navigator", false);
+        boolean nightVision = configuration.getBoolean(pathPrefix + ".nightvision", false);
+        boolean noClip = configuration.getBoolean(pathPrefix + ".no-clip", false);
+        boolean placePlants = configuration.getBoolean(pathPrefix + ".place-plants", false);
+        boolean scoreboard = configuration.getBoolean(pathPrefix + ".scoreboard", true);
+        boolean slabBreaking = configuration.getBoolean(pathPrefix + ".slab-breaking", false);
+        boolean spawnTeleport = configuration.getBoolean(pathPrefix + ".spawn-teleport", true);
+        boolean trapDoor = configuration.getBoolean(pathPrefix + ".trapdoor", false);
 
         return new SettingsImpl(
                 navigatorType, glassColor, worldDisplay, clearInventory, disableInteract, hidePlayers, instantPlaceSigns,
@@ -217,10 +217,10 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
         );
     }
 
-    private WorldDisplayImpl loadWorldDisplay(FileConfiguration configuration, String pathPrefix) {
-        WorldSort worldSort = WorldSort.matchWorldSort(configuration.getString(pathPrefix + "sort", WorldSort.NAME_A_TO_Z.name()));
-        WorldFilterImpl.Mode filterMode = WorldFilterImpl.Mode.valueOf(configuration.getString(pathPrefix + "filter.mode", WorldFilterImpl.Mode.NONE.name()));
-        String filterText = configuration.getString(pathPrefix + "filter.text", "");
+    private WorldDisplay loadWorldDisplay(FileConfiguration configuration, String pathPrefix) {
+        WorldSort worldSort = WorldSort.matchWorldSort(configuration.getString(pathPrefix + ".sort", WorldSort.NEWEST_FIRST.name()));
+        WorldFilter.Mode filterMode = WorldFilterImpl.Mode.valueOf(configuration.getString(pathPrefix + ".filter.mode", WorldFilter.Mode.NONE.name()));
+        String filterText = configuration.getString(pathPrefix + ".filter.text", "");
         return new WorldDisplayImpl(worldSort, new WorldFilterImpl(filterMode, filterText));
     }
 
