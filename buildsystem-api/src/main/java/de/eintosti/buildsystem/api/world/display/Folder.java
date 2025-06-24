@@ -17,22 +17,125 @@
  */
 package de.eintosti.buildsystem.api.world.display;
 
-import com.cryptomorin.xseries.XMaterial;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builder;
 import java.util.List;
+import java.util.UUID;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
+/**
+ * @since 3.0.0
+ */
 public interface Folder extends Displayable {
 
+    /**
+     * Gets the {@link Builder} who created the folder.
+     *
+     * @return The creator of the folder
+     */
+    Builder getCreator();
+
+    /**
+     * Gets the category in which the {@link Folder} is displayed.
+     *
+     * @return The folder category
+     */
+    NavigatorCategory getCategory();
+
+    /**
+     * Gets the folder's parent {@link Folder}.
+     *
+     * @return The parent folder, or {@code null} if this is a root folder
+     */
+    @Nullable
+    Folder getParent();
+
+    /**
+     * Gets whether this folder has a parent {@link Folder}.
+     *
+     * @return {@code true} if this folder has a parent, {@code false} otherwise
+     */
+    boolean hasParent();
+
+    /**
+     * Sets the folder's parent {@link Folder}.
+     *
+     * @param parent The parent folder to set, or {@code null} to remove the parent
+     */
+    void setParent(@Nullable Folder parent);
+
+    /**
+     * Gets a list of all world UUIDs in this folder.
+     *
+     * @return An unmodifiable list of world UUIDs
+     */
     @Unmodifiable
-    List<String> getWorlds();
+    List<UUID> getWorldUUIDs();
 
-    boolean containsWorld(String worldName);
+    /**
+     * Gets whether this folder contains the specific {@link BuildWorld}.
+     *
+     * @param buildWorld The world to check
+     * @return {@code true} if the folder contains the world, {@code false} otherwise
+     */
+    boolean containsWorld(BuildWorld buildWorld);
 
-    void addWorld(String worldName);
+    /**
+     * Adds a {@link BuildWorld} to this folder.
+     *
+     * @param buildWorld The world to add
+     */
+    void addWorld(BuildWorld buildWorld);
 
-    void removeWorld(String worldName);
+    /**
+     * Removes a {@link BuildWorld} from this folder.
+     *
+     * @param buildWorld The world to remove
+     */
+    void removeWorld(BuildWorld buildWorld);
 
+    /**
+     * Gets the number of worlds in this folder.
+     *
+     * @return The number of worlds in this folder
+     */
     int getWorldCount();
 
-    void setMaterial(XMaterial material);
-} 
+    /**
+     * Gets the permission required to access this folder.
+     *
+     * @return The permission, or '{@code -}' if no permission is required
+     */
+    String getPermission();
+
+    /**
+     * Sets the permission required to access this folder.
+     *
+     * @param permission The permission to set, or '{@code -}' to remove the permission
+     */
+    void setPermission(String permission);
+
+    /**
+     * Gets the project description of the {@link Folder}.
+     *
+     * @return The project description
+     */
+    String getProject();
+
+    /**
+     * Sets the project description of the {@link Folder}.
+     *
+     * @param project The project description
+     */
+    void setProject(String project);
+
+    /**
+     * Gets whether the folder is visible to the specified player.
+     *
+     * @param player The player to check
+     * @return {@code true} if the player can view the folder, {@code false} otherwise
+     */
+    boolean canView(Player player);
+}

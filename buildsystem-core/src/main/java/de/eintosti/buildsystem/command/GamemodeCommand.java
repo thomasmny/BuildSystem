@@ -100,7 +100,7 @@ public class GamemodeCommand implements CommandExecutor {
 
     private void setPlayerGamemode(Player player, GameMode gameMode, String gameModeName) {
         if (!player.hasPermission(String.format("buildsystem.gamemode.%s", gameMode.name().toLowerCase(Locale.ROOT)))) {
-            plugin.sendPermissionMessage(player);
+            Messages.sendPermissionError(player);
             return;
         }
 
@@ -110,7 +110,7 @@ public class GamemodeCommand implements CommandExecutor {
 
     private void setTargetGamemode(Player player, String[] args, GameMode gameMode, String gameModeName) {
         if (!player.hasPermission(String.format("buildsystem.gamemode.%s.other", gameMode.name().toLowerCase(Locale.ROOT)))) {
-            plugin.sendPermissionMessage(player);
+            Messages.sendPermissionError(player);
             return;
         }
 

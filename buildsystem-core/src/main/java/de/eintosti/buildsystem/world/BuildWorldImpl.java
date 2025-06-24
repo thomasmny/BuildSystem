@@ -30,6 +30,7 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.util.WorldPermissions;
 import de.eintosti.buildsystem.api.world.util.WorldTeleporter;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.world.builder.BuildersImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.util.WorldLoaderImpl;
@@ -40,11 +41,12 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,6 +54,7 @@ public final class BuildWorldImpl implements BuildWorld {
 
     private static final BuildSystemPlugin PLUGIN = JavaPlugin.getPlugin(BuildSystemPlugin.class);
 
+    private final UUID uuid;
     private String name;
     private boolean loaded;
 
@@ -59,43 +62,21 @@ public final class BuildWorldImpl implements BuildWorld {
     private final WorldDataImpl worldData;
     private final BuildersImpl builders;
     private final CustomGenerator customGenerator;
-    private final long creationDate;
+    private final long creation;
 
     private final WorldLoaderImpl worldLoader;
     private final WorldUnloaderImpl worldUnloader;
-
-//    public BuildWorldImpl(
-//            String name,
-//            Builder creator,
-//            BuildWorldType worldType,
-//            long creationDate,
-//            boolean privateWorld,
-//            CustomGenerator customGenerator,
-//            List<Builder> builders
-//    ) {
-//        BuildSystemPlugin plugin = JavaPlugin.getPlugin(BuildSystemPlugin.class);
-//
-//        this.name = name;
-//        this.worldType = worldType;
-//        this.worldData = new WorldDataImpl(name, plugin.getConfigValues(), privateWorld);
-//        this.creationDate = creationDate;
-//        this.customGenerator = customGenerator;
-//        this.builders = new BuildersImpl(creator, builders);
-//
-//        this.worldLoader = WorldLoaderImpl.of(this);
-//        this.worldUnloader = WorldUnloaderImpl.of(this);
-//        this.worldUnloader.manageUnload();
-//    }
 
     public BuildWorldImpl(
             String name,
             Builder creator,
             BuildWorldType worldType,
-            long creationDate,
+            long creation,
             boolean privateWorld,
             CustomGenerator customGenerator
     ) {
         this(
+                UUID.randomUUID(),
                 name,
                 worldType,
                 new WorldDataImpl(
@@ -106,25 +87,27 @@ public final class BuildWorldImpl implements BuildWorld {
                 ),
                 creator,
                 new ArrayList<>(),
-                creationDate,
+                creation,
                 customGenerator
         );
     }
 
     public BuildWorldImpl(
+            UUID uuid,
             String name,
             BuildWorldType worldType,
             WorldDataImpl worldData,
             Builder creator,
             List<Builder> builders,
-            long creationDate,
+            long creation,
             CustomGenerator customGenerator
     ) {
+        this.uuid = uuid;
         this.name = name;
         this.worldType = worldType;
         this.worldData = worldData;
         this.builders = new BuildersImpl(creator, builders);
-        this.creationDate = creationDate;
+        this.creation = creation;
         this.customGenerator = customGenerator;
 
         this.worldLoader = WorldLoaderImpl.of(this);
@@ -143,6 +126,11 @@ public final class BuildWorldImpl implements BuildWorld {
     }
 
     @Override
+    public UUID getUniqueId() {
+        return this.uuid;
+    }
+
+    @Override
     public String getName() {
         return this.name;
     }
@@ -154,8 +142,13 @@ public final class BuildWorldImpl implements BuildWorld {
     }
 
     @Override
-    public XMaterial getMaterial() {
+    public XMaterial getIcon() {
         return this.worldData.material().get();
+    }
+
+    @Override
+    public void setIcon(XMaterial material) {
+        this.worldData.material().set(material);
     }
 
     @Override
@@ -173,7 +166,7 @@ public final class BuildWorldImpl implements BuildWorld {
                 new AbstractMap.SimpleEntry<>("%project%", worldData.project().get()),
                 new AbstractMap.SimpleEntry<>("%permission%", worldData.permission().get()),
                 new AbstractMap.SimpleEntry<>("%creator%", builders.hasCreator() ? builders.getCreator().getName() : "-"),
-                new AbstractMap.SimpleEntry<>("%creation%", Messages.formatDate(getCreationDate())),
+                new AbstractMap.SimpleEntry<>("%creation%", Messages.formatDate(getCreation())),
                 new AbstractMap.SimpleEntry<>("%lastedited%", Messages.formatDate(worldData.lastEdited().get())),
                 new AbstractMap.SimpleEntry<>("%lastloaded%", Messages.formatDate(worldData.lastLoaded().get())),
                 new AbstractMap.SimpleEntry<>("%lastunloaded%", Messages.formatDate(worldData.lastUnloaded().get()))
@@ -213,8 +206,12 @@ public final class BuildWorldImpl implements BuildWorld {
     }
 
     @Override
-    public ItemStack asItemStack(Player player) {
-        return getMaterial().parseItem();
+    public void addToInventory(Inventory inventory, int slot, Player player) {
+        if (getIcon() == XMaterial.PLAYER_HEAD) {
+            InventoryUtils.addWorldItem(inventory, slot, this, getDisplayName(player), getLore(player));
+            return;
+        }
+        BuildWorld.super.addToInventory(inventory, slot, player);
     }
 
     @Override
@@ -235,8 +232,8 @@ public final class BuildWorldImpl implements BuildWorld {
     }
 
     @Override
-    public long getCreationDate() {
-        return creationDate;
+    public long getCreation() {
+        return creation;
     }
 
     @Override

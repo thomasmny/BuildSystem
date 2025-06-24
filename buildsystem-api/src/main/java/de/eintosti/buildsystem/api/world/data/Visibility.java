@@ -17,6 +17,9 @@
  */
 package de.eintosti.buildsystem.api.world.data;
 
+/**
+ * @since 3.0.0
+ */
 public enum Visibility {
 
     /**

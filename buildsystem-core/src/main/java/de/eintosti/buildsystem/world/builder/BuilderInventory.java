@@ -145,11 +145,11 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!InventoryUtils.isValidClick(event, "worldeditor_builders_title")) {
+        Player player = (Player) event.getWhoClicked();
+        if (!InventoryUtils.isValidClick(event, Messages.getString("worldeditor_builders_title", player))) {
             return;
         }
 
-        Player player = (Player) event.getWhoClicked();
         BuildWorld buildWorld = plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player).getCachedWorld();
         if (buildWorld == null) {
             player.closeInventory();

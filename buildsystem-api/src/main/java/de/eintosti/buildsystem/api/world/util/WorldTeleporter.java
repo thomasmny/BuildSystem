@@ -20,6 +20,9 @@ package de.eintosti.buildsystem.api.world.util;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
+/**
+ * @since 3.0.0
+ */
 public interface WorldTeleporter {
 
     void teleport(Player player);

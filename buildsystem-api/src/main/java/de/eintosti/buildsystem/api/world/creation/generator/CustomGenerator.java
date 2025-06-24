@@ -19,6 +19,11 @@ package de.eintosti.buildsystem.api.world.creation.generator;
 
 import org.bukkit.generator.ChunkGenerator;
 
+/**
+ * Represents a custom chunk generator for a world.
+ *
+ * @since 3.0.0
+ */
 public interface CustomGenerator {
 
     /**

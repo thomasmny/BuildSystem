@@ -22,10 +22,6 @@ import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-/**
- * @author einTosti
- * @since 2.21.0
- */
 public class CachedValuesImpl implements CachedValues {
 
     private GameMode gameMode;

@@ -21,6 +21,11 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.util.function.Predicate;
 import org.jetbrains.annotations.ApiStatus.Internal;
 
+/**
+ * Interface for a world filter that restricts which {@link BuildWorld}s are shown to a user in the navigator.
+ *
+ * @since 3.0.0
+ */
 public interface WorldFilter {
 
     enum Mode {

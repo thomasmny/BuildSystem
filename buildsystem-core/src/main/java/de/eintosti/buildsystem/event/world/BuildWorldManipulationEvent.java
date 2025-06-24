@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.event.world;
 
 import de.eintosti.buildsystem.api.event.world.BuildWorldEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.world.BuildWorldImpl;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.jetbrains.annotations.NotNull;

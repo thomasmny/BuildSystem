@@ -17,6 +17,11 @@
  */
 package de.eintosti.buildsystem.api.navigator.settings;
 
+/**
+ * Represents the type of the navigator.
+ *
+ * @since 3.0.0
+ */
 public enum NavigatorType {
     OLD,
     NEW;

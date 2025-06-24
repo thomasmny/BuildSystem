@@ -37,7 +37,7 @@ public class ConfigCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (!sender.hasPermission("buildsystem.config")) {
-            plugin.sendPermissionMessage(sender);
+            Messages.sendPermissionError(sender);
             return true;
         }
 

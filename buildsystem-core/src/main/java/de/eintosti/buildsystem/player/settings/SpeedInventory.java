@@ -64,11 +64,11 @@ public class SpeedInventory implements Listener {
 
     @EventHandler
     public void oInventoryClick(InventoryClickEvent event) {
-        if (!InventoryUtils.isValidClick(event, "speed_title")) {
+        Player player = (Player) event.getWhoClicked();
+        if (!InventoryUtils.isValidClick(event, Messages.getString("speed_title", player))) {
             return;
         }
 
-        Player player = (Player) event.getWhoClicked();
         if (!player.hasPermission("buildsystem.speed")) {
             player.closeInventory();
             return;
