@@ -21,7 +21,6 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.world.BuildWorldImpl;
 import java.util.Locale;
 import net.luckperms.api.context.ContextCalculator;
 import net.luckperms.api.context.ContextConsumer;
@@ -58,18 +57,19 @@ public class RoleCalculator implements ContextCalculator<Player> {
     }
 
     private enum Role {
+
         /**
-         * The creator of a {@link BuildWorldImpl}.
+         * The creator of a {@link BuildWorld}.
          */
         CREATOR,
 
         /**
-         * A player which has been added to the list of trusted players and is therefore allowed to build in a {@link BuildWorldImpl}.
+         * A player which has been added to the list of trusted players and is therefore allowed to build in a {@link BuildWorld}.
          */
         BUILDER,
 
         /**
-         * A player which is neither the {@link #CREATOR} nor a {@link #BUILDER} in a {@link BuildWorldImpl}.
+         * A player which is neither the {@link #CREATOR} nor a {@link #BUILDER} in a {@link BuildWorld}.
          */
         GUEST;
 
