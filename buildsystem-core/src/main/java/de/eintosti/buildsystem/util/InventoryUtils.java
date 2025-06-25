@@ -45,7 +45,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Utility class for inventory-related operations. All methods are static and the class cannot be instantiated.
@@ -73,8 +72,8 @@ public final class InventoryUtils {
     public static ItemStack createItem(@NotNull XMaterial material, @NotNull String displayName, @NotNull List<String> lore) {
         ItemStack itemStack = material.parseItem();
         if (itemStack == null) {
-            LOGGER.warning("Unknown material found (" + material + "). Defaulting to BEDROCK.");
             itemStack = XMaterial.BEDROCK.parseItem();
+            LOGGER.warning("Unknown material found (" + material + "). Defaulting to " + itemStack.getType() + ".");
         }
 
         ItemMeta itemMeta = itemStack.getItemMeta();
@@ -182,7 +181,7 @@ public final class InventoryUtils {
 
         // Initially set a default head
         ItemStack defaultHead = createItem(XMaterial.PLAYER_HEAD, displayName, lore);
-        storeWorldName(defaultHead, buildWorld);
+        storeWorldInformation(defaultHead, buildWorld);
         inventory.setItem(slot, defaultHead);
 
         // Then try to set texture asynchronously
@@ -196,49 +195,26 @@ public final class InventoryUtils {
                 .applyAsync()
                 .thenAcceptAsync(itemStack -> {
                     ItemMeta itemMeta = itemStack.getItemMeta();
-                    if (itemMeta == null) {
-                        return;
-                    }
                     itemMeta.setDisplayName(displayName);
                     itemMeta.setLore(lore);
                     itemStack.setItemMeta(itemMeta);
-                    storeWorldName(itemStack, buildWorld);
+                    storeWorldInformation(itemStack, buildWorld);
                     inventory.setItem(slot, itemStack);
                 });
     }
 
     /**
-     * Stores the given {@link BuildWorld}'s name in the given item's {@link PersistentDataContainer}.
+     * Stores information about the given {@link BuildWorld} in the given item's {@link PersistentDataContainer}.
      *
      * @param itemStack  The item stack to store the world information in
-     * @param buildWorld The world to store the name of
+     * @param buildWorld The world to store information about
      */
-    public static void storeWorldName(ItemStack itemStack, BuildWorld buildWorld) {
+    private static void storeWorldInformation(@NotNull ItemStack itemStack, BuildWorld buildWorld) {
         ItemMeta itemMeta = itemStack.getItemMeta();
         PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
         pdc.set(DISPLAYABLE_TYPE_KEY, PersistentDataType.STRING, DisplayableType.BUILD_WORLD.name());
         pdc.set(DISPLAYABLE_NAME_KEY, PersistentDataType.STRING, buildWorld.getName());
         itemStack.setItemMeta(itemMeta);
-    }
-
-    /**
-     * Extracts the world name from the given {@link ItemStack} and stores it in the item's {@link PersistentDataContainer}.
-     *
-     * @param itemStack The item stack to store the world information in
-     * @return The world name stored in the item's persistent data container, or {@code null} if not found
-     */
-    public static String extractWorldName(@Nullable ItemStack itemStack) {
-        if (itemStack == null || !itemStack.hasItemMeta()) {
-            return null;
-        }
-
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null) {
-            return null;
-        }
-
-        PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
-        return pdc.get(DISPLAYABLE_NAME_KEY, PersistentDataType.STRING);
     }
 
     /**
