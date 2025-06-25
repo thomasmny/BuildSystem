@@ -24,6 +24,7 @@ import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
 import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import de.eintosti.buildsystem.util.inventory.PaginatedInventory;
@@ -35,15 +36,13 @@ import org.bukkit.GameRule;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class GameRulesInventory extends PaginatedInventory implements Listener {
+public class GameRulesInventory extends PaginatedInventory {
 
     private static final int[] SLOTS = {11, 12, 13, 14, 15, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33};
 
@@ -52,7 +51,6 @@ public class GameRulesInventory extends PaginatedInventory implements Listener {
 
     public GameRulesInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     public void openInventory(Player player, BuildWorld buildWorld) {
@@ -96,7 +94,7 @@ public class GameRulesInventory extends PaginatedInventory implements Listener {
     }
 
     private Inventory createInventory(BuildWorld buildWorld, Player player) {
-        return new GameRulesInventoryHolder(buildWorld, player).getInventory();
+        return new GameRulesInventoryHolder(this, buildWorld, player).getInventory();
     }
 
     private void addGameRuleItem(Inventory inventory, int slot, World world, String gameRuleName, Player player) {
@@ -157,8 +155,8 @@ public class GameRulesInventory extends PaginatedInventory implements Listener {
         return Arrays.stream(SLOTS).anyMatch(i -> i == slot);
     }
 
-    @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
+    @Override
+    public void onClick(InventoryClickEvent event) {
         if (!(event.getInventory().getHolder() instanceof GameRulesInventoryHolder holder)) {
             return;
         }
@@ -193,7 +191,7 @@ public class GameRulesInventory extends PaginatedInventory implements Listener {
 
             default:
                 XSound.BLOCK_CHEST_OPEN.play(player);
-                plugin.getEditInventory().openInventory(player, buildWorld);
+                new EditInventory(plugin).openInventory(player, buildWorld);
                 return;
         }
 
@@ -258,8 +256,8 @@ public class GameRulesInventory extends PaginatedInventory implements Listener {
 
     private static class GameRulesInventoryHolder extends BuildWorldHolder {
 
-        public GameRulesInventoryHolder(BuildWorld buildWorld, Player player) {
-            super(buildWorld, 45, Messages.getString("worldeditor_gamerules_title", player));
+        public GameRulesInventoryHolder(BuildSystemInventory inventory, BuildWorld buildWorld, Player player) {
+            super(inventory, buildWorld, 45, Messages.getString("worldeditor_gamerules_title", player));
         }
     }
 }

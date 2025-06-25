@@ -31,8 +31,11 @@ import de.eintosti.buildsystem.command.subcommand.worlds.SetPermissionSubCommand
 import de.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
 import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import de.eintosti.buildsystem.world.builder.BuilderInventory;
+import de.eintosti.buildsystem.world.data.StatusInventory;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,15 +49,13 @@ import org.bukkit.Difficulty;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class EditInventory implements Listener {
+public class EditInventory extends BuildSystemInventory {
 
     /**
      * A set of entities which are ignored when the butcher item is used.
@@ -75,11 +76,15 @@ public class EditInventory implements Listener {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
         this.playerManager = plugin.getPlayerService();
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    public Inventory getInventory(Player player, BuildWorld buildWorld) {
-        Inventory inventory = new EditInventoryHolder(buildWorld, player).getInventory();
+    public void openInventory(Player player, BuildWorld buildWorld) {
+        XSound.BLOCK_CHEST_OPEN.play(player);
+        player.openInventory(getInventory(player, buildWorld));
+    }
+
+    private Inventory getInventory(Player player, BuildWorld buildWorld) {
+        Inventory inventory = new EditInventoryHolder(this, buildWorld, player).getInventory();
         WorldData worldData = buildWorld.getData();
 
         fillGuiWithGlass(player, inventory);
@@ -130,10 +135,6 @@ public class EditInventory implements Listener {
         ));
 
         return inventory;
-    }
-
-    public void openInventory(Player player, BuildWorld buildWorld) {
-        player.openInventory(getInventory(player, buildWorld));
     }
 
     private void fillGuiWithGlass(Player player, Inventory inventory) {
@@ -280,8 +281,8 @@ public class EditInventory implements Listener {
         };
     }
 
-    @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
+    @Override
+    public void onClick(InventoryClickEvent event) {
         if (!(event.getInventory().getHolder() instanceof EditInventoryHolder holder)) {
             return;
         }
@@ -337,7 +338,7 @@ public class EditInventory implements Listener {
                 }
                 if (event.isRightClick()) {
                     XSound.BLOCK_CHEST_OPEN.play(player);
-                    plugin.getBuilderInventory().openInventory(buildWorld, player);
+                    new BuilderInventory(plugin).openInventory(buildWorld, player);
                     return;
                 }
                 worldData.buildersEnabled().set(!worldData.buildersEnabled().get());
@@ -364,9 +365,7 @@ public class EditInventory implements Listener {
             case 38 -> {
                 if (hasPermission(player, "buildsystem.edit.gamerules")) {
                     XSound.BLOCK_CHEST_OPEN.play(player);
-                    GameRulesInventory gameRulesInventory = plugin.getGameRulesInventory();
-                    gameRulesInventory.resetInvIndex(player);
-                    gameRulesInventory.openInventory(player, buildWorld);
+                    new GameRulesInventory(plugin).openInventory(player, buildWorld);
                 }
                 return;
             }
@@ -379,7 +378,7 @@ public class EditInventory implements Listener {
             case 40 -> {
                 if (hasPermission(player, "buildsystem.edit.status")) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
-                    plugin.getStatusInventory().openInventory(player, buildWorld);
+                    new StatusInventory(plugin).openInventory(player, buildWorld);
                 }
                 return;
             }
@@ -456,8 +455,8 @@ public class EditInventory implements Listener {
 
     private static class EditInventoryHolder extends BuildWorldHolder {
 
-        public EditInventoryHolder(BuildWorld buildWorld, Player player) {
-            super(buildWorld, 54, Messages.getString("worldeditor_title", player));
+        public EditInventoryHolder(BuildSystemInventory inventory, BuildWorld buildWorld, Player player) {
+            super(inventory, buildWorld, 54, Messages.getString("worldeditor_title", player));
         }
     }
 }

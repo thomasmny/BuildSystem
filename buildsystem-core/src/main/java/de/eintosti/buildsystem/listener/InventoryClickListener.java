@@ -18,32 +18,21 @@
 package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
-import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import org.bukkit.entity.Player;
+import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 
-public class FoodLevelChangeListener implements Listener {
+public class InventoryClickListener implements Listener {
 
-    private final WorldStorageImpl worldStorage;
-
-    public FoodLevelChangeListener(BuildSystemPlugin plugin) {
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+    public InventoryClickListener(BuildSystemPlugin plugin) {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler
-    public void onFoodLevelChange(FoodLevelChangeEvent event) {
-        if (!(event.getEntity() instanceof Player player)) {
-            return;
-        }
-
-        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
-        if (buildWorld != null && buildWorld.getData().status().get() == BuildWorldStatus.ARCHIVE) {
-            event.setCancelled(true);
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (event.getInventory().getHolder() instanceof BuildSystemHolder holder) {
+            holder.getBuildSystemInventory().onClick(event);
         }
     }
 }

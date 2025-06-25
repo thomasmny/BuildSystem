@@ -17,9 +17,9 @@
  */
 package de.eintosti.buildsystem.command;
 
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.player.settings.SpeedInventory;
 import java.util.Map;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -52,8 +52,7 @@ public class SpeedCommand implements CommandExecutor {
 
         switch (args.length) {
             case 0:
-                plugin.getSpeedInventory().openInventory(player);
-                XSound.BLOCK_CHEST_OPEN.play(player);
+                new SpeedInventory().openInventory(player);
                 break;
             case 1:
                 String speedString = args[0];

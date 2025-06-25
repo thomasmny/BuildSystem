@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.PlayerChatInput;
+import de.eintosti.buildsystem.world.modification.EditInventory;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.Map;
 import org.bukkit.entity.Player;
@@ -72,7 +73,7 @@ public class SetPermissionSubCommand implements SubCommand {
             if (closeInventory) {
                 player.closeInventory();
             } else {
-                player.openInventory(plugin.getEditInventory().getInventory(player, buildWorld));
+                new EditInventory(plugin).openInventory(player, buildWorld);
             }
         });
     }

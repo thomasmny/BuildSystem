@@ -52,6 +52,7 @@ import de.eintosti.buildsystem.listener.EditSessionListener;
 import de.eintosti.buildsystem.listener.EntityDamageListener;
 import de.eintosti.buildsystem.listener.EntitySpawnListener;
 import de.eintosti.buildsystem.listener.FoodLevelChangeListener;
+import de.eintosti.buildsystem.listener.InventoryClickListener;
 import de.eintosti.buildsystem.listener.InventoryCloseListener;
 import de.eintosti.buildsystem.listener.InventoryCreativeListener;
 import de.eintosti.buildsystem.listener.NavigatorListener;
@@ -69,16 +70,11 @@ import de.eintosti.buildsystem.listener.WeatherChangeListener;
 import de.eintosti.buildsystem.listener.WorldManipulateByAxiomListener;
 import de.eintosti.buildsystem.listener.WorldManipulateListener;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
-import de.eintosti.buildsystem.navigator.inventory.NavigatorInventory;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.player.customblocks.BlocksInventory;
 import de.eintosti.buildsystem.player.customblocks.CustomBlocksManager;
-import de.eintosti.buildsystem.player.settings.DesignInventory;
 import de.eintosti.buildsystem.player.settings.NoClipManager;
-import de.eintosti.buildsystem.player.settings.SettingsInventory;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
-import de.eintosti.buildsystem.player.settings.SpeedInventory;
 import de.eintosti.buildsystem.tabcomplete.BuildTabComplete;
 import de.eintosti.buildsystem.tabcomplete.ConfigTabComplete;
 import de.eintosti.buildsystem.tabcomplete.EmptyTabComplete;
@@ -91,14 +87,7 @@ import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.world.SpawnManager;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
-import de.eintosti.buildsystem.world.builder.BuilderInventory;
-import de.eintosti.buildsystem.world.creation.CreateInventory;
-import de.eintosti.buildsystem.world.data.StatusInventory;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
-import de.eintosti.buildsystem.world.modification.DeleteInventory;
-import de.eintosti.buildsystem.world.modification.EditInventory;
-import de.eintosti.buildsystem.world.modification.GameRulesInventory;
-import de.eintosti.buildsystem.world.modification.SetupInventory;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Locale;
@@ -127,19 +116,6 @@ public class BuildSystemPlugin extends JavaPlugin {
     private SettingsManager settingsManager;
     private SpawnManager spawnManager;
     private WorldServiceImpl worldService;
-
-    private BlocksInventory blocksInventory;
-    private BuilderInventory builderInventory;
-    private CreateInventory createInventory;
-    private DeleteInventory deleteInventory;
-    private DesignInventory designInventory;
-    private EditInventory editInventory;
-    private GameRulesInventory gameRulesInventory;
-    private NavigatorInventory navigatorInventory;
-    private SettingsInventory settingsInventory;
-    private SetupInventory setupInventory;
-    private SpeedInventory speedInventory;
-    private StatusInventory statusInventory;
 
     private ConfigValues configValues;
     private CustomizableIcons customizableIcons;
@@ -226,19 +202,6 @@ public class BuildSystemPlugin extends JavaPlugin {
         (this.worldService = new WorldServiceImpl(this)).init();
         this.settingsManager = new SettingsManager(this);
         this.spawnManager = new SpawnManager(this);
-
-        this.blocksInventory = new BlocksInventory(this);
-        this.builderInventory = new BuilderInventory(this);
-        this.createInventory = new CreateInventory(this);
-        this.deleteInventory = new DeleteInventory(this);
-        this.designInventory = new DesignInventory(this);
-        this.editInventory = new EditInventory(this);
-        this.gameRulesInventory = new GameRulesInventory(this);
-        this.navigatorInventory = new NavigatorInventory(this);
-        this.settingsInventory = new SettingsInventory(this);
-        this.setupInventory = new SetupInventory(this);
-        this.speedInventory = new SpeedInventory(this);
-        this.statusInventory = new StatusInventory(this);
     }
 
     private void registerCommands() {
@@ -282,6 +245,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         new BuildWorldResetUnloadListener(this);
         new EntitySpawnListener(this);
         new FoodLevelChangeListener(this);
+        new InventoryClickListener(this);
         new InventoryCloseListener(this);
         new InventoryCreativeListener(this);
         new NavigatorListener(this);
@@ -455,54 +419,6 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     public WorldServiceImpl getWorldService() {
         return worldService;
-    }
-
-    public BlocksInventory getBlocksInventory() {
-        return blocksInventory;
-    }
-
-    public BuilderInventory getBuilderInventory() {
-        return builderInventory;
-    }
-
-    public CreateInventory getCreateInventory() {
-        return createInventory;
-    }
-
-    public DeleteInventory getDeleteInventory() {
-        return deleteInventory;
-    }
-
-    public DesignInventory getDesignInventory() {
-        return designInventory;
-    }
-
-    public EditInventory getEditInventory() {
-        return editInventory;
-    }
-
-    public GameRulesInventory getGameRulesInventory() {
-        return gameRulesInventory;
-    }
-
-    public NavigatorInventory getNavigatorInventory() {
-        return navigatorInventory;
-    }
-
-    public SettingsInventory getSettingsInventory() {
-        return settingsInventory;
-    }
-
-    public SetupInventory getSetupInventory() {
-        return setupInventory;
-    }
-
-    public SpeedInventory getSpeedInventory() {
-        return speedInventory;
-    }
-
-    public StatusInventory getStatusInventory() {
-        return statusInventory;
     }
 
     public ConfigValues getConfigValues() {

@@ -104,7 +104,7 @@ public class FolderContentInventory extends DisplayablesInventory {
 
     @Override
     protected void beginWorldCreation() {
-        plugin.getCreateInventory().openInventory(this.player, CreateInventory.Page.PREDEFINED, this.requiredVisibility, this.folder);
+        new CreateInventory(plugin).openInventory(this.player, CreateInventory.Page.PREDEFINED, this.requiredVisibility, this.folder);
     }
 
     @Override

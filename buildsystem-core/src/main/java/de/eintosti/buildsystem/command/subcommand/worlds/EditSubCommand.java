@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import de.eintosti.buildsystem.world.modification.EditInventory;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import org.bukkit.entity.Player;
 
@@ -55,7 +56,7 @@ public class EditSubCommand implements SubCommand {
         }
 
         if (buildWorld.isLoaded()) {
-            plugin.getEditInventory().openInventory(player, buildWorld);
+            new EditInventory(plugin).openInventory(player, buildWorld);
         } else {
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
             player.sendTitle(" ", Messages.getString("world_not_loaded", player), 5, 70, 20);

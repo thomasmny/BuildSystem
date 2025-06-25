@@ -42,6 +42,7 @@ import de.eintosti.buildsystem.command.subcommand.worlds.SetSpawnSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.SetStatusSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.TeleportSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.UnimportSubCommand;
+import de.eintosti.buildsystem.navigator.inventory.NavigatorInventory;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -71,7 +72,7 @@ public class WorldsCommand implements CommandExecutor {
                 return true;
             }
 
-            plugin.getNavigatorInventory().openInventory(player);
+            new NavigatorInventory(plugin).openInventory(player);
             XSound.BLOCK_CHEST_OPEN.play(player);
             return true;
         }

@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import de.eintosti.buildsystem.world.data.StatusInventory;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import org.bukkit.entity.Player;
 
@@ -53,7 +54,7 @@ public class SetStatusSubCommand implements SubCommand {
             return;
         }
 
-        plugin.getStatusInventory().openInventory(player, buildWorld);
+        new StatusInventory(plugin).openInventory(player, buildWorld);
     }
 
     @Override
