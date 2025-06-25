@@ -23,16 +23,14 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
+import de.eintosti.buildsystem.world.util.BuildWorldHolder;
 import java.util.Map;
 import java.util.stream.IntStream;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 
 public class DeleteInventory implements Listener {
 
@@ -44,23 +42,21 @@ public class DeleteInventory implements Listener {
     }
 
     private Inventory getInventory(Player player, BuildWorld buildWorld) {
-        Inventory inventory = Bukkit.createInventory(null, 27, Messages.getString("delete_title", player));
+        Inventory inventory = new DeleteInventoryHolder(buildWorld, player).getInventory();
         fillGuiWithGlass(inventory);
 
-        inventory.setItem(11, InventoryUtils.createItem(XMaterial.LIME_DYE, Messages.getString("delete_world_confirm", player)));
-        inventory.setItem(13, createWorldInfo(buildWorld, player));
-        inventory.setItem(15, InventoryUtils.createItem(XMaterial.RED_DYE, Messages.getString("delete_world_cancel", player)));
-
-        return inventory;
-    }
-
-    private ItemStack createWorldInfo(BuildWorld buildWorld, Player player) {
-        ItemStack itemStack = InventoryUtils.createItem(XMaterial.FILLED_MAP,
+        inventory.setItem(11, InventoryUtils.createItem(XMaterial.LIME_DYE,
+                Messages.getString("delete_world_confirm", player))
+        );
+        inventory.setItem(13, InventoryUtils.createItem(XMaterial.FILLED_MAP,
                 Messages.getString("delete_world_name", player, Map.entry("%world%", buildWorld.getName())),
                 Messages.getStringList("delete_world_name_lore", player)
+        ));
+        inventory.setItem(15, InventoryUtils.createItem(XMaterial.RED_DYE,
+                Messages.getString("delete_world_cancel", player))
         );
-        InventoryUtils.storeWorldName(itemStack, buildWorld);
-        return itemStack;
+
+        return inventory;
     }
 
     public void openInventory(Player player, BuildWorld buildWorld) {
@@ -79,31 +75,32 @@ public class DeleteInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        Player player = (Player) event.getWhoClicked();
-        if (!InventoryUtils.isValidClick(event, Messages.getString("delete_title", player))) {
+        if (!(event.getInventory().getHolder() instanceof DeleteInventoryHolder holder)) {
             return;
         }
 
-        String worldName = InventoryUtils.extractWorldName(event.getInventory().getItem(13));
-        WorldServiceImpl worldService = plugin.getWorldService();
-        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(worldName);
-        if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_delete_error");
-            player.closeInventory();
-            return;
-        }
+        event.setCancelled(true);
+        Player player = (Player) event.getWhoClicked();
+        BuildWorld buildWorld = holder.getBuildWorld();
 
         switch (event.getSlot()) {
             case 11 -> {
                 XSound.ENTITY_PLAYER_LEVELUP.play(player);
                 player.closeInventory();
-                worldService.deleteWorld(player, buildWorld);
+                plugin.getWorldService().deleteWorld(player, buildWorld);
             }
             case 15 -> {
                 XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
                 player.closeInventory();
                 Messages.sendMessage(player, "worlds_delete_canceled", Map.entry("%world%", buildWorld.getName()));
             }
+        }
+    }
+
+    private static class DeleteInventoryHolder extends BuildWorldHolder {
+
+        public DeleteInventoryHolder(BuildWorld buildWorld, Player player) {
+            super(buildWorld, Messages.getString("delete_title", player), 27);
         }
     }
 }
