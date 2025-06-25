@@ -5,11 +5,10 @@ messages:
 settings:
   update-checker: true
   scoreboard: true
-  archive-vanish: true
-  archive-should-change-gamemode: true
-  # Possible values are: "SURVIVAL", "CREATIVE", "ADVENTURE", "SPECTATOR"
-  archive-world-game-mode: "ADVENTURE"
-  teleport-after-creation: true
+  archive:
+    vanish: true
+    change-gamemode: true
+    world-game-mode: "ADVENTURE" # Possible values are: "SURVIVAL", "CREATIVE", "ADVENTURE", "SPECTATOR"
   save-from-death:
     enable: true
     teleport-to-map-spawn: true
@@ -61,7 +60,10 @@ world:
       - world
       - world_nether
       - worth_the_end
-  void-block: true
+  backup:
+    enabled: true
+    backup-interval: 900
+    max-backups-per-world: 9
 folder:
   override-permissions: true
   override-projects: false

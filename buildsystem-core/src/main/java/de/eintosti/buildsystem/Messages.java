@@ -19,6 +19,7 @@ package de.eintosti.buildsystem;
 
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -1048,7 +1049,7 @@ public class Messages {
 
     public static String formatDate(long millis) {
         return millis > 0
-                ? new SimpleDateFormat(PLUGIN.getConfigValues().getDateFormat()).format(millis)
+                ? new SimpleDateFormat(Config.Messages.dateFormat).format(millis)
                 : "-";
     }
 }

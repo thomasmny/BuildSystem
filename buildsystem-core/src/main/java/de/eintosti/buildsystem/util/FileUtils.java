@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.util;
 
 import com.google.common.collect.Sets;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +30,12 @@ import java.nio.file.attribute.FileTime;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Stream;
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.model.ExcludeFileFilter;
+import net.lingala.zip4j.model.ZipParameters;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public final class FileUtils {
 
@@ -133,5 +139,25 @@ public final class FileUtils {
             e.printStackTrace();
         }
         return creation;
+    }
+
+    @Nullable
+    public static File zipWorld(File storage, BuildWorld buildWorld) {
+        try (ZipFile zipFile = new ZipFile(storage.getAbsolutePath() + ".zip")) {
+            File worldContainer = new File(Bukkit.getWorldContainer(), buildWorld.getName());
+
+            ExcludeFileFilter excludeFileFilter = Sets.newHashSet(
+                    new File(worldContainer, "uid.dat"),
+                    new File(worldContainer, "session.lock")
+            )::contains;
+            ZipParameters zipParameters = new ZipParameters();
+            zipParameters.setExcludeFileFilter(excludeFileFilter);
+
+            zipFile.addFolder(worldContainer, zipParameters);
+            return zipFile.getFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

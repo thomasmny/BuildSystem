@@ -17,23 +17,15 @@
  */
 package de.eintosti.buildsystem.util;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.config.Config.World;
 import java.util.Arrays;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
 public class StringCleaner {
 
-    private static final BuildSystemPlugin PLUGIN = JavaPlugin.getPlugin(BuildSystemPlugin.class);
-
     public static final String INVALID_NAME_CHARACTERS = "[^A-Za-z\\d/_-]";
 
     private StringCleaner() {
-    }
-
-    private static String getConfigInvalidNameCharacters() {
-        return PLUGIN.getConfigValues().getInvalidNameCharacters();
     }
 
     /**
@@ -43,7 +35,7 @@ public class StringCleaner {
      * @return {@code true} if the input contains invalid characters, {@code false} otherwise
      */
     public static boolean hasInvalidNameCharacters(String input) {
-        return Arrays.stream(input.split("")).anyMatch(c -> c.matches(INVALID_NAME_CHARACTERS) || c.matches(getConfigInvalidNameCharacters()));
+        return Arrays.stream(input.split("")).anyMatch(c -> c.matches(INVALID_NAME_CHARACTERS) || c.matches(World.invalidCharacters));
     }
 
     /**
@@ -55,7 +47,7 @@ public class StringCleaner {
     @Nullable
     public static String firstInvalidChar(String input) {
         return Arrays.stream(input.split(""))
-                .filter(c -> c.matches(INVALID_NAME_CHARACTERS) || c.matches(getConfigInvalidNameCharacters()))
+                .filter(c -> c.matches(INVALID_NAME_CHARACTERS) || c.matches(World.invalidCharacters))
                 .findFirst()
                 .orElse(null);
     }
@@ -69,7 +61,7 @@ public class StringCleaner {
     public static String sanitize(String input) {
         return input
                 .replaceAll(INVALID_NAME_CHARACTERS, "")
-                .replaceAll(getConfigInvalidNameCharacters(), "")
+                .replaceAll(World.invalidCharacters, "")
                 .replace(" ", "_")
                 .trim();
     }

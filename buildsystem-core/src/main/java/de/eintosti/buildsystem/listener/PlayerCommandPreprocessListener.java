@@ -23,7 +23,8 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
-import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.config.Config.Settings.Builder;
+import de.eintosti.buildsystem.config.Config.Settings.Navigator;
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -218,17 +219,13 @@ public class PlayerCommandPreprocessListener implements Listener {
     );
 
     private final BuildSystemPlugin plugin;
-    private final ConfigValues configValues;
     private final SettingsManager settingsManager;
     private final WorldStorageImpl worldStorage;
 
     public PlayerCommandPreprocessListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.configValues = plugin.getConfigValues();
-
         this.settingsManager = plugin.getSettingsManager();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
-
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -242,7 +239,7 @@ public class PlayerCommandPreprocessListener implements Listener {
         Player player = event.getPlayer();
 
         if (command.equalsIgnoreCase("/clear")) {
-            ItemStack navigatorItem = InventoryUtils.createItem(configValues.getNavigatorItem(), Messages.getString("navigator_item", player));
+            ItemStack navigatorItem = InventoryUtils.createItem(Navigator.item, Messages.getString("navigator_item", player));
             if (!player.getInventory().contains(navigatorItem)) {
                 return;
             }
@@ -257,7 +254,7 @@ public class PlayerCommandPreprocessListener implements Listener {
             return;
         }
 
-        if (configValues.isBlockWorldEditNonBuilder()) {
+        if (Builder.blockWorldEditNonBuilder) {
             if (!DISABLED_COMMANDS.contains(command)) {
                 return;
             }

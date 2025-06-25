@@ -22,7 +22,7 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.config.Config.World.Unload;
 import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl;
 import java.io.File;
 import java.util.ArrayList;
@@ -155,7 +155,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
     }
 
     public void loadWorlds() {
-        boolean loadAllWorlds = !plugin.getConfigValues().isUnloadWorlds();
+        boolean loadAllWorlds = !Unload.enabled;
         if (loadAllWorlds) {
             logger.info("*** All worlds will be loaded now ***");
         } else {
@@ -185,7 +185,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
      */
     private LoadResult loadWorld(BuildWorld buildWorld, boolean alwaysLoad) {
         String worldName = buildWorld.getName();
-        if (!alwaysLoad && !plugin.getConfigValues().getBlackListedWorldsToUnload().contains(worldName)) {
+        if (!alwaysLoad && !Unload.blacklistedWorlds.contains(worldName)) {
             return LoadResult.NOT_BLACKLISTED;
         }
 

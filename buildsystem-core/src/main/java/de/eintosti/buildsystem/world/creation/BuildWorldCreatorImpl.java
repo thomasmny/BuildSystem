@@ -26,7 +26,8 @@ import de.eintosti.buildsystem.api.world.creation.BuildWorldCreator;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.config.Config.World.Default;
+import de.eintosti.buildsystem.config.Config.World.Default.Time;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.creation.generator.voidgenerator.ModernVoidGenerator;
@@ -42,6 +43,7 @@ import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Difficulty;
+import org.bukkit.GameRule;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
@@ -73,7 +75,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
         this.worldStorage = plugin.getWorldService().getWorldStorage();
 
         setName(name);
-        setDifficulty(plugin.getConfigValues().getWorldDifficulty());
+        setDifficulty(Default.difficulty);
     }
 
     @Override
@@ -307,12 +309,17 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
      * @param bukkitWorld The world to configure
      */
     private void applyDefaultWorldSettings(World bukkitWorld) {
-        ConfigValues config = plugin.getConfigValues();
         bukkitWorld.setDifficulty(this.difficulty);
-        bukkitWorld.setTime(config.getNoonTime());
-        bukkitWorld.getWorldBorder().setSize(config.getWorldBorderSize());
-        bukkitWorld.setKeepSpawnInMemory(config.isTeleportAfterCreation());
-        config.getDefaultGameRules().forEach(bukkitWorld::setGameRuleValue);
+        bukkitWorld.setTime(Time.noon);
+        bukkitWorld.getWorldBorder().setSize(Default.worldBoarderSize);
+        bukkitWorld.setKeepSpawnInMemory(true);
+        Default.gameRules.forEach((gameRule, value) -> applyGameRule(bukkitWorld, gameRule, value));
+    }
+
+    private <T> void applyGameRule(World world, GameRule<T> rule, Object value) {
+        @SuppressWarnings("unchecked")
+        T castedValue = (T) value;
+        world.setGameRule(rule, castedValue);
     }
 
     /**
@@ -323,18 +330,16 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
      */
     private void applyPostGenerationSettings(World bukkitWorld, BuildWorldType worldType) {
         switch (worldType) {
-            case VOID:
-                if (plugin.getConfigValues().isVoidBlock()) {
-                    bukkitWorld.getBlockAt(0, VOID_BLOCK_Y, 0).setType(Material.GOLD_BLOCK);
-                }
+            case VOID -> {
+                bukkitWorld.getBlockAt(0, VOID_BLOCK_Y, 0).setType(Material.GOLD_BLOCK);
                 bukkitWorld.setSpawnLocation(0, VOID_BLOCK_Y + 1, 0);
-                break;
-            case FLAT:
+            }
+            case FLAT -> {
                 bukkitWorld.setSpawnLocation(0, -60, 0);
-                break;
-            default:
+            }
+            default -> {
                 // No special post-generation steps for other types
-                break;
+            }
         }
     }
 
@@ -390,10 +395,6 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
     }
 
     private void teleportAfterCreation(Player player) {
-        if (!plugin.getConfigValues().isTeleportAfterCreation()) {
-            return;
-        }
-
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (buildWorld == null) {
             return;

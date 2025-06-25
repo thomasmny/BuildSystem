@@ -25,7 +25,11 @@ import de.eintosti.buildsystem.api.world.WorldService;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.config.Config;
+import de.eintosti.buildsystem.config.Config.World.Default;
+import de.eintosti.buildsystem.config.Config.World.Default.Permission;
+import de.eintosti.buildsystem.config.Config.World.Default.Settings;
+import de.eintosti.buildsystem.config.Config.World.Default.Settings.BuildersEnabled;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.Bukkit;
@@ -36,8 +40,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class WorldDataImpl implements WorldData {
-
-    private final ConfigValues configValues;
 
     private final Map<String, Type<?>> data = new HashMap<>();
 
@@ -64,27 +66,26 @@ public class WorldDataImpl implements WorldData {
 
     private String worldName;
 
-    public WorldDataImpl(String worldName, boolean privateWorld, XMaterial material, ConfigValues configValues) {
+    public WorldDataImpl(String worldName, boolean privateWorld, XMaterial material) {
         this(
                 worldName,
                 null,
-                configValues.getDefaultPermission(privateWorld).replace("%world%", worldName),
+                (privateWorld ? Permission.privatePermission : Permission.publicPermission).replace("%world%", worldName),
                 "-",
-                configValues.getWorldDifficulty(),
+                Default.difficulty,
                 material,
                 BuildWorldStatus.NOT_STARTED,
-                configValues.isWorldBlockBreaking(),
-                configValues.isWorldBlockInteractions(),
-                configValues.isWorldBlockPlacement(),
-                configValues.isWorldBuildersEnabled(privateWorld),
-                configValues.isWorldExplosions(),
-                configValues.isWorldMobAi(),
-                configValues.isWorldPhysics(),
+                Settings.blockBreaking,
+                Settings.blockInteractions,
+                Settings.blockPlacement,
+                (privateWorld ? BuildersEnabled.privateBuilders : BuildersEnabled.publicBuilders),
+                Settings.explosions,
+                Settings.mobAi,
+                Settings.physics,
                 privateWorld,
                 -1L,
                 -1L,
-                -1L,
-                configValues
+                -1L
         );
     }
 
@@ -106,8 +107,7 @@ public class WorldDataImpl implements WorldData {
             boolean privateWorld,
             long lastLoaded,
             long lastUnloaded,
-            long lastEdited,
-            ConfigValues configValues
+            long lastEdited
     ) {
         this.customSpawn.set(customSpawn);
         this.permission.set(permission);
@@ -131,7 +131,6 @@ public class WorldDataImpl implements WorldData {
         this.lastUnloaded.set(lastUnloaded);
 
         this.worldName = worldName;
-        this.configValues = configValues;
     }
 
     public <T> Type<T> register(@NotNull String key) {
@@ -182,7 +181,7 @@ public class WorldDataImpl implements WorldData {
 
     @Override
     public Type<String> permission() {
-        if (configValues.isFolderOverridePermissions()) {
+        if (Config.Folder.overridePermissions) {
             Type<String> assignedFolderPermission = getOverrideValue(Folder::getPermission);
             if (assignedFolderPermission != null) {
                 return assignedFolderPermission;
@@ -193,7 +192,7 @@ public class WorldDataImpl implements WorldData {
 
     @Override
     public Type<String> project() {
-        if (configValues.isFolderOverrideProjects()) {
+        if (Config.Folder.overrideProjects) {
             Type<String> assignedFolderProject = getOverrideValue(Folder::getProject);
             if (assignedFolderProject != null) {
                 return assignedFolderProject;

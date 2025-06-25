@@ -26,7 +26,7 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.factory.FolderStorageFactory;
@@ -58,15 +58,11 @@ public class WorldServiceImpl implements WorldService {
     private static boolean importingAllWorlds = false;
 
     private final BuildSystemPlugin plugin;
-    private final ConfigValues configValues;
-
     private final WorldStorageImpl worldStorage;
     private final FolderStorageImpl folderStorage;
 
     public WorldServiceImpl(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.configValues = plugin.getConfigValues();
-
         this.worldStorage = new WorldStorageFactory(plugin).createStorage();
         this.folderStorage = new FolderStorageFactory(plugin).createStorage();
     }
@@ -186,7 +182,7 @@ public class WorldServiceImpl implements WorldService {
 
     public void importWorlds(Player player, String[] worldList, Generator generator, @Nullable Builder creator) {
         int worlds = worldList.length;
-        int delay = configValues.getImportDelay();
+        int delay = Config.World.importAllDelay;
 
         Messages.sendMessage(player, "worlds_importall_started",
                 Map.entry("%amount%", String.valueOf(worlds))

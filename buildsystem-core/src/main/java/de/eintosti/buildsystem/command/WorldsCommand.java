@@ -97,7 +97,7 @@ public class WorldsCommand implements CommandExecutor {
             case IMPORT_ALL -> new ImportAllSubCommand(plugin);
             case IMPORT -> new ImportSubCommand(plugin, worldName);
             case INFO -> new InfoSubCommand(plugin, worldName);
-            case ITEM -> new ItemSubCommand(plugin);
+            case ITEM -> new ItemSubCommand();
             case REMOVE_BUILDER -> new RemoveBuilderSubCommand(plugin, player.getWorld().getName());
             case REMOVE_SPAWN -> new RemoveSpawnSubCommand(plugin);
             case RENAME -> new RenameSubCommand(plugin, worldName);

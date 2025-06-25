@@ -33,11 +33,9 @@ import org.bukkit.entity.Player;
 
 public class InfoSubCommand implements SubCommand {
 
-    private final BuildSystemPlugin plugin;
     private final BuildWorld buildWorld;
 
     public InfoSubCommand(BuildSystemPlugin plugin, String worldName) {
-        this.plugin = plugin;
         this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
     }
 

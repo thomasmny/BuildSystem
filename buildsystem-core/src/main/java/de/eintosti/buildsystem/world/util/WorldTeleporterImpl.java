@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.util.WorldTeleporter;
+import de.eintosti.buildsystem.config.Config.World.Unload;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -50,7 +51,7 @@ public class WorldTeleporterImpl implements WorldTeleporter {
     @Override
     public void teleport(Player player) {
         boolean hadToLoad = false;
-        if (plugin.getConfigValues().isUnloadWorlds() && !buildWorld.isLoaded()) {
+        if (Unload.enabled && !buildWorld.isLoaded()) {
             buildWorld.getLoader().loadForPlayer(player);
             hadToLoad = true;
         }

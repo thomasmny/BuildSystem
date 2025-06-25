@@ -22,7 +22,7 @@ import de.eintosti.buildsystem.api.event.world.BuildWorldPostUnloadEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldUnloadEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.util.WorldUnloader;
-import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.config.Config.World.Unload;
 import de.eintosti.buildsystem.world.SpawnManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -33,7 +33,6 @@ import org.bukkit.scheduler.BukkitTask;
 public class WorldUnloaderImpl implements WorldUnloader {
 
     private final BuildSystemPlugin plugin;
-    private final ConfigValues configValues;
     private final BuildWorld buildWorld;
 
     private final long secondsUntilUnload;
@@ -41,10 +40,17 @@ public class WorldUnloaderImpl implements WorldUnloader {
 
     private WorldUnloaderImpl(BuildWorld buildWorld) {
         this.plugin = JavaPlugin.getPlugin(BuildSystemPlugin.class);
-        this.configValues = plugin.getConfigValues();
         this.buildWorld = buildWorld;
 
-        this.secondsUntilUnload = configValues.getTimeUntilUnload();
+        this.secondsUntilUnload = calculateSecondsUntilUnload(Unload.timeUntilUnload);
+    }
+
+    private long calculateSecondsUntilUnload(String timeString) {
+        String[] timeArray = timeString.split(":");
+        int hours = Integer.parseInt(timeArray[0]);
+        int minutes = Integer.parseInt(timeArray[1]);
+        int seconds = Integer.parseInt(timeArray[2]);
+        return hours * 3600L + minutes * 60L + seconds;
     }
 
     public static WorldUnloaderImpl of(BuildWorld buildWorld) {
@@ -53,7 +59,7 @@ public class WorldUnloaderImpl implements WorldUnloader {
 
     @Override
     public void manageUnload() {
-        if (!configValues.isUnloadWorlds()) {
+        if (!Unload.enabled) {
             buildWorld.setLoaded(true);
             return;
         }
@@ -64,7 +70,7 @@ public class WorldUnloaderImpl implements WorldUnloader {
 
     @Override
     public void startUnloadTask() {
-        if (!configValues.isUnloadWorlds()) {
+        if (!Unload.enabled) {
             return;
         }
 
@@ -92,7 +98,7 @@ public class WorldUnloaderImpl implements WorldUnloader {
             return;
         }
 
-        if (configValues.getBlackListedWorldsToUnload().contains(buildWorld.getName()) || isSpawnWorld(bukkitWorld)) {
+        if (Unload.blacklistedWorlds.contains(buildWorld.getName()) || isSpawnWorld(bukkitWorld)) {
             return;
         }
 
