@@ -26,6 +26,9 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.ApiStatus.Internal;
 
+/**
+ * Represents a player managed by the BuildSystem. This interface provides access to player-specific data and settings within the BuildSystem.
+ */
 public interface BuildPlayer {
 
     /**

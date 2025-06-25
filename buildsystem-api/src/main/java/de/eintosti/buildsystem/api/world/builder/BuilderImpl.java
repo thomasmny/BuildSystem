@@ -31,6 +31,12 @@ final class BuilderImpl implements Builder {
     private final UUID uuid;
     private String name;
 
+    /**
+     * Constructs a new {@link BuilderImpl} with the given unique ID and name.
+     *
+     * @param uuid The unique ID of the builder
+     * @param name The name of the builder
+     */
     BuilderImpl(UUID uuid, String name) {
         this.uuid = uuid;
         this.name = name;

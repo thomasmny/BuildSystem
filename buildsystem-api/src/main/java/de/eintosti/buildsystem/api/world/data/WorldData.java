@@ -25,165 +25,174 @@ import org.bukkit.Location;
 import org.jetbrains.annotations.Nullable;
 
 /**
+ * Manages and provides access to various data points and settings for a {@link BuildWorld}. This interface allows for reading and modifying world-specific configurations.
+ *
  * @since 3.0.0
  */
 public interface WorldData {
 
     /**
-     * Gets the {@link BuildWorld}'s custom spawn in the format {@code x;y;z;yaw;pitch}.
+     * Retrieves a {@link Type} object representing the custom spawn location of the {@link BuildWorld}. The value is stored as a string in the format {@code x;y;z;yaw;pitch}.
      *
-     * @return The custom spawn as a string
+     * @return A {@link Type} containing the custom spawn string
      * @see #getCustomSpawnLocation()
      */
     Type<String> customSpawn();
 
     /**
-     * Gets the {@link BuildWorld}'s custom spawn as a location.
+     * Gets the {@link BuildWorld}'s custom spawn as a {@link Location} object.
      *
-     * @return The custom spawn as a location
+     * @return The custom spawn as a location, or {@code null} if not set or invalid
      */
     @Nullable
     Location getCustomSpawnLocation();
 
     /**
-     * Gets the permission needed to enter the {@link BuildWorld}.
+     * Retrieves a {@link Type} object representing the permission required to enter the {@link BuildWorld}. Returns "-" if no specific permission is required.
      *
-     * @return The permission, or '{@code -}' if no permission is required
+     * @return A {@link Type} containing the permission string
      */
     Type<String> permission();
 
     /**
-     * Gets the project description of the {@link BuildWorld}.
+     * Retrieves a {@link Type} object representing the project description of the {@link BuildWorld}. This typically provides a brief overview or purpose of the world.
      *
-     * @return The project description
+     * @return A {@link Type} containing the project description string
      */
     Type<String> project();
 
     /**
-     * Gets the difficulty of the {@link BuildWorld}.
+     * Retrieves a {@link Type} object representing the {@link Difficulty} of the {@link BuildWorld}.
      *
-     * @return The bukkit world's difficulty
+     * @return A {@link Type} containing the world's difficulty setting
      */
     Type<Difficulty> difficulty();
 
     /**
-     * Gets the material used to display the {@link BuildWorld} in the navigator.
+     * Retrieves a {@link Type} object representing the {@link XMaterial} used to display the {@link BuildWorld} in the navigator menus.
      *
-     * @return The material
+     * @return A {@link Type} containing the material used for display
      */
     Type<XMaterial> material();
 
     /**
-     * Gets the current status of the {@link BuildWorld}.
+     * Retrieves a {@link Type} object representing the current {@link BuildWorldStatus} of the world. This indicates the building progression or state of the world.
      *
-     * @return The current status
+     * @return A {@link Type} containing the current build status
      */
     Type<BuildWorldStatus> status();
 
     /**
-     * Gets whether blocks can be broken in the {@link BuildWorld}.
+     * Retrieves a {@link Type} object indicating whether block breaking is allowed in the {@link BuildWorld}.
      *
-     * @return {@code true} if allowed, otherwise {@code false}
+     * @return A {@link Type} containing a boolean: {@code true} if allowed, otherwise {@code false}
      */
     Type<Boolean> blockBreaking();
 
     /**
-     * Gets whether blocks interaction are enabled in the {@link BuildWorld}.
+     * Retrieves a {@link Type} object indicating whether block interactions (e.g., opening doors, chests) are enabled in the {@link BuildWorld}.
      *
-     * @return {@code true} if enabled, otherwise {@code false}
+     * @return A {@link Type} containing a boolean: {@code true} if enabled, otherwise {@code false}
      */
     Type<Boolean> blockInteractions();
 
     /**
-     * Gets whether blocks can be placed in the {@link BuildWorld}.
+     * Retrieves a {@link Type} object indicating whether block placement is allowed in the {@link BuildWorld}.
      *
-     * @return {@code true} if allowed, otherwise {@code false}
+     * @return A {@link Type} containing a boolean: {@code true} if allowed, otherwise {@code false}
      */
     Type<Boolean> blockPlacement();
 
     /**
-     * Gets whether the "builders feature" is enabled in the {@link BuildWorld}.
+     * Retrieves a {@link Type} object indicating whether the "builders feature" is enabled in the {@link BuildWorld}. When enabled, only designated builders can modify the world.
      *
-     * @return {@code true} if enabled, otherwise {@code false}
+     * @return A {@link Type} containing a boolean: {@code true} if enabled, otherwise {@code false}
      */
     Type<Boolean> buildersEnabled();
 
     /**
-     * Gets whether explosions are enabled in the {@link BuildWorld}.
+     * Retrieves a {@link Type} object indicating whether explosions are enabled in the {@link BuildWorld}.
      *
-     * @return {@code true} if enabled, otherwise {@code false}
+     * @return A {@link Type} containing a boolean: {@code true} if enabled, otherwise {@code false}
      */
     Type<Boolean> explosions();
 
     /**
-     * Gets whether entities have an AI in the {@link BuildWorld}.
+     * Retrieves a {@link Type} object indicating whether entities in the {@link BuildWorld} have artificial intelligence.
      *
-     * @return {@code true} if enabled, otherwise {@code false}
+     * @return A {@link Type} containing a boolean: {@code true} if enabled, otherwise {@code false}
      */
     Type<Boolean> mobAi();
 
     /**
-     * Gets whether physics is applied to blocks in the {@link BuildWorld}.
+     * Retrieves a {@link Type} object indicating whether physics (e.g., gravity, fluid flow) is applied to blocks in the {@link BuildWorld}.
      *
-     * @return {@code true} if enabled, otherwise {@code false}
+     * @return A {@link Type} containing a boolean: {@code true} if enabled, otherwise {@code false}
      */
     Type<Boolean> physics();
 
     /**
-     * Gets whether the visibility of the {@link BuildWorld} is set to private.
+     * Retrieves a {@link Type} object indicating whether the {@link BuildWorld} is set to private visibility. A private world is typically only accessible to its creator and
+     * designated builders.
      *
-     * @return {@code true} if private, otherwise {@code false}
+     * @return A {@link Type} containing a boolean: {@code true} if private, otherwise {@code false}
      */
     Type<Boolean> privateWorld();
 
     /**
-     * Gets the timestamp of the last time the {@link BuildWorld} was last edited.
+     * Retrieves a {@link Type} object representing the timestamp (in milliseconds since epoch) of the last time the {@link BuildWorld} was edited.
      *
-     * @return The difference, measured in milliseconds, between the current time and midnight, January 1, 1970 UTC.
+     * @return A {@link Type} containing the last edited timestamp
      */
     Type<Long> lastEdited();
 
     /**
-     * Gets the timestamp of the last time the {@link BuildWorld} was last loaded.
+     * Retrieves a {@link Type} object representing the timestamp (in milliseconds since epoch) of the last time the {@link BuildWorld} was loaded.
      *
-     * @return The difference, measured in milliseconds, between the current time and midnight, January 1, 1970 UTC.
+     * @return A {@link Type} containing the last loaded timestamp
      */
     Type<Long> lastLoaded();
 
     /**
-     * Gets the timestamp of the last time the {@link BuildWorld} was last unloaded.
+     * Retrieves a {@link Type} object representing the timestamp (in milliseconds since epoch) of the last time the {@link BuildWorld} was unloaded.
      *
-     * @return The difference, measured in milliseconds, between the current time and midnight, January 1, 1970 UTC.
+     * @return A {@link Type} containing the last unloaded timestamp
      */
     Type<Long> lastUnloaded();
 
     /**
-     * Gets all data of the {@link BuildWorld}.
+     * Gets a map of all configurable data points for the {@link BuildWorld}.
      *
-     * @return A map of all data
+     * @return An unmodifiable map where keys are data point names and values are their corresponding {@link Type} objects
      */
     Map<String, Type<?>> getAllData();
 
+    /**
+     * A generic interface representing a configurable data type within the {@link WorldData}. It provides methods to get, set, and format the value for configuration purposes.
+     *
+     * @param <T> The type of the value held by this data point
+     */
     interface Type<T> {
 
         /**
-         * Gets the current value.
+         * Gets the current value of this data point.
          *
          * @return The current value
          */
         T get();
 
         /**
-         * Sets the current value.
+         * Sets the value of this data point.
          *
-         * @param value The value to set to
+         * @param value The new value to set
          */
         void set(T value);
 
         /**
-         * Gets the value, formatted for a config.
+         * Gets the value of this data point formatted for storage in a configuration file. This might involve converting complex objects into simpler types (e.g., enums to
+         * strings).
          *
-         * @return The value in the format for a config
+         * @return The value formatted for a config file
          */
         Object getConfigFormat();
     }

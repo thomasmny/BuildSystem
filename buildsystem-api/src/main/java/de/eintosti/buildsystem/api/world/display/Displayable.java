@@ -68,6 +68,8 @@ public interface Displayable {
 
     /**
      * Sets the icon for this displayable item.
+     *
+     * @param material The material to set as the icon
      */
     void setIcon(XMaterial material);
 
@@ -121,10 +123,18 @@ public interface Displayable {
     }
 
     /**
-     * Represents the type of displayable item.
+     * Represents the distinct types of items that can be displayed in an inventory within the BuildSystem.
      */
     enum DisplayableType {
+
+        /**
+         * Indicates that the displayable item is a {@link BuildWorld}.
+         */
         BUILD_WORLD,
+
+        /**
+         * Indicates that the displayable item is a {@link Folder}.
+         */
         FOLDER
     }
 }
