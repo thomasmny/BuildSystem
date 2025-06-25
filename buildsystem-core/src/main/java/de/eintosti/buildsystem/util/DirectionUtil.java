@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.version.util;
+package de.eintosti.buildsystem.util;
 
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;

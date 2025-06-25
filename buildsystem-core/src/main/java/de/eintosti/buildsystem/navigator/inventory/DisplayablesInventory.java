@@ -2,7 +2,6 @@ package de.eintosti.buildsystem.navigator.inventory;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
-import com.cryptomorin.xseries.messages.Titles;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
@@ -17,6 +16,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.display.Displayable;
+import de.eintosti.buildsystem.api.world.display.Displayable.DisplayableType;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
@@ -28,7 +28,6 @@ import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.PaginatedInventory;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.StringCleaner;
-import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.CreateInventory.Page;
 import java.util.ArrayList;
@@ -48,6 +47,8 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -438,8 +439,8 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
     /**
      * Handles clicks on {@link Displayable} items (worlds or folders) within the inventory.
      *
-     * @param event       The click event.
-     * @param clickedItem The item that was clicked.
+     * @param event       The click event
+     * @param clickedItem The item that was clicked
      */
     private void handleDisplayableItemClick(@NotNull InventoryClickEvent event, @NotNull ItemStack clickedItem) {
         ItemMeta itemMeta = clickedItem.getItemMeta();
@@ -447,34 +448,38 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
             return;
         }
 
-        String displayName = itemMeta.getDisplayName();
-        if (event.getSlot() == 22 &&
-                (displayName.equals(Messages.getString("world_navigator_no_worlds", player))
-                        || displayName.equals(Messages.getString("archive_no_worlds", player))
-                        || displayName.equals(Messages.getString("private_no_worlds", player)))) {
+        PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
+        String displayableType = pdc.get(InventoryUtils.DISPLAYABLE_TYPE_KEY, PersistentDataType.STRING);
+        String displayableName = pdc.get(InventoryUtils.DISPLAYABLE_NAME_KEY, PersistentDataType.STRING);
+        if (displayableType == null || displayableName == null) {
             return;
         }
 
-        BuildWorld buildWorld = parseWorld(displayName);
-        if (buildWorld != null) {
-            manageWorldItemClick(event, buildWorld);
-            return;
+        switch (DisplayableType.valueOf(displayableType)) {
+            case BUILD_WORLD -> {
+                BuildWorld buildWorld = worldStorage.getBuildWorld(displayableName);
+                if (buildWorld == null) {
+                    plugin.getLogger().warning("Unable to find world with name: " + displayableName);
+                    return;
+                }
+                manageWorldItemClick(event, buildWorld);
+            }
+            case FOLDER -> {
+                Folder folder = folderStorage.getFolder(displayableName);
+                if (folder == null) {
+                    plugin.getLogger().warning("Unable to find folder with name: " + displayableName);
+                    return;
+                }
+                new FolderContentInventory(plugin, player, category, folder, this, requiredVisibility, validStatuses).openInventory();
+            }
         }
-
-        Folder folder = parseFolder(displayName);
-        if (folder != null) {
-            new FolderContentInventory(plugin, player, category, folder, this, requiredVisibility, validStatuses).openInventory();
-            return;
-        }
-
-        plugin.getLogger().warning("Clicked item does not represent a valid world or folder: " + displayName);
     }
 
     /**
      * Updates the inventory content and reopens it for the player. This is typically called after a setting (sort, filter) has changed.
      */
     private void updateAndReopenInventory() {
-        setInvIndex(player, 0);
+        resetInvIndex(player);
         initializeInventories();
         player.openInventory(generatedInventories[getInvIndex(player)]);
     }
@@ -532,30 +537,6 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
     }
 
     /**
-     * Parses the {@link BuildWorld} from an item's display name.
-     *
-     * @param displayName The display name of the item.
-     * @return The extracted world.
-     */
-    private @Nullable BuildWorld parseWorld(@NotNull String displayName) {
-        String template = Messages.getString("world_item_title", player, Map.entry("%world%", ""));
-        String worldName = StringUtils.difference(template, displayName);
-        return worldStorage.getBuildWorld(worldName);
-    }
-
-    /**
-     * Parses the {@link Folder} from an item's display name.
-     *
-     * @param displayName The display name of the item.
-     * @return The extracted folder.
-     */
-    private @Nullable Folder parseFolder(@NotNull String displayName) {
-        String template = Messages.getString("folder_item_title", player, Map.entry("%folder%", ""));
-        String folderName = StringUtils.difference(template, displayName);
-        return folderStorage.getFolder(folderName);
-    }
-
-    /**
      * Manages the click action for an item representing a {@link BuildWorld}.
      *
      * @param event      The InventoryClickEvent.
@@ -568,13 +549,12 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
         }
 
         if (buildWorld.isLoaded()) {
-            playerService.getPlayerStorage().getBuildPlayer(player).setCachedWorld(buildWorld);
             XSound.BLOCK_CHEST_OPEN.play(player);
             plugin.getEditInventory().openInventory(player, buildWorld);
         } else {
             player.closeInventory();
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-            Titles.sendTitle(player, 5, 70, 20, " ", Messages.getString("world_not_loaded", player));
+            player.sendTitle(" ", Messages.getString("world_not_loaded", player), 5, 70, 20);
         }
     }
 

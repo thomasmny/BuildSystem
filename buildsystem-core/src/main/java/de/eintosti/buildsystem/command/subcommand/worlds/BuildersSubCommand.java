@@ -53,7 +53,6 @@ public class BuildersSubCommand implements SubCommand {
             return;
         }
 
-        plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player).setCachedWorld(buildWorld);
         plugin.getBuilderInventory().openInventory(buildWorld, player);
     }
 

@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.player;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
-import com.cryptomorin.xseries.messages.ActionBar;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
@@ -40,6 +39,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -81,20 +82,6 @@ public class PlayerServiceImpl implements PlayerService {
     @Override
     public PlayerStorage getPlayerStorage() {
         return playerStorage;
-    }
-
-    @Nullable
-    public String getSelectedWorldName(Player player) {
-        BuildWorld selectedWorld = playerStorage.getBuildPlayer(player.getUniqueId()).getCachedWorld();
-        if (selectedWorld == null) {
-            return null;
-        }
-
-        String selectedWorldName = selectedWorld.getName();
-        if (selectedWorldName.length() > 17) {
-            selectedWorldName = selectedWorldName.substring(0, 14) + "...";
-        }
-        return selectedWorldName;
     }
 
     public Set<Player> getOpenNavigator() {
@@ -225,7 +212,7 @@ public class PlayerServiceImpl implements PlayerService {
         plugin.getArmorStandManager().removeArmorStands(player);
 
         XSound.ENTITY_ITEM_BREAK.play(player);
-        ActionBar.clearActionBar(player);
+        sendActionBar(player, "");
         replaceBarrier(player);
 
         CachedValues cachedValues = buildPlayer.getCachedValues();
@@ -271,7 +258,7 @@ public class PlayerServiceImpl implements PlayerService {
                     sendTypeInfo(player, category);
                 }
             } else {
-                ActionBar.clearActionBar(player);
+                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(""));
                 buildPlayer.setLastLookedAt(null);
             }
         }
@@ -325,7 +312,7 @@ public class PlayerServiceImpl implements PlayerService {
 
     private void sendTypeInfo(Player player, NavigatorCategory category) {
         if (category == null) {
-            ActionBar.clearActionBar(player);
+            sendActionBar(player, "");
             return;
         }
 
@@ -335,8 +322,12 @@ public class PlayerServiceImpl implements PlayerService {
             case PRIVATE -> "new_navigator_private_worlds";
         };
 
-        ActionBar.sendActionBar(player, Messages.getString(message, player));
+        sendActionBar(player, Messages.getString(message, player));
         XSound.ENTITY_CHICKEN_EGG.play(player);
+    }
+
+    private void sendActionBar(Player player, String message) {
+        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(message));
     }
 
     public void save() {

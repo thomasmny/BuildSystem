@@ -19,13 +19,26 @@ package de.eintosti.buildsystem.api.world;
 
 import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
+import de.eintosti.buildsystem.api.world.display.Folder;
 
 /**
+ * Provides a service for managing world-related operations and data. This interface offers methods to access and interact with world storage and folder management.
+ *
  * @since 3.0.0
  */
 public interface WorldService {
 
+    /**
+     * Gets the {@link WorldStorage} implementation for managing {@link BuildWorld} persistence.
+     *
+     * @return The world storage instance
+     */
     WorldStorage getWorldStorage();
 
+    /**
+     * Gets the {@link FolderStorage} implementation for managing {@link Folder} persistence.
+     *
+     * @return The folder storage instance
+     */
     FolderStorage getFolderStorage();
 }

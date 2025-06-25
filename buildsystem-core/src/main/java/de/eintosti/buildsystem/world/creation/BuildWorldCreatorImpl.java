@@ -28,9 +28,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.util.FileUtils;
-import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
-import de.eintosti.buildsystem.world.creation.generator.voidgenerator.DeprecatedVoidGenerator;
 import de.eintosti.buildsystem.world.creation.generator.voidgenerator.ModernVoidGenerator;
 import dev.dewy.nbt.Nbt;
 import dev.dewy.nbt.io.CompressionType;
@@ -226,13 +224,23 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
         return buildWorld;
     }
 
+    /**
+     * Retrieves the server's data version.
+     *
+     * @return The server's data version
+     */
+    @SuppressWarnings("deprecation")
+    private int getServerDataVersion() {
+        return Bukkit.getServer().getUnsafe().getDataVersion();
+    }
+
     @Override
     @Nullable
     public World generateBukkitWorld(BuildWorld buildWorld, boolean checkVersion) {
         if (checkVersion && isDataVersionTooHigh()) {
             plugin.getLogger().warning(String.format(Locale.ROOT,
                     "\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping...",
-                    worldName, parseDataVersion(), plugin.getCraftBukkitVersion().getDataVersion()
+                    worldName, parseDataVersion(), getServerDataVersion()
             ));
             return null;
         }
@@ -290,16 +298,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
     private void configureVoidWorld(WorldCreator worldCreator) {
         worldCreator.generateStructures(false);
         worldCreator.type(org.bukkit.WorldType.FLAT);
-        MinecraftVersion minecraftVersion = MinecraftVersion.getCurrent();
-
-        if (minecraftVersion.isEqualOrHigherThan(MinecraftVersion.CAVES_17)) {
-            worldCreator.generator(new ModernVoidGenerator());
-        } else if (minecraftVersion.isEqualOrHigherThan(MinecraftVersion.AQUATIC_13)) {
-            worldCreator.generator(new DeprecatedVoidGenerator());
-        } else {
-            // Legacy void generator settings
-            worldCreator.generatorSettings("2;0;1");
-        }
+        worldCreator.generator(new ModernVoidGenerator());
     }
 
     /**
@@ -331,8 +330,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
                 bukkitWorld.setSpawnLocation(0, VOID_BLOCK_Y + 1, 0);
                 break;
             case FLAT:
-                int spawnY = MinecraftVersion.getCurrent().isEqualOrHigherThan(MinecraftVersion.CAVES_18) ? -60 : 4;
-                bukkitWorld.setSpawnLocation(0, spawnY, 0);
+                bukkitWorld.setSpawnLocation(0, -60, 0);
                 break;
             default:
                 // No special post-generation steps for other types
@@ -345,7 +343,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
             return false;
         }
         int worldVersion = parseDataVersion();
-        return worldVersion > plugin.getCraftBukkitVersion().getDataVersion();
+        return worldVersion > getServerDataVersion();
     }
 
     private int parseDataVersion() {
@@ -381,8 +379,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
             }
 
             int worldVersion = dataVersionTag.getValue();
-            int serverVersion = plugin.getCraftBukkitVersion().getDataVersion();
-
+            int serverVersion = getServerDataVersion();
             if (worldVersion < serverVersion) {
                 dataVersionTag.setValue(serverVersion);
                 nbt.toFile(level, levelFile, CompressionType.GZIP);

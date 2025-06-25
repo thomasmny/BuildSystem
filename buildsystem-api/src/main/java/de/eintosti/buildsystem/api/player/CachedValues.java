@@ -30,21 +30,66 @@ import org.jetbrains.annotations.ApiStatus.Internal;
 @Internal
 public interface CachedValues {
 
+    /**
+     * Saves the given {@link GameMode} to be restored later.
+     *
+     * @param gameMode The game mode to save
+     */
     void saveGameMode(GameMode gameMode);
 
+    /**
+     * Resets the player's game mode to the previously saved one, if present.
+     *
+     * @param player The player whose game mode is to be reset
+     */
     void resetGameModeIfPresent(Player player);
 
+    /**
+     * Saves the given inventory contents to be restored later.
+     *
+     * @param inventory The inventory contents to save
+     */
     void saveInventory(ItemStack[] inventory);
 
+    /**
+     * Resets the player's inventory to the previously saved one, if present.
+     *
+     * @param player The player whose inventory is to be reset
+     */
     void resetInventoryIfPresent(Player player);
 
+    /**
+     * Saves the given walk speed to be restored later.
+     *
+     * @param walkSpeed The walk speed to save
+     */
     void saveWalkSpeed(float walkSpeed);
 
+    /**
+     * Resets the player's walk speed to the previously saved one, if present.
+     *
+     * @param player The player whose walk speed is to be reset
+     */
     void resetWalkSpeedIfPresent(Player player);
 
+    /**
+     * Saves the given fly speed to be restored later.
+     *
+     * @param flySpeed The fly speed to save
+     */
     void saveFlySpeed(float flySpeed);
 
+    /**
+     * Resets the player's fly speed to the previously saved one, if present.
+     *
+     * @param player The player whose fly speed is to be reset
+     */
     void resetFlySpeedIfPresent(Player player);
 
+    /**
+     * Resets all cached values for the given player.
+     *
+     * @param player The player whose cached values are to be reset
+     */
     void resetCachedValues(Player player);
 }

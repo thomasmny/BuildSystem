@@ -17,6 +17,7 @@
  */
 
 /**
- * Classes relevant to storing {@link de.eintosti.buildsystem.api.world.data.WorldData}.
+ * Provides interfaces for data structures and enumerations related to {@link de.eintosti.buildsystem.api.world.BuildWorld} properties. This includes world status, type,
+ * visibility, and other configurable data points.
  */
 package de.eintosti.buildsystem.api.world.data;

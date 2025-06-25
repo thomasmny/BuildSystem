@@ -5,8 +5,7 @@
   ],
   "automerge": true,
   "ignoreDeps": [
-    "org.spigotmc:spigot-api",
-    "com.sk89q.worldedit:worldedit-core"
+    "org.spigotmc:spigot-api"
   ],
   "labels": [
     "renovate"

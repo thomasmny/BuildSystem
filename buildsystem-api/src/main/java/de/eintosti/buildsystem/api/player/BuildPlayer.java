@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.api.player;
 
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -26,6 +25,9 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.ApiStatus.Internal;
 
+/**
+ * Represents a player managed by the BuildSystem. This interface provides access to player-specific data and settings within the BuildSystem.
+ */
 public interface BuildPlayer {
 
     /**
@@ -52,23 +54,6 @@ public interface BuildPlayer {
      */
     @Internal
     CachedValues getCachedValues();
-
-    /**
-     * Gets the world the player has selected for an action.
-     *
-     * @return The cached world, if any
-     */
-    @Nullable
-    @Internal
-    BuildWorld getCachedWorld();
-
-    /**
-     * Marks a {@link BuildWorld} as selected to later be used.
-     *
-     * @param buildWorld The world to select.
-     */
-    @Internal
-    void setCachedWorld(BuildWorld buildWorld);
 
     /**
      * Gets the location where the player was last before logging off.

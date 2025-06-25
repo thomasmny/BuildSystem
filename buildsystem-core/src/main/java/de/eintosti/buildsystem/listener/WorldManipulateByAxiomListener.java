@@ -39,6 +39,7 @@ public class WorldManipulateByAxiomListener implements Listener {
     public WorldManipulateByAxiomListener(@NotNull BuildSystemPlugin plugin) {
         this.dispatcher = new EventDispatcher(plugin.getWorldService().getWorldStorage());
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        plugin.getLogger().info("Axiom build-world manipulation prevention has been enabled.");
     }
 
     @EventHandler()
