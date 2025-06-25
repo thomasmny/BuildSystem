@@ -33,7 +33,7 @@ import de.eintosti.buildsystem.player.customblocks.CustomBlocksManager;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.DirectionUtil;
-import de.eintosti.buildsystem.util.MaterialUtils;
+import de.eintosti.buildsystem.util.inventory.MaterialUtils;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import java.util.EnumSet;
 import java.util.HashSet;

@@ -22,8 +22,8 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.util.InventoryUtils;
-import org.bukkit.Bukkit;
+import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
+import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -44,7 +44,7 @@ public class BlocksInventory implements Listener {
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 45, Messages.getString("blocks_title", player));
+        Inventory inventory = new BlocksInventoryHolder(player).getInventory();
         fillGuiWithGlass(player, inventory);
 
         setCustomBlock(inventory, player, 1, CustomBlock.FULL_OAK_BARCH);
@@ -98,13 +98,12 @@ public class BlocksInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
+        if (!(event.getInventory().getHolder() instanceof BlocksInventoryHolder)) {
             return;
         }
 
-        if (!InventoryUtils.isValidClick(event, Messages.getString("blocks_title", player))) {
-            return;
-        }
+        event.setCancelled(true);
+        Player player = (Player) event.getWhoClicked();
 
         switch (event.getSlot()) {
             case 1 -> giveCustomBlock(player, CustomBlock.FULL_OAK_BARCH);
@@ -155,5 +154,12 @@ public class BlocksInventory implements Listener {
 
     private void giveCustomBlock(Player player, ItemStack itemStack) {
         player.getInventory().addItem(itemStack);
+    }
+
+    private static class BlocksInventoryHolder extends BuildSystemHolder {
+
+        public BlocksInventoryHolder(Player player) {
+            super(45, Messages.getString("blocks_title", player));
+        }
     }
 }
