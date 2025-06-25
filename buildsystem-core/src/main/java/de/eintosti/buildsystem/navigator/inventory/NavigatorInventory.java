@@ -21,25 +21,28 @@ import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.player.settings.SettingsInventory;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
+import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 
-public class NavigatorInventory implements Listener {
+public class NavigatorInventory extends BuildSystemInventory {
 
     private final BuildSystemPlugin plugin;
 
     public NavigatorInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    }
+
+    public void openInventory(Player player) {
+        player.openInventory(getInventory(player));
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = new NavigatorInventoryHolder(player).getInventory();
+        Inventory inventory = new NavigatorInventoryHolder(this, player).getInventory();
         fillGuiWithGlass(player, inventory);
 
         inventory.setItem(11, InventoryUtils.createSkull(Messages.getString("old_navigator_world_navigator", player), Profileable.detect("d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622")));
@@ -51,18 +54,14 @@ public class NavigatorInventory implements Listener {
         return inventory;
     }
 
-    public void openInventory(Player player) {
-        player.openInventory(getInventory(player));
-    }
-
     private void fillGuiWithGlass(Player player, Inventory inventory) {
         for (int i = 0; i <= 26; i++) {
             InventoryUtils.addGlassPane(player, inventory, i);
         }
     }
 
-    @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
+    @Override
+    public void onClick(InventoryClickEvent event) {
         if (!(event.getInventory().getHolder() instanceof NavigatorInventoryHolder)) {
             return;
         }
@@ -85,7 +84,7 @@ public class NavigatorInventory implements Listener {
                     XSound.ENTITY_ITEM_BREAK.play(player);
                     return;
                 }
-                plugin.getSettingsInventory().openInventory(player);
+                new SettingsInventory(plugin).openInventory(player);
                 break;
             default:
                 return;
@@ -96,8 +95,8 @@ public class NavigatorInventory implements Listener {
 
     private static class NavigatorInventoryHolder extends BuildSystemHolder {
 
-        public NavigatorInventoryHolder(Player player) {
-            super(27, Messages.getString("old_navigator_title", player));
+        public NavigatorInventoryHolder(BuildSystemInventory inventory, Player player) {
+            super(inventory, 27, Messages.getString("old_navigator_title", player));
         }
     }
 }

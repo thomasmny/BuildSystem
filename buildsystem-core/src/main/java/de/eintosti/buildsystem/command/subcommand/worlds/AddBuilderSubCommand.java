@@ -29,6 +29,7 @@ import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.UUIDFetcher;
+import de.eintosti.buildsystem.world.builder.BuilderInventory;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.Map;
 import java.util.UUID;
@@ -106,7 +107,7 @@ public class AddBuilderSubCommand implements SubCommand {
         if (closeInventory) {
             player.closeInventory();
         } else {
-            plugin.getBuilderInventory().openInventory(buildWorld, player);
+            new BuilderInventory(plugin).openInventory(buildWorld, player);
         }
     }
 

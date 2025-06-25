@@ -35,8 +35,8 @@ public class BuildWorldHolder extends BuildSystemHolder {
      * @param size       The size of the inventory.
      * @param title      The title of the inventory.
      */
-    public BuildWorldHolder(@NotNull BuildWorld buildWorld, int size, @NotNull String title) {
-        super(size, title);
+    public BuildWorldHolder(@NotNull BuildSystemInventory buildSystemInventory, @NotNull BuildWorld buildWorld, int size, @NotNull String title) {
+        super(buildSystemInventory, size, title);
         this.buildWorld = buildWorld;
     }
 

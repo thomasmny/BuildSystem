@@ -23,28 +23,26 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
+import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-public class SetupInventory implements Listener {
+public class SetupInventory extends BuildSystemInventory {
 
     private final CustomizableIcons worldIcon;
 
     public SetupInventory(BuildSystemPlugin plugin) {
         this.worldIcon = plugin.getCustomizableIcons();
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = new SetupInventoryHolder(player).getInventory();
+        Inventory inventory = new SetupInventoryHolder(this, player).getInventory();
         fillGuiWithGlass(player, inventory);
 
         inventory.setItem(10, InventoryUtils.createSkull(Messages.getString("setup_default_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_default_item_lore", player)));
@@ -77,8 +75,8 @@ public class SetupInventory implements Listener {
         }
     }
 
-    @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
+    @Override
+    public void onClick(InventoryClickEvent event) {
         if (!(event.getInventory().getHolder() instanceof SetupInventoryHolder)) {
             return;
         }
@@ -111,8 +109,8 @@ public class SetupInventory implements Listener {
 
     private static class SetupInventoryHolder extends BuildSystemHolder {
 
-        public SetupInventoryHolder(Player player) {
-            super(36, Messages.getString("setup_title", player));
+        public SetupInventoryHolder(BuildSystemInventory inventory, Player player) {
+            super(inventory, 36, Messages.getString("setup_title", player));
         }
     }
 }

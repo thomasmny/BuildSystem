@@ -23,28 +23,30 @@ import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
+import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
-public class BlocksInventory implements Listener {
+public class BlocksInventory extends BuildSystemInventory {
 
     private final BuildSystemPlugin plugin;
 
     public BlocksInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    }
+
+    public void openInventory(Player player) {
+        player.openInventory(getInventory(player));
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = new BlocksInventoryHolder(player).getInventory();
+        Inventory inventory = new BlocksInventoryHolder(this, player).getInventory();
         fillGuiWithGlass(player, inventory);
 
         setCustomBlock(inventory, player, 1, CustomBlock.FULL_OAK_BARCH);
@@ -85,10 +87,6 @@ public class BlocksInventory implements Listener {
         inventory.setItem(position, InventoryUtils.createSkull(Messages.getString(customBlock.getKey(), player), Profileable.detect(customBlock.getSkullUrl())));
     }
 
-    public void openInventory(Player player) {
-        player.openInventory(getInventory(player));
-    }
-
     private void fillGuiWithGlass(Player player, Inventory inventory) {
         int[] glassSlots = {0, 8, 9, 17, 18, 26, 27, 35, 36, 44};
         for (int i : glassSlots) {
@@ -96,8 +94,8 @@ public class BlocksInventory implements Listener {
         }
     }
 
-    @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
+    @Override
+    public void onClick(InventoryClickEvent event) {
         if (!(event.getInventory().getHolder() instanceof BlocksInventoryHolder)) {
             return;
         }
@@ -158,8 +156,8 @@ public class BlocksInventory implements Listener {
 
     private static class BlocksInventoryHolder extends BuildSystemHolder {
 
-        public BlocksInventoryHolder(Player player) {
-            super(45, Messages.getString("blocks_title", player));
+        public BlocksInventoryHolder(BuildSystemInventory inventory, Player player) {
+            super(inventory, 45, Messages.getString("blocks_title", player));
         }
     }
 }
