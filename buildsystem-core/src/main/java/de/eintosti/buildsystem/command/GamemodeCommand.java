@@ -81,15 +81,9 @@ public class GamemodeCommand implements CommandExecutor {
 
     private void setGamemode(Player player, String[] args, GameMode gameMode, String gameModeName) {
         switch (args.length) {
-            case 1:
-                this.setPlayerGamemode(player, gameMode, gameModeName);
-                break;
-            case 2:
-                this.setTargetGamemode(player, args, gameMode, gameModeName);
-                break;
-            default:
-                this.sendUsageMessage(player);
-                break;
+            case 1 -> this.setPlayerGamemode(player, gameMode, gameModeName);
+            case 2 -> this.setTargetGamemode(player, args, gameMode, gameModeName);
+            default -> this.sendUsageMessage(player);
         }
     }
 

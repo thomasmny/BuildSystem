@@ -176,7 +176,7 @@ public class NavigatorListener implements Listener {
             return;
         }
 
-        if (isCloseNavigatorItem(player, player.getItemInHand())) {
+        if (isCloseNavigatorItem(player, player.getInventory().getItemInMainHand())) {
             event.setCancelled(true);
             playerService.closeNavigator(player);
             return;

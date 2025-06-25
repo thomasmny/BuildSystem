@@ -44,5 +44,5 @@ public enum Generator {
     /**
      * A custom world
      */
-    CUSTOM;
+    CUSTOM
 }

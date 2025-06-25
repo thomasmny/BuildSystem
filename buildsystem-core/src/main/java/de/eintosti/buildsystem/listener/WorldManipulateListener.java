@@ -66,11 +66,11 @@ public class WorldManipulateListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-        if (!(event.getDamager() instanceof Player) || !(event.getEntity() instanceof ArmorStand)) {
+        if (!(event.getDamager() instanceof Player player) || !(event.getEntity() instanceof ArmorStand)) {
             return;
         }
 
-        dispatcher.dispatchManipulationEventIfPlayerInBuildWorld((Player) event.getDamager(), event);
+        dispatcher.dispatchManipulationEventIfPlayerInBuildWorld(player, event);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

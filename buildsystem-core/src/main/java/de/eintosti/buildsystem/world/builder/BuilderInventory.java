@@ -29,36 +29,44 @@ import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete.WorldsArgument;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.PaginatedInventory;
-import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 public class BuilderInventory extends PaginatedInventory implements Listener {
 
-    private static final int MAX_BUILDERS = 9;
+    private static final int MAX_BUILDERS_PER_PAGE = 9;
+    private static final int WORLD_NAME_ITEM_SLOT = 0;
 
     private final BuildSystemPlugin plugin;
+    private final NamespacedKey builderNameKey;
 
     private int numBuilders = 0;
 
     public BuilderInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
+        this.builderNameKey = new NamespacedKey(plugin, "builder_name");
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     private Inventory createInventory(BuildWorld buildWorld, Player player) {
         Inventory inventory = Bukkit.createInventory(null, 27, Messages.getString("worldeditor_builders_title", player));
         fillGuiWithGlass(inventory, player);
+
+        // Store the world name in the first slot
+        InventoryUtils.storeWorldName(inventory.getItem(WORLD_NAME_ITEM_SLOT), buildWorld);
 
         addCreatorInfoItem(inventory, buildWorld.getBuilders(), player);
         addBuilderAddItem(inventory, buildWorld, player);
@@ -100,7 +108,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
     private void addItems(BuildWorld buildWorld, Player player) {
         Collection<Builder> builders = buildWorld.getBuilders().getAllBuilders();
         this.numBuilders = builders.size();
-        int numInventories = numBuilders % MAX_BUILDERS == 0 ? Math.max(numBuilders, 1) : numBuilders + 1;
+        int numInventories = numBuilders % MAX_BUILDERS_PER_PAGE == 0 ? Math.max(numBuilders, 1) : numBuilders + 1;
 
         int index = 0;
         Inventory inventory = createInventory(buildWorld, player);
@@ -109,13 +117,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
 
         int columnSkull = 9, maxColumnSkull = 17;
         for (Builder builder : builders) {
-            inventory.setItem(columnSkull++, InventoryUtils.createSkull(
-                    Messages.getString("worldeditor_builders_builder_item", player,
-                            Map.entry("%builder%", builder.getName())
-                    ),
-                    Profileable.username(builder.getName()),
-                    Messages.getStringList("worldeditor_builders_builder_lore", player)
-            ));
+            inventory.setItem(columnSkull++, createBuilderItem(builder, player));
 
             if (columnSkull > maxColumnSkull) {
                 columnSkull = 9;
@@ -123,6 +125,20 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
                 inventories[++index] = inventory;
             }
         }
+    }
+
+    private ItemStack createBuilderItem(Builder builder, Player player) {
+        ItemStack itemStack = InventoryUtils.createSkull(
+                Messages.getString("worldeditor_builders_builder_item", player,
+                        Map.entry("%builder%", builder.getName())
+                ),
+                Profileable.username(builder.getName()),
+                Messages.getStringList("worldeditor_builders_builder_lore", player)
+        );
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        itemMeta.getPersistentDataContainer().set(this.builderNameKey, PersistentDataType.STRING, builder.getName());
+        itemStack.setItemMeta(itemMeta);
+        return itemStack;
     }
 
     public void openInventory(BuildWorld buildWorld, Player player) {
@@ -150,7 +166,8 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
             return;
         }
 
-        BuildWorld buildWorld = plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player).getCachedWorld();
+        String worldName = InventoryUtils.extractWorldName(event.getInventory().getItem(WORLD_NAME_ITEM_SLOT));
+        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
         if (buildWorld == null) {
             player.closeInventory();
             Messages.sendMessage(player, "worlds_addbuilder_error");
@@ -171,7 +188,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         int slot = event.getSlot();
         switch (slot) {
             case 18:
-                if (decrementInv(player, numBuilders, MAX_BUILDERS)) {
+                if (decrementInv(player, numBuilders, MAX_BUILDERS_PER_PAGE)) {
                     openInventory(buildWorld, player);
                 }
                 break;
@@ -180,7 +197,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
                 new AddBuilderSubCommand(plugin, buildWorld.getName()).getAddBuilderInput(player, buildWorld, false);
                 return;
             case 26:
-                if (incrementInv(player, numBuilders, MAX_BUILDERS)) {
+                if (incrementInv(player, numBuilders, MAX_BUILDERS_PER_PAGE)) {
                     openInventory(buildWorld, player);
                 }
                 break;
@@ -189,8 +206,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
                     return;
                 }
 
-                String template = Messages.getString("worldeditor_builders_builder_item", player, Map.entry("%builder%", ""));
-                String builderName = StringUtils.difference(template, itemStack.getItemMeta().getDisplayName());
+                String builderName = itemStack.getItemMeta().getPersistentDataContainer().get(this.builderNameKey, PersistentDataType.STRING);
                 UUID builderId = UUIDFetcher.getUUID(builderName);
                 if (builderId == null) {
                     player.closeInventory();

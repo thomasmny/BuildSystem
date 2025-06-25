@@ -60,15 +60,9 @@ public class AddBuilderSubCommand implements SubCommand {
         }
 
         switch (args.length) {
-            case 1:
-                getAddBuilderInput(player, buildWorld, true);
-                break;
-            case 2:
-                addBuilder(player, buildWorld, args[1], true);
-                break;
-            default:
-                Messages.sendMessage(player, "worlds_addbuilder_usage");
-                break;
+            case 1 -> getAddBuilderInput(player, buildWorld, true);
+            case 2 -> addBuilder(player, buildWorld, args[1], true);
+            default -> Messages.sendMessage(player, "worlds_addbuilder_usage");
         }
     }
 

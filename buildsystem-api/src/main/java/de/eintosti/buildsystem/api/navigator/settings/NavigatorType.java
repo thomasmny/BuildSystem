@@ -17,12 +17,23 @@
  */
 package de.eintosti.buildsystem.api.navigator.settings;
 
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.inventory.Inventory;
+
 /**
  * Represents the type of the navigator.
  *
  * @since 3.0.0
  */
 public enum NavigatorType {
+
+    /**
+     * The old, {@link Inventory}-based navigator.
+     */
     OLD,
+
+    /**
+     * The new, {@link ArmorStand}-based navigator.
+     */
     NEW
 }

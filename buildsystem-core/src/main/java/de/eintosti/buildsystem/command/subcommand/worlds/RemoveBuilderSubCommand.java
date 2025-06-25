@@ -59,15 +59,9 @@ public class RemoveBuilderSubCommand implements SubCommand {
         }
 
         switch (args.length) {
-            case 1:
-                getRemoveBuilderInput(player, buildWorld);
-                break;
-            case 2:
-                removeBuilder(player, buildWorld, args[1]);
-                break;
-            default:
-                Messages.sendMessage(player, "worlds_removebuilder_usage");
-                break;
+            case 1 -> getRemoveBuilderInput(player, buildWorld);
+            case 2 -> removeBuilder(player, buildWorld, args[1]);
+            default -> Messages.sendMessage(player, "worlds_removebuilder_usage");
         }
     }
 

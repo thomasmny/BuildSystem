@@ -34,6 +34,11 @@ public class BuildWorldEvent extends Event {
 
     private final BuildWorld buildWorld;
 
+    /**
+     * Constructs a new {@link BuildWorldEvent}.
+     *
+     * @param buildWorld The {@link BuildWorld} involved in this event
+     */
     @Internal
     public BuildWorldEvent(BuildWorld buildWorld) {
         this.buildWorld = buildWorld;
@@ -54,6 +59,11 @@ public class BuildWorldEvent extends Event {
         return HANDLER_LIST;
     }
 
+    /**
+     * Gets the handler list for this event.
+     *
+     * @return The handler list
+     */
     public static HandlerList getHandlerList() {
         return HANDLER_LIST;
     }
