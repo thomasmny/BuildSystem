@@ -24,7 +24,7 @@ import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
-public abstract class PaginatedInventory {
+public abstract class PaginatedInventory extends BuildSystemInventory {
 
     protected final Map<UUID, Integer> invIndex;
     protected Inventory[] inventories;

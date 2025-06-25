@@ -24,27 +24,29 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
+import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class DesignInventory implements Listener {
+public class DesignInventory extends BuildSystemInventory {
 
     private final BuildSystemPlugin plugin;
 
     public DesignInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    }
+
+    public void openInventory(Player player) {
+        player.openInventory(getInventory(player));
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = new DesignInventoryHolder(player).getInventory();
+        Inventory inventory = new DesignInventoryHolder(this, player).getInventory();
         fillGuiWithGlass(inventory, player);
 
         setItem(player, inventory, 10, XMaterial.RED_STAINED_GLASS, "design_red", DesignColor.RED);
@@ -66,10 +68,6 @@ public class DesignInventory implements Listener {
         setItem(player, inventory, 26, XMaterial.BLACK_STAINED_GLASS, "design_black", DesignColor.BLACK);
 
         return inventory;
-    }
-
-    public void openInventory(Player player) {
-        player.openInventory(getInventory(player));
     }
 
     private void fillGuiWithGlass(Inventory inventory, Player player) {
@@ -104,8 +102,8 @@ public class DesignInventory implements Listener {
         inventory.setItem(position, itemStack);
     }
 
-    @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
+    @Override
+    public void onClick(InventoryClickEvent event) {
         if (!(event.getInventory().getHolder() instanceof DesignInventoryHolder)) {
             return;
         }
@@ -119,7 +117,7 @@ public class DesignInventory implements Listener {
         Player player = (Player) event.getWhoClicked();
 
         if (itemStack.getType().toString().contains("STAINED_GLASS_PANE")) {
-            plugin.getSettingsInventory().openInventory(player);
+            new SettingsInventory(plugin).openInventory(player);
             return;
         }
 
@@ -181,8 +179,8 @@ public class DesignInventory implements Listener {
 
     private static class DesignInventoryHolder extends BuildSystemHolder {
 
-        public DesignInventoryHolder(Player player) {
-            super(36, Messages.getString("design_title", player));
+        public DesignInventoryHolder(BuildSystemInventory inventory, Player player) {
+            super(inventory, 36, Messages.getString("design_title", player));
         }
     }
 }

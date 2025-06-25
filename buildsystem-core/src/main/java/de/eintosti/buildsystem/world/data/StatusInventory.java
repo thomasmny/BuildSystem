@@ -25,21 +25,21 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
 import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import de.eintosti.buildsystem.world.modification.EditInventory;
 import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class StatusInventory implements Listener {
+public class StatusInventory extends BuildSystemInventory {
 
     private final BuildSystemPlugin plugin;
     private final PlayerServiceImpl playerService;
@@ -47,11 +47,10 @@ public class StatusInventory implements Listener {
     public StatusInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.playerService = plugin.getPlayerService();
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     private Inventory getInventory(Player player, BuildWorld buildWorld) {
-        Inventory inventory = new StatusInventoryHolder(buildWorld, player).getInventory();
+        Inventory inventory = new StatusInventoryHolder(this, buildWorld, player).getInventory();
         fillGuiWithGlass(player, inventory);
 
         addStatusItem(player, inventory, 10, BuildWorldStatus.NOT_STARTED, buildWorld);
@@ -108,8 +107,8 @@ public class StatusInventory implements Listener {
         inventory.setItem(position, itemStack);
     }
 
-    @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
+    @Override
+    public void onClick(InventoryClickEvent event) {
         if (!(event.getInventory().getHolder() instanceof StatusInventoryHolder holder)) {
             return;
         }
@@ -131,7 +130,7 @@ public class StatusInventory implements Listener {
         int slot = event.getSlot();
         if (slot < 10 || slot > 14 && slot != 16) {
             XSound.BLOCK_CHEST_OPEN.play(player);
-            plugin.getEditInventory().openInventory(player, buildWorld);
+            new EditInventory(plugin).openInventory(player, buildWorld);
             return;
         }
 
@@ -172,8 +171,8 @@ public class StatusInventory implements Listener {
 
     private static class StatusInventoryHolder extends BuildWorldHolder {
 
-        public StatusInventoryHolder(BuildWorld buildWorld, Player player) {
-            super(buildWorld, 27, Messages.getString("status_title", player, Map.entry("%world%", formatWorldName(buildWorld))));
+        public StatusInventoryHolder(BuildSystemInventory inventory, BuildWorld buildWorld, Player player) {
+            super(inventory, buildWorld, 27, Messages.getString("status_title", player, Map.entry("%world%", formatWorldName(buildWorld))));
         }
 
         private static String formatWorldName(BuildWorld buildWorld) {
