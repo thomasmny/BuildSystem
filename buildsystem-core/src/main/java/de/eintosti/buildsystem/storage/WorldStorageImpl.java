@@ -23,7 +23,6 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.config.ConfigValues;
-import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl;
 import java.io.File;
 import java.util.ArrayList;
@@ -178,7 +177,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
     }
 
     /**
-     * Attempts to load the {@link World} with the given {@link BuildWorldImpl}.
+     * Attempts to load the {@link World} with the given {@link BuildWorld}.
      *
      * @param buildWorld The world to load
      * @param alwaysLoad Whether the world should always be loaded, regardless of being blacklisted
