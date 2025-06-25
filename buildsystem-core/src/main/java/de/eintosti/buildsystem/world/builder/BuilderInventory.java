@@ -28,24 +28,24 @@ import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete.WorldsArgument;
 import de.eintosti.buildsystem.util.UUIDFetcher;
+import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
 import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import de.eintosti.buildsystem.util.inventory.PaginatedInventory;
+import de.eintosti.buildsystem.world.modification.EditInventory;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
-public class BuilderInventory extends PaginatedInventory implements Listener {
+public class BuilderInventory extends PaginatedInventory {
 
     private static final int MAX_BUILDERS_PER_PAGE = 9;
 
@@ -57,11 +57,41 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
     public BuilderInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.builderNameKey = new NamespacedKey(plugin, "builder_name");
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    }
+
+    public void openInventory(BuildWorld buildWorld, Player player) {
+        player.openInventory(getInventory(buildWorld, player));
+    }
+
+    private Inventory getInventory(BuildWorld buildWorld, Player player) {
+        addItems(buildWorld, player);
+        return inventories[getInvIndex(player)];
+    }
+
+    private void addItems(BuildWorld buildWorld, Player player) {
+        Collection<Builder> builders = buildWorld.getBuilders().getAllBuilders();
+        this.numBuilders = builders.size();
+        int numInventories = calculateNumPages(this.numBuilders, MAX_BUILDERS_PER_PAGE);
+
+        int index = 0;
+        Inventory inventory = createInventory(buildWorld, player);
+        inventories = new Inventory[numInventories];
+        inventories[index] = inventory;
+
+        int columnSkull = 9, maxColumnSkull = 17;
+        for (Builder builder : builders) {
+            inventory.setItem(columnSkull++, createBuilderItem(builder, player));
+
+            if (columnSkull > maxColumnSkull) {
+                columnSkull = 9;
+                inventory = createInventory(buildWorld, player);
+                inventories[++index] = inventory;
+            }
+        }
     }
 
     private Inventory createInventory(BuildWorld buildWorld, Player player) {
-        Inventory inventory = new BuilderInventoryHolder(buildWorld, player).getInventory();
+        Inventory inventory = new BuilderInventoryHolder(this, buildWorld, player).getInventory();
         fillGuiWithGlass(inventory, player);
 
         addCreatorInfoItem(inventory, buildWorld.getBuilders(), player);
@@ -101,28 +131,6 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         inventory.setItem(22, builderAddItem);
     }
 
-    private void addItems(BuildWorld buildWorld, Player player) {
-        Collection<Builder> builders = buildWorld.getBuilders().getAllBuilders();
-        this.numBuilders = builders.size();
-        int numInventories = calculateNumPages(this.numBuilders, MAX_BUILDERS_PER_PAGE);
-
-        int index = 0;
-        Inventory inventory = createInventory(buildWorld, player);
-        inventories = new Inventory[numInventories];
-        inventories[index] = inventory;
-
-        int columnSkull = 9, maxColumnSkull = 17;
-        for (Builder builder : builders) {
-            inventory.setItem(columnSkull++, createBuilderItem(builder, player));
-
-            if (columnSkull > maxColumnSkull) {
-                columnSkull = 9;
-                inventory = createInventory(buildWorld, player);
-                inventories[++index] = inventory;
-            }
-        }
-    }
-
     private ItemStack createBuilderItem(Builder builder, Player player) {
         ItemStack itemStack = InventoryUtils.createSkull(
                 Messages.getString("worldeditor_builders_builder_item", player,
@@ -137,15 +145,6 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         return itemStack;
     }
 
-    public void openInventory(BuildWorld buildWorld, Player player) {
-        player.openInventory(getInventory(buildWorld, player));
-    }
-
-    private Inventory getInventory(BuildWorld buildWorld, Player player) {
-        addItems(buildWorld, player);
-        return inventories[getInvIndex(player)];
-    }
-
     private void fillGuiWithGlass(Inventory inventory, Player player) {
         for (int i = 0; i <= 8; i++) {
             InventoryUtils.addGlassPane(player, inventory, i);
@@ -155,8 +154,8 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         }
     }
 
-    @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
+    @Override
+    public void onClick(InventoryClickEvent event) {
         if (!(event.getInventory().getHolder() instanceof BuilderInventoryHolder holder)) {
             return;
         }
@@ -173,7 +172,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         if (itemStack.getType() != XMaterial.PLAYER_HEAD.get()) {
             if (buildWorld.getPermissions().canPerformCommand(player, WorldsArgument.EDIT.getPermission())) {
                 XSound.BLOCK_CHEST_OPEN.play(player);
-                plugin.getEditInventory().openInventory(player, buildWorld);
+                new EditInventory(plugin).openInventory(player, buildWorld);
             }
             return;
         }
@@ -219,8 +218,8 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
 
     private static class BuilderInventoryHolder extends BuildWorldHolder {
 
-        public BuilderInventoryHolder(BuildWorld buildWorld, Player player) {
-            super(buildWorld, 27, Messages.getString("worldeditor_builders_title", player));
+        public BuilderInventoryHolder(BuildSystemInventory inventory, BuildWorld buildWorld, Player player) {
+            super(inventory, buildWorld, 27, Messages.getString("worldeditor_builders_title", player));
         }
     }
 }

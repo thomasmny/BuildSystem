@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import de.eintosti.buildsystem.world.builder.BuilderInventory;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import org.bukkit.entity.Player;
 
@@ -53,7 +54,7 @@ public class BuildersSubCommand implements SubCommand {
             return;
         }
 
-        plugin.getBuilderInventory().openInventory(buildWorld, player);
+        new BuilderInventory(plugin).openInventory(buildWorld, player);
     }
 
     @Override

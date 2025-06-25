@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.player.settings.SettingsInventory;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -46,7 +47,7 @@ public class SettingsCommand implements CommandExecutor {
             return true;
         }
 
-        plugin.getSettingsInventory().openInventory(player);
+        new SettingsInventory(plugin).openInventory(player);
         return true;
     }
 }

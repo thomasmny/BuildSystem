@@ -22,27 +22,29 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
 import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import java.util.Map;
 import java.util.stream.IntStream;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 
-public class DeleteInventory implements Listener {
+public class DeleteInventory extends BuildSystemInventory {
 
     private final BuildSystemPlugin plugin;
 
     public DeleteInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    }
+
+    public void openInventory(Player player, BuildWorld buildWorld) {
+        player.openInventory(getInventory(player, buildWorld));
     }
 
     private Inventory getInventory(Player player, BuildWorld buildWorld) {
-        Inventory inventory = new DeleteInventoryHolder(buildWorld, player).getInventory();
+        Inventory inventory = new DeleteInventoryHolder(this, buildWorld, player).getInventory();
         fillGuiWithGlass(inventory);
 
         inventory.setItem(11, InventoryUtils.createItem(XMaterial.LIME_DYE,
@@ -59,10 +61,6 @@ public class DeleteInventory implements Listener {
         return inventory;
     }
 
-    public void openInventory(Player player, BuildWorld buildWorld) {
-        player.openInventory(getInventory(player, buildWorld));
-    }
-
     private void fillGuiWithGlass(Inventory inventory) {
         final int[] greenSlots = {0, 1, 2, 3, 9, 10, 12, 18, 19, 20, 21};
         final int[] blackSlots = {4, 22};
@@ -73,8 +71,8 @@ public class DeleteInventory implements Listener {
         IntStream.of(redSlots).forEach(slot -> inventory.setItem(slot, InventoryUtils.createItem(XMaterial.RED_STAINED_GLASS_PANE, "§f")));
     }
 
-    @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
+    @Override
+    public void onClick(InventoryClickEvent event) {
         if (!(event.getInventory().getHolder() instanceof DeleteInventoryHolder holder)) {
             return;
         }
@@ -99,8 +97,8 @@ public class DeleteInventory implements Listener {
 
     private static class DeleteInventoryHolder extends BuildWorldHolder {
 
-        public DeleteInventoryHolder(BuildWorld buildWorld, Player player) {
-            super(buildWorld, 27, Messages.getString("delete_title", player));
+        public DeleteInventoryHolder(BuildSystemInventory inventory, BuildWorld buildWorld, Player player) {
+            super(inventory, buildWorld, 27, Messages.getString("delete_title", player));
         }
     }
 }

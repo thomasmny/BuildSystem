@@ -34,6 +34,7 @@ import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.navigator.inventory.ArchivedWorldsInventory;
 import de.eintosti.buildsystem.navigator.inventory.DisplayablesInventory;
+import de.eintosti.buildsystem.navigator.inventory.NavigatorInventory;
 import de.eintosti.buildsystem.navigator.inventory.PrivateWorldsInventory;
 import de.eintosti.buildsystem.navigator.inventory.PublicWorldsInventory;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
@@ -128,7 +129,7 @@ public class NavigatorListener implements Listener {
     private void openNavigator(Player player) {
         Settings settings = settingsManager.getSettings(player);
         if (settings.getNavigatorType() == NavigatorType.OLD) {
-            plugin.getNavigatorInventory().openInventory(player);
+            new NavigatorInventory(plugin).openInventory(player);
             XSound.BLOCK_CHEST_OPEN.play(player);
             return;
         }

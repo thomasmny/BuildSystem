@@ -27,16 +27,19 @@ import org.jetbrains.annotations.NotNull;
  */
 public class BuildSystemHolder implements InventoryHolder {
 
-    private final Inventory inventory;
+    private final BuildSystemInventory buildSystemInventory;
+    private final Inventory bukkitInventory;
 
     /**
      * Initializes a new {@link BuildSystemHolder} with the specified size and title.
      *
-     * @param size  The size of the inventory.
-     * @param title The title of the inventory.
+     * @param buildSystemInventory The custom inventory logic associated with this holder.
+     * @param size                 The size of the inventory.
+     * @param title                The title of the inventory.
      */
-    public BuildSystemHolder(int size, @NotNull String title) {
-        this.inventory = Bukkit.createInventory(this, size, title);
+    public BuildSystemHolder(@NotNull BuildSystemInventory buildSystemInventory, int size, @NotNull String title) {
+        this.buildSystemInventory = buildSystemInventory;
+        this.bukkitInventory = Bukkit.createInventory(this, size, title);
     }
 
     /**
@@ -46,6 +49,15 @@ public class BuildSystemHolder implements InventoryHolder {
      */
     @Override
     public @NotNull Inventory getInventory() {
-        return this.inventory;
+        return this.bukkitInventory;
+    }
+
+    /**
+     * Returns the custom inventory logic associated with this holder.
+     *
+     * @return The {@link BuildSystemInventory} instance.
+     */
+    public @NotNull BuildSystemInventory getBuildSystemInventory() {
+        return this.buildSystemInventory;
     }
 }
