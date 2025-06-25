@@ -117,7 +117,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
 
     @Override
     public boolean worldAndFolderExist(String worldName) {
-        boolean worldExists = this.buildWorlds.containsKey(worldName);
+        boolean worldExists = worldExists(worldName);
         if (!worldExists) {
             return false;
         }
