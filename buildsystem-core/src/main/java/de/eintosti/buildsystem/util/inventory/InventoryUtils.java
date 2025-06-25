@@ -15,10 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.util;
+package de.eintosti.buildsystem.util.inventory;
 
 import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.inventory.XInventoryView;
 import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
@@ -33,10 +32,8 @@ import java.util.OptionalInt;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -215,28 +212,6 @@ public final class InventoryUtils {
         pdc.set(DISPLAYABLE_TYPE_KEY, PersistentDataType.STRING, DisplayableType.BUILD_WORLD.name());
         pdc.set(DISPLAYABLE_NAME_KEY, PersistentDataType.STRING, buildWorld.getName());
         itemStack.setItemMeta(itemMeta);
-    }
-
-    /**
-     * Checks if a click event is valid for the given inventory title.
-     *
-     * @param event         The click event to check
-     * @param expectedTitle The expected inventory title
-     * @return true if the click is valid, false otherwise
-     */
-    public static boolean isValidClick(InventoryClickEvent event, String expectedTitle) {
-        String viewTitle = XInventoryView.of(event.getView()).getTitle();
-        if (!viewTitle.equals(expectedTitle)) {
-            return false;
-        }
-
-        ItemStack itemStack = event.getCurrentItem();
-        if (itemStack == null || itemStack.getType() == Material.AIR || !itemStack.hasItemMeta()) {
-            return false;
-        }
-
-        event.setCancelled(true);
-        return true;
     }
 
     /**

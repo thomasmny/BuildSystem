@@ -27,7 +27,7 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.util.InventoryUtils;
+import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import java.util.Set;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
