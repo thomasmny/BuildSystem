@@ -34,7 +34,7 @@ import de.eintosti.buildsystem.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.factory.PlayerStorageFactory;
-import de.eintosti.buildsystem.util.InventoryUtils;
+import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;

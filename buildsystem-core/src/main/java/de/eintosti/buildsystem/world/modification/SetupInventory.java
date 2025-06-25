@@ -22,9 +22,9 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
-import de.eintosti.buildsystem.util.InventoryUtils;
+import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
+import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -44,7 +44,7 @@ public class SetupInventory implements Listener {
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 36, Messages.getString("setup_title", player));
+        Inventory inventory = new SetupInventoryHolder(player).getInventory();
         fillGuiWithGlass(player, inventory);
 
         inventory.setItem(10, InventoryUtils.createSkull(Messages.getString("setup_default_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_default_item_lore", player)));
@@ -79,22 +79,20 @@ public class SetupInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        Player player = (Player) event.getWhoClicked();
-        if (!InventoryUtils.isValidClick(event, Messages.getString("setup_title", player))) {
+        if (!(event.getInventory().getHolder() instanceof SetupInventoryHolder)) {
             return;
         }
 
         InventoryAction action = event.getAction();
-        InventoryType type = event.getInventory().getType();
-        int slot = event.getRawSlot();
-
         switch (action) {
             case PICKUP_ALL, PICKUP_ONE, PICKUP_SOME, PICKUP_HALF, PLACE_ALL, PLACE_SOME, PLACE_ONE, SWAP_WITH_CURSOR -> {
-                if (type != InventoryType.CHEST) {
+                if (event.getInventory().getType() != InventoryType.CHEST) {
                     return;
                 }
 
+                int slot = event.getRawSlot();
                 event.setCancelled(slot < 36 || slot > 80);
+
                 if (action != InventoryAction.SWAP_WITH_CURSOR) {
                     return;
                 }
@@ -103,11 +101,18 @@ public class SetupInventory implements Listener {
                     if ((slot >= 11 && slot <= 15) || (slot >= 20 && slot <= 25)) {
                         ItemStack itemStack = event.getCursor();
                         event.setCurrentItem(itemStack);
-                        player.setItemOnCursor(null);
+                        event.getWhoClicked().setItemOnCursor(null);
                     }
                 }
             }
             default -> event.setCancelled(true);
+        }
+    }
+
+    private static class SetupInventoryHolder extends BuildSystemHolder {
+
+        public SetupInventoryHolder(Player player) {
+            super(36, Messages.getString("setup_title", player));
         }
     }
 }

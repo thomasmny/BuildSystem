@@ -23,8 +23,8 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import de.eintosti.buildsystem.util.InventoryUtils;
-import org.bukkit.Bukkit;
+import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
+import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -44,7 +44,7 @@ public class DesignInventory implements Listener {
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 36, Messages.getString("design_title", player));
+        Inventory inventory = new DesignInventoryHolder(player).getInventory();
         fillGuiWithGlass(inventory, player);
 
         setItem(player, inventory, 10, XMaterial.RED_STAINED_GLASS, "design_red", DesignColor.RED);
@@ -106,17 +106,24 @@ public class DesignInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        Player player = (Player) event.getWhoClicked();
-        if (!InventoryUtils.isValidClick(event, Messages.getString("design_title", player))) {
+        if (!(event.getInventory().getHolder() instanceof DesignInventoryHolder)) {
             return;
         }
 
-        Settings settings = plugin.getSettingsManager().getSettings(player);
         ItemStack itemStack = event.getCurrentItem();
+        if (itemStack == null) {
+            return;
+        }
+
+        event.setCancelled(true);
+        Player player = (Player) event.getWhoClicked();
+
         if (itemStack.getType().toString().contains("STAINED_GLASS_PANE")) {
             plugin.getSettingsInventory().openInventory(player);
             return;
         }
+
+        Settings settings = plugin.getSettingsManager().getSettings(player);
 
         switch (event.getSlot()) {
             case 10:
@@ -170,5 +177,12 @@ public class DesignInventory implements Listener {
         }
 
         openInventory(player);
+    }
+
+    private static class DesignInventoryHolder extends BuildSystemHolder {
+
+        public DesignInventoryHolder(Player player) {
+            super(36, Messages.getString("design_title", player));
+        }
     }
 }

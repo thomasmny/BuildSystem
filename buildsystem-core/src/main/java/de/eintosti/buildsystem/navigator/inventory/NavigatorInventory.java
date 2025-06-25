@@ -21,8 +21,8 @@ import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.util.InventoryUtils;
-import org.bukkit.Bukkit;
+import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
+import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -39,7 +39,7 @@ public class NavigatorInventory implements Listener {
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 27, Messages.getString("old_navigator_title", player));
+        Inventory inventory = new NavigatorInventoryHolder(player).getInventory();
         fillGuiWithGlass(player, inventory);
 
         inventory.setItem(11, InventoryUtils.createSkull(Messages.getString("old_navigator_world_navigator", player), Profileable.detect("d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622")));
@@ -63,10 +63,12 @@ public class NavigatorInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        Player player = (Player) event.getWhoClicked();
-        if (!InventoryUtils.isValidClick(event, Messages.getString("old_navigator_title", player))) {
+        if (!(event.getInventory().getHolder() instanceof NavigatorInventoryHolder)) {
             return;
         }
+
+        event.setCancelled(true);
+        Player player = (Player) event.getWhoClicked();
 
         switch (event.getSlot()) {
             case 11:
@@ -90,5 +92,12 @@ public class NavigatorInventory implements Listener {
         }
 
         XSound.ENTITY_CHICKEN_EGG.play(player);
+    }
+
+    private static class NavigatorInventoryHolder extends BuildSystemHolder {
+
+        public NavigatorInventoryHolder(Player player) {
+            super(27, Messages.getString("old_navigator_title", player));
+        }
     }
 }

@@ -27,7 +27,7 @@ import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.util.InventoryUtils;
+import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import java.util.List;
 import java.util.Set;
 import org.bukkit.Bukkit;
