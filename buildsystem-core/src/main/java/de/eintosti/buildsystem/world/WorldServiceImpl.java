@@ -377,8 +377,10 @@ public class WorldServiceImpl implements WorldService {
             return players;
         }
 
+        World defaultWorld = Bukkit.getWorlds().getFirst();
+        Location spawnLocation = defaultWorld.getHighestBlockAt(defaultWorld.getSpawnLocation()).getLocation().add(0.5, 1, 0.5);
+
         SpawnManager spawnManager = plugin.getSpawnManager();
-        Location spawnLocation = Bukkit.getWorlds().getFirst().getSpawnLocation().add(0.5, 0, 0.5);
 
         Bukkit.getOnlinePlayers().forEach(player -> {
             World playerWorld = player.getWorld();
