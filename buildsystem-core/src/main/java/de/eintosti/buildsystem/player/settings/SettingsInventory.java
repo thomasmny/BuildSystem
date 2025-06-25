@@ -27,11 +27,10 @@ import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
+import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
@@ -40,23 +39,24 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-public class SettingsInventory implements Listener {
+public class SettingsInventory extends BuildSystemInventory {
 
     private final BuildSystemPlugin plugin;
     private final ConfigValues configValues;
-
     private final SettingsManager settingsManager;
 
     public SettingsInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.configValues = plugin.getConfigValues();
-
         this.settingsManager = plugin.getSettingsManager();
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    }
+
+    public void openInventory(Player player) {
+        player.openInventory(getInventory(player));
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = new SettingsInventoryHolder(player).getInventory();
+        Inventory inventory = new SettingsInventoryHolder(this, player).getInventory();
         fillGuiWithGlass(player, inventory);
 
         Settings settings = settingsManager.getSettings(player);
@@ -79,10 +79,6 @@ public class SettingsInventory implements Listener {
         addSettingsItem(player, inventory, 32, XMaterial.MAGMA_CREAM, settings.isSpawnTeleport(), "settings_spawnteleport_item", "settings_spawnteleport_lore");
 
         return inventory;
-    }
-
-    public void openInventory(Player player) {
-        player.openInventory(getInventory(player));
     }
 
     private void fillGuiWithGlass(Player player, Inventory inventory) {
@@ -129,8 +125,8 @@ public class SettingsInventory implements Listener {
         inventory.setItem(11, itemStack);
     }
 
-    @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
+    @Override
+    public void onClick(InventoryClickEvent event) {
         if (!(event.getInventory().getHolder() instanceof SettingsInventoryHolder)) {
             return;
         }
@@ -141,7 +137,7 @@ public class SettingsInventory implements Listener {
 
         switch (event.getSlot()) {
             case 11:
-                plugin.getDesignInventory().openInventory(player);
+                new DesignInventory(plugin).openInventory(player);
                 XSound.ENTITY_ITEM_PICKUP.play(player);
                 return;
             case 12:
@@ -225,7 +221,7 @@ public class SettingsInventory implements Listener {
         }
 
         XSound.ENTITY_ITEM_PICKUP.play(player);
-        plugin.getSettingsInventory().openInventory(player);
+        new SettingsInventory(plugin).openInventory(player);
     }
 
     @SuppressWarnings("deprecation")
@@ -239,8 +235,8 @@ public class SettingsInventory implements Listener {
 
     private static class SettingsInventoryHolder extends BuildSystemHolder {
 
-        public SettingsInventoryHolder(Player player) {
-            super(45, Messages.getString("settings_title", player));
+        public SettingsInventoryHolder(BuildSystemInventory inventory, Player player) {
+            super(inventory, 45, Messages.getString("settings_title", player));
         }
     }
 }

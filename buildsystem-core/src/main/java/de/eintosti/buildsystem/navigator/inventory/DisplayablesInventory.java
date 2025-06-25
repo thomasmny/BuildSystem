@@ -27,10 +27,13 @@ import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete.WorldsArgument;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
+import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import de.eintosti.buildsystem.util.inventory.PaginatedInventory;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import de.eintosti.buildsystem.world.creation.CreateInventory;
 import de.eintosti.buildsystem.world.creation.CreateInventory.Page;
+import de.eintosti.buildsystem.world.modification.EditInventory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -40,11 +43,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -57,7 +56,7 @@ import org.jetbrains.annotations.Nullable;
  * An abstract inventory class for displaying {@link Displayable} objects such as {@link Folder}s and {@link BuildWorld}s. This class is designed to be instantiated once per player
  * to manage their specific inventory view.
  */
-public abstract class DisplayablesInventory extends PaginatedInventory implements Listener {
+public abstract class DisplayablesInventory extends PaginatedInventory {
 
     private static final int MAX_WORLDS_PER_PAGE = 36;
     private static final int FIRST_WORD_SLOT = 9;
@@ -126,25 +125,6 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
             initializeInventories();
         }
         player.openInventory(generatedInventories[getInvIndex(player)]);
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
-    }
-
-    /**
-     * Creates a single inventory page with common navigation and setting items.
-     *
-     * @return A new inventory instance.
-     */
-    protected @NotNull Inventory createBaseInventoryPage(String inventoryTitle) {
-        Inventory inventory = new DisplayablesInventoryHolder(inventoryTitle).getInventory();
-        InventoryUtils.fillWithGlass(inventory, player);
-
-        addWorldSortItem(inventory);
-        addWorldFilterItem(inventory);
-
-        inventory.setItem(52, InventoryUtils.createSkull(Messages.getString("gui_previous_page", player), Profileable.detect(PREVIOUS_PAGE_SKULL_PROFILE)));
-        inventory.setItem(53, InventoryUtils.createSkull(Messages.getString("gui_next_page", player), Profileable.detect(NEXT_PAGE_SKULL_PROFILE)));
-
-        return inventory;
     }
 
     /**
@@ -177,6 +157,24 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
                 this.cachedDisplayables.get(i).addToInventory(currentPage, currentSlot++, player);
             }
         }
+    }
+
+    /**
+     * Creates a single inventory page with common navigation and setting items.
+     *
+     * @return A new inventory instance.
+     */
+    protected @NotNull Inventory createBaseInventoryPage(String inventoryTitle) {
+        Inventory inventory = new DisplayablesInventoryHolder(this, inventoryTitle).getInventory();
+        InventoryUtils.fillWithGlass(inventory, player);
+
+        addWorldSortItem(inventory);
+        addWorldFilterItem(inventory);
+
+        inventory.setItem(52, InventoryUtils.createSkull(Messages.getString("gui_previous_page", player), Profileable.detect(PREVIOUS_PAGE_SKULL_PROFILE)));
+        inventory.setItem(53, InventoryUtils.createSkull(Messages.getString("gui_next_page", player), Profileable.detect(NEXT_PAGE_SKULL_PROFILE)));
+
+        return inventory;
     }
 
     /**
@@ -316,8 +314,8 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
         inventory.setItem(46, InventoryUtils.createItem(XMaterial.HOPPER, Messages.getString("world_filter_title", player), lore));
     }
 
-    @EventHandler
-    public void onInventoryClick(@NotNull InventoryClickEvent event) {
+    @Override
+    public void onClick(@NotNull InventoryClickEvent event) {
         if (!(event.getInventory().getHolder() instanceof DisplayablesInventoryHolder)) {
             return;
         }
@@ -398,7 +396,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
     }
 
     protected void beginWorldCreation() {
-        this.plugin.getCreateInventory().openInventory(this.player, Page.PREDEFINED, this.requiredVisibility, null);
+        new CreateInventory(plugin).openInventory(this.player, Page.PREDEFINED, this.requiredVisibility, null);
     }
 
     protected Folder createFolder(String folderName) {
@@ -409,7 +407,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
      * Sends the player back to the previous inventory.
      */
     protected void returnToPreviousInventory() {
-        this.plugin.getNavigatorInventory().openInventory(this.player);
+        new NavigatorInventory(plugin).openInventory(this.player);
     }
 
     /**
@@ -487,20 +485,6 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
         player.openInventory(generatedInventories[getInvIndex(player)]);
     }
 
-    @EventHandler
-    public void onInventoryClose(@NotNull InventoryCloseEvent event) {
-        if (!event.getPlayer().equals(player)) {
-            return;
-        }
-
-        for (Inventory inv : generatedInventories) {
-            if (event.getInventory().equals(inv)) {
-                HandlerList.unregisterAll(this);
-                return;
-            }
-        }
-    }
-
     /**
      * Gets the next {@link WorldSort} order in the cycle.
      *
@@ -553,7 +537,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
 
         if (buildWorld.isLoaded()) {
             XSound.BLOCK_CHEST_OPEN.play(player);
-            plugin.getEditInventory().openInventory(player, buildWorld);
+            new EditInventory(plugin).openInventory(player, buildWorld);
         } else {
             player.closeInventory();
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
@@ -573,8 +557,8 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
 
     private static class DisplayablesInventoryHolder extends BuildSystemHolder {
 
-        public DisplayablesInventoryHolder(String inventoryTitle) {
-            super(54, inventoryTitle);
+        public DisplayablesInventoryHolder(BuildSystemInventory inventory, String inventoryTitle) {
+            super(inventory, 54, inventoryTitle);
         }
     }
 }
