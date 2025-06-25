@@ -53,7 +53,6 @@ public class DeleteSubCommand implements SubCommand {
             return;
         }
 
-        plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player).setCachedWorld(buildWorld);
         plugin.getDeleteInventory().openInventory(player, buildWorld);
     }
 

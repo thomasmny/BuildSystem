@@ -244,9 +244,19 @@ public interface Settings {
      */
     void setOpenTrapDoors(boolean openTrapDoors);
 
+    /**
+     * Gets the {@link BukkitTask} responsible for updating the player's scoreboard.
+     *
+     * @return The scoreboard task
+     */
     @Internal
     BukkitTask getScoreboardTask();
 
+    /**
+     * Sets the {@link BukkitTask} responsible for updating the player's scoreboard.
+     *
+     * @param scoreboardTask The scoreboard task
+     */
     @Internal
     void setScoreboardTask(BukkitTask scoreboardTask);
 }

@@ -57,12 +57,11 @@ public class BuildCommand implements CommandExecutor {
         }
 
         switch (args.length) {
-            case 0: {
+            case 0 -> {
                 toggleBuildMode(player, null, true);
-                break;
             }
 
-            case 1: {
+            case 1 -> {
                 if (!player.hasPermission("buildsystem.build.other")) {
                     Messages.sendPermissionError(player);
                     return true;
@@ -75,12 +74,10 @@ public class BuildCommand implements CommandExecutor {
                 }
 
                 toggleBuildMode(target, player, false);
-                break;
             }
 
-            default: {
+            default -> {
                 Messages.sendMessage(player, "build_usage");
-                break;
             }
         }
 

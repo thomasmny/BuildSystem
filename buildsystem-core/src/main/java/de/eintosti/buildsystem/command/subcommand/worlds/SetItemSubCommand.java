@@ -57,7 +57,7 @@ public class SetItemSubCommand implements SubCommand {
             return;
         }
 
-        ItemStack itemStack = player.getItemInHand();
+        ItemStack itemStack = player.getInventory().getItemInMainHand();
         if (itemStack.getType() == Material.AIR) {
             Messages.sendMessage(player, "worlds_setitem_hand_empty");
             return;

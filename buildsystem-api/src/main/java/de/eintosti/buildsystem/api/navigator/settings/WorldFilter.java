@@ -27,22 +27,6 @@ import java.util.function.Predicate;
  */
 public interface WorldFilter {
 
-    enum Mode {
-        NONE,
-        STARTS_WITH,
-        CONTAINS,
-        MATCHES;
-
-        public Mode getNext() {
-            return switch (this) {
-                case NONE -> STARTS_WITH;
-                case STARTS_WITH -> CONTAINS;
-                case CONTAINS -> MATCHES;
-                case MATCHES -> NONE;
-            };
-        }
-    }
-
     /**
      * Gets the current mode.
      *
@@ -72,9 +56,55 @@ public interface WorldFilter {
     void setText(String text);
 
     /**
-     * Apply the filter to a {@link BuildWorld}.
+     * Applies the current filter to a {@link BuildWorld} to determine if it should be shown.
      *
-     * @return The filter predicate
+     * @return A {@link Predicate} that tests if a {@link BuildWorld} matches the filter criteria
      */
     Predicate<BuildWorld> apply();
+
+    /**
+     * Represents the different modes of filtering worlds in the navigator.
+     */
+    enum Mode {
+
+        /**
+         * No filtering is applied.
+         */
+        NONE,
+
+        /**
+         * Worlds that name starts with the filter text.
+         *
+         * @see #getText()
+         */
+        STARTS_WITH,
+
+        /**
+         * Worlds that name contains the filter text.
+         *
+         * @see #getText()
+         */
+        CONTAINS,
+
+        /**
+         * Worlds that name matches the filter text.
+         *
+         * @see #getText()
+         */
+        MATCHES;
+
+        /**
+         * Gets the next filtering mode in the sequence.
+         *
+         * @return The next {@link Mode} in the enumeration
+         */
+        public Mode getNext() {
+            return switch (this) {
+                case NONE -> STARTS_WITH;
+                case STARTS_WITH -> CONTAINS;
+                case CONTAINS -> MATCHES;
+                case MATCHES -> NONE;
+            };
+        }
+    }
 }
