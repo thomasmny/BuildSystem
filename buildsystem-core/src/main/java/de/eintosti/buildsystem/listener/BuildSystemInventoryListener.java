@@ -22,10 +22,11 @@ import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 
-public class InventoryClickListener implements Listener {
+public class BuildSystemInventoryListener implements Listener {
 
-    public InventoryClickListener(BuildSystemPlugin plugin) {
+    public BuildSystemInventoryListener(BuildSystemPlugin plugin) {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -33,6 +34,13 @@ public class InventoryClickListener implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         if (event.getInventory().getHolder() instanceof BuildSystemHolder holder) {
             holder.getBuildSystemInventory().onClick(event);
+        }
+    }
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (event.getInventory().getHolder() instanceof BuildSystemHolder holder) {
+            holder.getBuildSystemInventory().onClose(event);
         }
     }
 }
