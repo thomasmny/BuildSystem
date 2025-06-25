@@ -52,13 +52,13 @@ public abstract class PaginatedInventory {
     /**
      * Attempts to go to the previous page of an inventory.
      *
-     * @param player        The player
-     * @param numObjects    The number of objects to display on the page
-     * @param maxNumObjects The maximum number of objects per page
+     * @param player            The player
+     * @param totalNumObjects   The number of objects to display in total
+     * @param numObjectsPerPage The maximum number of objects per page
      * @return {@code true} if the index was decremented (i.e., the page was changed), otherwise {@code false}.
      */
-    public boolean decrementInv(Player player, int numObjects, int maxNumObjects) {
-        int numOfPages = (numObjects / maxNumObjects) + (numObjects % maxNumObjects == 0 ? 0 : 1);
+    public boolean decrementInv(Player player, int totalNumObjects, int numObjectsPerPage) {
+        int numOfPages = calculateNumPages(totalNumObjects, numObjectsPerPage);
         UUID playerUUID = player.getUniqueId();
 
         int index = getInvIndex(player);
@@ -75,13 +75,13 @@ public abstract class PaginatedInventory {
     /**
      * Attempts to go to the next page of an inventory.
      *
-     * @param player        The player
-     * @param numObjects    The number of objects to display on the page
-     * @param maxNumObjects The maximum number of objects per page
-     * @return {@code true} if the index was incremented (i.e. the page was changed), otherwise {@code false}.
+     * @param player            The player
+     * @param totalNumObjects   The number of objects to display in total
+     * @param numObjectsPerPage The maximum number of objects per page
+     * @return {@code true} if the index was incremented (i.e., the page was changed), otherwise {@code false}.
      */
-    public boolean incrementInv(Player player, int numObjects, int maxNumObjects) {
-        int numOfPages = (numObjects / maxNumObjects) + (numObjects % maxNumObjects == 0 ? 0 : 1);
+    public boolean incrementInv(Player player, int totalNumObjects, int numObjectsPerPage) {
+        int numOfPages = calculateNumPages(totalNumObjects, numObjectsPerPage);
         UUID playerUUID = player.getUniqueId();
 
         int index = getInvIndex(player);
@@ -93,5 +93,9 @@ public abstract class PaginatedInventory {
 
         XSound.ENTITY_ITEM_BREAK.play(player);
         return false;
+    }
+
+    public int calculateNumPages(int totalNumObjects, int numObjectsPerPage) {
+        return totalNumObjects == 0 ? 1 : (int) Math.ceil((double) totalNumObjects / numObjectsPerPage);
     }
 }
