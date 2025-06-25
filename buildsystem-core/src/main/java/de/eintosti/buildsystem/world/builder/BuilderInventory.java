@@ -27,10 +27,10 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete.WorldsArgument;
-import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.util.PaginatedInventory;
 import de.eintosti.buildsystem.util.UUIDFetcher;
-import de.eintosti.buildsystem.world.util.BuildWorldHolder;
+import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
+import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import de.eintosti.buildsystem.util.inventory.PaginatedInventory;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
@@ -220,7 +220,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
     private static class BuilderInventoryHolder extends BuildWorldHolder {
 
         public BuilderInventoryHolder(BuildWorld buildWorld, Player player) {
-            super(buildWorld, Messages.getString("worldeditor_builders_title", player), 27);
+            super(buildWorld, 27, Messages.getString("worldeditor_builders_title", player));
         }
     }
 }

@@ -101,7 +101,7 @@ public interface WorldStorage extends Storage<BuildWorld> {
     boolean worldExists(String worldName, boolean caseSensitive);
 
     /**
-     * Checks if a world exists in the {@link BuildWorld} map and optionally checks if the world folder exists on disk.
+     * Checks if a {@link BuildWorld} exists and if the world folder exists on disk.
      *
      * @param worldName The name of the world to check
      * @return {@code true} if the world exists in the map or on disk, {@code false} otherwise

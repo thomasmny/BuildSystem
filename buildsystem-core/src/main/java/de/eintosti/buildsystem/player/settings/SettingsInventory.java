@@ -26,7 +26,8 @@ import de.eintosti.buildsystem.api.navigator.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.config.ConfigValues;
-import de.eintosti.buildsystem.util.InventoryUtils;
+import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
+import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -55,7 +56,7 @@ public class SettingsInventory implements Listener {
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 45, Messages.getString("settings_title", player));
+        Inventory inventory = new SettingsInventoryHolder(player).getInventory();
         fillGuiWithGlass(player, inventory);
 
         Settings settings = settingsManager.getSettings(player);
@@ -130,11 +131,12 @@ public class SettingsInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        Player player = (Player) event.getWhoClicked();
-        if (!InventoryUtils.isValidClick(event, Messages.getString("settings_title", player))) {
+        if (!(event.getInventory().getHolder() instanceof SettingsInventoryHolder)) {
             return;
         }
 
+        event.setCancelled(true);
+        Player player = (Player) event.getWhoClicked();
         Settings settings = settingsManager.getSettings(player);
 
         switch (event.getSlot()) {
@@ -232,6 +234,13 @@ public class SettingsInventory implements Listener {
             Bukkit.getOnlinePlayers().forEach(player::hidePlayer);
         } else {
             Bukkit.getOnlinePlayers().forEach(player::showPlayer);
+        }
+    }
+
+    private static class SettingsInventoryHolder extends BuildSystemHolder {
+
+        public SettingsInventoryHolder(Player player) {
+            super(45, Messages.getString("settings_title", player));
         }
     }
 }
