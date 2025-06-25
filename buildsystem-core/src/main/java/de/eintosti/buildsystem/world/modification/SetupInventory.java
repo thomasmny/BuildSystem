@@ -89,14 +89,7 @@ public class SetupInventory implements Listener {
         int slot = event.getRawSlot();
 
         switch (action) {
-            case PICKUP_ALL:
-            case PICKUP_ONE:
-            case PICKUP_SOME:
-            case PICKUP_HALF:
-            case PLACE_ALL:
-            case PLACE_SOME:
-            case PLACE_ONE:
-            case SWAP_WITH_CURSOR:
+            case PICKUP_ALL, PICKUP_ONE, PICKUP_SOME, PICKUP_HALF, PLACE_ALL, PLACE_SOME, PLACE_ONE, SWAP_WITH_CURSOR -> {
                 if (type != InventoryType.CHEST) {
                     return;
                 }
@@ -113,10 +106,8 @@ public class SetupInventory implements Listener {
                         player.setItemOnCursor(null);
                     }
                 }
-                break;
-            default:
-                event.setCancelled(true);
-                break;
+            }
+            default -> event.setCancelled(true);
         }
     }
 }

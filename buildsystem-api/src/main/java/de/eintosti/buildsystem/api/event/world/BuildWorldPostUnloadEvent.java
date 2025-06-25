@@ -27,6 +27,11 @@ import org.jetbrains.annotations.ApiStatus.Internal;
  */
 public class BuildWorldPostUnloadEvent extends BuildWorldEvent {
 
+    /**
+     * Constructs a new {@link BuildWorldPostUnloadEvent}.
+     *
+     * @param buildWorld The {@link BuildWorld} that has been unloaded
+     */
     @Internal
     public BuildWorldPostUnloadEvent(BuildWorld buildWorld) {
         super(buildWorld);

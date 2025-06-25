@@ -43,6 +43,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
         this.plugin = plugin;
         this.settingsManager = plugin.getSettingsManager();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
+        plugin.getLogger().info("PlaceholderAPI expansion initialized");
     }
 
     /**

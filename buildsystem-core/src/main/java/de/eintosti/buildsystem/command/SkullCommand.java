@@ -50,11 +50,11 @@ public class SkullCommand implements CommandExecutor {
         }
 
         switch (args.length) {
-            case 0:
+            case 0 -> {
                 addSkull(player, "§b" + player.getName(), Profileable.of(player));
                 Messages.sendMessage(player, "skull_player_received", Map.entry("%player%", player.getName()));
-                break;
-            case 1:
+            }
+            case 1 -> {
                 String identifier = args[0];
                 if (identifier.length() > 16) {
                     addSkull(player, Messages.getString("custom_skull_item", player), Profileable.detect(identifier));
@@ -63,10 +63,10 @@ public class SkullCommand implements CommandExecutor {
                     addSkull(player, "§b" + identifier, Profileable.detect(identifier));
                     Messages.sendMessage(player, "skull_player_received", Map.entry("%player%", identifier));
                 }
-                break;
-            default:
+            }
+            default -> {
                 Messages.sendMessage(player, "skull_usage");
-                break;
+            }
         }
         return true;
     }

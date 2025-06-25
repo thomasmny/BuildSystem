@@ -31,6 +31,11 @@ import org.bukkit.entity.Player;
  */
 public interface PlayerService {
 
+    /**
+     * Gets the {@link PlayerStorage} implementation for managing {@link BuildPlayer} persistence.
+     *
+     * @return The {@link PlayerStorage} implementation
+     */
     PlayerStorage getPlayerStorage();
 
     /**

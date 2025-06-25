@@ -30,6 +30,16 @@ public class BuildSystemProvider {
     private static BuildSystem instance = null;
 
     /**
+     * Sole private constructor to prevent instantiation.
+     *
+     * @throws AssertionError Always, as this class is not meant to be instantiated
+     */
+    @ApiStatus.Internal
+    private BuildSystemProvider() {
+        throw new AssertionError("This class is not meant to be instantiated");
+    }
+
+    /**
      * Gets an instance of the {@link BuildSystem} API.
      *
      * @return An instance of the BuildSystem API
@@ -52,10 +62,5 @@ public class BuildSystemProvider {
     @ApiStatus.Internal
     static void unregister() {
         BuildSystemProvider.instance = null;
-    }
-
-    @ApiStatus.Internal
-    private BuildSystemProvider() {
-        throw new AssertionError();
     }
 }
