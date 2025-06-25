@@ -26,10 +26,10 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.util.PaginatedInventory;
+import de.eintosti.buildsystem.world.util.BuildWorldHolder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameRule;
 import org.bukkit.Material;
@@ -46,7 +46,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class GameRulesInventory extends PaginatedInventory implements Listener {
 
     private static final int[] SLOTS = {11, 12, 13, 14, 15, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33};
-    private static final int WORLD_NAME_ITEM_SLOT = 0;
 
     private final BuildSystemPlugin plugin;
     private int numGameRules = 0;
@@ -57,51 +56,47 @@ public class GameRulesInventory extends PaginatedInventory implements Listener {
     }
 
     public void openInventory(Player player, BuildWorld buildWorld) {
-        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
-
-        Inventory inventory = getInventory(player, bukkitWorld);
+        Inventory inventory = getInventory(buildWorld, player);
         fillGuiWithGlass(player, inventory);
-
-        // Store the world name in the first slot
-        InventoryUtils.storeWorldName(inventory.getItem(WORLD_NAME_ITEM_SLOT), buildWorld);
 
         player.openInventory(inventory);
     }
 
-    public Inventory getInventory(Player player, World world) {
-        addGameRules(world, player);
+    public Inventory getInventory(BuildWorld buildWorld, Player player) {
+        addGameRules(buildWorld, player);
         return inventories[getInvIndex(player)];
     }
 
-    public void addGameRules(World world, Player player) {
-        int columnGameRule = 0, maxColumnGameRule = 14;
-        setNumGameRules(world);
+    public void addGameRules(BuildWorld buildWorld, Player player) {
+        World world = buildWorld.getWorld();
+        if (world == null) {
+            player.closeInventory();
+            plugin.getLogger().severe("World '" + buildWorld.getName() + "' does not exist.");
+            return;
+        }
 
-        int numPages = numGameRules == 0 ? 1 : (int) Math.ceil((double) numGameRules / SLOTS.length);
+        this.numGameRules = world.getGameRules().length;
+        int numPages = calculateNumPages(this.numGameRules, SLOTS.length);
         inventories = new Inventory[numPages];
-        Inventory inventory = createInventory(player);
+        Inventory inventory = createInventory(buildWorld, player);
 
         int index = 0;
         inventories[index] = inventory;
 
+        int columnGameRule = 0, maxColumnGameRule = 14;
         for (String gameRuleName : world.getGameRules()) {
             addGameRuleItem(inventory, SLOTS[columnGameRule++], world, gameRuleName, player);
 
             if (columnGameRule > maxColumnGameRule) {
                 columnGameRule = 0;
-                inventory = createInventory(player);
+                inventory = createInventory(buildWorld, player);
                 inventories[++index] = inventory;
             }
         }
     }
 
-    private void setNumGameRules(World world) {
-        int numWorldGameRules = world.getGameRules().length;
-        this.numGameRules = (numWorldGameRules / SLOTS.length) + (numWorldGameRules % SLOTS.length == 0 ? 0 : 1);
-    }
-
-    private Inventory createInventory(Player player) {
-        return Bukkit.createInventory(null, 45, Messages.getString("worldeditor_gamerules_title", player));
+    private Inventory createInventory(BuildWorld buildWorld, Player player) {
+        return new GameRulesInventoryHolder(buildWorld, player).getInventory();
     }
 
     private void addGameRuleItem(Inventory inventory, int slot, World world, String gameRuleName, Player player) {
@@ -164,28 +159,31 @@ public class GameRulesInventory extends PaginatedInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        Player player = (Player) event.getWhoClicked();
-        if (!InventoryUtils.isValidClick(event, Messages.getString("worldeditor_gamerules_title", player))) {
+        if (!(event.getInventory().getHolder() instanceof GameRulesInventoryHolder holder)) {
             return;
         }
 
-        String worldName = InventoryUtils.extractWorldName(event.getInventory().getItem(WORLD_NAME_ITEM_SLOT));
-        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
-        if (buildWorld == null) {
-            player.closeInventory();
-            Messages.sendMessage(player, "worlds_edit_error");
+        ItemStack itemStack = event.getCurrentItem();
+        if (itemStack == null || itemStack.getType() == Material.AIR || !itemStack.hasItemMeta()) {
             return;
         }
+
+        event.setCancelled(true);
+        Player player = (Player) event.getWhoClicked();
+        BuildWorld buildWorld = holder.getBuildWorld();
 
         switch (XMaterial.matchXMaterial(event.getCurrentItem())) {
             case PLAYER_HEAD:
+                boolean pageChanged = false;
                 int slot = event.getSlot();
                 if (slot == 36) {
-                    decrementInv(player, this.numGameRules, SLOTS.length);
+                    pageChanged = decrementInv(player, this.numGameRules, SLOTS.length);
                 } else if (slot == 44) {
-                    incrementInv(player, this.numGameRules, SLOTS.length);
+                    pageChanged = incrementInv(player, this.numGameRules, SLOTS.length);
                 }
-                openInventory(player, buildWorld);
+                if (pageChanged) {
+                    openInventory(player, buildWorld);
+                }
                 break;
 
             case FILLED_MAP:
@@ -256,5 +254,12 @@ public class GameRulesInventory extends PaginatedInventory implements Listener {
     @SuppressWarnings("unchecked")
     private static GameRule<Integer> asIntegerRule(GameRule<?> rule) {
         return rule != null && rule.getType() == Integer.class ? (GameRule<Integer>) rule : null;
+    }
+
+    private static class GameRulesInventoryHolder extends BuildWorldHolder {
+
+        public GameRulesInventoryHolder(BuildWorld buildWorld, Player player) {
+            super(buildWorld, Messages.getString("worldeditor_gamerules_title", player), 45);
+        }
     }
 }
