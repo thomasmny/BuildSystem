@@ -57,7 +57,7 @@ tasks.named("assemble") {
 
 tasks.named<ShadowJar>("shadowJar") {
     minimize()
-    archiveFileName.set("${rootProject.name}-${project.name}-${project.version}.jar") // More explicit naming
+    archiveFileName.set("${rootProject.name}-${project.version}.jar")
 
     val shadePath = "de.eintosti.buildsystem.util.external"
     relocate("io.papermc.lib", "$shadePath.paperlib")

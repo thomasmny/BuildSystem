@@ -47,7 +47,8 @@ import org.bukkit.persistence.PersistentDataType;
 
 public class BuilderInventory extends PaginatedInventory implements Listener {
 
-    private static final int MAX_BUILDERS = 9;
+    private static final int MAX_BUILDERS_PER_PAGE = 9;
+    private static final int WORLD_NAME_ITEM_SLOT = 0;
 
     private final BuildSystemPlugin plugin;
     private final NamespacedKey builderNameKey;
@@ -63,6 +64,9 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
     private Inventory createInventory(BuildWorld buildWorld, Player player) {
         Inventory inventory = Bukkit.createInventory(null, 27, Messages.getString("worldeditor_builders_title", player));
         fillGuiWithGlass(inventory, player);
+
+        // Store the world name in the first slot
+        InventoryUtils.storeWorldName(inventory.getItem(WORLD_NAME_ITEM_SLOT), buildWorld);
 
         addCreatorInfoItem(inventory, buildWorld.getBuilders(), player);
         addBuilderAddItem(inventory, buildWorld, player);
@@ -104,7 +108,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
     private void addItems(BuildWorld buildWorld, Player player) {
         Collection<Builder> builders = buildWorld.getBuilders().getAllBuilders();
         this.numBuilders = builders.size();
-        int numInventories = numBuilders % MAX_BUILDERS == 0 ? Math.max(numBuilders, 1) : numBuilders + 1;
+        int numInventories = numBuilders % MAX_BUILDERS_PER_PAGE == 0 ? Math.max(numBuilders, 1) : numBuilders + 1;
 
         int index = 0;
         Inventory inventory = createInventory(buildWorld, player);
@@ -162,7 +166,8 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
             return;
         }
 
-        BuildWorld buildWorld = plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player).getCachedWorld();
+        String worldName = InventoryUtils.extractWorldName(event.getInventory().getItem(WORLD_NAME_ITEM_SLOT));
+        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
         if (buildWorld == null) {
             player.closeInventory();
             Messages.sendMessage(player, "worlds_addbuilder_error");
@@ -183,7 +188,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
         int slot = event.getSlot();
         switch (slot) {
             case 18:
-                if (decrementInv(player, numBuilders, MAX_BUILDERS)) {
+                if (decrementInv(player, numBuilders, MAX_BUILDERS_PER_PAGE)) {
                     openInventory(buildWorld, player);
                 }
                 break;
@@ -192,7 +197,7 @@ public class BuilderInventory extends PaginatedInventory implements Listener {
                 new AddBuilderSubCommand(plugin, buildWorld.getName()).getAddBuilderInput(player, buildWorld, false);
                 return;
             case 26:
-                if (incrementInv(player, numBuilders, MAX_BUILDERS)) {
+                if (incrementInv(player, numBuilders, MAX_BUILDERS_PER_PAGE)) {
                     openInventory(buildWorld, player);
                 }
                 break;

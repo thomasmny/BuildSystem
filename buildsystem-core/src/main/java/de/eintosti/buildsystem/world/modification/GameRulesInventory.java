@@ -46,6 +46,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class GameRulesInventory extends PaginatedInventory implements Listener {
 
     private static final int[] SLOTS = {11, 12, 13, 14, 15, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33};
+    private static final int WORLD_NAME_ITEM_SLOT = 0;
 
     private final BuildSystemPlugin plugin;
     private int numGameRules = 0;
@@ -60,6 +61,9 @@ public class GameRulesInventory extends PaginatedInventory implements Listener {
 
         Inventory inventory = getInventory(player, bukkitWorld);
         fillGuiWithGlass(player, inventory);
+
+        // Store the world name in the first slot
+        InventoryUtils.storeWorldName(inventory.getItem(WORLD_NAME_ITEM_SLOT), buildWorld);
 
         player.openInventory(inventory);
     }
@@ -165,7 +169,8 @@ public class GameRulesInventory extends PaginatedInventory implements Listener {
             return;
         }
 
-        BuildWorld buildWorld = plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player).getCachedWorld();
+        String worldName = InventoryUtils.extractWorldName(event.getInventory().getItem(WORLD_NAME_ITEM_SLOT));
+        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
         if (buildWorld == null) {
             player.closeInventory();
             Messages.sendMessage(player, "worlds_edit_error");

@@ -33,8 +33,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 
 public class DeleteInventory implements Listener {
 
@@ -61,9 +59,7 @@ public class DeleteInventory implements Listener {
                 Messages.getString("delete_world_name", player, Map.entry("%world%", buildWorld.getName())),
                 Messages.getStringList("delete_world_name_lore", player)
         );
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.getPersistentDataContainer().set(InventoryUtils.DISPLAYABLE_NAME_KEY, PersistentDataType.STRING, buildWorld.getName());
-        itemStack.setItemMeta(itemMeta);
+        InventoryUtils.storeWorldName(itemStack, buildWorld);
         return itemStack;
     }
 
@@ -88,7 +84,7 @@ public class DeleteInventory implements Listener {
             return;
         }
 
-        String worldName = event.getInventory().getItem(13).getItemMeta().getPersistentDataContainer().get(InventoryUtils.DISPLAYABLE_NAME_KEY, PersistentDataType.STRING);
+        String worldName = InventoryUtils.extractWorldName(event.getInventory().getItem(13));
         WorldServiceImpl worldService = plugin.getWorldService();
         BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(worldName);
         if (buildWorld == null) {

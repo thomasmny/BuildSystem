@@ -55,7 +55,6 @@ public class EditSubCommand implements SubCommand {
         }
 
         if (buildWorld.isLoaded()) {
-            plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player).setCachedWorld(buildWorld);
             plugin.getEditInventory().openInventory(player, buildWorld);
         } else {
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);

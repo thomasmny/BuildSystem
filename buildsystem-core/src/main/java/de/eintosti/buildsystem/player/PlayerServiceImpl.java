@@ -84,20 +84,6 @@ public class PlayerServiceImpl implements PlayerService {
         return playerStorage;
     }
 
-    @Nullable
-    public String getSelectedWorldName(Player player) {
-        BuildWorld selectedWorld = playerStorage.getBuildPlayer(player.getUniqueId()).getCachedWorld();
-        if (selectedWorld == null) {
-            return null;
-        }
-
-        String selectedWorldName = selectedWorld.getName();
-        if (selectedWorldName.length() > 17) {
-            selectedWorldName = selectedWorldName.substring(0, 14) + "...";
-        }
-        return selectedWorldName;
-    }
-
     public Set<Player> getOpenNavigator() {
         return openNavigator;
     }

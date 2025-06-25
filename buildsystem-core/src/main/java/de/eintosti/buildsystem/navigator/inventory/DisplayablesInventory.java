@@ -549,7 +549,6 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
         }
 
         if (buildWorld.isLoaded()) {
-            playerService.getPlayerStorage().getBuildPlayer(player).setCachedWorld(buildWorld);
             XSound.BLOCK_CHEST_OPEN.play(player);
             plugin.getEditInventory().openInventory(player, buildWorld);
         } else {

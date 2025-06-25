@@ -51,7 +51,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 
 public class EditInventory implements Listener {
 
@@ -148,9 +147,7 @@ public class EditInventory implements Listener {
             InventoryUtils.addWorldItem(inventory, 4, buildWorld, displayName, new ArrayList<>());
         } else {
             ItemStack itemStack = InventoryUtils.createItem(material, displayName);
-            ItemMeta itemMeta = itemStack.getItemMeta();
-            itemMeta.getPersistentDataContainer().set(InventoryUtils.DISPLAYABLE_NAME_KEY, PersistentDataType.STRING, worldName);
-            itemStack.setItemMeta(itemMeta);
+            InventoryUtils.storeWorldName(itemStack, buildWorld);
             inventory.setItem(4, itemStack);
         }
     }
@@ -295,7 +292,7 @@ public class EditInventory implements Listener {
             return;
         }
 
-        String worldName = event.getInventory().getItem(4).getItemMeta().getPersistentDataContainer().get(InventoryUtils.DISPLAYABLE_NAME_KEY, PersistentDataType.STRING);
+        String worldName = InventoryUtils.extractWorldName(event.getInventory().getItem(4));
         BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
         if (buildWorld == null) {
             player.closeInventory();
@@ -387,7 +384,7 @@ public class EditInventory implements Listener {
             case 40 -> {
                 if (hasPermission(player, "buildsystem.edit.status")) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
-                    plugin.getStatusInventory().openInventory(player);
+                    plugin.getStatusInventory().openInventory(player, buildWorld);
                 }
                 return;
             }

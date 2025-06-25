@@ -45,6 +45,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Utility class for inventory-related operations. All methods are static and the class cannot be instantiated.
@@ -181,7 +182,7 @@ public final class InventoryUtils {
 
         // Initially set a default head
         ItemStack defaultHead = createItem(XMaterial.PLAYER_HEAD, displayName, lore);
-        storeWorldInformation(defaultHead, buildWorld);
+        storeWorldName(defaultHead, buildWorld);
         inventory.setItem(slot, defaultHead);
 
         // Then try to set texture asynchronously
@@ -201,17 +202,43 @@ public final class InventoryUtils {
                     itemMeta.setDisplayName(displayName);
                     itemMeta.setLore(lore);
                     itemStack.setItemMeta(itemMeta);
-                    storeWorldInformation(itemStack, buildWorld);
+                    storeWorldName(itemStack, buildWorld);
                     inventory.setItem(slot, itemStack);
                 });
     }
 
-    private static void storeWorldInformation(ItemStack itemStack, BuildWorld buildWorld) {
+    /**
+     * Stores the given {@link BuildWorld}'s name in the given item's {@link PersistentDataContainer}.
+     *
+     * @param itemStack  The item stack to store the world information in
+     * @param buildWorld The world to store the name of
+     */
+    public static void storeWorldName(ItemStack itemStack, BuildWorld buildWorld) {
         ItemMeta itemMeta = itemStack.getItemMeta();
         PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
         pdc.set(DISPLAYABLE_TYPE_KEY, PersistentDataType.STRING, DisplayableType.BUILD_WORLD.name());
         pdc.set(DISPLAYABLE_NAME_KEY, PersistentDataType.STRING, buildWorld.getName());
         itemStack.setItemMeta(itemMeta);
+    }
+
+    /**
+     * Extracts the world name from the given {@link ItemStack} and stores it in the item's {@link PersistentDataContainer}.
+     *
+     * @param itemStack The item stack to store the world information in
+     * @return The world name stored in the item's persistent data container, or {@code null} if not found
+     */
+    public static String extractWorldName(@Nullable ItemStack itemStack) {
+        if (itemStack == null || !itemStack.hasItemMeta()) {
+            return null;
+        }
+
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta == null) {
+            return null;
+        }
+
+        PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
+        return pdc.get(DISPLAYABLE_NAME_KEY, PersistentDataType.STRING);
     }
 
     /**
