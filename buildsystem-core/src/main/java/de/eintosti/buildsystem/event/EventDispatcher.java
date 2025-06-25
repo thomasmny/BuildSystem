@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.event;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.event.world.BuildWorldManipulationEvent;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.world.BuildWorldImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -35,7 +34,7 @@ public class EventDispatcher {
     /**
      * Creates a new {@link EventDispatcher} instance.
      *
-     * @param worldStorage The world storage used to retrieve {@link BuildWorldImpl} information
+     * @param worldStorage The world storage used to retrieve {@link BuildWorld} information
      */
     public EventDispatcher(WorldStorageImpl worldStorage) {
         this.worldStorage = worldStorage;
