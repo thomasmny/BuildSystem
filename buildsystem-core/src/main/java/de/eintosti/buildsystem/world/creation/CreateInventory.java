@@ -26,14 +26,14 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.util.PaginatedInventory;
+import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
+import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import de.eintosti.buildsystem.util.inventory.PaginatedInventory;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
-import java.io.FileFilter;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -41,6 +41,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class CreateInventory extends PaginatedInventory implements Listener {
@@ -62,7 +63,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
     }
 
     private Inventory getInventory(Player player, Page page) {
-        Inventory inventory = Bukkit.createInventory(null, 45, Messages.getString("create_title", player));
+        Inventory inventory = new CreateInventoryHolder(player, page).getInventory();
         fillGuiWithGlass(player, inventory, page);
 
         addPageItem(inventory, page, Page.PREDEFINED, InventoryUtils.createSkull(Messages.getString("create_predefined_worlds", player), Profileable.detect("2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78")));
@@ -120,7 +121,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
     }
 
     private void addTemplates(Player player, Page page) {
-        File[] templateFiles = new File(plugin.getDataFolder() + File.separator + "templates").listFiles(new TemplateFilter());
+        File[] templateFiles = new File(plugin.getDataFolder() + File.separator + "templates").listFiles((file) -> file.isDirectory() && !file.isHidden());
 
         this.numTemplates = templateFiles != null ? templateFiles.length : 0;
         int numPages = calculateNumPages(numTemplates, MAX_TEMPLATES);
@@ -182,32 +183,22 @@ public class CreateInventory extends PaginatedInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        Player player = (Player) event.getWhoClicked();
-        if (!InventoryUtils.isValidClick(event, Messages.getString("create_title", player))) {
+        if (!(event.getInventory().getHolder() instanceof CreateInventoryHolder holder)) {
             return;
         }
 
-        CreateInventory.Page newPage = switch (event.getSlot()) {
-            case 12 -> Page.PREDEFINED;
-            case 13 -> Page.GENERATOR;
-            case 14 -> Page.TEMPLATES;
-            default -> null;
-        };
+        event.setCancelled(true);
+        Player player = (Player) event.getWhoClicked();
 
+        int slot = event.getSlot();
+        CreateInventory.Page newPage = Page.of(slot);
         if (newPage != null) {
             openInventory(player, newPage, this.visibility, this.folder);
             XSound.ENTITY_CHICKEN_EGG.play(player);
             return;
         }
 
-        Inventory inventory = event.getClickedInventory();
-        if (inventory == null) {
-            return;
-        }
-
-        int slot = event.getSlot();
-
-        switch (Page.getCurrentPage(inventory)) {
+        switch (holder.getPage()) {
             case PREDEFINED: {
                 BuildWorldType worldType = switch (slot) {
                     case 29 -> BuildWorldType.NORMAL;
@@ -274,14 +265,18 @@ public class CreateInventory extends PaginatedInventory implements Listener {
             this.slot = slot;
         }
 
-        public static Page getCurrentPage(Inventory inventory) {
-            for (Page page : Page.values()) {
-                ItemStack itemStack = inventory.getItem(page.getSlot());
-                if (itemStack != null && itemStack.containsEnchantment(XEnchantment.UNBREAKING.get())) {
-                    return page;
-                }
-            }
-            return Page.PREDEFINED;
+        /**
+         * Gets the {@link Page} for the given slot.
+         *
+         * @param slot The clicked slot
+         * @return The {@link Page} for the given slot, or {@code null} if the slot does not correspond to a page
+         */
+        @Nullable
+        public static Page of(int slot) {
+            return Arrays.stream(values())
+                    .filter(value -> value.slot == slot)
+                    .findFirst()
+                    .orElse(null);
         }
 
         public int getSlot() {
@@ -289,11 +284,18 @@ public class CreateInventory extends PaginatedInventory implements Listener {
         }
     }
 
-    private static class TemplateFilter implements FileFilter {
+    private static class CreateInventoryHolder extends BuildSystemHolder {
 
-        @Override
-        public boolean accept(File file) {
-            return file.isDirectory() && !file.isHidden();
+        private final Page page;
+
+        public CreateInventoryHolder(Player player, @NotNull Page page) {
+            super(45, Messages.getString("create_title", player));
+            this.page = page;
+        }
+
+        @NotNull
+        public Page getPage() {
+            return page;
         }
     }
 }

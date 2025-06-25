@@ -25,8 +25,8 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.util.BuildWorldHolder;
+import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
+import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -173,7 +173,7 @@ public class StatusInventory implements Listener {
     private static class StatusInventoryHolder extends BuildWorldHolder {
 
         public StatusInventoryHolder(BuildWorld buildWorld, Player player) {
-            super(buildWorld, Messages.getString("status_title", player, Map.entry("%world%", formatWorldName(buildWorld))), 27);
+            super(buildWorld, 27, Messages.getString("status_title", player, Map.entry("%world%", formatWorldName(buildWorld))));
         }
 
         private static String formatWorldName(BuildWorld buildWorld) {

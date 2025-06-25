@@ -21,14 +21,15 @@ import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.util.InventoryUtils;
+import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
+import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import java.util.Map;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
 public class SpeedInventory implements Listener {
 
@@ -37,7 +38,7 @@ public class SpeedInventory implements Listener {
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 27, Messages.getString("speed_title", player));
+        Inventory inventory = new SpeedInventoryHolder(player).getInventory();
         fillGuiWithGlass(player, inventory);
 
         inventory.setItem(11, InventoryUtils.createSkull(Messages.getString("speed_1", player), Profileable.detect("71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530")));
@@ -61,11 +62,17 @@ public class SpeedInventory implements Listener {
 
     @EventHandler
     public void oInventoryClick(InventoryClickEvent event) {
-        Player player = (Player) event.getWhoClicked();
-        if (!InventoryUtils.isValidClick(event, Messages.getString("speed_title", player))) {
+        if (!(event.getInventory().getHolder() instanceof SpeedInventoryHolder)) {
             return;
         }
 
+        ItemStack itemStack = event.getCurrentItem();
+        if (itemStack == null) {
+            return;
+        }
+
+        event.setCancelled(true);
+        Player player = (Player) event.getWhoClicked();
         if (!player.hasPermission("buildsystem.speed")) {
             player.closeInventory();
             return;
@@ -102,6 +109,13 @@ public class SpeedInventory implements Listener {
         } else {
             player.setWalkSpeed(speed);
             Messages.sendMessage(player, "speed_set_walking", Map.entry("%speed%", num));
+        }
+    }
+
+    private static class SpeedInventoryHolder extends BuildSystemHolder {
+
+        public SpeedInventoryHolder(Player player) {
+            super(27, Messages.getString("speed_title", player));
         }
     }
 }

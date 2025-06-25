@@ -31,9 +31,9 @@ import de.eintosti.buildsystem.command.subcommand.worlds.SetPermissionSubCommand
 import de.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.util.InventoryUtils;
+import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
+import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
-import de.eintosti.buildsystem.world.util.BuildWorldHolder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -457,7 +457,7 @@ public class EditInventory implements Listener {
     private static class EditInventoryHolder extends BuildWorldHolder {
 
         public EditInventoryHolder(BuildWorld buildWorld, Player player) {
-            super(buildWorld, Messages.getString("worldeditor_title", player), 54);
+            super(buildWorld, 54, Messages.getString("worldeditor_title", player));
         }
     }
 }

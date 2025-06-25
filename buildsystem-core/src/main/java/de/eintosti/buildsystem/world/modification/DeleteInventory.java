@@ -22,8 +22,8 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.util.BuildWorldHolder;
+import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
+import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import java.util.Map;
 import java.util.stream.IntStream;
 import org.bukkit.entity.Player;
@@ -100,7 +100,7 @@ public class DeleteInventory implements Listener {
     private static class DeleteInventoryHolder extends BuildWorldHolder {
 
         public DeleteInventoryHolder(BuildWorld buildWorld, Player player) {
-            super(buildWorld, Messages.getString("delete_title", player), 27);
+            super(buildWorld, 27, Messages.getString("delete_title", player));
         }
     }
 }
