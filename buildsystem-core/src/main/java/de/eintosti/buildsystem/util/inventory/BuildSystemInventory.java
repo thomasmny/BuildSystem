@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.util.inventory;
 
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 
 /**
  * Abstract base class for custom inventory logic within the BuildSystem plugin.
@@ -27,7 +28,16 @@ public abstract class BuildSystemInventory {
     /**
      * Handles an {@link InventoryClickEvent} for this custom inventory.
      *
-     * @param event The {@link InventoryClickEvent} to handle.
+     * @param event The {@link InventoryClickEvent} to handle
      */
-    public abstract void onClick(InventoryClickEvent event);
+    public void onClick(InventoryClickEvent event) {
+    }
+
+    /**
+     * Handles an {@link InventoryCloseEvent} for this custom inventory.
+     *
+     * @param event The {@link InventoryCloseEvent} to handle
+     */
+    public void onClose(InventoryCloseEvent event) {
+    }
 }
