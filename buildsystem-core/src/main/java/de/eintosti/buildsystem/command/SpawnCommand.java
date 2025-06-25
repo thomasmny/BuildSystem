@@ -53,22 +53,22 @@ public class SpawnCommand implements CommandExecutor {
         }
 
         switch (args.length) {
-            case 0:
+            case 0 -> {
                 if (!spawnManager.teleport(player)) {
                     Messages.sendMessage(player, "spawn_unavailable");
                 } else if (plugin.getConfigValues().isSpawnTeleportMessage()) {
                     Messages.sendMessage(player, "spawn_teleported");
                 }
-                break;
+            }
 
-            case 1:
+            case 1 -> {
                 if (!player.hasPermission("buildsystem.spawn")) {
                     Messages.sendMessage(player, "spawn_usage");
                     return true;
                 }
 
                 switch (args[0].toLowerCase(Locale.ROOT)) {
-                    case "set":
+                    case "set" -> {
                         Location playerLocation = player.getLocation();
                         World bukkitWorld = playerLocation.getWorld();
                         if (bukkitWorld == null) {
@@ -89,21 +89,21 @@ public class SpawnCommand implements CommandExecutor {
                                 Map.entry("%z%", round(playerLocation.getZ())),
                                 Map.entry("%world%", playerLocation.getWorld().getName())
                         );
-                        break;
-                    case "remove":
+                    }
+                    case "remove" -> {
                         spawnManager.remove();
                         Messages.sendMessage(player, "spawn_remove");
-                        break;
-                    default:
+                    }
+                    default -> {
                         Messages.sendMessage(player, "spawn_admin");
-                        break;
+                    }
                 }
-                break;
+            }
 
-            default:
+            default -> {
                 String key = player.hasPermission("buildsystem.spawn") ? "spawn_admin" : "spawn_usage";
                 Messages.sendMessage(player, key);
-                break;
+            }
         }
         return true;
     }

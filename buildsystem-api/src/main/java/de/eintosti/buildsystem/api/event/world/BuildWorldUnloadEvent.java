@@ -30,6 +30,11 @@ public class BuildWorldUnloadEvent extends BuildWorldEvent implements Cancellabl
 
     private boolean cancelled = false;
 
+    /**
+     * Constructs a new {@link BuildWorldUnloadEvent}.
+     *
+     * @param buildWorld The {@link BuildWorld} that is about to be unloaded
+     */
     @Internal
     public BuildWorldUnloadEvent(BuildWorld buildWorld) {
         super(buildWorld);

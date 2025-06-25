@@ -58,15 +58,9 @@ public class ExplosionsCommand implements CommandExecutor {
         }
 
         switch (args.length) {
-            case 0:
-                toggleExplosions(player, player.getWorld());
-                break;
-            case 1:
-                toggleExplosions(player, Bukkit.getWorld(args[0]));
-                break;
-            default:
-                Messages.sendMessage(player, "explosions_usage");
-                break;
+            case 0 -> toggleExplosions(player, player.getWorld());
+            case 1 -> toggleExplosions(player, Bukkit.getWorld(args[0]));
+            default -> Messages.sendMessage(player, "explosions_usage");
         }
 
         return true;

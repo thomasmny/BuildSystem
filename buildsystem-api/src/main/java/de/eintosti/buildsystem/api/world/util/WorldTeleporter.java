@@ -17,15 +17,31 @@
  */
 package de.eintosti.buildsystem.api.world.util;
 
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 /**
+ * Provides utilities for teleporting {@link Player}s to specific locations within a {@link BuildWorld}. This interface ensures safe and controlled player movement.
+ *
  * @since 3.0.0
  */
 public interface WorldTeleporter {
 
+    /**
+     * Teleports the given {@link Player} to the designated spawn location of the world associated with this teleporter. If a custom spawn is not set, the player will be teleported
+     * to the world's default spawn.
+     *
+     * @param player The {@link Player} to teleport
+     */
     void teleport(Player player);
 
+    /**
+     * Checks if a given {@link Location} is considered safe for teleportation. A safe location typically means there are no immediate hazards (e.g., lava, void) at the target
+     * coordinates.
+     *
+     * @param location The {@link Location} to check
+     * @return {@code true} if the location is safe, {@code false} otherwise
+     */
     boolean isSafeLocation(Location location);
 }

@@ -78,16 +78,22 @@ public enum WorldSort {
     }
 
     /**
-     * Gets the pre-configured comparator for this sort order.
+     * Retrieves the name of a {@link Displayable} in lowercase for sorting purposes.
+     *
+     * @param displayable The {@link Displayable} item (e.g., {@link BuildWorld} or {@link Folder})
+     * @return The lowercase name of the displayable
      */
-    public Comparator<Displayable> getComparator() {
-        return this.comparator;
-    }
-
     private static String getNameSortKey(Displayable displayable) {
         return displayable.getName().toLowerCase(Locale.ROOT);
     }
 
+    /**
+     * Retrieves the project name of a {@link Displayable} in lowercase for sorting purposes. If the displayable is a {@link BuildWorld}, its project name is returned. If it is a
+     * {@link Folder}, its project is returned.
+     *
+     * @param displayable The {@link Displayable} item (e.g., {@link BuildWorld} or {@link Folder})
+     * @return The lowercase project name, or an empty string if not applicable
+     */
     private static String getProjectSortKey(Displayable displayable) {
         return switch (displayable) {
             case BuildWorld world -> world.getData().project().get().toLowerCase(Locale.ROOT);
@@ -96,6 +102,13 @@ public enum WorldSort {
         };
     }
 
+    /**
+     * Retrieves the status stage of a {@link Displayable} for sorting purposes. If the displayable is a {@link BuildWorld}, its status stage is returned. Otherwise,
+     * {@link BuildWorldStatus#FINISHED} stage is returned.
+     *
+     * @param displayable The {@link Displayable} item (e.g., {@link BuildWorld} or {@link Folder})
+     * @return The status stage integer
+     */
     private static int getStatusSortKey(Displayable displayable) {
         if (displayable instanceof BuildWorld buildWorld) {
             return buildWorld.getData().status().get().getStage();
@@ -103,6 +116,12 @@ public enum WorldSort {
         return BuildWorldStatus.FINISHED.getStage();
     }
 
+    /**
+     * Matches a string to a {@link WorldSort} enum constant.
+     *
+     * @param type The string to match
+     * @return The matched {@link WorldSort} constant, or {@link WorldSort#NAME_A_TO_Z} if no match is found
+     */
     public static WorldSort matchWorldSort(String type) {
         if (type == null) {
             return NAME_A_TO_Z;
@@ -115,5 +134,14 @@ public enum WorldSort {
         }
 
         return NAME_A_TO_Z;
+    }
+
+    /**
+     * Gets the pre-configured comparator for this sort order.
+     *
+     * @return The comparator used to sort {@link Displayable} items
+     */
+    public Comparator<Displayable> getComparator() {
+        return this.comparator;
     }
 }

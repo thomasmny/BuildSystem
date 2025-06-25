@@ -58,21 +58,21 @@ public class PhysicsCommand implements CommandExecutor {
         }
 
         switch (args.length) {
-            case 0:
+            case 0 -> {
                 togglePhysics(player, player.getWorld());
-                break;
-            case 1:
-                //TODO: Check each world for permission individually?
+            }
+            case 1 -> {
+                // TODO: Check each world for permission individually?
                 if (args[0].equalsIgnoreCase("all") && !worldStorage.worldExists("all")) {
                     worldStorage.getBuildWorlds().forEach(world -> world.getData().physics().set(true));
                     Messages.sendMessage(player, "physics_activated_all");
                 } else {
                     togglePhysics(player, Bukkit.getWorld(args[0]));
                 }
-                break;
-            default:
+            }
+            default -> {
                 Messages.sendMessage(player, "physics_usage");
-                break;
+            }
         }
         return true;
     }

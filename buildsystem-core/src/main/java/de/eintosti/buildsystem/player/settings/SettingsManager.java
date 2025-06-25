@@ -24,14 +24,12 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.config.ConfigValues;
-import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import fr.mrmicky.fastboard.FastBoard;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
@@ -120,13 +118,6 @@ public class SettingsManager {
 
     private void updateScoreboard(Player player, FastBoard board) {
         List<String> body = Messages.getStringList("body", player, (line) -> getPlaceholders(line, player));
-
-        // Scoreboard line cannot be longer than 30 chars in versions <1.13
-        if (MinecraftVersion.getCurrent().isLowerThan(MinecraftVersion.AQUATIC_13)) {
-            body = body.stream().map(line -> line.substring(0, Math.min(line.length(), 30)))
-                    .collect(Collectors.toList());
-        }
-
         board.updateLines(body);
     }
 

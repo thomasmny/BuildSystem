@@ -30,6 +30,11 @@ public class BuildWorldLoadEvent extends BuildWorldEvent implements Cancellable 
 
     private boolean cancelled = false;
 
+    /**
+     * Constructs a new {@link BuildWorldLoadEvent}.
+     *
+     * @param buildWorld The {@link BuildWorld} that is about to be loaded
+     */
     @Internal
     public BuildWorldLoadEvent(BuildWorld buildWorld) {
         super(buildWorld);

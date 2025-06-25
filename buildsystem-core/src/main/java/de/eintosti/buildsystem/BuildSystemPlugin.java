@@ -42,7 +42,6 @@ import de.eintosti.buildsystem.command.WorldsCommand;
 import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.expansion.luckperms.LuckPermsExpansion;
 import de.eintosti.buildsystem.expansion.placeholderapi.PlaceholderApiExpansion;
-import de.eintosti.buildsystem.internal.CraftBukkitVersion;
 import de.eintosti.buildsystem.listener.AsyncPlayerChatListener;
 import de.eintosti.buildsystem.listener.AsyncPlayerPreLoginListener;
 import de.eintosti.buildsystem.listener.BlockPhysicsListener;
@@ -71,9 +70,10 @@ import de.eintosti.buildsystem.listener.WorldManipulateByAxiomListener;
 import de.eintosti.buildsystem.listener.WorldManipulateListener;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.navigator.inventory.NavigatorInventory;
-import de.eintosti.buildsystem.player.BlocksInventory;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.player.customblocks.BlocksInventory;
+import de.eintosti.buildsystem.player.customblocks.CustomBlocksManager;
 import de.eintosti.buildsystem.player.settings.DesignInventory;
 import de.eintosti.buildsystem.player.settings.NoClipManager;
 import de.eintosti.buildsystem.player.settings.SettingsInventory;
@@ -89,9 +89,6 @@ import de.eintosti.buildsystem.tabcomplete.SpeedTabComplete;
 import de.eintosti.buildsystem.tabcomplete.TimeTabComplete;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.UpdateChecker;
-import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
-import de.eintosti.buildsystem.version.gamerules.GameRules;
-import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import de.eintosti.buildsystem.world.SpawnManager;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.builder.BuilderInventory;
@@ -100,7 +97,7 @@ import de.eintosti.buildsystem.world.data.StatusInventory;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import de.eintosti.buildsystem.world.modification.DeleteInventory;
 import de.eintosti.buildsystem.world.modification.EditInventory;
-import de.eintosti.buildsystem.world.modification.GameRuleInventory;
+import de.eintosti.buildsystem.world.modification.GameRulesInventory;
 import de.eintosti.buildsystem.world.modification.SetupInventory;
 import java.io.File;
 import java.util.HashMap;
@@ -123,9 +120,8 @@ public class BuildSystemPlugin extends JavaPlugin {
     public static final int METRICS_ID = 7427;
     public static final String ADMIN_PERMISSION = "buildsystem.admin";
 
-    private CraftBukkitVersion craftBukkitVersion;
-
     private ArmorStandManager armorStandManager;
+    private CustomBlocksManager customBlocksManager;
     private NoClipManager noClipManager;
     private PlayerServiceImpl playerService;
     private SettingsManager settingsManager;
@@ -138,7 +134,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     private DeleteInventory deleteInventory;
     private DesignInventory designInventory;
     private EditInventory editInventory;
-    private GameRuleInventory gameRuleInventory;
+    private GameRulesInventory gameRulesInventory;
     private NavigatorInventory navigatorInventory;
     private SettingsInventory settingsInventory;
     private SetupInventory setupInventory;
@@ -146,8 +142,6 @@ public class BuildSystemPlugin extends JavaPlugin {
     private StatusInventory statusInventory;
 
     private ConfigValues configValues;
-    private CustomBlocks customBlocks;
-    private GameRules gameRules;
     private CustomizableIcons customizableIcons;
 
     private LuckPermsExpansion luckPermsExpansion;
@@ -159,10 +153,6 @@ public class BuildSystemPlugin extends JavaPlugin {
     public void onLoad() {
         createTemplateFolder();
         Messages.createMessageFile();
-
-        if (!findCraftBukkitVersion()) {
-            this.setEnabled(false);
-        }
     }
 
     @Override
@@ -171,7 +161,6 @@ public class BuildSystemPlugin extends JavaPlugin {
         this.saveConfig();
 
         initClasses();
-        initVersionedClasses();
 
         registerCommands();
         registerTabCompleter();
@@ -226,26 +215,12 @@ public class BuildSystemPlugin extends JavaPlugin {
         ));
     }
 
-    private boolean findCraftBukkitVersion() {
-        MinecraftVersion minecraftVersion = MinecraftVersion.getCurrent();
-
-        this.craftBukkitVersion = CraftBukkitVersion.matchCraftBukkitVersion(minecraftVersion);
-        if (craftBukkitVersion == CraftBukkitVersion.UNKNOWN) {
-            getLogger().severe("BuildSystem does not support your server version: " + minecraftVersion);
-            getLogger().severe("If you wish to enable the plugin anyway, start your server with the '-DPaper.ignoreWorldDataVersion=true' flag");
-            getLogger().severe("Disabling plugin...");
-            return false;
-        }
-
-        getLogger().info(String.format(Locale.ROOT, "Detected server version: %s (%s)", minecraftVersion, craftBukkitVersion.name()));
-        return true;
-    }
-
     private void initClasses() {
         this.configValues = new ConfigValues(this);
         this.customizableIcons = new CustomizableIcons(this);
 
         this.armorStandManager = new ArmorStandManager();
+        this.customBlocksManager = new CustomBlocksManager(this);
         this.playerService = new PlayerServiceImpl(this);
         this.noClipManager = new NoClipManager(this);
         (this.worldService = new WorldServiceImpl(this)).init();
@@ -258,17 +233,12 @@ public class BuildSystemPlugin extends JavaPlugin {
         this.deleteInventory = new DeleteInventory(this);
         this.designInventory = new DesignInventory(this);
         this.editInventory = new EditInventory(this);
-        this.gameRuleInventory = new GameRuleInventory(this);
+        this.gameRulesInventory = new GameRulesInventory(this);
         this.navigatorInventory = new NavigatorInventory(this);
         this.settingsInventory = new SettingsInventory(this);
         this.setupInventory = new SetupInventory(this);
         this.speedInventory = new SpeedInventory(this);
         this.statusInventory = new StatusInventory(this);
-    }
-
-    private void initVersionedClasses() {
-        this.customBlocks = craftBukkitVersion.initCustomBlocks();
-        this.gameRules = craftBukkitVersion.initGameRules();
     }
 
     private void registerCommands() {
@@ -375,7 +345,6 @@ public class BuildSystemPlugin extends JavaPlugin {
 
         if (pluginManager.getPlugin("AxiomPaper") != null) {
             new WorldManipulateByAxiomListener(this);
-            getLogger().info("Axiom build-world manipulation prevention has been enabled.");
         }
 
         boolean isWorldEdit = pluginManager.getPlugin("WorldEdit") != null
@@ -415,15 +384,9 @@ public class BuildSystemPlugin extends JavaPlugin {
 
                     UpdateChecker.UpdateReason reason = result.getReason();
                     switch (reason) {
-                        case COULD_NOT_CONNECT:
-                        case INVALID_JSON:
-                        case UNAUTHORIZED_QUERY:
-                        case UNKNOWN_ERROR:
-                        case UNSUPPORTED_VERSION_SCHEME:
-                            Bukkit.getConsoleSender().sendMessage(ChatColor.RED +
-                                    "[BuildSystem] Could not check for a new version of BuildSystem. Reason: " + reason
-                            );
-                            break;
+                        case COULD_NOT_CONNECT, INVALID_JSON, UNAUTHORIZED_QUERY, UNKNOWN_ERROR, UNSUPPORTED_VERSION_SCHEME -> Bukkit.getConsoleSender().sendMessage(
+                                ChatColor.RED + "[BuildSystem] Could not check for a new version of BuildSystem. Reason: " + reason
+                        );
                     }
                 }
         );
@@ -456,7 +419,6 @@ public class BuildSystemPlugin extends JavaPlugin {
         configValues.setConfigValues();
 
         if (init) {
-            initVersionedClasses();
             worldService.getWorldStorage().getBuildWorlds().forEach(buildWorld -> buildWorld.getUnloader().manageUnload());
 
             if (configValues.isScoreboard()) {
@@ -467,12 +429,12 @@ public class BuildSystemPlugin extends JavaPlugin {
         }
     }
 
-    public CraftBukkitVersion getCraftBukkitVersion() {
-        return craftBukkitVersion;
-    }
-
     public ArmorStandManager getArmorStandManager() {
         return armorStandManager;
+    }
+
+    public CustomBlocksManager getCustomBlocksManager() {
+        return customBlocksManager;
     }
 
     public PlayerServiceImpl getPlayerService() {
@@ -519,8 +481,8 @@ public class BuildSystemPlugin extends JavaPlugin {
         return editInventory;
     }
 
-    public GameRuleInventory getGameRuleInventory() {
-        return gameRuleInventory;
+    public GameRulesInventory getGameRulesInventory() {
+        return gameRulesInventory;
     }
 
     public NavigatorInventory getNavigatorInventory() {
@@ -545,14 +507,6 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     public ConfigValues getConfigValues() {
         return configValues;
-    }
-
-    public CustomBlocks getCustomBlocks() {
-        return customBlocks;
-    }
-
-    public GameRules getGameRules() {
-        return gameRules;
     }
 
     public CustomizableIcons getCustomizableIcons() {

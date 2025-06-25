@@ -24,37 +24,40 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Represents the different kinds of navigator types that can be opened.
+ * Represents the different categories used to organize and display {@link BuildWorld}s in the navigator menus. Each category corresponds to a distinct filter or access level for
+ * worlds.
  *
  * @since 3.0.0
  */
 public enum NavigatorCategory {
 
     /**
-     * The navigator inventory which contains all {@link BuildWorld}s that are still being built.
+     * Represents the category for public worlds. This navigator inventory contains all {@link BuildWorld}s that are still being built or are generally accessible.
      */
     PUBLIC,
 
     /**
-     * The navigator inventory which contains all archived {@link BuildWorld}s.
+     * Represents the category for archived worlds. This navigator inventory contains {@link BuildWorld}s that have been marked with {@link BuildWorldStatus#ARCHIVE}. These worlds
+     * are typically read-only and no longer actively built upon.
      *
      * @see BuildWorldStatus#ARCHIVE
      */
     ARCHIVE,
 
     /**
-     * The navigator inventory which contains all private {@link BuildWorld}s that can only be modified by the world's creator and all players who have been added as a
-     * {@link Builder}.
+     * Represents the category for private worlds. This navigator inventory contains {@link BuildWorld}s that are set as private. These worlds can typically only be modified by
+     * their creator and explicitly added {@link Builder}s.
      *
      * @see WorldData#privateWorld()
      */
     PRIVATE;
 
     /**
-     * Returns the appropriate {@link NavigatorCategory} based on the provided {@link BuildWorld}.
+     * Determines the appropriate {@link NavigatorCategory} for a given {@link BuildWorld} based on its properties. It checks if the world is private, then if it's archived,
+     * otherwise it defaults to public.
      *
-     * @param buildWorld The {@link BuildWorld} to determine the category for
-     * @return The corresponding {@link NavigatorCategory}
+     * @param buildWorld The {@link BuildWorld} for which to determine the category
+     * @return The corresponding {@link NavigatorCategory} ({@link #PRIVATE}, {@link #ARCHIVE}, or {@link #PUBLIC})
      */
     public static NavigatorCategory of(@NotNull BuildWorld buildWorld) {
         WorldData worldData = buildWorld.getData();

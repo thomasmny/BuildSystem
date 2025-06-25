@@ -21,39 +21,39 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.util.Locale;
 
 /**
+ * Represents the various building statuses a {@link BuildWorld} can have. These statuses indicate the progression and accessibility of a world.
+ *
  * @since 3.0.0
  */
 public enum BuildWorldStatus {
 
     /**
-     * Represent a world that has not been modified.
+     * Represents a {@link BuildWorld} that has not yet been started or modified. This is typically the initial state for newly created worlds.
      */
     NOT_STARTED(1),
 
     /**
-     * Represents a world that is currently being built.
-     * <p>
-     * The status is automatically switched to this when a block is placed/broken.
+     * Represents a {@link BuildWorld} that is currently under construction. This status is automatically assigned when a block is placed or broken in the world.
      */
     IN_PROGRESS(2),
 
     /**
-     * Represents a world that has almost been completed.
+     * Represents a {@link BuildWorld} that is nearing completion.
      */
     ALMOST_FINISHED(3),
 
     /**
-     * Represents a world that has completed its building phase.
+     * Represents a {@link BuildWorld} whose building phase has been completed.
      */
     FINISHED(4),
 
     /**
-     * Represents an old world that has been finished for a while. Blocks cannot be placed/broken in archived worlds.
+     * Represents an older {@link BuildWorld} that has been completed and is now archived. Blocks typically cannot be placed or broken in archived worlds.
      */
     ARCHIVE(5),
 
     /**
-     * Represents a world not shown in the navigator.
+     * Represents a {@link BuildWorld} that is hidden from public view in the navigator.
      */
     HIDDEN(6);
 
@@ -64,18 +64,18 @@ public enum BuildWorldStatus {
     }
 
     /**
-     * Gets the permission needed to change the status.
+     * Gets the permission required to change a world to this status.
      *
-     * @return The permission needed to change the status
+     * @return The permission string (e.g., "buildsystem.setstatus.notstarted")
      */
     public String getPermission() {
         return "buildsystem.setstatus." + name().toLowerCase(Locale.ROOT).replace("_", "");
     }
 
     /**
-     * Gets the stage in which the {@link BuildWorld} is currently in. A higher value means the world is further in development.
+     * Gets the development stage of the {@link BuildWorld}. A higher numerical value indicates a further developed or completed world.
      *
-     * @return the stage in which the world is currently in.
+     * @return The integer representing the stage of development
      */
     public int getStage() {
         return stage;

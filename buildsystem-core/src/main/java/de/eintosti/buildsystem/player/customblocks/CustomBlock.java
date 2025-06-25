@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.version.customblocks;
+package de.eintosti.buildsystem.player.customblocks;
 
-import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 public enum CustomBlock {
+
     BARRIER("blocks_barrier", "3ed1aba73f639f4bc42bd48196c715197be2712c3b962c97ebf9e9ed8efa025"),
     BROWN_MUSHROOM("blocks_brown_mushroom", "fa49eca0369d1e158e539d78149acb1572949b88ba921d9ee694fea4c726b3"),
     BURNING_FURNACE("blocks_burning_furnace", "d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c"),
@@ -37,7 +37,7 @@ public enum CustomBlock {
     FULL_MUSHROOM_STEM("blocks_full_mushroom_stem", "f55fa642d5ebcba2c5246fe6499b1c4f6803c10f14f5299c8e59819d5dc"),
     FULL_OAK_BARCH("blocks_full_oak_barch", "22e4bb979efefd2ddb3f8b1545e59cd360492e12671ec371efc1f88af21ab83"),
     FULL_SPRUCE_BARCH("blocks_full_spruce_barch", "966cbdef8efb914d43a213be66b5396f75e5c1b9124f76f67d7cd32525748"),
-    INVISIBLE_ITEM_FRAME("blocks_invisible_item_frame", "8122a503d7a6f57802b03af7624194a4c4f5077a99ae21dd276ce7db88bc38ae", MinecraftVersion.CAVES_17),
+    INVISIBLE_ITEM_FRAME("blocks_invisible_item_frame", "8122a503d7a6f57802b03af7624194a4c4f5077a99ae21dd276ce7db88bc38ae"),
     MOB_SPAWNER("blocks_mob_spawner", "db6bd9727abb55d5415265789d4f2984781a343c68dcaf57f554a5e9aa1cd"),
     MUSHROOM_BLOCK("blocks_mushroom_block", "3fa39ccf4788d9179a8795e6b72382d49297b39217146eda68ae78384355b13"),
     MUSHROOM_STEM("blocks_mushroom_stem", "84d541275c7f924bcb9eb2dbbf4b866b7649c330a6a013b53d584fd4ddf186ca"),
@@ -48,22 +48,14 @@ public enum CustomBlock {
     SMOOTH_RED_SANDSTONE("blocks_smooth_red_sandstone", "a2da7aa1ae6cc9d6c36c18a460d2398162edc2207fdfc9e28a7bf84d7441b8a2"),
     SMOOTH_SANDSTONE("blocks_smooth_sandstone", "38fffbb0b8fdec6f62b17c451ab214fb86e4e355b116be961a9ae93eb49a43"),
     SMOOTH_STONE("blocks_smooth_stone", "8dd0cd158c2bb6618650e3954b2d29237f5b4c0ddc7d258e17380ab6979f071"),
-    DEBUG_STICK("blocks_debug_stick", "badc048a7ce78f7dad72a07da27d85c0916881e5522eeed1e3daf217a38c1a", MinecraftVersion.AQUATIC_13);
+    DEBUG_STICK("blocks_debug_stick", "badc048a7ce78f7dad72a07da27d85c0916881e5522eeed1e3daf217a38c1a");
 
     private final String key;
     private final String skullUrl;
-    private final MinecraftVersion version;
 
     CustomBlock(String key, String skullUrl) {
         this.key = key;
         this.skullUrl = skullUrl;
-        this.version = MinecraftVersion.BOUNTIFUL_8;
-    }
-
-    CustomBlock(String key, String skullUrl, MinecraftVersion version) {
-        this.key = key;
-        this.skullUrl = skullUrl;
-        this.version = version;
     }
 
     @Nullable
@@ -84,9 +76,5 @@ public enum CustomBlock {
 
     public String getSkullUrl() {
         return skullUrl;
-    }
-
-    public MinecraftVersion getVersion() {
-        return version;
     }
 }

@@ -17,6 +17,6 @@
  */
 
 /**
- * Main events package.
+ * Provides interfaces for events related to the BuildSystem API. These events allow external plugins to hook into and react to various actions within the BuildSystem.
  */
 package de.eintosti.buildsystem.api.event;

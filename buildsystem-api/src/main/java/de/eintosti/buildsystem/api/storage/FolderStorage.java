@@ -65,6 +65,7 @@ public interface FolderStorage extends Storage<Folder> {
      * @param folderName The name folder to create
      * @param category   The category in which the folder should be displayed
      * @param creator    The builder who created the folder
+     * @return The newly created folder
      */
     Folder createFolder(String folderName, NavigatorCategory category, Builder creator);
 
@@ -75,6 +76,7 @@ public interface FolderStorage extends Storage<Folder> {
      * @param category   The category in which the folder should be displayed
      * @param parent     The parent folder, or {@code null} if this is a top-level folder
      * @param creator    The builder who created the folder
+     * @return The newly created folder
      */
     Folder createFolder(String folderName, NavigatorCategory category, @Nullable Folder parent, Builder creator);
 

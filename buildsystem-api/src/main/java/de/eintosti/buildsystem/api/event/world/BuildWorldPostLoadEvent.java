@@ -27,6 +27,11 @@ import org.jetbrains.annotations.ApiStatus.Internal;
  */
 public class BuildWorldPostLoadEvent extends BuildWorldEvent {
 
+    /**
+     * Constructs a new {@link BuildWorldPostLoadEvent}.
+     *
+     * @param buildWorld The {@link BuildWorld} that has been loaded
+     */
     @Internal
     public BuildWorldPostLoadEvent(BuildWorld buildWorld) {
         super(buildWorld);

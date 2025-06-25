@@ -53,8 +53,7 @@ public class SetStatusSubCommand implements SubCommand {
             return;
         }
 
-        plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player).setCachedWorld(buildWorld);
-        plugin.getStatusInventory().openInventory(player);
+        plugin.getStatusInventory().openInventory(player, buildWorld);
     }
 
     @Override

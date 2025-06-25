@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.util;
 
 import com.cryptomorin.xseries.XSound;
-import com.cryptomorin.xseries.messages.Titles;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import java.util.HashMap;
@@ -52,7 +51,7 @@ public class PlayerChatInput implements Listener {
 
         this.taskId = new BukkitRunnable() {
             public void run() {
-                Titles.sendTitle(player, 0, 30, 0, title, subtitle);
+                player.sendTitle(title, subtitle, 0, 30, 0);
             }
         }.runTaskTimer(plugin, 0L, 20L);
 
@@ -88,14 +87,14 @@ public class PlayerChatInput implements Listener {
             current.unregister();
 
             XSound.ENTITY_ITEM_BREAK.play(player);
-            Titles.clearTitle(player);
+            player.resetTitle();
             Messages.sendMessage(player, "input_cancelled");
             return;
         }
 
         current.taskId.cancel();
         Bukkit.getScheduler().runTask(current.plugin, () -> current.runWhenComplete.run(input));
-        Titles.clearTitle(player);
+        player.resetTitle();
         current.unregister();
     }
 

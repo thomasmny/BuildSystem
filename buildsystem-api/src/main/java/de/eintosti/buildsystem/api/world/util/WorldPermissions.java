@@ -17,90 +17,97 @@
  */
 package de.eintosti.buildsystem.api.world.util;
 
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import java.util.function.Supplier;
 import org.bukkit.entity.Player;
 
 /**
+ * Manages and checks permissions related to {@link BuildWorld}s within the BuildSystem. This interface handles permissions for actions such as entering, modifying, and executing
+ * commands in worlds.
+ *
  * @since 3.0.0
  */
 public interface WorldPermissions {
 
     /**
-     * Checks if the given player can enter the world.
+     * Checks if the given {@link Player} is allowed to enter the world associated with these permissions.
      * <p>
-     * A player can enter the world if:
+     * A player can enter if any of the following conditions are met:
      * <ul>
-     *   <li>They have the admin permission, {@link #hasAdminPermission(Player)}</li>
-     *   <li>They can bypass the view permission, {@link #canBypassViewPermission(Player)}</li>
-     *   <li>They are either the creator or a builder</li>
-     *   <li>The world is public, i.e. has its permission set to "{@code -}"</li>
-     *   <li>They have the permission set in the world data</li>
+     *   <li>They have the administrative permission ({@link #hasAdminPermission(Player)}).</li>
+     *   <li>They can bypass the view permission ({@link #canBypassViewPermission(Player)}).</li>
+     *   <li>They are either the world's creator or an assigned builder.</li>
+     *   <li>The world is public (its permission is set to "{@code -}").</li>
+     *   <li>They possess the specific permission defined in the world's data.</li>
      * </ul>
      *
-     * @param player The player to check
+     * @param player The {@link Player} to check
      * @return {@code true} if the player can enter the world, {@code false} otherwise
      */
     boolean canEnter(Player player);
 
     /**
-     * Not every player can always modify the {@link de.eintosti.buildsystem.api.world.BuildWorld} they are in.
+     * Determines if the given {@link Player} can modify the {@link de.eintosti.buildsystem.api.world.BuildWorld} they are currently in.
      * <p>
-     * Reasons an interaction could be cancelled:
+     * Modifications might be disallowed due to:
      * <ul>
-     *     <li>The world has its {@link BuildWorldStatus} set to archive;</li>
-     *     <li>The world has a setting enabled which disallows certain events;</li>
-     *     <li>The world only allows {@link de.eintosti.buildsystem.api.world.builder.Builder}s to build and the player is not such a builder or the creator of the world.</li>
+     *     <li>The world having its {@link BuildWorldStatus} set to {@link BuildWorldStatus#ARCHIVE}.</li>
+     *     <li>A world setting is enabled that specifically prohibits certain events (e.g., block placement/breaking).</li>
+     *     <li>The world is configured to only allow designated {@link de.eintosti.buildsystem.api.world.builder.Builder}s, and the player is neither a builder nor the world's creator.</li>
      * </ul>
-     * <p>
-     * However, a player can override these reasons if:
+     * However, a player can bypass these restrictions if:
      * <ul>
-     *     <li>They have the admin permission, {@link #hasAdminPermission(Player)}</li>
-     *     <li>They can bypass building restrictions, {@link #canBypassBuildRestriction(Player)}</li>
+     *     <li>They have the administrative permission ({@link #hasAdminPermission(Player)}).</li>
+     *     <li>They are in a "build mode" that allows them to bypass building restrictions ({@link #canBypassBuildRestriction(Player)}).</li>
      * </ul>
      *
-     * @param player          The player to check
-     * @param additionalCheck An additional check if the player can modify the world. Will not apply to bypass permissions.
-     * @return {@code true} if the player can modify the world, {@code false} otherwise
+     * @param player          The {@link Player} attempting to modify the world
+     * @param additionalCheck An optional {@link Supplier} that provides an additional boolean check for modification permission. This check does not apply if bypass permissions
+     *                        are active.
+     * @return {@code true} if the player is allowed to modify the world, {@code false} otherwise
      */
     boolean canModify(Player player, Supplier<Boolean> additionalCheck);
 
     /**
-     * Gets whether the given player is permitted to run a command in the given world.
+     * Checks if the given {@link Player} is permitted to execute a specific command within the context of the current world.
      * <p>
+     * Permissions are handled as follows:
      * <ul>
-     *   <li>The creator of a world is allowed to run the command if they have the given permission, optionally
-     *   ending with {@code .self}.</li>
-     *   <li>All other players will need the permission {@code <permission>.other} to run the command.</li>
+     *   <li>The world's creator can run the command if they have the base permission, optionally ending with {@code .self}.</li>
+     *   <li>All other players require the permission {@code <permission>.other} to execute the command.</li>
      * </ul>
      *
-     * @param player     The player trying to run the command
-     * @param permission The permission needed to run the command
-     * @return {@code true} if the player is allowed to run the command, {@code false} otherwise
+     * @param player     The {@link Player} attempting to run the command
+     * @param permission The base permission string required for the command (e.g., "buildsystem.command.mycommand")
+     * @return {@code true} if the player is authorized to run the command, {@code false} otherwise
      */
     boolean canPerformCommand(Player player, String permission);
 
     /**
-     * Checks if the given player has the admin permission, {@code buildsystem.admin}.
+     * Checks if the given {@link Player} possesses the administrative permission, typically "{@code buildsystem.admin}". Players with this permission can bypass many
+     * world-specific restrictions.
      *
-     * @param player The player to check
-     * @return {@code true} if the player has the admin permission, {@code false} otherwise
+     * @param player The {@link Player} to check
+     * @return {@code true} if the player has the administrative permission, {@code false} otherwise
      */
     boolean hasAdminPermission(Player player);
 
     /**
-     * Checks if the player can bypass the permission needed for viewing the world in the navigator.
+     * Checks if the player can bypass the permission required to view a private world in the navigator. This is separate from the `canEnter` permission and relates specifically to
+     * listing the world.
      *
-     * @param player The player to check
-     * @return {@code true} if the player can bypass the permission, {@code false} otherwise
+     * @param player The {@link Player} to check
+     * @return {@code true} if the player can bypass the view permission, {@code false} otherwise
      */
     boolean canBypassViewPermission(Player player);
 
     /**
-     * Checks if the player can bypass the build restriction by being in "build mode".
+     * Checks if the given {@link Player} can bypass standard building restrictions due to being in a special "build mode" or having a bypass permission. This allows players to
+     * modify worlds even if general building is disabled.
      *
-     * @param player The player to check
-     * @return {@code true} if the player can bypass the build restriction, {@code false} otherwise
+     * @param player The {@link Player} to check
+     * @return {@code true} if the player can bypass build restrictions, {@code false} otherwise
      */
     boolean canBypassBuildRestriction(Player player);
 } 

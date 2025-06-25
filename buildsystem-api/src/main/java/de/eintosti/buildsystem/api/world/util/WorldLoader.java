@@ -17,14 +17,25 @@
  */
 package de.eintosti.buildsystem.api.world.util;
 
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import org.bukkit.entity.Player;
 
 /**
+ * Provides utilities for loading and managing {@link BuildWorld}s. This interface handles the process of making a world accessible on the server.
+ *
  * @since 3.0.0
  */
 public interface WorldLoader {
 
+    /**
+     * Loads the world associated with this loader for a specific player. This typically involves teleporting the player to the world after it's loaded.
+     *
+     * @param player The {@link Player} for whom the world should be loaded and who will be teleported into it
+     */
     void loadForPlayer(Player player);
 
+    /**
+     * Loads the world associated with this loader without teleporting any specific player. This is useful for background world loading or server-side operations.
+     */
     void load();
 } 

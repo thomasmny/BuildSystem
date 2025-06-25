@@ -21,7 +21,7 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.version.util.DirectionUtil;
+import de.eintosti.buildsystem.util.DirectionUtil;
 import java.util.List;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -61,22 +61,22 @@ public class BlockPhysicsListener implements Listener {
         }
 
         switch (XMaterial.matchXMaterial(block.getType())) {
-            case REDSTONE_BLOCK:
+            case REDSTONE_BLOCK -> {
                 for (BlockFace blockFace : DirectionUtil.BLOCK_SIDES) {
                     if (isCustomRedstoneLamp(block.getRelative(blockFace))) {
                         event.setCancelled(false);
                         return;
                     }
                 }
-                break;
-            case REDSTONE_LAMP:
+            }
+            case REDSTONE_LAMP -> {
                 for (BlockFace blockFace : DirectionUtil.BLOCK_SIDES) {
                     if (block.getRelative(blockFace).getType() == XMaterial.REDSTONE_BLOCK.get()) {
                         event.setCancelled(false);
                         return;
                     }
                 }
-                break;
+            }
         }
 
         event.setCancelled(true);

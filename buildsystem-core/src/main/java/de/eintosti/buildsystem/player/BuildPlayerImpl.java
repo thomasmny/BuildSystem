@@ -61,17 +61,6 @@ public class BuildPlayerImpl implements BuildPlayer {
 
     @Override
     @Nullable
-    public BuildWorld getCachedWorld() {
-        return cachedWorld;
-    }
-
-    @Override
-    public void setCachedWorld(BuildWorld buildWorld) {
-        this.cachedWorld = buildWorld;
-    }
-
-    @Override
-    @Nullable
     public LogoutLocation getLogoutLocation() {
         return logoutLocation;
     }

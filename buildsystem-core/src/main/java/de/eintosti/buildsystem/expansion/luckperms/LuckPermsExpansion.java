@@ -48,6 +48,7 @@ public class LuckPermsExpansion {
     public void registerAll() {
         register("build-mode", () -> new BuildModeCalculator(plugin));
         register("role", () -> new RoleCalculator(plugin));
+        plugin.getLogger().info("LuckPerms expansion initialized");
     }
 
     private void register(String option, Supplier<ContextCalculator<Player>> calculatorSupplier) {

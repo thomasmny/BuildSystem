@@ -17,60 +17,65 @@
  */
 package de.eintosti.buildsystem.api.world.data;
 
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import org.bukkit.World.Environment;
+import org.bukkit.generator.ChunkGenerator;
 
 /**
+ * Represents the different types of {@link BuildWorld}s that can be created or managed by the BuildSystem plugin. Each type specifies unique characteristics for world generation
+ * and behavior.
+ *
  * @since 3.0.0
  */
 public enum BuildWorldType {
 
     /**
-     * The equivalent to a default Minecraft world with {@link Environment#NORMAL}.
+     * A standard world type, equivalent to a default Minecraft overworld with {@link Environment#NORMAL}.
      */
     NORMAL(),
 
     /**
-     * The equivalent to a super-flat Minecraft world.
+     * A super-flat world, ideal for creative building without terrain obstacles.
      */
     FLAT(),
 
     /**
-     * The equivalent to a default Minecraft world with {@link Environment#NETHER}.
+     * A world type representing the Nether dimension, with {@link Environment#NETHER}.
      */
     NETHER(),
 
     /**
-     * The equivalent to a default Minecraft world with {@link Environment#THE_END}.
+     * A world type representing the End dimension, with {@link Environment#THE_END}.
      */
     END(),
 
     /**
-     * A completely empty world with no blocks at all, except the block a player spawns on.
+     * An empty world, containing no blocks except for a single platform at spawn.
      */
     VOID(),
 
     /**
-     * A world which is an identical copy of a provided template.
+     * A world created as an identical copy of an existing template world.
      */
     TEMPLATE(),
 
     /**
-     * A world which by default cannot be modified by any player except for the creator.
+     * A world that, by default, can only be modified by its creator.
      */
     PRIVATE(),
 
     /**
-     * A world which was not created by BuildSystem but was imported, so it can be used by the plugin.
+     * A world that was not originally created by the BuildSystem plugin but has been imported for management.
      */
     IMPORTED(),
 
     /**
-     * A world with a custom chunk generator
+     * A world generated using a custom {@link ChunkGenerator}.
      */
     CUSTOM(),
 
     /**
-     * A world with an unknown type.
+     * A world whose type could not be determined or is not recognized by the BuildSystem.
      */
     UNKNOWN()
 }
