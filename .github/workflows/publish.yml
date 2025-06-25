@@ -2,7 +2,7 @@ name: Publish to Sonatype
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, dev/v3 ]
 
 jobs:
   publish:
