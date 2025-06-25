@@ -243,20 +243,13 @@ public final class BuildWorldImpl implements BuildWorld {
 
     @Override
     public void cycleDifficulty() {
-        switch (worldData.difficulty().get()) {
-            case PEACEFUL:
-                worldData.difficulty().set(Difficulty.EASY);
-                break;
-            case EASY:
-                worldData.difficulty().set(Difficulty.NORMAL);
-                break;
-            case NORMAL:
-                worldData.difficulty().set(Difficulty.HARD);
-                break;
-            case HARD:
-                worldData.difficulty().set(Difficulty.PEACEFUL);
-                break;
-        }
+        Difficulty newDifficulty = switch (worldData.difficulty().get()) {
+            case PEACEFUL -> Difficulty.EASY;
+            case EASY -> Difficulty.NORMAL;
+            case NORMAL -> Difficulty.HARD;
+            case HARD -> Difficulty.PEACEFUL;
+        };
+        worldData.difficulty().set(newDifficulty);
     }
 
     @Override

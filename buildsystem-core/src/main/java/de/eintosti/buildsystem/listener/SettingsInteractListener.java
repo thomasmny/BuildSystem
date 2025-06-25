@@ -29,12 +29,11 @@ import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.player.customblocks.CustomBlocksManager;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.util.DirectionUtil;
 import de.eintosti.buildsystem.util.MaterialUtils;
-import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
-import de.eintosti.buildsystem.version.util.DirectionUtil;
-import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -68,7 +67,7 @@ public class SettingsInteractListener implements Listener {
     ), XMaterial.class);
 
     private final ConfigValues configValues;
-    private final CustomBlocks customBlocks;
+    private final CustomBlocksManager customBlocksManager;
 
     private final SettingsManager settingsManager;
     private final WorldStorageImpl worldStorage;
@@ -77,7 +76,7 @@ public class SettingsInteractListener implements Listener {
 
     public SettingsInteractListener(BuildSystemPlugin plugin) {
         this.configValues = plugin.getConfigValues();
-        this.customBlocks = plugin.getCustomBlocks();
+        this.customBlocksManager = plugin.getCustomBlocksManager();
 
         this.settingsManager = plugin.getSettingsManager();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
@@ -98,8 +97,7 @@ public class SettingsInteractListener implements Listener {
             return;
         }
 
-        boolean duelHanded = MinecraftVersion.getCurrent().isEqualOrHigherThan(MinecraftVersion.COMBAT_9);
-        if (duelHanded && event.getHand() != EquipmentSlot.valueOf("HAND")) {
+        if (event.getHand() != EquipmentSlot.HAND) {
             return;
         }
 
@@ -120,14 +118,8 @@ public class SettingsInteractListener implements Listener {
 
         event.setCancelled(true);
         switch (material) {
-            case IRON_TRAPDOOR:
-                customBlocks.toggleIronTrapdoor(event);
-                break;
-            case IRON_DOOR:
-                customBlocks.toggleIronDoor(event);
-                break;
-            default:
-                break;
+            case IRON_TRAPDOOR -> customBlocksManager.toggleIronTrapdoor(event);
+            case IRON_DOOR -> customBlocksManager.toggleIronDoor(event);
         }
     }
 
@@ -142,7 +134,7 @@ public class SettingsInteractListener implements Listener {
 
         Settings settings = settingsManager.getSettings(player);
         if (settings.isSlabBreaking() && action == Action.LEFT_CLICK_BLOCK) {
-            customBlocks.modifySlab(event);
+            customBlocksManager.modifySlab(event);
         }
     }
 
@@ -173,7 +165,7 @@ public class SettingsInteractListener implements Listener {
         }
 
         event.setCancelled(true);
-        customBlocks.setPlant(event);
+        customBlocksManager.setPlant(event);
     }
 
     @EventHandler
@@ -216,37 +208,29 @@ public class SettingsInteractListener implements Listener {
         boolean isHangingSign = XTag.HANGING_SIGNS.isTagged(xMaterial);
 
         switch (blockFace) {
-            case UP:
+            case UP -> {
                 if (isHangingSign) {
                     return;
                 }
-                if (MinecraftVersion.getCurrent().isLowerThan(MinecraftVersion.AQUATIC_13)) {
-                    material = Material.getMaterial("SIGN_POST") != null ? Material.valueOf("SIGN_POST") : material;
-                }
                 adjacent.setType(material);
-                customBlocks.rotateBlock(adjacent, player, DirectionUtil.getPlayerDirection(player).getOppositeFace());
-                break;
-            case DOWN:
+                customBlocksManager.rotateBlock(adjacent, DirectionUtil.getPlayerDirection(player).getOppositeFace());
+            }
+            case DOWN -> {
                 if (!isHangingSign) {
                     return;
                 }
                 adjacent.setType(material);
-                customBlocks.rotateBlock(adjacent, player, getHangingSignDirection(event));
-                break;
-            case NORTH:
-            case EAST:
-            case SOUTH:
-            case WEST:
+                customBlocksManager.rotateBlock(adjacent, getHangingSignDirection(event));
+            }
+            case NORTH, EAST, SOUTH, WEST -> {
                 String woodType = xMaterial.name()
                         .replace("_HANGING", "") // Replace hanging if present
                         .replace("_SIGN", ""); // Get wood type
                 String block = isHangingSign ? "_WALL_HANGING_SIGN" : "_WALL_SIGN";
                 BlockFace facing = isHangingSign ? getHangingSignDirection(event) : blockFace;
                 XMaterial.matchXMaterial(woodType + block).ifPresent(value -> adjacent.setType(value.get()));
-                customBlocks.rotateBlock(adjacent, player, facing);
-                break;
-            default:
-                break;
+                customBlocksManager.rotateBlock(adjacent, facing);
+            }
         }
     }
 
@@ -292,18 +276,9 @@ public class SettingsInteractListener implements Listener {
         event.setUseItemInHand(Event.Result.DENY);
         event.setUseInteractedBlock(Event.Result.DENY);
 
-        boolean preFlattening = MinecraftVersion.getCurrent().isLowerThan(MinecraftVersion.AQUATIC_13);
-        if (preFlattening && XTag.isItem(xMaterial)) {
-            material = Material.valueOf(material.toString().replace("_ITEM", ""));
-        }
-
         if (XTag.SIGNS.isTagged(xMaterial) && event.getBlockFace() != BlockFace.UP) {
-            if (preFlattening) {
-                material = Material.valueOf("WALL_SIGN");
-            } else {
-                String[] splitMaterial = material.toString().split("_");
-                material = Material.valueOf(splitMaterial[0] + "_WALL_SIGN");
-            }
+            String[] splitMaterial = material.toString().split("_");
+            material = Material.valueOf(splitMaterial[0] + "_WALL_SIGN");
         }
 
         if (!material.isBlock()) {
@@ -314,9 +289,14 @@ public class SettingsInteractListener implements Listener {
         adjacent.setType(material);
         XBlock.setColor(adjacent, DyeColor.getByWoolData((byte) itemStack.getDurability()));
 
-        customBlocks.rotateBlock(adjacent, player, DirectionUtil.getBlockDirection(player, false));
+        customBlocksManager.rotateBlock(adjacent, DirectionUtil.getBlockDirection(player, false));
 
-        BlockPlaceEvent blockPlaceEvent = new BlockPlaceEvent(adjacent, adjacent.getState(), block, itemStack, player, true);
+        EquipmentSlot hand = event.getHand();
+        if (hand == null) {
+            hand = EquipmentSlot.HAND;
+        }
+
+        BlockPlaceEvent blockPlaceEvent = new BlockPlaceEvent(adjacent, adjacent.getState(), block, itemStack, player, true, hand);
         Bukkit.getServer().getPluginManager().callEvent(blockPlaceEvent);
     }
 

@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.util;
 
-import com.cryptomorin.xseries.messages.Titles;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.event.world.BuildWorldLoadEvent;
@@ -52,11 +51,7 @@ public class WorldLoaderImpl implements WorldLoader {
         }
 
         player.closeInventory();
-        Titles.sendTitle(player, 5, 70, 20, " ",
-                Messages.getString("loading_world", player,
-                        Map.entry("%world%", buildWorld.getName())
-                )
-        );
+        player.sendTitle(" ", Messages.getString("loading_world", player, Map.entry("%world%", buildWorld.getName())), 5, 70, 20);
 
         load();
     }

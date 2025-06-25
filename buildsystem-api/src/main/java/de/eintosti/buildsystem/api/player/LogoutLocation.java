@@ -28,7 +28,17 @@ import org.jetbrains.annotations.ApiStatus.Internal;
 @Internal
 public interface LogoutLocation {
 
+    /**
+     * Gets the name of the world the player logged out from.
+     *
+     * @return The world name
+     */
     String worldName();
 
+    /**
+     * Gets the exact {@link Location} the player logged out from.
+     *
+     * @return The logout location
+     */
     Location location();
 }

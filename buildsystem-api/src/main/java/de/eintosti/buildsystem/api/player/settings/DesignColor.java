@@ -23,21 +23,85 @@ package de.eintosti.buildsystem.api.player.settings;
  * @since 3.0.0
  */
 public enum DesignColor {
+
+    /**
+     * The color red.
+     */
     RED,
+
+    /**
+     * The color orange.
+     */
     ORANGE,
+
+    /**
+     * The color yellow.
+     */
     YELLOW,
+
+    /**
+     * The color pink.
+     */
     PINK,
+
+    /**
+     * The color magenta.
+     */
     MAGENTA,
+
+    /**
+     * The color purple.
+     */
     PURPLE,
+
+    /**
+     * The color brown.
+     */
     BROWN,
+
+    /**
+     * The color lime.
+     */
     LIME,
+
+    /**
+     * The color green.
+     */
     GREEN,
+
+    /**
+     * The color blue.
+     */
     BLUE,
+
+    /**
+     * The color cyan.
+     */
     CYAN,
+
+    /**
+     * The color light blue.
+     */
     LIGHT_BLUE,
+
+    /**
+     * The color white.
+     */
     WHITE,
+
+    /**
+     * The color gray.
+     */
     GRAY,
+
+    /**
+     * The color light gray.
+     */
     LIGHT_GRAY,
+
+    /**
+     * The color black.
+     */
     BLACK;
 
     /**

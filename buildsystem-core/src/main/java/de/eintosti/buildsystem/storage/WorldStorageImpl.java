@@ -57,7 +57,10 @@ public abstract class WorldStorageImpl implements WorldStorage {
 
     @Override
     @Nullable
-    public BuildWorld getBuildWorld(String name) {
+    public BuildWorld getBuildWorld(@Nullable String name) {
+        if (name == null || name.isEmpty()) {
+            return null;
+        }
         return buildWorlds.get(name);
     }
 

@@ -15,41 +15,49 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.version.v1_14_R1;
+package de.eintosti.buildsystem.player.customblocks;
 
-import de.eintosti.buildsystem.version.customblocks.CustomBlock;
-import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
-import de.eintosti.buildsystem.version.util.DirectionUtil;
+import de.eintosti.buildsystem.util.DirectionUtil;
 import java.util.Arrays;
 import org.bukkit.Axis;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Furnace;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.Lightable;
 import org.bukkit.block.data.MultipleFacing;
 import org.bukkit.block.data.Openable;
 import org.bukkit.block.data.Orientable;
+import org.bukkit.block.data.type.HangingSign;
 import org.bukkit.block.data.type.Sign;
 import org.bukkit.block.data.type.Slab;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.RayTraceResult;
 
-public class CustomBlocks_1_14_R1 implements CustomBlocks {
+public class CustomBlocksManager implements Listener {
 
     private final JavaPlugin plugin;
+    private final NamespacedKey invisibleFrameKey;
 
-    public CustomBlocks_1_14_R1(JavaPlugin plugin) {
+    public CustomBlocksManager(JavaPlugin plugin) {
         this.plugin = plugin;
+        this.invisibleFrameKey = new NamespacedKey(plugin, "invisible-itemframe");
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    @Override
     public void setBlock(BlockPlaceEvent event, String key) {
         CustomBlock customBlock = CustomBlock.getCustomBlock(key);
         if (customBlock == null) {
@@ -130,28 +138,28 @@ public class CustomBlocks_1_14_R1 implements CustomBlocks {
                     Furnace furnace = (Furnace) block.getState();
                     furnace.setBurnTime(Short.MAX_VALUE);
                     furnace.update();
-                    rotateBlock(block, player, DirectionUtil.getBlockDirection(player, false));
+                    rotateBlock(block, DirectionUtil.getBlockDirection(player, false));
                     break;
                 case PISTON_HEAD:
                     block.setType(Material.PISTON_HEAD);
-                    rotateBlock(block, player, DirectionUtil.getBlockDirection(player, true));
+                    rotateBlock(block, DirectionUtil.getBlockDirection(player, true));
                     break;
                 case COMMAND_BLOCK:
                     block.setType(Material.COMMAND_BLOCK);
-                    rotateBlock(block, player, DirectionUtil.getBlockDirection(player, true));
+                    rotateBlock(block, DirectionUtil.getBlockDirection(player, true));
                     break;
                 case BARRIER:
                     block.setType(Material.BARRIER);
                     break;
                 case INVISIBLE_ITEM_FRAME:
-                    // Invalid server version
-                    break;
+                    // Handled below
+                    return;
                 case MOB_SPAWNER:
                     block.setType(Material.SPAWNER);
                     break;
                 case NETHER_PORTAL:
                     block.setType(Material.NETHER_PORTAL);
-                    rotateBlock(block, player, DirectionUtil.getBlockDirection(player, false));
+                    rotateBlock(block, DirectionUtil.getBlockDirection(player, false));
                     break;
                 case END_PORTAL:
                     block.setType(Material.END_PORTAL);
@@ -167,7 +175,25 @@ public class CustomBlocks_1_14_R1 implements CustomBlocks {
         });
     }
 
-    @Override
+    @EventHandler
+    public void onInvisibleItemFramePlacement(HangingPlaceEvent event) {
+        if (!(event.getEntity() instanceof ItemFrame itemFrame)) {
+            return;
+        }
+
+        ItemStack itemStack = event.getItemStack();
+        if (itemStack == null) {
+            return;
+        }
+
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta == null || !itemMeta.getPersistentDataContainer().has(this.invisibleFrameKey, PersistentDataType.BYTE)) {
+            return;
+        }
+
+        itemFrame.setVisible(false);
+    }
+
     public void setPlant(PlayerInteractEvent event) {
         Block block = event.getClickedBlock();
         if (block == null) {
@@ -188,8 +214,7 @@ public class CustomBlocks_1_14_R1 implements CustomBlocks {
                 }
                 adjacent.setType(material);
                 MultipleFacing multipleFacing = (MultipleFacing) adjacent.getBlockData();
-                Arrays.stream(DirectionUtil.BLOCK_SIDES)
-                        .forEach(blockFace -> multipleFacing.setFace(blockFace, blockFace == toPlace));
+                Arrays.stream(DirectionUtil.BLOCK_SIDES).forEach(blockFace -> multipleFacing.setFace(blockFace, blockFace == toPlace));
                 adjacent.setBlockData(multipleFacing);
                 break;
             default:
@@ -198,14 +223,12 @@ public class CustomBlocks_1_14_R1 implements CustomBlocks {
         }
     }
 
-    @Override
     public void modifySlab(PlayerInteractEvent event) {
         Block block = event.getClickedBlock();
-        if (block == null || !(block.getBlockData() instanceof Slab)) {
+        if (block == null || !(block.getBlockData() instanceof Slab slab)) {
             return;
         }
 
-        Slab slab = (Slab) block.getBlockData();
         if (slab.getType() != Slab.Type.DOUBLE) {
             return;
         }
@@ -222,7 +245,7 @@ public class CustomBlocks_1_14_R1 implements CustomBlocks {
         block.setBlockData(slab);
     }
 
-    private boolean isTopHalf(Player player) {
+    public boolean isTopHalf(Player player) {
         RayTraceResult result = player.rayTraceBlocks(6);
         if (result == null) {
             return false;
@@ -230,13 +253,11 @@ public class CustomBlocks_1_14_R1 implements CustomBlocks {
         return Math.abs(result.getHitPosition().getY() % 1) < 0.5;
     }
 
-    @Override
     public void toggleIronTrapdoor(PlayerInteractEvent event) {
         event.setCancelled(true);
         open(event.getClickedBlock());
     }
 
-    @Override
     public void toggleIronDoor(PlayerInteractEvent event) {
         event.setCancelled(true);
         open(event.getClickedBlock());
@@ -252,36 +273,31 @@ public class CustomBlocks_1_14_R1 implements CustomBlocks {
         block.setBlockData(openable);
     }
 
-    @Override
-    public void rotateBlock(Block block, Player player, BlockFace direction) {
-        BlockData blockData = block.getBlockData();
-
-        if (blockData instanceof Directional) {
-            Directional directional = (Directional) blockData;
-            directional.setFacing(direction);
-            block.setBlockData(directional);
-        } else if (blockData instanceof Orientable) {
-            Orientable orientable = (Orientable) blockData;
-            Axis axis;
-            switch (direction) {
-                case UP:
-                case DOWN:
-                    axis = Axis.Y;
-                    break;
-                case EAST:
-                case WEST:
-                    axis = Axis.X;
-                    break;
-                default:
-                    axis = Axis.Z;
-                    break;
+    public void rotateBlock(Block block, BlockFace direction) {
+        switch (block.getBlockData()) {
+            case Directional directional -> {
+                directional.setFacing(direction);
+                block.setBlockData(directional);
             }
-            orientable.setAxis(axis);
-            block.setBlockData(orientable);
-        } else if (blockData instanceof Sign) {
-            Sign sign = (Sign) blockData;
-            sign.setRotation(direction);
-            block.setBlockData(sign);
+            case Orientable orientable -> {
+                Axis axis = switch (direction) {
+                    case UP, DOWN -> Axis.Y;
+                    case EAST, WEST -> Axis.X;
+                    default -> Axis.Z;
+                };
+                orientable.setAxis(axis);
+                block.setBlockData(orientable);
+            }
+            case Sign sign -> {
+                sign.setRotation(direction);
+                block.setBlockData(sign);
+            }
+            case HangingSign hangingSign -> {
+                hangingSign.setRotation(direction);
+                block.setBlockData(hangingSign);
+            }
+            default -> {
+            }
         }
     }
 }

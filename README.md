@@ -89,14 +89,6 @@ building can start!
 
 ```xml
 
-<repository>
-    <id>eintosti-releases</id>
-    <url>https://repo.eintosti.de/releases</url>
-</repository>
-```
-
-```xml
-
 <dependency>
     <groupId>de.eintosti</groupId>
     <artifactId>buildsystem-api</artifactId>
@@ -108,9 +100,7 @@ building can start!
 
 ```kotlin
 repositories {
-    maven {
-        url = uri("https://repo.eintosti.de/releases")
-    }
+    mavenCentral()
 }
 
 dependencies {

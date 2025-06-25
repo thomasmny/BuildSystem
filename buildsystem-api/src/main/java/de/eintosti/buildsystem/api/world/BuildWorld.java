@@ -29,10 +29,14 @@ import de.eintosti.buildsystem.api.world.util.WorldTeleporter;
 import de.eintosti.buildsystem.api.world.util.WorldUnloader;
 import java.util.UUID;
 import org.bukkit.Difficulty;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.jetbrains.annotations.Nullable;
 
 /**
+ * Represents a world managed by the BuildSystem plugin, extending the {@link Displayable} interface. This interface provides comprehensive access to world-specific properties,
+ * data, and utility methods.
+ *
  * @since 3.0.0
  */
 public interface BuildWorld extends Displayable {
@@ -61,6 +65,11 @@ public interface BuildWorld extends Displayable {
      */
     void setName(String name);
 
+    /**
+     * Gets the {@link Profileable} representation of the build world which is applied when {@link WorldData#material()} is set to {@link Material#PLAYER_HEAD}.
+     *
+     * @return The {@link Profileable} representation of the build world
+     */
     Profileable asProfilable();
 
     /**
@@ -86,63 +95,63 @@ public interface BuildWorld extends Displayable {
     CustomGenerator getCustomGenerator();
 
     /**
-     * Cycles to the next {@link Difficulty}.
+     * Cycles to the next {@link Difficulty} for this world.
      */
     void cycleDifficulty();
 
     /**
-     * Gets a list of all builders who can modify the world.
+     * Gets the {@link Builders} object, which manages all players allowed to modify this world.
      *
-     * @return the list of all builders
+     * @return The {@link Builders} instance for this world
      */
     Builders getBuilders();
 
     /**
-     * Gets the time in the {@link World} linked to the build world.
+     * Gets the time of day in the {@link World} linked to this build world as a formatted string.
      *
-     * @return The world time
+     * @return The world time as a string (e.g., "Day", "Night")
      */
     String getWorldTime();
 
     /**
-     * Gets whether the world is currently loaded, allowing a player to enter it.
+     * Gets whether the world is currently loaded into server memory, allowing players to enter it.
      *
      * @return {@code true} if the world is loaded, otherwise {@code false}
      */
     boolean isLoaded();
 
     /**
-     * Sets whether the world is currently loaded, allowing a player to enter it.
+     * Sets whether the world is currently loaded into server memory.
      *
-     * @param loaded {@code true} if the world is loaded, otherwise {@code false}
+     * @param loaded {@code true} if the world is to be loaded, {@code false} if it should be unloaded
      */
     void setLoaded(boolean loaded);
 
     /**
-     * Gets the {@link WorldLoader} used to load the world.
+     * Gets the {@link WorldLoader} utility used to manage loading operations for this world.
      *
-     * @return The {@link WorldLoader} used to load the world
+     * @return The {@link WorldLoader} instance
      */
     WorldLoader getLoader();
 
     /**
-     * Gets the {@link WorldUnloader} used to unload the world.
+     * Gets the {@link WorldUnloader} utility used to manage unloading operations for this world.
      *
-     * @return The {@link WorldUnloader} used to unload the world
+     * @return The {@link WorldUnloader} instance
      */
     WorldUnloader getUnloader();
 
     /**
-     * Gets the {@link WorldTeleporter} used to teleport players to the world.
+     * Gets the {@link WorldTeleporter} utility used to manage teleportation of players to this world.
      *
-     * @return The {@link WorldTeleporter} used to teleport players to the world
+     * @return The {@link WorldTeleporter} instance
      */
     WorldTeleporter getTeleporter();
 
     /**
-     * Gets the {@link WorldPermissions} associated with the world.
+     * Gets the {@link WorldPermissions} associated with this world, which define access and modification rules.
      *
-     * @return The {@link WorldPermissions} for the world
+     * @return The {@link WorldPermissions} instance for this world
      */
     WorldPermissions getPermissions();
 }

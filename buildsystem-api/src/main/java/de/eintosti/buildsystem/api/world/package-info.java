@@ -17,6 +17,7 @@
  */
 
 /**
- * {@link de.eintosti.buildsystem.api.world.BuildWorld} functionality.
+ * Provides interfaces and classes related to {@link de.eintosti.buildsystem.api.world.BuildWorld} management within the BuildSystem API. This includes core world definitions,
+ * builders, creation, data, display, and utility functionalities.
  */
 package de.eintosti.buildsystem.api.world;

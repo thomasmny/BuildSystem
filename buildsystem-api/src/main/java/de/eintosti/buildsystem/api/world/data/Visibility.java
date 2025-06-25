@@ -17,26 +17,38 @@
  */
 package de.eintosti.buildsystem.api.world.data;
 
+import de.eintosti.buildsystem.api.world.BuildWorld;
+
 /**
+ * Defines the visibility settings for a {@link BuildWorld} within the BuildSystem. These settings determine how worlds are displayed and accessed in the world navigator.
+ *
  * @since 3.0.0
  */
 public enum Visibility {
 
     /**
-     * Public worlds are displayed in the world navigator.
+     * Indicates that a world is publicly accessible and displayed in the main world navigator.
      */
     PUBLIC,
 
     /**
-     * Private worlds are displayed in an extra menu - the private world navigator.
+     * Indicates that a world is private, typically only visible and accessible to its creator and designated builders. Private worlds are usually displayed in a separate,
+     * dedicated menu.
      */
     PRIVATE,
 
     /**
-     * Used for when the visibility of a world can be ignored.
+     * A special state indicating that the visibility setting of a world should be disregarded. This is useful for internal operations or specific contexts where visibility rules
+     * do not apply.
      */
     IGNORE;
 
+    /**
+     * Returns the appropriate {@link Visibility} enum based on whether a world is private.
+     *
+     * @param isPrivateWorld A boolean indicating if the world is private
+     * @return {@link #PRIVATE} if {@link WorldData#privateWorld()} is true, otherwise {@link #PUBLIC}
+     */
     public static Visibility matchVisibility(boolean isPrivateWorld) {
         return isPrivateWorld ? PRIVATE : PUBLIC;
     }

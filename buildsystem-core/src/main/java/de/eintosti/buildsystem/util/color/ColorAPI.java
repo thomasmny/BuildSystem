@@ -22,7 +22,6 @@ import de.eintosti.buildsystem.util.color.patterns.GradientPattern;
 import de.eintosti.buildsystem.util.color.patterns.HexPattern;
 import de.eintosti.buildsystem.util.color.patterns.RainbowPattern;
 import de.eintosti.buildsystem.util.color.patterns.SolidPattern;
-import de.eintosti.buildsystem.version.util.MinecraftVersion;
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,12 +32,6 @@ import net.md_5.bungee.api.ChatColor;
 import org.jetbrains.annotations.NotNull;
 
 public final class ColorAPI {
-
-    /**
-     * Clients are able to display RGB colors after Minecraft 1.16
-     */
-    private static final boolean SUPPORTS_RGB = MinecraftVersion.getCurrent()
-            .isEqualOrHigherThan(MinecraftVersion.NETHER_16);
 
     private static final Map<Color, ChatColor> COLORS = ImmutableMap.<Color, ChatColor>builder()
             .put(new Color(0), ChatColor.getByChar('0'))
@@ -128,9 +121,7 @@ public final class ColorAPI {
      */
     @NotNull
     public static ChatColor getColor(@NotNull String string) {
-        return SUPPORTS_RGB
-                ? ChatColor.of(new Color(Integer.parseInt(string, 16)))
-                : getClosestColor(new Color(Integer.parseInt(string, 16)));
+        return ChatColor.of(new Color(Integer.parseInt(string, 16)));
     }
 
     @NotNull
@@ -187,11 +178,7 @@ public final class ColorAPI {
 
         for (int i = 0; i < step; i++) {
             Color color = Color.getHSBColor((float) (colorStep * i), saturation, saturation);
-            if (SUPPORTS_RGB) {
-                colors[i] = ChatColor.of(color);
-            } else {
-                colors[i] = getClosestColor(color);
-            }
+            colors[i] = ChatColor.of(color);
         }
 
         return colors;
@@ -223,7 +210,7 @@ public final class ColorAPI {
                     start.getGreen() + ((stepG * i) * direction[1]),
                     start.getBlue() + ((stepB * i) * direction[2])
             );
-            colors[i] = SUPPORTS_RGB ? ChatColor.of(color) : getClosestColor(color);
+            colors[i] = ChatColor.of(color);
         }
 
         return colors;

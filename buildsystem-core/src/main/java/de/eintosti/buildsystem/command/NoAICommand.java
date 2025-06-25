@@ -22,7 +22,6 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.util.EntityAIManager;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.Map;
 import org.bukkit.Bukkit;
@@ -30,8 +29,6 @@ import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -61,15 +58,9 @@ public class NoAICommand implements CommandExecutor {
         }
 
         switch (args.length) {
-            case 0:
-                toggleAI(player, player.getWorld());
-                break;
-            case 1:
-                toggleAI(player, Bukkit.getWorld(args[0]));
-                break;
-            default:
-                Messages.sendMessage(player, "noai_usage");
-                break;
+            case 0 -> toggleAI(player, player.getWorld());
+            case 1 -> toggleAI(player, Bukkit.getWorld(args[0]));
+            default -> Messages.sendMessage(player, "noai_usage");
         }
 
         return true;
@@ -96,11 +87,7 @@ public class NoAICommand implements CommandExecutor {
             Messages.sendMessage(player, "noai_deactivated", Map.entry("%world%", buildWorld.getName()));
         }
 
-        boolean mobAI = worldData.mobAi().get();
-        for (Entity entity : bukkitWorld.getEntities()) {
-            if (entity instanceof LivingEntity livingEntity) {
-                EntityAIManager.setAIEnabled(livingEntity, mobAI);
-            }
-        }
+        boolean hasAi = worldData.mobAi().get();
+        bukkitWorld.getLivingEntities().forEach(entity -> entity.setAI(hasAi));
     }
 }
