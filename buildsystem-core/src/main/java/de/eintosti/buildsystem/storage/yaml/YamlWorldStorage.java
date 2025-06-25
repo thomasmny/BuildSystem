@@ -284,7 +284,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
     }
 
     /**
-     * Gets the {@link ChunkGenerator} for the generation of a {@link BuildWorldImpl} with {@link BuildWorldType#CUSTOM}
+     * Gets the {@link ChunkGenerator} for the generation of a {@link BuildWorld} with {@link BuildWorldType#CUSTOM}
      *
      * @param generator   The plugin's (generator) name
      * @param generatorId Unique ID, if any, that was specified to indicate which generator was requested

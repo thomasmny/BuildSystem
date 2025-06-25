@@ -237,7 +237,7 @@ public class WorldServiceImpl implements WorldService {
     }
 
     /**
-     * Unimport an existing {@link BuildWorldImpl}. In comparison to {@link #deleteWorld(Player, BuildWorld)}, unimporting a world does not delete the world's directory.
+     * Unimport an existing {@link BuildWorld}. In comparison to {@link #deleteWorld(Player, BuildWorld)}, unimporting a world does not delete the world's directory.
      *
      * @param player     The player unloading the world
      * @param buildWorld The build world object
@@ -251,7 +251,7 @@ public class WorldServiceImpl implements WorldService {
     }
 
     /**
-     * Delete an existing {@link BuildWorldImpl}. In comparison to {@link #unimportWorld(Player, BuildWorld, boolean)}, deleting a world deletes the world's directory.
+     * Delete an existing {@link BuildWorld}. In comparison to {@link #unimportWorld(Player, BuildWorld, boolean)}, deleting a world deletes the world's directory.
      *
      * @param player     The player who issued the deletion
      * @param buildWorld The world to be deleted
@@ -284,7 +284,7 @@ public class WorldServiceImpl implements WorldService {
     }
 
     /**
-     * Change the name of a {@link BuildWorldImpl} to a given name.
+     * Change the name of a {@link BuildWorld} to a given name.
      *
      * @param player     The player who issued the world renaming
      * @param buildWorld The build world object

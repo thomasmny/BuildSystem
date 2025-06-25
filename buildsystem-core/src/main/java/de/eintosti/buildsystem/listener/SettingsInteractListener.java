@@ -34,7 +34,6 @@ import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.DirectionUtil;
 import de.eintosti.buildsystem.util.inventory.MaterialUtils;
-import de.eintosti.buildsystem.world.BuildWorldImpl;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -301,11 +300,11 @@ public class SettingsInteractListener implements Listener {
     }
 
     /**
-     * Not every player can always interact with the {@link BuildWorldImpl} they are in.
+     * Not every player can always interact with the {@link BuildWorld} they are in.
      * <p>
      * Reasons an interaction could be canceled:
      * <ul>
-     *   <li>The world has its {@link BuildWorldStatus} set to archived</li>
+     *   <li>The world has its {@link BuildWorldStatus} set to archive</li>
      *   <li>The world has a setting enabled which disallows certain events</li>
      *   <li>The world only allows {@link Builder}s to build and the player is not such a builder</li>
      * </ul>

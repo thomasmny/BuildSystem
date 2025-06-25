@@ -115,7 +115,7 @@ public final class BuildWorldImpl implements BuildWorld {
     }
 
     /**
-     * Gets the Bukkit {@link World} associated with this {@link BuildWorldImpl}.
+     * Gets the Bukkit {@link World} associated with this {@link BuildWorld}.
      *
      * @return The Bukkit world, or {@code null} if not loaded
      */
