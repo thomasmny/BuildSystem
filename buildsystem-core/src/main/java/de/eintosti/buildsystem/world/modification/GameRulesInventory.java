@@ -24,9 +24,9 @@ import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.util.PaginatedInventory;
-import de.eintosti.buildsystem.world.util.BuildWorldHolder;
+import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
+import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import de.eintosti.buildsystem.util.inventory.PaginatedInventory;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -259,7 +259,7 @@ public class GameRulesInventory extends PaginatedInventory implements Listener {
     private static class GameRulesInventoryHolder extends BuildWorldHolder {
 
         public GameRulesInventoryHolder(BuildWorld buildWorld, Player player) {
-            super(buildWorld, Messages.getString("worldeditor_gamerules_title", player), 45);
+            super(buildWorld, 45, Messages.getString("worldeditor_gamerules_title", player));
         }
     }
 }

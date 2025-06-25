@@ -15,29 +15,36 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.world.util;
+package de.eintosti.buildsystem.util.inventory;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import org.bukkit.Bukkit;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.jetbrains.annotations.NotNull;
 
-public class BuildWorldHolder implements InventoryHolder {
+/**
+ * Represents an inventory holder specifically for a {@link BuildWorld}, extending {@link BuildSystemHolder}. This allows inventories to be associated with a particular build
+ * world.
+ */
+public class BuildWorldHolder extends BuildSystemHolder {
 
-    private final Inventory inventory;
     private final BuildWorld buildWorld;
 
-    public BuildWorldHolder(@NotNull BuildWorld buildWorld, @NotNull String title, int size) {
-        this.inventory = Bukkit.createInventory(this, size, title);
+    /**
+     * Initializes a new {@link BuildWorldHolder} with the specified {@link BuildWorld}, size, and title.
+     *
+     * @param buildWorld The {@link BuildWorld} associated with this inventory.
+     * @param size       The size of the inventory.
+     * @param title      The title of the inventory.
+     */
+    public BuildWorldHolder(@NotNull BuildWorld buildWorld, int size, @NotNull String title) {
+        super(size, title);
         this.buildWorld = buildWorld;
     }
 
-    @Override
-    public @NotNull Inventory getInventory() {
-        return this.inventory;
-    }
-
+    /**
+     * Returns the {@link BuildWorld} associated with this inventory holder.
+     *
+     * @return The associated {@link BuildWorld} instance.
+     */
     public @NotNull BuildWorld getBuildWorld() {
         return buildWorld;
     }

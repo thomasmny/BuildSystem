@@ -24,10 +24,11 @@ import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete.WorldsArgument;
-import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.util.PaginatedInventory;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.StringCleaner;
+import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
+import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import de.eintosti.buildsystem.util.inventory.PaginatedInventory;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.CreateInventory.Page;
 import java.util.ArrayList;
@@ -134,7 +135,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
      * @return A new inventory instance.
      */
     protected @NotNull Inventory createBaseInventoryPage(String inventoryTitle) {
-        Inventory inventory = Bukkit.createInventory(player, 54, inventoryTitle);
+        Inventory inventory = new DisplayablesInventoryHolder(inventoryTitle).getInventory();
         InventoryUtils.fillWithGlass(inventory, player);
 
         addWorldSortItem(inventory);
@@ -317,15 +318,17 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
 
     @EventHandler
     public void onInventoryClick(@NotNull InventoryClickEvent event) {
-        if (!InventoryUtils.isValidClick(event, this.inventoryTitle)) {
+        if (!(event.getInventory().getHolder() instanceof DisplayablesInventoryHolder)) {
             return;
         }
 
-        ItemStack clickedItem = event.getCurrentItem();
-        if (clickedItem == null) {
+        ItemStack itemStack = event.getCurrentItem();
+        if (itemStack == null) {
             return;
         }
 
+        event.setCancelled(true);
+        Player player = (Player) event.getWhoClicked();
         Settings settings = settingsManager.getSettings(player);
         WorldDisplay worldDisplay = settings.getWorldDisplay();
 
@@ -340,7 +343,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
                 handleFilterClick(event, worldDisplay);
                 return;
             case 48: // Create world
-                if (clickedItem.getType() == XMaterial.PLAYER_HEAD.get()) {
+                if (itemStack.getType() == XMaterial.PLAYER_HEAD.get()) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     beginWorldCreation();
                     return;
@@ -348,7 +351,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
                 break;
             case 49: // Create folder (archive)
             case 50: // Create folder (not archive)
-                if (clickedItem.getType() == XMaterial.PLAYER_HEAD.get()) {
+                if (itemStack.getType() == XMaterial.PLAYER_HEAD.get()) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     player.closeInventory(); // Close to allow chat input
                     new PlayerChatInput(plugin, player, "enter_folder_name", input -> {
@@ -387,8 +390,8 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
         }
 
         if (event.getSlot() >= FIRST_WORD_SLOT && event.getSlot() <= LAST_WORLD_SLOT) {
-            handleDisplayableItemClick(event, clickedItem);
-        } else if (event.getSlot() >= 45 && event.getSlot() <= 53 && clickedItem.getType() != XMaterial.PLAYER_HEAD.get()) {
+            handleDisplayableItemClick(event, itemStack);
+        } else if (event.getSlot() >= 45 && event.getSlot() <= 53 && itemStack.getType() != XMaterial.PLAYER_HEAD.get()) {
             XSound.BLOCK_CHEST_OPEN.play(player);
             returnToPreviousInventory();
         }
@@ -566,5 +569,12 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
     private void performNonEditClick(@NotNull BuildWorld buildWorld) {
         playerService.closeNavigator(player);
         buildWorld.getTeleporter().teleport(player);
+    }
+
+    private static class DisplayablesInventoryHolder extends BuildSystemHolder {
+
+        public DisplayablesInventoryHolder(String inventoryTitle) {
+            super(54, inventoryTitle);
+        }
     }
 }
