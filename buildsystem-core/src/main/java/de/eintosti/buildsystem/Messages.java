@@ -230,7 +230,6 @@ public class Messages {
         addSpacer(sb, "");
         addSpacer(sb, "# /worlds");
         setMessage(sb, "worlds_addbuilder_usage", "%prefix% &7Usage: &b/worlds addBuilder [player]");
-        setMessage(sb, "worlds_addbuilder_error", "%prefix% &cError: Please try again!");
         setMessage(sb, "worlds_addbuilder_unknown_world", "%prefix% &cWorld must be imported: /worlds import <world>");
         setMessage(sb, "worlds_addbuilder_player_not_found", "%prefix% &cThat player was not found.");
         setMessage(sb, "worlds_addbuilder_already_creator", "%prefix% &cYou are already the creator.");
@@ -255,7 +254,6 @@ public class Messages {
         setMessage(sb, "worlds_delete_usage", "%prefix% &7Usage: &b/worlds delete <world>");
         setMessage(sb, "worlds_delete_unknown_world", "%prefix% &cUnknown world.");
         setMessage(sb, "worlds_delete_unknown_directory", "%prefix% &cError while deleting world: Directory not found!");
-        setMessage(sb, "worlds_delete_error", "%prefix% &cError while deleting world: Please try again!");
         setMessage(sb, "worlds_delete_canceled", "%prefix% &7The deletion of &b%world% &7was canceled.");
         setMessage(sb, "worlds_delete_started", "%prefix% &7The deletion of &b%world% &7has started...");
         setMessage(sb, "worlds_delete_finished", "%prefix% &7The world was &asuccessfully &7deleted.");
@@ -263,7 +261,6 @@ public class Messages {
         addSpacer(sb, "");
         setMessage(sb, "worlds_edit_usage", "%prefix% &7Usage: &b/worlds edit <world>");
         setMessage(sb, "worlds_edit_unknown_world", "%prefix% &cUnknown world.");
-        setMessage(sb, "worlds_edit_error", "%prefix% &cError: Please try again.");
         addSpacer(sb, "");
         setMessage(sb, "worlds_folder_usage", "%prefix% &7Usage: &b/worlds folder <folder> <add|remove|delete|setPermission|setProject|setItem> [<world>]");
         setMessage(sb, "worlds_folder_unknown_folder", "%prefix% &cUnknown folder.");
@@ -391,7 +388,6 @@ public class Messages {
         addSpacer(sb, "");
         setMessage(sb, "worlds_setstatus_usage", "%prefix% &7Usage: &b/worlds setStatus <world>");
         setMessage(sb, "worlds_setstatus_unknown_world", "%prefix% &cUnknown world.");
-        setMessage(sb, "worlds_setstatus_error", "%prefix% &cPlease try again.");
         setMessage(sb, "worlds_setstatus_set", "%prefix% &b%world%&7's status was was changed to: %status%&7.");
         addSpacer(sb, "");
         setMessage(sb, "worlds_setpermission_usage", "%prefix% &7Usage: &b/worlds setPermission <world>");

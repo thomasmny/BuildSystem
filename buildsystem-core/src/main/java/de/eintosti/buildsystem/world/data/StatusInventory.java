@@ -20,15 +20,14 @@ package de.eintosti.buildsystem.world.data;
 import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
-import com.cryptomorin.xseries.inventory.XInventoryView;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.InventoryUtils;
+import de.eintosti.buildsystem.world.util.BuildWorldHolder;
 import java.util.Map;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -42,8 +41,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class StatusInventory implements Listener {
 
-    private static final int WORLD_NAME_ITEM_SLOT = 0;
-
     private final BuildSystemPlugin plugin;
     private final PlayerServiceImpl playerService;
 
@@ -54,12 +51,8 @@ public class StatusInventory implements Listener {
     }
 
     private Inventory getInventory(Player player, BuildWorld buildWorld) {
-        String title = Messages.getString("status_title", player, Map.entry("%world%", formatWorldName(buildWorld.getName())));
-        Inventory inventory = Bukkit.createInventory(null, 27, title);
+        Inventory inventory = new StatusInventoryHolder(buildWorld, player).getInventory();
         fillGuiWithGlass(player, inventory);
-
-        // Store the world name in the first slot
-        InventoryUtils.storeWorldName(inventory.getItem(WORLD_NAME_ITEM_SLOT), buildWorld);
 
         addStatusItem(player, inventory, 10, BuildWorldStatus.NOT_STARTED, buildWorld);
         addStatusItem(player, inventory, 11, BuildWorldStatus.IN_PROGRESS, buildWorld);
@@ -69,13 +62,6 @@ public class StatusInventory implements Listener {
         addStatusItem(player, inventory, 16, BuildWorldStatus.HIDDEN, buildWorld);
 
         return inventory;
-    }
-
-    private String formatWorldName(String worldName) {
-        if (worldName.length() > 17) {
-            worldName = worldName.substring(0, 14) + "...";
-        }
-        return worldName;
     }
 
     public void openInventory(Player player, BuildWorld buildWorld) {
@@ -124,25 +110,12 @@ public class StatusInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        Player player = (Player) event.getWhoClicked();
-
-        String selectedWorldName = InventoryUtils.extractWorldName(event.getInventory().getItem(WORLD_NAME_ITEM_SLOT));
-        String statusTitle = Messages.getString("status_title", player, Map.entry("%world%", formatWorldName(selectedWorldName)));
-        if (!XInventoryView.of(event.getView()).getTitle().equals(statusTitle)) {
-            return;
-        }
-
-        event.setCancelled(true);
-
-        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(selectedWorldName);
-        if (buildWorld == null) {
-            player.closeInventory();
-            Messages.sendMessage(player, "worlds_setstatus_error");
+        if (!(event.getInventory().getHolder() instanceof StatusInventoryHolder holder)) {
             return;
         }
 
         ItemStack itemStack = event.getCurrentItem();
-        if (itemStack == null) {
+        if (itemStack == null || itemStack.getType() == Material.AIR || !itemStack.hasItemMeta()) {
             return;
         }
 
@@ -150,6 +123,10 @@ public class StatusInventory implements Listener {
         if (itemType == Material.AIR || !itemStack.hasItemMeta()) {
             return;
         }
+
+        event.setCancelled(true);
+        Player player = (Player) event.getWhoClicked();
+        BuildWorld buildWorld = holder.getBuildWorld();
 
         int slot = event.getSlot();
         if (slot < 10 || slot > 14 && slot != 16) {
@@ -191,5 +168,20 @@ public class StatusInventory implements Listener {
             case 16 -> BuildWorldStatus.HIDDEN;
             default -> throw new IllegalArgumentException("Slot " + slot + " does not correspond to status");
         };
+    }
+
+    private static class StatusInventoryHolder extends BuildWorldHolder {
+
+        public StatusInventoryHolder(BuildWorld buildWorld, Player player) {
+            super(buildWorld, Messages.getString("status_title", player, Map.entry("%world%", formatWorldName(buildWorld))), 27);
+        }
+
+        private static String formatWorldName(BuildWorld buildWorld) {
+            String worldName = buildWorld.getName();
+            if (worldName.length() > 17) {
+                worldName = worldName.substring(0, 14) + "...";
+            }
+            return worldName;
+        }
     }
 }

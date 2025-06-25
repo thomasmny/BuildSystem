@@ -122,15 +122,13 @@ public class CreateInventory extends PaginatedInventory implements Listener {
     private void addTemplates(Player player, Page page) {
         File[] templateFiles = new File(plugin.getDataFolder() + File.separator + "templates").listFiles(new TemplateFilter());
 
-        int columnTemplate = 29, maxColumnTemplate = 33;
-        int fileLength = templateFiles != null ? templateFiles.length : 0;
-        this.numTemplates = (fileLength / MAX_TEMPLATES) + (fileLength % MAX_TEMPLATES == 0 ? 0 : 1);
-        int numInventories = numTemplates % MAX_TEMPLATES == 0 ? Math.max(numTemplates, 1) : numTemplates + 1;
+        this.numTemplates = templateFiles != null ? templateFiles.length : 0;
+        int numPages = calculateNumPages(numTemplates, MAX_TEMPLATES);
 
         int index = 0;
         Inventory inventory = getInventory(player, page);
-        inventories = new Inventory[numInventories];
-        inventories[index] = inventory;
+        this.inventories = new Inventory[numPages];
+        this.inventories[index] = inventory;
 
         if (numTemplates == 0) {
             ItemStack barrier = InventoryUtils.createItem(XMaterial.BARRIER, Messages.getString("create_no_templates", player));
@@ -144,6 +142,7 @@ public class CreateInventory extends PaginatedInventory implements Listener {
             return;
         }
 
+        int columnTemplate = 29, maxColumnTemplate = 33;
         for (File templateFile : templateFiles) {
             inventory.setItem(columnTemplate++,
                     InventoryUtils.createItem(XMaterial.FILLED_MAP, Messages.getString("create_template", player,

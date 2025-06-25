@@ -33,6 +33,7 @@ import de.eintosti.buildsystem.config.ConfigValues;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.InventoryUtils;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
+import de.eintosti.buildsystem.world.util.BuildWorldHolder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ import java.util.stream.IntStream;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Difficulty;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -77,7 +79,7 @@ public class EditInventory implements Listener {
     }
 
     public Inventory getInventory(Player player, BuildWorld buildWorld) {
-        Inventory inventory = Bukkit.createInventory(null, 54, Messages.getString("worldeditor_title", player));
+        Inventory inventory = new EditInventoryHolder(buildWorld, player).getInventory();
         WorldData worldData = buildWorld.getData();
 
         fillGuiWithGlass(player, inventory);
@@ -146,9 +148,7 @@ public class EditInventory implements Listener {
         if (material == XMaterial.PLAYER_HEAD) {
             InventoryUtils.addWorldItem(inventory, 4, buildWorld, displayName, new ArrayList<>());
         } else {
-            ItemStack itemStack = InventoryUtils.createItem(material, displayName);
-            InventoryUtils.storeWorldName(itemStack, buildWorld);
-            inventory.setItem(4, itemStack);
+            inventory.setItem(4, InventoryUtils.createItem(material, displayName));
         }
     }
 
@@ -282,23 +282,18 @@ public class EditInventory implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        Player player = (Player) event.getWhoClicked();
-        if (!InventoryUtils.isValidClick(event, Messages.getString("worldeditor_title", player))) {
+        if (!(event.getInventory().getHolder() instanceof EditInventoryHolder holder)) {
             return;
         }
 
         ItemStack itemStack = event.getCurrentItem();
-        if (itemStack == null) {
+        if (itemStack == null || itemStack.getType() == Material.AIR || !itemStack.hasItemMeta()) {
             return;
         }
 
-        String worldName = InventoryUtils.extractWorldName(event.getInventory().getItem(4));
-        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
-        if (buildWorld == null) {
-            player.closeInventory();
-            Messages.sendMessage(player, "worlds_edit_error");
-            return;
-        }
+        event.setCancelled(true);
+        Player player = (Player) event.getWhoClicked();
+        BuildWorld buildWorld = holder.getBuildWorld();
 
         WorldData worldData = buildWorld.getData();
         switch (event.getSlot()) {
@@ -457,5 +452,12 @@ public class EditInventory implements Listener {
 
     public enum Time {
         SUNRISE, NOON, NIGHT, UNKNOWN
+    }
+
+    private static class EditInventoryHolder extends BuildWorldHolder {
+
+        public EditInventoryHolder(BuildWorld buildWorld, Player player) {
+            super(buildWorld, Messages.getString("worldeditor_title", player), 54);
+        }
     }
 }

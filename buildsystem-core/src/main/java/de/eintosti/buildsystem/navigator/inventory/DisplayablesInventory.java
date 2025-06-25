@@ -153,7 +153,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory implement
         this.cachedDisplayables = collectDisplayables();
         int numDisplayableObjects = this.cachedDisplayables.size();
 
-        int numPages = numDisplayableObjects == 0 ? 1 : (int) Math.ceil((double) numDisplayableObjects / MAX_WORLDS_PER_PAGE);
+        int numPages = calculateNumPages(numDisplayableObjects, MAX_WORLDS_PER_PAGE);
         this.generatedInventories = new Inventory[numPages];
 
         for (int pageIndex = 0; pageIndex < numPages; pageIndex++) {
