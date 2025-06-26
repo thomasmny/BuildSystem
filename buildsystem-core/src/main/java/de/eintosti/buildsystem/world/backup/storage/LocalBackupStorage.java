@@ -75,7 +75,7 @@ public class LocalBackupStorage implements BackupStorage {
     @Override
     public void storeBackup(BackupProfile owner, BuildWorld buildWorld, CompletableFuture<Backup> future) {
         long currentTime = System.currentTimeMillis();
-        File storage = new File(getBackupDirectory(buildWorld).toFile(), getBackupName(buildWorld, currentTime));
+        File storage = new File(getBackupDirectory(buildWorld).toFile(), getBackupName(currentTime));
         File zip = FileUtils.zipWorld(storage, buildWorld);
         if (zip == null) {
             future.completeExceptionally(new RuntimeException("Failed to complete the backup for " + buildWorld.getName()));

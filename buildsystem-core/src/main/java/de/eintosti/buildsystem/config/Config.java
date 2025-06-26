@@ -469,7 +469,7 @@ public class Config {
         // World - Backup
         Backup.enabled = CONFIG.getBoolean("world.backup.enabled", true);
         Backup.backupInterval = CONFIG.getInt("world.backup.backup-interval", 900);
-        Backup.maxBackupsPerWorld = CONFIG.getInt("world.backup.max-backups-per-world", 5);
+        Backup.maxBackupsPerWorld = Math.min(CONFIG.getInt("world.backup.max-backups-per-world", 5), 9);
         Backup.storage = createBackupStorage(PLUGIN);
 
         // Folder

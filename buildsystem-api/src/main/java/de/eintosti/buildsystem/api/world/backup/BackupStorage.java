@@ -32,7 +32,7 @@ public interface BackupStorage {
 
     void deleteBackup(Backup backup);
 
-    default String getBackupName(BuildWorld buildWorld, long timestamp) {
-        return buildWorld.getUniqueId() + "-" + timestamp + ".zip";
+    default String getBackupName(long timestamp) {
+        return timestamp + ".zip";
     }
 }

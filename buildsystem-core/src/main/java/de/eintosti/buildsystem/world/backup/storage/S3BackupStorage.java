@@ -29,19 +29,16 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
+import org.bukkit.Bukkit;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -62,7 +59,7 @@ public class S3BackupStorage implements BackupStorage {
     public S3BackupStorage(BuildSystemPlugin plugin, String accessKey, String secretKey, String region, String bucket, String pathPrefix) {
         this.plugin = plugin;
         this.bucket = bucket;
-        this.pathPrefix = pathPrefix;
+        this.pathPrefix = pathPrefix.endsWith("/") ? pathPrefix : pathPrefix + "/";
         this.s3Client = S3Client.builder()
                 .region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
@@ -74,7 +71,7 @@ public class S3BackupStorage implements BackupStorage {
     }
 
     private String getBackupDirectory(BuildWorld buildWorld) {
-        return this.pathPrefix + "/" + buildWorld.getUniqueId() + "/";
+        return this.pathPrefix + buildWorld.getUniqueId() + "/";
     }
 
     private Path getTmpDownloadDirectory() {
@@ -94,10 +91,10 @@ public class S3BackupStorage implements BackupStorage {
             backups.addAll(
                     response.contents().stream()
                             .filter(object -> isValidS3Key(object.key()))
-                            .map(object -> new BackupImpl(owner, extractCreationTime(object.key()).toEpochMilli(), object.key()))
+                            .map(object -> new BackupImpl(owner, object.lastModified().toEpochMilli(), object.key()))
                             .toList()
             );
-        } catch (S3Exception e) {
+        } catch (S3Exception | SdkClientException e) {
             plugin.getLogger().log(Level.SEVERE, "Error while listing backups", e);
             return Collections.emptyList();
         }
@@ -117,29 +114,19 @@ public class S3BackupStorage implements BackupStorage {
         }
 
         long currentTime = System.currentTimeMillis();
-        String key = getBackupDirectory(buildWorld) + getBackupName(buildWorld, currentTime);
+        String key = getBackupDirectory(buildWorld) + getBackupName(currentTime);
 
-        this.s3Client.putObject(
-                PutObjectRequest.builder()
-                        .bucket(this.bucket)
-                        .key(key)
-                        .build(),
-                RequestBody.fromBytes(zipBytes)
-        );
-
-        future.complete(new BackupImpl(owner, currentTime, key));
-    }
-
-    private Instant extractCreationTime(String key) {
-        // TODO: Is this the correct format for the key?
-        // Example: key = "backups/worlds/world1/2024-06-25T18-30-00.zip"
-        String filename = Paths.get(key).getFileName().toString().replace(".zip", "");
         try {
-            return LocalDateTime.parse(filename, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH-mm-ss"))
-                    .atZone(ZoneOffset.UTC)
-                    .toInstant();
-        } catch (DateTimeParseException e) {
-            return Instant.EPOCH;
+            this.s3Client.putObject(
+                    PutObjectRequest.builder()
+                            .bucket(this.bucket)
+                            .key(key)
+                            .build(),
+                    RequestBody.fromBytes(zipBytes)
+            );
+            future.complete(new BackupImpl(owner, currentTime, key));
+        } catch (S3Exception | SdkClientException e) {
+            future.completeExceptionally(new RuntimeException("Failed to upload backup for " + buildWorld.getName(), e));
         }
     }
 
@@ -147,22 +134,33 @@ public class S3BackupStorage implements BackupStorage {
     public File downloadBackup(Backup backup) {
         Path targetPath = getTmpDownloadDirectory().resolve(Paths.get(backup.key()).getFileName().toString());
 
-        this.s3Client.getObject(
-                GetObjectRequest.builder()
-                        .bucket(this.bucket)
-                        .key(backup.key())
-                        .build(),
-                targetPath
-        );
+        try {
+            this.s3Client.getObject(
+                    GetObjectRequest.builder()
+                            .bucket(this.bucket)
+                            .key(backup.key())
+                            .build(),
+                    targetPath
+            );
+        } catch (S3Exception | SdkClientException e) {
+            plugin.getLogger().log(Level.SEVERE, "Error while downloading backup: " + backup.key(), e);
+            return null;
+        }
 
         return targetPath.toFile();
     }
 
     @Override
     public void deleteBackup(Backup backup) {
-        this.s3Client.deleteObject(DeleteObjectRequest.builder()
-                .bucket(this.bucket)
-                .key(backup.key())
-                .build());
+        try {
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                this.s3Client.deleteObject(DeleteObjectRequest.builder()
+                        .bucket(this.bucket)
+                        .key(backup.key())
+                        .build());
+            });
+        } catch (S3Exception | SdkClientException e) {
+            plugin.getLogger().log(Level.SEVERE, "Unable to delete backup " + backup.key(), e);
+        }
     }
 }
