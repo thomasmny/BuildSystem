@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.config;
+package de.eintosti.buildsystem.storage.yaml;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import org.bukkit.Location;
 
-public class SpawnConfig extends ConfigurationFile {
+public class YamlSpawnStorage extends AbstractYamlStorage {
 
-    public SpawnConfig(BuildSystemPlugin plugin) {
+    public YamlSpawnStorage(BuildSystemPlugin plugin) {
         super(plugin, "spawn.yml");
     }
 

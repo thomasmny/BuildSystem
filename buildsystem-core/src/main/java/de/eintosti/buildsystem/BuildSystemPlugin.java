@@ -45,6 +45,7 @@ import de.eintosti.buildsystem.config.Config.Settings.Archive;
 import de.eintosti.buildsystem.config.Config.Settings.Builder;
 import de.eintosti.buildsystem.config.Config.World;
 import de.eintosti.buildsystem.config.Config.World.Unload;
+import de.eintosti.buildsystem.config.migration.ConfigMigrationManager;
 import de.eintosti.buildsystem.expansion.luckperms.LuckPermsExpansion;
 import de.eintosti.buildsystem.expansion.placeholderapi.PlaceholderApiExpansion;
 import de.eintosti.buildsystem.listener.AsyncPlayerChatListener;
@@ -131,9 +132,11 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     @Override
     public void onLoad() {
+        new ConfigMigrationManager(this).migrate();
         this.getConfig().options().copyDefaults(true);
         this.saveConfig();
-        Config.load(this);
+        Config.load();
+
         Messages.createMessageFile();
         createTemplateFolder();
     }
@@ -381,7 +384,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         }
 
         reloadConfig();
-        Config.load(this);
+        Config.load();
 
         if (init) {
             worldService.getWorldStorage().getBuildWorlds().forEach(buildWorld -> buildWorld.getUnloader().manageUnload());

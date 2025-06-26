@@ -32,11 +32,13 @@ import de.eintosti.buildsystem.config.Config.World.Default.Settings.BuildersEnab
 import de.eintosti.buildsystem.config.Config.World.Default.Time;
 import de.eintosti.buildsystem.config.Config.World.Limits;
 import de.eintosti.buildsystem.config.Config.World.Unload;
+import de.eintosti.buildsystem.config.migration.ConfigMigrationManager;
 import de.eintosti.buildsystem.world.backup.storage.LocalBackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.S3BackupStorage;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -55,6 +57,39 @@ import org.bukkit.plugin.java.JavaPlugin;
  * Manages the plugin's configuration, loading and providing access to various settings.
  */
 public class Config {
+
+    private static final BuildSystemPlugin PLUGIN = JavaPlugin.getPlugin(BuildSystemPlugin.class);
+    private static final FileConfiguration CONFIG = PLUGIN.getConfig();
+
+    /**
+     * Gets the plugin's configuration.
+     *
+     * @return The plugin's configuration
+     */
+    public static FileConfiguration getConfig() {
+        return CONFIG;
+    }
+
+    /**
+     * Gets the current version of the plugin's configuration.
+     *
+     * @return The version number of the configuration
+     * @see ConfigMigrationManager#LATEST_VERSION
+     */
+    public static int getVersion() {
+        return CONFIG.getInt("version", 1);
+    }
+
+    /**
+     * Sets the version of the plugin's configuration.
+     *
+     * @param version The version number to set
+     */
+    public static void setVersion(int version) {
+        CONFIG.set("version", version);
+        CONFIG.setComments("version", List.of("Internal, do not change manually!"));
+        PLUGIN.saveConfig();
+    }
 
     /**
      * Stores messages related configurations.
@@ -363,45 +398,41 @@ public class Config {
 
     /**
      * Loads the configuration values from the plugin's config.yml into the static fields.
-     *
-     * @param plugin The plugin instance.
      */
-    public static void load(final BuildSystemPlugin plugin) {
-        FileConfiguration config = plugin.getConfig();
-
+    public static void load() {
         // Messages
-        Messages.spawnTeleportMessage = config.getBoolean("messages.spawn-teleport-message", false);
-        Messages.joinQuitMessages = config.getBoolean("messages.join-quit-messages", true);
-        Messages.dateFormat = config.getString("messages.date-format", "dd/MM/yyyy");
+        Messages.spawnTeleportMessage = CONFIG.getBoolean("messages.spawn-teleport-message", false);
+        Messages.joinQuitMessages = CONFIG.getBoolean("messages.join-quit-messages", true);
+        Messages.dateFormat = CONFIG.getString("messages.date-format", "dd/MM/yyyy");
 
         // Settings
-        Settings.updateChecker = config.getBoolean("settings.update-checker", true);
-        Settings.scoreboard = config.getBoolean("settings.scoreboard", true);
+        Settings.updateChecker = CONFIG.getBoolean("settings.update-checker", true);
+        Settings.scoreboard = CONFIG.getBoolean("settings.scoreboard", true);
         // Settings - Archive
-        Archive.vanish = config.getBoolean("settings.archive.vanish", true);
-        Archive.changeGamemode = config.getBoolean("settings.archive.change-gamemode", true);
-        Archive.worldGameMode = parseGameMode(config.getString("settings.archive.world-game-mode"));
+        Archive.vanish = CONFIG.getBoolean("settings.archive.vanish", true);
+        Archive.changeGamemode = CONFIG.getBoolean("settings.archive.change-gamemode", true);
+        Archive.worldGameMode = parseGameMode(CONFIG.getString("settings.archive.world-gamemode"));
         // Settings - Save from death
-        SaveFromDeath.enabled = config.getBoolean("settings.save-from-death.enable", true);
-        SaveFromDeath.teleportToMapSpawn = config.getBoolean("settings.save-from-death.teleport-to-map-spawn", true);
+        SaveFromDeath.enabled = CONFIG.getBoolean("settings.save-from-death.enable", true);
+        SaveFromDeath.teleportToMapSpawn = CONFIG.getBoolean("settings.save-from-death.teleport-to-map-spawn", true);
         // Settings - Build mode
-        BuildMode.dropItems = config.getBoolean("settings.build-mode.drop-items", true);
-        BuildMode.moveItems = config.getBoolean("settings.build-mode.move-items", true);
+        BuildMode.dropItems = CONFIG.getBoolean("settings.build-mode.drop-items", true);
+        BuildMode.moveItems = CONFIG.getBoolean("settings.build-mode.move-items", true);
         // Settings - Builder
-        Builder.blockWorldEditNonBuilder = config.getBoolean("settings.builder.block-worldedit-non-builder", true);
-        Builder.worldEditWand = parseWorldEditWand(plugin);
+        Builder.blockWorldEditNonBuilder = CONFIG.getBoolean("settings.builder.block-worldedit-non-builder", true);
+        Builder.worldEditWand = parseWorldEditWand();
         // Settings - Navigator
-        Navigator.item = XMaterial.valueOf(config.getString("settings.navigator.item", "CLOCK"));
-        Navigator.giveItemOnJoin = config.getBoolean("settings.navigator.give-item-on-join", true);
+        Navigator.item = XMaterial.valueOf(CONFIG.getString("settings.navigator.item", "CLOCK"));
+        Navigator.giveItemOnJoin = CONFIG.getBoolean("settings.navigator.give-item-on-join", true);
 
         // World
-        World.lockWeather = config.getBoolean("world.lock-weather", true);
-        World.invalidCharacters = config.getString("world.invalid-characters", "^\b$");
-        World.importAllDelay = config.getInt("world.import-all.delay", 30);
+        World.lockWeather = CONFIG.getBoolean("world.lock-weather", true);
+        World.invalidCharacters = CONFIG.getString("world.invalid-characters", "^\b$");
+        World.importAllDelay = CONFIG.getInt("world.import-all.delay", 30);
         // World - Default
-        Default.worldBoarderSize = config.getInt("world.default.worldborder.size", 6000000);
-        Default.difficulty = Difficulty.valueOf(config.getString("world.default.difficulty", "PEACEFUL").toUpperCase(Locale.ROOT));
-        Default.gameRules = config.getConfigurationSection("world.default.gamerules")
+        Default.worldBoarderSize = CONFIG.getInt("world.default.worldborder.size", 6000000);
+        Default.difficulty = Difficulty.valueOf(CONFIG.getString("world.default.difficulty", "PEACEFUL").toUpperCase(Locale.ROOT));
+        Default.gameRules = CONFIG.getConfigurationSection("world.default.gamerules")
                 .getValues(true)
                 .entrySet()
                 .stream()
@@ -412,38 +443,38 @@ public class Config {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         // World - Default - Permission
-        Permission.publicPermission = config.getString("world.default.permission.public", "-");
-        Permission.privatePermission = config.getString("world.default.permission.private", "-");
+        Permission.publicPermission = CONFIG.getString("world.default.permission.public", "-");
+        Permission.privatePermission = CONFIG.getString("world.default.permission.private", "-");
         // World - Default - Time
-        Time.sunrise = config.getInt("world.default.time.sunrise", 0);
-        Time.noon = config.getInt("world.default.time.noon", 6000);
-        Time.night = config.getInt("world.default.time.night", 18000);
+        Time.sunrise = CONFIG.getInt("world.default.time.sunrise", 0);
+        Time.noon = CONFIG.getInt("world.default.time.noon", 6000);
+        Time.night = CONFIG.getInt("world.default.time.night", 18000);
         // World - Default - Settings
-        Default.Settings.physics = config.getBoolean("world.default.settings.physics", true);
-        Default.Settings.explosions = config.getBoolean("world.default.settings.explosions", true);
-        Default.Settings.mobAi = config.getBoolean("world.default.settings.mob-ai", true);
-        Default.Settings.blockBreaking = config.getBoolean("world.default.settings.block-breaking", true);
-        Default.Settings.blockPlacement = config.getBoolean("world.default.settings.block-placement", true);
-        Default.Settings.blockInteractions = config.getBoolean("world.default.settings.block-interactions", true);
+        Default.Settings.physics = CONFIG.getBoolean("world.default.settings.physics", true);
+        Default.Settings.explosions = CONFIG.getBoolean("world.default.settings.explosions", true);
+        Default.Settings.mobAi = CONFIG.getBoolean("world.default.settings.mob-ai", true);
+        Default.Settings.blockBreaking = CONFIG.getBoolean("world.default.settings.block-breaking", true);
+        Default.Settings.blockPlacement = CONFIG.getBoolean("world.default.settings.block-placement", true);
+        Default.Settings.blockInteractions = CONFIG.getBoolean("world.default.settings.block-interactions", true);
         // World - Default - Settings - Builders Enabled
-        BuildersEnabled.publicBuilders = config.getBoolean("world.default.settings.builders-enabled.public", false);
-        BuildersEnabled.privateBuilders = config.getBoolean("world.default.settings.builders-enabled.private", true);
+        BuildersEnabled.publicBuilders = CONFIG.getBoolean("world.default.settings.builders-enabled.public", false);
+        BuildersEnabled.privateBuilders = CONFIG.getBoolean("world.default.settings.builders-enabled.private", true);
         // World - Limits
-        Limits.publicWorlds = config.getInt("world.default.settings.public-worlds", -1);
-        Limits.privateWorlds = config.getInt("world.default.settings.private-worlds", -1);
+        Limits.publicWorlds = CONFIG.getInt("world.default.settings.public-worlds", -1);
+        Limits.privateWorlds = CONFIG.getInt("world.default.settings.private-worlds", -1);
         // World - Unload
-        Unload.enabled = config.getBoolean("world.unload.enabled", false);
-        Unload.timeUntilUnload = config.getString("world.unload.time-until-unload", "01:00:00");
-        Unload.blacklistedWorlds = new HashSet<>(config.getStringList("world.unload.blacklisted-worlds"));
+        Unload.enabled = CONFIG.getBoolean("world.unload.enabled", false);
+        Unload.timeUntilUnload = CONFIG.getString("world.unload.time-until-unload", "01:00:00");
+        Unload.blacklistedWorlds = new HashSet<>(CONFIG.getStringList("world.unload.blacklisted-worlds"));
         // World - Backup
-        Backup.enabled = config.getBoolean("world.backup.enabled", true);
-        Backup.backupInterval = config.getInt("world.backup.backup-interval", 900);
-        Backup.maxBackupsPerWorld = config.getInt("world.backup.max-backups-per-world", 5);
-        Backup.storage = createBackupStorage(plugin);
+        Backup.enabled = CONFIG.getBoolean("world.backup.enabled", true);
+        Backup.backupInterval = CONFIG.getInt("world.backup.backup-interval", 900);
+        Backup.maxBackupsPerWorld = CONFIG.getInt("world.backup.max-backups-per-world", 5);
+        Backup.storage = createBackupStorage(PLUGIN);
 
         // Folder
-        Folder.overridePermissions = config.getBoolean("folder.override-permissions", true);
-        Folder.overrideProjects = config.getBoolean("folder.override-projects", false);
+        Folder.overridePermissions = CONFIG.getBoolean("folder.override-permissions", true);
+        Folder.overrideProjects = CONFIG.getBoolean("folder.override-projects", false);
     }
 
     /**
@@ -466,11 +497,10 @@ public class Config {
     /**
      * Parses the WorldEdit wand from the plugin's configuration.
      *
-     * @param plugin The JavaPlugin instance.
      * @return The parsed {@link XMaterial} for the WorldEdit wand.
      */
-    private static XMaterial parseWorldEditWand(JavaPlugin plugin) {
-        File pluginDir = plugin.getDataFolder().getParentFile();
+    private static XMaterial parseWorldEditWand() {
+        File pluginDir = PLUGIN.getDataFolder().getParentFile();
         File configFile = null;
 
         File weConfig = new File(pluginDir + File.separator + "WorldEdit", "config.yml");
@@ -503,12 +533,11 @@ public class Config {
     }
 
     private static BackupStorage createBackupStorage(BuildSystemPlugin plugin) {
-        FileConfiguration config = plugin.getConfig();
-        String type = config.getString("world.backup.storage.type", "local").toLowerCase();
+        String type = CONFIG.getString("world.backup.storage.type", "local").toLowerCase();
 
         switch (type) {
             case "s3" -> {
-                ConfigurationSection s3 = config.getConfigurationSection("world.backup.storage.s3");
+                ConfigurationSection s3 = CONFIG.getConfigurationSection("world.backup.storage.s3");
                 return new S3BackupStorage(
                         plugin,
                         s3.getString("access-key"),

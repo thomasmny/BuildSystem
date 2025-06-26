@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.config;
+package de.eintosti.buildsystem.storage.yaml;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
@@ -29,9 +29,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.Nullable;
 
-public class SetupConfig extends ConfigurationFile {
+public class YamlSetupStorage extends AbstractYamlStorage {
 
-    public SetupConfig(BuildSystemPlugin plugin) {
+    public YamlSetupStorage(BuildSystemPlugin plugin) {
         super(plugin, "setup.yml");
     }
 
