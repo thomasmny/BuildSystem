@@ -367,7 +367,7 @@ public class Config {
             /**
              * Whether world backups are enabled.
              */
-            public static boolean enabled = true;
+            public static boolean autoBackup = true;
             /**
              * The interval in seconds between automatic backups.
              */
@@ -467,7 +467,7 @@ public class Config {
         Unload.timeUntilUnload = CONFIG.getString("world.unload.time-until-unload", "01:00:00");
         Unload.blacklistedWorlds = new HashSet<>(CONFIG.getStringList("world.unload.blacklisted-worlds"));
         // World - Backup
-        Backup.enabled = CONFIG.getBoolean("world.backup.enabled", true);
+        Backup.autoBackup = CONFIG.getBoolean("world.auto-backup", true);
         Backup.backupInterval = CONFIG.getInt("world.backup.backup-interval", 900);
         Backup.maxBackupsPerWorld = Math.min(CONFIG.getInt("world.backup.max-backups-per-world", 5), 9);
         Backup.storage = createBackupStorage(PLUGIN);

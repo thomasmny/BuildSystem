@@ -42,12 +42,14 @@ public class BackupService {
         this.backupStorage = Backup.storage;
         this.worldStorage = plugin.getWorldService().getWorldStorage();
 
-        Bukkit.getScheduler().runTaskTimer(plugin, this::incrementTimeSinceBackup, UPDATE_INTERVAL * 20, UPDATE_INTERVAL * 20);
+        if (Backup.autoBackup) {
+            Bukkit.getScheduler().runTaskTimer(plugin, this::incrementTimeSinceBackup, UPDATE_INTERVAL * 20, UPDATE_INTERVAL * 20);
+        }
     }
 
     /**
      * Increments the time since a {@link BuildWorld} was backed-up by {@link #UPDATE_INTERVAL} seconds. If the time has surpassed {@link World.Backup#backupInterval}, a backup
-     * will be created.
+     * will automatically be created.
      */
     private void incrementTimeSinceBackup() {
         Set<BuildWorld> worlds = new HashSet<>();
