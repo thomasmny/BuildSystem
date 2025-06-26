@@ -107,14 +107,18 @@ public class WorldUnloaderImpl implements WorldUnloader {
 
     @Override
     public void forceUnload(boolean save) {
-        World bukkitWorld = buildWorld.getWorld();
-        if (bukkitWorld == null) {
-            return;
-        }
-
         BuildWorldUnloadEvent unloadEvent = new BuildWorldUnloadEvent(buildWorld);
         Bukkit.getServer().getPluginManager().callEvent(unloadEvent);
         if (unloadEvent.isCancelled()) {
+            return;
+        }
+
+        this.buildWorld.getData().lastUnloaded().set(System.currentTimeMillis());
+        this.buildWorld.setLoaded(false);
+        this.unloadTask = null;
+
+        World bukkitWorld = this.buildWorld.getWorld();
+        if (bukkitWorld == null) {
             return;
         }
 
@@ -125,15 +129,16 @@ public class WorldUnloaderImpl implements WorldUnloader {
         for (Chunk chunk : bukkitWorld.getLoadedChunks()) {
             chunk.unload(save);
         }
-        Bukkit.unloadWorld(bukkitWorld, save);
+
+        if (!Bukkit.unloadWorld(bukkitWorld, save)) {
+            plugin.getLogger().warning("Failed to unload world \"" + this.buildWorld.getName() + "\". It may still be loaded in memory.");
+            return;
+        }
+
         Bukkit.getWorlds().remove(bukkitWorld);
 
-        buildWorld.getData().lastUnloaded().set(System.currentTimeMillis());
-        buildWorld.setLoaded(false);
-        this.unloadTask = null;
-
-        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostUnloadEvent(buildWorld));
-        plugin.getLogger().info("*** Unloaded world \"" + buildWorld.getName() + "\" ***");
+        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostUnloadEvent(this.buildWorld));
+        plugin.getLogger().info("*** Unloaded world \"" + this.buildWorld.getName() + "\" ***");
     }
 
     private boolean isSpawnWorld(World bukkitWorld) {

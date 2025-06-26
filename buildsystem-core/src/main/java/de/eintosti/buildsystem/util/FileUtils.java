@@ -18,7 +18,9 @@
 package de.eintosti.buildsystem.util;
 
 import com.google.common.collect.Sets;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,19 +31,41 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.Comparator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ExcludeFileFilter;
 import net.lingala.zip4j.model.ZipParameters;
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public final class FileUtils {
 
+    private static final Logger LOGGER = JavaPlugin.getPlugin(BuildSystemPlugin.class).getLogger();
     private static final Set<String> IGNORE_FILES = Sets.newHashSet("uid.dat", "session.lock");
 
     private FileUtils() {
+    }
+
+    public static Path resolve(Path parent, final String child) {
+        Path path = parent;
+        try {
+            if (!Files.exists(parent)) {
+                Files.createDirectory(parent);
+            }
+            path = parent.resolve(child);
+            if (!Files.exists(path)) {
+                Files.createDirectory(path);
+            }
+        } catch (final Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to create backup directory for " + child, e);
+        }
+        return path;
     }
 
     /**
@@ -63,7 +87,7 @@ public final class FileUtils {
                 copyFile(source, target);
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            LOGGER.log(Level.SEVERE, "Failed to copy " + source.getAbsolutePath() + " to " + target.getAbsolutePath(), e);
         }
     }
 
@@ -76,7 +100,8 @@ public final class FileUtils {
      */
     private static void copyDirectory(@NotNull File source, @NotNull File target) throws IOException {
         if (!target.exists() && !target.mkdirs()) {
-            throw new IOException("Couldn't create directory: " + target.getName());
+            LOGGER.log(Level.SEVERE, "Failed to create target directory: " + target.getAbsolutePath());
+            return;
         }
 
         for (String fileName : source.list()) {
@@ -98,8 +123,10 @@ public final class FileUtils {
      * @throws IOException If an I/O error occurs while copying the file
      */
     private static void copyFile(@NotNull File source, @NotNull File target) throws IOException {
-        try (InputStream inputStream = Files.newInputStream(source.toPath());
-                OutputStream outputStream = Files.newOutputStream(target.toPath())) {
+        try (
+                InputStream inputStream = Files.newInputStream(source.toPath());
+                OutputStream outputStream = Files.newOutputStream(target.toPath())
+        ) {
             byte[] buffer = new byte[1024];
             int length;
             while ((length = inputStream.read(buffer)) > 0) {
@@ -119,7 +146,7 @@ public final class FileUtils {
                     .map(Path::toFile)
                     .forEach(File::delete);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Failed to delete directory " + directory.getAbsolutePath(), e);
         }
     }
 
@@ -136,14 +163,14 @@ public final class FileUtils {
             FileTime time = attrs.creationTime();
             creation = time.toMillis();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Failed to read attributes from " + file.getAbsolutePath(), e);
         }
         return creation;
     }
 
     @Nullable
     public static File zipWorld(File storage, BuildWorld buildWorld) {
-        try (ZipFile zipFile = new ZipFile(storage.getAbsolutePath() + ".zip")) {
+        try (ZipFile zipFile = new ZipFile(storage.getAbsolutePath())) {
             File worldContainer = new File(Bukkit.getWorldContainer(), buildWorld.getName());
 
             ExcludeFileFilter excludeFileFilter = Sets.newHashSet(
@@ -156,8 +183,31 @@ public final class FileUtils {
             zipFile.addFolder(worldContainer, zipParameters);
             return zipFile.getFile();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Failed to zip world " + storage.getAbsolutePath(), e);
         }
         return null;
+    }
+
+    public static byte[] zipWorldToMemory(BuildWorld buildWorld) throws IOException {
+        Path worldPath = Path.of(new File(Bukkit.getWorldContainer(), buildWorld.getName()).getPath());
+        ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+
+        try (
+                ZipOutputStream zipOut = new ZipOutputStream(byteOut);
+                Stream<Path> walk = Files.walk(worldPath)
+        ) {
+            walk.filter(Files::isRegularFile).forEach(file -> {
+                try {
+                    Path relativePath = worldPath.relativize(file);
+                    zipOut.putNextEntry(new ZipEntry(relativePath.toString().replace("\\", "/")));
+                    Files.copy(file, zipOut);
+                    zipOut.closeEntry();
+                } catch (IOException e) {
+                    LOGGER.log(Level.SEVERE, "Failed to zip world " + worldPath + " to memory", e);
+                }
+            });
+        }
+
+        return byteOut.toByteArray();
     }
 }

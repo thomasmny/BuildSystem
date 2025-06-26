@@ -15,6 +15,8 @@ bstats = "3.1.0"
 fastboard = "2.1.5"
 nbt = "1.5.1"
 xseries = "13.3.1"
+aws-sdk = "2.31.70"
+zip4j = "2.11.5"
 
 [libraries]
 # Platform expectations
@@ -30,7 +32,20 @@ axiompaper = { group = "maven.modrinth.workaround", name = "axiom-paper-plugin",
 # Third Party
 annotations = { group = "org.jetbrains", name = "annotations", version.ref = "annotations" }
 authlib = { group = "com.mojang", name = "authlib", version.ref = "authlib" }
+aws-auth = { module = "software.amazon.awssdk:auth", version.ref = "aws-sdk" }
+aws-core = { module = "software.amazon.awssdk:core", version.ref = "aws-sdk" }
+aws-regions = { module = "software.amazon.awssdk:regions", version.ref = "aws-sdk" }
+aws-s3 = { module = "software.amazon.awssdk:s3", version.ref = "aws-sdk" }
 bstats = { group = "org.bstats", name = "bstats-bukkit", version.ref = "bstats" }
 fastboard = { group = "fr.mrmicky", name = "fastboard", version.ref = "fastboard" }
 nbt = { group = "dev.dewy", name = "nbt", version.ref = "nbt" }
+zip4j = { group = "net.lingala.zip4j", name = "zip4j", version.ref = "zip4j" }
 xseries = { group = "com.github.cryptomorin", name = "XSeries", version.ref = "xseries" }
+
+[bundles]
+aws = [
+    "aws-s3",
+    "aws-auth",
+    "aws-regions",
+    # "aws-core", Unable to find the dependency at runtime
+]

@@ -18,6 +18,8 @@
 package de.eintosti.buildsystem.config;
 
 import com.cryptomorin.xseries.XMaterial;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.config.Config.Settings.Archive;
 import de.eintosti.buildsystem.config.Config.Settings.BuildMode;
 import de.eintosti.buildsystem.config.Config.Settings.Builder;
@@ -30,6 +32,8 @@ import de.eintosti.buildsystem.config.Config.World.Default.Settings.BuildersEnab
 import de.eintosti.buildsystem.config.Config.World.Default.Time;
 import de.eintosti.buildsystem.config.Config.World.Limits;
 import de.eintosti.buildsystem.config.Config.World.Unload;
+import de.eintosti.buildsystem.world.backup.storage.LocalBackupStorage;
+import de.eintosti.buildsystem.world.backup.storage.S3BackupStorage;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -42,6 +46,7 @@ import javax.annotation.Nullable;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
 import org.bukkit.GameRule;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -335,7 +340,9 @@ public class Config {
             /**
              * The maximum number of backups to keep per world.
              */
-            public static int maxBackupsPerWorld = 9;
+            public static int maxBackupsPerWorld = 5;
+
+            public static BackupStorage storage;
         }
     }
 
@@ -357,9 +364,9 @@ public class Config {
     /**
      * Loads the configuration values from the plugin's config.yml into the static fields.
      *
-     * @param plugin The JavaPlugin instance.
+     * @param plugin The plugin instance.
      */
-    public static void load(final JavaPlugin plugin) {
+    public static void load(final BuildSystemPlugin plugin) {
         FileConfiguration config = plugin.getConfig();
 
         // Messages
@@ -431,7 +438,8 @@ public class Config {
         // World - Backup
         Backup.enabled = config.getBoolean("world.backup.enabled", true);
         Backup.backupInterval = config.getInt("world.backup.backup-interval", 900);
-        Backup.maxBackupsPerWorld = config.getInt("world.backup.max-backups-per-world", 9);
+        Backup.maxBackupsPerWorld = config.getInt("world.backup.max-backups-per-world", 5);
+        Backup.storage = createBackupStorage(plugin);
 
         // Folder
         Folder.overridePermissions = config.getBoolean("folder.override-permissions", true);
@@ -492,5 +500,30 @@ public class Config {
         }
 
         return XMaterial.matchXMaterial(wand).orElse(defaultWand);
+    }
+
+    private static BackupStorage createBackupStorage(BuildSystemPlugin plugin) {
+        FileConfiguration config = plugin.getConfig();
+        String type = config.getString("world.backup.storage.type", "local").toLowerCase();
+
+        switch (type) {
+            case "s3" -> {
+                ConfigurationSection s3 = config.getConfigurationSection("world.backup.storage.s3");
+                return new S3BackupStorage(
+                        plugin,
+                        s3.getString("access-key"),
+                        s3.getString("secret-key"),
+                        s3.getString("region"),
+                        s3.getString("bucket"),
+                        s3.getString("path")
+                );
+            }
+            default -> {
+                if (!type.equals("local")) {
+                    plugin.getLogger().warning("Unknown backup storage type '" + type + "', defaulting to local storage.");
+                }
+                return new LocalBackupStorage(plugin);
+            }
+        }
     }
 }

@@ -15,20 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.world.creation.generator.voidgenerator;
+package de.eintosti.buildsystem.world.backup;
 
-import org.bukkit.block.Biome;
-import org.bukkit.generator.ChunkGenerator;
+import de.eintosti.buildsystem.api.world.backup.Backup;
+import de.eintosti.buildsystem.api.world.backup.BackupProfile;
 
-public abstract class VoidGenerator extends ChunkGenerator {
+public record BackupImpl(BackupProfile owner, long creationTime, String key) implements Backup {
 
-    private final Biome biome;
-
-    public VoidGenerator(Biome biome) {
-        this.biome = biome;
-    }
-
-    public Biome getBiome() {
-        return biome;
-    }
 }

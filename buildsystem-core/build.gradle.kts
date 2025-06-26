@@ -51,8 +51,10 @@ dependencies {
     implementation(libs.fastboard)
     implementation(libs.nbt) { isTransitive = false }
     implementation(libs.bstats)
+    implementation(libs.aws.core) // Unable to find the dependency at runtime, so we add it here
 
-    library("net.lingala.zip4j", "zip4j", "2.11.5")
+    library(libs.bundles.aws)
+    library(libs.zip4j)
 }
 
 tasks.named("assemble") {

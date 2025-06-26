@@ -21,7 +21,7 @@ import de.eintosti.buildsystem.config.Config.World;
 import java.util.Arrays;
 import org.jetbrains.annotations.Nullable;
 
-public class StringCleaner {
+public final class StringCleaner {
 
     public static final String INVALID_NAME_CHARACTERS = "[^A-Za-z\\d/_-]";
 

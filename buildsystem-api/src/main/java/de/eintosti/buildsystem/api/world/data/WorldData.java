@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.api.world.data;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.backup.Backup;
 import java.util.Map;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
@@ -138,6 +139,13 @@ public interface WorldData {
      * @return A {@link Type} containing a boolean: {@code true} if private, otherwise {@code false}
      */
     Type<Boolean> privateWorld();
+
+    /**
+     * Gets the number of seconds that have passed since that last {@link Backup} of the {@link BuildWorld} was created.
+     *
+     * @return The number of seconds since the last backup
+     */
+    Type<Integer> timeSinceBackup();
 
     /**
      * Retrieves a {@link Type} object representing the timestamp (in milliseconds since epoch) of the last time the {@link BuildWorld} was edited.

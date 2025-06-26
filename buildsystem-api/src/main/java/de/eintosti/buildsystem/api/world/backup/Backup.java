@@ -15,27 +15,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.world.creation.generator.voidgenerator;
+package de.eintosti.buildsystem.api.world.backup;
 
-import java.util.Random;
-import javax.annotation.Nonnull;
-import org.bukkit.World;
-import org.bukkit.block.Biome;
+public interface Backup {
 
-/**
- * The {@link VoidGenerator} that is used for servers which run on Spigot 1.13-1.16.
- */
-@SuppressWarnings("deprecation")
-public class DeprecatedVoidGenerator extends VoidGenerator {
+    BackupProfile owner();
 
-    public DeprecatedVoidGenerator() {
-        super(Biome.PLAINS);
-    }
+    long creationTime();
 
-    @Nonnull
-    @Override
-    public ChunkData generateChunkData(@Nonnull World world, @Nonnull Random random, int x, int z, @Nonnull BiomeGrid biome) {
-        biome.setBiome(x, z, super.getBiome());
-        return createChunkData(world);
-    }
+    String key();
 }

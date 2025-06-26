@@ -235,19 +235,18 @@ public class WorldServiceImpl implements WorldService {
     /**
      * Unimport an existing {@link BuildWorld}. In comparison to {@link #deleteWorld(Player, BuildWorld)}, unimporting a world does not delete the world's directory.
      *
-     * @param player     The player unloading the world
      * @param buildWorld The build world object
      * @param save       Whether to save the world before unloading
      */
-    public void unimportWorld(Player player, BuildWorld buildWorld, boolean save) {
+    public void unimportWorld(BuildWorld buildWorld, boolean save) {
         buildWorld.getUnloader().forceUnload(save);
         this.worldStorage.removeBuildWorld(buildWorld);
-        removePlayersFromWorld(buildWorld.getName(), Messages.getString("worlds_unimport_players_world", player));
+        removePlayersFromWorld(buildWorld.getName(), "worlds_unimport_players_world");
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> this.worldStorage.delete(buildWorld));
     }
 
     /**
-     * Delete an existing {@link BuildWorld}. In comparison to {@link #unimportWorld(Player, BuildWorld, boolean)}, deleting a world deletes the world's directory.
+     * Delete an existing {@link BuildWorld}. In comparison to {@link #unimportWorld(BuildWorld, boolean)}, deleting a world deletes the world's directory.
      *
      * @param player     The player who issued the deletion
      * @param buildWorld The world to be deleted
@@ -271,9 +270,9 @@ public class WorldServiceImpl implements WorldService {
         }
 
         Messages.sendMessage(player, "worlds_delete_started", Map.entry("%world%", worldName));
-        removePlayersFromWorld(worldName, Messages.getString("worlds_delete_players_world", player));
+        removePlayersFromWorld(worldName, "worlds_delete_players_world");
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            unimportWorld(player, buildWorld, false);
+            unimportWorld(buildWorld, false);
             FileUtils.deleteDirectory(deleteFolder);
             Messages.sendMessage(player, "worlds_delete_finished");
         }, 20L);
@@ -319,7 +318,7 @@ public class WorldServiceImpl implements WorldService {
             return;
         }
 
-        List<Player> removedPlayers = removePlayersFromWorld(oldName, Messages.getString("worlds_rename_players_world", player));
+        List<Player> removedPlayers = removePlayersFromWorld(oldName, "worlds_rename_players_world");
         for (Chunk chunk : oldWorld.getLoadedChunks()) {
             chunk.unload(true);
         }
@@ -337,7 +336,7 @@ public class WorldServiceImpl implements WorldService {
         this.worldStorage.addBuildWorld(buildWorld);
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> this.worldStorage.save(buildWorld));
 
-        World newWorld = new BuildWorldCreatorImpl(plugin, sanitizedNewName).generateBukkitWorld(buildWorld, false);
+        World newWorld = new BuildWorldCreatorImpl(plugin, buildWorld).generateBukkitWorld(false);
         Location spawnLocation = oldWorld.getSpawnLocation();
         spawnLocation.setWorld(newWorld);
 
@@ -365,41 +364,49 @@ public class WorldServiceImpl implements WorldService {
         );
     }
 
-    private List<Player> removePlayersFromWorld(String worldName, String message) {
-        List<Player> players = new ArrayList<>();
+    public List<Player> removePlayersFromWorld(String worldName, String messageKey) {
+        List<Player> affectedPlayers = new ArrayList<>();
 
-        World bukkitWorld = Bukkit.getWorld(worldName);
-        if (bukkitWorld == null) {
-            return players;
+        World worldToRemove = Bukkit.getWorld(worldName);
+        if (worldToRemove == null) {
+            plugin.getLogger().warning("Cannot remove players from world '" + worldName + "' because the world does not exist.");
+            return affectedPlayers;
         }
 
-        World defaultWorld = Bukkit.getWorlds().getFirst();
-        Location spawnLocation = defaultWorld.getHighestBlockAt(defaultWorld.getSpawnLocation()).getLocation().add(0.5, 1, 0.5);
+        World fallbackWorld = Bukkit.getWorlds().getFirst();
+        Location fallbackSpawn = fallbackWorld.getHighestBlockAt(fallbackWorld.getSpawnLocation()).getLocation().add(0.5, 1, 0.5);
 
         SpawnManager spawnManager = plugin.getSpawnManager();
 
         Bukkit.getOnlinePlayers().forEach(player -> {
-            World playerWorld = player.getWorld();
-            if (!playerWorld.equals(bukkitWorld)) {
+            if (!player.getWorld().equals(worldToRemove)) {
                 return;
             }
 
+            boolean teleported = false;
+
             if (spawnManager.spawnExists()) {
-                if (!spawnManager.getSpawnWorld().equals(playerWorld)) {
-                    spawnManager.teleport(player);
-                } else {
-                    PaperLib.teleportAsync(player, spawnLocation);
-                    spawnManager.remove();
-                }
-            } else {
-                PaperLib.teleportAsync(player, spawnLocation);
+                // Spawn exists -> always teleport to it
+                spawnManager.teleport(player);
+                teleported = true;
+            } else if (!fallbackWorld.equals(worldToRemove)) {
+                // Spawn doesn't exist, the fallback world is usable -> teleport
+                PaperLib.teleportAsync(player, fallbackSpawn);
+                teleported = true;
             }
 
-            player.sendMessage(message);
-            players.add(player);
+            if (!teleported) {
+                // No valid spawn and fallback world is the one being deleted -> kick
+                spawnManager.remove();
+                player.kickPlayer(Messages.getString(messageKey, player));
+                return;
+            }
+
+            Messages.sendMessage(player, messageKey);
+            affectedPlayers.add(player);
         });
 
-        return players;
+        return affectedPlayers;
     }
 
     public void save() {

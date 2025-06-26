@@ -60,6 +60,8 @@ public class WorldDataImpl implements WorldData {
     private final Type<Boolean> physics = register("physics");
     private final Type<Boolean> privateWorld = register("private");
 
+    private final Type<Integer> timeSinceBackup = register("time-since-backup");
+
     private final Type<Long> lastEdited = register("last-edited");
     private final Type<Long> lastLoaded = register("last-loaded");
     private final Type<Long> lastUnloaded = register("last-unloaded");
@@ -83,6 +85,7 @@ public class WorldDataImpl implements WorldData {
                 Settings.mobAi,
                 Settings.physics,
                 privateWorld,
+                0,
                 -1L,
                 -1L,
                 -1L
@@ -105,6 +108,7 @@ public class WorldDataImpl implements WorldData {
             boolean mobAi,
             boolean physics,
             boolean privateWorld,
+            int timeSinceBackup,
             long lastLoaded,
             long lastUnloaded,
             long lastEdited
@@ -125,6 +129,8 @@ public class WorldDataImpl implements WorldData {
         this.mobAi.set(mobAi);
         this.physics.set(physics);
         this.privateWorld.set(privateWorld);
+
+        this.timeSinceBackup.set(timeSinceBackup);
 
         this.lastEdited.set(lastEdited);
         this.lastLoaded.set(lastLoaded);
@@ -254,6 +260,11 @@ public class WorldDataImpl implements WorldData {
     @Override
     public Type<Boolean> privateWorld() {
         return privateWorld;
+    }
+
+    @Override
+    public Type<Integer> timeSinceBackup() {
+        return timeSinceBackup;
     }
 
     @Override

@@ -237,6 +237,14 @@ public class Messages {
         setMessage(sb, "worlds_addbuilder_already_added", "%prefix% &cThis player is already a builder.");
         setMessage(sb, "worlds_addbuilder_added", "%prefix% &b%builder% &7was &aadded &7as a builder.");
         addSpacer(sb, "");
+        setMessage(sb, "worlds_backup_usage", "%prefix% &7Usage: &b/worlds backup [create]");
+        setMessage(sb, "worlds_backup_unknown_world", "%prefix% &cUnknown world.");
+        setMessage(sb, "worlds_backup_world_not_imported", "%prefix% &cWorld must be imported: /worlds import <world>");
+        setMessage(sb, "worlds_backup_created", "%prefix% &7Successfully &acreated &7a backup of &b%world%&7.");
+        setMessage(sb, "worlds_backup_failed", "%prefix% &cUnable to create a backup of %world%.");
+        setMessage(sb, "worlds_backup_restoration_in_progress", "%prefix% &7&oThe world you are in is being restored...");
+        setMessage(sb, "worlds_backup_restoration_successful", "%prefix% &7The world has been successfully reset to the state from &a%timestamp%&7.");
+        addSpacer(sb, "");
         setMessage(sb, "worlds_builders_usage", "%prefix% &7Usage: &b/worlds builders <world>");
         setMessage(sb, "worlds_builders_unknown_world", "%prefix% &cUnknown world.");
         addSpacer(sb, "");
@@ -507,6 +515,29 @@ public class Messages {
         setMessage(sb, "private_title", "&3» &8Private Worlds");
         setMessage(sb, "private_no_worlds", "&c&nNo worlds available");
         setMessage(sb, "private_create_world", "&bCreate a Private World");
+        addSpacer(sb, "");
+        addSpacer(sb, "# World Backups");
+        setMessage(sb, "backups_title", "&3» &8World Backups");
+        setMessage(sb, "backups_information_name", "&aInformation");
+        setMessage(sb, "backups_information_lore", Arrays.asList(
+                "",
+                "&7A backup is automatically created",
+                "&7every &a%interval% minutes &7in which a",
+                "&7builder is present in the world.",
+                "",
+                "&7Next backup in: &a%remaining%"
+        ));
+        setMessage(sb, "backups_backup_name", "&a%timestamp%");
+        setMessage(sb, "restore_backup_title", "&3» &8Restore Backup");
+        setMessage(sb, "restore_backup_confirm_name", "&aConfirm");
+        setMessage(sb, "restore_backup_confirm_lore", Arrays.asList(
+                "",
+                "&7Are you sure you to &arestore &7to the",
+                "&7backup from &f%timestamp%&7?",
+                "",
+                "&c&nWarning&c: &7This action &cCANNOT &7be undone."
+        ));
+        setMessage(sb, "restore_backup_cancel_name", "&cCancel");
         addSpacer(sb, "");
         addSpacer(sb, "# Setup");
         setMessage(sb, "setup_title", "&3» &8Setup");

@@ -189,7 +189,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
             return LoadResult.NOT_BLACKLISTED;
         }
 
-        World world = new BuildWorldCreatorImpl(plugin, worldName).generateBukkitWorld(buildWorld);
+        World world = new BuildWorldCreatorImpl(plugin, buildWorld).generateBukkitWorld();
         if (world == null) {
             return LoadResult.FAILED;
         }

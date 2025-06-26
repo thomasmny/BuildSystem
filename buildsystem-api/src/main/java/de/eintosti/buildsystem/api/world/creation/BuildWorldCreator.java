@@ -127,25 +127,26 @@ public interface BuildWorldCreator {
     void importWorld(Player player, boolean teleport);
 
     /**
-     * Generates the underlying Bukkit {@link World} and applies post-generation settings.
+     * Generates the underlying Bukkit {@link World} and applies post-generation settings. Only generates the world if the world was not created in a newer Minecraft version that
+     * the server is running.
      * <p>
-     * Only generates the world if the world was not created in a newer Minecraft version that the server is running.
+     * Important: This method should only be called after the world has been created and registered with the plugin.
      *
-     * @param buildWorld The build world to generate
      * @return The generated {@link World}, or {@code null} if generation failed
      */
     @Nullable
-    default World generateBukkitWorld(BuildWorld buildWorld) {
-        return generateBukkitWorld(buildWorld, true);
+    default World generateBukkitWorld() {
+        return generateBukkitWorld(true);
     }
 
     /**
      * Generates the underlying Bukkit {@link World} and applies post-generation settings.
+     * <p>
+     * Important: This method should only be called after the world has been created and registered with the plugin.
      *
-     * @param buildWorld   The build world to generate
      * @param checkVersion If true, verify that the world's data version is compatible
-     * @return The generated {@link World}, or {@code null} if generation failed.
+     * @return The generated {@link World}, or {@code null} if generation failed
      */
     @Nullable
-    World generateBukkitWorld(BuildWorld buildWorld, boolean checkVersion);
+    World generateBukkitWorld(boolean checkVersion);
 }

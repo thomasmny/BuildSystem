@@ -8,7 +8,7 @@ settings:
   archive:
     vanish: true
     change-gamemode: true
-    world-game-mode: "ADVENTURE" # Possible values are: "SURVIVAL", "CREATIVE", "ADVENTURE", "SPECTATOR"
+    world-game-mode: "ADVENTURE" # Options: "SURVIVAL", "CREATIVE", "ADVENTURE", "SPECTATOR"
   save-from-death:
     enable: true
     teleport-to-map-spawn: true
@@ -63,7 +63,15 @@ world:
   backup:
     enabled: true
     backup-interval: 900
-    max-backups-per-world: 9
+    max-backups-per-world: 5
+    storage:
+      type: local # Options: local, s3
+      s3:
+        access-key: YOUR_AWS_ACCESS_KEY
+        secret-key: YOUR_AWS_SECRET_KEY
+        region: eu-central-1
+        bucket: buildsystem-backups
+        path: backups/worlds/
 folder:
   override-permissions: true
   override-projects: false

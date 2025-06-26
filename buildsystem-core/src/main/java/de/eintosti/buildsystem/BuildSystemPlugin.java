@@ -91,6 +91,7 @@ import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.world.SpawnManager;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import de.eintosti.buildsystem.world.backup.BackupService;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import java.io.File;
 import java.util.HashMap;
@@ -120,6 +121,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     private SettingsManager settingsManager;
     private SpawnManager spawnManager;
     private WorldServiceImpl worldService;
+    private BackupService backupService;
     private CustomizableIcons customizableIcons;
 
     private LuckPermsExpansion luckPermsExpansion;
@@ -201,6 +203,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         this.playerService = new PlayerServiceImpl(this);
         this.noClipManager = new NoClipManager(this);
         (this.worldService = new WorldServiceImpl(this)).init();
+        this.backupService = new BackupService(this);
         this.settingsManager = new SettingsManager(this);
         this.spawnManager = new SpawnManager(this);
     }
@@ -417,6 +420,10 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     public WorldServiceImpl getWorldService() {
         return worldService;
+    }
+
+    public BackupService getBackupService() {
+        return backupService;
     }
 
     public CustomizableIcons getCustomizableIcons() {
