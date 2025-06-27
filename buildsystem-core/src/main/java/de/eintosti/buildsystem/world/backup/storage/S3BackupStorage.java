@@ -58,11 +58,13 @@ public class S3BackupStorage implements BackupStorage {
     private final S3Client s3Client;
     private final String bucket;
     private final String pathPrefix;
+    private final Path tmpDownloadDirectory;
 
     public S3BackupStorage(BuildSystemPlugin plugin, String accessKey, String secretKey, String region, String bucket, String pathPrefix) {
         this.plugin = plugin;
         this.bucket = bucket;
         this.pathPrefix = pathPrefix.endsWith("/") ? pathPrefix : pathPrefix + "/";
+        this.tmpDownloadDirectory = FileUtils.resolve(plugin.getDataFolder().toPath(), ".tmp_backup_downloads");
 
         S3ClientBuilder builder = S3Client.builder()
                 .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)));
@@ -138,7 +140,7 @@ public class S3BackupStorage implements BackupStorage {
 
     @Override
     public File downloadBackup(Backup backup) {
-        Path targetPath = FileUtils.resolve(getTmpDownloadDirectory(), UUID.randomUUID() + ".zip");
+        Path target = this.tmpDownloadDirectory.resolve(UUID.randomUUID() + ".zip");
 
         try {
             this.s3Client.getObject(
@@ -146,18 +148,14 @@ public class S3BackupStorage implements BackupStorage {
                             .bucket(this.bucket)
                             .key(backup.key())
                             .build(),
-                    targetPath
+                    target
             );
         } catch (S3Exception | SdkClientException e) {
             plugin.getLogger().log(Level.SEVERE, "Error while downloading backup: " + backup.key(), e);
             return null;
         }
 
-        return targetPath.toFile();
-    }
-
-    private Path getTmpDownloadDirectory() {
-        return FileUtils.resolve(plugin.getDataFolder().toPath(), ".tmp_backup_downloads");
+        return target.toFile();
     }
 
     @Override
@@ -184,6 +182,6 @@ public class S3BackupStorage implements BackupStorage {
             }
         }
 
-        FileUtils.deleteDirectory(getTmpDownloadDirectory().toFile());
+        FileUtils.deleteDirectory(this.tmpDownloadDirectory.toFile());
     }
 }

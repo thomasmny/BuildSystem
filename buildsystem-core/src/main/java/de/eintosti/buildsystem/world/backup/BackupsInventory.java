@@ -20,9 +20,11 @@ import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -35,9 +37,11 @@ public class BackupsInventory extends BuildSystemInventory {
 
     private static final int FIRST_BACKUP_SLOT = 9;
 
+    private final Logger logger;
     private final BackupService backupService;
 
     public BackupsInventory(BuildSystemPlugin plugin) {
+        this.logger = plugin.getLogger();
         this.backupService = plugin.getBackupService();
     }
 
@@ -46,8 +50,9 @@ public class BackupsInventory extends BuildSystemInventory {
     }
 
     private Inventory getBackupsInventory(Player player, BuildWorld buildWorld) {
-        List<Backup> backups = backupService.getProfile(buildWorld).listBackups().join();
-        Inventory inventory = new BackupsHolder(this, buildWorld, player, backups).getInventory();
+        BackupsHolder backupsHolder = new BackupsHolder(this, buildWorld, player, new ArrayList<>());
+        Inventory inventory = backupsHolder.getInventory();
+        loadBackups(backupsHolder, buildWorld, player);
 
         for (int i = 0; i <= 8; i++) {
             InventoryUtils.addGlassPane(player, inventory, i);
@@ -61,14 +66,6 @@ public class BackupsInventory extends BuildSystemInventory {
                 )
         ));
 
-        for (int i = 0; i < backups.size(); i++) {
-            inventory.setItem(FIRST_BACKUP_SLOT + i, InventoryUtils.createItem(XMaterial.GRASS_BLOCK,
-                    Messages.getString("backups_backup_name", player,
-                            Map.entry("%timestamp%", StringUtils.formatTime(backups.get(i).creationTime()))
-                    )
-            ));
-        }
-
         for (int i = 18; i <= 26; i++) {
             InventoryUtils.addGlassPane(player, inventory, i);
         }
@@ -76,6 +73,34 @@ public class BackupsInventory extends BuildSystemInventory {
         return inventory;
     }
 
+    /**
+     * Loads the {@link Backup} for a given world and adds them to the inventory on completion.
+     *
+     * @param backupsHolder The holder to populate
+     * @param buildWorld    The world to load backups for
+     * @param player        The player to display the backups to
+     */
+    private void loadBackups(BackupsHolder backupsHolder, BuildWorld buildWorld, Player player) {
+        backupService.getProfile(buildWorld).listBackups().thenAcceptAsync(backups -> {
+            backupsHolder.getBackups().addAll(backups);
+
+            Inventory inventory = backupsHolder.getInventory();
+            for (int i = 0; i < backups.size(); i++) {
+                inventory.setItem(FIRST_BACKUP_SLOT + i, InventoryUtils.createItem(XMaterial.GRASS_BLOCK,
+                        Messages.getString("backups_backup_name", player,
+                                Map.entry("%timestamp%", StringUtils.formatTime(backups.get(i).creationTime()))
+                        )
+                ));
+            }
+        });
+    }
+
+    /**
+     * Gets the duration until the next backup is due as a string formatted in {@code mm:ss}.
+     *
+     * @param buildWorld The world to get the backup duration for
+     * @return A string representing the duration until the next backup
+     */
     private String getDurationUntilBackup(BuildWorld buildWorld) {
         int timeUntilBackup = World.Backup.backupInterval;
         int timeSinceBackup = buildWorld.getData().timeSinceBackup().get();
@@ -128,9 +153,10 @@ public class BackupsInventory extends BuildSystemInventory {
             event.setCancelled(true);
 
             int slot = event.getSlot();
-            if (slot >= FIRST_BACKUP_SLOT && slot <= 17) {
+            if (slot >= FIRST_BACKUP_SLOT && slot < FIRST_BACKUP_SLOT + 9 && itemStack.getType() == XMaterial.GRASS_BLOCK.get()) {
                 Backup backup = backupsHolder.getBackups().get(slot - FIRST_BACKUP_SLOT);
                 if (backup == null) {
+                    logger.warning("Could not find backup for slot " + slot + " in backups inventory for player " + player.getName());
                     return;
                 }
 
