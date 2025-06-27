@@ -15,13 +15,12 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
 import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.api.world.data.WorldData.Type;
-import de.eintosti.buildsystem.config.Config.World;
 import de.eintosti.buildsystem.config.Config.World.Backup;
 import de.eintosti.buildsystem.config.Config.World.Backup.AutoBackup;
 import java.time.Duration;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -30,13 +29,13 @@ import org.bukkit.entity.Player;
 
 public class BackupService {
 
-    private static final long UPDATE_INTERVAL = Duration.ofSeconds(5).getSeconds();
+    private static final long UPDATE_PERIOD = Duration.ofSeconds(5).getSeconds();
 
     private final BuildSystemPlugin plugin;
     private final BackupStorage backupStorage;
     private final WorldStorage worldStorage;
 
-    private final Cache<BuildWorldCacheKey, BackupProfile> backupProfileCache = CacheBuilder.newBuilder().expireAfterAccess(3, TimeUnit.MINUTES).build();
+    private final Cache<UUID, BackupProfile> backupProfileCache = CacheBuilder.newBuilder().expireAfterAccess(3, TimeUnit.MINUTES).build();
 
     public BackupService(BuildSystemPlugin plugin) {
         this.plugin = plugin;
@@ -44,7 +43,7 @@ public class BackupService {
         this.worldStorage = plugin.getWorldService().getWorldStorage();
 
         if (AutoBackup.enabled) {
-            Bukkit.getScheduler().runTaskTimer(plugin, this::incrementTimeSinceBackup, UPDATE_INTERVAL * 20, UPDATE_INTERVAL * 20);
+            Bukkit.getScheduler().runTaskTimer(plugin, this::incrementTimeSinceBackup, UPDATE_PERIOD * 20, UPDATE_PERIOD * 20);
         }
     }
 
@@ -53,8 +52,8 @@ public class BackupService {
     }
 
     /**
-     * Increments the time since a {@link BuildWorld} was backed-up by {@link #UPDATE_INTERVAL} seconds. If the time has surpassed {@link World.Backup#backupInterval}, a backup
-     * will automatically be created.
+     * Increments the time since a {@link BuildWorld} was backed-up by {@link #UPDATE_PERIOD} seconds. If the time has surpassed {@link AutoBackup#interval}, a backup will
+     * automatically be created.
      */
     private void incrementTimeSinceBackup() {
         Set<BuildWorld> worlds = new HashSet<>();
@@ -72,7 +71,7 @@ public class BackupService {
 
         worlds.forEach(buildWorld -> {
             Type<Integer> timeSinceBackup = buildWorld.getData().timeSinceBackup();
-            timeSinceBackup.set((int) (timeSinceBackup.get() + UPDATE_INTERVAL));
+            timeSinceBackup.set((int) (timeSinceBackup.get() + UPDATE_PERIOD));
 
             if (timeSinceBackup.get() > AutoBackup.interval) {
                 getProfile(buildWorld).createBackup();
@@ -108,30 +107,13 @@ public class BackupService {
     public BackupProfile getProfile(BuildWorld buildWorld) {
         try {
             return this.backupProfileCache.get(
-                    new BuildWorldCacheKey(buildWorld),
+                    buildWorld.getUniqueId(),
                     () -> new BackupProfileImpl(this.plugin, this.backupStorage, buildWorld)
             );
         } catch (ExecutionException e) {
             BackupProfileImpl profile = new BackupProfileImpl(this.plugin, this.backupStorage, buildWorld);
-            this.backupProfileCache.put(new BuildWorldCacheKey(buildWorld), profile);
+            this.backupProfileCache.put(buildWorld.getUniqueId(), profile);
             return profile;
-        }
-    }
-
-    private record BuildWorldCacheKey(BuildWorld buildWorld) {
-
-        @Override
-        public boolean equals(Object other) {
-            if (this == other) {
-                return true;
-            }
-
-            if (other == null || getClass() != other.getClass()) {
-                return false;
-            }
-
-            BuildWorldCacheKey that = (BuildWorldCacheKey) other;
-            return Objects.equals(buildWorld.getUniqueId(), that.buildWorld.getUniqueId());
         }
     }
 }

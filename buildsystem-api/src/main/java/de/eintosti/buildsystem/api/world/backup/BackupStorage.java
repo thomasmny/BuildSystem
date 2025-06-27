@@ -22,19 +22,54 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Represents a storage mechanism for managing world backups.
+ */
 public interface BackupStorage {
 
+    /**
+     * Generates a unique backup name based on a given timestamp.
+     *
+     * @param timestamp The timestamp to use for the backup name.
+     * @return A string representing the backup name (e.g., "1678886400000.zip").
+     */
     default String getBackupName(long timestamp) {
         return timestamp + ".zip";
     }
 
-    List<Backup> listBackups(BackupProfile owner, BuildWorld buildWorld);
+    /**
+     * Lists all available {@link Backup}s for a specific {@link BuildWorld}.
+     *
+     * @param buildWorld The world for which to list backups.
+     * @return A list of backup objects associated with the specified world.
+     */
+    List<Backup> listBackups(BuildWorld buildWorld);
 
-    void storeBackup(BackupProfile owner, BuildWorld buildWorld, CompletableFuture<Backup> future);
+    /**
+     * Stores a new {@link Backup} for a given {@link BuildWorld}. The result of the operation is communicated via the provided {@link CompletableFuture}.
+     *
+     * @param buildWorld The world to be backed up.
+     * @param future     A future that will be completed with the backup object upon successful storage, or exceptionally if an error occurs.
+     */
+    void storeBackup(BuildWorld buildWorld, CompletableFuture<Backup> future);
 
+    /**
+     * Downloads a specific {@link Backup} file.
+     *
+     * @param backup The backup object representing the backup to be downloaded
+     * @return A file object pointing to the downloaded backup
+     */
     File downloadBackup(Backup backup);
 
+    /**
+     * Deletes a specific {@link Backup}.
+     *
+     * @param backup The backup object representing the backup to be deleted
+     */
     void deleteBackup(Backup backup);
 
+    /**
+     * Closes the backup storage, releasing any resources.
+     */
     void close();
 }

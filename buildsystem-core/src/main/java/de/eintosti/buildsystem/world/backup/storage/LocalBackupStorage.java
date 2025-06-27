@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.world.backup.storage;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
-import de.eintosti.buildsystem.api.world.backup.BackupProfile;
 import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.util.FileUtils;
@@ -56,12 +55,16 @@ public class LocalBackupStorage implements BackupStorage {
     }
 
     @Override
-    public List<Backup> listBackups(BackupProfile owner, BuildWorld buildWorld) {
+    public List<Backup> listBackups(BuildWorld buildWorld) {
         List<Backup> backups = new ArrayList<>(Config.World.Backup.maxBackupsPerWorld);
 
         try (Stream<Path> walk = Files.walk(getBackupDirectory(buildWorld))) {
             walk.filter(LocalBackupStorage::isValidFile).forEach(path -> backups.add(
-                    new BackupImpl(owner, FileUtils.getDirectoryCreation(path.toFile()), path.toAbsolutePath().toString())
+                    new BackupImpl(
+                            plugin.getBackupService().getProfile(buildWorld),
+                            FileUtils.getDirectoryCreation(path.toFile()),
+                            path.toAbsolutePath().toString()
+                    )
             ));
         } catch (IOException e) {
             plugin.getLogger().log(Level.SEVERE, "Error while listing backups", e);
@@ -73,15 +76,21 @@ public class LocalBackupStorage implements BackupStorage {
     }
 
     @Override
-    public void storeBackup(BackupProfile owner, BuildWorld buildWorld, CompletableFuture<Backup> future) {
-        long currentTime = System.currentTimeMillis();
-        File storage = new File(getBackupDirectory(buildWorld).toFile(), getBackupName(currentTime));
+    public void storeBackup(BuildWorld buildWorld, CompletableFuture<Backup> future) {
+        long timestamp = System.currentTimeMillis();
+        File storage = new File(getBackupDirectory(buildWorld).toFile(), getBackupName(timestamp));
         File zip = FileUtils.zipWorld(storage, buildWorld);
         if (zip == null) {
             future.completeExceptionally(new RuntimeException("Failed to complete the backup for " + buildWorld.getName()));
             return;
         }
-        future.complete(new BackupImpl(owner, currentTime, zip.getAbsolutePath()));
+
+        future.complete(new BackupImpl(
+                plugin.getBackupService().getProfile(buildWorld),
+                timestamp,
+                zip.getAbsolutePath()
+        ));
+        plugin.getLogger().info(String.format("Backed up world '%s'. Took %sms", buildWorld.getName(), (System.currentTimeMillis() - timestamp)));
     }
 
     @Override

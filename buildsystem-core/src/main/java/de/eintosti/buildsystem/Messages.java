@@ -344,6 +344,7 @@ public class Messages {
                 "&7&m-------------------------------------",
                 "%prefix% &7&nWorld info:&b %world%",
                 " ",
+                " &8- &7UUID: &b%uuid%",
                 " &8- &7Creator: &b%creator%",
                 " &8- &7Type: &b%type%",
                 " &8- &7Private: &b%private%",
@@ -587,6 +588,7 @@ public class Messages {
         setMessage(sb, "type_custom", "Custom");
         setMessage(sb, "type_template", "Template");
         setMessage(sb, "type_private", "Private");
+        setMessage(sb, "type_imported", "Imported");
         addSpacer(sb, "");
         addSpacer(sb, "# World Status");
         setMessage(sb, "status_title", "&8Status &7» &3%world%");
@@ -1060,7 +1062,7 @@ public class Messages {
             case VOID -> "type_void";
             case TEMPLATE -> "type_template";
             case PRIVATE -> "type_private";
-            case IMPORTED -> null; // No message key for imported worlds
+            case IMPORTED -> "type_imported";
             case CUSTOM -> "type_custom";
             case UNKNOWN -> null; // No message key for unknown worlds
         };

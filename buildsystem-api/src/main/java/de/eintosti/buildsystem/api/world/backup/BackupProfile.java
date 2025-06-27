@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.bukkit.entity.Player;
 
+/**
+ * Represents a profile for managing backups of a specific {@link BuildWorld}. This interface defines operations related to listing, creating, restoring, and destroying backups.
+ */
 public interface BackupProfile {
 
     /**

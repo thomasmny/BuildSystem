@@ -15,31 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.api.world.backup;
 
 /**
- * Represents a single backup of a {@link de.eintosti.buildsystem.api.world.BuildWorld}.
+ * Provides interfaces and classes for managing world display and rendering.
  */
-public interface Backup {
-
-    /**
-     * Returns the {@link BackupProfile} that owns this backup.
-     *
-     * @return The owner of the backup.
-     */
-    BackupProfile owner();
-
-    /**
-     * Returns the timestamp when this backup was created.
-     *
-     * @return The creation time in milliseconds since the Unix epoch.
-     */
-    long creationTime();
-
-    /**
-     * Returns a unique key or identifier for this backup.
-     *
-     * @return The key of the backup.
-     */
-    String key();
-}
+package de.eintosti.buildsystem.api.world.display;

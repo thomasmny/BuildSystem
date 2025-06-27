@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.world.backup.storage;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
-import de.eintosti.buildsystem.api.world.backup.BackupProfile;
 import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.util.FileUtils;
@@ -55,6 +54,7 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 public class S3BackupStorage implements BackupStorage {
 
     private final BuildSystemPlugin plugin;
+
     private final S3Client s3Client;
     private final String bucket;
     private final String pathPrefix;
@@ -62,6 +62,7 @@ public class S3BackupStorage implements BackupStorage {
 
     public S3BackupStorage(BuildSystemPlugin plugin, @Nullable String url, String accessKey, String secretKey, String region, String bucket, String pathPrefix) {
         this.plugin = plugin;
+
         this.bucket = bucket;
         this.pathPrefix = pathPrefix.endsWith("/") ? pathPrefix : pathPrefix + "/";
         this.tmpDownloadDirectory = FileUtils.resolve(plugin.getDataFolder().toPath(), ".tmp_backup_downloads");
@@ -84,7 +85,7 @@ public class S3BackupStorage implements BackupStorage {
     }
 
     @Override
-    public List<Backup> listBackups(BackupProfile owner, BuildWorld buildWorld) {
+    public List<Backup> listBackups(BuildWorld buildWorld) {
         List<Backup> backups = new ArrayList<>(Config.World.Backup.maxBackupsPerWorld);
 
         try {
@@ -96,7 +97,11 @@ public class S3BackupStorage implements BackupStorage {
             backups.addAll(
                     response.contents().stream()
                             .filter(object -> object.key().endsWith(".zip"))
-                            .map(object -> new BackupImpl(owner, object.lastModified().toEpochMilli(), object.key()))
+                            .map(object -> new BackupImpl(
+                                    plugin.getBackupService().getProfile(buildWorld),
+                                    object.lastModified().toEpochMilli(),
+                                    object.key()
+                            ))
                             .toList()
             );
         } catch (S3Exception | SdkClientException e) {
@@ -109,7 +114,10 @@ public class S3BackupStorage implements BackupStorage {
     }
 
     @Override
-    public void storeBackup(BackupProfile owner, BuildWorld buildWorld, CompletableFuture<Backup> future) {
+    public void storeBackup(BuildWorld buildWorld, CompletableFuture<Backup> future) {
+        long timestamp = System.currentTimeMillis();
+        String key = getBackupDirectory(buildWorld) + getBackupName(timestamp);
+
         byte[] zipBytes;
         try {
             zipBytes = FileUtils.zipWorldToMemory(buildWorld);
@@ -117,9 +125,6 @@ public class S3BackupStorage implements BackupStorage {
             future.completeExceptionally(new RuntimeException("Failed to complete the backup for " + buildWorld.getName()));
             return;
         }
-
-        long currentTime = System.currentTimeMillis();
-        String key = getBackupDirectory(buildWorld) + getBackupName(currentTime);
 
         try {
             this.s3Client.putObject(
@@ -129,7 +134,8 @@ public class S3BackupStorage implements BackupStorage {
                             .build(),
                     RequestBody.fromBytes(zipBytes)
             );
-            future.complete(new BackupImpl(owner, currentTime, key));
+            future.complete(new BackupImpl(plugin.getBackupService().getProfile(buildWorld), timestamp, key));
+            plugin.getLogger().info(String.format("Backed up world '%s'. Took %sms", buildWorld.getName(), (System.currentTimeMillis() - timestamp)));
         } catch (S3Exception | SdkClientException e) {
             future.completeExceptionally(new RuntimeException("Failed to upload backup for " + buildWorld.getName(), e));
         }

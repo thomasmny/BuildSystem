@@ -21,6 +21,7 @@ import de.eintosti.buildsystem.world.SpawnManager;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -49,7 +50,7 @@ public class BackupProfileImpl implements BackupProfile {
     @Override
     public CompletableFuture<List<Backup>> listBackups() {
         synchronized (this.backupLock) {
-            return CompletableFuture.supplyAsync(() -> this.storage.listBackups(this, this.buildWorld));
+            return CompletableFuture.supplyAsync(() -> this.storage.listBackups(this.buildWorld));
         }
     }
 
@@ -63,11 +64,17 @@ public class BackupProfileImpl implements BackupProfile {
         CompletableFuture<Backup> future = new CompletableFuture<>();
         this.listBackups().thenAcceptAsync(backups -> {
             synchronized (this.backupLock) {
-                if (backups.size() >= Config.World.Backup.maxBackupsPerWorld) {
-                    storage.deleteBackup(backups.getLast());
+                int maxBackups = Config.World.Backup.maxBackupsPerWorld;
+                int excess = backups.size() - maxBackups + 1;
+
+                if (excess > 0) {
+                    backups.stream()
+                            .sorted(Comparator.comparingLong(Backup::creationTime))
+                            .limit(excess)
+                            .forEach(storage::deleteBackup);
                 }
 
-                this.storage.storeBackup(this, this.buildWorld, future);
+                this.storage.storeBackup(this.buildWorld, future);
             }
         });
         return future;

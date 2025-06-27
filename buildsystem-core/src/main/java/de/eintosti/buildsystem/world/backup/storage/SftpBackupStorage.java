@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.world.backup.storage;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
-import de.eintosti.buildsystem.api.world.backup.BackupProfile;
 import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.util.FileUtils;
@@ -54,6 +53,7 @@ public class SftpBackupStorage implements BackupStorage {
     private static final int BUFFER_SIZE = 8192;
 
     private final BuildSystemPlugin plugin;
+
     private final String host;
     private final int port;
     private final String username;
@@ -65,6 +65,7 @@ public class SftpBackupStorage implements BackupStorage {
 
     public SftpBackupStorage(BuildSystemPlugin plugin, String host, int port, String username, String password, String remoteBasePath) {
         this.plugin = plugin;
+
         this.host = host;
         this.port = validatePort(port);
         this.username = username;
@@ -119,7 +120,7 @@ public class SftpBackupStorage implements BackupStorage {
     }
 
     @Override
-    public List<Backup> listBackups(BackupProfile owner, BuildWorld buildWorld) {
+    public List<Backup> listBackups(BuildWorld buildWorld) {
         List<Backup> backups = new ArrayList<>(Config.World.Backup.maxBackupsPerWorld);
         String backupDirectory = getBackupDirectory(buildWorld);
 
@@ -134,7 +135,7 @@ public class SftpBackupStorage implements BackupStorage {
                 if (file.getFilename().endsWith(".zip")) {
                     long creationTime = file.getAttributes().getCreateTime().toMillis();
                     String fullPath = backupDirectory + file.getFilename();
-                    backups.add(new BackupImpl(owner, creationTime, fullPath));
+                    backups.add(new BackupImpl(plugin.getBackupService().getProfile(buildWorld), creationTime, fullPath));
                 }
             }
         } catch (IOException e) {
@@ -146,7 +147,12 @@ public class SftpBackupStorage implements BackupStorage {
     }
 
     @Override
-    public void storeBackup(BackupProfile owner, BuildWorld buildWorld, CompletableFuture<Backup> future) {
+    public void storeBackup(BuildWorld buildWorld, CompletableFuture<Backup> future) {
+        long timestamp = System.currentTimeMillis();
+        String backupName = getBackupName(timestamp);
+        String backupDir = getBackupDirectory(buildWorld);
+        String remotePath = backupDir + backupName;
+
         byte[] zipBytes;
         try {
             zipBytes = FileUtils.zipWorldToMemory(buildWorld);
@@ -154,11 +160,6 @@ public class SftpBackupStorage implements BackupStorage {
             future.completeExceptionally(new RuntimeException("Failed to zip world: " + buildWorld.getName()));
             return;
         }
-
-        long timestamp = System.currentTimeMillis();
-        String backupName = getBackupName(timestamp);
-        String backupDir = getBackupDirectory(buildWorld);
-        String remotePath = backupDir + backupName;
 
         try (SftpClient sftp = connect()) {
             createDirectoryIfNotExists(sftp, backupDir);
@@ -170,7 +171,8 @@ public class SftpBackupStorage implements BackupStorage {
                 bufferedOut.write(zipBytes);
                 bufferedOut.flush();
             }
-            future.complete(new BackupImpl(owner, timestamp, remotePath));
+            future.complete(new BackupImpl(plugin.getBackupService().getProfile(buildWorld), timestamp, remotePath));
+            plugin.getLogger().info(String.format("Backed up world '%s'. Took %sms", buildWorld.getName(), (System.currentTimeMillis() - timestamp)));
         } catch (IOException e) {
             future.completeExceptionally(new RuntimeException("Failed to upload SFTP backup", e));
         }
