@@ -35,6 +35,7 @@ import de.eintosti.buildsystem.config.Config.World.Unload;
 import de.eintosti.buildsystem.config.migration.ConfigMigrationManager;
 import de.eintosti.buildsystem.world.backup.storage.LocalBackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.S3BackupStorage;
+import de.eintosti.buildsystem.world.backup.storage.SftpBackupStorage;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -44,7 +45,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
 import org.bukkit.GameRule;
@@ -52,6 +52,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Manages the plugin's configuration, loading and providing access to various settings.
@@ -364,6 +365,8 @@ public class Config {
          */
         public static class Backup {
 
+            @Nullable
+            public static String url = null;
             /**
              * Whether world backups are enabled.
              */
@@ -467,7 +470,8 @@ public class Config {
         Unload.timeUntilUnload = CONFIG.getString("world.unload.time-until-unload", "01:00:00");
         Unload.blacklistedWorlds = new HashSet<>(CONFIG.getStringList("world.unload.blacklisted-worlds"));
         // World - Backup
-        Backup.autoBackup = CONFIG.getBoolean("world.auto-backup", true);
+        Backup.url = CONFIG.getString("world.backup.url");
+        Backup.autoBackup = CONFIG.getBoolean("world.backup.auto-backup", true);
         Backup.backupInterval = CONFIG.getInt("world.backup.backup-interval", 900);
         Backup.maxBackupsPerWorld = Math.min(CONFIG.getInt("world.backup.max-backups-per-world", 5), 9);
         Backup.storage = createBackupStorage(PLUGIN);
@@ -545,6 +549,17 @@ public class Config {
                         s3.getString("region"),
                         s3.getString("bucket"),
                         s3.getString("path")
+                );
+            }
+            case "sftp" -> {
+                ConfigurationSection sftp = CONFIG.getConfigurationSection("world.backup.storage.s3");
+                return new SftpBackupStorage(
+                        plugin,
+                        sftp.getString("host"),
+                        sftp.getInt("port"),
+                        sftp.getString("username"),
+                        sftp.getString("password"),
+                        sftp.getString("path")
                 );
             }
             default -> {

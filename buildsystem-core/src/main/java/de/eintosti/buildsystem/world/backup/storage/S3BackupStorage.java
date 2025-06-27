@@ -23,16 +23,18 @@ import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
 import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.config.Config;
+import de.eintosti.buildsystem.config.Config.World;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.backup.BackupImpl;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
@@ -42,6 +44,7 @@ import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3ClientBuilder;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
@@ -60,22 +63,25 @@ public class S3BackupStorage implements BackupStorage {
         this.plugin = plugin;
         this.bucket = bucket;
         this.pathPrefix = pathPrefix.endsWith("/") ? pathPrefix : pathPrefix + "/";
-        this.s3Client = S3Client.builder()
-                .region(Region.of(region))
-                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
-                .build();
-    }
 
-    private boolean isValidS3Key(String key) {
-        return key.endsWith(".zip");
+        S3ClientBuilder builder = S3Client.builder()
+                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)));
+
+        if (World.Backup.url == null || World.Backup.url.isEmpty()) {
+            builder = builder
+                    .region(Region.of(region));
+        } else {
+            builder = builder
+                    .region(Region.EU_CENTRAL_1) // Dummy value
+                    .endpointOverride(URI.create(World.Backup.url))
+                    .forcePathStyle(true);
+        }
+
+        this.s3Client = builder.build();
     }
 
     private String getBackupDirectory(BuildWorld buildWorld) {
         return this.pathPrefix + buildWorld.getUniqueId() + "/";
-    }
-
-    private Path getTmpDownloadDirectory() {
-        return FileUtils.resolve(plugin.getDataFolder().toPath(), "backups");
     }
 
     @Override
@@ -90,7 +96,7 @@ public class S3BackupStorage implements BackupStorage {
 
             backups.addAll(
                     response.contents().stream()
-                            .filter(object -> isValidS3Key(object.key()))
+                            .filter(object -> object.key().endsWith(".zip"))
                             .map(object -> new BackupImpl(owner, object.lastModified().toEpochMilli(), object.key()))
                             .toList()
             );
@@ -132,7 +138,7 @@ public class S3BackupStorage implements BackupStorage {
 
     @Override
     public File downloadBackup(Backup backup) {
-        Path targetPath = getTmpDownloadDirectory().resolve(Paths.get(backup.key()).getFileName().toString());
+        Path targetPath = FileUtils.resolve(getTmpDownloadDirectory(), UUID.randomUUID() + ".zip");
 
         try {
             this.s3Client.getObject(
@@ -150,6 +156,10 @@ public class S3BackupStorage implements BackupStorage {
         return targetPath.toFile();
     }
 
+    private Path getTmpDownloadDirectory() {
+        return FileUtils.resolve(plugin.getDataFolder().toPath(), ".tmp_backup_downloads");
+    }
+
     @Override
     public void deleteBackup(Backup backup) {
         try {
@@ -162,5 +172,18 @@ public class S3BackupStorage implements BackupStorage {
         } catch (S3Exception | SdkClientException e) {
             plugin.getLogger().log(Level.SEVERE, "Unable to delete backup " + backup.key(), e);
         }
+    }
+
+    @Override
+    public void close() {
+        if (this.s3Client != null) {
+            try {
+                this.s3Client.close();
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.SEVERE, "Error while closing S3 client", e);
+            }
+        }
+
+        FileUtils.deleteDirectory(getTmpDownloadDirectory().toFile());
     }
 }

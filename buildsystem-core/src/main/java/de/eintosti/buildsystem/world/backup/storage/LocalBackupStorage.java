@@ -99,6 +99,11 @@ public class LocalBackupStorage implements BackupStorage {
         }
     }
 
+    @Override
+    public void close() {
+        // Nothing to do for local storage
+    }
+
     /**
      * Gets the directory containing the backups for this profile. This directory may not exist.
      *

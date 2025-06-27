@@ -24,6 +24,10 @@ import java.util.concurrent.CompletableFuture;
 
 public interface BackupStorage {
 
+    default String getBackupName(long timestamp) {
+        return timestamp + ".zip";
+    }
+
     List<Backup> listBackups(BackupProfile owner, BuildWorld buildWorld);
 
     void storeBackup(BackupProfile owner, BuildWorld buildWorld, CompletableFuture<Backup> future);
@@ -32,7 +36,5 @@ public interface BackupStorage {
 
     void deleteBackup(Backup backup);
 
-    default String getBackupName(long timestamp) {
-        return timestamp + ".zip";
-    }
+    void close();
 }

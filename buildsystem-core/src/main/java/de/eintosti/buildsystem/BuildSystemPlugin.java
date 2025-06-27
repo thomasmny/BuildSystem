@@ -185,6 +185,8 @@ public class BuildSystemPlugin extends JavaPlugin {
             playerService.closeNavigator(pl);
         });
 
+        this.backupService.getStorage().close();
+
         reloadConfigData(false);
         saveConfig();
         saveBuildConfig();

@@ -47,6 +47,10 @@ public class BackupService {
         }
     }
 
+    public BackupStorage getStorage() {
+        return this.backupStorage;
+    }
+
     /**
      * Increments the time since a {@link BuildWorld} was backed-up by {@link #UPDATE_INTERVAL} seconds. If the time has surpassed {@link World.Backup#backupInterval}, a backup
      * will automatically be created.

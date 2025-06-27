@@ -66,13 +66,20 @@ world:
     backup-interval: 900 # In seconds
     max-backups-per-world: 5 # Maximum: 9
     storage:
-      # Options: local, s3
+      # Options: local, s3, sftp
       type: local
       s3:
-        access-key: YOUR_AWS_ACCESS_KEY
-        secret-key: YOUR_AWS_SECRET_KEY
+        url: null # Only required when not using AWS S3
+        access-key: YOUR_ACCESS_KEY
+        secret-key: YOUR_SECRET_KEY
         region: eu-central-1
         bucket: buildsystem-backups
+        path: backups/worlds/
+      sftp:
+        host: YOUR_SFTP_HOST
+        port: 22
+        username: YOUR_SFTP_USERNAME
+        password: YOUR_SFTP_PASSWORD
         path: backups/worlds/
 folder:
   override-permissions: true
