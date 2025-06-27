@@ -286,7 +286,13 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
      * @return A configured {@link WorldCreator}
      */
     private WorldCreator createBukkitWorldCreator() {
-        WorldCreator worldCreator = new WorldCreator(worldName);
+        WorldCreator worldCreator = new WorldCreator(this.worldName);
+        BuildWorldType worldType = this.worldType;
+
+        if (worldType == BuildWorldType.IMPORTED && this.customGenerator != null && this.customGenerator.name() != null) {
+            // For imported worlds we store the world type generator within the custom generator
+            worldType = BuildWorldType.valueOf(this.customGenerator.name().toUpperCase(Locale.ROOT));
+        }
 
         switch (worldType) {
             case VOID:
@@ -308,8 +314,8 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
                 worldCreator.environment(World.Environment.THE_END);
                 break;
             case CUSTOM:
-                if (customGenerator != null) {
-                    worldCreator.generator(customGenerator.chunkGenerator());
+                if (this.customGenerator != null) {
+                    worldCreator.generator(this.customGenerator.chunkGenerator());
                 }
                 // Fall-through to NORMAL for default settings
             default: // NORMAL

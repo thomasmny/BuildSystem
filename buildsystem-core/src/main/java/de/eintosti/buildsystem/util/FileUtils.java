@@ -141,12 +141,21 @@ public final class FileUtils {
      * @param directory Directory to delete
      */
     public static void deleteDirectory(File directory) {
-        try (Stream<Path> walk = Files.walk(directory.toPath())) {
+        deleteDirectory(directory.toPath());
+    }
+
+    /**
+     * Deletes a directory recursively.
+     *
+     * @param directoryPath The path of the directory to delete
+     */
+    public static void deleteDirectory(Path directoryPath) {
+        try (Stream<Path> walk = Files.walk(directoryPath)) {
             walk.sorted(Comparator.reverseOrder())
                     .map(Path::toFile)
                     .forEach(File::delete);
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to delete directory " + directory.getAbsolutePath(), e);
+            LOGGER.log(Level.SEVERE, "Failed to delete directory " + directoryPath.toAbsolutePath(), e);
         }
     }
 

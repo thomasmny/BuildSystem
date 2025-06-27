@@ -75,56 +75,46 @@ public class BackupProfileImpl implements BackupProfile {
 
     @Override
     public void restoreBackup(Backup backup, Player player) {
-        File backupFile = this.storage.downloadBackup(backup);
-        if (backupFile == null || !Files.exists(backupFile.toPath())) {
-            throw new IllegalArgumentException("The specific backup does not exist");
-        }
-
         String worldName = this.buildWorld.getName();
         World world = this.buildWorld.getWorld();
-        if (world == null && !this.buildWorld.isLoaded()) {
-            this.buildWorld.getLoader().load();
-        }
-
         if (world == null) {
             Messages.sendMessage(player, "worlds_backup_unknown_world");
             return;
+        }
+
+        List<Player> removedPlayers = plugin.getWorldService().removePlayersFromWorld(worldName, "worlds_backup_restoration_in_progress");
+
+        File backupFile = this.storage.downloadBackup(backup);
+        if (backupFile == null || !Files.exists(backupFile.toPath())) {
+            throw new IllegalArgumentException("The specific backup does not exist");
         }
 
         SpawnManager spawnManager = plugin.getSpawnManager();
         Location spawn = spawnManager.getSpawn();
         boolean isSpawn = spawnManager.spawnExists() && spawnManager.getSpawnWorld().equals(world);
 
-        List<Player> removedPlayers = plugin.getWorldService().removePlayersFromWorld(worldName, "worlds_backup_restoration_in_progress");
+        this.buildWorld.getUnloader().forceUnload(false);
+        FileUtils.deleteDirectory(new File(Bukkit.getWorldContainer(), worldName));
 
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            this.buildWorld.getUnloader().forceUnload(false);
-        }, 20L);
+        try (ZipFile zip = new ZipFile(backupFile)) {
+            zip.extractAll(FileUtils.resolve(Bukkit.getWorldContainer().toPath(), this.buildWorld.getName()).toString());
+        } catch (IOException e) {
+            plugin.getLogger().warning("Failed to restore backup at: " + backupFile.getAbsolutePath());
+            return;
+        }
 
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            FileUtils.deleteDirectory(new File(Bukkit.getWorldContainer(), worldName));
+        this.buildWorld.getLoader().load();
+        WorldTeleporter worldTeleporter = this.buildWorld.getTeleporter();
+        removedPlayers.stream().filter(Objects::nonNull).forEach(worldTeleporter::teleport);
 
-            try (ZipFile zip = new ZipFile(backupFile)) {
-                zip.extractAll(Bukkit.getWorldContainer().getAbsolutePath());
-            } catch (IOException e) {
-                plugin.getLogger().warning("Failed to restore backup at: " + backupFile.getAbsolutePath());
-                return;
-            }
+        if (isSpawn) {
+            spawn.setWorld(Bukkit.getWorld(worldName));
+            spawnManager.set(spawn, worldName);
+        }
 
-            this.buildWorld.getLoader().load();
-
-            WorldTeleporter worldTeleporter = this.buildWorld.getTeleporter();
-            removedPlayers.stream().filter(Objects::nonNull).forEach(worldTeleporter::teleport);
-
-            if (isSpawn) {
-                spawn.setWorld(Bukkit.getWorld(worldName));
-                spawnManager.set(spawn, worldName);
-            }
-
-            Messages.sendMessage(player, "worlds_backup_restoration_successful",
-                    Map.entry("%timestamp%", StringUtils.formatTime(backup.creationTime()))
-            );
-        }, 60L);
+        Messages.sendMessage(player, "worlds_backup_restoration_successful",
+                Map.entry("%timestamp%", StringUtils.formatTime(backup.creationTime()))
+        );
     }
 
     @Override

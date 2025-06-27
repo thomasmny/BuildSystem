@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.util.WorldUnloader;
 import de.eintosti.buildsystem.config.Config.World.Unload;
 import de.eintosti.buildsystem.world.SpawnManager;
+import java.util.Arrays;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
@@ -123,11 +124,8 @@ public class WorldUnloaderImpl implements WorldUnloader {
         }
 
         if (save) {
+            Arrays.stream(bukkitWorld.getLoadedChunks()).forEach(Chunk::unload);
             bukkitWorld.save();
-        }
-
-        for (Chunk chunk : bukkitWorld.getLoadedChunks()) {
-            chunk.unload(save);
         }
 
         if (!Bukkit.unloadWorld(bukkitWorld, save)) {

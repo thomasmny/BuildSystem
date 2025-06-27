@@ -17,6 +17,7 @@ import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.api.world.data.WorldData.Type;
 import de.eintosti.buildsystem.config.Config.World;
 import de.eintosti.buildsystem.config.Config.World.Backup;
+import de.eintosti.buildsystem.config.Config.World.Backup.AutoBackup;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Objects;
@@ -42,7 +43,7 @@ public class BackupService {
         this.backupStorage = Backup.storage;
         this.worldStorage = plugin.getWorldService().getWorldStorage();
 
-        if (Backup.autoBackup) {
+        if (AutoBackup.enabled) {
             Bukkit.getScheduler().runTaskTimer(plugin, this::incrementTimeSinceBackup, UPDATE_INTERVAL * 20, UPDATE_INTERVAL * 20);
         }
     }
@@ -58,18 +59,22 @@ public class BackupService {
     private void incrementTimeSinceBackup() {
         Set<BuildWorld> worlds = new HashSet<>();
 
-        for (Player pl : Bukkit.getOnlinePlayers()) {
-            BuildWorld buildWorld = worldStorage.getBuildWorld(pl.getWorld().getName());
-            if (buildWorld != null && buildWorld.getPermissions().canModify(pl, () -> true)) {
-                worlds.add(buildWorld);
+        if (AutoBackup.onlyActiveWorlds) {
+            for (Player pl : Bukkit.getOnlinePlayers()) {
+                BuildWorld buildWorld = worldStorage.getBuildWorld(pl.getWorld().getName());
+                if (buildWorld != null && buildWorld.getPermissions().canModify(pl, () -> true)) {
+                    worlds.add(buildWorld);
+                }
             }
+        } else {
+            worlds.addAll(worldStorage.getBuildWorlds());
         }
 
         worlds.forEach(buildWorld -> {
             Type<Integer> timeSinceBackup = buildWorld.getData().timeSinceBackup();
             timeSinceBackup.set((int) (timeSinceBackup.get() + UPDATE_INTERVAL));
 
-            if (timeSinceBackup.get() > World.Backup.backupInterval) {
+            if (timeSinceBackup.get() > AutoBackup.interval) {
                 getProfile(buildWorld).createBackup();
                 timeSinceBackup.set(0);
             }

@@ -391,7 +391,7 @@ public class WorldServiceImpl implements WorldService {
                 teleported = true;
             } else if (!fallbackWorld.equals(worldToRemove)) {
                 // Spawn doesn't exist, the fallback world is usable -> teleport
-                PaperLib.teleportAsync(player, fallbackSpawn);
+                player.teleport(fallbackSpawn);
                 teleported = true;
             }
 

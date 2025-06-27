@@ -62,9 +62,11 @@ world:
       - world_nether
       - worth_the_end
   backup:
-    auto-backup: true
-    backup-interval: 900 # In seconds
-    max-backups-per-world: 5 # Maximum: 9
+    max-backups-per-world: 5 # Maximum: 18
+    auto-backup:
+      enabled: true
+      interval: 900 # In seconds
+      only-active-worlds: true
     storage:
       # Options: local, s3, sftp
       type: local

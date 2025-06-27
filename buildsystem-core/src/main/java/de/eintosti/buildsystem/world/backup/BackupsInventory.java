@@ -12,7 +12,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
-import de.eintosti.buildsystem.config.Config.World;
+import de.eintosti.buildsystem.config.Config.World.Backup.AutoBackup;
 import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
 import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
@@ -61,12 +61,12 @@ public class BackupsInventory extends BuildSystemInventory {
         inventory.setItem(4, InventoryUtils.createItem(XMaterial.OAK_HANGING_SIGN,
                 Messages.getString("backups_information_name", player),
                 Messages.getStringList("backups_information_lore", player,
-                        Map.entry("%interval%", World.Backup.backupInterval / 60),
+                        Map.entry("%interval%", AutoBackup.interval / 60),
                         Map.entry("%remaining%", getDurationUntilBackup(buildWorld))
                 )
         ));
 
-        for (int i = 18; i <= 26; i++) {
+        for (int i = 27; i <= 35; i++) {
             InventoryUtils.addGlassPane(player, inventory, i);
         }
 
@@ -102,7 +102,7 @@ public class BackupsInventory extends BuildSystemInventory {
      * @return A string representing the duration until the next backup
      */
     private String getDurationUntilBackup(BuildWorld buildWorld) {
-        int timeUntilBackup = World.Backup.backupInterval;
+        int timeUntilBackup = AutoBackup.interval;
         int timeSinceBackup = buildWorld.getData().timeSinceBackup().get();
 
         Date date = new Date((timeUntilBackup - timeSinceBackup) * 1000L);
@@ -153,7 +153,7 @@ public class BackupsInventory extends BuildSystemInventory {
             event.setCancelled(true);
 
             int slot = event.getSlot();
-            if (slot >= FIRST_BACKUP_SLOT && slot < FIRST_BACKUP_SLOT + 9 && itemStack.getType() == XMaterial.GRASS_BLOCK.get()) {
+            if (slot >= FIRST_BACKUP_SLOT && slot < FIRST_BACKUP_SLOT + 18 && itemStack.getType() == XMaterial.GRASS_BLOCK.get()) {
                 Backup backup = backupsHolder.getBackups().get(slot - FIRST_BACKUP_SLOT);
                 if (backup == null) {
                     logger.warning("Could not find backup for slot " + slot + " in backups inventory for player " + player.getName());
@@ -188,7 +188,7 @@ public class BackupsInventory extends BuildSystemInventory {
         private final List<Backup> backups;
 
         public BackupsHolder(BuildSystemInventory inventory, BuildWorld buildWorld, Player player, List<Backup> backups) {
-            super(inventory, buildWorld, 27, Messages.getString("backups_title", player));
+            super(inventory, buildWorld, 36, Messages.getString("backups_title", player));
             this.backups = backups;
         }
 

@@ -253,20 +253,14 @@ public class SftpBackupStorage implements BackupStorage {
 
     @Override
     public void close() {
-        try {
-            if (Files.exists(tmpDownloadPath)) {
-                FileUtils.deleteDirectory(tmpDownloadPath.toFile());
-            }
-        } catch (Exception e) {
-            plugin.getLogger().log(Level.WARNING, "Failed to clean up temporary download directory", e);
-        }
-
-        if (sshClient != null && !sshClient.isClosed()) {
+        if (this.sshClient != null && !this.sshClient.isClosed()) {
             try {
-                sshClient.stop();
+                this.sshClient.stop();
             } catch (Exception e) {
                 plugin.getLogger().log(Level.WARNING, "Failed to properly close SSH client", e);
             }
         }
+
+        FileUtils.deleteDirectory(this.tmpDownloadPath);
     }
 }

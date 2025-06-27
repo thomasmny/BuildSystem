@@ -72,7 +72,7 @@ public final class BuildWorldImpl implements BuildWorld {
             BuildWorldType worldType,
             long creation,
             boolean privateWorld,
-            CustomGenerator customGenerator
+            @Nullable CustomGenerator customGenerator
     ) {
         this(
                 UUID.randomUUID(),
@@ -98,7 +98,7 @@ public final class BuildWorldImpl implements BuildWorld {
             Builder creator,
             List<Builder> builders,
             long creation,
-            CustomGenerator customGenerator
+            @Nullable CustomGenerator customGenerator
     ) {
         this.uuid = uuid;
         this.name = name;

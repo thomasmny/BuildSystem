@@ -23,7 +23,6 @@ import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
 import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.config.Config;
-import de.eintosti.buildsystem.config.Config.World;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.backup.BackupImpl;
 import java.io.File;
@@ -38,6 +37,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.Nullable;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkClientException;
@@ -60,23 +60,20 @@ public class S3BackupStorage implements BackupStorage {
     private final String pathPrefix;
     private final Path tmpDownloadDirectory;
 
-    public S3BackupStorage(BuildSystemPlugin plugin, String accessKey, String secretKey, String region, String bucket, String pathPrefix) {
+    public S3BackupStorage(BuildSystemPlugin plugin, @Nullable String url, String accessKey, String secretKey, String region, String bucket, String pathPrefix) {
         this.plugin = plugin;
         this.bucket = bucket;
         this.pathPrefix = pathPrefix.endsWith("/") ? pathPrefix : pathPrefix + "/";
         this.tmpDownloadDirectory = FileUtils.resolve(plugin.getDataFolder().toPath(), ".tmp_backup_downloads");
 
         S3ClientBuilder builder = S3Client.builder()
-                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)));
+                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
+                .region(Region.of(region));
 
-        if (World.Backup.url == null || World.Backup.url.isEmpty()) {
+        if (url != null && !url.isEmpty()) {
             builder = builder
-                    .region(Region.of(region));
-        } else {
-            builder = builder
-                    .region(Region.EU_CENTRAL_1) // Dummy value
-                    .endpointOverride(URI.create(World.Backup.url))
-                    .forcePathStyle(true);
+                    .region(Region.of(region))
+                    .endpointOverride(URI.create(url));
         }
 
         this.s3Client = builder.build();
@@ -182,6 +179,6 @@ public class S3BackupStorage implements BackupStorage {
             }
         }
 
-        FileUtils.deleteDirectory(this.tmpDownloadDirectory.toFile());
+        FileUtils.deleteDirectory(this.tmpDownloadDirectory);
     }
 }

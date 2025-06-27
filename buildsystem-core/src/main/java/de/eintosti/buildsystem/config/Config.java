@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.config.Config.Settings.Builder;
 import de.eintosti.buildsystem.config.Config.Settings.Navigator;
 import de.eintosti.buildsystem.config.Config.Settings.SaveFromDeath;
 import de.eintosti.buildsystem.config.Config.World.Backup;
+import de.eintosti.buildsystem.config.Config.World.Backup.AutoBackup;
 import de.eintosti.buildsystem.config.Config.World.Default;
 import de.eintosti.buildsystem.config.Config.World.Default.Permission;
 import de.eintosti.buildsystem.config.Config.World.Default.Settings.BuildersEnabled;
@@ -365,22 +366,30 @@ public class Config {
          */
         public static class Backup {
 
-            @Nullable
-            public static String url = null;
-            /**
-             * Whether world backups are enabled.
-             */
-            public static boolean autoBackup = true;
-            /**
-             * The interval in seconds between automatic backups.
-             */
-            public static int backupInterval = 900;
             /**
              * The maximum number of backups to keep per world.
              */
             public static int maxBackupsPerWorld = 5;
-
+            /**
+             * The storage for backups.
+             */
             public static BackupStorage storage;
+
+            public static class AutoBackup {
+
+                /**
+                 * Whether automatic backups are enabled.
+                 */
+                public static boolean enabled = true;
+                /**
+                 * Whether only active worlds should be backed up.
+                 */
+                public static boolean onlyActiveWorlds;
+                /**
+                 * The interval in seconds between automatic backups.
+                 */
+                public static int interval = 900;
+            }
         }
     }
 
@@ -470,11 +479,12 @@ public class Config {
         Unload.timeUntilUnload = CONFIG.getString("world.unload.time-until-unload", "01:00:00");
         Unload.blacklistedWorlds = new HashSet<>(CONFIG.getStringList("world.unload.blacklisted-worlds"));
         // World - Backup
-        Backup.url = CONFIG.getString("world.backup.url");
-        Backup.autoBackup = CONFIG.getBoolean("world.backup.auto-backup", true);
-        Backup.backupInterval = CONFIG.getInt("world.backup.backup-interval", 900);
-        Backup.maxBackupsPerWorld = Math.min(CONFIG.getInt("world.backup.max-backups-per-world", 5), 9);
-        Backup.storage = createBackupStorage(PLUGIN);
+        Backup.maxBackupsPerWorld = Math.min(CONFIG.getInt("world.backup.max-backups-per-world", 5), 18);
+        Backup.storage = createBackupStorage();
+        // World - Backup - AutoBackup
+        AutoBackup.enabled = CONFIG.getBoolean("world.backup.auto-backup.enabled", true);
+        AutoBackup.interval = CONFIG.getInt("world.backup.auto-backup.interval", 900);
+        AutoBackup.onlyActiveWorlds = CONFIG.getBoolean("world.backup.auto-backup.only-active-worlds", true);
 
         // Folder
         Folder.overridePermissions = CONFIG.getBoolean("folder.override-permissions", true);
@@ -536,14 +546,15 @@ public class Config {
         return XMaterial.matchXMaterial(wand).orElse(defaultWand);
     }
 
-    private static BackupStorage createBackupStorage(BuildSystemPlugin plugin) {
+    private static BackupStorage createBackupStorage() {
         String type = CONFIG.getString("world.backup.storage.type", "local").toLowerCase();
 
         switch (type) {
             case "s3" -> {
                 ConfigurationSection s3 = CONFIG.getConfigurationSection("world.backup.storage.s3");
                 return new S3BackupStorage(
-                        plugin,
+                        PLUGIN,
+                        s3.getString("url"),
                         s3.getString("access-key"),
                         s3.getString("secret-key"),
                         s3.getString("region"),
@@ -552,9 +563,9 @@ public class Config {
                 );
             }
             case "sftp" -> {
-                ConfigurationSection sftp = CONFIG.getConfigurationSection("world.backup.storage.s3");
+                ConfigurationSection sftp = CONFIG.getConfigurationSection("world.backup.storage.sftp");
                 return new SftpBackupStorage(
-                        plugin,
+                        PLUGIN,
                         sftp.getString("host"),
                         sftp.getInt("port"),
                         sftp.getString("username"),
@@ -564,9 +575,9 @@ public class Config {
             }
             default -> {
                 if (!type.equals("local")) {
-                    plugin.getLogger().warning("Unknown backup storage type '" + type + "', defaulting to local storage.");
+                    PLUGIN.getLogger().warning("Unknown backup storage type '" + type + "', defaulting to local storage.");
                 }
-                return new LocalBackupStorage(plugin);
+                return new LocalBackupStorage(PLUGIN);
             }
         }
     }
