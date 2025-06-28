@@ -53,13 +53,13 @@ import de.eintosti.buildsystem.listener.AsyncPlayerPreLoginListener;
 import de.eintosti.buildsystem.listener.BlockPhysicsListener;
 import de.eintosti.buildsystem.listener.BlockPlaceListener;
 import de.eintosti.buildsystem.listener.BuildModePreventationListener;
-import de.eintosti.buildsystem.listener.BuildSystemInventoryListener;
 import de.eintosti.buildsystem.listener.BuildWorldResetUnloadListener;
 import de.eintosti.buildsystem.listener.EditSessionListener;
 import de.eintosti.buildsystem.listener.EntityDamageListener;
 import de.eintosti.buildsystem.listener.EntitySpawnListener;
 import de.eintosti.buildsystem.listener.FoodLevelChangeListener;
 import de.eintosti.buildsystem.listener.InventoryCreativeListener;
+import de.eintosti.buildsystem.listener.InventoryListener;
 import de.eintosti.buildsystem.listener.NavigatorListener;
 import de.eintosti.buildsystem.listener.PlayerChangedWorldListener;
 import de.eintosti.buildsystem.listener.PlayerCommandPreprocessListener;
@@ -90,6 +90,7 @@ import de.eintosti.buildsystem.tabcomplete.SpeedTabComplete;
 import de.eintosti.buildsystem.tabcomplete.TimeTabComplete;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.UpdateChecker;
+import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.world.SpawnManager;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.backup.BackupService;
@@ -117,8 +118,9 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     private ArmorStandManager armorStandManager;
     private CustomBlocksManager customBlocksManager;
-    private NoClipManager noClipManager;
+    private InventoryManager inventoryManager;
     private PlayerServiceImpl playerService;
+    private NoClipManager noClipManager;
     private SettingsManager settingsManager;
     private SpawnManager spawnManager;
     private WorldServiceImpl worldService;
@@ -203,6 +205,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     private void initClasses() {
         this.customizableIcons = new CustomizableIcons(this);
 
+        this.inventoryManager = new InventoryManager();
         this.armorStandManager = new ArmorStandManager();
         this.customBlocksManager = new CustomBlocksManager(this);
         this.playerService = new PlayerServiceImpl(this);
@@ -251,11 +254,11 @@ public class BuildSystemPlugin extends JavaPlugin {
         new BlockPhysicsListener(this);
         new BlockPlaceListener(this);
         new BuildModePreventationListener(this);
-        new BuildSystemInventoryListener(this);
         new BuildWorldResetUnloadListener(this);
         new EntitySpawnListener(this);
         new FoodLevelChangeListener(this);
         new InventoryCreativeListener(this);
+        new InventoryListener(this);
         new NavigatorListener(this);
         new PlayerChangedWorldListener(this);
         new EntityDamageListener(this);
@@ -405,6 +408,10 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     public CustomBlocksManager getCustomBlocksManager() {
         return customBlocksManager;
+    }
+
+    public InventoryManager getInventoryManager() {
+        return inventoryManager;
     }
 
     public PlayerServiceImpl getPlayerService() {

@@ -18,29 +18,34 @@
 package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
+import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 
-public class BuildSystemInventoryListener implements Listener {
+public class InventoryListener implements Listener {
 
-    public BuildSystemInventoryListener(BuildSystemPlugin plugin) {
+    private final InventoryManager inventoryManager;
+
+    public InventoryListener(BuildSystemPlugin plugin) {
+        this.inventoryManager = plugin.getInventoryManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler
+    public void onInventoryOpen(InventoryOpenEvent event) {
+        this.inventoryManager.handleOpen(event);
+    }
+
+    @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (event.getInventory().getHolder() instanceof BuildSystemHolder holder) {
-            holder.getBuildSystemInventory().onClick(event);
-        }
+        this.inventoryManager.handleClick(event);
     }
 
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
-        if (event.getInventory().getHolder() instanceof BuildSystemHolder holder) {
-            holder.getBuildSystemInventory().onClose(event);
-        }
+        this.inventoryManager.handleClose(event);
     }
 }
