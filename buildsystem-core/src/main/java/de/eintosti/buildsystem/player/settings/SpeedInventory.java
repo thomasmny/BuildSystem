@@ -19,9 +19,11 @@ package de.eintosti.buildsystem.player.settings;
 
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
-import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
+import de.eintosti.buildsystem.util.inventory.InventoryHandler;
+import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import java.util.Map;
 import org.bukkit.entity.Player;
@@ -29,14 +31,22 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-public class SpeedInventory extends BuildSystemInventory {
+public class SpeedInventory implements InventoryHandler {
+
+    private final InventoryManager inventoryManager;
+
+    public SpeedInventory(BuildSystemPlugin plugin) {
+        this.inventoryManager = plugin.getInventoryManager();
+    }
 
     public void openInventory(Player player) {
-        player.openInventory(getInventory(player));
+        Inventory inventory = getInventory(player);
+        this.inventoryManager.registerInventoryHandler(inventory, this);
+        player.openInventory(inventory);
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = new SpeedInventoryHolder(this, player).getInventory();
+        Inventory inventory = new SpeedInventoryHolder(player).getInventory();
         fillGuiWithGlass(player, inventory);
 
         inventory.setItem(11, InventoryUtils.createSkull(Messages.getString("speed_1", player), Profileable.detect("71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530")));
@@ -108,8 +118,8 @@ public class SpeedInventory extends BuildSystemInventory {
 
     private static class SpeedInventoryHolder extends BuildSystemHolder {
 
-        public SpeedInventoryHolder(BuildSystemInventory inventory, Player player) {
-            super(inventory, 27, Messages.getString("speed_title", player));
+        public SpeedInventoryHolder(Player player) {
+            super(27, Messages.getString("speed_title", player));
         }
     }
 }

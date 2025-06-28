@@ -15,8 +15,9 @@ import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.config.Config.World.Backup.AutoBackup;
 import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
-import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
 import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
+import de.eintosti.buildsystem.util.inventory.InventoryHandler;
+import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -33,24 +34,28 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
-public class BackupsInventory extends BuildSystemInventory {
+public class BackupsInventory implements InventoryHandler {
 
     private static final int FIRST_BACKUP_SLOT = 9;
 
     private final Logger logger;
+    private final InventoryManager inventoryManager;
     private final BackupService backupService;
 
     public BackupsInventory(BuildSystemPlugin plugin) {
         this.logger = plugin.getLogger();
+        this.inventoryManager = plugin.getInventoryManager();
         this.backupService = plugin.getBackupService();
     }
 
     public void openBackupsInventory(Player player, BuildWorld buildWorld) {
-        player.openInventory(getBackupsInventory(player, buildWorld));
+        Inventory inventory = getBackupsInventory(player, buildWorld);
+        this.inventoryManager.registerInventoryHandler(inventory, this);
+        player.openInventory(inventory);
     }
 
     private Inventory getBackupsInventory(Player player, BuildWorld buildWorld) {
-        BackupsHolder backupsHolder = new BackupsHolder(this, buildWorld, player, new ArrayList<>());
+        BackupsHolder backupsHolder = new BackupsHolder(buildWorld, player, new ArrayList<>());
         Inventory inventory = backupsHolder.getInventory();
         loadBackups(backupsHolder, buildWorld, player);
 
@@ -111,11 +116,13 @@ public class BackupsInventory extends BuildSystemInventory {
     }
 
     public void openConfirmationInventory(Player player, Backup backup) {
-        player.openInventory(getConfirmationInventory(player, backup));
+        Inventory inventory = getConfirmationInventory(player, backup);
+        this.inventoryManager.registerInventoryHandler(inventory, this);
+        player.openInventory(inventory);
     }
 
     private Inventory getConfirmationInventory(Player player, Backup backup) {
-        Inventory inventory = new ConfirmationHolder(this, backup, player).getInventory();
+        Inventory inventory = new ConfirmationHolder(backup, player).getInventory();
 
         for (int slot : new int[]{0, 1, 2, 3, 9, 10, 12, 18, 19, 20, 21}) {
             inventory.setItem(slot, InventoryUtils.createItem(XMaterial.LIME_STAINED_GLASS_PANE, "§a"));
@@ -187,8 +194,8 @@ public class BackupsInventory extends BuildSystemInventory {
 
         private final List<Backup> backups;
 
-        public BackupsHolder(BuildSystemInventory inventory, BuildWorld buildWorld, Player player, List<Backup> backups) {
-            super(inventory, buildWorld, 36, Messages.getString("backups_title", player));
+        public BackupsHolder(BuildWorld buildWorld, Player player, List<Backup> backups) {
+            super(buildWorld, 36, Messages.getString("backups_title", player));
             this.backups = backups;
         }
 
@@ -201,8 +208,8 @@ public class BackupsInventory extends BuildSystemInventory {
 
         private final Backup backup;
 
-        public ConfirmationHolder(BuildSystemInventory inventory, Backup backup, Player player) {
-            super(inventory, 27, Messages.getString("restore_backup_title", player));
+        public ConfirmationHolder(Backup backup, Player player) {
+            super(27, Messages.getString("restore_backup_title", player));
             this.backup = backup;
         }
 
