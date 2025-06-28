@@ -32,50 +32,50 @@ public enum BuildWorldType {
     /**
      * A standard world type, equivalent to a default Minecraft overworld with {@link Environment#NORMAL}.
      */
-    NORMAL(),
+    NORMAL,
 
     /**
      * A super-flat world, ideal for creative building without terrain obstacles.
      */
-    FLAT(),
+    FLAT,
 
     /**
      * A world type representing the Nether dimension, with {@link Environment#NETHER}.
      */
-    NETHER(),
+    NETHER,
 
     /**
      * A world type representing the End dimension, with {@link Environment#THE_END}.
      */
-    END(),
+    END,
 
     /**
      * An empty world, containing no blocks except for a single platform at spawn.
      */
-    VOID(),
+    VOID,
 
     /**
      * A world created as an identical copy of an existing template world.
      */
-    TEMPLATE(),
+    TEMPLATE,
 
     /**
      * A world that, by default, can only be modified by its creator.
      */
-    PRIVATE(),
+    PRIVATE,
 
     /**
      * A world that was not originally created by the BuildSystem plugin but has been imported for management.
      */
-    IMPORTED(),
+    IMPORTED,
 
     /**
      * A world generated using a custom {@link ChunkGenerator}.
      */
-    CUSTOM(),
+    CUSTOM,
 
     /**
      * A world whose type could not be determined or is not recognized by the BuildSystem.
      */
-    UNKNOWN()
+    UNKNOWN
 }

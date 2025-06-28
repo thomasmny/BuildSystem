@@ -101,6 +101,13 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                         break;
                     }
 
+                    case "backup": {
+                        if (player.hasPermission(WorldsArgument.BACKUP.getPermission() + ".create")) {
+                            addArgument(args[1], "create", arrayList);
+                        }
+                        break;
+                    }
+
                     case "delete": {
                         worldStorage.getBuildWorlds().stream()
                                 .filter(world -> world.getPermissions().canPerformCommand(player, "buildsystem." + args[0].toLowerCase(Locale.ROOT)))
@@ -240,6 +247,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
 
     public enum WorldsArgument implements Argument {
         ADD_BUILDER("addBuilder", "buildsystem.addbuilder"),
+        BACKUP("backup", "buildsystem.backup"),
         BUILDERS("builders", "buildsystem.builders"),
         DELETE("delete", "buildsystem.delete"),
         EDIT("edit", "buildsystem.edit"),

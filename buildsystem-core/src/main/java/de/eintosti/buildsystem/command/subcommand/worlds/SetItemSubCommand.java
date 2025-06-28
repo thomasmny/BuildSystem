@@ -32,11 +32,9 @@ import org.bukkit.inventory.ItemStack;
 
 public class SetItemSubCommand implements SubCommand {
 
-    private final BuildSystemPlugin plugin;
     private final BuildWorld buildWorld;
 
     public SetItemSubCommand(BuildSystemPlugin plugin, String worldName) {
-        this.plugin = plugin;
         this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
     }
 

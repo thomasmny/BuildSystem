@@ -23,7 +23,7 @@ import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.WorldData;
-import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import fr.mrmicky.fastboard.FastBoard;
 import java.util.HashMap;
@@ -37,14 +37,12 @@ import org.bukkit.scheduler.BukkitTask;
 public class SettingsManager {
 
     private final BuildSystemPlugin plugin;
-    private final ConfigValues configValues;
     private final WorldServiceImpl worldService;
 
     private final Map<UUID, FastBoard> boards;
 
     public SettingsManager(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.configValues = plugin.getConfigValues();
         this.worldService = plugin.getWorldService();
 
         this.boards = new HashMap<>();
@@ -79,7 +77,7 @@ public class SettingsManager {
      * @param player The player object
      */
     public void startScoreboard(Player player) {
-        if (!configValues.isScoreboard()) {
+        if (!Config.Settings.scoreboard) {
             return;
         }
 
@@ -102,7 +100,7 @@ public class SettingsManager {
      * Set each player's scoreboard if they have {@link SettingsImpl#isScoreboard} enabled.
      */
     public void startScoreboard() {
-        if (!configValues.isScoreboard()) {
+        if (!Config.Settings.scoreboard) {
             return;
         }
 

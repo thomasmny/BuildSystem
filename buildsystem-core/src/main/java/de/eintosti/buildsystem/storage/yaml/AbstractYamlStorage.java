@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.config;
+package de.eintosti.buildsystem.storage.yaml;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import java.io.File;
@@ -24,12 +24,12 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-public abstract class ConfigurationFile {
+public abstract class AbstractYamlStorage {
 
     private final File file;
     private final FileConfiguration configuration;
 
-    public ConfigurationFile(BuildSystemPlugin plugin, String fileName) {
+    public AbstractYamlStorage(BuildSystemPlugin plugin, String fileName) {
         this.file = new File(plugin.getDataFolder(), fileName);
         this.configuration = YamlConfiguration.loadConfiguration(file);
         loadFile();

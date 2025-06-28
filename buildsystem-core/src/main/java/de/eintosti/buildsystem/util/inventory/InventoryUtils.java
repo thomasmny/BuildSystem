@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.display.Displayable.DisplayableType;
+import de.eintosti.buildsystem.config.Config.Settings.Navigator;
 import java.util.Arrays;
 import java.util.List;
 import java.util.OptionalInt;
@@ -222,7 +223,7 @@ public final class InventoryUtils {
      * @return true if the item is a navigator, false otherwise
      */
     public static boolean isNavigator(Player player, ItemStack itemStack) {
-        if (itemStack == null || itemStack.getType() != PLUGIN.getConfigValues().getNavigatorItem().get()) {
+        if (itemStack == null || itemStack.getType() != Navigator.item.get()) {
             return false;
         }
 

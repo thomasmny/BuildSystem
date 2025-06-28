@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.util.WorldTeleporter;
+import de.eintosti.buildsystem.config.Config.World.Unload;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -50,7 +51,7 @@ public class WorldTeleporterImpl implements WorldTeleporter {
     @Override
     public void teleport(Player player) {
         boolean hadToLoad = false;
-        if (plugin.getConfigValues().isUnloadWorlds() && !buildWorld.isLoaded()) {
+        if (Unload.enabled && !buildWorld.isLoaded()) {
             buildWorld.getLoader().loadForPlayer(player);
             hadToLoad = true;
         }
@@ -92,20 +93,21 @@ public class WorldTeleporterImpl implements WorldTeleporter {
         }
 
         Location finalLocation = location;
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            PaperLib.teleportAsync(player, finalLocation).whenComplete((completed, throwable) -> {
-                if (!completed) {
-                    return;
-                }
+        Bukkit.getScheduler().runTaskLater(plugin, () ->
+                PaperLib.teleportAsync(player, finalLocation)
+                        .whenComplete((completed, throwable) -> {
+                                    if (!completed) {
+                                        return;
+                                    }
 
-                player.resetTitle();
-                XSound.ENTITY_ENDERMAN_TELEPORT.play(player);
+                                    player.resetTitle();
+                                    XSound.ENTITY_ENDERMAN_TELEPORT.play(player);
 
-                if (!finalLocation.clone().add(0, -1, 0).getBlock().getType().isSolid()) {
-                    player.setFlying(player.getAllowFlight());
-                }
-            });
-        }, hadToLoad ? 20L : 0L);
+                                    if (!finalLocation.clone().add(0, -1, 0).getBlock().getType().isSolid()) {
+                                        player.setFlying(player.getAllowFlight());
+                                    }
+                                }
+                        ), hadToLoad ? 20L : 0L);
     }
 
     @Override

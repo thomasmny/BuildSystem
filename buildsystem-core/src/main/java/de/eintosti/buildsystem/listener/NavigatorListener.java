@@ -30,7 +30,7 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.config.Config.Settings.Navigator;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.navigator.inventory.ArchivedWorldsInventory;
 import de.eintosti.buildsystem.navigator.inventory.DisplayablesInventory;
@@ -65,8 +65,6 @@ public class NavigatorListener implements Listener {
     private static final double MIN_HEIGHT = 1.4409877061843872;
 
     private final BuildSystemPlugin plugin;
-    private final ConfigValues configValues;
-
     private final ArmorStandManager armorStandManager;
     private final PlayerServiceImpl playerService;
     private final SettingsManager settingsManager;
@@ -74,8 +72,6 @@ public class NavigatorListener implements Listener {
 
     public NavigatorListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.configValues = plugin.getConfigValues();
-
         this.armorStandManager = plugin.getArmorStandManager();
         this.playerService = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsManager();
@@ -113,7 +109,7 @@ public class NavigatorListener implements Listener {
         }
 
         XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-        if (xMaterial != configValues.getNavigatorItem() || !itemMeta.getDisplayName().equals(Messages.getString("navigator_item", player))) {
+        if (xMaterial != Navigator.item || !itemMeta.getDisplayName().equals(Messages.getString("navigator_item", player))) {
             return;
         }
 
@@ -144,7 +140,7 @@ public class NavigatorListener implements Listener {
 
         String findItemName = Messages.getString("navigator_item", player);
         ItemStack replaceItem = InventoryUtils.createItem(XMaterial.BARRIER, Messages.getString("barrier_item", player));
-        InventoryUtils.replaceItem(player, findItemName, configValues.getNavigatorItem(), replaceItem);
+        InventoryUtils.replaceItem(player, findItemName, Navigator.item, replaceItem);
     }
 
     private void summonNewNavigator(Player player) {
