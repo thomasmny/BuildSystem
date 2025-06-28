@@ -23,7 +23,8 @@ import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
-import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
+import de.eintosti.buildsystem.util.inventory.InventoryHandler;
+import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -33,20 +34,24 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
-public class BlocksInventory extends BuildSystemInventory {
+public class BlocksInventory implements InventoryHandler {
 
     private final BuildSystemPlugin plugin;
+    private final InventoryManager inventoryManager;
 
     public BlocksInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
+        this.inventoryManager = plugin.getInventoryManager();
     }
 
     public void openInventory(Player player) {
-        player.openInventory(getInventory(player));
+        Inventory inventory = getInventory(player);
+        this.inventoryManager.registerInventoryHandler(inventory, this);
+        player.openInventory(inventory);
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = new BlocksInventoryHolder(this, player).getInventory();
+        Inventory inventory = new BlocksInventoryHolder(player).getInventory();
         fillGuiWithGlass(player, inventory);
 
         setCustomBlock(inventory, player, 1, CustomBlock.FULL_OAK_BARCH);
@@ -156,8 +161,8 @@ public class BlocksInventory extends BuildSystemInventory {
 
     private static class BlocksInventoryHolder extends BuildSystemHolder {
 
-        public BlocksInventoryHolder(BuildSystemInventory inventory, Player player) {
-            super(inventory, 45, Messages.getString("blocks_title", player));
+        public BlocksInventoryHolder(Player player) {
+            super(45, Messages.getString("blocks_title", player));
         }
     }
 }

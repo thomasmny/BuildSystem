@@ -24,8 +24,8 @@ import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
 import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
+import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import de.eintosti.buildsystem.util.inventory.PaginatedInventory;
 import java.util.Arrays;
@@ -47,22 +47,26 @@ public class GameRulesInventory extends PaginatedInventory {
     private static final int[] SLOTS = {11, 12, 13, 14, 15, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33};
 
     private final BuildSystemPlugin plugin;
+    private final InventoryManager inventoryManager;
+
     private int numGameRules = 0;
 
     public GameRulesInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
+        this.inventoryManager = plugin.getInventoryManager();
     }
 
     public void openInventory(Player player, BuildWorld buildWorld) {
         Inventory inventory = getInventory(buildWorld, player);
-        fillGuiWithGlass(player, inventory);
-
+        this.inventoryManager.registerInventoryHandler(inventory, this);
         player.openInventory(inventory);
     }
 
     public Inventory getInventory(BuildWorld buildWorld, Player player) {
         addGameRules(buildWorld, player);
-        return inventories[getInvIndex(player)];
+        Inventory inventory = inventories[getInvIndex(player)];
+        fillGuiWithGlass(player, inventory);
+        return inventory;
     }
 
     public void addGameRules(BuildWorld buildWorld, Player player) {
@@ -94,7 +98,7 @@ public class GameRulesInventory extends PaginatedInventory {
     }
 
     private Inventory createInventory(BuildWorld buildWorld, Player player) {
-        return new GameRulesInventoryHolder(this, buildWorld, player).getInventory();
+        return new GameRulesInventoryHolder(buildWorld, player).getInventory();
     }
 
     private void addGameRuleItem(Inventory inventory, int slot, World world, String gameRuleName, Player player) {
@@ -256,8 +260,8 @@ public class GameRulesInventory extends PaginatedInventory {
 
     private static class GameRulesInventoryHolder extends BuildWorldHolder {
 
-        public GameRulesInventoryHolder(BuildSystemInventory inventory, BuildWorld buildWorld, Player player) {
-            super(inventory, buildWorld, 45, Messages.getString("worldeditor_gamerules_title", player));
+        public GameRulesInventoryHolder(BuildWorld buildWorld, Player player) {
+            super(buildWorld, 45, Messages.getString("worldeditor_gamerules_title", player));
         }
     }
 }
