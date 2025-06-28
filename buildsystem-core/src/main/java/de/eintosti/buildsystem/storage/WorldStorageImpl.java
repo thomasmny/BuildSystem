@@ -28,9 +28,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -53,7 +55,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
         this.plugin = plugin;
         this.logger = plugin.getLogger();
 
-        this.buildWorlds = load().stream().collect(Collectors.toMap(BuildWorld::getName, Function.identity()));
+        this.buildWorlds = new HashMap<>();
     }
 
     @Override
@@ -157,6 +159,15 @@ public abstract class WorldStorageImpl implements WorldStorage {
     }
 
     public void loadWorlds() {
+        try {
+            this.buildWorlds.putAll(
+                    load().get().stream().collect(Collectors.toMap(BuildWorld::getName, Function.identity()))
+            );
+        } catch (InterruptedException | ExecutionException e) {
+            logger.severe("Failed to load worlds from storage: " + e.getMessage());
+            return;
+        }
+
         boolean loadAllWorlds = !Unload.enabled;
         if (loadAllWorlds) {
             logger.info("*** All worlds will be loaded now ***");
