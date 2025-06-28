@@ -17,36 +17,34 @@
  */
 package de.eintosti.buildsystem.listener;
 
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldStatus;
-import org.bukkit.World;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class FoodLevelChangeListener implements Listener {
 
-    private final WorldManager worldManager;
+    private final WorldStorageImpl worldStorage;
 
-    public FoodLevelChangeListener(BuildSystem plugin) {
-        this.worldManager = plugin.getWorldManager();
+    public FoodLevelChangeListener(BuildSystemPlugin plugin) {
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler
-    public void onFoodLevelChangeEvent(FoodLevelChangeEvent event) {
-        if (!(event.getEntity() instanceof Player)) {
+    public void onFoodLevelChange(FoodLevelChangeEvent event) {
+        if (!(event.getEntity() instanceof Player player)) {
             return;
         }
 
-        Player player = (Player) event.getEntity();
-        World bukkitWorld = player.getWorld();
-        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
-
-        if (buildWorld != null && buildWorld.getData().status().get() == WorldStatus.ARCHIVE) {
+        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
+        if (buildWorld != null && buildWorld.getData().status().get() == BuildWorldStatus.ARCHIVE) {
             event.setCancelled(true);
         }
     }

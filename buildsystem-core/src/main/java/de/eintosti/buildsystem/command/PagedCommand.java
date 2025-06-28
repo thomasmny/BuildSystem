@@ -18,16 +18,18 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.Messages;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public abstract class PagedCommand {
 
     private static final int MAX_COMMANDS_PER_PAGE = 7;
@@ -85,7 +87,7 @@ public abstract class PagedCommand {
 
         commandComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, suggest));
         commandComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new ComponentBuilder(Messages.getString(this.permissionTemplate, player, new AbstractMap.SimpleEntry<>("%permission%", permission))).create()
+                new Text(Messages.getString(this.permissionTemplate, player, Map.entry("%permission%", permission)))
         ));
         commandComponent.addExtra(textComponent);
         return commandComponent;

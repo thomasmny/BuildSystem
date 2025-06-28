@@ -17,22 +17,23 @@
  */
 package de.eintosti.buildsystem.tabcomplete;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class ConfigTabComplete implements TabCompleter {
 
-    public ConfigTabComplete(BuildSystem plugin) {
+    public ConfigTabComplete(BuildSystemPlugin plugin) {
         plugin.getCommand("config").setTabCompleter(this);
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> arrayList = new ArrayList<>();
 
         if (sender.hasPermission("buildsystem.config")) {

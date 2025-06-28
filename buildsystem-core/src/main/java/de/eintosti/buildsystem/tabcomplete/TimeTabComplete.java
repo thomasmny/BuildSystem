@@ -17,8 +17,8 @@
  */
 package de.eintosti.buildsystem.tabcomplete;
 
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -26,44 +26,33 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class TimeTabComplete extends ArgumentSorter implements TabCompleter {
 
-    private final WorldManager worldManager;
+    private final WorldStorage worldStorage;
 
-    public TimeTabComplete(BuildSystem plugin) {
-        this.worldManager = plugin.getWorldManager();
+    public TimeTabComplete(BuildSystemPlugin plugin) {
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getCommand("day").setTabCompleter(this);
         plugin.getCommand("night").setTabCompleter(this);
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> arrayList = new ArrayList<>();
-
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             return arrayList;
         }
-        Player player = (Player) sender;
 
-        switch (label.toLowerCase(Locale.ROOT)) {
+        String labelLowerCase = label.toLowerCase(Locale.ROOT);
+        switch (labelLowerCase) {
             case "day":
-                worldManager.getBuildWorlds().forEach(world -> {
-                    String worldName = world.getName();
-                    if (worldManager.isPermitted(player, "buildsystem.day", worldName)) {
-                        addArgument(args[0], worldName, arrayList);
-                    }
-                });
-                break;
-
             case "night":
-                worldManager.getBuildWorlds().forEach(world -> {
-                    String worldName = world.getName();
-                    if (worldManager.isPermitted(player, "buildsystem.night", worldName)) {
-                        addArgument(args[0], worldName, arrayList);
-                    }
-                });
+                worldStorage.getBuildWorlds().stream()
+                        .filter(world -> world.getPermissions().canPerformCommand(player, "buildsystem." + labelLowerCase))
+                        .forEach(world -> addArgument(args[0], world.getName(), arrayList));
                 break;
         }
 
