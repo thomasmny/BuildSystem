@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.api.storage;
 
 import java.util.Collection;
+import java.util.concurrent.CompletableFuture;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -33,34 +34,38 @@ public interface Storage<T> {
      * Saves the given object to the storage.
      *
      * @param object The object to save
+     * @return A {@link CompletableFuture} that completes when the save operation is done
      */
-    void save(T object);
+    CompletableFuture<Void> save(T object);
 
     /**
      * Saves all the given objects to the storage.
      *
      * @param objects The objects to save
+     * @return A {@link CompletableFuture} that completes when the save operation is done
      */
-    void save(Collection<T> objects);
+    CompletableFuture<Void> save(Collection<T> objects);
 
     /**
      * Loads all objects from the storage.
      *
-     * @return A collection of loaded objects
+     * @return A {@link CompletableFuture} that completes with a collection of loaded objects
      */
-    Collection<T> load();
+    CompletableFuture<Collection<T>> load();
 
     /**
      * Deletes the given object from the storage.
      *
      * @param object The object to delete
+     * @return A {@link CompletableFuture} that completes when the deletion finishes
      */
-    void delete(T object);
+    CompletableFuture<Void> delete(T object);
 
     /**
      * Deletes the object with the given key from the storage.
      *
      * @param key The key of the object to delete
+     * @return A {@link CompletableFuture} that completes when the deletion finishes
      */
-    void delete(String key);
+    CompletableFuture<Void> delete(String key);
 }

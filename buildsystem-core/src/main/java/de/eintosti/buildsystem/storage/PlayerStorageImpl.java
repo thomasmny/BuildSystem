@@ -25,8 +25,10 @@ import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -45,7 +47,17 @@ public abstract class PlayerStorageImpl implements PlayerStorage {
         this.plugin = plugin;
         this.logger = plugin.getLogger();
 
-        this.buildPlayers = load().stream().collect(Collectors.toMap(BuildPlayer::getUniqueId, Function.identity()));
+        this.buildPlayers = new HashMap<>();
+    }
+
+    public void loadPlayers() {
+        try {
+            this.buildPlayers.putAll(
+                    load().get().stream().collect(Collectors.toMap(BuildPlayer::getUniqueId, Function.identity()))
+            );
+        } catch (InterruptedException | ExecutionException e) {
+            logger.severe("Failed to load players from storage: " + e.getMessage());
+        }
     }
 
     @Override
