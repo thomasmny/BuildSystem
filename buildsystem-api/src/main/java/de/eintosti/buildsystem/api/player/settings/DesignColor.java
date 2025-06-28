@@ -17,11 +17,14 @@
  */
 package de.eintosti.buildsystem.api.player.settings;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * A {@link DesignColor} is the color which glass panes are tinted to in different menus.
  *
  * @since 3.0.0
  */
+@NullMarked
 public enum DesignColor {
 
     /**

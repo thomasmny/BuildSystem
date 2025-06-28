@@ -23,7 +23,9 @@ import java.util.Map;
 import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public abstract class PaginatedInventory implements InventoryHandler {
 
     protected final Map<UUID, Integer> invIndex;
@@ -31,6 +33,7 @@ public abstract class PaginatedInventory implements InventoryHandler {
 
     public PaginatedInventory() {
         this.invIndex = new HashMap<>();
+        this.inventories = new Inventory[0];
     }
 
     public int getInvIndex(Player player) {

@@ -22,7 +22,9 @@ import de.eintosti.buildsystem.util.color.ColorPattern;
 import java.awt.Color;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class GradientPattern implements ColorPattern {
 
     private static final Pattern PATTERN = Pattern.compile("<GRADIENT:([0-9A-Fa-f]{6})>(.*?)</GRADIENT:([0-9A-Fa-f]{6})>");

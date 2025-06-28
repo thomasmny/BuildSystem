@@ -23,8 +23,9 @@ import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class SpeedTabComplete implements TabCompleter {
 
     public SpeedTabComplete(BuildSystemPlugin plugin) {
@@ -32,7 +33,7 @@ public class SpeedTabComplete implements TabCompleter {
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> arrayList = new ArrayList<>();
         for (int i = 1; i <= 5; i++) {
             arrayList.add(String.valueOf(i));

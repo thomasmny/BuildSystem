@@ -11,10 +11,12 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Represents a profile for managing backups of a specific {@link BuildWorld}. This interface defines operations related to listing, creating, restoring, and destroying backups.
  */
+@NullMarked
 public interface BackupProfile {
 
     /**
@@ -38,9 +40,4 @@ public interface BackupProfile {
      * @param player The player restoring the backup
      */
     void restoreBackup(Backup backup, Player player);
-
-    /**
-     * Removes all {@link Backup}s stored for this profile.
-     */
-    void destroy();
 }

@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.data.Type;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
@@ -40,7 +41,9 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class WorldManipulateListener implements Listener {
 
     private final BuildSystemPlugin plugin;
@@ -123,7 +126,7 @@ public class WorldManipulateListener implements Listener {
         updateStatus(worldData, player);
     }
 
-    private WorldData.Type<Boolean> getRelatedWorldSetting(Cancellable event, WorldData data) {
+    private Type<Boolean> getRelatedWorldSetting(Cancellable event, WorldData data) {
         if (event instanceof BlockBreakEvent) {
             return data.blockBreaking();
         }

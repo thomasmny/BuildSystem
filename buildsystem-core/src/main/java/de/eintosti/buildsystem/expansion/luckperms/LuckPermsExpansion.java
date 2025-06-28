@@ -27,7 +27,9 @@ import net.luckperms.api.LuckPerms;
 import net.luckperms.api.context.ContextCalculator;
 import net.luckperms.api.context.ContextManager;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class LuckPermsExpansion {
 
     private final BuildSystemPlugin plugin;

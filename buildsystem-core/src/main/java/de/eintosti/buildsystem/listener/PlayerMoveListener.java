@@ -28,7 +28,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class PlayerMoveListener implements Listener {
 
     private final BuildSystemPlugin plugin;

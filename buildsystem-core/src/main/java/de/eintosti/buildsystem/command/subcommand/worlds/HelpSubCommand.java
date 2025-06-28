@@ -26,7 +26,9 @@ import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import java.util.List;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class HelpSubCommand extends PagedCommand implements SubCommand {
 
     public HelpSubCommand() {

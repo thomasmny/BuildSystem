@@ -20,7 +20,9 @@ package de.eintosti.buildsystem.api;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.world.WorldService;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class BuildSystemApi implements BuildSystem {
 
     private final BuildSystemPlugin plugin;

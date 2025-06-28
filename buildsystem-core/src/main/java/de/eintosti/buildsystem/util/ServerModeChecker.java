@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.util;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import org.bukkit.Bukkit;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Utility class to determine the mode in which the server is running. The server can be in one of the following modes:
@@ -28,6 +29,7 @@ import org.bukkit.Bukkit;
  *     <li>{@link ServerMode#OFFLINE} - The server is running in offline mode</li>
  * </ul>
  */
+@NullMarked
 public final class ServerModeChecker {
 
     private static final ServerMode SERVER_MODE = determineServerMode();

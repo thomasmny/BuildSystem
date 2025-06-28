@@ -53,9 +53,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class PlayerServiceImpl implements PlayerService {
 
     private static final double MIN_LOOK_HEIGHT = -0.16453003708696978;
@@ -263,7 +264,7 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Nullable
-    private <T extends Entity> T getTarget(Entity entity, Iterable<T> entities) {
+    private <T extends Entity> T getTarget(@Nullable Entity entity, Iterable<T> entities) {
         if (entity == null) {
             return null;
         }
@@ -293,7 +294,6 @@ public class PlayerServiceImpl implements PlayerService {
         return getTarget(entity, entity.getNearbyEntities(3, 3, 3));
     }
 
-    @NotNull
     private String getEntityName(Player player) {
         Entity targetEntity = getTargetEntity(player);
         if (targetEntity == null || targetEntity.getType() != EntityType.ARMOR_STAND) {
@@ -308,7 +308,7 @@ public class PlayerServiceImpl implements PlayerService {
         return entity.getCustomName();
     }
 
-    private void sendTypeInfo(Player player, NavigatorCategory category) {
+    private void sendTypeInfo(Player player, @Nullable NavigatorCategory category) {
         if (category == null) {
             sendActionBar(player, "");
             return;

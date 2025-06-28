@@ -20,12 +20,14 @@ package de.eintosti.buildsystem.api.world;
 import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Provides a service for managing world-related operations and data. This interface offers methods to access and interact with world storage and folder management.
  *
  * @since 3.0.0
  */
+@NullMarked
 public interface WorldService {
 
     /**

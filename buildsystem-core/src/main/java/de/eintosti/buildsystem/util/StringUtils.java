@@ -21,7 +21,9 @@ import de.eintosti.buildsystem.config.Config.Messages;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public final class StringUtils {
 
     private StringUtils() {

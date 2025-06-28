@@ -19,7 +19,9 @@ package de.eintosti.buildsystem.util;
 
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public final class DirectionUtil {
 
     public static final BlockFace[] BLOCK_SIDES = new BlockFace[]{

@@ -37,21 +37,22 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class FolderContentInventory extends DisplayablesInventory {
 
     private final Folder folder;
     private final DisplayablesInventory parentInventory;
 
     public FolderContentInventory(
-            @NotNull BuildSystemPlugin plugin,
-            @NotNull Player player,
-            @NotNull NavigatorCategory category,
-            @NotNull Folder folder,
-            @NotNull DisplayablesInventory parentInventory,
-            @NotNull Visibility requiredVisibility,
-            @NotNull Set<@NotNull BuildWorldStatus> validStatuses
+            BuildSystemPlugin plugin,
+            Player player,
+            NavigatorCategory category,
+            Folder folder,
+            DisplayablesInventory parentInventory,
+            Visibility requiredVisibility,
+            Set<BuildWorldStatus> validStatuses
     ) {
         super(
                 plugin,
@@ -67,12 +68,12 @@ public class FolderContentInventory extends DisplayablesInventory {
     }
 
     @Override
-    protected @NotNull Inventory createBaseInventoryPage(String inventoryTitle) {
+    protected Inventory createBaseInventoryPage(String inventoryTitle) {
         return this.parentInventory.createBaseInventoryPage(inventoryTitle);
     }
 
     @Override
-    protected @NotNull List<Displayable> collectDisplayables() {
+    protected List<Displayable> collectDisplayables() {
         WorldDisplay worldDisplay = this.settingsManager.getSettings(this.player).getWorldDisplay();
 
         Collection<Folder> folders = collectFolders();
@@ -104,7 +105,7 @@ public class FolderContentInventory extends DisplayablesInventory {
 
     @Override
     protected void beginWorldCreation() {
-        new CreateInventory(plugin).openInventory(this.player, CreateInventory.Page.PREDEFINED, this.requiredVisibility, this.folder);
+        new CreateInventory(plugin, this.requiredVisibility, this.folder).openInventory(this.player, CreateInventory.Page.PREDEFINED);
     }
 
     @Override

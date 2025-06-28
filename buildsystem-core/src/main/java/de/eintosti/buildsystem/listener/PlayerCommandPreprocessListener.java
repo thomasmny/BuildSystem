@@ -38,7 +38,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.inventory.ItemStack;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class PlayerCommandPreprocessListener implements Listener {
 
     private static final Set<String> DISABLED_COMMANDS = Sets.newHashSet(

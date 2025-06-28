@@ -44,8 +44,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
 
     private final WorldStorage worldStorage;
@@ -59,7 +60,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> arrayList = new ArrayList<>();
         if (!(sender instanceof Player player)) {
             return arrayList;
@@ -70,8 +71,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                 for (WorldsArgument argument : WorldsArgument.values()) {
                     String command = argument.getName();
                     String permission = argument.getPermission();
-
-                    if (permission == null || player.hasPermission(permission)) {
+                    if (player.hasPermission(permission)) {
                         addArgument(args[0], command, arrayList);
                     }
                 }
@@ -245,6 +245,7 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
         }
     }
 
+    @NullMarked
     public enum WorldsArgument implements Argument {
         ADD_BUILDER("addBuilder", "buildsystem.addbuilder"),
         BACKUP("backup", "buildsystem.backup"),

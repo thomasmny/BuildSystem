@@ -22,14 +22,16 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import java.util.Collection;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Interface for managing the storage of {@link Folder} objects.
  *
  * @since 3.0.0
  */
+@NullMarked
 public interface FolderStorage extends Storage<Folder> {
 
     /**

@@ -31,7 +31,9 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public abstract class PlayerStorageImpl implements PlayerStorage {
 
     protected final BuildSystemPlugin plugin;

@@ -31,7 +31,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class BlockPlaceListener implements Listener {
 
     private final BuildSystemPlugin plugin;

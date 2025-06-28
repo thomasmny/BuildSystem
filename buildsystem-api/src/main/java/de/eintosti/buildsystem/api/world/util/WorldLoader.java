@@ -19,12 +19,14 @@ package de.eintosti.buildsystem.api.world.util;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Provides utilities for loading and managing {@link BuildWorld}s. This interface handles the process of making a world accessible on the server.
  *
  * @since 3.0.0
  */
+@NullMarked
 public interface WorldLoader {
 
     /**

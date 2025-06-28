@@ -40,9 +40,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class CreateInventory extends PaginatedInventory {
 
     private static final int MAX_TEMPLATES = 5;
@@ -51,22 +52,26 @@ public class CreateInventory extends PaginatedInventory {
     private final InventoryManager inventoryManager;
     private final WorldServiceImpl worldService;
 
-    private int numTemplates = 0;
-    private Visibility visibility;
-    private Folder folder;
-    private boolean createPrivateWorld;
+    @Nullable
+    private final Folder folder;
+    private final boolean createPrivateWorld;
 
-    public CreateInventory(BuildSystemPlugin plugin) {
+    private int numTemplates = 0;
+
+    public CreateInventory(BuildSystemPlugin plugin, Visibility visibility) {
+        this(plugin, visibility, null);
+    }
+
+    public CreateInventory(BuildSystemPlugin plugin, Visibility visibility, @Nullable Folder folder) {
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
         this.worldService = plugin.getWorldService();
-    }
 
-    public void openInventory(Player player, Page page, Visibility visibility, @Nullable Folder folder) {
-        this.visibility = visibility;
         this.createPrivateWorld = visibility == Visibility.PRIVATE;
         this.folder = folder;
+    }
 
+    public void openInventory(Player player, Page page) {
         Inventory inventory;
         if (page == Page.TEMPLATES) {
             addTemplates(player, page);
@@ -196,7 +201,7 @@ public class CreateInventory extends PaginatedInventory {
         int slot = event.getSlot();
         CreateInventory.Page newPage = Page.of(slot);
         if (newPage != null) {
-            openInventory(player, newPage, this.visibility, this.folder);
+            openInventory(player, newPage);
             XSound.ENTITY_CHICKEN_EGG.play(player);
             return;
         }
@@ -247,7 +252,7 @@ public class CreateInventory extends PaginatedInventory {
                         } else if (slot == 42 && !incrementInv(player, numTemplates, MAX_TEMPLATES)) {
                             return;
                         }
-                        openInventory(player, CreateInventory.Page.TEMPLATES, this.visibility, this.folder);
+                        openInventory(player, CreateInventory.Page.TEMPLATES);
                         break;
                     default:
                         return;
@@ -291,12 +296,11 @@ public class CreateInventory extends PaginatedInventory {
 
         private final Page page;
 
-        public CreateInventoryHolder(Player player, @NotNull Page page) {
+        public CreateInventoryHolder(Player player, Page page) {
             super(45, Messages.getString("create_title", player));
             this.page = page;
         }
 
-        @NotNull
         public Page getPage() {
             return page;
         }

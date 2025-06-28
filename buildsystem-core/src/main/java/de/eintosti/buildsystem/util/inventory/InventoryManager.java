@@ -23,13 +23,14 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Manages active inventories and dispatches inventory-related events to their respective {@link InventoryHandler}s.
  * <p>
  * This class acts as a central point for handling custom inventory logic within the plugin.
  */
+@NullMarked
 public class InventoryManager {
 
     public final Map<Inventory, InventoryHandler> activeInventories;
@@ -47,7 +48,7 @@ public class InventoryManager {
      * @param inventory The inventory to register the handler for
      * @param handler   The handler to associate with the inventory
      */
-    public void registerInventoryHandler(@NotNull Inventory inventory, @NotNull InventoryHandler handler) {
+    public void registerInventoryHandler(Inventory inventory, InventoryHandler handler) {
         this.activeInventories.put(inventory, handler);
     }
 
@@ -57,7 +58,7 @@ public class InventoryManager {
      *
      * @param inventory The inventory whose handler is to be unregistered
      */
-    public void unregisterInventoryHandler(@NotNull Inventory inventory) {
+    public void unregisterInventoryHandler(Inventory inventory) {
         this.activeInventories.remove(inventory);
     }
 

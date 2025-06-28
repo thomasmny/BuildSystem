@@ -24,12 +24,15 @@ import org.bukkit.GameMode;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.ApiStatus.Internal;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Different settings a {@link BuildPlayer} can modify for themselves.
  *
  * @since 3.0.0
  */
+@NullMarked
 public interface Settings {
 
     /**
@@ -249,6 +252,7 @@ public interface Settings {
      *
      * @return The scoreboard task
      */
+    @Nullable
     @Internal
     BukkitTask getScoreboardTask();
 
@@ -258,5 +262,5 @@ public interface Settings {
      * @param scoreboardTask The scoreboard task
      */
     @Internal
-    void setScoreboardTask(BukkitTask scoreboardTask);
+    void setScoreboardTask(@Nullable BukkitTask scoreboardTask);
 }

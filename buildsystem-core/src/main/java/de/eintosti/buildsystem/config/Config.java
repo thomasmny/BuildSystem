@@ -53,11 +53,13 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Manages the plugin's configuration, loading and providing access to various settings.
  */
+@NullMarked
 public class Config {
 
     private static final BuildSystemPlugin PLUGIN = JavaPlugin.getPlugin(BuildSystemPlugin.class);
@@ -373,7 +375,7 @@ public class Config {
             /**
              * The storage for backups.
              */
-            public static BackupStorage storage;
+            public static BackupStorage storage = createBackupStorage();
 
             public static class AutoBackup {
 

@@ -24,14 +24,16 @@ import java.util.List;
 import java.util.UUID;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Interface for managing the storage of {@link BuildWorld} objects.
  *
  * @since 3.0.0
  */
+@NullMarked
 public interface WorldStorage extends Storage<BuildWorld> {
 
     /**

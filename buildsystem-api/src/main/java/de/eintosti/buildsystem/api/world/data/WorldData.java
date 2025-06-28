@@ -18,18 +18,21 @@
 package de.eintosti.buildsystem.api.world.data;
 
 import com.cryptomorin.xseries.XMaterial;
+import de.eintosti.buildsystem.api.data.Type;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import java.util.Map;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Manages and provides access to various data points and settings for a {@link BuildWorld}. This interface allows for reading and modifying world-specific configurations.
  *
  * @since 3.0.0
  */
+@NullMarked
 public interface WorldData {
 
     /**
@@ -174,34 +177,4 @@ public interface WorldData {
      * @return An unmodifiable map where keys are data point names and values are their corresponding {@link Type} objects
      */
     Map<String, Type<?>> getAllData();
-
-    /**
-     * A generic interface representing a configurable data type within the {@link WorldData}. It provides methods to get, set, and format the value for configuration purposes.
-     *
-     * @param <T> The type of the value held by this data point
-     */
-    interface Type<T> {
-
-        /**
-         * Gets the current value of this data point.
-         *
-         * @return The current value
-         */
-        T get();
-
-        /**
-         * Sets the value of this data point.
-         *
-         * @param value The new value to set
-         */
-        void set(T value);
-
-        /**
-         * Gets the value of this data point formatted for storage in a configuration file. This might involve converting complex objects into simpler types (e.g., enums to
-         * strings).
-         *
-         * @return The value formatted for a config file
-         */
-        Object getConfigFormat();
-    }
 }

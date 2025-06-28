@@ -33,7 +33,10 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class SettingsManager {
 
     private final BuildSystemPlugin plugin;
@@ -142,7 +145,7 @@ public class SettingsManager {
     }
 
     // Is there an easier way of doing this?
-    private String parseWorldInformation(Player player, BuildWorld buildWorld, String input) {
+    private String parseWorldInformation(Player player, @Nullable BuildWorld buildWorld, String input) {
         if (buildWorld == null) {
             return "§f-";
         }
