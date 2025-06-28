@@ -208,7 +208,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         this.inventoryManager = new InventoryManager();
         this.armorStandManager = new ArmorStandManager();
         this.customBlocksManager = new CustomBlocksManager(this);
-        this.playerService = new PlayerServiceImpl(this);
+        (this.playerService = new PlayerServiceImpl(this)).init();
         this.noClipManager = new NoClipManager(this);
         (this.worldService = new WorldServiceImpl(this)).init();
         this.backupService = new BackupService(this);

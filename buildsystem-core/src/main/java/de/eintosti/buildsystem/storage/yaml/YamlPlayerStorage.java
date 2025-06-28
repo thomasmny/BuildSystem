@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import org.bukkit.configuration.ConfigurationSection;
@@ -54,25 +55,29 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
 
     private static final String PLAYERS_KEY = "players";
 
-    @Nullable
-    private File file;
-    @Nullable
-    private FileConfiguration config;
+    private final File file;
+    private final FileConfiguration config;
 
     public YamlPlayerStorage(BuildSystemPlugin plugin) {
         super(plugin);
+        this.file = new File(plugin.getDataFolder(), "players.yml");
+        this.config = YamlConfiguration.loadConfiguration(file);
     }
 
     @Override
-    public void save(BuildPlayer buildPlayer) {
-        config.set(PLAYERS_KEY + "." + buildPlayer.getUniqueId(), serializePlayer(buildPlayer));
-        saveFile();
+    public CompletableFuture<Void> save(BuildPlayer buildPlayer) {
+        return CompletableFuture.runAsync(() -> {
+            config.set(PLAYERS_KEY + "." + buildPlayer.getUniqueId(), serializePlayer(buildPlayer));
+            saveFile();
+        });
     }
 
     @Override
-    public void save(Collection<BuildPlayer> players) {
-        players.forEach(player -> config.set(PLAYERS_KEY + "." + player.getUniqueId().toString(), serializePlayer(player)));
-        saveFile();
+    public CompletableFuture<Void> save(Collection<BuildPlayer> players) {
+        return CompletableFuture.runAsync(() -> {
+            players.forEach(player -> config.set(PLAYERS_KEY + "." + player.getUniqueId(), serializePlayer(player)));
+            saveFile();
+        });
     }
 
     private void saveFile() {
@@ -131,18 +136,15 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
     }
 
     @Override
-    public Collection<BuildPlayer> load() {
-        Set<String> players = loadPlayerKeys();
-
-        return players.stream()
-                .map(this::loadPlayer)
-                .collect(Collectors.toCollection(ArrayList::new));
+    public CompletableFuture<Collection<BuildPlayer>> load() {
+        return CompletableFuture.supplyAsync(() ->
+                loadPlayerKeys().stream()
+                        .map(this::loadPlayer)
+                        .collect(Collectors.toCollection(ArrayList::new))
+        );
     }
 
     private Set<String> loadPlayerKeys() {
-        this.file = new File(plugin.getDataFolder(), "players.yml");
-        this.config = YamlConfiguration.loadConfiguration(file);
-
         if (!file.exists()) {
             config.options().copyDefaults(true);
             saveFile();
@@ -227,13 +229,15 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
     }
 
     @Override
-    public void delete(BuildPlayer buildPlayer) {
-        delete(buildPlayer.getUniqueId().toString());
+    public CompletableFuture<Void> delete(BuildPlayer buildPlayer) {
+        return delete(buildPlayer.getUniqueId().toString());
     }
 
     @Override
-    public void delete(String playerKey) {
-        config.set(PLAYERS_KEY + "." + playerKey, null);
-        saveFile();
+    public CompletableFuture<Void> delete(String playerKey) {
+        return CompletableFuture.runAsync(() -> {
+            config.set(PLAYERS_KEY + "." + playerKey, null);
+            saveFile();
+        });
     }
 }
