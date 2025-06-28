@@ -19,14 +19,17 @@ package de.eintosti.buildsystem.storage.yaml;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import org.bukkit.Location;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class YamlSpawnStorage extends AbstractYamlStorage {
 
     public YamlSpawnStorage(BuildSystemPlugin plugin) {
         super(plugin, "spawn.yml");
     }
 
-    public void saveSpawn(Location location) {
+    public void saveSpawn(@Nullable Location location) {
         if (location == null || location.getWorld() == null) {
             return;
         }

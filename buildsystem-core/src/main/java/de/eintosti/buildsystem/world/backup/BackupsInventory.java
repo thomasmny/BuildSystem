@@ -33,7 +33,9 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class BackupsInventory implements InventoryHandler {
 
     private static final int FIRST_BACKUP_SLOT = 9;
@@ -162,11 +164,6 @@ public class BackupsInventory implements InventoryHandler {
             int slot = event.getSlot();
             if (slot >= FIRST_BACKUP_SLOT && slot < FIRST_BACKUP_SLOT + 18 && itemStack.getType() == XMaterial.GRASS_BLOCK.get()) {
                 Backup backup = backupsHolder.getBackups().get(slot - FIRST_BACKUP_SLOT);
-                if (backup == null) {
-                    logger.warning("Could not find backup for slot " + slot + " in backups inventory for player " + player.getName());
-                    return;
-                }
-
                 player.closeInventory();
                 openConfirmationInventory(player, backup);
             }

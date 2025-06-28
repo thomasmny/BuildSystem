@@ -20,14 +20,16 @@ package de.eintosti.buildsystem.api.player;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.ApiStatus.Internal;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a player managed by the BuildSystem. This interface provides access to player-specific data and settings within the BuildSystem.
  */
+@NullMarked
 public interface BuildPlayer {
 
     /**
@@ -70,7 +72,7 @@ public interface BuildPlayer {
      * @param logoutLocation The logout location
      */
     @Internal
-    void setLogoutLocation(LogoutLocation logoutLocation);
+    void setLogoutLocation(@Nullable LogoutLocation logoutLocation);
 
     /**
      * Gets the location the player was last at.
@@ -91,7 +93,7 @@ public interface BuildPlayer {
      * @param location The location
      */
     @Internal
-    void setPreviousLocation(Location location);
+    void setPreviousLocation(@Nullable Location location);
 
     /**
      * Gets the {@link NavigatorCategory} the player last looked at.
@@ -108,5 +110,5 @@ public interface BuildPlayer {
      * @param type The last looked navigator inventory type
      */
     @Internal
-    void setLastLookedAt(NavigatorCategory type);
+    void setLastLookedAt(@Nullable NavigatorCategory type);
 }

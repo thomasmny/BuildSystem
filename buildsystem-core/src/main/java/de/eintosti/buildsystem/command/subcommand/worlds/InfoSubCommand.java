@@ -30,9 +30,13 @@ import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.Map;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class InfoSubCommand implements SubCommand {
 
+    @Nullable
     private final BuildWorld buildWorld;
 
     public InfoSubCommand(BuildSystemPlugin plugin, String worldName) {

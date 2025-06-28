@@ -47,8 +47,10 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public final class BuildWorldImpl implements BuildWorld {
 
     private static final BuildSystemPlugin PLUGIN = JavaPlugin.getPlugin(BuildSystemPlugin.class);
@@ -60,6 +62,7 @@ public final class BuildWorldImpl implements BuildWorld {
     private final BuildWorldType worldType;
     private final WorldDataImpl worldData;
     private final BuildersImpl builders;
+    @Nullable
     private final CustomGenerator customGenerator;
     private final long creation;
 

@@ -31,13 +31,14 @@ import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import java.util.Set;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * An abstract inventory class extending {@link DisplayablesInventory} that provides common functionality for inventories which allow the creation of new {@link BuildWorld}s and
  * {@link Folder}s.
  */
+@NullMarked
 public abstract class CreatableWorldsInventory extends DisplayablesInventory {
 
     private static final Set<BuildWorldStatus> VALID_STATUSES = Sets.newHashSet(
@@ -62,12 +63,12 @@ public abstract class CreatableWorldsInventory extends DisplayablesInventory {
      * @param requiredVisibility The required {@link Visibility} for worlds to be displayed in this inventory
      */
     protected CreatableWorldsInventory(
-            @NotNull BuildSystemPlugin plugin,
-            @NotNull Player player,
-            @NotNull NavigatorCategory category,
-            @NotNull String inventoryTitle,
+            BuildSystemPlugin plugin,
+            Player player,
+            NavigatorCategory category,
+            String inventoryTitle,
             @Nullable String noWorldsMessage,
-            @NotNull Visibility requiredVisibility
+            Visibility requiredVisibility
     ) {
         super(plugin, player, category, inventoryTitle, noWorldsMessage, requiredVisibility, VALID_STATUSES);
         this.playerService = plugin.getPlayerService();
@@ -79,7 +80,7 @@ public abstract class CreatableWorldsInventory extends DisplayablesInventory {
      * @return A newly created {@link Inventory} page with common base items and creation options
      */
     @Override
-    protected @NotNull Inventory createBaseInventoryPage(String inventoryTitle) {
+    protected Inventory createBaseInventoryPage(String inventoryTitle) {
         Inventory inventory = super.createBaseInventoryPage(inventoryTitle);
         addWorldCreateItem(inventory, player);
         addFolderCreateItem(inventory, player);
@@ -108,12 +109,12 @@ public abstract class CreatableWorldsInventory extends DisplayablesInventory {
      *
      * @return The permission string for creating a world of this inventory's type
      */
-    protected abstract @NotNull String getWorldCreationPermission();
+    protected abstract String getWorldCreationPermission();
 
     /**
      * Gets the message key the title of the "create world" item.
      *
      * @return The message key for the "create world" item's title
      */
-    protected abstract @NotNull String getWorldCreationItemTitleKey();
+    protected abstract String getWorldCreationItemTitleKey();
 }

@@ -19,8 +19,10 @@ package de.eintosti.buildsystem.util;
 
 import de.eintosti.buildsystem.config.Config.World;
 import java.util.Arrays;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public final class StringCleaner {
 
     public static final String INVALID_NAME_CHARACTERS = "[^A-Za-z\\d/_-]";
@@ -29,7 +31,7 @@ public final class StringCleaner {
     }
 
     /**
-     * Checks if the input string contains any invalid characters as defined by {@link #INVALID_NAME_CHARACTERS} and {@link ConfigValues#getInvalidNameCharacters()}.
+     * Checks if the input string contains any invalid characters as defined by {@link #INVALID_NAME_CHARACTERS} and {@link World#invalidCharacters}.
      *
      * @param input The input string to check
      * @return {@code true} if the input contains invalid characters, {@code false} otherwise

@@ -17,11 +17,15 @@
  */
 package de.eintosti.buildsystem.util;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 /**
  * <p>Provides extra functionality for Java Number classes.</p>
  *
  * @since 2.0
  */
+@NullMarked
 public final class NumberUtils {
 
     private NumberUtils() {
@@ -64,7 +68,7 @@ public final class NumberUtils {
      * @return the int represented by the string, or the default if conversion fails
      * @since 2.1
      */
-    public static int toInt(final String str, final int defaultValue) {
+    public static int toInt(@Nullable final String str, final int defaultValue) {
         if (str == null) {
             return defaultValue;
         }

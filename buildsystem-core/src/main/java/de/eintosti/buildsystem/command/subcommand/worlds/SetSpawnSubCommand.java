@@ -27,7 +27,9 @@ import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.Map;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class SetSpawnSubCommand implements SubCommand {
 
     private final BuildSystemPlugin plugin;

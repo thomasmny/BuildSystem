@@ -41,7 +41,10 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class GameRulesInventory extends PaginatedInventory {
 
     private static final int[] SLOTS = {11, 12, 13, 14, 15, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33};
@@ -236,11 +239,12 @@ public class GameRulesInventory extends PaginatedInventory {
         }
     }
 
-    private static boolean isBoolean(GameRule<?> gameRule) {
+    private static boolean isBoolean(@Nullable GameRule<?> gameRule) {
         return gameRule != null && gameRule.getType().equals(Boolean.class);
     }
 
     @SuppressWarnings("unchecked")
+    @Nullable
     private static GameRule<Boolean> asBooleanRule(GameRule<?> gameRule) {
         return isBoolean(gameRule) ? (GameRule<Boolean>) gameRule : null;
     }
@@ -254,7 +258,8 @@ public class GameRulesInventory extends PaginatedInventory {
     }
 
     @SuppressWarnings("unchecked")
-    private static GameRule<Integer> asIntegerRule(GameRule<?> rule) {
+    @Nullable
+    private static GameRule<Integer> asIntegerRule(@Nullable GameRule<?> rule) {
         return rule != null && rule.getType() == Integer.class ? (GameRule<Integer>) rule : null;
     }
 

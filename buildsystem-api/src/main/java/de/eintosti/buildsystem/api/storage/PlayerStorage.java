@@ -23,12 +23,14 @@ import java.util.Collection;
 import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Interface for managing the storage of {@link BuildPlayer} objects.
  *
  * @since 3.0.0
  */
+@NullMarked
 public interface PlayerStorage extends Storage<BuildPlayer> {
 
     /**

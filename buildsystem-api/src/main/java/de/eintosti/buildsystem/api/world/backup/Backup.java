@@ -17,9 +17,12 @@
  */
 package de.eintosti.buildsystem.api.world.backup;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * Represents a single backup of a {@link de.eintosti.buildsystem.api.world.BuildWorld}.
  */
+@NullMarked
 public interface Backup {
 
     /**

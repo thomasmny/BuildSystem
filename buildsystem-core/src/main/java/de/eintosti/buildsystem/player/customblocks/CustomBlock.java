@@ -18,9 +18,11 @@
 package de.eintosti.buildsystem.player.customblocks;
 
 import org.bukkit.Bukkit;
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.ApiStatus.Internal;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public enum CustomBlock {
 
     BARRIER("blocks_barrier", "3ed1aba73f639f4bc42bd48196c715197be2712c3b962c97ebf9e9ed8efa025"),
@@ -59,7 +61,7 @@ public enum CustomBlock {
     }
 
     @Nullable
-    @ApiStatus.Internal
+    @Internal
     public static CustomBlock getCustomBlock(String key) {
         String customBlock = key.substring("blocks_".length()).toUpperCase();
         try {

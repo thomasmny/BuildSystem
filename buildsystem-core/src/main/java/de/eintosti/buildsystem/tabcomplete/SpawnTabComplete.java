@@ -24,8 +24,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class SpawnTabComplete extends ArgumentSorter implements TabCompleter {
 
     public SpawnTabComplete(BuildSystemPlugin plugin) {
@@ -33,7 +34,7 @@ public class SpawnTabComplete extends ArgumentSorter implements TabCompleter {
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> arrayList = new ArrayList<>();
         if (!(sender instanceof Player player)) {
             return arrayList;

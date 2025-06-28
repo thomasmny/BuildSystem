@@ -18,7 +18,9 @@
 package de.eintosti.buildsystem.util.inventory;
 
 import com.cryptomorin.xseries.XMaterial;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public final class MaterialUtils {
 
     private MaterialUtils() {

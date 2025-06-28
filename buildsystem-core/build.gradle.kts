@@ -38,12 +38,14 @@ repositories {
 dependencies {
     api(project(":buildsystem-api"))
 
+    compileOnlyApi(libs.annotations)
+    compileOnlyApi(libs.jspecify)
+
     compileOnly(libs.spigot)
     compileOnly(libs.authlib)
     compileOnly(libs.luckperms)
     compileOnly(libs.placeholderapi)
     compileOnly(libs.worldedit)
-    compileOnly(libs.annotations)
     compileOnly(libs.axiompaper)
 
     implementation(libs.paperlib)

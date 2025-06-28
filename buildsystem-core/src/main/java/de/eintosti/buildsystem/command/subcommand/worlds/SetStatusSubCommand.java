@@ -26,10 +26,15 @@ import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.data.StatusInventory;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class SetStatusSubCommand implements SubCommand {
 
     private final BuildSystemPlugin plugin;
+
+    @Nullable
     private final BuildWorld buildWorld;
 
     public SetStatusSubCommand(BuildSystemPlugin plugin, String worldName) {

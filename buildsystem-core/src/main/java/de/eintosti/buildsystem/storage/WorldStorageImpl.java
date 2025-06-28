@@ -37,9 +37,11 @@ import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public abstract class WorldStorageImpl implements WorldStorage {
 
     protected final BuildSystemPlugin plugin;
@@ -212,7 +214,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
         FAILED,
 
         /**
-         * {@link ConfigValues#isUnloadWorlds()} is enabled and the world is not blacklisted to unload
+         * {@link Unload#enabled} is set to {@code true} and the world is not blacklisted to unload
          */
         NOT_BLACKLISTED
     }

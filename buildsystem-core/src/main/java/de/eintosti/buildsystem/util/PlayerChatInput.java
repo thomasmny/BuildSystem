@@ -31,7 +31,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class PlayerChatInput implements Listener {
 
     private final BuildSystemPlugin plugin;

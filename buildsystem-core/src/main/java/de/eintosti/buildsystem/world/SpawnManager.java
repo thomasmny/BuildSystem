@@ -28,14 +28,19 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class SpawnManager {
 
     private final BuildSystemPlugin plugin;
     private final WorldStorage worldStorage;
     private final YamlSpawnStorage spawnStorage;
 
+    @Nullable
     private String spawnName;
+    @Nullable
     private Location spawn;
 
     public SpawnManager(BuildSystemPlugin plugin) {
@@ -73,11 +78,16 @@ public class SpawnManager {
         return spawn != null;
     }
 
+    @Nullable
     public Location getSpawn() {
         return spawn;
     }
 
+    @Nullable
     public World getSpawnWorld() {
+        if (this.spawn == null) {
+            return null;
+        }
         return spawn.getWorld();
     }
 

@@ -23,17 +23,22 @@ import de.eintosti.buildsystem.api.player.LogoutLocation;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import org.bukkit.Location;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class BuildPlayerImpl implements BuildPlayer {
 
     private final UUID uuid;
     private final Settings settings;
     private final CachedValues cachedValues;
 
+    @Nullable
     private LogoutLocation logoutLocation;
+    @Nullable
     private Location previousLocation;
+    @Nullable
     private NavigatorCategory lastLookedAt;
 
     public BuildPlayerImpl(UUID uuid, Settings settings) {
@@ -64,7 +69,7 @@ public class BuildPlayerImpl implements BuildPlayer {
     }
 
     @Override
-    public void setLogoutLocation(LogoutLocation logoutLocation) {
+    public void setLogoutLocation(@Nullable LogoutLocation logoutLocation) {
         this.logoutLocation = logoutLocation;
     }
 
@@ -75,7 +80,7 @@ public class BuildPlayerImpl implements BuildPlayer {
     }
 
     @Override
-    public void setPreviousLocation(Location location) {
+    public void setPreviousLocation(@Nullable Location location) {
         this.previousLocation = location;
     }
 
@@ -86,7 +91,7 @@ public class BuildPlayerImpl implements BuildPlayer {
     }
 
     @Override
-    public void setLastLookedAt(NavigatorCategory type) {
+    public void setLastLookedAt(@Nullable NavigatorCategory type) {
         this.lastLookedAt = type;
     }
 }

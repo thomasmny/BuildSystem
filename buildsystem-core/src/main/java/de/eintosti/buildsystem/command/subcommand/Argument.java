@@ -17,6 +17,10 @@
  */
 package de.eintosti.buildsystem.command.subcommand;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 public interface Argument {
 
     /**
@@ -31,5 +35,6 @@ public interface Argument {
      *
      * @return The permission required to run the command
      */
+    @Nullable
     String getPermission();
 }

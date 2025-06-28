@@ -29,8 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import net.md_5.bungee.api.ChatColor;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public final class ColorAPI {
 
     private static final Map<Color, ChatColor> COLORS = ImmutableMap.<Color, ChatColor>builder()
@@ -69,8 +70,7 @@ public final class ColorAPI {
      *
      * @param string The string we want to process
      */
-    @NotNull
-    public static String process(@NotNull String string) {
+    public static String process(String string) {
         for (ColorPattern pattern : PATTERNS) {
             string = pattern.process(string);
         }
@@ -84,8 +84,7 @@ public final class ColorAPI {
      * @param strings The collection of the strings we are processing
      * @return The list of processed strings
      */
-    @NotNull
-    public static List<String> process(@NotNull Collection<String> strings) {
+    public static List<String> process(Collection<String> strings) {
         return strings.stream().map(ColorAPI::process).collect(Collectors.toList());
     }
 
@@ -96,8 +95,7 @@ public final class ColorAPI {
      * @param start  The starting gradiant
      * @param end    The ending gradiant
      */
-    @NotNull
-    public static String color(@NotNull String string, @NotNull Color start, @NotNull Color end) {
+    public static String color(String string, Color start, Color end) {
         ChatColor[] colors = createGradient(start, end, withoutSpecialChar(string).length());
         return apply(string, colors);
     }
@@ -108,8 +106,7 @@ public final class ColorAPI {
      * @param string     The string which should have rainbow colors
      * @param saturation The saturation of the rainbow colors
      */
-    @NotNull
-    public static String rainbow(@NotNull String string, float saturation) {
+    public static String rainbow(String string, float saturation) {
         ChatColor[] colors = createRainbow(withoutSpecialChar(string).length(), saturation);
         return apply(string, colors);
     }
@@ -119,13 +116,11 @@ public final class ColorAPI {
      *
      * @param string The hex code of the color
      */
-    @NotNull
-    public static ChatColor getColor(@NotNull String string) {
+    public static ChatColor getColor(String string) {
         return ChatColor.of(new Color(Integer.parseInt(string, 16)));
     }
 
-    @NotNull
-    private static String apply(@NotNull String source, ChatColor[] colors) {
+    private static String apply(String source, ChatColor[] colors) {
         StringBuilder specialColors = new StringBuilder();
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -153,8 +148,7 @@ public final class ColorAPI {
         return stringBuilder.toString();
     }
 
-    @NotNull
-    private static String withoutSpecialChar(@NotNull String source) {
+    private static String withoutSpecialChar(String source) {
         String workingString = source;
         for (String color : SPECIAL_COLORS) {
             if (workingString.contains(color)) {
@@ -171,7 +165,6 @@ public final class ColorAPI {
      * @param saturation The saturation of the rainbow
      * @return The array of colors
      */
-    @NotNull
     private static ChatColor[] createRainbow(int step, float saturation) {
         ChatColor[] colors = new ChatColor[step];
         double colorStep = (1.00 / step);
@@ -192,8 +185,7 @@ public final class ColorAPI {
      * @param step  How many colors we return.
      * @author TheViperShow
      */
-    @NotNull
-    private static ChatColor[] createGradient(@NotNull Color start, @NotNull Color end, int step) {
+    private static ChatColor[] createGradient(Color start, Color end, int step) {
         ChatColor[] colors = new ChatColor[step];
         int stepR = Math.abs(start.getRed() - end.getRed()) / (step - 1);
         int stepG = Math.abs(start.getGreen() - end.getGreen()) / (step - 1);
@@ -221,7 +213,6 @@ public final class ColorAPI {
      *
      * @param color The color we want to transform
      */
-    @NotNull
     private static ChatColor getClosestColor(Color color) {
         Color nearestColor = null;
         double nearestDistance = Integer.MAX_VALUE;

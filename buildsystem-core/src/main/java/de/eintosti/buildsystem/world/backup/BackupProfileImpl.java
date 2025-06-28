@@ -33,7 +33,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class BackupProfileImpl implements BackupProfile {
 
     private final BuildSystemPlugin plugin;
@@ -104,7 +107,7 @@ public class BackupProfileImpl implements BackupProfile {
             return;
         }
 
-        List<Player> removedPlayers = plugin.getWorldService().removePlayersFromWorld(worldName, "worlds_backup_restoration_in_progress");
+        List<@Nullable Player> removedPlayers = plugin.getWorldService().removePlayersFromWorld(worldName, "worlds_backup_restoration_in_progress");
 
         File backupFile;
         try {
@@ -140,16 +143,5 @@ public class BackupProfileImpl implements BackupProfile {
         Messages.sendMessage(player, "worlds_backup_restoration_successful",
                 Map.entry("%timestamp%", StringUtils.formatTime(backup.creationTime()))
         );
-    }
-
-    @Override
-    public void destroy() {
-        this.listBackups().whenCompleteAsync((backups, error) -> {
-            if (error != null) {
-                plugin.getLogger().log(Level.SEVERE, "Failed to destroy backup", error);
-                return;
-            }
-            backups.forEach(this.storage::deleteBackup);
-        });
     }
 }

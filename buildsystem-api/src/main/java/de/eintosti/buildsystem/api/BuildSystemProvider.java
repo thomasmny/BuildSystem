@@ -18,15 +18,18 @@
 package de.eintosti.buildsystem.api;
 
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Provides static access to the {@link BuildSystem} API.
  *
  * @since 3.0.0
  */
+@NullMarked
 public class BuildSystemProvider {
 
+    @Nullable
     private static BuildSystem instance = null;
 
     /**
@@ -45,7 +48,6 @@ public class BuildSystemProvider {
      * @return An instance of the BuildSystem API
      * @throws IllegalStateException if the API is not loaded yet
      */
-    @NotNull
     public static BuildSystem get() {
         BuildSystem instance = BuildSystemProvider.instance;
         if (instance == null) {
