@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.backup.BackupImpl;
+import de.eintosti.buildsystem.world.backup.BackupService;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -55,57 +56,62 @@ public class LocalBackupStorage implements BackupStorage {
     }
 
     @Override
-    public List<Backup> listBackups(BuildWorld buildWorld) {
-        List<Backup> backups = new ArrayList<>(Config.World.Backup.maxBackupsPerWorld);
+    public CompletableFuture<List<Backup>> listBackups(BuildWorld buildWorld) {
+        return CompletableFuture.supplyAsync(() -> {
+            List<Backup> backups = new ArrayList<>(Config.World.Backup.maxBackupsPerWorld);
 
-        try (Stream<Path> walk = Files.walk(getBackupDirectory(buildWorld))) {
-            walk.filter(LocalBackupStorage::isValidFile).forEach(path -> backups.add(
-                    new BackupImpl(
-                            plugin.getBackupService().getProfile(buildWorld),
-                            FileUtils.getDirectoryCreation(path.toFile()),
-                            path.toAbsolutePath().toString()
-                    )
-            ));
-        } catch (IOException e) {
-            plugin.getLogger().log(Level.SEVERE, "Error while listing backups", e);
-            return Collections.emptyList();
-        }
+            try (Stream<Path> walk = Files.walk(getBackupDirectory(buildWorld))) {
+                walk.filter(LocalBackupStorage::isValidFile).forEach(path -> backups.add(
+                        new BackupImpl(
+                                plugin.getBackupService().getProfile(buildWorld),
+                                FileUtils.getDirectoryCreation(path.toFile()),
+                                path.toAbsolutePath().toString()
+                        )
+                ));
+            } catch (IOException e) {
+                plugin.getLogger().log(Level.SEVERE, "Error while listing backups", e);
+                return Collections.emptyList();
+            }
 
-        backups.sort(Comparator.comparingLong(Backup::creationTime).reversed());
-        return backups;
+            backups.sort(Comparator.comparingLong(Backup::creationTime).reversed());
+            return backups;
+        }, BackupService.BACKUP_EXECUTOR);
     }
 
     @Override
-    public void storeBackup(BuildWorld buildWorld, CompletableFuture<Backup> future) {
-        long timestamp = System.currentTimeMillis();
-        File storage = new File(getBackupDirectory(buildWorld).toFile(), getBackupName(timestamp));
-        File zip = FileUtils.zipWorld(storage, buildWorld);
-        if (zip == null) {
-            future.completeExceptionally(new RuntimeException("Failed to complete the backup for " + buildWorld.getName()));
-            return;
-        }
+    public CompletableFuture<Backup> storeBackup(BuildWorld buildWorld) {
+        return CompletableFuture.supplyAsync(() -> {
+            long timestamp = System.currentTimeMillis();
+            File storage = new File(getBackupDirectory(buildWorld).toFile(), getBackupName(timestamp));
+            File zip = FileUtils.zipWorld(storage, buildWorld);
+            if (zip == null) {
+                throw new RuntimeException("Failed to complete the backup for " + buildWorld.getName());
+            }
 
-        future.complete(new BackupImpl(
-                plugin.getBackupService().getProfile(buildWorld),
-                timestamp,
-                zip.getAbsolutePath()
-        ));
-        plugin.getLogger().info(String.format("Backed up world '%s'. Took %sms", buildWorld.getName(), (System.currentTimeMillis() - timestamp)));
+            plugin.getLogger().info(String.format("Backed up world '%s'. Took %sms", buildWorld.getName(), (System.currentTimeMillis() - timestamp)));
+            return new BackupImpl(
+                    plugin.getBackupService().getProfile(buildWorld),
+                    timestamp,
+                    zip.getAbsolutePath()
+            );
+        }, BackupService.BACKUP_EXECUTOR);
     }
 
     @Override
-    public File downloadBackup(Backup backup) {
-        return new File(backup.key());
+    public CompletableFuture<File> downloadBackup(Backup backup) {
+        return CompletableFuture.completedFuture(new File(backup.key()));
     }
 
     @Override
-    public void deleteBackup(Backup backup) {
-        File file = new File(backup.key());
-        try {
-            Files.deleteIfExists(file.toPath());
-        } catch (IOException e) {
-            plugin.getLogger().log(Level.SEVERE, "Unable to delete backup " + backup.key(), e);
-        }
+    public CompletableFuture<Void> deleteBackup(Backup backup) {
+        return CompletableFuture.runAsync(() -> {
+            File file = new File(backup.key());
+            try {
+                Files.deleteIfExists(file.toPath());
+            } catch (IOException e) {
+                throw new RuntimeException("Unable to delete backup " + backup.key(), e);
+            }
+        }, BackupService.BACKUP_EXECUTOR);
     }
 
     @Override

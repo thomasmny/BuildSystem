@@ -40,10 +40,10 @@ public interface BackupStorage {
     /**
      * Lists all available {@link Backup}s for a specific {@link BuildWorld}.
      *
-     * @param buildWorld The world for which to list backups.
-     * @return A list of backup objects associated with the specified world.
+     * @param buildWorld The world for which to list backups
+     * @return A future with a list of backup objects associated with the specified world
      */
-    List<Backup> listBackups(BuildWorld buildWorld);
+    CompletableFuture<List<Backup>> listBackups(BuildWorld buildWorld);
 
     /**
      * Creates and stores a new {@link Backup} for a given {@link BuildWorld}. The result of the operation is communicated via the provided {@link CompletableFuture}.
@@ -51,25 +51,26 @@ public interface BackupStorage {
      * In comparison to {@link BackupProfile#createBackup()}, a backup will always be created and no older backups will be deleted. This method is intended for immediate backup
      * creation and storage, rather than profile management.
      *
-     * @param buildWorld The world to be backed up.
-     * @param future     A future that will be completed with the backup object upon successful storage, or exceptionally if an error occurs.
+     * @param buildWorld The world to be backed up
+     * @return A future that will be completed with the backup object upon successful storage, or exceptionally if an error occurs
      */
-    void storeBackup(BuildWorld buildWorld, CompletableFuture<Backup> future);
+    CompletableFuture<Backup> storeBackup(BuildWorld buildWorld);
 
     /**
-     * Downloads a specific {@link Backup} file.
+     * Downloads a specific {@link Backup} file asynchronously.
      *
      * @param backup The backup object representing the backup to be downloaded
-     * @return A file object pointing to the downloaded backup
+     * @return A future that will complete with a {@link File} object pointing to the downloaded backup once the download operation is finished
      */
-    File downloadBackup(Backup backup);
+    CompletableFuture<File> downloadBackup(Backup backup);
 
     /**
      * Deletes a specific {@link Backup}.
      *
      * @param backup The backup object representing the backup to be deleted
+     * @return A future that will complete after the deletion
      */
-    void deleteBackup(Backup backup);
+    CompletableFuture<Void> deleteBackup(Backup backup);
 
     /**
      * Closes the backup storage, releasing any resources.

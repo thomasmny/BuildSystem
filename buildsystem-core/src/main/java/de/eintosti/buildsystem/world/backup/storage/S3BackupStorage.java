@@ -24,18 +24,17 @@ import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.backup.BackupImpl;
+import de.eintosti.buildsystem.world.backup.BackupService;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
-import org.bukkit.Bukkit;
 import org.jetbrains.annotations.Nullable;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -85,106 +84,112 @@ public class S3BackupStorage implements BackupStorage {
     }
 
     @Override
-    public List<Backup> listBackups(BuildWorld buildWorld) {
-        List<Backup> backups = new ArrayList<>(Config.World.Backup.maxBackupsPerWorld);
+    public CompletableFuture<List<Backup>> listBackups(BuildWorld buildWorld) {
+        return CompletableFuture.supplyAsync(() -> {
+            List<Backup> backups = new ArrayList<>(Config.World.Backup.maxBackupsPerWorld);
 
-        try {
-            ListObjectsV2Response response = this.s3Client.listObjectsV2(ListObjectsV2Request.builder()
-                    .bucket(this.bucket)
-                    .prefix(getBackupDirectory(buildWorld))
-                    .build());
+            try {
+                ListObjectsV2Response response = this.s3Client.listObjectsV2(ListObjectsV2Request.builder()
+                        .bucket(this.bucket)
+                        .prefix(getBackupDirectory(buildWorld))
+                        .build());
 
-            backups.addAll(
-                    response.contents().stream()
-                            .filter(object -> object.key().endsWith(".zip"))
-                            .map(object -> new BackupImpl(
-                                    plugin.getBackupService().getProfile(buildWorld),
-                                    object.lastModified().toEpochMilli(),
-                                    object.key()
-                            ))
-                            .toList()
-            );
-        } catch (S3Exception | SdkClientException e) {
-            plugin.getLogger().log(Level.SEVERE, "Error while listing backups", e);
-            return Collections.emptyList();
-        }
+                backups.addAll(
+                        response.contents().stream()
+                                .filter(object -> object.key().endsWith(".zip"))
+                                .map(object -> new BackupImpl(
+                                        plugin.getBackupService().getProfile(buildWorld),
+                                        object.lastModified().toEpochMilli(),
+                                        object.key()
+                                ))
+                                .toList()
+                );
+            } catch (S3Exception | SdkClientException e) {
+                throw new RuntimeException("Error while listing backups", e);
+            }
 
-        backups.sort(Comparator.comparingLong(Backup::creationTime).reversed());
-        return backups;
+            backups.sort(Comparator.comparingLong(Backup::creationTime).reversed());
+            return backups;
+        }, BackupService.BACKUP_EXECUTOR);
     }
 
     @Override
-    public void storeBackup(BuildWorld buildWorld, CompletableFuture<Backup> future) {
-        long timestamp = System.currentTimeMillis();
-        String key = getBackupDirectory(buildWorld) + getBackupName(timestamp);
+    public CompletableFuture<Backup> storeBackup(BuildWorld buildWorld) {
+        return CompletableFuture.supplyAsync(() -> {
+            long timestamp = System.currentTimeMillis();
+            String key = getBackupDirectory(buildWorld) + getBackupName(timestamp);
 
-        byte[] zipBytes;
-        try {
-            zipBytes = FileUtils.zipWorldToMemory(buildWorld);
-        } catch (IOException e) {
-            future.completeExceptionally(new RuntimeException("Failed to complete the backup for " + buildWorld.getName()));
-            return;
-        }
+            byte[] zipBytes;
+            try {
+                zipBytes = FileUtils.zipWorldToMemory(buildWorld);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to complete the backup for " + buildWorld.getName());
+            }
 
-        try {
-            this.s3Client.putObject(
-                    PutObjectRequest.builder()
-                            .bucket(this.bucket)
-                            .key(key)
-                            .build(),
-                    RequestBody.fromBytes(zipBytes)
-            );
-            future.complete(new BackupImpl(plugin.getBackupService().getProfile(buildWorld), timestamp, key));
-            plugin.getLogger().info(String.format("Backed up world '%s'. Took %sms", buildWorld.getName(), (System.currentTimeMillis() - timestamp)));
-        } catch (S3Exception | SdkClientException e) {
-            future.completeExceptionally(new RuntimeException("Failed to upload backup for " + buildWorld.getName(), e));
-        }
+            try {
+                this.s3Client.putObject(
+                        PutObjectRequest.builder()
+                                .bucket(this.bucket)
+                                .key(key)
+                                .build(),
+                        RequestBody.fromBytes(zipBytes)
+                );
+                plugin.getLogger().info(String.format("Backed up world '%s'. Took %sms", buildWorld.getName(), (System.currentTimeMillis() - timestamp)));
+                return new BackupImpl(plugin.getBackupService().getProfile(buildWorld), timestamp, key);
+            } catch (S3Exception | SdkClientException e) {
+                throw new RuntimeException("Failed to upload backup for " + buildWorld.getName(), e);
+            }
+        }, BackupService.BACKUP_EXECUTOR);
     }
 
     @Override
-    public File downloadBackup(Backup backup) {
-        Path target = this.tmpDownloadDirectory.resolve(UUID.randomUUID() + ".zip");
-
-        try {
-            this.s3Client.getObject(
-                    GetObjectRequest.builder()
-                            .bucket(this.bucket)
-                            .key(backup.key())
-                            .build(),
-                    target
-            );
-        } catch (S3Exception | SdkClientException e) {
-            plugin.getLogger().log(Level.SEVERE, "Error while downloading backup: " + backup.key(), e);
-            return null;
-        }
-
-        return target.toFile();
+    public CompletableFuture<File> downloadBackup(Backup backup) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Path target = this.tmpDownloadDirectory.resolve(UUID.randomUUID() + ".zip");
+                this.s3Client.getObject(
+                        GetObjectRequest.builder()
+                                .bucket(this.bucket)
+                                .key(backup.key())
+                                .build(),
+                        target
+                );
+                return target.toFile();
+            } catch (S3Exception | SdkClientException e) {
+                throw new RuntimeException("Failed to download S3 backup: " + backup.key(), e);
+            }
+        }, BackupService.BACKUP_EXECUTOR);
     }
 
     @Override
-    public void deleteBackup(Backup backup) {
-        try {
-            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+    public CompletableFuture<Void> deleteBackup(Backup backup) {
+        return CompletableFuture.runAsync(() -> {
+            try {
                 this.s3Client.deleteObject(DeleteObjectRequest.builder()
                         .bucket(this.bucket)
                         .key(backup.key())
                         .build());
-            });
-        } catch (S3Exception | SdkClientException e) {
-            plugin.getLogger().log(Level.SEVERE, "Unable to delete backup " + backup.key(), e);
-        }
+            } catch (S3Exception | SdkClientException e) {
+                throw new RuntimeException("Unable to delete backup " + backup.key(), e);
+            }
+        }, BackupService.BACKUP_EXECUTOR);
     }
 
     @Override
     public void close() {
-        if (this.s3Client != null) {
-            try {
-                this.s3Client.close();
-            } catch (Exception e) {
-                plugin.getLogger().log(Level.SEVERE, "Error while closing S3 client", e);
-            }
+        disconnect();
+        FileUtils.deleteDirectory(this.tmpDownloadDirectory);
+    }
+
+    private void disconnect() {
+        if (this.s3Client == null) {
+            return;
         }
 
-        FileUtils.deleteDirectory(this.tmpDownloadDirectory);
+        try {
+            this.s3Client.close();
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.SEVERE, "Error while closing S3 client", e);
+        }
     }
 }

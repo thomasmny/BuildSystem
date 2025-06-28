@@ -20,12 +20,13 @@ import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.world.SpawnManager;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import net.lingala.zip4j.ZipFile;
 import org.bukkit.Bukkit;
@@ -50,7 +51,7 @@ public class BackupProfileImpl implements BackupProfile {
     @Override
     public CompletableFuture<List<Backup>> listBackups() {
         synchronized (this.backupLock) {
-            return CompletableFuture.supplyAsync(() -> this.storage.listBackups(this.buildWorld));
+            return this.storage.listBackups(this.buildWorld);
         }
     }
 
@@ -61,23 +62,37 @@ public class BackupProfileImpl implements BackupProfile {
             world.save();
         }
 
-        CompletableFuture<Backup> future = new CompletableFuture<>();
-        this.listBackups().thenAcceptAsync(backups -> {
-            synchronized (this.backupLock) {
-                int maxBackups = Config.World.Backup.maxBackupsPerWorld;
-                int excess = backups.size() - maxBackups + 1;
+        CompletableFuture<Backup> resultFuture = new CompletableFuture<>();
+        this.listBackups()
+                .thenComposeAsync(backups -> {
+                    synchronized (this.backupLock) {
+                        int maxBackups = Config.World.Backup.maxBackupsPerWorld;
+                        int excess = backups.size() - maxBackups + 1;
 
-                if (excess > 0) {
-                    backups.stream()
-                            .sorted(Comparator.comparingLong(Backup::creationTime))
-                            .limit(excess)
-                            .forEach(storage::deleteBackup);
-                }
+                        List<CompletableFuture<Void>> deleteFutures = Collections.emptyList();
 
-                this.storage.storeBackup(this.buildWorld, future);
-            }
-        });
-        return future;
+                        if (excess > 0) {
+                            deleteFutures = backups.stream()
+                                    .sorted(Comparator.comparingLong(Backup::creationTime))
+                                    .limit(excess)
+                                    .map(storage::deleteBackup)
+                                    .toList();
+                        }
+
+                        return CompletableFuture
+                                .allOf(deleteFutures.toArray(new CompletableFuture[0]))
+                                .thenCompose(v -> storage.storeBackup(this.buildWorld));
+                    }
+                })
+                .whenComplete((backup, throwable) -> {
+                    if (throwable != null) {
+                        resultFuture.completeExceptionally(throwable);
+                    } else {
+                        resultFuture.complete(backup);
+                    }
+                });
+
+        return resultFuture;
     }
 
     @Override
@@ -91,9 +106,12 @@ public class BackupProfileImpl implements BackupProfile {
 
         List<Player> removedPlayers = plugin.getWorldService().removePlayersFromWorld(worldName, "worlds_backup_restoration_in_progress");
 
-        File backupFile = this.storage.downloadBackup(backup);
-        if (backupFile == null || !Files.exists(backupFile.toPath())) {
-            throw new IllegalArgumentException("The specific backup does not exist");
+        File backupFile;
+        try {
+            backupFile = this.storage.downloadBackup(backup).get();
+        } catch (InterruptedException | ExecutionException e) {
+            plugin.getLogger().log(Level.SEVERE, "Error while downloading backup", e);
+            return;
         }
 
         SpawnManager spawnManager = plugin.getSpawnManager();

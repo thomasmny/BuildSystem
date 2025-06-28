@@ -22,6 +22,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
@@ -29,6 +31,7 @@ import org.bukkit.entity.Player;
 
 public class BackupService {
 
+    public static final Executor BACKUP_EXECUTOR = Executors.newCachedThreadPool();
     private static final long UPDATE_PERIOD = Duration.ofSeconds(5).getSeconds();
 
     private final BuildSystemPlugin plugin;
