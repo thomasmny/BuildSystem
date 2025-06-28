@@ -42,7 +42,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -71,6 +74,7 @@ public class WorldServiceImpl implements WorldService {
 
     public void init() {
         this.worldStorage.loadWorlds();
+        this.folderStorage.loadFolders();
     }
 
     @Override
@@ -240,11 +244,11 @@ public class WorldServiceImpl implements WorldService {
      * @param buildWorld The build world object
      * @param save       Whether to save the world before unloading
      */
-    public void unimportWorld(BuildWorld buildWorld, boolean save) {
+    public CompletableFuture<Void> unimportWorld(BuildWorld buildWorld, boolean save) {
         buildWorld.getUnloader().forceUnload(save);
         this.worldStorage.removeBuildWorld(buildWorld);
         removePlayersFromWorld(buildWorld.getName(), "worlds_unimport_players_world");
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> this.worldStorage.delete(buildWorld));
+        return this.worldStorage.delete(buildWorld);
     }
 
     /**
@@ -253,17 +257,17 @@ public class WorldServiceImpl implements WorldService {
      * @param player     The player who issued the deletion
      * @param buildWorld The world to be deleted
      */
-    public void deleteWorld(Player player, BuildWorld buildWorld) {
+    public CompletableFuture<Void> deleteWorld(Player player, BuildWorld buildWorld) {
         if (!this.worldStorage.worldExists(buildWorld.getName())) {
             Messages.sendMessage(player, "worlds_delete_unknown_world");
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         String worldName = buildWorld.getName();
         File deleteFolder = new File(Bukkit.getWorldContainer(), worldName);
         if (!deleteFolder.exists()) {
             Messages.sendMessage(player, "worlds_delete_unknown_directory");
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         Folder assignedFolder = this.folderStorage.getAssignedFolder(buildWorld);
@@ -273,11 +277,10 @@ public class WorldServiceImpl implements WorldService {
 
         Messages.sendMessage(player, "worlds_delete_started", Map.entry("%world%", worldName));
         removePlayersFromWorld(worldName, "worlds_delete_players_world");
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            unimportWorld(buildWorld, false);
-            FileUtils.deleteDirectory(deleteFolder);
-            Messages.sendMessage(player, "worlds_delete_finished");
-        }, 20L);
+        return CompletableFuture.allOf(
+                unimportWorld(buildWorld, false),
+                CompletableFuture.runAsync(() -> FileUtils.deleteDirectory(deleteFolder))
+        );
     }
 
     /**
@@ -331,39 +334,47 @@ public class WorldServiceImpl implements WorldService {
 
         File oldWorldFile = new File(Bukkit.getWorldContainer(), oldName);
         File newWorldFile = new File(Bukkit.getWorldContainer(), sanitizedNewName);
-        FileUtils.copy(oldWorldFile, newWorldFile);
-        FileUtils.deleteDirectory(oldWorldFile);
+        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+            try {
+                worldStorage.delete(oldName).join(); // ensure deletion is complete before renaming
+                FileUtils.copy(oldWorldFile, newWorldFile);
+                FileUtils.deleteDirectory(oldWorldFile);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new RuntimeException("Failed to rename world directory", e);
+            }
+        }).thenRunAsync(() -> {
+            buildWorld.setName(sanitizedNewName);
+            worldStorage.addBuildWorld(buildWorld);
+            worldStorage.save(buildWorld);
+        }).thenRun(() -> Bukkit.getScheduler().runTask(plugin, () -> {
+            World newWorld = new BuildWorldCreatorImpl(plugin, buildWorld).generateBukkitWorld(false);
+            Location spawnLocation = oldWorld.getSpawnLocation();
+            spawnLocation.setWorld(newWorld);
 
-        buildWorld.setName(sanitizedNewName);
-        this.worldStorage.addBuildWorld(buildWorld);
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> this.worldStorage.save(buildWorld));
+            removedPlayers.stream()
+                    .filter(Objects::nonNull)
+                    .forEach(pl -> PaperLib.teleportAsync(pl, spawnLocation.clone().add(0.5, 0, 0.5)));
 
-        World newWorld = new BuildWorldCreatorImpl(plugin, buildWorld).generateBukkitWorld(false);
-        Location spawnLocation = oldWorld.getSpawnLocation();
-        spawnLocation.setWorld(newWorld);
+            SpawnManager spawnManager = plugin.getSpawnManager();
+            if (spawnManager.spawnExists() && Objects.equals(spawnManager.getSpawnWorld(), oldWorld)) {
+                Location oldSpawn = spawnManager.getSpawn();
+                Location newSpawn = new Location(
+                        newWorld,
+                        oldSpawn.getX(),
+                        oldSpawn.getY(),
+                        oldSpawn.getZ(),
+                        oldSpawn.getYaw(),
+                        oldSpawn.getPitch()
+                );
+                spawnManager.set(newSpawn, sanitizedNewName);
+            }
 
-        removedPlayers.stream()
-                .filter(Objects::nonNull)
-                .forEach(pl -> PaperLib.teleportAsync(pl, spawnLocation.add(0.5, 0, 0.5)));
-
-        SpawnManager spawnManager = plugin.getSpawnManager();
-        if (spawnManager.spawnExists() && Objects.equals(spawnManager.getSpawnWorld(), oldWorld)) {
-            Location oldSpawn = spawnManager.getSpawn();
-            Location newSpawn = new Location(
-                    spawnLocation.getWorld(),
-                    oldSpawn.getX(),
-                    oldSpawn.getY(),
-                    oldSpawn.getZ(),
-                    oldSpawn.getYaw(),
-                    oldSpawn.getPitch()
+            Messages.sendMessage(player, "worlds_rename_set",
+                    Map.entry("%oldName%", oldName),
+                    Map.entry("%newName%", sanitizedNewName)
             );
-            spawnManager.set(newSpawn, newSpawn.getWorld().getName());
-        }
-
-        Messages.sendMessage(player, "worlds_rename_set",
-                Map.entry("%oldName%", oldName),
-                Map.entry("%newName%", sanitizedNewName)
-        );
+        }));
     }
 
     public List<Player> removePlayersFromWorld(String worldName, String messageKey) {
@@ -412,7 +423,18 @@ public class WorldServiceImpl implements WorldService {
     }
 
     public void save() {
-        this.worldStorage.save(this.worldStorage.getBuildWorlds());
-        this.folderStorage.save(this.folderStorage.getFolders());
+        this.worldStorage
+                .save(this.worldStorage.getBuildWorlds())
+                .exceptionally(e -> {
+                    plugin.getLogger().log(Level.SEVERE, "Failed to save world data", e);
+                    throw new CompletionException("Failed to save world data", e);
+                });
+
+        this.folderStorage
+                .save(this.folderStorage.getFolders())
+                .exceptionally(e -> {
+                    plugin.getLogger().log(Level.SEVERE, "Failed to save folder data", e);
+                    throw new CompletionException("Failed to save folder data", e);
+                });
     }
 }

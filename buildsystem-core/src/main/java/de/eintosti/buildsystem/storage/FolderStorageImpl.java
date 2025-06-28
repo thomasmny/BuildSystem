@@ -26,8 +26,10 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.world.display.FolderImpl;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -48,12 +50,25 @@ public abstract class FolderStorageImpl implements FolderStorage {
         this.plugin = plugin;
         this.logger = plugin.getLogger();
 
-        this.foldersByName = load().stream()
-                .collect(Collectors.toMap(Folder::getName, Function.identity()));
-        this.worldToFolderMap = this.foldersByName.values().stream()
-                .flatMap(folder -> folder.getWorldUUIDs().stream()
-                        .map(world -> Map.entry(world, folder.getName())))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        this.foldersByName = new HashMap<>();
+        this.worldToFolderMap = new HashMap<>();
+    }
+
+    public void loadFolders() {
+        try {
+            this.foldersByName.putAll(
+                    load().get().stream().collect(Collectors.toMap(Folder::getName, Function.identity()))
+            );
+        } catch (InterruptedException | ExecutionException e) {
+            logger.severe("Failed to load folders from storage: " + e.getMessage());
+            return;
+        }
+
+        this.worldToFolderMap.putAll(
+                this.foldersByName.values().stream()
+                        .flatMap(folder -> folder.getWorldUUIDs().stream().map(world -> Map.entry(world, folder.getName())))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+        );
     }
 
     @Override
