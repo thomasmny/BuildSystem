@@ -46,7 +46,10 @@ public interface BackupStorage {
     List<Backup> listBackups(BuildWorld buildWorld);
 
     /**
-     * Stores a new {@link Backup} for a given {@link BuildWorld}. The result of the operation is communicated via the provided {@link CompletableFuture}.
+     * Creates and stores a new {@link Backup} for a given {@link BuildWorld}. The result of the operation is communicated via the provided {@link CompletableFuture}.
+     * <p>
+     * In comparison to {@link BackupProfile#createBackup()}, a backup will always be created and no older backups will be deleted. This method is intended for immediate backup
+     * creation and storage, rather than profile management.
      *
      * @param buildWorld The world to be backed up.
      * @param future     A future that will be completed with the backup object upon successful storage, or exceptionally if an error occurs.

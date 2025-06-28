@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.aws.core) // Unable to find the dependency at runtime, so we add it here
 
     library(libs.bundles.aws)
+    library(libs.bouncycastle)
     library(libs.sftp)
     library(libs.zip4j)
 }

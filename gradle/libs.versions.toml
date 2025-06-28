@@ -12,11 +12,12 @@ axiompaper = "4.0.1-1.21.1"
 annotations = "26.0.2"
 authlib = "3.13.56"
 aws-sdk = "2.31.70"
+bouncycastle = "1.81"
 bstats = "3.1.0"
 fastboard = "2.1.5"
 nbt = "1.5.1"
 xseries = "13.3.1"
-sshd-sftp = "2.9.0"
+sshd-sftp = "2.15.0"
 zip4j = "2.11.5"
 
 [libraries]
@@ -37,6 +38,7 @@ aws-auth = { module = "software.amazon.awssdk:auth", version.ref = "aws-sdk" }
 aws-core = { module = "software.amazon.awssdk:core", version.ref = "aws-sdk" }
 aws-regions = { module = "software.amazon.awssdk:regions", version.ref = "aws-sdk" }
 aws-s3 = { module = "software.amazon.awssdk:s3", version.ref = "aws-sdk" }
+bouncycastle = { group = "org.bouncycastle", name = "bcpkix-jdk18on", version.ref = "bouncycastle" }
 bstats = { group = "org.bstats", name = "bstats-bukkit", version.ref = "bstats" }
 fastboard = { group = "fr.mrmicky", name = "fastboard", version.ref = "fastboard" }
 nbt = { group = "dev.dewy", name = "nbt", version.ref = "nbt" }
