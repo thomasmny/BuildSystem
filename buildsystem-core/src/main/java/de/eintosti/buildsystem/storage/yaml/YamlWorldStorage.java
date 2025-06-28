@@ -199,6 +199,8 @@ public class YamlWorldStorage extends WorldStorageImpl {
         boolean physics = config.getBoolean(path + ".physics");
         boolean privateWorld = config.getBoolean(path + ".private");
 
+        int timeSinceBackup = config.getInt(path + ".time-since-backup", 0);
+
         long lastLoaded = config.getLong(path + ".last-loaded");
         long lastUnloaded = config.getLong(path + ".last-unloaded");
         long lastEdited = config.getLong(path + ".last-edited");
@@ -206,7 +208,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
         return new WorldDataImpl(
                 worldName, customSpawn, permission, project, difficulty, material, worldStatus, blockBreaking,
                 blockInteractions, blockPlacement, buildersEnabled, explosions, mobAi, physics, privateWorld,
-                lastLoaded, lastUnloaded, lastEdited, plugin.getConfigValues()
+                timeSinceBackup, lastLoaded, lastUnloaded, lastEdited
         );
     }
 

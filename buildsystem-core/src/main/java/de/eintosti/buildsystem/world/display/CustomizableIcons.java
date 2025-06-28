@@ -21,7 +21,7 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
-import de.eintosti.buildsystem.config.SetupConfig;
+import de.eintosti.buildsystem.storage.yaml.YamlSetupStorage;
 import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
@@ -31,13 +31,13 @@ import java.util.Map;
  */
 public class CustomizableIcons {
 
-    private final SetupConfig setupConfig;
+    private final YamlSetupStorage setupStorage;
 
     private final Map<BuildWorldType, XMaterial> typeIcons;
     private final Map<BuildWorldStatus, XMaterial> statusIcons;
 
     public CustomizableIcons(BuildSystemPlugin plugin) {
-        this.setupConfig = new SetupConfig(plugin);
+        this.setupStorage = new YamlSetupStorage(plugin);
 
         this.typeIcons = loadTypeIcons();
         this.statusIcons = loadStatusIcons();
@@ -55,12 +55,12 @@ public class CustomizableIcons {
                 Map.entry(BuildWorldType.IMPORTED, XMaterial.FURNACE)
         ));
 
-        Map<BuildWorldType, XMaterial> loadedIcons = this.setupConfig.loadIcons(IconType.TYPE, type -> BuildWorldType.valueOf(type.toUpperCase(Locale.ROOT)));
+        Map<BuildWorldType, XMaterial> loadedIcons = this.setupStorage.loadIcons(IconType.TYPE, type -> BuildWorldType.valueOf(type.toUpperCase(Locale.ROOT)));
         if (loadedIcons != null) {
             typeIcons.putAll(loadedIcons);
         }
 
-        setupConfig.saveIcons(IconType.TYPE, typeIcons);
+        setupStorage.saveIcons(IconType.TYPE, typeIcons);
         return typeIcons;
     }
 
@@ -74,12 +74,12 @@ public class CustomizableIcons {
                 Map.entry(BuildWorldStatus.HIDDEN, XMaterial.BONE_MEAL)
         ));
 
-        Map<BuildWorldStatus, XMaterial> loadedIcons = this.setupConfig.loadIcons(IconType.STATUS, type -> BuildWorldStatus.valueOf(type.toUpperCase(Locale.ROOT)));
+        Map<BuildWorldStatus, XMaterial> loadedIcons = this.setupStorage.loadIcons(IconType.STATUS, type -> BuildWorldStatus.valueOf(type.toUpperCase(Locale.ROOT)));
         if (loadedIcons != null) {
             statusIcon.putAll(loadedIcons);
         }
 
-        setupConfig.saveIcons(IconType.STATUS, statusIcon);
+        setupStorage.saveIcons(IconType.STATUS, statusIcon);
         return statusIcon;
     }
 
@@ -111,7 +111,7 @@ public class CustomizableIcons {
      */
     public void setIcon(BuildWorldType type, XMaterial material) {
         this.typeIcons.put(type, material);
-        this.setupConfig.saveIcon(IconType.TYPE, type, material);
+        this.setupStorage.saveIcon(IconType.TYPE, type, material);
     }
 
     /**
@@ -122,7 +122,7 @@ public class CustomizableIcons {
      */
     public void setIcon(BuildWorldStatus status, XMaterial material) {
         this.statusIcons.put(status, material);
-        this.setupConfig.saveIcon(IconType.STATUS, status, material);
+        this.setupStorage.saveIcon(IconType.STATUS, status, material);
     }
 
     public enum IconType {

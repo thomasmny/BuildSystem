@@ -82,7 +82,7 @@ public class ImportSubCommand implements SubCommand {
 
         Builder creator = null;
         Generator generator = Generator.VOID;
-        String generatorName = null;
+        String generatorName = generator.name();
         BuildWorldType worldType = BuildWorldType.IMPORTED;
 
         if (args.length != 2) {
@@ -96,6 +96,7 @@ public class ImportSubCommand implements SubCommand {
                 }
                 try {
                     generator = Generator.valueOf(generatorArg.toUpperCase(Locale.ROOT));
+                    generatorName = generator.name();
                 } catch (IllegalArgumentException ignored) {
                     generator = Generator.CUSTOM;
                     generatorName = generatorArg;
@@ -125,7 +126,6 @@ public class ImportSubCommand implements SubCommand {
                 try {
                     worldType = BuildWorldType.valueOf(worldTypeArg.toUpperCase(Locale.ROOT));
                 } catch (IllegalArgumentException ignored) {
-
                 }
             }
         }

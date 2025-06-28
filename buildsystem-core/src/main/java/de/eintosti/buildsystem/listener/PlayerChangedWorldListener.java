@@ -24,7 +24,8 @@ import de.eintosti.buildsystem.api.player.CachedValues;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
-import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.config.Config.Settings.Archive;
+import de.eintosti.buildsystem.config.Config.World.Unload;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
@@ -47,8 +48,6 @@ import org.bukkit.potion.PotionEffectType;
 
 public class PlayerChangedWorldListener implements Listener {
 
-    private final ConfigValues configValues;
-
     private final ArmorStandManager armorStandManager;
     private final PlayerServiceImpl playerManager;
     private final SettingsManager settingsManager;
@@ -59,8 +58,6 @@ public class PlayerChangedWorldListener implements Listener {
     private final Map<UUID, ItemStack[]> playerArmor;
 
     public PlayerChangedWorldListener(BuildSystemPlugin plugin) {
-        this.configValues = plugin.getConfigValues();
-
         this.armorStandManager = plugin.getArmorStandManager();
         this.playerManager = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsManager();
@@ -81,7 +78,7 @@ public class PlayerChangedWorldListener implements Listener {
         event.getPlayer().setAllowFlight(true);
 
         BuildWorld oldWorld = worldStorage.getBuildWorld(event.getFrom());
-        if (oldWorld != null && configValues.isUnloadWorlds()) {
+        if (oldWorld != null && Unload.enabled) {
             oldWorld.getUnloader().resetUnloadTask();
         }
 
@@ -131,9 +128,7 @@ public class PlayerChangedWorldListener implements Listener {
             return;
         }
 
-        if (configValues.isVoidBlock()) {
-            bukkitWorld.getBlockAt(0, 64, 0).setType(Material.GOLD_BLOCK);
-        }
+        bukkitWorld.getBlockAt(0, 64, 0).setType(Material.GOLD_BLOCK);
     }
 
     @SuppressWarnings("deprecation")
@@ -172,7 +167,7 @@ public class PlayerChangedWorldListener implements Listener {
             playerInventory.clear();
             setSpectatorMode(player);
 
-            if (configValues.isArchiveVanish()) {
+            if (Archive.vanish) {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, false, false), false);
                 Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
             }
@@ -188,8 +183,8 @@ public class PlayerChangedWorldListener implements Listener {
 
     private void setSpectatorMode(Player player) {
         // Checking if the game mode should be set to adventure mode on archive worlds
-        if (configValues.shouldArchiveChangeGameMode()) {
-            player.setGameMode(configValues.getArchiveWorldGameMode());
+        if (Archive.changeGamemode) {
+            player.setGameMode(Archive.worldGameMode);
         }
         player.setSaturation(20);
         player.setHealth(20);

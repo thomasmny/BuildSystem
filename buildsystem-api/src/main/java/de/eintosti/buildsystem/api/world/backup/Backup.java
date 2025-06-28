@@ -15,29 +15,31 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.config;
+package de.eintosti.buildsystem.api.world.backup;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
-import org.bukkit.Location;
+/**
+ * Represents a single backup of a {@link de.eintosti.buildsystem.api.world.BuildWorld}.
+ */
+public interface Backup {
 
-public class SpawnConfig extends ConfigurationFile {
+    /**
+     * Returns the {@link BackupProfile} that owns this backup.
+     *
+     * @return The owner of the backup.
+     */
+    BackupProfile owner();
 
-    public SpawnConfig(BuildSystemPlugin plugin) {
-        super(plugin, "spawn.yml");
-    }
+    /**
+     * Returns the timestamp when this backup was created.
+     *
+     * @return The creation time in milliseconds since the Unix epoch.
+     */
+    long creationTime();
 
-    public void saveSpawn(Location location) {
-        if (location == null || location.getWorld() == null) {
-            return;
-        }
-
-        getFile().set("spawn", location.getWorld().getName() + ":"
-                + location.getX() + ":"
-                + location.getY() + ":"
-                + location.getZ() + ":"
-                + location.getYaw() + ":"
-                + location.getPitch()
-        );
-        saveFile();
-    }
+    /**
+     * Returns a unique key or identifier for this backup.
+     *
+     * @return The key of the backup.
+     */
+    String key();
 }
