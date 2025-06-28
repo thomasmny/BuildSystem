@@ -17,10 +17,10 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
+import de.eintosti.buildsystem.config.Config.Settings.Navigator;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import org.bukkit.entity.Player;
@@ -28,10 +28,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class ItemSubCommand implements SubCommand {
 
-    private final BuildSystemPlugin plugin;
-
-    public ItemSubCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+    public ItemSubCommand() {
     }
 
     @Override
@@ -42,7 +39,7 @@ public class ItemSubCommand implements SubCommand {
         }
 
         ItemStack navigator = InventoryUtils.createItem(
-                plugin.getConfigValues().getNavigatorItem(),
+                Navigator.item,
                 Messages.getString("navigator_item", player)
         );
         player.getInventory().addItem(navigator);

@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.CachedValues;
 import de.eintosti.buildsystem.api.player.settings.Settings;
+import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
@@ -49,7 +50,7 @@ public class PlayerQuitListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void sendPlayerQuitMessage(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        String message = plugin.getConfigValues().isJoinQuitMessages()
+        String message = Config.Messages.joinQuitMessages
                 ? Messages.getString("player_quit", player, Map.entry("%player%", player.getName()))
                 : null;
         event.setQuitMessage(message);

@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.api.world.util;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import java.util.function.Supplier;
 import org.bukkit.entity.Player;
@@ -48,13 +49,13 @@ public interface WorldPermissions {
     boolean canEnter(Player player);
 
     /**
-     * Determines if the given {@link Player} can modify the {@link de.eintosti.buildsystem.api.world.BuildWorld} they are currently in.
+     * Determines if the given {@link Player} can modify the {@link BuildWorld} they are currently in.
      * <p>
      * Modifications might be disallowed due to:
      * <ul>
      *     <li>The world having its {@link BuildWorldStatus} set to {@link BuildWorldStatus#ARCHIVE}.</li>
      *     <li>A world setting is enabled that specifically prohibits certain events (e.g., block placement/breaking).</li>
-     *     <li>The world is configured to only allow designated {@link de.eintosti.buildsystem.api.world.builder.Builder}s, and the player is neither a builder nor the world's creator.</li>
+     *     <li>The world is configured to only allow designated {@link Builder}s, and the player is neither a builder nor the world's creator.</li>
      * </ul>
      * However, a player can bypass these restrictions if:
      * <ul>

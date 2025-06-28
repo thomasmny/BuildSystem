@@ -15,27 +15,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.world.creation.generator.voidgenerator;
+package de.eintosti.buildsystem.storage.yaml;
 
-import java.util.Random;
-import javax.annotation.Nonnull;
-import org.bukkit.World;
-import org.bukkit.block.Biome;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import org.bukkit.Location;
 
-/**
- * The {@link VoidGenerator} that is used for servers which run on Spigot 1.13-1.16.
- */
-@SuppressWarnings("deprecation")
-public class DeprecatedVoidGenerator extends VoidGenerator {
+public class YamlSpawnStorage extends AbstractYamlStorage {
 
-    public DeprecatedVoidGenerator() {
-        super(Biome.PLAINS);
+    public YamlSpawnStorage(BuildSystemPlugin plugin) {
+        super(plugin, "spawn.yml");
     }
 
-    @Nonnull
-    @Override
-    public ChunkData generateChunkData(@Nonnull World world, @Nonnull Random random, int x, int z, @Nonnull BiomeGrid biome) {
-        biome.setBiome(x, z, super.getBiome());
-        return createChunkData(world);
+    public void saveSpawn(Location location) {
+        if (location == null || location.getWorld() == null) {
+            return;
+        }
+
+        getFile().set("spawn", location.getWorld().getName() + ":"
+                + location.getX() + ":"
+                + location.getY() + ":"
+                + location.getZ() + ":"
+                + location.getYaw() + ":"
+                + location.getPitch()
+        );
+        saveFile();
     }
 }
