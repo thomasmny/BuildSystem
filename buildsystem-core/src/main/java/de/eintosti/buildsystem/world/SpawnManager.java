@@ -51,7 +51,7 @@ public class SpawnManager {
     }
 
     public boolean teleport(Player player) {
-        if (!spawnExists()) {
+        if (spawn == null || spawnName == null) {
             return false;
         }
 
