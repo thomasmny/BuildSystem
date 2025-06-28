@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.inventory.XInventoryView;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.config.Config.Settings.BuildMode;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -30,11 +30,9 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 
 public class BuildModePreventationListener implements Listener {
 
-    private final ConfigValues configValues;
     private final PlayerServiceImpl playerManager;
 
     public BuildModePreventationListener(BuildSystemPlugin plugin) {
-        this.configValues = plugin.getConfigValues();
         this.playerManager = plugin.getPlayerService();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -46,7 +44,7 @@ public class BuildModePreventationListener implements Listener {
      */
     @EventHandler
     public void onPlayerDropItem(PlayerDropItemEvent event) {
-        if (configValues.isBuildModeDropItems()) {
+        if (BuildMode.dropItems) {
             return;
         }
 
@@ -62,7 +60,7 @@ public class BuildModePreventationListener implements Listener {
      */
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (configValues.isBuildModeMoveItems()) {
+        if (BuildMode.moveItems) {
             return;
         }
 

@@ -21,7 +21,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.util.WorldPermissions;
-import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.config.Config.World.Default.Time;
 import java.util.Locale;
 import java.util.Map;
 import org.bukkit.Bukkit;
@@ -35,11 +35,9 @@ import org.jetbrains.annotations.NotNull;
 public class TimeCommand implements CommandExecutor {
 
     private final BuildSystemPlugin plugin;
-    private final ConfigValues configValues;
 
     public TimeCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.configValues = plugin.getConfigValues();
         plugin.getCommand("day").setExecutor(this);
         plugin.getCommand("night").setExecutor(this);
     }
@@ -70,7 +68,7 @@ public class TimeCommand implements CommandExecutor {
 
                 switch (args.length) {
                     case 0, 1 -> {
-                        world.setTime(configValues.getNoonTime());
+                        world.setTime(Time.noon);
                         Messages.sendMessage(player, "day_set", Map.entry("%world%", world.getName()));
                     }
                     default -> Messages.sendMessage(player, "day_usage");
@@ -85,7 +83,7 @@ public class TimeCommand implements CommandExecutor {
 
                 switch (args.length) {
                     case 0, 1 -> {
-                        world.setTime(configValues.getNightTime());
+                        world.setTime(Time.night);
                         Messages.sendMessage(player, "night_set", Map.entry("%world%", world.getName()));
                     }
                     default -> {

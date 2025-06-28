@@ -19,9 +19,6 @@ package de.eintosti.buildsystem.util.inventory;
 
 import com.cryptomorin.xseries.XMaterial;
 
-/**
- * @author Trichtern
- */
 public final class MaterialUtils {
 
     private MaterialUtils() {

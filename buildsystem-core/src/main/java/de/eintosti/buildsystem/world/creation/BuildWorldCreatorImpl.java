@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.world.creation;
 
+import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
@@ -26,10 +27,11 @@ import de.eintosti.buildsystem.api.world.creation.BuildWorldCreator;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.config.Config.World.Default;
+import de.eintosti.buildsystem.config.Config.World.Default.Time;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
-import de.eintosti.buildsystem.world.creation.generator.voidgenerator.ModernVoidGenerator;
+import de.eintosti.buildsystem.world.creation.generator.VoidGenerator;
 import dev.dewy.nbt.Nbt;
 import dev.dewy.nbt.io.CompressionType;
 import dev.dewy.nbt.tags.collection.CompoundTag;
@@ -42,9 +44,10 @@ import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Difficulty;
-import org.bukkit.Material;
+import org.bukkit.GameRule;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
+import org.bukkit.WorldType;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -53,7 +56,6 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
 
     private static final String LEVEL_DAT_FILE_NAME = "level.dat";
     private static final String TEMPLATES_DIRECTORY = "templates";
-    private static final int VOID_BLOCK_Y = 64;
 
     private final BuildSystemPlugin plugin;
     private final WorldStorage worldStorage;
@@ -65,15 +67,32 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
     private CustomGenerator customGenerator = null;
     private long creationDate = System.currentTimeMillis();
     private String template = null;
-    private Difficulty difficulty;
     private Folder folder;
+
+    private Difficulty difficulty;
+    private Integer time;
+    private Integer worldBoarderSize;
+
+    private BuildWorld buildWorld;
 
     public BuildWorldCreatorImpl(BuildSystemPlugin plugin, @NotNull String name) {
         this.plugin = plugin;
         this.worldStorage = plugin.getWorldService().getWorldStorage();
 
-        setName(name);
-        setDifficulty(plugin.getConfigValues().getWorldDifficulty());
+        this.worldName = name;
+        this.difficulty = Default.difficulty;
+        this.time = Time.noon;
+        this.worldBoarderSize = Default.worldBoarderSize;
+    }
+
+    public BuildWorldCreatorImpl(BuildSystemPlugin plugin, @NotNull BuildWorld buildWorld) {
+        this.plugin = plugin;
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
+
+        this.buildWorld = buildWorld;
+        this.worldName = buildWorld.getName();
+        this.worldType = buildWorld.getType();
+        this.customGenerator = buildWorld.getCustomGenerator();
     }
 
     @Override
@@ -132,12 +151,12 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
 
     @Override
     public void createWorld(Player player) {
-        if (worldStorage.worldAndFolderExist(worldName)) {
+        if (this.worldStorage.worldAndFolderExist(this.worldName)) {
             Messages.sendMessage(player, "worlds_world_exists");
             return;
         }
 
-        boolean success = (worldType == BuildWorldType.TEMPLATE)
+        boolean success = (this.worldType == BuildWorldType.TEMPLATE)
                 ? createWorldFromTemplate(player)
                 : createWorldFromGenerator(player);
 
@@ -149,8 +168,8 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
 
     @Override
     public void importWorld(Player player, boolean teleport) {
-        BuildWorld buildWorld = createAndRegisterBuildWorld(player);
-        generateBukkitWorld(buildWorld, true);
+        this.buildWorld = createAndRegisterBuildWorld(player);
+        generateBukkitWorld(true);
         if (teleport) {
             teleportAfterCreation(player);
         }
@@ -164,12 +183,12 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
      */
     private boolean createWorldFromGenerator(Player player) {
         Messages.sendMessage(player, "worlds_world_creation_started",
-                Map.entry("%world%", worldName),
-                Map.entry("%type%", Messages.getString(Messages.getMessageKey(worldType), player))
+                Map.entry("%world%", this.worldName),
+                Map.entry("%type%", Messages.getString(Messages.getMessageKey(this.worldType), player))
         );
 
-        BuildWorld buildWorld = createAndRegisterBuildWorld(player);
-        generateBukkitWorld(buildWorld, false); // Version check is not needed for new worlds.
+        this.buildWorld = createAndRegisterBuildWorld(player);
+        generateBukkitWorld(false); // Version check is not needed for new worlds.
         return true;
     }
 
@@ -180,22 +199,22 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
      * @return {@code true} if the creation was successful, {@code false} otherwise
      */
     private boolean createWorldFromTemplate(Player player) {
-        File templateFile = new File(plugin.getDataFolder(), TEMPLATES_DIRECTORY + File.separator + template);
+        File templateFile = new File(this.plugin.getDataFolder(), TEMPLATES_DIRECTORY + File.separator + template);
         if (!templateFile.exists()) {
             Messages.sendMessage(player, "worlds_template_does_not_exist");
             return false;
         }
 
         Messages.sendMessage(player, "worlds_template_creation_started",
-                Map.entry("%world%", worldName),
-                Map.entry("%template%", template)
+                Map.entry("%world%", this.worldName),
+                Map.entry("%template%", this.template)
         );
 
-        File worldFile = new File(Bukkit.getWorldContainer(), worldName);
+        File worldFile = new File(Bukkit.getWorldContainer(), this.worldName);
         FileUtils.copy(templateFile, worldFile);
 
-        BuildWorld buildWorld = createAndRegisterBuildWorld(player);
-        generateBukkitWorld(buildWorld, true); // Version check is important for templates.
+        this.buildWorld = createAndRegisterBuildWorld(player);
+        generateBukkitWorld(true);
         return true;
     }
 
@@ -207,18 +226,18 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
      */
     private BuildWorld createAndRegisterBuildWorld(Player player) {
         BuildWorldImpl buildWorld = new BuildWorldImpl(
-                worldName,
-                creator == null ? Builder.of(player) : creator,
-                worldType,
-                creationDate,
-                isPrivate,
-                customGenerator
+                this.worldName,
+                this.creator == null ? Builder.of(player) : this.creator,
+                this.worldType,
+                this.creationDate,
+                this.isPrivate,
+                this.customGenerator
         );
 
         buildWorld.getData().lastLoaded().set(System.currentTimeMillis());
-        worldStorage.addBuildWorld(buildWorld);
-        if (folder != null) {
-            folder.addWorld(buildWorld);
+        this.worldStorage.addBuildWorld(buildWorld);
+        if (this.folder != null) {
+            this.folder.addWorld(buildWorld);
         }
 
         return buildWorld;
@@ -236,7 +255,11 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
 
     @Override
     @Nullable
-    public World generateBukkitWorld(BuildWorld buildWorld, boolean checkVersion) {
+    public World generateBukkitWorld(boolean checkVersion) {
+        if (this.buildWorld == null) {
+            throw new IllegalStateException("BuildWorld must be set before generating the Bukkit world.");
+        }
+
         if (checkVersion && isDataVersionTooHigh()) {
             plugin.getLogger().warning(String.format(Locale.ROOT,
                     "\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping...",
@@ -250,7 +273,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
 
         if (bukkitWorld != null) {
             applyDefaultWorldSettings(bukkitWorld);
-            applyPostGenerationSettings(bukkitWorld, buildWorld.getType());
+            applyPostGenerationSettings(bukkitWorld, this.buildWorld.getType());
             updateWorldDataVersion();
         }
 
@@ -263,16 +286,24 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
      * @return A configured {@link WorldCreator}
      */
     private WorldCreator createBukkitWorldCreator() {
-        WorldCreator worldCreator = new WorldCreator(worldName);
+        WorldCreator worldCreator = new WorldCreator(this.worldName);
+        BuildWorldType worldType = this.worldType;
+
+        if (worldType == BuildWorldType.IMPORTED && this.customGenerator != null && this.customGenerator.name() != null) {
+            // For imported worlds we store the world type generator within the custom generator
+            worldType = BuildWorldType.valueOf(this.customGenerator.name().toUpperCase(Locale.ROOT));
+        }
 
         switch (worldType) {
             case VOID:
-                configureVoidWorld(worldCreator);
+                worldCreator.type(WorldType.FLAT);
+                worldCreator.generateStructures(false);
+                worldCreator.generator(new VoidGenerator());
                 break;
             case FLAT:
             case PRIVATE:
+                worldCreator.type(WorldType.FLAT);
                 worldCreator.generateStructures(false);
-                worldCreator.type(org.bukkit.WorldType.FLAT);
                 break;
             case NETHER:
                 worldCreator.generateStructures(true);
@@ -283,22 +314,18 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
                 worldCreator.environment(World.Environment.THE_END);
                 break;
             case CUSTOM:
-                if (customGenerator != null) {
-                    worldCreator.generator(customGenerator.chunkGenerator());
+                if (this.customGenerator != null) {
+                    worldCreator.generator(this.customGenerator.chunkGenerator());
                 }
                 // Fall-through to NORMAL for default settings
             default: // NORMAL
+                worldCreator.type(WorldType.NORMAL);
                 worldCreator.generateStructures(true);
                 worldCreator.environment(World.Environment.NORMAL);
                 break;
         }
-        return worldCreator;
-    }
 
-    private void configureVoidWorld(WorldCreator worldCreator) {
-        worldCreator.generateStructures(false);
-        worldCreator.type(org.bukkit.WorldType.FLAT);
-        worldCreator.generator(new ModernVoidGenerator());
+        return worldCreator;
     }
 
     /**
@@ -307,12 +334,23 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
      * @param bukkitWorld The world to configure
      */
     private void applyDefaultWorldSettings(World bukkitWorld) {
-        ConfigValues config = plugin.getConfigValues();
-        bukkitWorld.setDifficulty(this.difficulty);
-        bukkitWorld.setTime(config.getNoonTime());
-        bukkitWorld.getWorldBorder().setSize(config.getWorldBorderSize());
-        bukkitWorld.setKeepSpawnInMemory(config.isTeleportAfterCreation());
-        config.getDefaultGameRules().forEach(bukkitWorld::setGameRuleValue);
+        if (this.difficulty != null) {
+            bukkitWorld.setDifficulty(this.difficulty);
+        }
+        if (this.time != null) {
+            bukkitWorld.setTime(this.time);
+        }
+        if (this.worldBoarderSize != null) {
+            bukkitWorld.getWorldBorder().setSize(Default.worldBoarderSize);
+        }
+        bukkitWorld.setKeepSpawnInMemory(true);
+        Default.gameRules.forEach((gameRule, value) -> applyGameRule(bukkitWorld, gameRule, value));
+    }
+
+    private <T> void applyGameRule(World world, GameRule<T> rule, Object value) {
+        @SuppressWarnings("unchecked")
+        T castedValue = (T) value;
+        world.setGameRule(rule, castedValue);
     }
 
     /**
@@ -323,18 +361,17 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
      */
     private void applyPostGenerationSettings(World bukkitWorld, BuildWorldType worldType) {
         switch (worldType) {
-            case VOID:
-                if (plugin.getConfigValues().isVoidBlock()) {
-                    bukkitWorld.getBlockAt(0, VOID_BLOCK_Y, 0).setType(Material.GOLD_BLOCK);
-                }
-                bukkitWorld.setSpawnLocation(0, VOID_BLOCK_Y + 1, 0);
-                break;
-            case FLAT:
+            case VOID -> {
+                int voidBlockY = 64;
+                bukkitWorld.getBlockAt(0, voidBlockY, 0).setType(XMaterial.GOLD_BLOCK.get());
+                bukkitWorld.setSpawnLocation(0, voidBlockY + 1, 0);
+            }
+            case FLAT -> {
                 bukkitWorld.setSpawnLocation(0, -60, 0);
-                break;
-            default:
+            }
+            default -> {
                 // No special post-generation steps for other types
-                break;
+            }
         }
     }
 
@@ -347,7 +384,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
     }
 
     private int parseDataVersion() {
-        File levelFile = new File(new File(Bukkit.getWorldContainer(), worldName), LEVEL_DAT_FILE_NAME);
+        File levelFile = new File(new File(Bukkit.getWorldContainer(), this.worldName), LEVEL_DAT_FILE_NAME);
         if (!levelFile.exists()) {
             return -1;
         }
@@ -358,13 +395,13 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
             IntTag dataVersion = data.getInt("DataVersion");
             return dataVersion != null ? dataVersion.getValue() : -1;
         } catch (IOException e) {
-            plugin.getLogger().log(Level.WARNING, "Failed to parse level.dat for world " + worldName, e);
+            plugin.getLogger().log(Level.WARNING, "Failed to parse level.dat for world " + this.worldName, e);
             return -1;
         }
     }
 
     private void updateWorldDataVersion() {
-        File levelFile = new File(new File(Bukkit.getWorldContainer(), worldName), LEVEL_DAT_FILE_NAME);
+        File levelFile = new File(new File(Bukkit.getWorldContainer(), this.worldName), LEVEL_DAT_FILE_NAME);
         if (!levelFile.exists()) {
             return;
         }
@@ -390,10 +427,6 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
     }
 
     private void teleportAfterCreation(Player player) {
-        if (!plugin.getConfigValues().isTeleportAfterCreation()) {
-            return;
-        }
-
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (buildWorld == null) {
             return;

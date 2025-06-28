@@ -33,11 +33,9 @@ import org.bukkit.entity.Player;
 
 public class InfoSubCommand implements SubCommand {
 
-    private final BuildSystemPlugin plugin;
     private final BuildWorld buildWorld;
 
     public InfoSubCommand(BuildSystemPlugin plugin, String worldName) {
-        this.plugin = plugin;
         this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
     }
 
@@ -63,6 +61,7 @@ public class InfoSubCommand implements SubCommand {
         WorldData worldData = buildWorld.getData();
         Messages.sendMessage(player, "world_info",
                 Map.entry("%world%", buildWorld.getName()),
+                Map.entry("%uuid%", buildWorld.getUniqueId().toString()),
                 Map.entry("%creator%", getCreator(builders)),
                 Map.entry("%item%", worldData.material().get().name()),
                 Map.entry("%type%", Messages.getString(Messages.getMessageKey(buildWorld.getType()), player)),

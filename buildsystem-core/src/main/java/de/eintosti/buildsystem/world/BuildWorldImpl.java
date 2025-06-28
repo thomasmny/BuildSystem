@@ -72,7 +72,7 @@ public final class BuildWorldImpl implements BuildWorld {
             BuildWorldType worldType,
             long creation,
             boolean privateWorld,
-            CustomGenerator customGenerator
+            @Nullable CustomGenerator customGenerator
     ) {
         this(
                 UUID.randomUUID(),
@@ -81,8 +81,7 @@ public final class BuildWorldImpl implements BuildWorld {
                 new WorldDataImpl(
                         name,
                         privateWorld,
-                        privateWorld ? XMaterial.PLAYER_HEAD : PLUGIN.getCustomizableIcons().getIcon(worldType),
-                        PLUGIN.getConfigValues()
+                        privateWorld ? XMaterial.PLAYER_HEAD : PLUGIN.getCustomizableIcons().getIcon(worldType)
                 ),
                 creator,
                 new ArrayList<>(),
@@ -99,7 +98,7 @@ public final class BuildWorldImpl implements BuildWorld {
             Builder creator,
             List<Builder> builders,
             long creation,
-            CustomGenerator customGenerator
+            @Nullable CustomGenerator customGenerator
     ) {
         this.uuid = uuid;
         this.name = name;

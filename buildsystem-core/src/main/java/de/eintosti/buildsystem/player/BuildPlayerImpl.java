@@ -21,7 +21,6 @@ import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.CachedValues;
 import de.eintosti.buildsystem.api.player.LogoutLocation;
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -33,7 +32,6 @@ public class BuildPlayerImpl implements BuildPlayer {
     private final Settings settings;
     private final CachedValues cachedValues;
 
-    private BuildWorld cachedWorld;
     private LogoutLocation logoutLocation;
     private Location previousLocation;
     private NavigatorCategory lastLookedAt;
