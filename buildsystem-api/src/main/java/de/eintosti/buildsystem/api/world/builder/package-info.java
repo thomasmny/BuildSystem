@@ -15,20 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.world.creation.generator.voidgenerator;
 
-import org.bukkit.block.Biome;
-import org.bukkit.generator.ChunkGenerator;
-
-public abstract class VoidGenerator extends ChunkGenerator {
-
-    private final Biome biome;
-
-    public VoidGenerator(Biome biome) {
-        this.biome = biome;
-    }
-
-    public Biome getBiome() {
-        return biome;
-    }
-}
+/**
+ * Provides interfaces and classes for managing world builders and their associated permissions.
+ */
+package de.eintosti.buildsystem.api.world.builder;

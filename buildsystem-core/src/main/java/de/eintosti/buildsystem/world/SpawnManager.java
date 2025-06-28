@@ -21,7 +21,7 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.config.SpawnConfig;
+import de.eintosti.buildsystem.storage.yaml.YamlSpawnStorage;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -33,7 +33,7 @@ public class SpawnManager {
 
     private final BuildSystemPlugin plugin;
     private final WorldStorage worldStorage;
-    private final SpawnConfig spawnConfig;
+    private final YamlSpawnStorage spawnStorage;
 
     private String spawnName;
     private Location spawn;
@@ -41,7 +41,7 @@ public class SpawnManager {
     public SpawnManager(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.worldStorage = plugin.getWorldService().getWorldStorage();
-        this.spawnConfig = new SpawnConfig(plugin);
+        this.spawnStorage = new YamlSpawnStorage(plugin);
         load();
     }
 
@@ -91,11 +91,11 @@ public class SpawnManager {
     }
 
     public void save() {
-        spawnConfig.saveSpawn(spawn);
+        spawnStorage.saveSpawn(spawn);
     }
 
     private void load() {
-        FileConfiguration configuration = spawnConfig.getFile();
+        FileConfiguration configuration = spawnStorage.getFile();
         String string = configuration.getString("spawn");
         if (string == null || string.trim().isEmpty()) {
             return;

@@ -46,39 +46,39 @@ public class WorldLoaderImpl implements WorldLoader {
 
     @Override
     public void loadForPlayer(Player player) {
-        if (buildWorld.isLoaded()) {
+        if (this.buildWorld.isLoaded()) {
             return;
         }
 
         player.closeInventory();
-        player.sendTitle(" ", Messages.getString("loading_world", player, Map.entry("%world%", buildWorld.getName())), 5, 70, 20);
+        player.sendTitle(" ", Messages.getString("loading_world", player, Map.entry("%world%", this.buildWorld.getName())), 5, 70, 20);
 
         load();
     }
 
     @Override
     public void load() {
-        if (buildWorld.isLoaded()) {
+        if (this.buildWorld.isLoaded()) {
             return;
         }
 
-        BuildWorldLoadEvent loadEvent = new BuildWorldLoadEvent(buildWorld);
+        BuildWorldLoadEvent loadEvent = new BuildWorldLoadEvent(this.buildWorld);
         Bukkit.getServer().getPluginManager().callEvent(loadEvent);
         if (loadEvent.isCancelled()) {
             return;
         }
 
-        String worldName = buildWorld.getName();
-        plugin.getLogger().info("*** Loading world \"" + worldName + "\" ***");
-        World world = new BuildWorldCreatorImpl(plugin, worldName).generateBukkitWorld(buildWorld);
+        String worldName = this.buildWorld.getName();
+        this.plugin.getLogger().info("*** Loading world \"" + worldName + "\" ***");
+        World world = new BuildWorldCreatorImpl(this.plugin, this.buildWorld).generateBukkitWorld();
         if (world == null) {
             return;
         }
 
-        buildWorld.getData().lastLoaded().set(System.currentTimeMillis());
-        buildWorld.setLoaded(true);
+        this.buildWorld.getData().lastLoaded().set(System.currentTimeMillis());
+        this.buildWorld.setLoaded(true);
 
-        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostLoadEvent(buildWorld));
-        buildWorld.getUnloader().resetUnloadTask();
+        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostLoadEvent(this.buildWorld));
+        this.buildWorld.getUnloader().resetUnloadTask();
     }
 } 

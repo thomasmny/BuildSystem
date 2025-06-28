@@ -29,7 +29,7 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.command.subcommand.worlds.SetPermissionSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
-import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.config.Config.World.Default;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
 import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
@@ -69,12 +69,10 @@ public class EditInventory extends BuildSystemInventory {
     );
 
     private final BuildSystemPlugin plugin;
-    private final ConfigValues configValues;
     private final PlayerServiceImpl playerManager;
 
     public EditInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.configValues = plugin.getConfigValues();
         this.playerManager = plugin.getPlayerService();
     }
 
@@ -170,26 +168,20 @@ public class EditInventory extends BuildSystemInventory {
     }
 
     private void addTimeItem(Player player, Inventory inventory, BuildWorld buildWorld) {
-        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
-
         XMaterial xMaterial;
         String value;
-        switch (getWorldTime(bukkitWorld)) {
-            case SUNRISE -> {
-                xMaterial = XMaterial.ORANGE_STAINED_GLASS;
-                value = Messages.getString("worldeditor_time_lore_sunrise", player);
+        switch (getWorldTime(buildWorld)) {
+            case NIGHT -> {
+                xMaterial = XMaterial.BLUE_STAINED_GLASS;
+                value = Messages.getString("worldeditor_time_lore_night", player);
             }
             case NOON -> {
                 xMaterial = XMaterial.YELLOW_STAINED_GLASS;
                 value = Messages.getString("worldeditor_time_lore_noon", player);
             }
-            case NIGHT -> {
-                xMaterial = XMaterial.BLUE_STAINED_GLASS;
-                value = Messages.getString("worldeditor_time_lore_night", player);
-            }
             default -> {
-                xMaterial = XMaterial.WHITE_STAINED_GLASS;
-                value = Messages.getString("worldeditor_time_lore_unknown", player);
+                xMaterial = XMaterial.ORANGE_STAINED_GLASS;
+                value = Messages.getString("worldeditor_time_lore_sunrise", player);
             }
         }
 
@@ -198,13 +190,9 @@ public class EditInventory extends BuildSystemInventory {
         ));
     }
 
-    public Time getWorldTime(World bukkitWorld) {
-        if (bukkitWorld == null) {
-            return Time.UNKNOWN;
-        }
-
-        int worldTime = (int) bukkitWorld.getTime();
-        int noonTime = plugin.getConfigValues().getNoonTime();
+    public Time getWorldTime(BuildWorld buildWorld) {
+        int worldTime = (int) buildWorld.getWorld().getTime();
+        int noonTime = Default.Time.noon;
 
         if (worldTime >= 0 && worldTime < noonTime) {
             return Time.SUNRISE;
@@ -416,18 +404,12 @@ public class EditInventory extends BuildSystemInventory {
     }
 
     private void changeTime(Player player, BuildWorld buildWorld) {
-        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
-        if (bukkitWorld == null) {
-            return;
-        }
-
-        int time = switch (getWorldTime(bukkitWorld)) {
-            case UNKNOWN, SUNRISE -> configValues.getNoonTime();
-            case NOON -> configValues.getNightTime();
-            case NIGHT -> configValues.getSunriseTime();
+        int time = switch (getWorldTime(buildWorld)) {
+            case SUNRISE -> Default.Time.noon;
+            case NOON -> Default.Time.night;
+            case NIGHT -> Default.Time.sunrise;
         };
-
-        bukkitWorld.setTime(time);
+        buildWorld.getWorld().setTime(time);
         openInventory(player, buildWorld);
     }
 
@@ -450,7 +432,7 @@ public class EditInventory extends BuildSystemInventory {
     }
 
     public enum Time {
-        SUNRISE, NOON, NIGHT, UNKNOWN
+        SUNRISE, NOON, NIGHT
     }
 
     private static class EditInventoryHolder extends BuildWorldHolder {

@@ -15,23 +15,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.world.creation.generator.voidgenerator;
+package de.eintosti.buildsystem.world.creation.generator;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import org.bukkit.block.Biome;
 import org.bukkit.generator.BiomeProvider;
+import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.generator.WorldInfo;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * The {@link VoidGenerator} that is used for servers which run on Spigot 1.17+
- */
-public class ModernVoidGenerator extends VoidGenerator {
+public class VoidGenerator extends ChunkGenerator {
 
-    public ModernVoidGenerator() {
-        super(Biome.PLAINS);
+    private final Biome biome;
+
+    public VoidGenerator() {
+        this.biome = Biome.PLAINS;
+    }
+
+    @Override
+    public void generateNoise(@NotNull WorldInfo worldInfo, @NotNull Random random, int chunkX, int chunkZ, @NotNull ChunkData chunkData) {
     }
 
     @Override
@@ -39,8 +43,12 @@ public class ModernVoidGenerator extends VoidGenerator {
     }
 
     @Override
+    public void generateCaves(@NotNull WorldInfo worldInfo, @NotNull Random random, int chunkX, int chunkZ, @NotNull ChunkData chunkData) {
+    }
+
+    @Override
     public BiomeProvider getDefaultBiomeProvider(@NotNull WorldInfo worldInfo) {
-        return new SingleBiomeProvider(super.getBiome());
+        return new SingleBiomeProvider(this.biome);
     }
 
     public static class SingleBiomeProvider extends BiomeProvider {

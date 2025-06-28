@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
+import de.eintosti.buildsystem.command.subcommand.worlds.BackupsSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.BuildersSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.DeleteSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.EditSubCommand;
@@ -89,6 +90,7 @@ public class WorldsCommand implements CommandExecutor {
 
         SubCommand subCommand = switch (argument) {
             case ADD_BUILDER -> new AddBuilderSubCommand(plugin, player.getWorld().getName());
+            case BACKUP -> new BackupsSubCommand(plugin);
             case BUILDERS -> new BuildersSubCommand(plugin, worldName);
             case DELETE -> new DeleteSubCommand(plugin, worldName);
             case EDIT -> new EditSubCommand(plugin, worldName);
@@ -97,7 +99,7 @@ public class WorldsCommand implements CommandExecutor {
             case IMPORT_ALL -> new ImportAllSubCommand(plugin);
             case IMPORT -> new ImportSubCommand(plugin, worldName);
             case INFO -> new InfoSubCommand(plugin, worldName);
-            case ITEM -> new ItemSubCommand(plugin);
+            case ITEM -> new ItemSubCommand();
             case REMOVE_BUILDER -> new RemoveBuilderSubCommand(plugin, player.getWorld().getName());
             case REMOVE_SPAWN -> new RemoveSpawnSubCommand(plugin);
             case RENAME -> new RenameSubCommand(plugin, worldName);
