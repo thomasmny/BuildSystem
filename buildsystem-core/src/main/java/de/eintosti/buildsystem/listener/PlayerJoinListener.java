@@ -25,7 +25,8 @@ import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
-import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.config.Config;
+import de.eintosti.buildsystem.config.Config.Settings.Archive;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
@@ -49,8 +50,6 @@ import org.bukkit.potion.PotionEffectType;
 public class PlayerJoinListener implements Listener {
 
     private final BuildSystemPlugin plugin;
-    private final ConfigValues configValues;
-
     private final PlayerServiceImpl playerManager;
     private final SettingsManager settingsManager;
     private final SpawnManager spawnManager;
@@ -58,20 +57,17 @@ public class PlayerJoinListener implements Listener {
 
     public PlayerJoinListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.configValues = plugin.getConfigValues();
-
         this.playerManager = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsManager();
         this.spawnManager = plugin.getSpawnManager();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
-
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void sendPlayerJoinMessage(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        String message = plugin.getConfigValues().isJoinQuitMessages()
+        String message = Config.Messages.joinQuitMessages
                 ? Messages.getString("player_join", player, Map.entry("%player%", player.getName()))
                 : null;
         event.setJoinMessage(message);
@@ -97,8 +93,8 @@ public class PlayerJoinListener implements Listener {
                 Messages.sendMessage(player, "physics_deactivated_in_world", Map.entry("%world%", worldName));
             }
 
-            if (configValues.isArchiveVanish() && worldData.status().get() == BuildWorldStatus.ARCHIVE) {
-                player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, false, false), false);
+            if (Archive.vanish && worldData.status().get() == BuildWorldStatus.ARCHIVE) {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, PotionEffect.INFINITE_DURATION, 0, false, false), false);
                 Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
             }
         }
@@ -182,7 +178,7 @@ public class PlayerJoinListener implements Listener {
     }
 
     private void performUpdateCheck(Player player) {
-        if (!configValues.isUpdateChecker()) {
+        if (!Config.Settings.updateChecker) {
             return;
         }
 

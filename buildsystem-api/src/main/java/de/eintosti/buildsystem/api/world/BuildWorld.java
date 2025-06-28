@@ -88,8 +88,10 @@ public interface BuildWorld extends Displayable {
 
     /**
      * Gets the custom chunk generator used to generate the world.
+     * <p>
+     * Only set when the world type is {@link BuildWorldType#CUSTOM} or {@link BuildWorldType#IMPORTED}.
      *
-     * @return The custom chunk generator used to generate the world.
+     * @return The custom chunk generator used to generate the world, or {@code null} if not set
      */
     @Nullable
     CustomGenerator getCustomGenerator();

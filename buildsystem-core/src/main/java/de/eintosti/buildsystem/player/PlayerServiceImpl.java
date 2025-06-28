@@ -29,7 +29,9 @@ import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.config.Config.Settings;
+import de.eintosti.buildsystem.config.Config.Settings.Navigator;
+import de.eintosti.buildsystem.config.Config.World.Limits;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -60,8 +62,6 @@ public class PlayerServiceImpl implements PlayerService {
     private static final double MAX_LOOK_HEIGHT = 0.16481381407766063;
 
     private final BuildSystemPlugin plugin;
-    private final ConfigValues configValues;
-
     private final PlayerStorage playerStorage;
 
     private final Set<Player> openNavigator;
@@ -69,8 +69,6 @@ public class PlayerServiceImpl implements PlayerService {
 
     public PlayerServiceImpl(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.configValues = plugin.getConfigValues();
-
         this.playerStorage = new PlayerStorageFactory(plugin).createStorage();
 
         this.openNavigator = new HashSet<>();
@@ -103,7 +101,9 @@ public class PlayerServiceImpl implements PlayerService {
         boolean showPrivateWorlds = visibility == Visibility.PRIVATE;
         WorldStorageImpl worldStorage = plugin.getWorldService().getWorldStorage();
 
-        int maxWorldAmountConfig = configValues.getMaxWorldAmount(showPrivateWorlds);
+        int maxWorldAmountConfig = showPrivateWorlds
+                ? Limits.privateWorlds
+                : Limits.publicWorlds;
         if (maxWorldAmountConfig >= 0 && worldStorage.getBuildWorlds().size() >= maxWorldAmountConfig) {
             return false;
         }
@@ -154,7 +154,7 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     public void forceUpdateSidebar(BuildWorld buildWorld) {
-        if (!configValues.isScoreboard()) {
+        if (!Settings.scoreboard) {
             return;
         }
 
@@ -168,14 +168,14 @@ public class PlayerServiceImpl implements PlayerService {
 
     public void forceUpdateSidebar(Player player) {
         SettingsManager settingsManager = plugin.getSettingsManager();
-        if (!configValues.isScoreboard() || !settingsManager.getSettings(player).isScoreboard()) {
+        if (!Settings.scoreboard || !settingsManager.getSettings(player).isScoreboard()) {
             return;
         }
         settingsManager.updateScoreboard(player);
     }
 
     public void giveNavigator(Player player) {
-        if (!configValues.isGiveNavigatorOnJoin()) {
+        if (!Navigator.giveItemOnJoin) {
             return;
         }
 
@@ -187,9 +187,8 @@ public class PlayerServiceImpl implements PlayerService {
             return;
         }
 
-        XMaterial navigatorMaterial = configValues.getNavigatorItem();
         ItemStack itemStack = InventoryUtils.createItem(
-                navigatorMaterial,
+                Navigator.item,
                 Messages.getString("navigator_item", player)
         );
         PlayerInventory playerInventory = player.getInventory();
@@ -225,13 +224,12 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     private void replaceBarrier(Player player) {
-        XMaterial navigatorMaterial = configValues.getNavigatorItem();
         InventoryUtils.replaceItem(
                 player,
                 Messages.getString("navigator_back", player),
                 XMaterial.BARRIER,
                 InventoryUtils.createItem(
-                        navigatorMaterial,
+                        Navigator.item,
                         Messages.getString("navigator_item", player)
                 )
         );

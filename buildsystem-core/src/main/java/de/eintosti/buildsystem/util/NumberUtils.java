@@ -22,7 +22,7 @@ package de.eintosti.buildsystem.util;
  *
  * @since 2.0
  */
-public class NumberUtils {
+public final class NumberUtils {
 
     private NumberUtils() {
     }
