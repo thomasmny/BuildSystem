@@ -24,7 +24,8 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
-import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
+import de.eintosti.buildsystem.util.inventory.InventoryHandler;
+import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import java.util.Map;
@@ -38,7 +39,7 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-public class SetupInventory extends BuildSystemInventory {
+public class SetupInventory implements InventoryHandler {
 
     private static final Map<BuildWorldType, Integer> CREATE_ITEM_SLOTS = Map.of(
             BuildWorldType.NORMAL, 11,
@@ -58,14 +59,16 @@ public class SetupInventory extends BuildSystemInventory {
             BuildWorldStatus.HIDDEN, 25
     );
 
+    private final InventoryManager inventoryManager;
     private final CustomizableIcons icons;
 
     public SetupInventory(BuildSystemPlugin plugin) {
+        this.inventoryManager = plugin.getInventoryManager();
         this.icons = plugin.getCustomizableIcons();
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = new SetupInventoryHolder(this, player).getInventory();
+        Inventory inventory = new SetupInventoryHolder(player).getInventory();
         fillGuiWithGlass(player, inventory);
 
         inventory.setItem(10, InventoryUtils.createSkull(Messages.getString("setup_default_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_default_item_lore", player)));
@@ -89,7 +92,9 @@ public class SetupInventory extends BuildSystemInventory {
     }
 
     public void openInventory(Player player) {
-        player.openInventory(getInventory(player));
+        Inventory inventory = getInventory(player);
+        this.inventoryManager.registerInventoryHandler(inventory, this);
+        player.openInventory(inventory);
     }
 
     private void fillGuiWithGlass(Player player, Inventory inventory) {
@@ -159,8 +164,8 @@ public class SetupInventory extends BuildSystemInventory {
 
     private static class SetupInventoryHolder extends BuildSystemHolder {
 
-        public SetupInventoryHolder(BuildSystemInventory inventory, Player player) {
-            super(inventory, 36, Messages.getString("setup_title", player));
+        public SetupInventoryHolder(Player player) {
+            super(36, Messages.getString("setup_title", player));
         }
     }
 }

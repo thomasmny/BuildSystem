@@ -22,8 +22,9 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
 import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
+import de.eintosti.buildsystem.util.inventory.InventoryHandler;
+import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -31,20 +32,24 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 
-public class DeleteInventory extends BuildSystemInventory {
+public class DeleteInventory implements InventoryHandler {
 
     private final BuildSystemPlugin plugin;
+    private final InventoryManager inventoryManager;
 
     public DeleteInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
+        this.inventoryManager = plugin.getInventoryManager();
     }
 
     public void openInventory(Player player, BuildWorld buildWorld) {
-        player.openInventory(getInventory(player, buildWorld));
+        Inventory inventory = getInventory(player, buildWorld);
+        this.inventoryManager.registerInventoryHandler(inventory, this);
+        player.openInventory(inventory);
     }
 
     private Inventory getInventory(Player player, BuildWorld buildWorld) {
-        Inventory inventory = new DeleteInventoryHolder(this, buildWorld, player).getInventory();
+        Inventory inventory = new DeleteInventoryHolder(buildWorld, player).getInventory();
         fillGuiWithGlass(inventory);
 
         inventory.setItem(11, InventoryUtils.createItem(XMaterial.LIME_DYE,
@@ -97,8 +102,8 @@ public class DeleteInventory extends BuildSystemInventory {
 
     private static class DeleteInventoryHolder extends BuildWorldHolder {
 
-        public DeleteInventoryHolder(BuildSystemInventory inventory, BuildWorld buildWorld, Player player) {
-            super(inventory, buildWorld, 27, Messages.getString("delete_title", player));
+        public DeleteInventoryHolder(BuildWorld buildWorld, Player player) {
+            super(buildWorld, 27, Messages.getString("delete_title", player));
         }
     }
 }

@@ -31,12 +31,11 @@ public class BuildWorldHolder extends BuildSystemHolder {
     /**
      * Initializes a new {@link BuildWorldHolder} with the specified {@link BuildWorld}, size, and title.
      *
-     * @param buildWorld The {@link BuildWorld} associated with this inventory.
-     * @param size       The size of the inventory.
-     * @param title      The title of the inventory.
+     * @param size  The size of the inventory.
+     * @param title The title of the inventory.
      */
-    public BuildWorldHolder(@NotNull BuildSystemInventory buildSystemInventory, @NotNull BuildWorld buildWorld, int size, @NotNull String title) {
-        super(buildSystemInventory, size, title);
+    public BuildWorldHolder(@NotNull BuildWorld buildWorld, int size, @NotNull String title) {
+        super(size, title);
         this.buildWorld = buildWorld;
     }
 
