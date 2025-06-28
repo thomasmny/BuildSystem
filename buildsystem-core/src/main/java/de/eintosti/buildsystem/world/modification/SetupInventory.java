@@ -38,7 +38,9 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class SetupInventory implements InventoryHandler {
 
     private static final Map<BuildWorldType, Integer> CREATE_ITEM_SLOTS = Map.of(
@@ -59,10 +61,12 @@ public class SetupInventory implements InventoryHandler {
             BuildWorldStatus.HIDDEN, 25
     );
 
+    private final BuildSystemPlugin plugin;
     private final InventoryManager inventoryManager;
     private final CustomizableIcons icons;
 
     public SetupInventory(BuildSystemPlugin plugin) {
+        this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
         this.icons = plugin.getCustomizableIcons();
     }
@@ -158,6 +162,10 @@ public class SetupInventory implements InventoryHandler {
             XMaterial material = Optional.ofNullable(inventory.getItem(slot))
                     .map(XMaterial::matchXMaterial)
                     .orElse(null);
+            if (material == null) {
+                plugin.getLogger().warning("Failed to set icon for " + enumConstant.name() + " in setup inventory. ItemStack is null or not a valid Material.");
+                return;
+            }
             setter.accept(enumConstant, material);
         });
     }

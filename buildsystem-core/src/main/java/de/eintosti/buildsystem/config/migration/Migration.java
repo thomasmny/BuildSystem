@@ -18,10 +18,12 @@
 package de.eintosti.buildsystem.config.migration;
 
 import org.bukkit.configuration.file.FileConfiguration;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Interface for a single configuration migration step. Each implementation should know how to migrate a configuration from a specific source version to the next version.
  */
+@NullMarked
 public interface Migration {
 
     /**

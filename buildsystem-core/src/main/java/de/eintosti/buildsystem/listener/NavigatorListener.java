@@ -57,8 +57,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class NavigatorListener implements Listener {
 
     private static final double MAX_HEIGHT = 2.074631929397583;
@@ -240,7 +242,7 @@ public class NavigatorListener implements Listener {
     }
 
     /**
-     * Checks if the given item is the item which is used to close the {@link NavigatorType#NEW} navigator.
+     * Checks if the given item is the item that is used to close the {@link NavigatorType#NEW} navigator.
      *
      * @param player    The player used to get the item name
      * @param itemStack The item stack to check

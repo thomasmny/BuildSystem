@@ -35,7 +35,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkClientException;
@@ -50,6 +51,7 @@ import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
+@NullMarked
 public class S3BackupStorage implements BackupStorage {
 
     private final BuildSystemPlugin plugin;
@@ -182,10 +184,6 @@ public class S3BackupStorage implements BackupStorage {
     }
 
     private void disconnect() {
-        if (this.s3Client == null) {
-            return;
-        }
-
         try {
             this.s3Client.close();
         } catch (Exception e) {

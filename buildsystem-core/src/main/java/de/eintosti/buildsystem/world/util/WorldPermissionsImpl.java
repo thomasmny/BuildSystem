@@ -26,10 +26,13 @@ import de.eintosti.buildsystem.api.world.util.WorldPermissions;
 import java.util.function.Supplier;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class WorldPermissionsImpl implements WorldPermissions {
 
+    @Nullable
     private final BuildWorld buildWorld;
 
     private WorldPermissionsImpl(@Nullable BuildWorld buildWorld) {
@@ -94,7 +97,12 @@ public class WorldPermissionsImpl implements WorldPermissions {
     }
 
     @Override
-    public boolean canPerformCommand(Player player, String permission) {
+    public boolean canPerformCommand(Player player, @Nullable String permission) {
+        if (permission == null || permission.isEmpty()) {
+            // If no permission is specified, we assume the command can be executed by anyone.
+            return true;
+        }
+
         if (hasAdminPermission(player)) {
             return true;
         }

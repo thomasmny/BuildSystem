@@ -45,7 +45,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class PlayerChangedWorldListener implements Listener {
 
     private final ArmorStandManager armorStandManager;
@@ -117,7 +120,7 @@ public class PlayerChangedWorldListener implements Listener {
         Messages.sendMessage(player, "build_deactivated_self");
     }
 
-    private void setGoldBlock(BuildWorld buildWorld) {
+    private void setGoldBlock(@Nullable BuildWorld buildWorld) {
         if (buildWorld == null || buildWorld.getType() != BuildWorldType.VOID
                 || buildWorld.getData().status().get() != BuildWorldStatus.NOT_STARTED) {
             return;

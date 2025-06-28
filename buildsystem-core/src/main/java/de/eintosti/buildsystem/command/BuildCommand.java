@@ -31,8 +31,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class BuildCommand implements CommandExecutor {
 
     private final BuildSystemPlugin plugin;
@@ -45,7 +47,7 @@ public class BuildCommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player player)) {
             plugin.getLogger().warning(Messages.getString("sender_not_player", null));
             return true;
@@ -58,7 +60,7 @@ public class BuildCommand implements CommandExecutor {
 
         switch (args.length) {
             case 0 -> {
-                toggleBuildMode(player, null, true);
+                toggleBuildMode(player, null);
             }
 
             case 1 -> {
@@ -73,7 +75,7 @@ public class BuildCommand implements CommandExecutor {
                     return true;
                 }
 
-                toggleBuildMode(target, player, false);
+                toggleBuildMode(target, player);
             }
 
             default -> {
@@ -84,7 +86,7 @@ public class BuildCommand implements CommandExecutor {
         return true;
     }
 
-    private void toggleBuildMode(Player target, Player sender, boolean self) {
+    private void toggleBuildMode(Player target, @Nullable Player sender) {
         UUID targetUuid = target.getUniqueId();
         BuildPlayer buildPlayer = playerService.getPlayerStorage().getBuildPlayer(targetUuid);
         CachedValues cachedValues = buildPlayer.getCachedValues();
@@ -94,7 +96,7 @@ public class BuildCommand implements CommandExecutor {
             cachedValues.resetInventoryIfPresent(target);
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
-            if (self) {
+            if (sender == null) {
                 Messages.sendMessage(target, "build_deactivated_self");
             } else {
                 XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(sender);
@@ -108,7 +110,7 @@ public class BuildCommand implements CommandExecutor {
             target.setGameMode(GameMode.CREATIVE);
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
-            if (self) {
+            if (sender == null) {
                 Messages.sendMessage(target, "build_activated_self");
             } else {
                 XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(sender);

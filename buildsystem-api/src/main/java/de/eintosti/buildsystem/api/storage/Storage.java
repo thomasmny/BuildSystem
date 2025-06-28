@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.api.storage;
 
 import java.util.Collection;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * A generic interface for storage operations.
@@ -25,6 +26,7 @@ import java.util.Collection;
  * @param <T> The type of objects to be stored
  * @since 3.0.0
  */
+@NullMarked
 public interface Storage<T> {
 
     /**
@@ -54,7 +56,6 @@ public interface Storage<T> {
      * @param object The object to delete
      */
     void delete(T object);
-
 
     /**
      * Deletes the object with the given key from the storage.

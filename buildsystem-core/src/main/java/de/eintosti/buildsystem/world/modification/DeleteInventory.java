@@ -31,7 +31,9 @@ import java.util.stream.IntStream;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class DeleteInventory implements InventoryHandler {
 
     private final BuildSystemPlugin plugin;

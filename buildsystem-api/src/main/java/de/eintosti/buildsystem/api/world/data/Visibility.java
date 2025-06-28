@@ -18,12 +18,14 @@
 package de.eintosti.buildsystem.api.world.data;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Defines the visibility settings for a {@link BuildWorld} within the BuildSystem. These settings determine how worlds are displayed and accessed in the world navigator.
  *
  * @since 3.0.0
  */
+@NullMarked
 public enum Visibility {
 
     /**

@@ -25,10 +25,12 @@ import de.eintosti.buildsystem.storage.yaml.YamlSetupStorage;
 import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * User-customizable icons for different areas of the plugin.
  */
+@NullMarked
 public class CustomizableIcons {
 
     private final YamlSetupStorage setupStorage;

@@ -26,7 +26,9 @@ import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class TeleportSubCommand implements SubCommand {
 
     private final BuildSystemPlugin plugin;

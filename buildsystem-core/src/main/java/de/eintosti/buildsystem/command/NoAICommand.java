@@ -30,8 +30,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class NoAICommand implements CommandExecutor {
 
     private final BuildSystemPlugin plugin;
@@ -44,7 +46,7 @@ public class NoAICommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player player)) {
             plugin.getLogger().warning(Messages.getString("sender_not_player", null));
             return true;
@@ -66,13 +68,13 @@ public class NoAICommand implements CommandExecutor {
         return true;
     }
 
-    private void toggleAI(Player player, World bukkitWorld) {
-        if (bukkitWorld == null) {
+    private void toggleAI(Player player, @Nullable World world) {
+        if (world == null) {
             Messages.sendMessage(player, "noai_unknown_world");
             return;
         }
 
-        BuildWorld buildWorld = worldStorage.getBuildWorld(bukkitWorld);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(world);
         if (buildWorld == null) {
             Messages.sendMessage(player, "noai_world_not_imported");
             return;
@@ -88,6 +90,6 @@ public class NoAICommand implements CommandExecutor {
         }
 
         boolean hasAi = worldData.mobAi().get();
-        bukkitWorld.getLivingEntities().forEach(entity -> entity.setAI(hasAi));
+        world.getLivingEntities().forEach(entity -> entity.setAI(hasAi));
     }
 }

@@ -15,36 +15,37 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.api.world.creation.generator;
+package de.eintosti.buildsystem.api.data;
 
-import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldData;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Different kinds of world generators that can be used for a {@link BuildWorld}.
+ * A generic interface representing a configurable data type within the {@link WorldData}. It provides methods to get, set, and format the value for configuration purposes.
  *
- * @since 3.0.0
+ * @param <T> The type of the value held by this data point
  */
 @NullMarked
-public enum Generator {
+public interface Type<T> {
 
     /**
-     * A normal world
+     * Gets the current value of this data point.
+     *
+     * @return The current value
      */
-    NORMAL,
+    T get();
 
     /**
-     * A flat world
+     * Sets the value of this data point.
+     *
+     * @param value The new value to set
      */
-    FLAT,
+    void set(T value);
 
     /**
-     * A void world
+     * Gets the value of this data point formatted for storage in a configuration file. This might involve converting complex objects into simpler types (e.g., enums to strings).
+     *
+     * @return The value formatted for a config file
      */
-    VOID,
-
-    /**
-     * A custom world
-     */
-    CUSTOM
+    Object getConfigFormat();
 }

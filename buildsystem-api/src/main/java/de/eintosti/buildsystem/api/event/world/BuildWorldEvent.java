@@ -21,13 +21,14 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.ApiStatus.Internal;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Represents a {@link BuildWorld} related event.
  *
  * @since 3.0.0
  */
+@NullMarked
 public class BuildWorldEvent extends Event {
 
     private static final HandlerList HANDLER_LIST = new HandlerList();
@@ -53,7 +54,6 @@ public class BuildWorldEvent extends Event {
         return buildWorld;
     }
 
-    @NotNull
     @Override
     public HandlerList getHandlers() {
         return HANDLER_LIST;

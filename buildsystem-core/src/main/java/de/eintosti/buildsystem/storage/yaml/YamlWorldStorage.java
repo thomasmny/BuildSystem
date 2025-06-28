@@ -51,14 +51,17 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.Plugin;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class YamlWorldStorage extends WorldStorageImpl {
 
     private static final String WORLDS_KEY = "worlds";
 
+    @Nullable
     private File file;
+    @Nullable
     private FileConfiguration config;
 
     public YamlWorldStorage(BuildSystemPlugin plugin) {
@@ -85,7 +88,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
         }
     }
 
-    public @NotNull Map<String, Object> serializeWorld(BuildWorld buildWorld) {
+    public Map<String, Object> serializeWorld(BuildWorld buildWorld) {
         Map<String, Object> world = new HashMap<>();
 
         world.put("uuid", buildWorld.getUniqueId().toString());
@@ -104,7 +107,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
         return world;
     }
 
-    private @NotNull Map<String, Object> serializeWorldData(WorldData worldData) {
+    private Map<String, Object> serializeWorldData(WorldData worldData) {
         return worldData.getAllData().entrySet().stream()
                 .filter(entry -> entry.getValue().get() != null)
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getConfigFormat()));

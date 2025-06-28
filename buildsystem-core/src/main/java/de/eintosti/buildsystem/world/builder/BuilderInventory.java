@@ -44,7 +44,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class BuilderInventory extends PaginatedInventory {
 
     private static final int MAX_BUILDERS_PER_PAGE = 9;

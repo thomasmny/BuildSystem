@@ -23,7 +23,10 @@ import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.navigator.settings.WorldDisplayImpl;
 import org.bukkit.scheduler.BukkitTask;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class SettingsImpl implements Settings {
 
     private DesignColor designColor;
@@ -42,6 +45,7 @@ public class SettingsImpl implements Settings {
     private boolean spawnTeleport;
     private boolean openTrapDoors;
 
+    @Nullable
     private BukkitTask scoreboardTask;
 
     public SettingsImpl() {
@@ -63,8 +67,8 @@ public class SettingsImpl implements Settings {
     }
 
     public SettingsImpl(
-            NavigatorType navigatorType,
-            DesignColor designColor,
+            @Nullable NavigatorType navigatorType,
+            @Nullable DesignColor designColor,
             WorldDisplay worldDisplay,
             boolean clearInventory,
             boolean disableInteract,
@@ -246,13 +250,14 @@ public class SettingsImpl implements Settings {
         this.openTrapDoors = trapDoor;
     }
 
+    @Nullable
     @Override
     public BukkitTask getScoreboardTask() {
         return scoreboardTask;
     }
 
     @Override
-    public void setScoreboardTask(BukkitTask scoreboardTask) {
+    public void setScoreboardTask(@Nullable BukkitTask scoreboardTask) {
         this.scoreboardTask = scoreboardTask;
     }
 }

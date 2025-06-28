@@ -22,14 +22,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Interface for managing builders in a {@link BuildWorld}.
  *
  * @since 3.0.0
  */
+@NullMarked
 public interface Builders {
 
     /**
@@ -67,7 +68,6 @@ public interface Builders {
      *
      * @return List of builders
      */
-    @NotNull
     Collection<Builder> getAllBuilders();
 
     /**
@@ -107,21 +107,21 @@ public interface Builders {
      *
      * @param builder The builder to add
      */
-    void addBuilder(@NotNull Builder builder);
+    void addBuilder(Builder builder);
 
     /**
      * Removes a builder from the world.
      *
      * @param builder The builder to remove
      */
-    void removeBuilder(@NotNull Builder builder);
+    void removeBuilder(Builder builder);
 
     /**
      * Removes a builder by their UUID.
      *
      * @param uuid The UUID of the builder to remove
      */
-    void removeBuilder(@NotNull UUID uuid);
+    void removeBuilder(UUID uuid);
 
     /**
      * Formats the list of builders for the {@code %builder%} placeholder.
