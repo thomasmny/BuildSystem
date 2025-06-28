@@ -30,10 +30,15 @@ import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.Map;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class SetCreatorSubCommand implements SubCommand {
 
     private final BuildSystemPlugin plugin;
+
+    @Nullable
     private final BuildWorld buildWorld;
 
     public SetCreatorSubCommand(BuildSystemPlugin plugin, String worldName) {

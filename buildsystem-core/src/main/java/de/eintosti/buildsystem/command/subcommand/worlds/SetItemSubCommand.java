@@ -29,9 +29,13 @@ import java.util.Map;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class SetItemSubCommand implements SubCommand {
 
+    @Nullable
     private final BuildWorld buildWorld;
 
     public SetItemSubCommand(BuildSystemPlugin plugin, String worldName) {

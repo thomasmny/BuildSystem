@@ -19,7 +19,9 @@ package de.eintosti.buildsystem.world.backup;
 
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public record BackupImpl(BackupProfile owner, long creationTime, String key) implements Backup {
 
 }

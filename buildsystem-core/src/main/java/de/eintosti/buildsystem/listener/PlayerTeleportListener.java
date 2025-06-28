@@ -29,7 +29,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class PlayerTeleportListener implements Listener {
 
     private final PlayerStorage playerStorage;

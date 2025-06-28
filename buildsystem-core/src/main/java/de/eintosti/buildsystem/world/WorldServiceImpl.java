@@ -51,8 +51,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class WorldServiceImpl implements WorldService {
 
     private static boolean importingAllWorlds = false;
@@ -102,7 +104,7 @@ public class WorldServiceImpl implements WorldService {
         });
     }
 
-    private void startCustomGeneratorInput(Player player, String worldName, String template, boolean privateWorld, Folder folder) {
+    private void startCustomGeneratorInput(Player player, String worldName, @Nullable String template, boolean privateWorld, @Nullable Folder folder) {
         new PlayerChatInput(plugin, player, "enter_generator_name", input -> {
             String[] generatorInfo = input.split(":");
             if (generatorInfo.length == 1) {
@@ -122,7 +124,7 @@ public class WorldServiceImpl implements WorldService {
         });
     }
 
-    private void createWorld(Player player, String worldName, BuildWorldType worldType, CustomGeneratorImpl customGenerator, String template, boolean privateWorld, Folder folder) {
+    private void createWorld(Player player, String worldName, BuildWorldType worldType, @Nullable CustomGeneratorImpl customGenerator, @Nullable String template, boolean privateWorld, @Nullable Folder folder) {
         new BuildWorldCreatorImpl(plugin, worldName)
                 .setType(worldType)
                 .setTemplate(template)
@@ -133,7 +135,7 @@ public class WorldServiceImpl implements WorldService {
     }
 
     @Nullable
-    public ChunkGenerator getChunkGenerator(String generator, String generatorId, String worldName) {
+    public ChunkGenerator getChunkGenerator(@Nullable String generator, String generatorId, String worldName) {
         if (generator == null) {
             return null;
         }
@@ -146,7 +148,7 @@ public class WorldServiceImpl implements WorldService {
         return plugin.getDefaultWorldGenerator(worldName, generatorId);
     }
 
-    public boolean importWorld(Player player, String worldName, Builder creator, BuildWorldType worldType, Generator generator, String generatorName, boolean single) {
+    public boolean importWorld(Player player, String worldName, @Nullable Builder creator, BuildWorldType worldType, Generator generator, String generatorName, boolean single) {
         ChunkGenerator chunkGenerator = null;
         if (generator == Generator.CUSTOM) {
             String[] generatorInfo = generatorName.split(":");
@@ -221,7 +223,7 @@ public class WorldServiceImpl implements WorldService {
                     return;
                 }
 
-                if (importWorld(player, worldName, creator, BuildWorldType.IMPORTED, generator, null, false)) {
+                if (importWorld(player, worldName, creator, BuildWorldType.IMPORTED, generator, "void", false)) {
                     Messages.sendMessage(player, "worlds_importall_world_imported", Map.entry("%world%", worldName));
                 }
             }
@@ -318,7 +320,7 @@ public class WorldServiceImpl implements WorldService {
             return;
         }
 
-        List<Player> removedPlayers = removePlayersFromWorld(oldName, "worlds_rename_players_world");
+        List<@Nullable Player> removedPlayers = removePlayersFromWorld(oldName, "worlds_rename_players_world");
         for (Chunk chunk : oldWorld.getLoadedChunks()) {
             chunk.unload(true);
         }

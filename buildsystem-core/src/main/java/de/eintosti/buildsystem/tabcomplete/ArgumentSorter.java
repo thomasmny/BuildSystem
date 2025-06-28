@@ -18,7 +18,9 @@
 package de.eintosti.buildsystem.tabcomplete;
 
 import java.util.List;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 abstract class ArgumentSorter {
 
     public void addArgument(String input, String argument, List<String> arrayList) {

@@ -20,12 +20,14 @@ package de.eintosti.buildsystem.api.event.world;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import org.bukkit.event.Cancellable;
 import org.jetbrains.annotations.ApiStatus.Internal;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Called when a {@link BuildWorld} is loaded.
  *
  * @since 3.0.0
  */
+@NullMarked
 public class BuildWorldLoadEvent extends BuildWorldEvent implements Cancellable {
 
     private boolean cancelled = false;

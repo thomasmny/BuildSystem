@@ -22,6 +22,8 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import java.util.function.Supplier;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Manages and checks permissions related to {@link BuildWorld}s within the BuildSystem. This interface handles permissions for actions such as entering, modifying, and executing
@@ -29,6 +31,7 @@ import org.bukkit.entity.Player;
  *
  * @since 3.0.0
  */
+@NullMarked
 public interface WorldPermissions {
 
     /**
@@ -83,7 +86,7 @@ public interface WorldPermissions {
      * @param permission The base permission string required for the command (e.g., "buildsystem.command.mycommand")
      * @return {@code true} if the player is authorized to run the command, {@code false} otherwise
      */
-    boolean canPerformCommand(Player player, String permission);
+    boolean canPerformCommand(Player player, @Nullable String permission);
 
     /**
      * Checks if the given {@link Player} possesses the administrative permission, typically "{@code buildsystem.admin}". Players with this permission can bypass many

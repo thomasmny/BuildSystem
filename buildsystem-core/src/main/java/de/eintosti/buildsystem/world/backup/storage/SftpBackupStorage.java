@@ -52,7 +52,10 @@ import org.apache.sshd.sftp.client.SftpClient.Attributes;
 import org.apache.sshd.sftp.client.SftpClient.DirEntry;
 import org.apache.sshd.sftp.client.SftpClientFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class SftpBackupStorage implements BackupStorage {
 
     private static final Duration CONNECTION_TIMEOUT = Duration.ofSeconds(10);
@@ -68,8 +71,11 @@ public class SftpBackupStorage implements BackupStorage {
     private final String remoteBasePath;
     private final Path tmpDownloadPath;
 
+    @Nullable
     private volatile SshClient sshClient;
+    @Nullable
     private volatile ClientSession clientSession;
+    @Nullable
     private volatile SftpClient sftpClient;
 
     public SftpBackupStorage(BuildSystemPlugin plugin, String host, int port, String username, String password, String remoteBasePath) {
@@ -93,7 +99,7 @@ public class SftpBackupStorage implements BackupStorage {
         return port;
     }
 
-    private static String normalizeBasePath(String basePath) {
+    private static String normalizeBasePath(@Nullable String basePath) {
         if (basePath == null || basePath.trim().isEmpty()) {
             return "/";
         }
@@ -102,7 +108,7 @@ public class SftpBackupStorage implements BackupStorage {
     }
 
     private synchronized void establishConnection() {
-        if (this.sshClient == null || this.sshClient.isClosed()) {
+        if (this.sshClient == null) {
             initializeSshClient();
         }
 
@@ -110,6 +116,10 @@ public class SftpBackupStorage implements BackupStorage {
             this.clientSession = this.sshClient.connect(this.username, this.host, this.port)
                     .verify(CONNECTION_TIMEOUT.toMillis())
                     .getSession();
+
+            if (this.clientSession == null) {
+                throw new IllegalStateException();
+            }
 
             this.clientSession.addPasswordIdentity(this.password);
             this.clientSession.auth().verify(AUTH_TIMEOUT.toMillis());
@@ -131,6 +141,7 @@ public class SftpBackupStorage implements BackupStorage {
         this.sshClient.start();
     }
 
+    @Nullable
     private SftpClient getSftpClient() {
         if (sftpClient == null || !sftpClient.isOpen()) {
             synchronized (this) {
@@ -229,7 +240,7 @@ public class SftpBackupStorage implements BackupStorage {
         }
     }
 
-    private void createDirectoriesRecursively(SftpClient sftp, String path) throws IOException {
+    private void createDirectoriesRecursively(SftpClient sftp, @Nullable String path) throws IOException {
         if (path == null || path.isEmpty() || path.equals("/")) {
             return;
         }
@@ -310,7 +321,7 @@ public class SftpBackupStorage implements BackupStorage {
         this.clientSession = null;
     }
 
-    private void close(Closeable closeable) {
+    private void close(@Nullable Closeable closeable) {
         if (closeable == null) {
             return;
         }

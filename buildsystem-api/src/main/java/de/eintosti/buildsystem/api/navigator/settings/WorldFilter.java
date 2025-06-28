@@ -19,12 +19,14 @@ package de.eintosti.buildsystem.api.navigator.settings;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.util.function.Predicate;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Interface for a world filter that restricts which {@link BuildWorld}s are shown to a user in the navigator.
  *
  * @since 3.0.0
  */
+@NullMarked
 public interface WorldFilter {
 
     /**
@@ -65,6 +67,7 @@ public interface WorldFilter {
     /**
      * Represents the different modes of filtering worlds in the navigator.
      */
+    @NullMarked
     enum Mode {
 
         /**

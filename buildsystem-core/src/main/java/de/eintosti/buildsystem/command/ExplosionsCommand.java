@@ -30,8 +30,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class ExplosionsCommand implements CommandExecutor {
 
     private final BuildSystemPlugin plugin;
@@ -44,7 +46,7 @@ public class ExplosionsCommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player player)) {
             plugin.getLogger().warning(Messages.getString("sender_not_player", null));
             return true;
@@ -66,13 +68,13 @@ public class ExplosionsCommand implements CommandExecutor {
         return true;
     }
 
-    private void toggleExplosions(Player player, World bukkitWorld) {
-        if (bukkitWorld == null) {
+    private void toggleExplosions(Player player, @Nullable World world) {
+        if (world == null) {
             Messages.sendMessage(player, "explosions_unknown_world");
             return;
         }
 
-        BuildWorld buildWorld = worldStorage.getBuildWorld(bukkitWorld);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(world);
         if (buildWorld == null) {
             Messages.sendMessage(player, "explosions_world_not_imported");
             return;

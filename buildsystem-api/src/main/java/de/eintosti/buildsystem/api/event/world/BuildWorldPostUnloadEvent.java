@@ -19,12 +19,14 @@ package de.eintosti.buildsystem.api.event.world;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import org.jetbrains.annotations.ApiStatus.Internal;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Called after a {@link BuildWorld} has unloaded.
  *
  * @since 3.0.0
  */
+@NullMarked
 public class BuildWorldPostUnloadEvent extends BuildWorldEvent {
 
     /**

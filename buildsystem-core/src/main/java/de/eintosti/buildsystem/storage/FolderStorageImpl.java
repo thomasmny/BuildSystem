@@ -33,7 +33,9 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public abstract class FolderStorageImpl implements FolderStorage {
 
     protected final BuildSystemPlugin plugin;
@@ -103,11 +105,13 @@ public abstract class FolderStorageImpl implements FolderStorage {
         }
     }
 
+    @Nullable
     @Override
     public Folder getFolder(String folderName) {
         return getFolder(folderName, false);
     }
 
+    @Nullable
     @Override
     public Folder getFolder(String folderName, boolean caseSensitive) {
         if (caseSensitive) {
@@ -145,6 +149,7 @@ public abstract class FolderStorageImpl implements FolderStorage {
         return worldToFolderMap.containsKey(buildWorld.getUniqueId());
     }
 
+    @Nullable
     @Override
     public Folder getAssignedFolder(BuildWorld buildWorld) {
         String folderName = worldToFolderMap.get(buildWorld.getUniqueId());

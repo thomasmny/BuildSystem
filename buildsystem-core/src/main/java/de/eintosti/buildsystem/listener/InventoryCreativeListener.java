@@ -29,7 +29,9 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class InventoryCreativeListener implements Listener {
 
     private final BuildSystemPlugin plugin;

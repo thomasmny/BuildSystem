@@ -36,7 +36,9 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.stream.Stream;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class LocalBackupStorage implements BackupStorage {
 
     private final BuildSystemPlugin plugin;

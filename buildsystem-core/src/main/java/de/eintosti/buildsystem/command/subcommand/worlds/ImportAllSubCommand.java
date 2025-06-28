@@ -32,7 +32,9 @@ import java.util.Locale;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class ImportAllSubCommand implements SubCommand {
 
     private final BuildSystemPlugin plugin;

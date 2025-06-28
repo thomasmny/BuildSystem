@@ -41,9 +41,10 @@ import net.lingala.zip4j.model.ExcludeFileFilter;
 import net.lingala.zip4j.model.ZipParameters;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public final class FileUtils {
 
     private static final Logger LOGGER = JavaPlugin.getPlugin(BuildSystemPlugin.class).getLogger();
@@ -75,7 +76,7 @@ public final class FileUtils {
      * @param target The target file or directory where the source will be copied to
      * @throws RuntimeException If an I/O error occurs while copying
      */
-    public static void copy(@NotNull File source, @NotNull File target) {
+    public static void copy(File source, File target) {
         try {
             if (IGNORE_FILES.contains(source.getName())) {
                 return;
@@ -98,7 +99,7 @@ public final class FileUtils {
      * @param target The target directory where the source directory will be copied to
      * @throws IOException If an I/O error occurs while copying the directory
      */
-    private static void copyDirectory(@NotNull File source, @NotNull File target) throws IOException {
+    private static void copyDirectory(File source, File target) throws IOException {
         if (!target.exists() && !target.mkdirs()) {
             LOGGER.log(Level.SEVERE, "Failed to create target directory: " + target.getAbsolutePath());
             return;
@@ -122,7 +123,7 @@ public final class FileUtils {
      * @param target The target file where the source file will be copied to
      * @throws IOException If an I/O error occurs while copying the file
      */
-    private static void copyFile(@NotNull File source, @NotNull File target) throws IOException {
+    private static void copyFile(File source, File target) throws IOException {
         try (
                 InputStream inputStream = Files.newInputStream(source.toPath());
                 OutputStream outputStream = Files.newOutputStream(target.toPath())

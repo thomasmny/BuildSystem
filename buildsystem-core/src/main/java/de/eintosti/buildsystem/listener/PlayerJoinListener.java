@@ -46,7 +46,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class PlayerJoinListener implements Listener {
 
     private final BuildSystemPlugin plugin;

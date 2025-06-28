@@ -49,13 +49,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * An abstract inventory class for displaying {@link Displayable} objects such as {@link Folder}s and {@link BuildWorld}s. This class is designed to be instantiated once per player
  * to manage their specific inventory view.
  */
+@NullMarked
 public abstract class DisplayablesInventory extends PaginatedInventory {
 
     private static final int MAX_WORLDS_PER_PAGE = 36;
@@ -78,9 +79,11 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
     protected final Visibility requiredVisibility;
     protected final Set<BuildWorldStatus> validStatuses;
     private final String inventoryTitle;
+    @Nullable
     private final String noWorldsMessage;
 
     private List<Displayable> cachedDisplayables;
+    @Nullable
     private Inventory[] generatedInventories;
 
     /**
@@ -95,13 +98,13 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
      * @param validStatuses      The set of valid statuses for worlds to be displayed
      */
     protected DisplayablesInventory(
-            @NotNull BuildSystemPlugin plugin,
-            @NotNull Player player,
-            @NotNull NavigatorCategory category,
-            @NotNull String inventoryTitle,
+            BuildSystemPlugin plugin,
+            Player player,
+            NavigatorCategory category,
+            String inventoryTitle,
             @Nullable String noWorldsMessage,
-            @NotNull Visibility requiredVisibility,
-            @NotNull Set<@NotNull BuildWorldStatus> validStatuses
+            Visibility requiredVisibility,
+            Set<BuildWorldStatus> validStatuses
     ) {
         this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
@@ -169,7 +172,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
      *
      * @return A new inventory instance.
      */
-    protected @NotNull Inventory createBaseInventoryPage(String inventoryTitle) {
+    protected Inventory createBaseInventoryPage(String inventoryTitle) {
         Inventory inventory = new DisplayablesInventoryHolder(inventoryTitle).getInventory();
         InventoryUtils.fillWithGlass(inventory, player);
 
@@ -201,7 +204,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
      *
      * @return A list of {@link Displayable} items to be presented in the UI, sorted with folders first.
      */
-    protected @NotNull List<Displayable> collectDisplayables() {
+    protected List<Displayable> collectDisplayables() {
         WorldDisplay worldDisplay = settingsManager.getSettings(player).getWorldDisplay();
 
         Collection<Folder> folders = collectFolders();
@@ -256,7 +259,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
      * @param buildWorld The world to check.
      * @return {@code true} if the world should be displayed, {@link false} otherwise
      */
-    private boolean isWorldValidForDisplay(@NotNull BuildWorld buildWorld) {
+    private boolean isWorldValidForDisplay(BuildWorld buildWorld) {
         WorldData worldData = buildWorld.getData();
         if (!this.worldStorage.isCorrectVisibility(worldData.privateWorld().get(), this.requiredVisibility)) {
             return false;
@@ -278,7 +281,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
      *
      * @param inventory The inventory to add the item to
      */
-    private void addWorldSortItem(@NotNull Inventory inventory) {
+    private void addWorldSortItem(Inventory inventory) {
         Settings settings = settingsManager.getSettings(player);
         WorldSort worldSort = settings.getWorldDisplay().getWorldSort();
 
@@ -301,7 +304,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
      *
      * @param inventory The inventory to add the item to
      */
-    private void addWorldFilterItem(@NotNull Inventory inventory) {
+    private void addWorldFilterItem(Inventory inventory) {
         Settings settings = settingsManager.getSettings(player);
         WorldFilter worldFilter = settings.getWorldDisplay().getWorldFilter();
 
@@ -320,7 +323,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
     }
 
     @Override
-    public void onClick(@NotNull InventoryClickEvent event) {
+    public void onClick(InventoryClickEvent event) {
         if (!(event.getInventory().getHolder() instanceof DisplayablesInventoryHolder)) {
             return;
         }
@@ -401,7 +404,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
     }
 
     protected void beginWorldCreation() {
-        new CreateInventory(plugin).openInventory(this.player, Page.PREDEFINED, this.requiredVisibility, null);
+        new CreateInventory(plugin, this.requiredVisibility).openInventory(this.player, Page.PREDEFINED);
     }
 
     protected Folder createFolder(String folderName) {
@@ -421,7 +424,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
      * @param event        The InventoryClickEvent.
      * @param worldDisplay The player's WorldDisplay settings.
      */
-    private void handleFilterClick(@NotNull InventoryClickEvent event, @NotNull WorldDisplay worldDisplay) {
+    private void handleFilterClick(InventoryClickEvent event, WorldDisplay worldDisplay) {
         WorldFilter worldFilter = worldDisplay.getWorldFilter();
         Mode currentMode = worldFilter.getMode();
 
@@ -448,7 +451,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
      * @param event       The click event
      * @param clickedItem The item that was clicked
      */
-    private void handleDisplayableItemClick(@NotNull InventoryClickEvent event, @NotNull ItemStack clickedItem) {
+    private void handleDisplayableItemClick(InventoryClickEvent event, ItemStack clickedItem) {
         ItemMeta itemMeta = clickedItem.getItemMeta();
         if (itemMeta == null || !itemMeta.hasDisplayName()) {
             return;
@@ -534,7 +537,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
      * @param event      The InventoryClickEvent.
      * @param buildWorld The BuildWorld associated with the clicked item.
      */
-    private void manageWorldItemClick(@NotNull InventoryClickEvent event, @NotNull BuildWorld buildWorld) {
+    private void manageWorldItemClick(InventoryClickEvent event, BuildWorld buildWorld) {
         if (event.isLeftClick() || !buildWorld.getPermissions().canPerformCommand(player, WorldsArgument.EDIT.getPermission())) {
             performNonEditClick(buildWorld);
             return;
@@ -555,7 +558,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
      *
      * @param buildWorld The BuildWorld to act upon.
      */
-    private void performNonEditClick(@NotNull BuildWorld buildWorld) {
+    private void performNonEditClick(BuildWorld buildWorld) {
         playerService.closeNavigator(player);
         buildWorld.getTeleporter().teleport(player);
     }

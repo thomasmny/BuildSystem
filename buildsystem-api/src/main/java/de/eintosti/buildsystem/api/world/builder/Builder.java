@@ -20,13 +20,15 @@ package de.eintosti.buildsystem.api.world.builder;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.util.UUID;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A {@link Builder} represents a player allowed to build in a {@link BuildWorld}.
  *
  * @since 3.0.0
  */
+@NullMarked
 public interface Builder {
 
     /**
@@ -59,7 +61,7 @@ public interface Builder {
      * @return The builder if all the input is valid, otherwise {@code null}
      */
     @Nullable
-    static Builder deserialize(String serialized) {
+    static Builder deserialize(@Nullable String serialized) {
         if (serialized == null || serialized.equals("-")) {
             return null;
         }
@@ -67,7 +69,6 @@ public interface Builder {
         String[] parts = serialized.split(BuilderImpl.SEPARATOR);
         return of(UUID.fromString(parts[0]), parts[1]);
     }
-
 
     /**
      * Returns a unique and persistent id for the builder.

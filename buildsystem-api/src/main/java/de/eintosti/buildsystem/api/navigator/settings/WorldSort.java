@@ -23,12 +23,15 @@ import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import java.util.Comparator;
 import java.util.Locale;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Represents the sorting options for worlds in the navigator.
  *
  * @since 3.0.0
  */
+@NullMarked
 public enum WorldSort {
 
     /**
@@ -122,7 +125,7 @@ public enum WorldSort {
      * @param type The string to match
      * @return The matched {@link WorldSort} constant, or {@link WorldSort#NAME_A_TO_Z} if no match is found
      */
-    public static WorldSort matchWorldSort(String type) {
+    public static WorldSort matchWorldSort(@Nullable String type) {
         if (type == null) {
             return NAME_A_TO_Z;
         }

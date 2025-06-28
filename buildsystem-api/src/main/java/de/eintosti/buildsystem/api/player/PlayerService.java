@@ -23,12 +23,14 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import java.util.Set;
 import java.util.UUID;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Service for managing {@link BuildPlayer}.
  *
  * @since 3.0.0
  */
+@NullMarked
 public interface PlayerService {
 
     /**

@@ -20,10 +20,12 @@ package de.eintosti.buildsystem.util.inventory;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Interface for custom inventory logic.
  */
+@NullMarked
 public interface InventoryHandler {
 
     /**

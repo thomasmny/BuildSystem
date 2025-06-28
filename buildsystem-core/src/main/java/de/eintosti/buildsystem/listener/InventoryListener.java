@@ -24,7 +24,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class InventoryListener implements Listener {
 
     private final InventoryManager inventoryManager;

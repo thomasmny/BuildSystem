@@ -29,12 +29,14 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Represents an object that can be displayed in an inventory.
  *
  * @since 3.0.0
  */
+@NullMarked
 public interface Displayable {
 
     /**

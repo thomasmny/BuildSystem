@@ -49,9 +49,10 @@ import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class BuildWorldCreatorImpl implements BuildWorldCreator {
 
     private static final String LEVEL_DAT_FILE_NAME = "level.dat";
@@ -61,21 +62,29 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
     private final WorldStorage worldStorage;
 
     private String worldName;
+    @Nullable
     private Builder creator;
     private boolean isPrivate = false;
     private BuildWorldType worldType = BuildWorldType.NORMAL;
+    @Nullable
     private CustomGenerator customGenerator = null;
     private long creationDate = System.currentTimeMillis();
+    @Nullable
     private String template = null;
+    @Nullable
     private Folder folder;
 
+    @Nullable
     private Difficulty difficulty;
+    @Nullable
     private Integer time;
+    @Nullable
     private Integer worldBoarderSize;
 
+    @Nullable
     private BuildWorld buildWorld;
 
-    public BuildWorldCreatorImpl(BuildSystemPlugin plugin, @NotNull String name) {
+    public BuildWorldCreatorImpl(BuildSystemPlugin plugin, String name) {
         this.plugin = plugin;
         this.worldStorage = plugin.getWorldService().getWorldStorage();
 
@@ -85,7 +94,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
         this.worldBoarderSize = Default.worldBoarderSize;
     }
 
-    public BuildWorldCreatorImpl(BuildSystemPlugin plugin, @NotNull BuildWorld buildWorld) {
+    public BuildWorldCreatorImpl(BuildSystemPlugin plugin, BuildWorld buildWorld) {
         this.plugin = plugin;
         this.worldStorage = plugin.getWorldService().getWorldStorage();
 
@@ -102,13 +111,13 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
     }
 
     @Override
-    public BuildWorldCreatorImpl setCreator(Builder creator) {
+    public BuildWorldCreatorImpl setCreator(@Nullable Builder creator) {
         this.creator = creator;
         return this;
     }
 
     @Override
-    public BuildWorldCreatorImpl setTemplate(String template) {
+    public BuildWorldCreatorImpl setTemplate(@Nullable String template) {
         this.template = ChatColor.stripColor(template);
         return this;
     }
@@ -120,7 +129,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
     }
 
     @Override
-    public BuildWorldCreatorImpl setCustomGenerator(CustomGenerator customGenerator) {
+    public BuildWorldCreatorImpl setCustomGenerator(@Nullable CustomGenerator customGenerator) {
         this.customGenerator = customGenerator;
         return this;
     }
@@ -289,8 +298,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
         WorldCreator worldCreator = new WorldCreator(this.worldName);
         BuildWorldType worldType = this.worldType;
 
-        if (worldType == BuildWorldType.IMPORTED && this.customGenerator != null && this.customGenerator.name() != null) {
-            // For imported worlds we store the world type generator within the custom generator
+        if (worldType == BuildWorldType.IMPORTED && this.customGenerator != null) {
             worldType = BuildWorldType.valueOf(this.customGenerator.name().toUpperCase(Locale.ROOT));
         }
 

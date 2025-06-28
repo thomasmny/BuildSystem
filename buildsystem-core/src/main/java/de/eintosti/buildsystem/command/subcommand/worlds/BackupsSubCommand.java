@@ -29,7 +29,9 @@ import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class BackupsSubCommand implements SubCommand {
 
     private final BuildSystemPlugin plugin;

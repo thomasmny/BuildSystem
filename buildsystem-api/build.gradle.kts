@@ -10,8 +10,9 @@ project.description = "API"
 
 dependencies {
     compileOnly(libs.spigot)
-    compileOnly(libs.annotations)
     compileOnly(libs.xseries)
+    compileOnly(libs.annotations)
+    compileOnly(libs.jspecify)
 }
 
 java {
@@ -25,9 +26,10 @@ tasks.withType<Javadoc> {
     opt.overview("javadoc/overview.html")
     opt.encoding("UTF-8")
     opt.charSet("UTF-8")
-    opt.links("https://docs.oracle.com/javase/21/docs/api/")
+    opt.links("https://docs.oracle.com/en/java/javase/21/docs/api/")
     opt.links("https://hub.spigotmc.org/javadocs/spigot/")
     opt.links("https://javadoc.io/static/org.jetbrains/annotations/")
+    opt.links("https://javadoc.io/doc/org.jspecify/jspecify")
     opt.isLinkSource = true
     opt.isUse = true
     opt.keyWords()

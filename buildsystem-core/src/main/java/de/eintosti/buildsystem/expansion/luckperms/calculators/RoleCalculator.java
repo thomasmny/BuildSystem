@@ -28,8 +28,10 @@ import net.luckperms.api.context.ContextSet;
 import net.luckperms.api.context.ImmutableContextSet;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class RoleCalculator implements ContextCalculator<Player> {
 
     private static final String KEY = "buildsystem:role";
@@ -46,7 +48,6 @@ public class RoleCalculator implements ContextCalculator<Player> {
         contextConsumer.accept(KEY, Role.matchRole(player, buildWorld).toString());
     }
 
-    @NotNull
     @Override
     public ContextSet estimatePotentialContexts() {
         ImmutableContextSet.Builder builder = ImmutableContextSet.builder();
@@ -56,6 +57,7 @@ public class RoleCalculator implements ContextCalculator<Player> {
         return builder.build();
     }
 
+    @NullMarked
     private enum Role {
 
         /**
@@ -73,7 +75,7 @@ public class RoleCalculator implements ContextCalculator<Player> {
          */
         GUEST;
 
-        public static Role matchRole(Player player, BuildWorld buildWorld) {
+        public static Role matchRole(Player player, @Nullable BuildWorld buildWorld) {
             if (buildWorld == null) {
                 return GUEST;
             }

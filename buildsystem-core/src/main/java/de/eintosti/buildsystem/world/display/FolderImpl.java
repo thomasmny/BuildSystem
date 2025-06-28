@@ -32,10 +32,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class FolderImpl implements Folder {
 
     private final FolderStorageImpl folderStorage;
@@ -46,6 +47,7 @@ public class FolderImpl implements Folder {
     private final NavigatorCategory category;
     private final List<UUID> worlds;
 
+    @Nullable
     private Folder parent;
     private XMaterial material;
     private String permission;
@@ -56,16 +58,16 @@ public class FolderImpl implements Folder {
     }
 
     public FolderImpl(
-            @NotNull FolderStorageImpl folderStorage,
-            @NotNull String name,
+            FolderStorageImpl folderStorage,
+            String name,
             long creation,
-            @NotNull NavigatorCategory category,
+            NavigatorCategory category,
             @Nullable Folder parent,
-            @NotNull Builder creator,
-            @NotNull XMaterial material,
-            @NotNull String permission,
-            @NotNull String project,
-            @NotNull List<@NotNull UUID> worlds
+            Builder creator,
+            XMaterial material,
+            String permission,
+            String project,
+            List<UUID> worlds
     ) {
         this.folderStorage = folderStorage;
         this.name = name;
