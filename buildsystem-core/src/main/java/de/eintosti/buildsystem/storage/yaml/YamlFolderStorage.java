@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -49,25 +50,29 @@ public class YamlFolderStorage extends FolderStorageImpl {
 
     private static final String FOLDERS_KEY = "folders";
 
-    @Nullable
-    private File file;
-    @Nullable
-    private FileConfiguration config;
+    private final File file;
+    private final FileConfiguration config;
 
     public YamlFolderStorage(BuildSystemPlugin plugin) {
         super(plugin);
+        this.file = new File(plugin.getDataFolder(), "folders.yml");
+        this.config = YamlConfiguration.loadConfiguration(file);
     }
 
     @Override
-    public void save(Folder folder) {
-        config.set(FOLDERS_KEY + "." + folder.getName(), serializeFolder(folder));
-        saveFile();
+    public CompletableFuture<Void> save(Folder folder) {
+        return CompletableFuture.runAsync(() -> {
+            config.set(FOLDERS_KEY + "." + folder.getName(), serializeFolder(folder));
+            saveFile();
+        });
     }
 
     @Override
-    public void save(Collection<Folder> folders) {
-        folders.forEach(folder -> config.set(FOLDERS_KEY + "." + folder.getName(), serializeFolder(folder)));
-        saveFile();
+    public CompletableFuture<Void> save(Collection<Folder> folders) {
+        return CompletableFuture.runAsync(() -> {
+            folders.forEach(folder -> config.set(FOLDERS_KEY + "." + folder.getName(), serializeFolder(folder)));
+            saveFile();
+        });
     }
 
     private void saveFile() {
@@ -94,33 +99,32 @@ public class YamlFolderStorage extends FolderStorageImpl {
     }
 
     @Override
-    public Collection<Folder> load() {
-        Set<String> folders = loadFolderKeys();
+    public CompletableFuture<Collection<Folder>> load() {
+        return CompletableFuture.supplyAsync(() -> {
+            Set<String> folders = loadFolderKeys();
 
-        // First pass: Create all folders without parent references
-        Map<String, Folder> loadedFolders = folders.stream()
-                .map(this::loadFolder)
-                .collect(Collectors.toMap(Folder::getName, Function.identity()));
+            // First pass: Create all folders without parent references
+            Map<String, Folder> loadedFolders = folders.stream()
+                    .map(this::loadFolder)
+                    .collect(Collectors.toMap(Folder::getName, Function.identity()));
 
-        // Second pass: Set up parent references
-        for (String folderName : folders) {
-            String parentName = config.getString(FOLDERS_KEY + "." + folderName + ".parent");
-            if (parentName != null) {
-                Folder folder = loadedFolders.get(folderName);
-                Folder parent = loadedFolders.get(parentName);
-                if (folder != null && parent != null) {
-                    folder.setParent(parent);
+            // Second pass: Set up parent references
+            for (String folderName : folders) {
+                String parentName = config.getString(FOLDERS_KEY + "." + folderName + ".parent");
+                if (parentName != null) {
+                    Folder folder = loadedFolders.get(folderName);
+                    Folder parent = loadedFolders.get(parentName);
+                    if (folder != null && parent != null) {
+                        folder.setParent(parent);
+                    }
                 }
             }
-        }
 
-        return new ArrayList<>(loadedFolders.values());
+            return new ArrayList<>(loadedFolders.values());
+        });
     }
 
     private Set<String> loadFolderKeys() {
-        this.file = new File(plugin.getDataFolder(), "folders.yml");
-        this.config = YamlConfiguration.loadConfiguration(file);
-
         if (!file.exists()) {
             config.options().copyDefaults(true);
             saveFile();
@@ -167,13 +171,15 @@ public class YamlFolderStorage extends FolderStorageImpl {
     }
 
     @Override
-    public void delete(Folder folder) {
-        delete(folder.getName());
+    public CompletableFuture<Void> delete(Folder folder) {
+        return delete(folder.getName());
     }
 
     @Override
-    public void delete(String folderKey) {
-        config.set(FOLDERS_KEY + "." + folderKey, null);
-        saveFile();
+    public CompletableFuture<Void> delete(String folderKey) {
+        return CompletableFuture.runAsync(() -> {
+            config.set(FOLDERS_KEY + "." + folderKey, null);
+            saveFile();
+        });
     }
 }

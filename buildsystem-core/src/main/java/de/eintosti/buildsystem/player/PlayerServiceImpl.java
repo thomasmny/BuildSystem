@@ -34,12 +34,14 @@ import de.eintosti.buildsystem.config.Config.Settings.Navigator;
 import de.eintosti.buildsystem.config.Config.World.Limits;
 import de.eintosti.buildsystem.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
+import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.factory.PlayerStorageFactory;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletionException;
 import java.util.logging.Level;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -63,7 +65,7 @@ public class PlayerServiceImpl implements PlayerService {
     private static final double MAX_LOOK_HEIGHT = 0.16481381407766063;
 
     private final BuildSystemPlugin plugin;
-    private final PlayerStorage playerStorage;
+    private final PlayerStorageImpl playerStorage;
 
     private final Set<Player> openNavigator;
     private final Set<UUID> buildModePlayers;
@@ -76,6 +78,10 @@ public class PlayerServiceImpl implements PlayerService {
         this.buildModePlayers = new HashSet<>();
 
         initEntityChecker();
+    }
+
+    public void init() {
+        this.playerStorage.loadPlayers();
     }
 
     @Override
@@ -329,6 +335,11 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     public void save() {
-        this.playerStorage.save(this.playerStorage.getBuildPlayers());
+        this.playerStorage
+                .save(this.playerStorage.getBuildPlayers())
+                .exceptionally(e -> {
+                    plugin.getLogger().log(Level.SEVERE, "Failed to save player data", e);
+                    throw new CompletionException("Failed to save player data", e);
+                });
     }
 }

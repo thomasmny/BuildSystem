@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.storage.factory;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.api.storage.PlayerStorage;
+import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlPlayerStorage;
 import org.jspecify.annotations.NullMarked;
 
@@ -39,7 +39,7 @@ public class PlayerStorageFactory {
      *
      * @return The folder storage implementation
      */
-    public PlayerStorage createStorage() {
+    public PlayerStorageImpl createStorage() {
         return new YamlPlayerStorage(plugin);
     }
 } 

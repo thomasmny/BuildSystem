@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
@@ -59,25 +60,29 @@ public class YamlWorldStorage extends WorldStorageImpl {
 
     private static final String WORLDS_KEY = "worlds";
 
-    @Nullable
-    private File file;
-    @Nullable
-    private FileConfiguration config;
+    private final File file;
+    private final FileConfiguration config;
 
     public YamlWorldStorage(BuildSystemPlugin plugin) {
         super(plugin);
+        this.file = new File(plugin.getDataFolder(), "worlds.yml");
+        this.config = YamlConfiguration.loadConfiguration(file);
     }
 
     @Override
-    public void save(BuildWorld buildWorld) {
-        config.set(WORLDS_KEY + "." + buildWorld.getName(), serializeWorld(buildWorld));
-        saveFile();
+    public CompletableFuture<Void> save(BuildWorld buildWorld) {
+        return CompletableFuture.runAsync(() -> {
+            config.set(WORLDS_KEY + "." + buildWorld.getName(), serializeWorld(buildWorld));
+            saveFile();
+        });
     }
 
     @Override
-    public void save(Collection<BuildWorld> buildWorlds) {
-        buildWorlds.forEach(buildWorld -> config.set(WORLDS_KEY + "." + buildWorld.getName(), serializeWorld(buildWorld)));
-        saveFile();
+    public CompletableFuture<Void> save(Collection<BuildWorld> buildWorlds) {
+        return CompletableFuture.runAsync(() -> {
+            buildWorlds.forEach(buildWorld -> config.set(WORLDS_KEY + "." + buildWorld.getName(), serializeWorld(buildWorld)));
+            saveFile();
+        });
     }
 
     private void saveFile() {
@@ -114,24 +119,21 @@ public class YamlWorldStorage extends WorldStorageImpl {
     private String serializeBuilders(Collection<Builder> builders) {
         StringBuilder builderList = new StringBuilder();
         for (Builder builder : builders) {
-            builderList.append(";").append(builder.toString());
+            builderList.append(";").append(builder);
         }
         return !builderList.isEmpty() ? builderList.substring(1) : builderList.toString();
     }
 
     @Override
-    public Collection<BuildWorld> load() {
-        Set<String> worlds = loadWorldKeys();
-
-        return worlds.stream()
-                .map(this::loadWorld)
-                .collect(Collectors.toCollection(ArrayList::new));
+    public CompletableFuture<Collection<BuildWorld>> load() {
+        return CompletableFuture.supplyAsync(() ->
+                loadWorldKeys().stream()
+                        .map(this::loadWorld)
+                        .collect(Collectors.toCollection(ArrayList::new))
+        );
     }
 
     private Set<String> loadWorldKeys() {
-        this.file = new File(plugin.getDataFolder(), "worlds.yml");
-        this.config = YamlConfiguration.loadConfiguration(file);
-
         if (!file.exists()) {
             config.options().copyDefaults(true);
             saveFile();
@@ -266,8 +268,13 @@ public class YamlWorldStorage extends WorldStorageImpl {
             String buildersString = config.getString(WORLDS_KEY + "." + worldName + ".builders");
             if (buildersString != null && !buildersString.isEmpty()) {
                 String[] splitBuilders = buildersString.split(";");
-                for (String builder : splitBuilders) {
-                    builders.add(Builder.deserialize(builder));
+                for (String serializedBuilder : splitBuilders) {
+                    Builder builder = Builder.deserialize(serializedBuilder);
+                    if (builder == null) {
+                        plugin.getLogger().warning("Could not deserialize builder: " + serializedBuilder + " for world: " + worldName);
+                        continue;
+                    }
+                    builders.add(builder);
                 }
             }
         }
@@ -306,13 +313,15 @@ public class YamlWorldStorage extends WorldStorageImpl {
     }
 
     @Override
-    public void delete(BuildWorld buildWorld) {
-        delete(buildWorld.getName());
+    public CompletableFuture<Void> delete(BuildWorld buildWorld) {
+        return delete(buildWorld.getName());
     }
 
     @Override
-    public void delete(String worldKey) {
-        config.set(WORLDS_KEY + "." + worldKey, null);
-        saveFile();
+    public CompletableFuture<Void> delete(String worldKey) {
+        return CompletableFuture.runAsync(() -> {
+            config.set(WORLDS_KEY + "." + worldKey, null);
+            saveFile();
+        });
     }
 }
