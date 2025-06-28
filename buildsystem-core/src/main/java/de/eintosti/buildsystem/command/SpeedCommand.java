@@ -52,7 +52,7 @@ public class SpeedCommand implements CommandExecutor {
 
         switch (args.length) {
             case 0:
-                new SpeedInventory().openInventory(player);
+                new SpeedInventory(plugin).openInventory(player);
                 break;
             case 1:
                 String speedString = args[0];

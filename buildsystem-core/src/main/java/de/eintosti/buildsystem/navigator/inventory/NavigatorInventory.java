@@ -23,26 +23,31 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.player.settings.SettingsInventory;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
-import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
+import de.eintosti.buildsystem.util.inventory.InventoryHandler;
+import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 
-public class NavigatorInventory extends BuildSystemInventory {
+public class NavigatorInventory implements InventoryHandler {
 
     private final BuildSystemPlugin plugin;
+    private final InventoryManager inventoryManager;
 
     public NavigatorInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
+        this.inventoryManager = plugin.getInventoryManager();
     }
 
     public void openInventory(Player player) {
-        player.openInventory(getInventory(player));
+        Inventory inventory = getInventory(player);
+        this.inventoryManager.registerInventoryHandler(inventory, this);
+        player.openInventory(inventory);
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = new NavigatorInventoryHolder(this, player).getInventory();
+        Inventory inventory = new NavigatorInventoryHolder(player).getInventory();
         fillGuiWithGlass(player, inventory);
 
         inventory.setItem(11, InventoryUtils.createSkull(Messages.getString("old_navigator_world_navigator", player), Profileable.detect("d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622")));
@@ -95,8 +100,8 @@ public class NavigatorInventory extends BuildSystemInventory {
 
     private static class NavigatorInventoryHolder extends BuildSystemHolder {
 
-        public NavigatorInventoryHolder(BuildSystemInventory inventory, Player player) {
-            super(inventory, 27, Messages.getString("old_navigator_title", player));
+        public NavigatorInventoryHolder(Player player) {
+            super(27, Messages.getString("old_navigator_title", player));
         }
     }
 }

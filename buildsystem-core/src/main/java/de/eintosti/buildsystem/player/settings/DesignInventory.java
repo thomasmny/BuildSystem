@@ -24,7 +24,8 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
-import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
+import de.eintosti.buildsystem.util.inventory.InventoryHandler;
+import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -33,20 +34,24 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class DesignInventory extends BuildSystemInventory {
+public class DesignInventory implements InventoryHandler {
 
     private final BuildSystemPlugin plugin;
+    private final InventoryManager inventoryManager;
 
     public DesignInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
+        this.inventoryManager = plugin.getInventoryManager();
     }
 
     public void openInventory(Player player) {
-        player.openInventory(getInventory(player));
+        Inventory inventory = getInventory(player);
+        this.inventoryManager.registerInventoryHandler(inventory, this);
+        player.openInventory(inventory);
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = new DesignInventoryHolder(this, player).getInventory();
+        Inventory inventory = new DesignInventoryHolder(player).getInventory();
         fillGuiWithGlass(inventory, player);
 
         setItem(player, inventory, 10, XMaterial.RED_STAINED_GLASS, "design_red", DesignColor.RED);
@@ -179,8 +184,8 @@ public class DesignInventory extends BuildSystemInventory {
 
     private static class DesignInventoryHolder extends BuildSystemHolder {
 
-        public DesignInventoryHolder(BuildSystemInventory inventory, Player player) {
-            super(inventory, 36, Messages.getString("design_title", player));
+        public DesignInventoryHolder(Player player) {
+            super(36, Messages.getString("design_title", player));
         }
     }
 }

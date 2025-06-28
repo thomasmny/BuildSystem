@@ -27,7 +27,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
-import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
+import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import de.eintosti.buildsystem.util.inventory.PaginatedInventory;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -48,6 +48,7 @@ public class CreateInventory extends PaginatedInventory {
     private static final int MAX_TEMPLATES = 5;
 
     private final BuildSystemPlugin plugin;
+    private final InventoryManager inventoryManager;
     private final WorldServiceImpl worldService;
 
     private int numTemplates = 0;
@@ -57,6 +58,7 @@ public class CreateInventory extends PaginatedInventory {
 
     public CreateInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
+        this.inventoryManager = plugin.getInventoryManager();
         this.worldService = plugin.getWorldService();
     }
 
@@ -65,12 +67,15 @@ public class CreateInventory extends PaginatedInventory {
         this.createPrivateWorld = visibility == Visibility.PRIVATE;
         this.folder = folder;
 
+        Inventory inventory;
         if (page == Page.TEMPLATES) {
             addTemplates(player, page);
-            player.openInventory(inventories[getInvIndex(player)]);
+            inventory = inventories[getInvIndex(player)];
         } else {
-            player.openInventory(getBaseInventory(player, page));
+            inventory = getBaseInventory(player, page);
         }
+        this.inventoryManager.registerInventoryHandler(inventory, this);
+        player.openInventory(inventory);
     }
 
     private void addTemplates(Player player, Page page) {
@@ -113,7 +118,7 @@ public class CreateInventory extends PaginatedInventory {
     }
 
     private Inventory getBaseInventory(Player player, Page page) {
-        Inventory inventory = new CreateInventoryHolder(this, player, page).getInventory();
+        Inventory inventory = new CreateInventoryHolder(player, page).getInventory();
         fillGuiWithGlass(player, inventory, page);
 
         addPageItem(inventory, page, Page.PREDEFINED, InventoryUtils.createSkull(Messages.getString("create_predefined_worlds", player), Profileable.detect("2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78")));
@@ -286,8 +291,8 @@ public class CreateInventory extends PaginatedInventory {
 
         private final Page page;
 
-        public CreateInventoryHolder(BuildSystemInventory inventory, Player player, @NotNull Page page) {
-            super(inventory, 45, Messages.getString("create_title", player));
+        public CreateInventoryHolder(Player player, @NotNull Page page) {
+            super(45, Messages.getString("create_title", player));
             this.page = page;
         }
 

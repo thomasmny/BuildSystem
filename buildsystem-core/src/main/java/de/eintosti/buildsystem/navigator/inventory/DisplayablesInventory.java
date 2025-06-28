@@ -27,7 +27,7 @@ import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete.WorldsArgument;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
-import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
+import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import de.eintosti.buildsystem.util.inventory.PaginatedInventory;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -67,6 +67,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
     private static final String NO_WORLDS_SKULL_PROFILE = "2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6";
 
     protected final BuildSystemPlugin plugin;
+    protected final InventoryManager inventoryManager;
     protected final PlayerServiceImpl playerService;
     protected final SettingsManager settingsManager;
     protected final FolderStorageImpl folderStorage;
@@ -103,18 +104,19 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
             @NotNull Set<@NotNull BuildWorldStatus> validStatuses
     ) {
         this.plugin = plugin;
+        this.inventoryManager = plugin.getInventoryManager();
+        this.playerService = plugin.getPlayerService();
+        this.settingsManager = plugin.getSettingsManager();
+        WorldServiceImpl worldService = plugin.getWorldService();
+        this.folderStorage = worldService.getFolderStorage();
+        this.worldStorage = worldService.getWorldStorage();
+
         this.player = player;
         this.category = category;
         this.inventoryTitle = inventoryTitle;
         this.noWorldsMessage = noWorldsMessage;
         this.requiredVisibility = requiredVisibility;
         this.validStatuses = validStatuses;
-
-        this.playerService = plugin.getPlayerService();
-        this.settingsManager = plugin.getSettingsManager();
-        WorldServiceImpl worldService = plugin.getWorldService();
-        this.folderStorage = worldService.getFolderStorage();
-        this.worldStorage = worldService.getWorldStorage();
     }
 
     /**
@@ -124,7 +126,10 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
         if (this.generatedInventories == null) {
             initializeInventories();
         }
-        player.openInventory(generatedInventories[getInvIndex(player)]);
+
+        Inventory inventory = generatedInventories[getInvIndex(player)];
+        this.inventoryManager.registerInventoryHandler(inventory, this);
+        player.openInventory(inventory);
     }
 
     /**
@@ -165,7 +170,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
      * @return A new inventory instance.
      */
     protected @NotNull Inventory createBaseInventoryPage(String inventoryTitle) {
-        Inventory inventory = new DisplayablesInventoryHolder(this, inventoryTitle).getInventory();
+        Inventory inventory = new DisplayablesInventoryHolder(inventoryTitle).getInventory();
         InventoryUtils.fillWithGlass(inventory, player);
 
         addWorldSortItem(inventory);
@@ -557,8 +562,8 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
 
     private static class DisplayablesInventoryHolder extends BuildSystemHolder {
 
-        public DisplayablesInventoryHolder(BuildSystemInventory inventory, String inventoryTitle) {
-            super(inventory, 54, inventoryTitle);
+        public DisplayablesInventoryHolder(String inventoryTitle) {
+            super(54, inventoryTitle);
         }
     }
 }

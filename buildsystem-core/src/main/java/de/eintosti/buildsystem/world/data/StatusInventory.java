@@ -25,8 +25,9 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
 import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
+import de.eintosti.buildsystem.util.inventory.InventoryHandler;
+import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import de.eintosti.buildsystem.world.modification.EditInventory;
 import java.util.Map;
@@ -39,18 +40,20 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class StatusInventory extends BuildSystemInventory {
+public class StatusInventory implements InventoryHandler {
 
     private final BuildSystemPlugin plugin;
+    private final InventoryManager inventoryManager;
     private final PlayerServiceImpl playerService;
 
     public StatusInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
+        this.inventoryManager = plugin.getInventoryManager();
         this.playerService = plugin.getPlayerService();
     }
 
     private Inventory getInventory(Player player, BuildWorld buildWorld) {
-        Inventory inventory = new StatusInventoryHolder(this, buildWorld, player).getInventory();
+        Inventory inventory = new StatusInventoryHolder(buildWorld, player).getInventory();
         fillGuiWithGlass(player, inventory);
 
         addStatusItem(player, inventory, 10, BuildWorldStatus.NOT_STARTED, buildWorld);
@@ -64,7 +67,9 @@ public class StatusInventory extends BuildSystemInventory {
     }
 
     public void openInventory(Player player, BuildWorld buildWorld) {
-        player.openInventory(getInventory(player, buildWorld));
+        Inventory inventory = getInventory(player, buildWorld);
+        this.inventoryManager.registerInventoryHandler(inventory, this);
+        player.openInventory(inventory);
     }
 
     private void fillGuiWithGlass(Player player, Inventory inventory) {
@@ -171,8 +176,8 @@ public class StatusInventory extends BuildSystemInventory {
 
     private static class StatusInventoryHolder extends BuildWorldHolder {
 
-        public StatusInventoryHolder(BuildSystemInventory inventory, BuildWorld buildWorld, Player player) {
-            super(inventory, buildWorld, 27, Messages.getString("status_title", player, Map.entry("%world%", formatWorldName(buildWorld))));
+        public StatusInventoryHolder(BuildWorld buildWorld, Player player) {
+            super(buildWorld, 27, Messages.getString("status_title", player, Map.entry("%world%", formatWorldName(buildWorld))));
         }
 
         private static String formatWorldName(BuildWorld buildWorld) {

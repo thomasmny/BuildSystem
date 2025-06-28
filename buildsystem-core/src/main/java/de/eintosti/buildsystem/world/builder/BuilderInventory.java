@@ -28,8 +28,8 @@ import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete.WorldsArgument;
 import de.eintosti.buildsystem.util.UUIDFetcher;
-import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
 import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
+import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import de.eintosti.buildsystem.util.inventory.PaginatedInventory;
 import de.eintosti.buildsystem.world.modification.EditInventory;
@@ -50,17 +50,21 @@ public class BuilderInventory extends PaginatedInventory {
     private static final int MAX_BUILDERS_PER_PAGE = 9;
 
     private final BuildSystemPlugin plugin;
+    private final InventoryManager inventoryManager;
     private final NamespacedKey builderNameKey;
 
     private int numBuilders = 0;
 
     public BuilderInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
+        this.inventoryManager = plugin.getInventoryManager();
         this.builderNameKey = new NamespacedKey(plugin, "builder_name");
     }
 
     public void openInventory(BuildWorld buildWorld, Player player) {
-        player.openInventory(getInventory(buildWorld, player));
+        Inventory inventory = getInventory(buildWorld, player);
+        this.inventoryManager.registerInventoryHandler(inventory, this);
+        player.openInventory(inventory);
     }
 
     private Inventory getInventory(BuildWorld buildWorld, Player player) {
@@ -91,7 +95,7 @@ public class BuilderInventory extends PaginatedInventory {
     }
 
     private Inventory createInventory(BuildWorld buildWorld, Player player) {
-        Inventory inventory = new BuilderInventoryHolder(this, buildWorld, player).getInventory();
+        Inventory inventory = new BuilderInventoryHolder(buildWorld, player).getInventory();
         fillGuiWithGlass(inventory, player);
 
         addCreatorInfoItem(inventory, buildWorld.getBuilders(), player);
@@ -218,8 +222,8 @@ public class BuilderInventory extends PaginatedInventory {
 
     private static class BuilderInventoryHolder extends BuildWorldHolder {
 
-        public BuilderInventoryHolder(BuildSystemInventory inventory, BuildWorld buildWorld, Player player) {
-            super(inventory, buildWorld, 27, Messages.getString("worldeditor_builders_title", player));
+        public BuilderInventoryHolder(BuildWorld buildWorld, Player player) {
+            super(buildWorld, 27, Messages.getString("worldeditor_builders_title", player));
         }
     }
 }
