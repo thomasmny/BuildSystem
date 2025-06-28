@@ -108,9 +108,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
     }
 
     private Map<String, Object> serializeWorldData(WorldData worldData) {
-        return worldData.getAllData().entrySet().stream()
-                .filter(entry -> entry.getValue().get() != null)
-                .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getConfigFormat()));
+        return worldData.getAllData().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getConfigFormat()));
     }
 
     private String serializeBuilders(Collection<Builder> builders) {
@@ -168,7 +166,9 @@ public class YamlWorldStorage extends WorldStorageImpl {
                 : -1;
         List<Builder> builders = parseBuilders(worldName);
         String generatorName = config.getString("worlds." + worldName + ".chunk-generator");
-        CustomGeneratorImpl customGenerator = new CustomGeneratorImpl(generatorName, parseChunkGenerator(worldName, generatorName));
+        CustomGeneratorImpl customGenerator = generatorName != null
+                ? new CustomGeneratorImpl(generatorName, parseChunkGenerator(worldName, generatorName))
+                : null;
 
         return new BuildWorldImpl(
                 uuid,
@@ -185,9 +185,9 @@ public class YamlWorldStorage extends WorldStorageImpl {
     private WorldDataImpl parseWorldData(String worldName) {
         final String path = WORLDS_KEY + "." + worldName + ".data";
 
-        String customSpawn = config.getString(WORLDS_KEY + "." + worldName + ".spawn");
-        String permission = config.getString(path + ".permission");
-        String project = config.getString(path + ".project");
+        String customSpawn = config.getString(WORLDS_KEY + "." + worldName + ".spawn", "");
+        String permission = config.getString(path + ".permission", "-");
+        String project = config.getString(path + ".project", "-");
 
         Difficulty difficulty = Difficulty.valueOf(config.getString(path + ".difficulty", "PEACEFUL").toUpperCase(Locale.ROOT));
         XMaterial material = parseMaterial(path + ".material", worldName);
@@ -232,14 +232,13 @@ public class YamlWorldStorage extends WorldStorageImpl {
         }
     }
 
+    @Nullable
     private Builder parseCreator(String worldName) {
         final String creator = config.getString(WORLDS_KEY + "." + worldName + ".creator");
-        final String oldCreatorIdPath = WORLDS_KEY + "." + worldName + ".creator-id";
-        final String oldCreatorId = config.isString(oldCreatorIdPath)
-                ? config.getString(oldCreatorIdPath)
-                : null;
 
         // Previously, creator name & id were stored separately
+        final String oldCreatorIdPath = WORLDS_KEY + "." + worldName + ".creator-id";
+        final String oldCreatorId = config.isString(oldCreatorIdPath) ? config.getString(oldCreatorIdPath) : null;
         if (oldCreatorId != null) {
             if (creator == null || creator.equals("-")) {
                 return null;
@@ -249,7 +248,12 @@ public class YamlWorldStorage extends WorldStorageImpl {
                 return Builder.of(UUID.fromString(oldCreatorId), creator);
             }
 
-            return Builder.of(UUIDFetcher.getUUID(creator), creator);
+            UUID creatorId = UUIDFetcher.getUUID(creator);
+            if (creatorId == null) {
+                return null;
+            }
+
+            return Builder.of(creatorId, creator);
         }
 
         return Builder.deserialize(creator);
@@ -276,10 +280,6 @@ public class YamlWorldStorage extends WorldStorageImpl {
      */
     @Nullable
     private ChunkGenerator parseChunkGenerator(String worldName, String generatorName) {
-        if (generatorName == null) {
-            return null;
-        }
-
         String[] generatorInfo = generatorName.split(":");
         if (generatorInfo.length == 1) {
             generatorInfo = new String[]{generatorInfo[0], generatorInfo[0]};
@@ -297,10 +297,6 @@ public class YamlWorldStorage extends WorldStorageImpl {
      */
     @Nullable
     public ChunkGenerator getChunkGenerator(String generator, String generatorId, String worldName) {
-        if (generator == null) {
-            return null;
-        }
-
         Plugin plugin = Bukkit.getPluginManager().getPlugin(generator);
         if (plugin == null) {
             return null;

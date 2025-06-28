@@ -98,7 +98,7 @@ public final class BuildWorldImpl implements BuildWorld {
             String name,
             BuildWorldType worldType,
             WorldDataImpl worldData,
-            Builder creator,
+            @Nullable Builder creator,
             List<Builder> builders,
             long creation,
             @Nullable CustomGenerator customGenerator
