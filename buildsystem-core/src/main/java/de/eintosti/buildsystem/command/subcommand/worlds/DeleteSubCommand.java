@@ -26,10 +26,15 @@ import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.modification.DeleteInventory;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class DeleteSubCommand implements SubCommand {
 
     private final BuildSystemPlugin plugin;
+
+    @Nullable
     private final BuildWorld buildWorld;
 
     public DeleteSubCommand(BuildSystemPlugin plugin, String worldName) {

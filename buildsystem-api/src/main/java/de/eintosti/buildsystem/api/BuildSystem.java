@@ -21,12 +21,14 @@ import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.WorldService;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * The BuildSystem API.
  *
  * @since 3.0.0
  */
+@NullMarked
 public interface BuildSystem {
 
     /**

@@ -25,7 +25,9 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntitySpawnEvent;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class EntitySpawnListener implements Listener {
 
     private final WorldStorage worldStorage;

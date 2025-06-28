@@ -35,9 +35,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Bukkit;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @SuppressWarnings("deprecation")
+@NullMarked
 public class UUIDFetcher {
 
     private static final String UUID_URL = "https://api.mojang.com/users/profiles/minecraft/%s";

@@ -18,12 +18,14 @@
 package de.eintosti.buildsystem.api.world.util;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Provides utilities for managing the unloading process of a {@link BuildWorld}. This interface handles tasks such as initiating and cancelling unload procedures.
  *
  * @since 3.0.0
  */
+@NullMarked
 public interface WorldUnloader {
 
     /**

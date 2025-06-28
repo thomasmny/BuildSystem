@@ -42,11 +42,13 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Utility class for inventory-related operations. All methods are static and the class cannot be instantiated.
  */
+@NullMarked
 public final class InventoryUtils {
 
     private static final BuildSystemPlugin PLUGIN = BuildSystemPlugin.getPlugin(BuildSystemPlugin.class);
@@ -67,7 +69,7 @@ public final class InventoryUtils {
      * @param lore        The lore of the item
      * @return The created ItemStack
      */
-    public static ItemStack createItem(@NotNull XMaterial material, @NotNull String displayName, @NotNull List<String> lore) {
+    public static ItemStack createItem(XMaterial material, String displayName, List<String> lore) {
         ItemStack itemStack = material.parseItem();
         if (itemStack == null) {
             itemStack = XMaterial.BEDROCK.parseItem();
@@ -207,7 +209,7 @@ public final class InventoryUtils {
      * @param itemStack  The item stack to store the world information in
      * @param buildWorld The world to store information about
      */
-    private static void storeWorldInformation(@NotNull ItemStack itemStack, BuildWorld buildWorld) {
+    private static void storeWorldInformation(ItemStack itemStack, BuildWorld buildWorld) {
         ItemMeta itemMeta = itemStack.getItemMeta();
         PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
         pdc.set(DISPLAYABLE_TYPE_KEY, PersistentDataType.STRING, DisplayableType.BUILD_WORLD.name());
@@ -222,7 +224,7 @@ public final class InventoryUtils {
      * @param itemStack The item to check
      * @return true if the item is a navigator, false otherwise
      */
-    public static boolean isNavigator(Player player, ItemStack itemStack) {
+    public static boolean isNavigator(Player player, @Nullable ItemStack itemStack) {
         if (itemStack == null || itemStack.getType() != Navigator.item.get()) {
             return false;
         }

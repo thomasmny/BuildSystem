@@ -10,11 +10,11 @@ package de.eintosti.buildsystem.world.backup;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.data.Type;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
 import de.eintosti.buildsystem.api.world.backup.BackupStorage;
-import de.eintosti.buildsystem.api.world.data.WorldData.Type;
 import de.eintosti.buildsystem.config.Config.World.Backup;
 import de.eintosti.buildsystem.config.Config.World.Backup.AutoBackup;
 import java.time.Duration;
@@ -28,7 +28,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class BackupService {
 
     public static final Executor BACKUP_EXECUTOR = Executors.newCachedThreadPool();

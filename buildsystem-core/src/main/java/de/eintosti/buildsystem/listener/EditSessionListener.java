@@ -31,7 +31,9 @@ import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class EditSessionListener implements Listener {
 
     private final WorldStorageImpl worldStorage;

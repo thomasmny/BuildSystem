@@ -26,7 +26,9 @@ import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.Map;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class RemoveSpawnSubCommand implements SubCommand {
 
     private final BuildSystemPlugin plugin;

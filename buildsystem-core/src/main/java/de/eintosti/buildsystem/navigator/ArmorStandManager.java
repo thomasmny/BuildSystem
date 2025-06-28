@@ -28,8 +28,10 @@ import java.util.UUID;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class ArmorStandManager {
 
     public static final Map<NavigatorCategory, String> ARMOR_STAND_NAMES;

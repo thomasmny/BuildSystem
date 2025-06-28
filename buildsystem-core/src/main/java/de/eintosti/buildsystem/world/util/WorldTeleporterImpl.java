@@ -32,8 +32,9 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class WorldTeleporterImpl implements WorldTeleporter {
 
     private final BuildSystemPlugin plugin;
@@ -44,7 +45,7 @@ public class WorldTeleporterImpl implements WorldTeleporter {
         this.buildWorld = buildWorld;
     }
 
-    public static WorldTeleporterImpl of(@Nullable BuildWorld buildWorld) {
+    public static WorldTeleporterImpl of(BuildWorld buildWorld) {
         return new WorldTeleporterImpl(buildWorld);
     }
 
@@ -110,8 +111,7 @@ public class WorldTeleporterImpl implements WorldTeleporter {
                         ), hadToLoad ? 20L : 0L);
     }
 
-    @Override
-    public boolean isSafeLocation(Location location) {
+    public static boolean isSafeLocation(Location location) {
         Block feet = location.getBlock();
         if (feet.getType() != Material.AIR && feet.getLocation().add(0, 1, 0).getBlock().getType() != Material.AIR) {
             return false;

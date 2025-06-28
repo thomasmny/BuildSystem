@@ -46,7 +46,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.RayTraceResult;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class CustomBlocksManager implements Listener {
 
     private final JavaPlugin plugin;
@@ -263,7 +266,7 @@ public class CustomBlocksManager implements Listener {
         open(event.getClickedBlock());
     }
 
-    private void open(Block block) {
+    private void open(@Nullable Block block) {
         if (block == null) {
             return;
         }

@@ -18,12 +18,14 @@
 package de.eintosti.buildsystem.api.world.builder;
 
 import java.util.UUID;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Concrete implementation of the {@link Builder} interface.
  *
  * @since 3.0.0
  */
+@NullMarked
 final class BuilderImpl implements Builder {
 
     static final String SEPARATOR = ",";
@@ -59,6 +61,6 @@ final class BuilderImpl implements Builder {
 
     @Override
     public String toString() {
-        return uuid.toString() + SEPARATOR + name;
+        return this.uuid + SEPARATOR + this.name;
     }
 }

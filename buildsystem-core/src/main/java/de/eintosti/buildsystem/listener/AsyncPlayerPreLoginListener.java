@@ -30,7 +30,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class AsyncPlayerPreLoginListener implements Listener {
 
     private final BuildSystemPlugin plugin;

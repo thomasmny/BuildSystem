@@ -41,13 +41,17 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class YamlFolderStorage extends FolderStorageImpl {
 
     private static final String FOLDERS_KEY = "folders";
 
+    @Nullable
     private File file;
+    @Nullable
     private FileConfiguration config;
 
     public YamlFolderStorage(BuildSystemPlugin plugin) {
@@ -74,8 +78,8 @@ public class YamlFolderStorage extends FolderStorageImpl {
         }
     }
 
-    public @NotNull Map<String, Object> serializeFolder(Folder folder) {
-        Map<String, Object> serializedFolder = new HashMap<>();
+    public Map<String, @Nullable Object> serializeFolder(Folder folder) {
+        Map<String, @Nullable Object> serializedFolder = new HashMap<>();
 
         serializedFolder.put("creator", folder.getCreator().toString());
         serializedFolder.put("creation", folder.getCreation());

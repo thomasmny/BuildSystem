@@ -20,11 +20,12 @@ package de.eintosti.buildsystem.util.inventory;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Holder for custom Bukkit inventories used within the BuildSystem plugin. This class implements {@link InventoryHolder} to allow for custom inventory handling.
  */
+@NullMarked
 public class BuildSystemHolder implements InventoryHolder {
 
     private final Inventory bukkitInventory;
@@ -35,7 +36,7 @@ public class BuildSystemHolder implements InventoryHolder {
      * @param size  The size of the inventory.
      * @param title The title of the inventory.
      */
-    public BuildSystemHolder(int size, @NotNull String title) {
+    public BuildSystemHolder(int size, String title) {
         this.bukkitInventory = Bukkit.createInventory(this, size, title);
     }
 
@@ -45,7 +46,7 @@ public class BuildSystemHolder implements InventoryHolder {
      * @return The {@link Inventory} instance.
      */
     @Override
-    public @NotNull Inventory getInventory() {
+    public Inventory getInventory() {
         return this.bukkitInventory;
     }
 }

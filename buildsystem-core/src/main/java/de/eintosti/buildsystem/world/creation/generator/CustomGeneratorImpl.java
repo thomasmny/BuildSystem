@@ -19,7 +19,10 @@ package de.eintosti.buildsystem.world.creation.generator;
 
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import org.bukkit.generator.ChunkGenerator;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
-public record CustomGeneratorImpl(String name, ChunkGenerator chunkGenerator) implements CustomGenerator {
+@NullMarked
+public record CustomGeneratorImpl(String name, @Nullable ChunkGenerator chunkGenerator) implements CustomGenerator {
 
 }

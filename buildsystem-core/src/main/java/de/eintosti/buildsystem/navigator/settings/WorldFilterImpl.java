@@ -20,7 +20,9 @@ package de.eintosti.buildsystem.navigator.settings;
 import de.eintosti.buildsystem.api.navigator.settings.WorldFilter;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.util.function.Predicate;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class WorldFilterImpl implements WorldFilter {
 
     private Mode mode;

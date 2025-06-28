@@ -30,13 +30,17 @@ import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class WorldUnloaderImpl implements WorldUnloader {
 
     private final BuildSystemPlugin plugin;
     private final BuildWorld buildWorld;
 
     private final long secondsUntilUnload;
+    @Nullable
     private BukkitTask unloadTask;
 
     private WorldUnloaderImpl(BuildWorld buildWorld) {

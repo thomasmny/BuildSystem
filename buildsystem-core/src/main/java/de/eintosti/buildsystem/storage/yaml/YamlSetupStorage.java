@@ -27,8 +27,10 @@ import java.util.Set;
 import java.util.function.Function;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class YamlSetupStorage extends AbstractYamlStorage {
 
     public YamlSetupStorage(BuildSystemPlugin plugin) {

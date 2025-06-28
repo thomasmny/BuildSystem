@@ -39,7 +39,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class StatusInventory implements InventoryHandler {
 
     private final BuildSystemPlugin plugin;

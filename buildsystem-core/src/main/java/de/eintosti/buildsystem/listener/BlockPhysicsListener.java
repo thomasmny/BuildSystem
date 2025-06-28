@@ -42,7 +42,9 @@ import org.bukkit.event.block.LeavesDecayEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.metadata.MetadataValue;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class BlockPhysicsListener implements Listener {
 
     private final WorldStorageImpl worldStorage;

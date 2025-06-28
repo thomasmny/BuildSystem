@@ -19,7 +19,9 @@ package de.eintosti.buildsystem.navigator.settings;
 
 import de.eintosti.buildsystem.api.navigator.settings.WorldDisplay;
 import de.eintosti.buildsystem.api.navigator.settings.WorldSort;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class WorldDisplayImpl implements WorldDisplay {
 
     private final WorldFilterImpl worldFilter;

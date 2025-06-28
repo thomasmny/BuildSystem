@@ -20,10 +20,12 @@ package de.eintosti.buildsystem.storage.factory;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlFolderStorage;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Factory for creating folder storage implementations.
  */
+@NullMarked
 public class FolderStorageFactory {
 
     private final BuildSystemPlugin plugin;

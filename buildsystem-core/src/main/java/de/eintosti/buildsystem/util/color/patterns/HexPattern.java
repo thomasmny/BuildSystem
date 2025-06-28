@@ -20,7 +20,9 @@ package de.eintosti.buildsystem.util.color.patterns;
 import de.eintosti.buildsystem.util.color.ColorPattern;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class HexPattern implements ColorPattern {
 
     private static final Pattern DEFAULT_HEX = Pattern.compile("#[0-9a-fA-F]{6}");

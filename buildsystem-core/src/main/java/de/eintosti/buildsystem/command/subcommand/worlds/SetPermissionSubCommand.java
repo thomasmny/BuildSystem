@@ -29,10 +29,15 @@ import de.eintosti.buildsystem.world.modification.EditInventory;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.Map;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class SetPermissionSubCommand implements SubCommand {
 
     private final BuildSystemPlugin plugin;
+
+    @Nullable
     private final BuildWorld buildWorld;
 
     public SetPermissionSubCommand(BuildSystemPlugin plugin, String worldName) {
