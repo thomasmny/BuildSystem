@@ -28,7 +28,8 @@ import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.config.Config.Settings.Navigator;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
-import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
+import de.eintosti.buildsystem.util.inventory.InventoryHandler;
+import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -40,22 +41,26 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-public class SettingsInventory extends BuildSystemInventory {
+public class SettingsInventory implements InventoryHandler {
 
     private final BuildSystemPlugin plugin;
+    private final InventoryManager inventoryManager;
     private final SettingsManager settingsManager;
 
     public SettingsInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
+        this.inventoryManager = plugin.getInventoryManager();
         this.settingsManager = plugin.getSettingsManager();
     }
 
     public void openInventory(Player player) {
-        player.openInventory(getInventory(player));
+        Inventory inventory = getInventory(player);
+        this.inventoryManager.registerInventoryHandler(inventory, this);
+        player.openInventory(inventory);
     }
 
     private Inventory getInventory(Player player) {
-        Inventory inventory = new SettingsInventoryHolder(this, player).getInventory();
+        Inventory inventory = new SettingsInventoryHolder(player).getInventory();
         fillGuiWithGlass(player, inventory);
 
         Settings settings = settingsManager.getSettings(player);
@@ -233,8 +238,8 @@ public class SettingsInventory extends BuildSystemInventory {
 
     private static class SettingsInventoryHolder extends BuildSystemHolder {
 
-        public SettingsInventoryHolder(BuildSystemInventory inventory, Player player) {
-            super(inventory, 45, Messages.getString("settings_title", player));
+        public SettingsInventoryHolder(Player player) {
+            super(45, Messages.getString("settings_title", player));
         }
     }
 }

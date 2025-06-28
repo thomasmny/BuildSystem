@@ -31,8 +31,9 @@ import de.eintosti.buildsystem.command.subcommand.worlds.SetPermissionSubCommand
 import de.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
 import de.eintosti.buildsystem.config.Config.World.Default;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.util.inventory.BuildSystemInventory;
 import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
+import de.eintosti.buildsystem.util.inventory.InventoryHandler;
+import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import de.eintosti.buildsystem.world.builder.BuilderInventory;
 import de.eintosti.buildsystem.world.data.StatusInventory;
@@ -55,7 +56,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class EditInventory extends BuildSystemInventory {
+public class EditInventory implements InventoryHandler {
 
     /**
      * A set of entities which are ignored when the butcher item is used.
@@ -69,20 +70,24 @@ public class EditInventory extends BuildSystemInventory {
     );
 
     private final BuildSystemPlugin plugin;
+    private final InventoryManager inventoryManager;
     private final PlayerServiceImpl playerManager;
 
     public EditInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
+        this.inventoryManager = plugin.getInventoryManager();
         this.playerManager = plugin.getPlayerService();
     }
 
     public void openInventory(Player player, BuildWorld buildWorld) {
         XSound.BLOCK_CHEST_OPEN.play(player);
-        player.openInventory(getInventory(player, buildWorld));
+        Inventory inventory = getInventory(player, buildWorld);
+        this.inventoryManager.registerInventoryHandler(inventory, this);
+        player.openInventory(inventory);
     }
 
     private Inventory getInventory(Player player, BuildWorld buildWorld) {
-        Inventory inventory = new EditInventoryHolder(this, buildWorld, player).getInventory();
+        Inventory inventory = new EditInventoryHolder(buildWorld, player).getInventory();
         WorldData worldData = buildWorld.getData();
 
         fillGuiWithGlass(player, inventory);
@@ -437,8 +442,8 @@ public class EditInventory extends BuildSystemInventory {
 
     private static class EditInventoryHolder extends BuildWorldHolder {
 
-        public EditInventoryHolder(BuildSystemInventory inventory, BuildWorld buildWorld, Player player) {
-            super(inventory, buildWorld, 54, Messages.getString("worldeditor_title", player));
+        public EditInventoryHolder(BuildWorld buildWorld, Player player) {
+            super(buildWorld, 54, Messages.getString("worldeditor_title", player));
         }
     }
 }
