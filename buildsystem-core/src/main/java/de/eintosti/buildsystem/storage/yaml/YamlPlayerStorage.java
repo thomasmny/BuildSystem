@@ -46,14 +46,17 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class YamlPlayerStorage extends PlayerStorageImpl {
 
     private static final String PLAYERS_KEY = "players";
 
+    @Nullable
     private File file;
+    @Nullable
     private FileConfiguration config;
 
     public YamlPlayerStorage(BuildSystemPlugin plugin) {
@@ -62,7 +65,7 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
 
     @Override
     public void save(BuildPlayer buildPlayer) {
-        config.set(PLAYERS_KEY + "." + buildPlayer.getUniqueId().toString(), serializePlayer(buildPlayer));
+        config.set(PLAYERS_KEY + "." + buildPlayer.getUniqueId(), serializePlayer(buildPlayer));
         saveFile();
     }
 
@@ -80,7 +83,7 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
         }
     }
 
-    public @NotNull Map<String, Object> serializePlayer(BuildPlayer player) {
+    public Map<String, Object> serializePlayer(BuildPlayer player) {
         Map<String, Object> serialized = new HashMap<>();
 
         serialized.put("settings", serializeSettings(player.getSettings()));
@@ -91,7 +94,7 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
         return serialized;
     }
 
-    public @NotNull Map<String, Object> serializeSettings(Settings settings) {
+    public Map<String, Object> serializeSettings(Settings settings) {
         Map<String, Object> serialized = new HashMap<>();
 
         serialized.put("type", settings.getNavigatorType().toString());
@@ -113,14 +116,14 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
         return serialized;
     }
 
-    public @NotNull Map<String, Object> serializeWorldDisplay(WorldDisplay worldDisplay) {
+    public Map<String, Object> serializeWorldDisplay(WorldDisplay worldDisplay) {
         Map<String, Object> serialized = new HashMap<>();
         serialized.put("sort", worldDisplay.getWorldSort().toString());
         serialized.put("filter", serializeFilter(worldDisplay.getWorldFilter()));
         return serialized;
     }
 
-    public @NotNull Map<String, Object> serializeFilter(WorldFilter filter) {
+    public Map<String, Object> serializeFilter(WorldFilter filter) {
         Map<String, Object> serialized = new HashMap<>();
         serialized.put("mode", filter.getMode().toString());
         serialized.put("text", filter.getText());

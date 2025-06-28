@@ -23,10 +23,12 @@ import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Manages the dispatching of custom events related to build world manipulations.
  */
+@NullMarked
 public class EventDispatcher {
 
     private final WorldStorageImpl worldStorage;

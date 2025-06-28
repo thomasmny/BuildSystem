@@ -22,14 +22,16 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import java.util.List;
 import java.util.UUID;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a folder within the BuildSystem's world navigation structure. Folders can contain {@link BuildWorld}s and other nested folders, organizing them for easier access.
  *
  * @since 3.0.0
  */
+@NullMarked
 public interface Folder extends Displayable {
 
     /**

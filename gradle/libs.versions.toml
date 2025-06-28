@@ -15,6 +15,7 @@ aws-sdk = "2.31.70"
 bouncycastle = "1.81"
 bstats = "3.1.0"
 fastboard = "2.1.5"
+jspecify = "1.0.0"
 nbt = "1.5.1"
 sshd-sftp = "2.15.0"
 xseries = "13.3.3"
@@ -41,6 +42,7 @@ aws-s3 = { module = "software.amazon.awssdk:s3", version.ref = "aws-sdk" }
 bouncycastle = { group = "org.bouncycastle", name = "bcpkix-jdk18on", version.ref = "bouncycastle" }
 bstats = { group = "org.bstats", name = "bstats-bukkit", version.ref = "bstats" }
 fastboard = { group = "fr.mrmicky", name = "fastboard", version.ref = "fastboard" }
+jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
 nbt = { group = "dev.dewy", name = "nbt", version.ref = "nbt" }
 sftp = { group = "org.apache.sshd", name = "sshd-sftp", version.ref = "sshd-sftp" }
 zip4j = { group = "net.lingala.zip4j", name = "zip4j", version.ref = "zip4j" }

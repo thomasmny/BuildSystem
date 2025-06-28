@@ -12,15 +12,17 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class BuildersImpl implements Builders {
 
+    @Nullable
     private Builder creator;
     private final Map<UUID, Builder> buildersByUuid;
 
-    public BuildersImpl(@Nullable Builder creator, List<@NotNull Builder> builders) {
+    public BuildersImpl(@Nullable Builder creator, List<Builder> builders) {
         this.creator = creator;
         this.buildersByUuid = builders.stream().collect(Collectors.toMap(Builder::getUniqueId, Function.identity()));
     }
@@ -47,7 +49,6 @@ public class BuildersImpl implements Builders {
     }
 
     @Override
-    @NotNull
     public Collection<Builder> getAllBuilders() {
         return Collections.unmodifiableCollection(buildersByUuid.values());
     }
@@ -76,17 +77,17 @@ public class BuildersImpl implements Builders {
     }
 
     @Override
-    public void addBuilder(@NotNull Builder builder) {
+    public void addBuilder(Builder builder) {
         buildersByUuid.put(builder.getUniqueId(), builder);
     }
 
     @Override
-    public void removeBuilder(@NotNull Builder builder) {
+    public void removeBuilder(Builder builder) {
         removeBuilder(builder.getUniqueId());
     }
 
     @Override
-    public void removeBuilder(@NotNull UUID uuid) {
+    public void removeBuilder(UUID uuid) {
         buildersByUuid.remove(uuid);
     }
 

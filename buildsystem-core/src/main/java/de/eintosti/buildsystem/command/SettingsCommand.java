@@ -24,8 +24,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class SettingsCommand implements CommandExecutor {
 
     private final BuildSystemPlugin plugin;
@@ -36,7 +37,7 @@ public class SettingsCommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player player)) {
             plugin.getLogger().warning(Messages.getString("sender_not_player", null));
             return true;

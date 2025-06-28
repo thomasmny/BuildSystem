@@ -20,7 +20,11 @@ package de.eintosti.buildsystem.player;
 import de.eintosti.buildsystem.api.player.LogoutLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class LogoutLocationImpl implements LogoutLocation {
 
     private final String worldName;
@@ -50,9 +54,14 @@ public class LogoutLocationImpl implements LogoutLocation {
         return worldName;
     }
 
+    @Nullable
     @Override
     public Location location() {
-        return new Location(Bukkit.getWorld(worldName), x, y, z, yaw, pitch);
+        World world = Bukkit.getWorld(worldName);
+        if (world == null) {
+            return null;
+        }
+        return new Location(world, x, y, z, yaw, pitch);
     }
 
     @Override

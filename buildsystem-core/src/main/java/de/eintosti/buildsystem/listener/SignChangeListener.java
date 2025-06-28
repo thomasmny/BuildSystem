@@ -24,7 +24,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.SignChangeEvent;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class SignChangeListener implements Listener {
 
     public SignChangeListener(BuildSystemPlugin plugin) {

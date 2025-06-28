@@ -17,16 +17,17 @@
  */
 package de.eintosti.buildsystem.config.migration;
 
-
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.config.Config;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Manages the migration of configurations. It holds a registry of available migration steps and applies them sequentially.
  */
+@NullMarked
 public class ConfigMigrationManager {
 
     public static final int LATEST_VERSION = 2;

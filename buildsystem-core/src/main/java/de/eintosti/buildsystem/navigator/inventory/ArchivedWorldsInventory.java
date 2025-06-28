@@ -29,8 +29,9 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class ArchivedWorldsInventory extends DisplayablesInventory {
 
     public ArchivedWorldsInventory(BuildSystemPlugin plugin, Player player) {
@@ -51,7 +52,7 @@ public class ArchivedWorldsInventory extends DisplayablesInventory {
      * @return A newly created {@link Inventory} page with common base items and creation options
      */
     @Override
-    protected @NotNull Inventory createBaseInventoryPage(String inventoryTitle) {
+    protected Inventory createBaseInventoryPage(String inventoryTitle) {
         Inventory inventory = super.createBaseInventoryPage(inventoryTitle);
         addFolderCreateItem(inventory, player);
         return inventory;

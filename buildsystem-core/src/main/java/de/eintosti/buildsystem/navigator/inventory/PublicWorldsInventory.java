@@ -23,11 +23,12 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * An inventory class specifically for displaying and managing public {@link BuildWorld}s.
  */
+@NullMarked
 public class PublicWorldsInventory extends CreatableWorldsInventory {
 
     /**
@@ -36,7 +37,7 @@ public class PublicWorldsInventory extends CreatableWorldsInventory {
      * @param plugin The plugin instance
      * @param player The player for whom this inventory is created
      */
-    public PublicWorldsInventory(@NotNull BuildSystemPlugin plugin, @NotNull Player player) {
+    public PublicWorldsInventory(BuildSystemPlugin plugin, Player player) {
         super(
                 plugin,
                 player,
@@ -53,7 +54,7 @@ public class PublicWorldsInventory extends CreatableWorldsInventory {
      * @return The permission string: "buildsystem.create.private".
      */
     @Override
-    protected @NotNull String getWorldCreationPermission() {
+    protected String getWorldCreationPermission() {
         return "buildsystem.create.public";
     }
 
@@ -63,7 +64,7 @@ public class PublicWorldsInventory extends CreatableWorldsInventory {
      * @return The message key: "world_navigator_create_world".
      */
     @Override
-    protected @NotNull String getWorldCreationItemTitleKey() {
+    protected String getWorldCreationItemTitleKey() {
         return "world_navigator_create_world";
     }
 }

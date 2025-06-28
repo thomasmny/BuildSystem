@@ -24,8 +24,9 @@ import org.bukkit.block.Biome;
 import org.bukkit.generator.BiomeProvider;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.generator.WorldInfo;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class VoidGenerator extends ChunkGenerator {
 
     private final Biome biome;
@@ -35,19 +36,19 @@ public class VoidGenerator extends ChunkGenerator {
     }
 
     @Override
-    public void generateNoise(@NotNull WorldInfo worldInfo, @NotNull Random random, int chunkX, int chunkZ, @NotNull ChunkData chunkData) {
+    public void generateNoise(WorldInfo worldInfo, Random random, int chunkX, int chunkZ, ChunkData chunkData) {
     }
 
     @Override
-    public void generateSurface(@NotNull WorldInfo worldInfo, @NotNull Random random, int x, int z, @NotNull ChunkData chunkData) {
+    public void generateSurface(WorldInfo worldInfo, Random random, int x, int z, ChunkData chunkData) {
     }
 
     @Override
-    public void generateCaves(@NotNull WorldInfo worldInfo, @NotNull Random random, int chunkX, int chunkZ, @NotNull ChunkData chunkData) {
+    public void generateCaves(WorldInfo worldInfo, Random random, int chunkX, int chunkZ, ChunkData chunkData) {
     }
 
     @Override
-    public BiomeProvider getDefaultBiomeProvider(@NotNull WorldInfo worldInfo) {
+    public BiomeProvider getDefaultBiomeProvider(WorldInfo worldInfo) {
         return new SingleBiomeProvider(this.biome);
     }
 
@@ -59,15 +60,13 @@ public class VoidGenerator extends ChunkGenerator {
             this.biome = biome;
         }
 
-        @NotNull
         @Override
-        public Biome getBiome(@NotNull WorldInfo worldInfo, int x, int y, int z) {
+        public Biome getBiome(WorldInfo worldInfo, int x, int y, int z) {
             return this.biome;
         }
 
-        @NotNull
         @Override
-        public List<Biome> getBiomes(@NotNull WorldInfo worldInfo) {
+        public List<Biome> getBiomes(WorldInfo worldInfo) {
             return Collections.singletonList(this.biome);
         }
     }

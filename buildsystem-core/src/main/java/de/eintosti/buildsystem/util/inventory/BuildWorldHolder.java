@@ -18,12 +18,13 @@
 package de.eintosti.buildsystem.util.inventory;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Represents an inventory holder specifically for a {@link BuildWorld}, extending {@link BuildSystemHolder}. This allows inventories to be associated with a particular build
  * world.
  */
+@NullMarked
 public class BuildWorldHolder extends BuildSystemHolder {
 
     private final BuildWorld buildWorld;
@@ -34,7 +35,7 @@ public class BuildWorldHolder extends BuildSystemHolder {
      * @param size  The size of the inventory.
      * @param title The title of the inventory.
      */
-    public BuildWorldHolder(@NotNull BuildWorld buildWorld, int size, @NotNull String title) {
+    public BuildWorldHolder(BuildWorld buildWorld, int size, String title) {
         super(size, title);
         this.buildWorld = buildWorld;
     }
@@ -44,7 +45,7 @@ public class BuildWorldHolder extends BuildSystemHolder {
      *
      * @return The associated {@link BuildWorld} instance.
      */
-    public @NotNull BuildWorld getBuildWorld() {
+    public BuildWorld getBuildWorld() {
         return buildWorld;
     }
 }

@@ -27,7 +27,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class BuildModePreventationListener implements Listener {
 
     private final PlayerServiceImpl playerManager;

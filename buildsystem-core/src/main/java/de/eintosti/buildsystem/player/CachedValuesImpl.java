@@ -18,16 +18,23 @@
 package de.eintosti.buildsystem.player;
 
 import de.eintosti.buildsystem.api.player.CachedValues;
+import java.util.List;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class CachedValuesImpl implements CachedValues {
 
+    @Nullable
     private GameMode gameMode;
-    private ItemStack[] inventory;
-
+    @Nullable
+    private List<ItemStack> inventory;
+    @Nullable
     private Float walkSpeed;
+    @Nullable
     private Float flySpeed;
 
     @Override
@@ -46,7 +53,7 @@ public class CachedValuesImpl implements CachedValues {
 
     @Override
     public void saveInventory(ItemStack[] inventory) {
-        this.inventory = inventory;
+        this.inventory = List.of(inventory);
     }
 
     @Override
@@ -55,7 +62,7 @@ public class CachedValuesImpl implements CachedValues {
             return;
         }
         player.getInventory().clear();
-        player.getInventory().setContents(this.inventory);
+        player.getInventory().setContents(this.inventory.toArray(new ItemStack[0]));
         this.inventory = null;
     }
 

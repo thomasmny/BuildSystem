@@ -18,12 +18,14 @@
 package de.eintosti.buildsystem.api.navigator.settings;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Interface for managing the display settings of worlds in the navigator.
  *
  * @since 3.0.0
  */
+@NullMarked
 public interface WorldDisplay {
 
     /**

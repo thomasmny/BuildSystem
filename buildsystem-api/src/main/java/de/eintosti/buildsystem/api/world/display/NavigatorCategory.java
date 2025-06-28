@@ -21,7 +21,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Represents the different categories used to organize and display {@link BuildWorld}s in the navigator menus. Each category corresponds to a distinct filter or access level for
@@ -29,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @since 3.0.0
  */
+@NullMarked
 public enum NavigatorCategory {
 
     /**
@@ -53,13 +54,14 @@ public enum NavigatorCategory {
     PRIVATE;
 
     /**
-     * Determines the appropriate {@link NavigatorCategory} for a given {@link BuildWorld} based on its properties. It checks if the world is private, then if it's archived,
-     * otherwise it defaults to public.
+     * Determines the appropriate {@link NavigatorCategory} for a given {@link BuildWorld} based on its properties.
+     * <p>
+     * First checks if the world is private ({@link #PRIVATE}), then if it's archived ({@link #ARCHIVE}), otherwise it defaults to {@link #PUBLIC}.
      *
      * @param buildWorld The {@link BuildWorld} for which to determine the category
-     * @return The corresponding {@link NavigatorCategory} ({@link #PRIVATE}, {@link #ARCHIVE}, or {@link #PUBLIC})
+     * @return The corresponding category
      */
-    public static NavigatorCategory of(@NotNull BuildWorld buildWorld) {
+    public static NavigatorCategory of(BuildWorld buildWorld) {
         WorldData worldData = buildWorld.getData();
         if (worldData.privateWorld().get()) {
             return PRIVATE;

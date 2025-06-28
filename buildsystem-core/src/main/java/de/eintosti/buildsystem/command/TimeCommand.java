@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.util.WorldPermissions;
 import de.eintosti.buildsystem.config.Config.World.Default.Time;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.Locale;
 import java.util.Map;
 import org.bukkit.Bukkit;
@@ -30,8 +31,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class TimeCommand implements CommandExecutor {
 
     private final BuildSystemPlugin plugin;
@@ -43,7 +45,7 @@ public class TimeCommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player player)) {
             plugin.getLogger().warning(Messages.getString("sender_not_player", null));
             return true;
@@ -57,7 +59,7 @@ public class TimeCommand implements CommandExecutor {
         }
 
         BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(world);
-        WorldPermissions permissions = buildWorld.getPermissions();
+        WorldPermissions permissions = WorldPermissionsImpl.of(buildWorld);
 
         switch (label.toLowerCase(Locale.ROOT)) {
             case "day" -> {

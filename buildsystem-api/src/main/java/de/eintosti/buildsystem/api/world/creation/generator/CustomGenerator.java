@@ -19,12 +19,14 @@ package de.eintosti.buildsystem.api.world.creation.generator;
 
 import org.bukkit.World;
 import org.bukkit.generator.ChunkGenerator;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Represents a custom chunk generator for a {@link World}.
  *
  * @since 3.0.0
  */
+@NullMarked
 public interface CustomGenerator {
 
     /**

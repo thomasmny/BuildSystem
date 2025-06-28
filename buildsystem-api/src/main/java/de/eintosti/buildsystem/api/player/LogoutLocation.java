@@ -19,6 +19,8 @@ package de.eintosti.buildsystem.api.player;
 
 import org.bukkit.Location;
 import org.jetbrains.annotations.ApiStatus.Internal;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a player's logout location, which includes the world name and the location coordinates.
@@ -26,6 +28,7 @@ import org.jetbrains.annotations.ApiStatus.Internal;
  * @since 3.0.0
  */
 @Internal
+@NullMarked
 public interface LogoutLocation {
 
     /**
@@ -40,5 +43,6 @@ public interface LogoutLocation {
      *
      * @return The logout location
      */
+    @Nullable
     Location location();
 }

@@ -26,13 +26,15 @@ import org.bukkit.Difficulty;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a creator for a {@link BuildWorld}.
  *
  * @since 3.0.0
  */
+@NullMarked
 public interface BuildWorldCreator {
 
     /**

@@ -20,10 +20,12 @@ package de.eintosti.buildsystem.storage.factory;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlWorldStorage;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Factory for creating world storage implementations.
  */
+@NullMarked
 public class WorldStorageFactory {
 
     private final BuildSystemPlugin plugin;

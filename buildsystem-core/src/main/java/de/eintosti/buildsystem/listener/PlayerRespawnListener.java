@@ -25,7 +25,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class PlayerRespawnListener implements Listener {
 
     private final SettingsManager settingsManager;

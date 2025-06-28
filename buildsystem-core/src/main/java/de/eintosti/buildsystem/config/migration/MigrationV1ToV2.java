@@ -19,7 +19,9 @@ package de.eintosti.buildsystem.config.migration;
 
 import java.util.List;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class MigrationV1ToV2 implements Migration {
 
     @Override

@@ -36,7 +36,9 @@ import java.util.Map.Entry;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class FolderSubCommand implements SubCommand {
 
     private final BuildSystemPlugin plugin;

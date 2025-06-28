@@ -21,6 +21,7 @@ import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.ApiStatus.Internal;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Interface for managing cached values of a player.
@@ -28,6 +29,7 @@ import org.jetbrains.annotations.ApiStatus.Internal;
  * @since 3.0.0
  */
 @Internal
+@NullMarked
 public interface CachedValues {
 
     /**

@@ -31,7 +31,8 @@ import java.util.UUID;
 import org.bukkit.Difficulty;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a world managed by the BuildSystem plugin, extending the {@link Displayable} interface. This interface provides comprehensive access to world-specific properties,
@@ -39,6 +40,7 @@ import org.jetbrains.annotations.Nullable;
  *
  * @since 3.0.0
  */
+@NullMarked
 public interface BuildWorld extends Displayable {
 
     /**

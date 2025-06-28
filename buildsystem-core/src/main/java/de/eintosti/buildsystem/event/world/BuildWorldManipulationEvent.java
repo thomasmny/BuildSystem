@@ -22,7 +22,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.listener.WorldManipulateListener;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * This event reduces duplicated code.
@@ -38,12 +38,13 @@ import org.jetbrains.annotations.NotNull;
  *
  * @see WorldManipulateListener
  */
+@NullMarked
 public class BuildWorldManipulationEvent extends BuildWorldEvent implements Cancellable {
 
     private final Cancellable parentEvent;
     private final Player player;
 
-    public BuildWorldManipulationEvent(Cancellable parentEvent, @NotNull Player player, @NotNull BuildWorld buildWorld) {
+    public BuildWorldManipulationEvent(Cancellable parentEvent, Player player, BuildWorld buildWorld) {
         super(buildWorld);
         this.parentEvent = parentEvent;
         this.player = player;
@@ -66,7 +67,11 @@ public class BuildWorldManipulationEvent extends BuildWorldEvent implements Canc
         return parentEvent;
     }
 
-    @NotNull
+    /**
+     * Returns the player manipulating the {@link BuildWorld}.
+     *
+     * @return The player manipulating the world
+     */
     public Player getPlayer() {
         return player;
     }

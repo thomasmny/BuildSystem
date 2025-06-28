@@ -29,7 +29,9 @@ import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class NavigatorInventory implements InventoryHandler {
 
     private final BuildSystemPlugin plugin;

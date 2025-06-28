@@ -23,7 +23,10 @@ import java.io.IOException;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public abstract class AbstractYamlStorage {
 
     private final File file;
@@ -57,6 +60,7 @@ public abstract class AbstractYamlStorage {
         }
     }
 
+    @Nullable
     public FileConfiguration getFile() {
         return configuration;
     }

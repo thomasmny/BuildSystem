@@ -35,10 +35,15 @@ import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class AddBuilderSubCommand implements SubCommand {
 
     private final BuildSystemPlugin plugin;
+
+    @Nullable
     private final BuildWorld buildWorld;
     private final WorldPermissions permissions;
 
