@@ -51,12 +51,8 @@ public class SettingsManager {
         this.boards = new HashMap<>();
     }
 
-    public Settings getSettings(UUID uuid) {
-        return plugin.getPlayerService().getPlayerStorage().getBuildPlayer(uuid).getSettings();
-    }
-
     public Settings getSettings(Player player) {
-        return getSettings(player.getUniqueId());
+        return plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player).getSettings();
     }
 
     /**
@@ -94,8 +90,7 @@ public class SettingsManager {
         }
 
         board.updateTitle(Messages.getString("title", player));
-        BukkitTask scoreboardTask = Bukkit.getScheduler()
-                .runTaskTimerAsynchronously(plugin, () -> updateScoreboard(player, board), 0L, 20L);
+        BukkitTask scoreboardTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> updateScoreboard(player, board), 0L, 20L);
         settings.setScoreboardTask(scoreboardTask);
     }
 

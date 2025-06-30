@@ -103,7 +103,12 @@ public class WorldServiceImpl implements WorldService {
             if (worldType == BuildWorldType.CUSTOM) {
                 startCustomGeneratorInput(player, worldName, template, privateWorld, folder);
             } else {
-                createWorld(player, worldName, worldType, null, template, privateWorld, folder);
+                worldStorage.createBuildWorld(worldName)
+                        .setType(worldType)
+                        .setTemplate(template)
+                        .setPrivate(privateWorld)
+                        .setFolder(folder)
+                        .createWorld(player);
             }
         });
     }
@@ -123,19 +128,14 @@ public class WorldServiceImpl implements WorldService {
             }
 
             CustomGeneratorImpl customGenerator = new CustomGeneratorImpl(generatorInfo[0], chunkGenerator);
-            plugin.getLogger().info("Using custom world generator: " + customGenerator.name());
-            createWorld(player, worldName, BuildWorldType.CUSTOM, customGenerator, template, privateWorld, folder);
+            worldStorage.createBuildWorld(worldName)
+                    .setType(BuildWorldType.CUSTOM)
+                    .setTemplate(template)
+                    .setPrivate(privateWorld)
+                    .setCustomGenerator(customGenerator)
+                    .setFolder(folder)
+                    .createWorld(player);
         });
-    }
-
-    private void createWorld(Player player, String worldName, BuildWorldType worldType, @Nullable CustomGeneratorImpl customGenerator, @Nullable String template, boolean privateWorld, @Nullable Folder folder) {
-        new BuildWorldCreatorImpl(plugin, worldName)
-                .setType(worldType)
-                .setTemplate(template)
-                .setPrivate(privateWorld)
-                .setCustomGenerator(customGenerator)
-                .setFolder(folder)
-                .createWorld(player);
     }
 
     @Nullable
@@ -167,7 +167,7 @@ public class WorldServiceImpl implements WorldService {
             }
         }
 
-        BuildWorldCreatorImpl worldCreator = new BuildWorldCreatorImpl(plugin, worldName)
+        BuildWorldCreatorImpl worldCreator = worldStorage.createBuildWorld(worldName)
                 .setType(worldType)
                 .setCreator(creator)
                 .setCustomGenerator(new CustomGeneratorImpl(generatorName, chunkGenerator))

@@ -213,7 +213,7 @@ public class PlayerServiceImpl implements PlayerService {
             return;
         }
 
-        BuildPlayer buildPlayer = playerStorage.getBuildPlayer(player.getUniqueId());
+        BuildPlayer buildPlayer = playerStorage.getBuildPlayer(player);
         buildPlayer.setLastLookedAt(null);
         plugin.getArmorStandManager().removeArmorStands(player);
 
@@ -252,7 +252,7 @@ public class PlayerServiceImpl implements PlayerService {
                 continue;
             }
 
-            BuildPlayer buildPlayer = playerStorage.getBuildPlayer(player.getUniqueId());
+            BuildPlayer buildPlayer = playerStorage.getBuildPlayer(player);
             double lookedPosition = player.getEyeLocation().getDirection().getY();
             if (lookedPosition >= MIN_LOOK_HEIGHT && lookedPosition <= MAX_LOOK_HEIGHT) {
                 NavigatorCategory category = ArmorStandManager.matchNavigatorCategory(player, getEntityName(player));

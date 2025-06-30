@@ -323,6 +323,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
                 break;
             case CUSTOM:
                 if (this.customGenerator != null) {
+                    plugin.getLogger().info("Using custom world generator: " + customGenerator.name());
                     worldCreator.generator(this.customGenerator.chunkGenerator());
                 }
                 // Fall-through to NORMAL for default settings

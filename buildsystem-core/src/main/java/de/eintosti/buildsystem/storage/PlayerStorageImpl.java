@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.storage;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
-import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
@@ -34,6 +33,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public abstract class PlayerStorageImpl implements PlayerStorage {
@@ -61,15 +61,15 @@ public abstract class PlayerStorageImpl implements PlayerStorage {
     }
 
     @Override
-    public BuildPlayer createBuildPlayer(UUID uuid, Settings settings) {
-        BuildPlayer buildPlayer = this.buildPlayers.getOrDefault(uuid, new BuildPlayerImpl(uuid, settings));
+    public BuildPlayer createBuildPlayer(UUID uuid) {
+        BuildPlayer buildPlayer = this.buildPlayers.getOrDefault(uuid, new BuildPlayerImpl(uuid, new SettingsImpl()));
         this.buildPlayers.put(uuid, buildPlayer);
         return buildPlayer;
     }
 
     @Override
     public BuildPlayer createBuildPlayer(Player player) {
-        return createBuildPlayer(player.getUniqueId(), new SettingsImpl());
+        return createBuildPlayer(player.getUniqueId());
     }
 
     @Override
@@ -77,11 +77,14 @@ public abstract class PlayerStorageImpl implements PlayerStorage {
         return Collections.unmodifiableCollection(this.buildPlayers.values());
     }
 
+    @Override
+    @Nullable
     public BuildPlayer getBuildPlayer(UUID uuid) {
         return this.buildPlayers.get(uuid);
     }
 
     public BuildPlayer getBuildPlayer(Player player) {
-        return this.buildPlayers.get(player.getUniqueId());
+        UUID playerUuid = player.getUniqueId();
+        return this.buildPlayers.getOrDefault(playerUuid, createBuildPlayer(playerUuid));
     }
 }

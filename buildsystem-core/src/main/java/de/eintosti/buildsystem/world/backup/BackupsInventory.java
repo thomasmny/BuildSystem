@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -40,12 +39,10 @@ public class BackupsInventory implements InventoryHandler {
 
     private static final int FIRST_BACKUP_SLOT = 9;
 
-    private final Logger logger;
     private final InventoryManager inventoryManager;
     private final BackupService backupService;
 
     public BackupsInventory(BuildSystemPlugin plugin) {
-        this.logger = plugin.getLogger();
         this.inventoryManager = plugin.getInventoryManager();
         this.backupService = plugin.getBackupService();
     }
