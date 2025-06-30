@@ -108,12 +108,11 @@ public class PlayerChangedWorldListener implements Listener {
     }
 
     private void removeBuildMode(Player player) {
-        UUID playerUuid = player.getUniqueId();
-        if (!playerManager.getBuildModePlayers().remove(playerUuid)) {
+        if (!playerManager.getBuildModePlayers().remove(player.getUniqueId())) {
             return;
         }
 
-        CachedValues cachedValues = playerManager.getPlayerStorage().getBuildPlayer(playerUuid).getCachedValues();
+        CachedValues cachedValues = playerManager.getPlayerStorage().getBuildPlayer(player).getCachedValues();
         cachedValues.resetGameModeIfPresent(player);
         cachedValues.resetInventoryIfPresent(player);
         XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);

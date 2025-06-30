@@ -18,12 +18,12 @@
 package de.eintosti.buildsystem.api.storage;
 
 import de.eintosti.buildsystem.api.player.BuildPlayer;
-import de.eintosti.buildsystem.api.player.settings.Settings;
 import java.util.Collection;
 import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Interface for managing the storage of {@link BuildPlayer} objects.
@@ -37,10 +37,9 @@ public interface PlayerStorage extends Storage<BuildPlayer> {
      * Creates a new {@link BuildPlayer} with the given uuid and settings.
      *
      * @param uuid     The uuid of the player
-     * @param settings The settings of the player
      * @return The created build-player
      */
-    BuildPlayer createBuildPlayer(UUID uuid, Settings settings);
+    BuildPlayer createBuildPlayer(UUID uuid);
 
     /**
      * Creates a new {@link BuildPlayer} with the given player.
@@ -56,13 +55,17 @@ public interface PlayerStorage extends Storage<BuildPlayer> {
      * @param uuid The uuid of the player
      * @return The player, if found, otherwise {@code null}
      */
+    @Nullable
     BuildPlayer getBuildPlayer(UUID uuid);
 
     /**
      * Gets the {@link BuildPlayer} which wraps the given player.
+     * <p>
+     * If the player is not found, a new {@link BuildPlayer} will be created using {@link #createBuildPlayer(Player)}.
      *
      * @param player The wrapped player
-     * @return The player, if found, otherwise {@code null}
+     * @return The player
+     * @see #createBuildPlayer(Player)
      */
     BuildPlayer getBuildPlayer(Player player);
 
