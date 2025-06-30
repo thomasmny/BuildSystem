@@ -186,13 +186,14 @@ public class GameRulesInventory extends PaginatedInventory {
                 } else if (slot == 44) {
                     pageChanged = incrementInv(player, this.numGameRules, SLOTS.length);
                 }
-                if (pageChanged) {
-                    openInventory(player, buildWorld);
+                if (!pageChanged) {
+                    return;
                 }
                 break;
 
             case FILLED_MAP:
             case MAP:
+                XSound.ENTITY_CHICKEN_EGG.play(player);
                 modifyGameRule(event, buildWorld.getWorld());
                 break;
 
@@ -202,7 +203,6 @@ public class GameRulesInventory extends PaginatedInventory {
                 return;
         }
 
-        XSound.ENTITY_CHICKEN_EGG.play(player);
         openInventory(player, buildWorld);
     }
 
