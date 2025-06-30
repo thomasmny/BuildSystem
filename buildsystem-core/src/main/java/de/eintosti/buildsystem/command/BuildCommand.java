@@ -88,7 +88,7 @@ public class BuildCommand implements CommandExecutor {
 
     private void toggleBuildMode(Player target, @Nullable Player sender) {
         UUID targetUuid = target.getUniqueId();
-        BuildPlayer buildPlayer = playerService.getPlayerStorage().getBuildPlayer(targetUuid);
+        BuildPlayer buildPlayer = playerService.getPlayerStorage().getBuildPlayer(target);
         CachedValues cachedValues = buildPlayer.getCachedValues();
 
         if (playerService.getBuildModePlayers().remove(targetUuid)) {

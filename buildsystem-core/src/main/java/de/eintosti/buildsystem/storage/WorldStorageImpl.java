@@ -83,6 +83,11 @@ public abstract class WorldStorageImpl implements WorldStorage {
     }
 
     @Override
+    public BuildWorldCreatorImpl createBuildWorld(String name) {
+        return new BuildWorldCreatorImpl(plugin, name);
+    }
+
+    @Override
     @Unmodifiable
     public Collection<BuildWorld> getBuildWorlds() {
         return Collections.unmodifiableCollection(buildWorlds.values());

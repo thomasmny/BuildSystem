@@ -23,7 +23,6 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import io.papermc.lib.PaperLib;
-import java.util.UUID;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -65,10 +64,8 @@ public class BackCommand implements CommandExecutor {
     }
 
     private void teleportBack(Player player) {
-        UUID playerUuid = player.getUniqueId();
-        BuildPlayer buildPlayer = playerStorage.getBuildPlayer(playerUuid);
+        BuildPlayer buildPlayer = playerStorage.getBuildPlayer(player);
         Location previousLocation = buildPlayer.getPreviousLocation();
-
         if (previousLocation == null) {
             Messages.sendMessage(player, "back_failed");
             return;
