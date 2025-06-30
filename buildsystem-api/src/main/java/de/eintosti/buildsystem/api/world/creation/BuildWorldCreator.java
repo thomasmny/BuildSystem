@@ -58,10 +58,10 @@ public interface BuildWorldCreator {
      * <p>
      * Only used if the world type is {@link BuildWorldType#TEMPLATE}
      *
-     * @param template The template name
+     * @param template The template name, may be {@code null} if no template is used
      * @return The creator object
      */
-    BuildWorldCreator setTemplate(String template);
+    BuildWorldCreator setTemplate(@Nullable String template);
 
     /**
      * Sets the type of the world.
@@ -82,10 +82,10 @@ public interface BuildWorldCreator {
     /**
      * Sets the folder in which the world should be created.
      *
-     * @param folder The folder where the world should be created
+     * @param folder The folder where the world should be created, may be {@code null} if not to be added to a folder
      * @return The world creator object
      */
-    BuildWorldCreator setFolder(Folder folder);
+    BuildWorldCreator setFolder(@Nullable Folder folder);
 
     /**
      * Sets whether the world should be private or not.
