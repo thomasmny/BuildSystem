@@ -100,8 +100,12 @@ public interface BuildWorld extends Displayable {
 
     /**
      * Cycles to the next {@link Difficulty} for this world.
+     * <p>
+     * The cycle order is: {@link Difficulty#PEACEFUL} -> {@link Difficulty#EASY} -> {@link Difficulty#NORMAL} -> {@link Difficulty#HARD} -> {@link Difficulty#PEACEFUL}.
+     *
+     * @return The new difficulty after cycling
      */
-    void cycleDifficulty();
+    Difficulty cycleDifficulty();
 
     /**
      * Gets the {@link Builders} object, which manages all players allowed to modify this world.
