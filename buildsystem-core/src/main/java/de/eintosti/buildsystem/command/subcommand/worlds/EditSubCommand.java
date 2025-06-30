@@ -61,6 +61,7 @@ public class EditSubCommand implements SubCommand {
         }
 
         if (buildWorld.isLoaded()) {
+            XSound.BLOCK_CHEST_OPEN.play(player);
             new EditInventory(plugin).openInventory(player, buildWorld);
         } else {
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);

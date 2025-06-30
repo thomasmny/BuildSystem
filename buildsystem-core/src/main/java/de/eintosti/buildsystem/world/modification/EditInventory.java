@@ -82,7 +82,6 @@ public class EditInventory implements InventoryHandler {
     }
 
     public void openInventory(Player player, BuildWorld buildWorld) {
-        XSound.BLOCK_CHEST_OPEN.play(player);
         Inventory inventory = getInventory(player, buildWorld);
         this.inventoryManager.registerInventoryHandler(inventory, this);
         player.openInventory(inventory);
@@ -366,8 +365,8 @@ public class EditInventory implements InventoryHandler {
             }
             case 39 -> {
                 if (hasPermission(player, "buildsystem.edit.difficulty")) {
-                    buildWorld.cycleDifficulty();
-                    buildWorld.getWorld().setDifficulty(buildWorld.getData().difficulty().get());
+                    Difficulty newDifficulty = buildWorld.cycleDifficulty();
+                    buildWorld.getWorld().setDifficulty(newDifficulty);
                 }
             }
             case 40 -> {
