@@ -68,7 +68,7 @@ public class UUIDFetcher {
         }
 
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(String.format(Locale.ROOT, UUID_URL, name)).openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URL(UUID_URL.formatted(name)).openConnection();
             connection.setReadTimeout(5000);
 
             JsonObject jsonObject;
@@ -110,7 +110,7 @@ public class UUIDFetcher {
         }
 
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(String.format(Locale.ROOT, NAME_URL, UUIDTypeAdapter.fromUUID(uuid))).openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URL(NAME_URL.formatted(UUIDTypeAdapter.fromUUID(uuid))).openConnection();
             connection.setReadTimeout(5000);
 
             JsonArray nameHistory;
