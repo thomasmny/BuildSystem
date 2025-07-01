@@ -180,7 +180,12 @@ public class S3BackupStorage implements BackupStorage {
     @Override
     public void close() {
         disconnect();
-        FileUtils.deleteDirectory(this.tmpDownloadDirectory);
+
+        try {
+            FileUtils.deleteDirectory(this.tmpDownloadDirectory);
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to delete temporary download directory", e);
+        }
     }
 
     private void disconnect() {

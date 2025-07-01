@@ -91,7 +91,14 @@ public interface Displayable {
      */
     default ItemStack asItemStack(Player player) {
         ItemStack itemStack = getIcon().parseItem();
+        if (itemStack == null) {
+            throw new IllegalStateException("Icon material " + getIcon() + " could not be parsed into an ItemStack.");
+        }
+
         ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta == null) {
+            throw new IllegalStateException("ItemMeta for " + getIcon() + " is null. This should not happen.");
+        }
 
         itemMeta.setDisplayName(getDisplayName(player));
         itemMeta.setLore(getLore(player));

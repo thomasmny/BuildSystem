@@ -92,9 +92,7 @@ public class DeleteInventory implements InventoryHandler {
             case 11 -> {
                 XSound.ENTITY_PLAYER_LEVELUP.play(player);
                 player.closeInventory();
-                plugin.getWorldService()
-                        .deleteWorld(player, buildWorld)
-                        .thenRun(() -> Messages.sendMessage(player, "worlds_delete_finished"));
+                plugin.getWorldService().deleteWorld(player, buildWorld);
             }
             case 15 -> {
                 XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);

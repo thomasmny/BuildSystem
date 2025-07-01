@@ -140,8 +140,9 @@ public final class FileUtils {
      * Deletes a directory recursively.
      *
      * @param directory Directory to delete
+     * @throws IOException If an I/O error occurs while deleting the directory
      */
-    public static void deleteDirectory(File directory) {
+    public static void deleteDirectory(File directory) throws IOException {
         deleteDirectory(directory.toPath());
     }
 
@@ -149,14 +150,13 @@ public final class FileUtils {
      * Deletes a directory recursively.
      *
      * @param directoryPath The path of the directory to delete
+     * @throws IOException If an I/O error occurs while deleting the directory
      */
-    public static void deleteDirectory(Path directoryPath) {
+    public static void deleteDirectory(Path directoryPath) throws IOException {
         try (Stream<Path> walk = Files.walk(directoryPath)) {
             walk.sorted(Comparator.reverseOrder())
                     .map(Path::toFile)
                     .forEach(File::delete);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to delete directory " + directoryPath.toAbsolutePath(), e);
         }
     }
 
