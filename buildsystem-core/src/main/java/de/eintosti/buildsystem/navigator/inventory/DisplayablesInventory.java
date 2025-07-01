@@ -82,6 +82,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
     @Nullable
     private final String noWorldsMessage;
 
+    @Nullable
     private List<Displayable> cachedDisplayables;
     @Nullable
     private Inventory[] generatedInventories;
@@ -120,13 +121,14 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
         this.noWorldsMessage = noWorldsMessage;
         this.requiredVisibility = requiredVisibility;
         this.validStatuses = validStatuses;
+        generatedInventories = new Inventory[0];
     }
 
     /**
      * Opens the inventory for the associated player.
      */
     public void openInventory() {
-        if (this.generatedInventories == null) {
+        if (this.generatedInventories.length == 0) {
             initializeInventories();
         }
 
@@ -378,6 +380,8 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
 
                         Folder folder = createFolder(sanitizedName);
                         Messages.sendMessage(player, "worlds_folder_created", Map.entry("%folder%", folder.getName()));
+
+                        initializeInventories();
                         openInventory();
                     });
                     return;

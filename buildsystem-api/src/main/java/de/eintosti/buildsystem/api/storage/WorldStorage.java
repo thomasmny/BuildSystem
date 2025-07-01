@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.api.storage;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.creation.BuildWorldCreator;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import java.util.Collection;
 import java.util.List;
@@ -73,44 +72,6 @@ public interface WorldStorage extends Storage<BuildWorld> {
     Collection<BuildWorld> getBuildWorlds();
 
     /**
-     * Creates a new {@link BuildWorldCreator} for the given name.
-     *
-     * @param name The name of the world to create
-     * @return A new {@link BuildWorldCreator} instance for the specified world name
-     */
-    BuildWorldCreator createBuildWorld(String name);
-
-    /**
-     * Adds a {@link BuildWorld} to the world map.
-     *
-     * @param buildWorld The {@link BuildWorld} to add
-     */
-    void addBuildWorld(BuildWorld buildWorld);
-
-    /**
-     * Removes a {@link BuildWorld} from the world map.
-     *
-     * @param buildWorld The {@link BuildWorld} to remove
-     */
-    void removeBuildWorld(BuildWorld buildWorld);
-
-    /**
-     * Checks if a {@link BuildWorld} with the given name (case-insensitive) exists.
-     *
-     * @param worldName The name of the world to check
-     * @return {@code true} if the world exists, {@code false} otherwise
-     */
-    boolean worldExists(String worldName);
-
-    /**
-     * Checks if a {@link BuildWorld} exists and if the world folder exists on disk.
-     *
-     * @param worldName The name of the world to check
-     * @return {@code true} if the world exists in the map or on disk, {@code false} otherwise
-     */
-    boolean worldAndFolderExist(String worldName);
-
-    /**
      * Gets a list of {@link BuildWorld}s created by the given player.
      *
      * @param player The player who created the worlds
@@ -128,4 +89,20 @@ public interface WorldStorage extends Storage<BuildWorld> {
      */
     @Unmodifiable
     List<BuildWorld> getBuildWorldsCreatedByPlayer(Player player, Visibility visibility);
+
+    /**
+     * Checks if a {@link BuildWorld} with the given name (case-insensitive) exists.
+     *
+     * @param worldName The name of the world to check
+     * @return {@code true} if the world exists, {@code false} otherwise
+     */
+    boolean worldExists(String worldName);
+
+    /**
+     * Checks if a {@link BuildWorld} exists and if the world folder exists on disk.
+     *
+     * @param worldName The name of the world to check
+     * @return {@code true} if the world exists in the map or on disk, {@code false} otherwise
+     */
+    boolean worldAndFolderExist(String worldName);
 }
