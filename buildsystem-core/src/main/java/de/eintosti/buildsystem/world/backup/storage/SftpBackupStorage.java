@@ -221,7 +221,7 @@ public class SftpBackupStorage implements BackupStorage {
                     bufferedOut.flush();
                 }
 
-                plugin.getLogger().info(String.format("Backed up world '%s'. Took %sms", buildWorld.getName(), (System.currentTimeMillis() - timestamp)));
+                plugin.getLogger().info("Backed up world '%s'. Took %sms".formatted(buildWorld.getName(), (System.currentTimeMillis() - timestamp)));
                 return new BackupImpl(plugin.getBackupService().getProfile(buildWorld), timestamp, remotePath);
             } catch (IOException e) {
                 disconnectAll();

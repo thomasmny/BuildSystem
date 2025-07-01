@@ -47,7 +47,7 @@ public class GamemodeTabComplete extends ArgumentSorter implements TabCompleter 
         if (args.length == 1) {
             Arrays.stream(GameMode.values())
                     .map(gameMode -> gameMode.name().toLowerCase(Locale.ROOT))
-                    .filter(gameModeName -> player.hasPermission(String.format("buildsystem.gamemode.%s", gameModeName)))
+                    .filter(gameModeName -> player.hasPermission("buildsystem.gamemode.%s".formatted(gameModeName)))
                     .forEach(gameModeName -> addArgument(args[0], gameModeName, arrayList));
         } else if (args.length == 2) {
             String gameModeName = switch (args[0].toLowerCase(Locale.ROOT)) {
@@ -58,7 +58,7 @@ public class GamemodeTabComplete extends ArgumentSorter implements TabCompleter 
                 default -> null;
             };
 
-            if (gameModeName != null && player.hasPermission(String.format("buildsystem.gamemode.%s.other", gameModeName))) {
+            if (gameModeName != null && player.hasPermission("buildsystem.gamemode.%s.other".formatted(gameModeName))) {
                 Bukkit.getOnlinePlayers().forEach(pl -> addArgument(args[1], pl.getName(), arrayList));
             }
         }
