@@ -97,7 +97,6 @@ import de.eintosti.buildsystem.world.backup.BackupService;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import java.io.File;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import org.bstats.bukkit.Metrics;
@@ -169,10 +168,9 @@ public class BuildSystemPlugin extends JavaPlugin {
 
         Bukkit.getScheduler().runTaskTimer(this, this::saveBuildConfig, 6000L, 6000L);
 
-        Bukkit.getConsoleSender().sendMessage(String.format(Locale.ROOT,
-                "%sBuildSystem » Plugin %senabled%s!",
-                ChatColor.RESET, ChatColor.GREEN, ChatColor.RESET
-        ));
+        Bukkit.getConsoleSender().sendMessage(
+                "%sBuildSystem » Plugin %senabled%s!".formatted(ChatColor.RESET, ChatColor.GREEN, ChatColor.RESET)
+        );
     }
 
     @Override
@@ -196,10 +194,9 @@ public class BuildSystemPlugin extends JavaPlugin {
         unregisterExpansions();
         this.api.unregister();
 
-        Bukkit.getConsoleSender().sendMessage(String.format(Locale.ROOT,
-                "%sBuildSystem » Plugin %sdisabled%s!",
-                ChatColor.RESET, ChatColor.RED, ChatColor.RESET
-        ));
+        Bukkit.getConsoleSender().sendMessage(
+                "%sBuildSystem » Plugin %sdisabled%s!".formatted(ChatColor.RESET, ChatColor.RED, ChatColor.RESET)
+        );
     }
 
     private void initClasses() {

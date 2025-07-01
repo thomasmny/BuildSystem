@@ -136,7 +136,7 @@ public class S3BackupStorage implements BackupStorage {
                                 .build(),
                         RequestBody.fromBytes(zipBytes)
                 );
-                plugin.getLogger().info(String.format("Backed up world '%s'. Took %sms", buildWorld.getName(), (System.currentTimeMillis() - timestamp)));
+                plugin.getLogger().info("Backed up world '%s'. Took %sms".formatted(buildWorld.getName(), (System.currentTimeMillis() - timestamp)));
                 return new BackupImpl(plugin.getBackupService().getProfile(buildWorld), timestamp, key);
             } catch (S3Exception | SdkClientException e) {
                 throw new RuntimeException("Failed to upload backup for " + buildWorld.getName(), e);

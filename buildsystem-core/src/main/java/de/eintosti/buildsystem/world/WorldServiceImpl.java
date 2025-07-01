@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.api.exception.WorldNotFoundException;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.WorldService;
 import de.eintosti.buildsystem.api.world.builder.Builder;
+import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
@@ -55,8 +56,6 @@ import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.generator.ChunkGenerator;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -124,19 +123,13 @@ public class WorldServiceImpl implements WorldService {
 
     private void startCustomGeneratorInput(Player player, String worldName, @Nullable String template, boolean privateWorld, @Nullable Folder folder) {
         new PlayerChatInput(plugin, player, "enter_generator_name", input -> {
-            String[] generatorInfo = input.split(":");
-            if (generatorInfo.length == 1) {
-                generatorInfo = new String[]{generatorInfo[0], generatorInfo[0]};
-            }
-
-            ChunkGenerator chunkGenerator = getChunkGenerator(generatorInfo[0], generatorInfo[1], worldName);
-            if (chunkGenerator == null) {
+            CustomGenerator customGenerator = CustomGeneratorImpl.of(input, worldName);
+            if (customGenerator == null) {
                 Messages.sendMessage(player, "worlds_import_unknown_generator");
                 XSound.ENTITY_ITEM_BREAK.play(player);
                 return;
             }
 
-            CustomGeneratorImpl customGenerator = new CustomGeneratorImpl(generatorInfo[0], chunkGenerator);
             createWorld(worldName)
                     .setType(BuildWorldType.CUSTOM)
                     .setTemplate(template)
@@ -147,30 +140,11 @@ public class WorldServiceImpl implements WorldService {
         });
     }
 
-    @Nullable
-    public ChunkGenerator getChunkGenerator(@Nullable String generator, String generatorId, String worldName) {
-        if (generator == null) {
-            return null;
-        }
-
-        Plugin plugin = Bukkit.getPluginManager().getPlugin(generator);
-        if (plugin == null) {
-            return null;
-        }
-
-        return plugin.getDefaultWorldGenerator(worldName, generatorId);
-    }
-
-    public boolean importWorld(Player player, String worldName, @Nullable Builder creator, BuildWorldType worldType, Generator generator, String generatorName, boolean single) {
-        ChunkGenerator chunkGenerator = null;
+    public boolean importWorld(Player player, String worldName, @Nullable Builder creator, BuildWorldType worldType, Generator generator, String generatorData, boolean single) {
+        CustomGenerator customGenerator = null;
         if (generator == Generator.CUSTOM) {
-            String[] generatorInfo = generatorName.split(":");
-            if (generatorInfo.length == 1) {
-                generatorInfo = new String[]{generatorInfo[0], generatorInfo[0]};
-            }
-
-            chunkGenerator = getChunkGenerator(generatorInfo[0], generatorInfo[1], worldName);
-            if (chunkGenerator == null) {
+            customGenerator = CustomGeneratorImpl.of(generatorData, worldName);
+            if (customGenerator == null) {
                 Messages.sendMessage(player, "worlds_import_unknown_generator");
                 return false;
             }
@@ -179,7 +153,7 @@ public class WorldServiceImpl implements WorldService {
         BuildWorldCreatorImpl worldCreator = createWorld(worldName)
                 .setType(worldType)
                 .setCreator(creator)
-                .setCustomGenerator(new CustomGeneratorImpl(generatorName, chunkGenerator))
+                .setCustomGenerator(customGenerator != null ? customGenerator : new CustomGeneratorImpl("BuildSystem", generatorData, null))
                 .setPrivate(false)
                 .setCreationDate(FileUtils.getDirectoryCreation(new File(Bukkit.getWorldContainer(), worldName)));
 

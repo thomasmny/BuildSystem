@@ -183,8 +183,8 @@ public class CreateInventory extends PaginatedInventory {
                 InventoryUtils.addGlassPane(player, inventory, 33);
                 break;
             case TEMPLATES:
-                inventory.setItem(38, InventoryUtils.createSkull(Messages.getString("gui_previous_page", player), Profileable.detect("f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2")));
-                inventory.setItem(42, InventoryUtils.createSkull(Messages.getString("gui_next_page", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158")));
+                inventory.setItem(28, InventoryUtils.createSkull(Messages.getString("gui_previous_page", player), Profileable.detect("f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2")));
+                inventory.setItem(34, InventoryUtils.createSkull(Messages.getString("gui_next_page", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158")));
                 break;
         }
     }
@@ -247,9 +247,9 @@ public class CreateInventory extends PaginatedInventory {
                         this.worldService.startWorldNameInput(player, BuildWorldType.TEMPLATE, itemStack.getItemMeta().getDisplayName(), this.createPrivateWorld, this.folder);
                         break;
                     case PLAYER_HEAD:
-                        if (slot == 38 && !decrementInv(player, numTemplates, MAX_TEMPLATES)) {
+                        if (slot == 28 && !decrementInv(player, numTemplates, MAX_TEMPLATES)) {
                             return;
-                        } else if (slot == 42 && !incrementInv(player, numTemplates, MAX_TEMPLATES)) {
+                        } else if (slot == 34 && !incrementInv(player, numTemplates, MAX_TEMPLATES)) {
                             return;
                         }
                         openInventory(player, CreateInventory.Page.TEMPLATES);

@@ -107,7 +107,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
         world.put("date", buildWorld.getCreation());
         world.put("builders", serializeBuilders(builders.getAllBuilders()));
         if (buildWorld.getCustomGenerator() != null) {
-            world.put("chunk-generator", buildWorld.getCustomGenerator().name());
+            world.put("chunk-generator", buildWorld.getCustomGenerator().toString());
         }
 
         return world;
@@ -170,7 +170,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
         List<Builder> builders = parseBuilders(worldName);
         String generatorName = config.getString("worlds." + worldName + ".chunk-generator");
         CustomGeneratorImpl customGenerator = generatorName != null
-                ? new CustomGeneratorImpl(generatorName, parseChunkGenerator(worldName, generatorName))
+                ? CustomGeneratorImpl.of(generatorName, worldName)
                 : null;
 
         return new BuildWorldImpl(
@@ -282,19 +282,6 @@ public class YamlWorldStorage extends WorldStorageImpl {
         }
 
         return builders;
-    }
-
-    /**
-     * @author Ein_Jojo, einTosti
-     */
-    @Nullable
-    private ChunkGenerator parseChunkGenerator(String worldName, String generatorName) {
-        String[] generatorInfo = generatorName.split(":");
-        if (generatorInfo.length == 1) {
-            generatorInfo = new String[]{generatorInfo[0], generatorInfo[0]};
-        }
-
-        return getChunkGenerator(generatorInfo[0], generatorInfo[1], worldName);
     }
 
     /**

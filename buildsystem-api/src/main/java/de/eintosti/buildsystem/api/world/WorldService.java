@@ -59,6 +59,7 @@ public interface WorldService {
      *
      * @param buildWorld The world to unimport
      * @param save       Whether to save the world before unloading
+     * @return A future that completes when the unimport operation is finished
      */
     CompletableFuture<Void> unimportWorld(BuildWorld buildWorld, boolean save);
 
@@ -66,6 +67,7 @@ public interface WorldService {
      * Delete an existing {@link BuildWorld}. In comparison to {@link #unimportWorld(BuildWorld, boolean)}, deleting a world deletes the world's directory.
      *
      * @param buildWorld The world to be deleted
+     * @return A future that completes when the delete operation is finished
      */
     CompletableFuture<Void> deleteWorld(BuildWorld buildWorld);
 }
