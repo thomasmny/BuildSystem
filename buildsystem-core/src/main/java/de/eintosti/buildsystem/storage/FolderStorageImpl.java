@@ -58,11 +58,10 @@ public abstract class FolderStorageImpl implements FolderStorage {
     public void loadFolders() {
         try {
             this.foldersByName.putAll(
-                    load().get().stream().collect(Collectors.toMap(Folder::getName, Function.identity()))
+                    load().get().stream().collect(Collectors.toMap(folder -> folder.getName().toLowerCase(), Function.identity()))
             );
         } catch (InterruptedException | ExecutionException e) {
             logger.severe("Failed to load folders from storage: " + e.getMessage());
-            return;
         }
     }
 
@@ -72,26 +71,43 @@ public abstract class FolderStorageImpl implements FolderStorage {
         return Collections.unmodifiableCollection(foldersByName.values());
     }
 
+    @Nullable
     @Override
-    public Folder createFolder(String folderName, NavigatorCategory category, Builder creator) {
-        return createFolder(folderName, category, null, creator);
+    public Folder getFolder(String name) {
+        return foldersByName.get(name.toLowerCase());
     }
 
     @Override
-    public Folder createFolder(String folderName, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
-        Folder folder = new FolderImpl(folderName, category, parent, creator);
-        foldersByName.put(folderName, folder);
+    public boolean folderExists(String name) {
+        return getFolder(name) != null;
+    }
+
+    @Override
+    public Folder createFolder(String name, NavigatorCategory category, Builder creator) {
+        return createFolder(name, category, null, creator);
+    }
+
+    @Override
+    public Folder createFolder(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
+        Folder folder = new FolderImpl(name, category, parent, creator);
+        foldersByName.put(name.toLowerCase(), folder);
         return folder;
     }
 
     @Override
-    public void removeFolder(String folderName) {
-        Folder removed = foldersByName.remove(folderName);
+    public void removeFolder(String name) {
+        Folder removed = foldersByName.remove(name.toLowerCase());
         if (removed == null) {
             return;
         }
 
-        WorldStorage worldStorage = plugin.getWorldService().getWorldStorage();
+        // Remove all subfolders
+        getFolders().stream()
+                .filter(folder -> Objects.equals(folder.getParent(), removed))
+                .forEach(this::removeFolder);
+
+        // Remove world <> folder assignments
+        WorldStorage worldStorage = worldService.getWorldStorage();
         removed.getWorldUUIDs()
                 .stream()
                 .map(worldStorage::getBuildWorld)
@@ -102,39 +118,5 @@ public abstract class FolderStorageImpl implements FolderStorage {
     @Override
     public void removeFolder(Folder folder) {
         removeFolder(folder.getName());
-    }
-
-    @Override
-    public boolean folderExists(String folderName) {
-        return folderExists(folderName, false);
-    }
-
-    @Override
-    public boolean folderExists(String folderName, boolean caseSensitive) {
-        if (caseSensitive) {
-            return foldersByName.containsKey(folderName);
-        } else {
-            return foldersByName.keySet().stream().anyMatch(name -> name.equalsIgnoreCase(folderName));
-        }
-    }
-
-    @Nullable
-    @Override
-    public Folder getFolder(String folderName) {
-        return getFolder(folderName, false);
-    }
-
-    @Nullable
-    @Override
-    public Folder getFolder(String folderName, boolean caseSensitive) {
-        if (caseSensitive) {
-            return foldersByName.get(folderName);
-        } else {
-            return foldersByName.entrySet().stream()
-                    .filter(entry -> entry.getKey().equalsIgnoreCase(folderName))
-                    .map(Map.Entry::getValue)
-                    .findFirst()
-                    .orElse(null);
-        }
     }
 }

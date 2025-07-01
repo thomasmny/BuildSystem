@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.api.storage;
 
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
@@ -44,71 +45,66 @@ public interface FolderStorage extends Storage<Folder> {
     /**
      * Gets a {@link Folder} by its name (case-insensitive).
      *
-     * @param folderName The name of the folder to retrieve
+     * @param name The name of the folder to retrieve
      * @return The folder if it exists, or {@code null} if it does not
      */
     @Nullable
-    Folder getFolder(String folderName);
-
-    /**
-     * Gets a {@link Folder} by its name.
-     *
-     * @param folderName    The name of the folder to retrieve
-     * @param caseSensitive Whether to check the name case-sensitive or not
-     * @return The folder if it exists, or {@code null} if it does not
-     */
-    @Nullable
-    Folder getFolder(String folderName, boolean caseSensitive);
-
-    /**
-     * Creates a new {@link Folder} with the given name.
-     *
-     * @param folderName The name folder to create
-     * @param category   The category in which the folder should be displayed
-     * @param creator    The builder who created the folder
-     * @return The newly created folder
-     */
-    Folder createFolder(String folderName, NavigatorCategory category, Builder creator);
-
-    /**
-     * Creates a new nested {@link Folder} with the given name.
-     *
-     * @param folderName The name folder to create
-     * @param category   The category in which the folder should be displayed
-     * @param parent     The parent folder, or {@code null} if this is a top-level folder
-     * @param creator    The builder who created the folder
-     * @return The newly created folder
-     */
-    Folder createFolder(String folderName, NavigatorCategory category, @Nullable Folder parent, Builder creator);
-
-    /**
-     * Removes the {@link Folder} with the given name.
-     *
-     * @param folderName The name of the folder to remove
-     */
-    void removeFolder(String folderName);
-
-    /**
-     * Removes the given {@link Folder}.
-     *
-     * @param folder The folder to remove
-     */
-    void removeFolder(Folder folder);
+    Folder getFolder(String name);
 
     /**
      * Checks if a {@link Folder} with the given name (case-insensitive) exists.
      *
-     * @param folderName The name of the folder to check
+     * @param name The name of the folder to check
      * @return {@code true} if the folder exists, {@code false} otherwise
      */
-    boolean folderExists(String folderName);
+    boolean folderExists(String name);
 
     /**
-     * Checks if a {@link Folder} with the given name exists.
+     * Creates a new {@link Folder} with the given name.
      *
-     * @param folderName    The name of the folder to check
-     * @param caseSensitive Whether to check the name case-sensitive or not
-     * @return {@code true} if the folder exists, {@code false} otherwise
+     * @param name     The name folder to create
+     * @param category The category in which the folder should be displayed
+     * @param creator  The builder who created the folder
+     * @return The newly created folder
      */
-    boolean folderExists(String folderName, boolean caseSensitive);
+    Folder createFolder(String name, NavigatorCategory category, Builder creator);
+
+    /**
+     * Creates a new nested {@link Folder} with the given name.
+     *
+     * @param name     The name folder to create
+     * @param category The category in which the folder should be displayed
+     * @param parent   The parent folder, or {@code null} if this is a top-level folder
+     * @param creator  The builder who created the folder
+     * @return The newly created folder
+     */
+    Folder createFolder(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator);
+
+    /**
+     * Removes the {@link Folder} with the given name.
+     * <p>
+     * This operation cascades:
+     * <ul>
+     *   <li>All subfolders within the specified folder will also be removed.</li>
+     *   <li>Any {@link BuildWorld} instances associated with this folder will have their folder reference unset.</li>
+     * </ul>
+     *
+     * @param name The name of the folder to remove
+     * @see #removeFolder(Folder)
+     */
+    void removeFolder(String name);
+
+    /**
+     * Removes the given {@link Folder}.
+     * <p>
+     * This operation cascades:
+     * <ul>
+     *   <li>All subfolders within the specified folder will also be removed.</li>
+     *   <li>Any {@link BuildWorld} instances associated with this folder will have their folder reference unset.</li>
+     * </ul>
+     *
+     * @param folder The folder to remove
+     * @see #removeFolder(String)
+     */
+    void removeFolder(Folder folder);
 }

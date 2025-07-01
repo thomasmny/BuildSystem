@@ -307,7 +307,12 @@ public class SftpBackupStorage implements BackupStorage {
     @Override
     public void close() {
         disconnectAll();
-        FileUtils.deleteDirectory(this.tmpDownloadPath);
+
+        try {
+            FileUtils.deleteDirectory(this.tmpDownloadPath);
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to delete temporary download directory", e);
+        }
     }
 
     private void disconnectAll() {

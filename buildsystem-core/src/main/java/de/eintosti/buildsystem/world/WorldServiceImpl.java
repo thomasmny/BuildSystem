@@ -20,6 +20,9 @@ package de.eintosti.buildsystem.world;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.exception.WorldDeletionException;
+import de.eintosti.buildsystem.api.exception.WorldDirectoryNotFoundException;
+import de.eintosti.buildsystem.api.exception.WorldNotFoundException;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.WorldService;
 import de.eintosti.buildsystem.api.world.builder.Builder;
@@ -38,6 +41,7 @@ import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import io.papermc.lib.PaperLib;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -63,13 +67,13 @@ public class WorldServiceImpl implements WorldService {
     private static boolean importingAllWorlds = false;
 
     private final BuildSystemPlugin plugin;
-    private final WorldStorageImpl worldStorage;
     private final FolderStorageImpl folderStorage;
+    private final WorldStorageImpl worldStorage;
 
     public WorldServiceImpl(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.worldStorage = new WorldStorageFactory(plugin).createStorage(this);
         this.folderStorage = new FolderStorageFactory(plugin).createStorage(this);
+        this.worldStorage = new WorldStorageFactory(plugin).createStorage(this);
     }
 
     public void init() {
@@ -78,13 +82,18 @@ public class WorldServiceImpl implements WorldService {
     }
 
     @Override
+    public FolderStorageImpl getFolderStorage() {
+        return folderStorage;
+    }
+
+    @Override
     public WorldStorageImpl getWorldStorage() {
         return worldStorage;
     }
 
     @Override
-    public FolderStorageImpl getFolderStorage() {
-        return folderStorage;
+    public BuildWorldCreatorImpl createWorld(String name) {
+        return new BuildWorldCreatorImpl(plugin, name);
     }
 
     public void startWorldNameInput(Player player, BuildWorldType worldType, @Nullable String template, boolean privateWorld, @Nullable Folder folder) {
@@ -103,7 +112,7 @@ public class WorldServiceImpl implements WorldService {
             if (worldType == BuildWorldType.CUSTOM) {
                 startCustomGeneratorInput(player, worldName, template, privateWorld, folder);
             } else {
-                worldStorage.createBuildWorld(worldName)
+                createWorld(worldName)
                         .setType(worldType)
                         .setTemplate(template)
                         .setPrivate(privateWorld)
@@ -128,7 +137,7 @@ public class WorldServiceImpl implements WorldService {
             }
 
             CustomGeneratorImpl customGenerator = new CustomGeneratorImpl(generatorInfo[0], chunkGenerator);
-            worldStorage.createBuildWorld(worldName)
+            createWorld(worldName)
                     .setType(BuildWorldType.CUSTOM)
                     .setTemplate(template)
                     .setPrivate(privateWorld)
@@ -167,7 +176,7 @@ public class WorldServiceImpl implements WorldService {
             }
         }
 
-        BuildWorldCreatorImpl worldCreator = worldStorage.createBuildWorld(worldName)
+        BuildWorldCreatorImpl worldCreator = createWorld(worldName)
                 .setType(worldType)
                 .setCreator(creator)
                 .setCustomGenerator(new CustomGeneratorImpl(generatorName, chunkGenerator))
@@ -238,12 +247,7 @@ public class WorldServiceImpl implements WorldService {
         return importingAllWorlds;
     }
 
-    /**
-     * Unimport an existing {@link BuildWorld}. In comparison to {@link #deleteWorld(Player, BuildWorld)}, unimporting a world does not delete the world's directory.
-     *
-     * @param buildWorld The build world object
-     * @param save       Whether to save the world before unloading
-     */
+    @Override
     public CompletableFuture<Void> unimportWorld(BuildWorld buildWorld, boolean save) {
         buildWorld.getUnloader().forceUnload(save);
         this.worldStorage.removeBuildWorld(buildWorld);
@@ -251,32 +255,49 @@ public class WorldServiceImpl implements WorldService {
         return this.worldStorage.delete(buildWorld);
     }
 
-    /**
-     * Delete an existing {@link BuildWorld}. In comparison to {@link #unimportWorld(BuildWorld, boolean)}, deleting a world deletes the world's directory.
-     *
-     * @param player     The player who issued the deletion
-     * @param buildWorld The world to be deleted
-     */
-    public CompletableFuture<Void> deleteWorld(Player player, BuildWorld buildWorld) {
-        if (!this.worldStorage.worldExists(buildWorld.getName())) {
-            Messages.sendMessage(player, "worlds_delete_unknown_world");
-            return CompletableFuture.completedFuture(null);
+    public void deleteWorld(Player player, BuildWorld buildWorld) {
+        String worldName = buildWorld.getName();
+        Messages.sendMessage(player, "worlds_delete_started", Map.entry("%world%", worldName));
+        deleteWorld(buildWorld)
+                .thenRun(() -> Messages.sendMessage(player, "worlds_delete_finished"))
+                .exceptionally(e -> {
+                    Throwable cause = e.getCause() != null ? e.getCause() : e;
+                    switch (cause) {
+                        case WorldNotFoundException ignored -> Messages.sendMessage(player, "worlds_delete_unknown_world");
+                        case WorldDirectoryNotFoundException ignored -> Messages.sendMessage(player, "worlds_delete_unknown_directory");
+                        default -> {
+                            Messages.sendMessage(player, "worlds_delete_error", Map.entry("%world%", worldName));
+                            plugin.getLogger().log(Level.SEVERE, "An unexpected error occurred while deleting the world: " + worldName, cause);
+                        }
+                    }
+                    return null;
+                });
+    }
+
+    @Override
+    public CompletableFuture<Void> deleteWorld(BuildWorld buildWorld) {
+        String worldName = buildWorld.getName();
+        if (!this.worldStorage.worldExists(worldName)) {
+            return CompletableFuture.failedFuture(new WorldNotFoundException(worldName));
         }
 
-        String worldName = buildWorld.getName();
         File deleteFolder = new File(Bukkit.getWorldContainer(), worldName);
         if (!deleteFolder.exists()) {
-            Messages.sendMessage(player, "worlds_delete_unknown_directory");
-            return CompletableFuture.completedFuture(null);
+            return CompletableFuture.failedFuture(new WorldDirectoryNotFoundException(worldName, deleteFolder.getAbsolutePath()));
         }
 
         buildWorld.setFolder(null);
-
-        Messages.sendMessage(player, "worlds_delete_started", Map.entry("%world%", worldName));
         removePlayersFromWorld(worldName, "worlds_delete_players_world");
+
         return CompletableFuture.allOf(
                 unimportWorld(buildWorld, false),
-                CompletableFuture.runAsync(() -> FileUtils.deleteDirectory(deleteFolder))
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        FileUtils.deleteDirectory(deleteFolder);
+                    } catch (IOException e) {
+                        throw new CompletionException(new WorldDeletionException("An unexpected error occurred during directory deletion for world: " + worldName, e));
+                    }
+                })
         );
     }
 
@@ -331,13 +352,12 @@ public class WorldServiceImpl implements WorldService {
 
         File oldWorldFile = new File(Bukkit.getWorldContainer(), oldName);
         File newWorldFile = new File(Bukkit.getWorldContainer(), sanitizedNewName);
-        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+        CompletableFuture.runAsync(() -> {
             try {
-                worldStorage.delete(oldName).join(); // ensure deletion is complete before renaming
+                worldStorage.delete(oldName).join();
                 FileUtils.copy(oldWorldFile, newWorldFile);
                 FileUtils.deleteDirectory(oldWorldFile);
             } catch (Exception e) {
-                e.printStackTrace();
                 throw new RuntimeException("Failed to rename world directory", e);
             }
         }).thenRunAsync(() -> {
@@ -375,18 +395,16 @@ public class WorldServiceImpl implements WorldService {
     }
 
     public List<Player> removePlayersFromWorld(String worldName, String messageKey) {
-        List<Player> affectedPlayers = new ArrayList<>();
-
         World worldToRemove = Bukkit.getWorld(worldName);
         if (worldToRemove == null) {
-            plugin.getLogger().warning("Cannot remove players from world '" + worldName + "' because the world does not exist.");
-            return affectedPlayers;
+            return List.of();
         }
 
         World fallbackWorld = Bukkit.getWorlds().getFirst();
         Location fallbackSpawn = fallbackWorld.getHighestBlockAt(fallbackWorld.getSpawnLocation()).getLocation().add(0.5, 1, 0.5);
 
         SpawnManager spawnManager = plugin.getSpawnManager();
+        List<Player> affectedPlayers = new ArrayList<>();
 
         Bukkit.getOnlinePlayers().forEach(player -> {
             if (!player.getWorld().equals(worldToRemove)) {

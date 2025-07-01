@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.world.creation;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.BuildWorldCreator;
@@ -29,6 +28,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.config.Config.World.Default;
 import de.eintosti.buildsystem.config.Config.World.Default.Time;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.creation.generator.VoidGenerator;
@@ -59,7 +59,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
     private static final String TEMPLATES_DIRECTORY = "templates";
 
     private final BuildSystemPlugin plugin;
-    private final WorldStorage worldStorage;
+    private final WorldStorageImpl worldStorage;
 
     private String worldName;
     @Nullable
@@ -208,6 +208,10 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
      * @return {@code true} if the creation was successful, {@code false} otherwise
      */
     private boolean createWorldFromTemplate(Player player) {
+        if (this.template == null || this.template.isEmpty()) {
+            throw new IllegalStateException("Attempted to create a template world without a template name");
+        }
+
         File templateFile = new File(this.plugin.getDataFolder(), TEMPLATES_DIRECTORY + File.separator + template);
         if (!templateFile.exists()) {
             Messages.sendMessage(player, "worlds_template_does_not_exist");

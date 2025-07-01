@@ -19,7 +19,9 @@ package de.eintosti.buildsystem.api.world;
 
 import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
+import de.eintosti.buildsystem.api.world.creation.BuildWorldCreator;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import java.util.concurrent.CompletableFuture;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -31,6 +33,13 @@ import org.jspecify.annotations.NullMarked;
 public interface WorldService {
 
     /**
+     * Gets the {@link FolderStorage} implementation for managing {@link Folder} persistence.
+     *
+     * @return The folder storage instance
+     */
+    FolderStorage getFolderStorage();
+
+    /**
      * Gets the {@link WorldStorage} implementation for managing {@link BuildWorld} persistence.
      *
      * @return The world storage instance
@@ -38,9 +47,25 @@ public interface WorldService {
     WorldStorage getWorldStorage();
 
     /**
-     * Gets the {@link FolderStorage} implementation for managing {@link Folder} persistence.
+     * Creates a new {@link BuildWorldCreator} for the given name.
      *
-     * @return The folder storage instance
+     * @param name The name of the world to create
+     * @return A new {@link BuildWorldCreator} instance for the specified world name
      */
-    FolderStorage getFolderStorage();
+    BuildWorldCreator createWorld(String name);
+
+    /**
+     * Unimport an existing {@link BuildWorld}. In comparison to {@link #deleteWorld(BuildWorld)}, unimporting a world does not delete the world's directory.
+     *
+     * @param buildWorld The world to unimport
+     * @param save       Whether to save the world before unloading
+     */
+    CompletableFuture<Void> unimportWorld(BuildWorld buildWorld, boolean save);
+
+    /**
+     * Delete an existing {@link BuildWorld}. In comparison to {@link #unimportWorld(BuildWorld, boolean)}, deleting a world deletes the world's directory.
+     *
+     * @param buildWorld The world to be deleted
+     */
+    CompletableFuture<Void> deleteWorld(BuildWorld buildWorld);
 }
