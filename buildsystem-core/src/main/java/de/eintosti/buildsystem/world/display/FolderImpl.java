@@ -24,7 +24,6 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.util.WorldPermissions;
-import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,8 +38,6 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class FolderImpl implements Folder {
 
-    private final FolderStorageImpl folderStorage;
-
     private final String name;
     private final Builder creator;
     private final long creation;
@@ -53,12 +50,11 @@ public class FolderImpl implements Folder {
     private String permission;
     private String project;
 
-    public FolderImpl(FolderStorageImpl folderStorage, String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
-        this(folderStorage, name, System.currentTimeMillis(), category, parent, creator, XMaterial.CHEST, "-", "-", new ArrayList<>());
+    public FolderImpl(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
+        this(name, System.currentTimeMillis(), category, parent, creator, XMaterial.CHEST, "-", "-", new ArrayList<>());
     }
 
     public FolderImpl(
-            FolderStorageImpl folderStorage,
             String name,
             long creation,
             NavigatorCategory category,
@@ -69,7 +65,6 @@ public class FolderImpl implements Folder {
             String project,
             List<UUID> worlds
     ) {
-        this.folderStorage = folderStorage;
         this.name = name;
         this.creation = creation;
         this.category = category;
@@ -125,14 +120,20 @@ public class FolderImpl implements Folder {
 
     @Override
     public void addWorld(BuildWorld buildWorld) {
+        if (containsWorld(buildWorld)) {
+            return;
+        }
         this.worlds.add(buildWorld.getUniqueId());
-        this.folderStorage.assignWorldToFolder(buildWorld, this.name);
+        buildWorld.setFolder(this);
     }
 
     @Override
     public void removeWorld(BuildWorld buildWorld) {
+        if (!containsWorld(buildWorld)) {
+            return;
+        }
         this.worlds.remove(buildWorld.getUniqueId());
-        this.folderStorage.unassignWorldFromFolder(buildWorld);
+        buildWorld.setFolder(null);
     }
 
     @Override

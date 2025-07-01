@@ -363,9 +363,9 @@ public class WorldDataImpl implements WorldData {
             WorldService worldService = JavaPlugin.getPlugin(BuildSystemPlugin.class).getWorldService();
             BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(this.worldName);
             if (buildWorld != null) {
-                Folder folder = worldService.getFolderStorage().getAssignedFolder(buildWorld);
-                if (folder != null) {
-                    return this.overrideProvider.apply(folder);
+                Folder assignedFolder = buildWorld.getFolder();
+                if (assignedFolder != null) {
+                    return this.overrideProvider.apply(assignedFolder);
                 }
             }
 

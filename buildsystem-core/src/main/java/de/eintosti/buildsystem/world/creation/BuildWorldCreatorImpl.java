@@ -240,14 +240,17 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
                 this.worldType,
                 this.creationDate,
                 this.isPrivate,
-                this.customGenerator
+                this.customGenerator,
+                this.folder
         );
 
-        buildWorld.getData().lastLoaded().set(System.currentTimeMillis());
-        this.worldStorage.addBuildWorld(buildWorld);
+        // Also store the world in the folder
         if (this.folder != null) {
             this.folder.addWorld(buildWorld);
         }
+
+        buildWorld.getData().lastLoaded().set(System.currentTimeMillis());
+        this.worldStorage.addBuildWorld(buildWorld);
 
         return buildWorld;
     }

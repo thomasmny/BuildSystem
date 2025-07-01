@@ -68,13 +68,13 @@ public class WorldServiceImpl implements WorldService {
 
     public WorldServiceImpl(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.worldStorage = new WorldStorageFactory(plugin).createStorage();
-        this.folderStorage = new FolderStorageFactory(plugin).createStorage();
+        this.worldStorage = new WorldStorageFactory(plugin).createStorage(this);
+        this.folderStorage = new FolderStorageFactory(plugin).createStorage(this);
     }
 
     public void init() {
-        this.worldStorage.loadWorlds();
         this.folderStorage.loadFolders();
+        this.worldStorage.loadWorlds();
     }
 
     @Override
@@ -270,10 +270,7 @@ public class WorldServiceImpl implements WorldService {
             return CompletableFuture.completedFuture(null);
         }
 
-        Folder assignedFolder = this.folderStorage.getAssignedFolder(buildWorld);
-        if (assignedFolder != null) {
-            assignedFolder.removeWorld(buildWorld);
-        }
+        buildWorld.setFolder(null);
 
         Messages.sendMessage(player, "worlds_delete_started", Map.entry("%world%", worldName));
         removePlayersFromWorld(worldName, "worlds_delete_players_world");
