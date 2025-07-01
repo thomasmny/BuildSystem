@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.util.WorldPermissions;
 import de.eintosti.buildsystem.api.world.util.WorldTeleporter;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
@@ -40,6 +41,7 @@ import de.eintosti.buildsystem.world.util.WorldUnloaderImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
@@ -58,6 +60,8 @@ public final class BuildWorldImpl implements BuildWorld {
     private final UUID uuid;
     private String name;
     private boolean loaded;
+    @Nullable
+    private Folder folder;
 
     private final BuildWorldType worldType;
     private final WorldDataImpl worldData;
@@ -75,7 +79,8 @@ public final class BuildWorldImpl implements BuildWorld {
             BuildWorldType worldType,
             long creation,
             boolean privateWorld,
-            @Nullable CustomGenerator customGenerator
+            @Nullable CustomGenerator customGenerator,
+            @Nullable Folder folder
     ) {
         this(
                 UUID.randomUUID(),
@@ -89,7 +94,8 @@ public final class BuildWorldImpl implements BuildWorld {
                 creator,
                 new ArrayList<>(),
                 creation,
-                customGenerator
+                customGenerator,
+                folder
         );
     }
 
@@ -101,7 +107,8 @@ public final class BuildWorldImpl implements BuildWorld {
             @Nullable Builder creator,
             List<Builder> builders,
             long creation,
-            @Nullable CustomGenerator customGenerator
+            @Nullable CustomGenerator customGenerator,
+            @Nullable Folder folder
     ) {
         this.uuid = uuid;
         this.name = name;
@@ -110,6 +117,7 @@ public final class BuildWorldImpl implements BuildWorld {
         this.builders = new BuildersImpl(creator, builders);
         this.creation = creation;
         this.customGenerator = customGenerator;
+        this.folder = folder;
 
         this.worldLoader = WorldLoaderImpl.of(this);
         this.worldUnloader = WorldUnloaderImpl.of(this);
@@ -297,6 +305,46 @@ public final class BuildWorldImpl implements BuildWorld {
     @Override
     public WorldPermissions getPermissions() {
         return WorldPermissionsImpl.of(this);
+    }
+
+    @Override
+    @Nullable
+    public Folder getFolder() {
+        return folder;
+    }
+
+    @Override
+    public boolean isAssignedToFolder() {
+        return getFolder() != null;
+    }
+
+    @Override
+    public void setFolder(@Nullable Folder folder) {
+        if (Objects.equals(this.folder, folder)) {
+            // No change in folder assignment, do nothing
+            return;
+        }
+
+        Folder oldFolder = this.folder;
+
+        // World is not assigned to any folder, assign it to the new folder
+        if (this.folder == null) {
+            this.folder = folder;
+            folder.addWorld(this);
+            return;
+        }
+
+        // World is currently assigned to a folder, remove it from the old folder
+        if (folder == null) {
+            this.folder = null;
+            oldFolder.removeWorld(this);
+            return;
+        }
+
+        // World is being moved to a new folder, remove it from the old folder and assign it to the new one
+        this.folder = folder;
+        oldFolder.removeWorld(this);
+        folder.addWorld(this);
     }
 
     @Override

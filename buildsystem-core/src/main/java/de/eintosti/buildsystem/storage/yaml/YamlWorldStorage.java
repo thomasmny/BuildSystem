@@ -28,6 +28,7 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import java.io.File;
@@ -63,8 +64,8 @@ public class YamlWorldStorage extends WorldStorageImpl {
     private final File file;
     private final FileConfiguration config;
 
-    public YamlWorldStorage(BuildSystemPlugin plugin) {
-        super(plugin);
+    public YamlWorldStorage(BuildSystemPlugin plugin, WorldServiceImpl worldService) {
+        super(plugin, worldService);
         this.file = new File(plugin.getDataFolder(), "worlds.yml");
         this.config = YamlConfiguration.loadConfiguration(file);
     }
@@ -180,7 +181,8 @@ public class YamlWorldStorage extends WorldStorageImpl {
                 creator,
                 builders,
                 creationDate,
-                customGenerator
+                customGenerator,
+                null // The folder will be set later
         );
     }
 

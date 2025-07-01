@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.api.storage;
 
-import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
@@ -112,21 +111,4 @@ public interface FolderStorage extends Storage<Folder> {
      * @return {@code true} if the folder exists, {@code false} otherwise
      */
     boolean folderExists(String folderName, boolean caseSensitive);
-
-    /**
-     * Checks whether the given {@link BuildWorld} is assigned to any {@link Folder}.
-     *
-     * @param buildWorld The world to check
-     * @return {@code true} if the world is in any folder; {@code false} otherwise
-     */
-    boolean isAssignedToAnyFolder(BuildWorld buildWorld);
-
-    /**
-     * Gets the {@link Folder} that contains the specified {@link BuildWorld}.
-     *
-     * @param buildWorld The world to check
-     * @return The folder containing the world, or {@code null} if the world is not in any folder
-     */
-    @Nullable
-    Folder getAssignedFolder(BuildWorld buildWorld);
 }
