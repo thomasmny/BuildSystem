@@ -209,7 +209,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
 
         Collection<Folder> folders = collectFolders();
         List<BuildWorld> standaloneWorlds = filterWorlds(collectWorlds(), worldDisplay).stream()
-                .filter(world -> !folderStorage.isAssignedToAnyFolder(world))
+                .filter(buildWorld -> !buildWorld.isAssignedToFolder())
                 .toList();
 
         List<Displayable> displayables = new ArrayList<>();

@@ -103,15 +103,6 @@ public interface WorldStorage extends Storage<BuildWorld> {
     boolean worldExists(String worldName);
 
     /**
-     * Checks if a {@link BuildWorld} with the given name exists.
-     *
-     * @param worldName     The name of the world to check
-     * @param caseSensitive Whether to check the name case-sensitive or not
-     * @return {@code true} if the world exists, {@code false} otherwise
-     */
-    boolean worldExists(String worldName, boolean caseSensitive);
-
-    /**
      * Checks if a {@link BuildWorld} exists and if the world folder exists on disk.
      *
      * @param worldName The name of the world to check
@@ -125,6 +116,7 @@ public interface WorldStorage extends Storage<BuildWorld> {
      * @param player The player who created the worlds
      * @return A list of worlds created by the player
      */
+    @Unmodifiable
     List<BuildWorld> getBuildWorldsCreatedByPlayer(Player player);
 
     /**
@@ -134,5 +126,6 @@ public interface WorldStorage extends Storage<BuildWorld> {
      * @param visibility The visibility of the worlds
      * @return A list of worlds created by the player with the given visibility
      */
+    @Unmodifiable
     List<BuildWorld> getBuildWorldsCreatedByPlayer(Player player, Visibility visibility);
 }

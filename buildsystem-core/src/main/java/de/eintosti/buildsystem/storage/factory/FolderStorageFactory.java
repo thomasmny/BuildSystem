@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.storage.factory;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlFolderStorage;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -37,9 +38,10 @@ public class FolderStorageFactory {
     /**
      * Creates a folder storage implementation based on the configured storage type.
      *
+     * @param worldService The world service implementation to be used by the storage
      * @return The folder storage implementation
      */
-    public FolderStorageImpl createStorage() {
-        return new YamlFolderStorage(plugin);
+    public FolderStorageImpl createStorage(WorldServiceImpl worldService) {
+        return new YamlFolderStorage(plugin, worldService);
     }
 } 
