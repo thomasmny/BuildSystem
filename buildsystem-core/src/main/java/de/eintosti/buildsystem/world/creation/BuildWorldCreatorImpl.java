@@ -31,6 +31,9 @@ import de.eintosti.buildsystem.config.Config.World.Default.Time;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl.WorldGenerationData.CustomGeneratorData;
+import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl.WorldGenerationData.PredefinedGeneratorData;
+import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import de.eintosti.buildsystem.world.creation.generator.VoidGenerator;
 import dev.dewy.nbt.Nbt;
 import dev.dewy.nbt.io.CompressionType;
@@ -38,6 +41,9 @@ import dev.dewy.nbt.tags.collection.CompoundTag;
 import dev.dewy.nbt.tags.primitive.IntTag;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
@@ -57,6 +63,8 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
 
     private static final String LEVEL_DAT_FILE_NAME = "level.dat";
     private static final String TEMPLATES_DIRECTORY = "templates";
+    private static final String WORLD_TYPE_FILE_NAME = ".buildsystem-generator-date.txt";
+    private static final String CUSTOM_GENERATOR_PREFIX = "GENERATOR:";
 
     private final BuildSystemPlugin plugin;
     private final WorldStorageImpl worldStorage;
@@ -277,10 +285,9 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
         }
 
         if (checkVersion && isDataVersionTooHigh()) {
-            plugin.getLogger().warning(String.format(Locale.ROOT,
-                    "\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping...",
-                    worldName, parseDataVersion(), getServerDataVersion()
-            ));
+            plugin.getLogger().warning(
+                    "\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping...".formatted(worldName, parseDataVersion(), getServerDataVersion())
+            );
             return null;
         }
 
@@ -291,6 +298,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
             applyDefaultWorldSettings(bukkitWorld);
             applyPostGenerationSettings(bukkitWorld, this.buildWorld.getType());
             updateWorldDataVersion();
+            saveGenerationData(bukkitWorld, this.buildWorld.getType(), this.customGenerator);
         }
 
         return bukkitWorld;
@@ -306,7 +314,28 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
         BuildWorldType worldType = this.worldType;
 
         if (worldType == BuildWorldType.IMPORTED && this.customGenerator != null) {
-            worldType = BuildWorldType.valueOf(this.customGenerator.name().toUpperCase(Locale.ROOT));
+            worldType = BuildWorldType.valueOf(this.customGenerator.chunkGeneratorName().toUpperCase(Locale.ROOT));
+        }
+
+        if (worldType == BuildWorldType.TEMPLATE) {
+            switch (loadGenerationData(this.worldName)) {
+                case PredefinedGeneratorData predefinedData -> {
+                    worldType = predefinedData.type();
+                }
+                case CustomGeneratorData customGeneratorData -> {
+                    this.customGenerator = customGeneratorData.getCustomGenerator(this.worldName);
+                    if (this.customGenerator == null) {
+                        plugin.getLogger().warning(
+                                "Custom generator '%s:%s' not found. Defaulting to NORMAL type.".formatted(customGeneratorData.pluginName(), customGeneratorData.chunkGeneratorName())
+                        );
+                        worldType = BuildWorldType.NORMAL;
+                    }
+                }
+                default -> {
+                    plugin.getLogger().warning("Failed to load world generation data for '%s'. Defaulting to NORMAL type.".formatted(this.worldName));
+                    worldType = BuildWorldType.NORMAL;
+                }
+            }
         }
 
         switch (worldType) {
@@ -330,8 +359,8 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
                 break;
             case CUSTOM:
                 if (this.customGenerator != null) {
-                    plugin.getLogger().info("Using custom world generator: " + customGenerator.name());
                     worldCreator.generator(this.customGenerator.chunkGenerator());
+                    plugin.getLogger().info("Using custom world generator: " + this.customGenerator);
                 }
                 // Fall-through to NORMAL for default settings
             default: // NORMAL
@@ -442,6 +471,93 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
         }
     }
 
+    /**
+     * Saves the world generation setting for a given {@link World} to a dedicated file within the world's folder.
+     * <p>
+     * If the {@link BuildWorldType} is {@link BuildWorldType#CUSTOM}, the specified chunk generator's name will be stored prefixed with "GENERATOR:". Otherwise, the
+     * {@link BuildWorldType}'s enum name will be stored directly.
+     * <p>
+     * This method will only write the file if it does not already exist. If the file {@link #WORLD_TYPE_FILE_NAME} is already present in the world's folder, no action will be
+     * taken, and the existing world generation setting will not be overwritten.
+     *
+     * @param world           The world for which to save the generation setting
+     * @param worldType       The type representing the world's standard type
+     * @param customGenerator The custom chunk generator, if {@code worldType} is {@link BuildWorldType#CUSTOM}. This parameter is ignored if {@code worldType} is not
+     *                        {@link BuildWorldType#CUSTOM}
+     */
+    private void saveGenerationData(World world, BuildWorldType worldType, @Nullable CustomGenerator customGenerator) {
+        Path path = Path.of(world.getWorldFolder() + File.separator + WORLD_TYPE_FILE_NAME);
+        if (path.toFile().exists()) {
+            return;
+        }
+
+        String contentToSave;
+        if (worldType == BuildWorldType.CUSTOM) {
+            if (customGenerator == null) {
+                plugin.getLogger().warning("Attempted to save CUSTOM world type for world %s without a custom generator. Defaulting to NORMAL type.".formatted(world.getName()));
+                contentToSave = BuildWorldType.NORMAL.name();
+            } else {
+                contentToSave = CUSTOM_GENERATOR_PREFIX + customGenerator;
+            }
+        } else {
+            contentToSave = worldType.name();
+        }
+
+        try {
+            Files.writeString(path, contentToSave, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+        } catch (IOException e) {
+            plugin.getLogger().log(
+                    Level.WARNING,
+                    "Failed to save world generation setting for world %s (type: %s, generator: %s)".formatted(world.getName(), worldType.name(), customGenerator),
+                    e
+            );
+        }
+    }
+
+    /**
+     * Retrieves the world generation setting for a specific world identified by its name. It reads the setting from a dedicated file within the world's folder.
+     * <p>
+     * The file's content is interpreted: if it starts with "GENERATOR:", the rest is considered the custom chunk generator name. Otherwise, the content is parsed as a
+     * {@link BuildWorldType} enum constant (case-insensitively).
+     *
+     * @param worldName The name of the world for which to retrieve the generation setting
+     * @return A {@link WorldGenerationData} object representing either a {@link PredefinedGeneratorData} or a {@link CustomGeneratorData}, or {@code null} if the file does not
+     * exist or an error occurs while loading
+     */
+    private WorldGenerationData loadGenerationData(String worldName) {
+        BuildWorldType defaultType = BuildWorldType.NORMAL;
+
+        Path filePath = Path.of(plugin.getServer().getWorldContainer().getAbsolutePath(), worldName, WORLD_TYPE_FILE_NAME);
+        if (!filePath.toFile().exists()) {
+            return new PredefinedGeneratorData(defaultType);
+        }
+
+        String content;
+        try {
+            content = Files.readString(filePath).trim();
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to load world generation setting for world %s. Defaulting to %s.".formatted(worldName, defaultType), e);
+            return new PredefinedGeneratorData(defaultType);
+        }
+
+        if (content.startsWith(CUSTOM_GENERATOR_PREFIX)) {
+            String[] generatorData = content.substring(CUSTOM_GENERATOR_PREFIX.length()).trim().split(":");
+            if (generatorData.length != 2) {
+                plugin.getLogger().warning("Invalid custom generator name in file for world %s. Content: '%s'. Defaulting to %s.".formatted(worldName, content, defaultType));
+                return new PredefinedGeneratorData(defaultType);
+            }
+            return new CustomGeneratorData(generatorData[0], generatorData[1]);
+        } else {
+            try {
+                BuildWorldType type = BuildWorldType.valueOf(content.toUpperCase());
+                return new PredefinedGeneratorData(type);
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("Invalid BuildWorldType in file for world %s. Content: '%s'. Defaulting to %s.".formatted(worldName, content, defaultType));
+                return new PredefinedGeneratorData(defaultType);
+            }
+        }
+    }
+
     private void teleportAfterCreation(Player player) {
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (buildWorld == null) {
@@ -450,5 +566,20 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
 
         buildWorld.getUnloader().manageUnload();
         buildWorld.getTeleporter().teleport(player);
+    }
+
+    public interface WorldGenerationData {
+
+        record PredefinedGeneratorData(BuildWorldType type) implements WorldGenerationData {
+
+        }
+
+        record CustomGeneratorData(String pluginName, String chunkGeneratorName) implements WorldGenerationData {
+
+            @Nullable
+            public CustomGenerator getCustomGenerator(String worldName) {
+                return CustomGeneratorImpl.of("%s:%s".formatted(pluginName, chunkGeneratorName), worldName);
+            }
+        }
     }
 }

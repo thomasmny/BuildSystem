@@ -26,7 +26,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
-import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -153,7 +152,7 @@ public final class UpdateChecker {
             int responseCode;
 
             try {
-                URL url = URI.create(String.format(Locale.ROOT, UPDATE_URL, pluginID)).toURL();
+                URL url = URI.create(UPDATE_URL.formatted(pluginID)).toURL();
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.addRequestProperty("User-Agent", USER_AGENT);
                 responseCode = connection.getResponseCode();

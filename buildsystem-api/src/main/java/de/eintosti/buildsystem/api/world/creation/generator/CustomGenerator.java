@@ -30,11 +30,18 @@ import org.jspecify.annotations.NullMarked;
 public interface CustomGenerator {
 
     /**
+     * Gets the name plugin providing the chunk generator.
+     *
+     * @return The name of the plugin
+     */
+    String pluginName();
+
+    /**
      * Gets the name of the chunk generator.
      *
-     * @return The name
+     * @return The name of the chunk generator
      */
-    String name();
+    String chunkGeneratorName();
 
     /**
      * Gets the chunk generator.
