@@ -264,6 +264,7 @@ public class Messages {
         setMessage(sb, "worlds_delete_unknown_world", "%prefix% &cUnknown world.");
         setMessage(sb, "worlds_delete_unknown_directory", "%prefix% &cError while deleting world: Directory not found!");
         setMessage(sb, "worlds_delete_canceled", "%prefix% &7The deletion of &b%world% &7was canceled.");
+        setMessage(sb, "worlds_delete_error", "%prefix% &7cThe deletion of %world% failed.");
         setMessage(sb, "worlds_delete_started", "%prefix% &7The deletion of &b%world% &7has started...");
         setMessage(sb, "worlds_delete_finished", "%prefix% &7The world was &asuccessfully &7deleted.");
         setMessage(sb, "worlds_delete_players_world", "%prefix% &7&oThe world you were in was deleted.");

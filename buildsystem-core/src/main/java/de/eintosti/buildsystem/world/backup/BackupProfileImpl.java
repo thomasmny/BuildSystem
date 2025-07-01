@@ -122,7 +122,11 @@ public class BackupProfileImpl implements BackupProfile {
         boolean isSpawn = spawnManager.spawnExists() && spawnManager.getSpawnWorld().equals(world);
 
         this.buildWorld.getUnloader().forceUnload(false);
-        FileUtils.deleteDirectory(new File(Bukkit.getWorldContainer(), worldName));
+        try {
+            FileUtils.deleteDirectory(new File(Bukkit.getWorldContainer(), worldName));
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.SEVERE, "Error while deleting backup file", e);
+        }
 
         try (ZipFile zip = new ZipFile(backupFile)) {
             zip.extractAll(FileUtils.resolve(Bukkit.getWorldContainer().toPath(), this.buildWorld.getName()).toString());
