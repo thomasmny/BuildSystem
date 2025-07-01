@@ -33,6 +33,7 @@ import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -127,7 +128,7 @@ public class FolderSubCommand implements SubCommand {
                     return;
                 }
 
-                if (folderStorage.isAssignedToAnyFolder(buildWorld)) {
+                if (buildWorld.isAssignedToFolder()) {
                     Messages.sendMessage(player, "worlds_folder_world_already_in_another_folder", worldPlaceholder);
                     return;
                 }
@@ -217,7 +218,9 @@ public class FolderSubCommand implements SubCommand {
             return;
         }
 
-        if (folder.getWorldCount() > 0) {
+        boolean hasWorlds = folder.getWorldCount() > 0;
+        boolean hasSubFolders = this.folderStorage.getFolders().stream().anyMatch(f -> Objects.equals(f.getParent(), folder));
+        if (hasWorlds || hasSubFolders) {
             Messages.sendMessage(player, "worlds_folder_not_empty",
                     Map.entry("%folder%", folder.getName())
             );

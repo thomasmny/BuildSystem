@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.storage.factory;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlWorldStorage;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -37,9 +38,10 @@ public class WorldStorageFactory {
     /**
      * Creates a world storage implementation based on the configured storage type.
      *
+     * @param worldService The world service implementation to be used by the storage
      * @return The world storage implementation
      */
-    public WorldStorageImpl createStorage() {
-        return new YamlWorldStorage(plugin);
+    public WorldStorageImpl createStorage(WorldServiceImpl worldService) {
+        return new YamlWorldStorage(plugin, worldService);
     }
 } 
