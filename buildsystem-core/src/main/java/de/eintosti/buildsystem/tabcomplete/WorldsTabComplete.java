@@ -227,12 +227,12 @@ public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
                                 }
 
                                 worldStorage.getBuildWorlds().stream()
-                                        .filter(world -> NavigatorCategory.of(world) == folder.getCategory())
-                                        .filter(world -> {
+                                        .filter(buildWorld -> NavigatorCategory.of(buildWorld) == folder.getCategory())
+                                        .filter(buildWorld -> {
                                             if (args[2].equalsIgnoreCase("add")) {
-                                                return !folderStorage.isAssignedToAnyFolder(world);
+                                                return !buildWorld.isAssignedToFolder();
                                             } else if (args[2].equalsIgnoreCase("remove")) {
-                                                return folder.containsWorld(world);
+                                                return folder.containsWorld(buildWorld);
                                             }
                                             return false;
                                         })

@@ -19,16 +19,17 @@ package de.eintosti.buildsystem.storage;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.FolderStorage;
-import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.display.FolderImpl;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -40,18 +41,18 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public abstract class FolderStorageImpl implements FolderStorage {
 
-    protected final BuildSystemPlugin plugin;
     protected final Logger logger;
+    protected final BuildSystemPlugin plugin;
+    protected final WorldServiceImpl worldService;
 
     private final Map<String, Folder> foldersByName;
-    private final Map<UUID, String> worldToFolderMap;
 
-    public FolderStorageImpl(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+    public FolderStorageImpl(BuildSystemPlugin plugin, WorldServiceImpl worldService) {
         this.logger = plugin.getLogger();
+        this.plugin = plugin;
+        this.worldService = worldService;
 
         this.foldersByName = new HashMap<>();
-        this.worldToFolderMap = new HashMap<>();
     }
 
     public void loadFolders() {
@@ -63,12 +64,6 @@ public abstract class FolderStorageImpl implements FolderStorage {
             logger.severe("Failed to load folders from storage: " + e.getMessage());
             return;
         }
-
-        this.worldToFolderMap.putAll(
-                this.foldersByName.values().stream()
-                        .flatMap(folder -> folder.getWorldUUIDs().stream().map(world -> Map.entry(world, folder.getName())))
-                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
-        );
     }
 
     @Override
@@ -84,7 +79,7 @@ public abstract class FolderStorageImpl implements FolderStorage {
 
     @Override
     public Folder createFolder(String folderName, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
-        Folder folder = new FolderImpl(this, folderName, category, parent, creator);
+        Folder folder = new FolderImpl(folderName, category, parent, creator);
         foldersByName.put(folderName, folder);
         return folder;
     }
@@ -96,9 +91,12 @@ public abstract class FolderStorageImpl implements FolderStorage {
             return;
         }
 
-        for (UUID worldUuid : removed.getWorldUUIDs()) {
-            worldToFolderMap.remove(worldUuid);
-        }
+        WorldStorage worldStorage = plugin.getWorldService().getWorldStorage();
+        removed.getWorldUUIDs()
+                .stream()
+                .map(worldStorage::getBuildWorld)
+                .filter(Objects::nonNull)
+                .forEach(buildWorld -> buildWorld.setFolder(null));
     }
 
     @Override
@@ -138,36 +136,5 @@ public abstract class FolderStorageImpl implements FolderStorage {
                     .findFirst()
                     .orElse(null);
         }
-    }
-
-    /**
-     * Caches which {@link Folder} a {@link BuildWorld} is assigned to.
-     *
-     * @param buildWorld The world to assign
-     * @param folderName The name of the folder
-     */
-    public void assignWorldToFolder(BuildWorld buildWorld, String folderName) {
-        this.worldToFolderMap.put(buildWorld.getUniqueId(), folderName);
-    }
-
-    /**
-     * Removes the mapping of a {@link BuildWorld} from its assigned {@link Folder}.
-     *
-     * @param buildWorld The world to unassign
-     */
-    public void unassignWorldFromFolder(BuildWorld buildWorld) {
-        this.worldToFolderMap.remove(buildWorld.getUniqueId());
-    }
-
-    @Override
-    public boolean isAssignedToAnyFolder(BuildWorld buildWorld) {
-        return worldToFolderMap.containsKey(buildWorld.getUniqueId());
-    }
-
-    @Nullable
-    @Override
-    public Folder getAssignedFolder(BuildWorld buildWorld) {
-        String folderName = worldToFolderMap.get(buildWorld.getUniqueId());
-        return getFolder(folderName);
     }
 }

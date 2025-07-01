@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.display.FolderImpl;
 import java.io.File;
 import java.io.IOException;
@@ -53,8 +54,8 @@ public class YamlFolderStorage extends FolderStorageImpl {
     private final File file;
     private final FileConfiguration config;
 
-    public YamlFolderStorage(BuildSystemPlugin plugin) {
-        super(plugin);
+    public YamlFolderStorage(BuildSystemPlugin plugin, WorldServiceImpl worldService) {
+        super(plugin, worldService);
         this.file = new File(plugin.getDataFolder(), "folders.yml");
         this.config = YamlConfiguration.loadConfiguration(file);
     }
@@ -158,7 +159,6 @@ public class YamlFolderStorage extends FolderStorageImpl {
         List<UUID> worlds = config.getStringList(path + ".worlds").stream().map(UUID::fromString).collect(Collectors.toList());
 
         return new FolderImpl(
-                this,
                 folderName,
                 creation,
                 category,
