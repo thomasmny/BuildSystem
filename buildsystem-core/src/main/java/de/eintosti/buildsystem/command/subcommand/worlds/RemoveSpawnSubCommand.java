@@ -50,7 +50,7 @@ public class RemoveSpawnSubCommand implements SubCommand {
             return;
         }
 
-        buildWorld.getData().customSpawn().set(null);
+        buildWorld.getData().customSpawn().set("");
         Messages.sendMessage(player, "worlds_removespawn_world_spawn_removed",
                 Map.entry("%world%", buildWorld.getName())
         );

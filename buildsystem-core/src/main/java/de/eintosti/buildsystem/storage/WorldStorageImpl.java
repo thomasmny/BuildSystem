@@ -92,23 +92,16 @@ public abstract class WorldStorageImpl implements WorldStorage {
     }
 
     @Override
-    public BuildWorldCreatorImpl createBuildWorld(String name) {
-        return new BuildWorldCreatorImpl(plugin, name);
-    }
-
-    @Override
     @Unmodifiable
     public Collection<BuildWorld> getBuildWorlds() {
         return Collections.unmodifiableCollection(buildWorldsByUuid.values());
     }
 
-    @Override
     public void addBuildWorld(BuildWorld buildWorld) {
         this.buildWorldsByUuid.put(buildWorld.getUniqueId(), buildWorld);
         this.worldIdentifiers.put(buildWorld.getUniqueId(), buildWorld.getName().toLowerCase());
     }
 
-    @Override
     public void removeBuildWorld(BuildWorld buildWorld) {
         UUID worldId = buildWorld.getUniqueId();
         this.buildWorldsByUuid.remove(worldId);
