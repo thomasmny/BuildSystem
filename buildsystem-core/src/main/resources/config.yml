@@ -61,6 +61,10 @@ world:
       - world
       - world_nether
       - worth_the_end
+  deletion-blacklist:
+    - world
+    - world_nether
+    - worth_the_end
   backup:
     max-backups-per-world: 5 # Maximum: 18
     auto-backup:
