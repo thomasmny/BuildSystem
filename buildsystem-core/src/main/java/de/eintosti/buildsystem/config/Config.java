@@ -225,6 +225,11 @@ public class Config {
          * The delay in seconds for the /build import all command.
          */
         public static int importAllDelay = 30;
+        /**
+         * A blacklist of worlds that cannot be deleted. This is used to prevent deletion of important worlds.
+         */
+        public static Set<String> deletionBlacklist = Set.of("world", "world_nether", "worth_the_end");
+        ;
 
         /**
          * Stores default world settings.
@@ -443,6 +448,7 @@ public class Config {
         World.lockWeather = CONFIG.getBoolean("world.lock-weather", true);
         World.invalidCharacters = CONFIG.getString("world.invalid-characters", "^\b$");
         World.importAllDelay = CONFIG.getInt("world.import-all.delay", 30);
+        World.deletionBlacklist = CONFIG.getStringList("world.deletion-blacklist").stream().map(String::toLowerCase).collect(Collectors.toSet());
         // World - Default
         Default.worldBoarderSize = CONFIG.getInt("world.default.worldborder.size", 6000000);
         Default.difficulty = Difficulty.valueOf(CONFIG.getString("world.default.difficulty", "PEACEFUL").toUpperCase(Locale.ROOT));

@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
+import de.eintosti.buildsystem.config.Config.World;
 import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.world.modification.DeleteInventory;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
@@ -56,6 +57,11 @@ public class DeleteSubCommand implements SubCommand {
 
         if (buildWorld == null) {
             Messages.sendMessage(player, "worlds_delete_unknown_world");
+            return;
+        }
+
+        if (World.deletionBlacklist.contains(buildWorld.getName().toLowerCase())) {
+            Messages.sendMessage(player, "worlds_delete_forbidden");
             return;
         }
 
