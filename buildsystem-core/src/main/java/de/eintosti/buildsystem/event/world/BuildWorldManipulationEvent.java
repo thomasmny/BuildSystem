@@ -17,24 +17,28 @@
  */
 package de.eintosti.buildsystem.event.world;
 
-import de.eintosti.buildsystem.world.BuildWorld;
+import de.eintosti.buildsystem.api.event.world.BuildWorldEvent;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.listener.WorldManipulateListener;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * This event reduces duplicated code.
- * <p>It will be called when</p>
+ * <p>
+ * It will be called when:
  * <ul>
  *     <li>Breaking Blocks</li>
  *     <li>Placing Blocks</li>
- *     <li>Other modification related stuff</li>
+ *     <li>Other modification-related stuff</li>
  * </ul>
  * Cancelling this event will affect the parent-Event, which has caused the ManipulationEvent to fire.
- * <p>Expect the manipulation event to be cancelled at {@link org.bukkit.event.EventPriority#LOW} if the player is not allowed to interact with the world.</p>
+ * <p>Expect the manipulation event to be canceled at {@link org.bukkit.event.EventPriority#LOW} if the player is not allowed to interact with the world.</p>
  *
- * @see de.eintosti.buildsystem.listener.WorldManipulateListener
- * @since TODO
+ * @see WorldManipulateListener
  */
+@NullMarked
 public class BuildWorldManipulationEvent extends BuildWorldEvent implements Cancellable {
 
     private final Cancellable parentEvent;
@@ -46,17 +50,11 @@ public class BuildWorldManipulationEvent extends BuildWorldEvent implements Canc
         this.player = player;
     }
 
-    /**
-     * @return whether the parent event has been cancelled
-     */
     @Override
     public boolean isCancelled() {
         return parentEvent.isCancelled();
     }
 
-    /**
-     * @param cancelled true if the parent event should be cancelled.
-     */
     @Override
     public void setCancelled(boolean cancelled) {
         parentEvent.setCancelled(cancelled);
@@ -69,9 +67,12 @@ public class BuildWorldManipulationEvent extends BuildWorldEvent implements Canc
         return parentEvent;
     }
 
+    /**
+     * Returns the player manipulating the {@link BuildWorld}.
+     *
+     * @return The player manipulating the world
+     */
     public Player getPlayer() {
         return player;
     }
-
-
 }

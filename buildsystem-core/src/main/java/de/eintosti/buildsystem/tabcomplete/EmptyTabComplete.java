@@ -17,22 +17,18 @@
  */
 package de.eintosti.buildsystem.tabcomplete;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
-/**
- * The tab completer which is used for commands which do not have any arguments.
- *
- * @author einTosti
- */
+@NullMarked
 public class EmptyTabComplete implements TabCompleter {
 
-    public EmptyTabComplete(BuildSystem plugin) {
+    public EmptyTabComplete(BuildSystemPlugin plugin) {
         plugin.getCommand("back").setTabCompleter(this);
         plugin.getCommand("blocks").setTabCompleter(this);
         plugin.getCommand("buildsystem").setTabCompleter(this);
@@ -42,7 +38,7 @@ public class EmptyTabComplete implements TabCompleter {
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         return new ArrayList<>();
     }
 }

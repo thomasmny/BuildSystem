@@ -17,13 +17,14 @@
  */
 package de.eintosti.buildsystem.tabcomplete;
 
-import de.eintosti.buildsystem.util.StringUtils;
 import java.util.List;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 abstract class ArgumentSorter {
 
     public void addArgument(String input, String argument, List<String> arrayList) {
-        if (input.equals("") || StringUtils.startsWithIgnoreCase(argument, input)) {
+        if (input.isEmpty() || argument.toLowerCase().startsWith(input.toLowerCase())) {
             arrayList.add(argument);
         }
     }

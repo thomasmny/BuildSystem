@@ -17,7 +17,7 @@
  */
 package de.eintosti.buildsystem.tabcomplete;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.Bukkit;
@@ -25,31 +25,28 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class BuildTabComplete extends ArgumentSorter implements TabCompleter {
 
-    public BuildTabComplete(BuildSystem plugin) {
+    public BuildTabComplete(BuildSystemPlugin plugin) {
         plugin.getCommand("build").setTabCompleter(this);
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> arrayList = new ArrayList<>();
-
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             return arrayList;
         }
-        Player player = (Player) sender;
 
         if (!player.hasPermission("buildsystem.build")) {
             return arrayList;
         }
 
-        if (args.length == 1) {
-            if (!player.hasPermission("buildsystem.build.other")) {
-                Bukkit.getOnlinePlayers().forEach(pl -> addArgument(args[0], pl.getName(), arrayList));
-            }
+        if (args.length == 1 && !player.hasPermission("buildsystem.build.other")) {
+            Bukkit.getOnlinePlayers().forEach(pl -> addArgument(args[0], pl.getName(), arrayList));
         }
 
         return arrayList;

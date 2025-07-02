@@ -18,7 +18,9 @@
 package de.eintosti.buildsystem.command.subcommand;
 
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public interface SubCommand {
 
     void execute(Player player, String[] args);

@@ -17,6 +17,9 @@
  */
 package de.eintosti.buildsystem;
 
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -38,14 +41,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class Messages {
 
-    private static final BuildSystem PLUGIN = JavaPlugin.getPlugin(BuildSystem.class);
+    private static final BuildSystemPlugin PLUGIN = JavaPlugin.getPlugin(BuildSystemPlugin.class);
     private static final Map<String, String> MESSAGES = new HashMap<>();
-    private static final boolean PLACEHOLDER_API_ENABLED =
-            Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null;
+    private static final boolean PLACEHOLDER_API_ENABLED = Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null;
 
     private static YamlConfiguration config;
 
@@ -79,6 +81,7 @@ public class Messages {
         setMessage(sb, "loading_world", "&7Loading &b%world%&7...");
         setMessage(sb, "world_not_loaded", "&cWorld is not loaded!");
         setMessage(sb, "enter_world_name", "&7Enter &bWorld Name");
+        setMessage(sb, "enter_folder_name", "&7Enter &bFolder Name");
         setMessage(sb, "enter_generator_name", "&7Enter &bGenerator Name");
         setMessage(sb, "enter_world_creator", "&7Enter &bWorld Creator");
         setMessage(sb, "enter_world_permission", "&7Enter &bPermission");
@@ -228,12 +231,19 @@ public class Messages {
         addSpacer(sb, "");
         addSpacer(sb, "# /worlds");
         setMessage(sb, "worlds_addbuilder_usage", "%prefix% &7Usage: &b/worlds addBuilder [player]");
-        setMessage(sb, "worlds_addbuilder_error", "%prefix% &cError: Please try again!");
         setMessage(sb, "worlds_addbuilder_unknown_world", "%prefix% &cWorld must be imported: /worlds import <world>");
         setMessage(sb, "worlds_addbuilder_player_not_found", "%prefix% &cThat player was not found.");
         setMessage(sb, "worlds_addbuilder_already_creator", "%prefix% &cYou are already the creator.");
         setMessage(sb, "worlds_addbuilder_already_added", "%prefix% &cThis player is already a builder.");
         setMessage(sb, "worlds_addbuilder_added", "%prefix% &b%builder% &7was &aadded &7as a builder.");
+        addSpacer(sb, "");
+        setMessage(sb, "worlds_backup_usage", "%prefix% &7Usage: &b/worlds backup [create]");
+        setMessage(sb, "worlds_backup_unknown_world", "%prefix% &cUnknown world.");
+        setMessage(sb, "worlds_backup_world_not_imported", "%prefix% &cWorld must be imported: /worlds import <world>");
+        setMessage(sb, "worlds_backup_created", "%prefix% &7Successfully &acreated &7a backup of &b%world%&7.");
+        setMessage(sb, "worlds_backup_failed", "%prefix% &cUnable to create a backup of %world%.");
+        setMessage(sb, "worlds_backup_restoration_in_progress", "%prefix% &7&oThe world you are in is being restored...");
+        setMessage(sb, "worlds_backup_restoration_successful", "%prefix% &7The world has been successfully reset to the state from &a%timestamp%&7.");
         addSpacer(sb, "");
         setMessage(sb, "worlds_builders_usage", "%prefix% &7Usage: &b/worlds builders <world>");
         setMessage(sb, "worlds_builders_unknown_world", "%prefix% &cUnknown world.");
@@ -253,15 +263,34 @@ public class Messages {
         setMessage(sb, "worlds_delete_usage", "%prefix% &7Usage: &b/worlds delete <world>");
         setMessage(sb, "worlds_delete_unknown_world", "%prefix% &cUnknown world.");
         setMessage(sb, "worlds_delete_unknown_directory", "%prefix% &cError while deleting world: Directory not found!");
-        setMessage(sb, "worlds_delete_error", "%prefix% &cError while deleting world: Please try again!");
+        setMessage(sb, "worlds_delete_forbidden", "%prefix% &cYou are not allowed to delete this world.");
         setMessage(sb, "worlds_delete_canceled", "%prefix% &7The deletion of &b%world% &7was canceled.");
+        setMessage(sb, "worlds_delete_error", "%prefix% &7cThe deletion of %world% failed.");
         setMessage(sb, "worlds_delete_started", "%prefix% &7The deletion of &b%world% &7has started...");
         setMessage(sb, "worlds_delete_finished", "%prefix% &7The world was &asuccessfully &7deleted.");
         setMessage(sb, "worlds_delete_players_world", "%prefix% &7&oThe world you were in was deleted.");
         addSpacer(sb, "");
         setMessage(sb, "worlds_edit_usage", "%prefix% &7Usage: &b/worlds edit <world>");
         setMessage(sb, "worlds_edit_unknown_world", "%prefix% &cUnknown world.");
-        setMessage(sb, "worlds_edit_error", "%prefix% &cError: Please try again.");
+        addSpacer(sb, "");
+        setMessage(sb, "worlds_folder_usage", "%prefix% &7Usage: &b/worlds folder <folder> <add|remove|delete|setPermission|setProject|setItem> [<world>]");
+        setMessage(sb, "worlds_folder_unknown_folder", "%prefix% &cUnknown folder.");
+        setMessage(sb, "worlds_folder_unknown_world", "%prefix% &cUnknown world.");
+        setMessage(sb, "worlds_folder_world_already_in_folder", "%prefix% &c%world% is already contained within %folder%.");
+        setMessage(sb, "worlds_folder_world_already_in_another_folder", "%prefix% &c%world% is already contained within another folder.");
+        setMessage(sb, "worlds_folder_world_category_mismatch", "%prefix% &cThe folder's category (%folder_category%) does not match the world's category (%world_category%).");
+        setMessage(sb, "worlds_folder_world_not_in_folder", "%prefix% &c%world% is not contained within %folder%.");
+        setMessage(sb, "worlds_folder_world_added_to_folder", "%prefix% &b%world% &7was &aadded &7to &b%folder%&7.");
+        setMessage(sb, "worlds_folder_world_removed_from_folder", "%prefix% &b%world% &7was &cremoved &7from &b%folder%&7.");
+        setMessage(sb, "worlds_folder_exists", "%prefix% &cThis folder already exists.");
+        setMessage(sb, "worlds_folder_creation_invalid_characters", "%prefix% &7&oRemoved invalid characters from folder name.");
+        setMessage(sb, "worlds_folder_creation_name_bank", "%prefix% &cThe folder name cannot be blank.");
+        setMessage(sb, "worlds_folder_created", "%prefix% &7The folder &b%folder% &7was &asuccessfully &7created.");
+        setMessage(sb, "worlds_folder_not_empty", "%prefix% &cThe folder %folder% is not empty.");
+        setMessage(sb, "worlds_folder_deleted", "%prefix% &7The folder &b%folder% &7was &asuccessfully &7deleted.");
+        setMessage(sb, "worlds_folder_permission_set", "%prefix% &b%folder%&7's permission was successfully changed.");
+        setMessage(sb, "worlds_folder_project_set", "%prefix% &b%folder%&7's project was successfully changed.");
+        setMessage(sb, "worlds_folder_item_set", "%prefix% &b%folder%&7's item was successfully changed.");
         addSpacer(sb, "");
         setMessage(sb, "worlds_help_usage", "%prefix% &7Usage: &b/worlds help [page]");
         setMessage(sb, "worlds_help_invalid_page", "%prefix% &cInvalid page.");
@@ -317,6 +346,7 @@ public class Messages {
                 "&7&m-------------------------------------",
                 "%prefix% &7&nWorld info:&b %world%",
                 " ",
+                " &8- &7UUID: &b%uuid%",
                 " &8- &7Creator: &b%creator%",
                 " &8- &7Type: &b%type%",
                 " &8- &7Private: &b%private%",
@@ -370,7 +400,6 @@ public class Messages {
         addSpacer(sb, "");
         setMessage(sb, "worlds_setstatus_usage", "%prefix% &7Usage: &b/worlds setStatus <world>");
         setMessage(sb, "worlds_setstatus_unknown_world", "%prefix% &cUnknown world.");
-        setMessage(sb, "worlds_setstatus_error", "%prefix% &cPlease try again.");
         setMessage(sb, "worlds_setstatus_set", "%prefix% &b%world%&7's status was was changed to: %status%&7.");
         addSpacer(sb, "");
         setMessage(sb, "worlds_setpermission_usage", "%prefix% &7Usage: &b/worlds setPermission <world>");
@@ -425,7 +454,8 @@ public class Messages {
         addSpacer(sb, "# World Navigator");
         setMessage(sb, "world_navigator_title", "&3» &8World Navigator");
         setMessage(sb, "world_navigator_no_worlds", "&c&nNo worlds available");
-        setMessage(sb, "world_navigator_create_world", "&bCreate World");
+        setMessage(sb, "world_navigator_create_world", "&bCreate a Public World");
+        setMessage(sb, "world_navigator_create_folder", "&bCreate a Folder");
         setMessage(sb, "world_item_title", "&3&l%world%");
         setMessage(sb, "world_item_lore_normal", Arrays.asList(
                 "&7Status&8: %status%",
@@ -449,6 +479,14 @@ public class Messages {
                 "",
                 "&8- &7&oLeft click&8: &7Teleport",
                 "&8- &7&oRight click&8: &7Edit"
+        ));
+        setMessage(sb, "folder_title", "&3» &8%folder%");
+        setMessage(sb, "folder_item_title", "&3&l%folder%");
+        setMessage(sb, "folder_item_lore", Arrays.asList(
+                "&7Project&8: &b%project%",
+                "&7Permission&8: &b%permission%",
+                "",
+                "&7Worlds&8: &b%worlds%"
         ));
         setMessage(sb, "world_item_builders_builder_template", "&b%builder%&7, ");
         setMessage(sb, "world_sort_title", "&bSort");
@@ -479,17 +517,33 @@ public class Messages {
         addSpacer(sb, "# Private Worlds");
         setMessage(sb, "private_title", "&3» &8Private Worlds");
         setMessage(sb, "private_no_worlds", "&c&nNo worlds available");
-        setMessage(sb, "private_create_world", "&bCreate a private world");
+        setMessage(sb, "private_create_world", "&bCreate a Private World");
+        addSpacer(sb, "");
+        addSpacer(sb, "# World Backups");
+        setMessage(sb, "backups_title", "&3» &8World Backups");
+        setMessage(sb, "backups_information_name", "&aInformation");
+        setMessage(sb, "backups_information_lore", Arrays.asList(
+                "",
+                "&7A backup is automatically created",
+                "&7every &a%interval% minutes &7in which a",
+                "&7builder is present in the world.",
+                "",
+                "&7Next backup in: &a%remaining%"
+        ));
+        setMessage(sb, "backups_backup_name", "&a%timestamp%");
+        setMessage(sb, "restore_backup_title", "&3» &8Restore Backup");
+        setMessage(sb, "restore_backup_confirm_name", "&aConfirm");
+        setMessage(sb, "restore_backup_confirm_lore", Arrays.asList(
+                "",
+                "&7Are you sure you to &arestore &7to the",
+                "&7backup from &f%timestamp%&7?",
+                "",
+                "&c&nWarning&c: &7This action &cCANNOT &7be undone."
+        ));
+        setMessage(sb, "restore_backup_cancel_name", "&cCancel");
         addSpacer(sb, "");
         addSpacer(sb, "# Setup");
         setMessage(sb, "setup_title", "&3» &8Setup");
-        setMessage(sb, "setup_create_item_name", "&bCreate World Item");
-        setMessage(sb, "setup_create_item_lore", Arrays.asList(
-                "&7The item which is shown",
-                "&7when you create a world.",
-                "", "&7&nTo change&7:",
-                "&8» &7&oDrag new item onto old one"
-        ));
         setMessage(sb, "setup_default_item_name", "&bDefault Item");
         setMessage(sb, "setup_default_item_lore", Arrays.asList(
                 "&7The item which a world",
@@ -536,6 +590,7 @@ public class Messages {
         setMessage(sb, "type_custom", "Custom");
         setMessage(sb, "type_template", "Template");
         setMessage(sb, "type_private", "Private");
+        setMessage(sb, "type_imported", "Imported");
         addSpacer(sb, "");
         addSpacer(sb, "# World Status");
         setMessage(sb, "status_title", "&8Status &7» &3%world%");
@@ -910,6 +965,10 @@ public class Messages {
         return MESSAGES.get("prefix");
     }
 
+    public static void sendPermissionError(CommandSender sender) {
+        Messages.sendMessage(sender, "no_permissions");
+    }
+
     @SafeVarargs
     public static void sendMessage(CommandSender sender, String key, Map.Entry<String, Object>... placeholders) {
         Player player = sender instanceof Player ? (Player) sender : null;
@@ -974,6 +1033,43 @@ public class Messages {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Gets the message key for the {@link BuildWorldStatus}'s display name.
+     *
+     * @return The type's display name message key
+     */
+    public static String getMessageKey(BuildWorldStatus status) {
+        return switch (status) {
+            case NOT_STARTED -> "status_not_started";
+            case IN_PROGRESS -> "status_in_progress";
+            case ALMOST_FINISHED -> "status_almost_finished";
+            case FINISHED -> "status_finished";
+            case ARCHIVE -> "status_archive";
+            case HIDDEN -> "status_hidden";
+        };
+    }
+
+    /**
+     * Get the message key for the {@link BuildWorldType}'s display name.
+     *
+     * @return The type's display name message key, or {@code null} for {@link BuildWorldType#IMPORTED} and {@link BuildWorldType#UNKNOWN}
+     */
+    @Nullable
+    public static String getMessageKey(BuildWorldType type) {
+        return switch (type) {
+            case NORMAL -> "type_normal";
+            case FLAT -> "type_flat";
+            case NETHER -> "type_nether";
+            case END -> "type_end";
+            case VOID -> "type_void";
+            case TEMPLATE -> "type_template";
+            case PRIVATE -> "type_private";
+            case IMPORTED -> "type_imported";
+            case CUSTOM -> "type_custom";
+            case UNKNOWN -> null; // No message key for unknown worlds
+        };
+    }
+
     @SafeVarargs
     private static String replacePlaceholders(String query, Map.Entry<String, Object>... placeholders) {
         if (placeholders.length == 0) {
@@ -988,7 +1084,7 @@ public class Messages {
 
     public static String formatDate(long millis) {
         return millis > 0
-                ? new SimpleDateFormat(PLUGIN.getConfigValues().getDateFormat()).format(millis)
+                ? new SimpleDateFormat(Config.Messages.dateFormat).format(millis)
                 : "-";
     }
 }

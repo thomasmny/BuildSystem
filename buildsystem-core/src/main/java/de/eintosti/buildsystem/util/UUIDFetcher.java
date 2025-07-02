@@ -35,9 +35,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Bukkit;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @SuppressWarnings("deprecation")
+@NullMarked
 public class UUIDFetcher {
 
     private static final String UUID_URL = "https://api.mojang.com/users/profiles/minecraft/%s";
@@ -66,7 +68,7 @@ public class UUIDFetcher {
         }
 
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(String.format(Locale.ROOT, UUID_URL, name)).openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URL(UUID_URL.formatted(name)).openConnection();
             connection.setReadTimeout(5000);
 
             JsonObject jsonObject;
@@ -108,7 +110,7 @@ public class UUIDFetcher {
         }
 
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(String.format(Locale.ROOT, NAME_URL, UUIDTypeAdapter.fromUUID(uuid))).openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URL(NAME_URL.formatted(UUIDTypeAdapter.fromUUID(uuid))).openConnection();
             connection.setReadTimeout(5000);
 
             JsonArray nameHistory;
