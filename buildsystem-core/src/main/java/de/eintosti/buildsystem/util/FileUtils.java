@@ -53,6 +53,10 @@ public final class FileUtils {
     private FileUtils() {
     }
 
+    public static Path resolve(File file, final String child) {
+        return resolve(file.toPath(), child);
+    }
+
     public static Path resolve(Path parent, final String child) {
         Path path = parent;
         try {

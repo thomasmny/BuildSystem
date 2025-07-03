@@ -129,7 +129,7 @@ public class BackupProfileImpl implements BackupProfile {
         }
 
         try (ZipFile zip = new ZipFile(backupFile)) {
-            zip.extractAll(FileUtils.resolve(Bukkit.getWorldContainer().toPath(), this.buildWorld.getName()).toString());
+            zip.extractAll(FileUtils.resolve(Bukkit.getWorldContainer(), this.buildWorld.getName()).toString());
         } catch (IOException e) {
             plugin.getLogger().warning("Failed to restore backup at: " + backupFile.getAbsolutePath());
             return;

@@ -24,7 +24,7 @@ import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.UUIDFetcher;
@@ -142,6 +142,6 @@ public class ImportSubCommand implements SubCommand {
 
     @Override
     public Argument getArgument() {
-        return WorldsTabComplete.WorldsArgument.IMPORT;
+        return WorldsTabCompleter.WorldsArgument.IMPORT;
     }
 }

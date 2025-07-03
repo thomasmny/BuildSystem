@@ -24,7 +24,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
@@ -82,6 +82,6 @@ public class SetCreatorSubCommand implements SubCommand {
 
     @Override
     public Argument getArgument() {
-        return WorldsTabComplete.WorldsArgument.SET_CREATOR;
+        return WorldsTabCompleter.WorldsArgument.SET_CREATOR;
     }
 }

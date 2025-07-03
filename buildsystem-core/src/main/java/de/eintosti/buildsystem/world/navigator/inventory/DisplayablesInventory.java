@@ -1,14 +1,27 @@
-package de.eintosti.buildsystem.navigator.inventory;
+/*
+ * Copyright (c) 2018-2025, Thomas Meaney
+ * Copyright (c) contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+package de.eintosti.buildsystem.world.navigator.inventory;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.api.navigator.settings.WorldDisplay;
-import de.eintosti.buildsystem.api.navigator.settings.WorldFilter;
-import de.eintosti.buildsystem.api.navigator.settings.WorldFilter.Mode;
-import de.eintosti.buildsystem.api.navigator.settings.WorldSort;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
@@ -19,11 +32,15 @@ import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.Displayable.DisplayableType;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.api.world.navigator.settings.WorldDisplay;
+import de.eintosti.buildsystem.api.world.navigator.settings.WorldFilter;
+import de.eintosti.buildsystem.api.world.navigator.settings.WorldFilter.Mode;
+import de.eintosti.buildsystem.api.world.navigator.settings.WorldSort;
+import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete.WorldsArgument;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;

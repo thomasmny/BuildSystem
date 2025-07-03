@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.tabcomplete;
+package de.eintosti.buildsystem.command.tabcomplete;
 
 import com.google.common.collect.Lists;
 import de.eintosti.buildsystem.BuildSystemPlugin;
@@ -47,12 +47,12 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class WorldsTabComplete extends ArgumentSorter implements TabCompleter {
+public class WorldsTabCompleter extends ArgumentSorter implements TabCompleter {
 
     private final WorldStorage worldStorage;
     private final FolderStorage folderStorage;
 
-    public WorldsTabComplete(BuildSystemPlugin plugin) {
+    public WorldsTabCompleter(BuildSystemPlugin plugin) {
         WorldService worldService = plugin.getWorldService();
         this.worldStorage = worldService.getWorldStorage();
         this.folderStorage = worldService.getFolderStorage();

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.tabcomplete;
+package de.eintosti.buildsystem.command.tabcomplete;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import java.util.ArrayList;
@@ -31,9 +31,9 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class GamemodeTabComplete extends ArgumentSorter implements TabCompleter {
+public class GamemodeTabCompleter extends ArgumentSorter implements TabCompleter {
 
-    public GamemodeTabComplete(BuildSystemPlugin plugin) {
+    public GamemodeTabCompleter(BuildSystemPlugin plugin) {
         plugin.getCommand("gamemode").setTabCompleter(this);
     }
 

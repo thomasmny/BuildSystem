@@ -26,7 +26,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
-import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete.WorldsArgument;
+import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
 import de.eintosti.buildsystem.util.inventory.InventoryManager;
