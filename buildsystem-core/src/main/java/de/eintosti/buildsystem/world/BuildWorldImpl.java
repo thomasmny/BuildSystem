@@ -30,7 +30,7 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.util.WorldPermissions;
 import de.eintosti.buildsystem.api.world.util.WorldTeleporter;
-import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import de.eintosti.buildsystem.world.builder.BuildersImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
@@ -181,7 +181,7 @@ public final class BuildWorldImpl implements BuildWorld {
                 Map.entry("%lastunloaded%", Messages.formatDate(worldData.lastUnloaded().get()))
         ).toArray(Map.Entry[]::new);
 
-        List<String> messageList = getPermissions().canPerformCommand(player, WorldsTabComplete.WorldsArgument.EDIT.getPermission())
+        List<String> messageList = getPermissions().canPerformCommand(player, WorldsTabCompleter.WorldsArgument.EDIT.getPermission())
                 ? Messages.getStringList("world_item_lore_edit", player, placeholders)
                 : Messages.getStringList("world_item_lore_normal", player, placeholders);
 

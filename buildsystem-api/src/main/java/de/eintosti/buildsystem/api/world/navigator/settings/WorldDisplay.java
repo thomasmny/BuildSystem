@@ -15,25 +15,37 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.api.navigator.settings;
+package de.eintosti.buildsystem.api.world.navigator.settings;
 
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.inventory.Inventory;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import org.jspecify.annotations.NullMarked;
 
 /**
- * Represents the type of the navigator.
+ * Interface for managing the display settings of worlds in the navigator.
  *
  * @since 3.0.0
  */
-public enum NavigatorType {
+@NullMarked
+public interface WorldDisplay {
 
     /**
-     * The old, {@link Inventory}-based navigator.
+     * Gets the order in which the {@link BuildWorld}s are sorted.
+     *
+     * @return The world sort order
      */
-    OLD,
+    WorldSort getWorldSort();
 
     /**
-     * The new, {@link ArmorStand}-based navigator.
+     * Sets the order in which the {@link BuildWorld}s are sorted.
+     *
+     * @param worldSort The world sort order
      */
-    NEW
+    void setWorldSort(WorldSort worldSort);
+
+    /**
+     * Gets the filter which removed non-matching {@link BuildWorld}s from the navigator
+     *
+     * @return The world filter
+     */
+    WorldFilter getWorldFilter();
 }

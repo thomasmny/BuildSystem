@@ -20,8 +20,8 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
+import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter;
 import de.eintosti.buildsystem.config.Config.Settings.Navigator;
-import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -50,6 +50,6 @@ public class ItemSubCommand implements SubCommand {
 
     @Override
     public Argument getArgument() {
-        return WorldsTabComplete.WorldsArgument.ITEM;
+        return WorldsTabCompleter.WorldsArgument.ITEM;
     }
 }

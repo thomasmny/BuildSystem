@@ -17,9 +17,9 @@
  */
 package de.eintosti.buildsystem.api.player.settings;
 
-import de.eintosti.buildsystem.api.navigator.settings.NavigatorType;
-import de.eintosti.buildsystem.api.navigator.settings.WorldDisplay;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
+import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
+import de.eintosti.buildsystem.api.world.navigator.settings.WorldDisplay;
 import org.bukkit.GameMode;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;

@@ -18,20 +18,20 @@
 package de.eintosti.buildsystem.storage.yaml;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.api.navigator.settings.NavigatorType;
-import de.eintosti.buildsystem.api.navigator.settings.WorldDisplay;
-import de.eintosti.buildsystem.api.navigator.settings.WorldFilter;
-import de.eintosti.buildsystem.api.navigator.settings.WorldSort;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.LogoutLocation;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import de.eintosti.buildsystem.navigator.settings.WorldDisplayImpl;
-import de.eintosti.buildsystem.navigator.settings.WorldFilterImpl;
+import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
+import de.eintosti.buildsystem.api.world.navigator.settings.WorldDisplay;
+import de.eintosti.buildsystem.api.world.navigator.settings.WorldFilter;
+import de.eintosti.buildsystem.api.world.navigator.settings.WorldSort;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
+import de.eintosti.buildsystem.world.navigator.settings.WorldDisplayImpl;
+import de.eintosti.buildsystem.world.navigator.settings.WorldFilterImpl;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;

@@ -15,29 +15,38 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.tabcomplete;
+package de.eintosti.buildsystem.command.tabcomplete;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import java.util.ArrayList;
 import java.util.List;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class ConfigTabComplete implements TabCompleter {
+public class BuildTabCompleter extends ArgumentSorter implements TabCompleter {
 
-    public ConfigTabComplete(BuildSystemPlugin plugin) {
-        plugin.getCommand("config").setTabCompleter(this);
+    public BuildTabCompleter(BuildSystemPlugin plugin) {
+        plugin.getCommand("build").setTabCompleter(this);
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> arrayList = new ArrayList<>();
+        if (!(sender instanceof Player player)) {
+            return arrayList;
+        }
 
-        if (sender.hasPermission("buildsystem.config")) {
-            arrayList.add("reload");
+        if (!player.hasPermission("buildsystem.build")) {
+            return arrayList;
+        }
+
+        if (args.length == 1 && !player.hasPermission("buildsystem.build.other")) {
+            Bukkit.getOnlinePlayers().forEach(pl -> addArgument(args[0], pl.getName(), arrayList));
         }
 
         return arrayList;

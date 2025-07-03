@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.navigator.settings;
+package de.eintosti.buildsystem.world.navigator.settings;
 
-import de.eintosti.buildsystem.api.navigator.settings.WorldDisplay;
-import de.eintosti.buildsystem.api.navigator.settings.WorldSort;
+import de.eintosti.buildsystem.api.world.navigator.settings.WorldDisplay;
+import de.eintosti.buildsystem.api.world.navigator.settings.WorldSort;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked

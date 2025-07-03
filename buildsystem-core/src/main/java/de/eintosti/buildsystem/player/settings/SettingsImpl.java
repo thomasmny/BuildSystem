@@ -17,11 +17,11 @@
  */
 package de.eintosti.buildsystem.player.settings;
 
-import de.eintosti.buildsystem.api.navigator.settings.NavigatorType;
-import de.eintosti.buildsystem.api.navigator.settings.WorldDisplay;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import de.eintosti.buildsystem.navigator.settings.WorldDisplayImpl;
+import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
+import de.eintosti.buildsystem.api.world.navigator.settings.WorldDisplay;
+import de.eintosti.buildsystem.world.navigator.settings.WorldDisplayImpl;
 import org.bukkit.scheduler.BukkitTask;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
