@@ -338,6 +338,11 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
             }
         }
 
+        if (this.customGenerator != null && this.customGenerator.chunkGenerator() != null) {
+            worldCreator.generator(this.customGenerator.chunkGenerator());
+            plugin.getLogger().info("Using custom chunk generator '%s' for world '%s'".formatted(this.customGenerator.toString(), this.worldName));
+        }
+
         switch (worldType) {
             case VOID:
                 worldCreator.type(WorldType.FLAT);
@@ -357,12 +362,6 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
                 worldCreator.generateStructures(true);
                 worldCreator.environment(World.Environment.THE_END);
                 break;
-            case CUSTOM:
-                if (this.customGenerator != null) {
-                    worldCreator.generator(this.customGenerator.chunkGenerator());
-                    plugin.getLogger().info("Using custom world generator: " + this.customGenerator);
-                }
-                // Fall-through to NORMAL for default settings
             default: // NORMAL
                 worldCreator.type(WorldType.NORMAL);
                 worldCreator.generateStructures(true);
