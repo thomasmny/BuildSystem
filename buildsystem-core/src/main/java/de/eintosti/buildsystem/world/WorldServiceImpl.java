@@ -348,8 +348,8 @@ public class WorldServiceImpl implements WorldService {
                     .forEach(pl -> PaperLib.teleportAsync(pl, spawnLocation.clone().add(0.5, 0, 0.5)));
 
             SpawnManager spawnManager = plugin.getSpawnManager();
-            if (spawnManager.spawnExists() && Objects.equals(spawnManager.getSpawnWorld(), oldWorld)) {
-                Location oldSpawn = spawnManager.getSpawn();
+            Location oldSpawn = spawnManager.getSpawn();
+            if (oldSpawn != null && Objects.equals(spawnManager.getSpawnWorld(), oldWorld)) {
                 Location newSpawn = new Location(
                         newWorld,
                         oldSpawn.getX(),

@@ -19,9 +19,9 @@ package de.eintosti.buildsystem;
 
 import de.eintosti.buildsystem.api.BuildSystem;
 import de.eintosti.buildsystem.api.BuildSystemApi;
-import de.eintosti.buildsystem.api.navigator.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.settings.Settings;
+import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
 import de.eintosti.buildsystem.command.BackCommand;
 import de.eintosti.buildsystem.command.BlocksCommand;
 import de.eintosti.buildsystem.command.BuildCommand;
@@ -39,6 +39,15 @@ import de.eintosti.buildsystem.command.SpeedCommand;
 import de.eintosti.buildsystem.command.TimeCommand;
 import de.eintosti.buildsystem.command.TopCommand;
 import de.eintosti.buildsystem.command.WorldsCommand;
+import de.eintosti.buildsystem.command.tabcomplete.BuildTabCompleter;
+import de.eintosti.buildsystem.command.tabcomplete.ConfigTabCompleter;
+import de.eintosti.buildsystem.command.tabcomplete.EmptyTabCompleter;
+import de.eintosti.buildsystem.command.tabcomplete.GamemodeTabCompleter;
+import de.eintosti.buildsystem.command.tabcomplete.PhysicsTabCompleter;
+import de.eintosti.buildsystem.command.tabcomplete.SpawnTabCompleter;
+import de.eintosti.buildsystem.command.tabcomplete.SpeedTabCompleter;
+import de.eintosti.buildsystem.command.tabcomplete.TimeTabCompleter;
+import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter;
 import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.config.Config.Folder;
 import de.eintosti.buildsystem.config.Config.Settings.Archive;
@@ -74,27 +83,18 @@ import de.eintosti.buildsystem.listener.SignChangeListener;
 import de.eintosti.buildsystem.listener.WeatherChangeListener;
 import de.eintosti.buildsystem.listener.WorldManipulateByAxiomListener;
 import de.eintosti.buildsystem.listener.WorldManipulateListener;
-import de.eintosti.buildsystem.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.customblocks.CustomBlocksManager;
 import de.eintosti.buildsystem.player.settings.NoClipManager;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
-import de.eintosti.buildsystem.tabcomplete.BuildTabComplete;
-import de.eintosti.buildsystem.tabcomplete.ConfigTabComplete;
-import de.eintosti.buildsystem.tabcomplete.EmptyTabComplete;
-import de.eintosti.buildsystem.tabcomplete.GamemodeTabComplete;
-import de.eintosti.buildsystem.tabcomplete.PhysicsTabComplete;
-import de.eintosti.buildsystem.tabcomplete.SpawnTabComplete;
-import de.eintosti.buildsystem.tabcomplete.SpeedTabComplete;
-import de.eintosti.buildsystem.tabcomplete.TimeTabComplete;
-import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.world.SpawnManager;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.backup.BackupService;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
+import de.eintosti.buildsystem.world.navigator.ArmorStandManager;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -147,7 +147,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         initClasses();
 
         registerCommands();
-        registerTabCompleter();
+        registerTabCompleters();
         registerListeners();
         registerExpansions();
 
@@ -233,16 +233,16 @@ public class BuildSystemPlugin extends JavaPlugin {
         new WorldsCommand(this);
     }
 
-    private void registerTabCompleter() {
-        new BuildTabComplete(this);
-        new ConfigTabComplete(this);
-        new EmptyTabComplete(this);
-        new GamemodeTabComplete(this);
-        new PhysicsTabComplete(this);
-        new SpawnTabComplete(this);
-        new SpeedTabComplete(this);
-        new TimeTabComplete(this);
-        new WorldsTabComplete(this);
+    private void registerTabCompleters() {
+        new BuildTabCompleter(this);
+        new ConfigTabCompleter(this);
+        new EmptyTabCompleter(this);
+        new GamemodeTabCompleter(this);
+        new PhysicsTabCompleter(this);
+        new SpawnTabCompleter(this);
+        new SpeedTabCompleter(this);
+        new TimeTabCompleter(this);
+        new WorldsTabCompleter(this);
     }
 
     private void registerListeners() {

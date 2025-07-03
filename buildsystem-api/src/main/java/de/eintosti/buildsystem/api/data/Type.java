@@ -17,11 +17,10 @@
  */
 package de.eintosti.buildsystem.api.data;
 
-import de.eintosti.buildsystem.api.world.data.WorldData;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * A generic interface representing a configurable data type within the {@link WorldData}. It provides methods to get, set, and format the value for configuration purposes.
+ * A generic interface representing a configurable data type.
  *
  * @param <T> The type of the value held by this data point
  */

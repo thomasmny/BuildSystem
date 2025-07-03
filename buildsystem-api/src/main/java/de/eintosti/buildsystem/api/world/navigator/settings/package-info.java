@@ -20,4 +20,4 @@
  * Provides interfaces and enumerations for navigator-specific settings within the BuildSystem API. This includes options for how worlds are displayed, filtered, and sorted in the
  * in-game navigator menus.
  */
-package de.eintosti.buildsystem.api.navigator.settings;
+package de.eintosti.buildsystem.api.world.navigator.settings;

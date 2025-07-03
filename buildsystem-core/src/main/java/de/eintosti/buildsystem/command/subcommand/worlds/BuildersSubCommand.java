@@ -22,7 +22,7 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter;
 import de.eintosti.buildsystem.world.builder.BuilderInventory;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import org.bukkit.entity.Player;
@@ -64,6 +64,6 @@ public class BuildersSubCommand implements SubCommand {
 
     @Override
     public Argument getArgument() {
-        return WorldsTabComplete.WorldsArgument.BUILDERS;
+        return WorldsTabCompleter.WorldsArgument.BUILDERS;
     }
 }

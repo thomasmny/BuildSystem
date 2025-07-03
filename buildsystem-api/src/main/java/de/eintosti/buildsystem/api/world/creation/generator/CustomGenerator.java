@@ -22,7 +22,7 @@ import org.bukkit.generator.ChunkGenerator;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Represents a custom chunk generator for a {@link World}.
+ * Represents a custom chunk generator for a {@link World} which is provided by an external plugin.
  *
  * @since 3.0.0
  */

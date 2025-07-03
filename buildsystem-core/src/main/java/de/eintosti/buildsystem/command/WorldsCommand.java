@@ -43,8 +43,8 @@ import de.eintosti.buildsystem.command.subcommand.worlds.SetSpawnSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.SetStatusSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.TeleportSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.UnimportSubCommand;
-import de.eintosti.buildsystem.navigator.inventory.NavigatorInventory;
-import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter;
+import de.eintosti.buildsystem.world.navigator.inventory.NavigatorInventory;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -79,7 +79,7 @@ public class WorldsCommand implements CommandExecutor {
             return true;
         }
 
-        WorldsTabComplete.WorldsArgument argument = WorldsTabComplete.WorldsArgument.matchArgument(args[0]);
+        WorldsTabCompleter.WorldsArgument argument = WorldsTabCompleter.WorldsArgument.matchArgument(args[0]);
         if (argument == null) {
             Messages.sendMessage(player, "worlds_unknown_command");
             return true;

@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
 import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
@@ -84,7 +85,9 @@ public class CreateInventory extends PaginatedInventory {
     }
 
     private void addTemplates(Player player, Page page) {
-        File[] templateFiles = new File(plugin.getDataFolder() + File.separator + "templates").listFiles((file) -> file.isDirectory() && !file.isHidden());
+        File[] templateFiles = FileUtils.resolve(plugin.getDataFolder(), "templates")
+                .toFile()
+                .listFiles((file) -> file.isDirectory() && !file.isHidden());
 
         this.numTemplates = templateFiles != null ? templateFiles.length : 0;
         int numPages = calculateNumPages(numTemplates, MAX_TEMPLATES);

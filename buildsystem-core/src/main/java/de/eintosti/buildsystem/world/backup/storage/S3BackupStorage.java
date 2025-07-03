@@ -66,7 +66,7 @@ public class S3BackupStorage implements BackupStorage {
 
         this.bucket = bucket;
         this.pathPrefix = pathPrefix.endsWith("/") ? pathPrefix : pathPrefix + "/";
-        this.tmpDownloadDirectory = FileUtils.resolve(plugin.getDataFolder().toPath(), ".tmp_backup_downloads");
+        this.tmpDownloadDirectory = FileUtils.resolve(plugin.getDataFolder(), ".tmp_backup_downloads");
 
         S3ClientBuilder builder = S3Client.builder()
                 .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
