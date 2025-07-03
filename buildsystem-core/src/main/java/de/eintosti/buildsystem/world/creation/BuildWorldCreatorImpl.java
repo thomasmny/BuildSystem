@@ -35,6 +35,7 @@ import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl.WorldGenerat
 import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl.WorldGenerationData.PredefinedGeneratorData;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import de.eintosti.buildsystem.world.creation.generator.VoidGenerator;
+import de.eintosti.buildsystem.world.modification.GameRuleEntry;
 import dev.dewy.nbt.Nbt;
 import dev.dewy.nbt.io.CompressionType;
 import dev.dewy.nbt.tags.collection.CompoundTag;
@@ -50,7 +51,6 @@ import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Difficulty;
-import org.bukkit.GameRule;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
@@ -388,13 +388,11 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
             bukkitWorld.getWorldBorder().setSize(Default.worldBoarderSize);
         }
         bukkitWorld.setKeepSpawnInMemory(true);
-        Default.gameRules.forEach((gameRule, value) -> applyGameRule(bukkitWorld, gameRule, value));
+        Default.gameRules.forEach(gameRule -> applyGameRule(bukkitWorld, gameRule));
     }
 
-    private <T> void applyGameRule(World world, GameRule<T> rule, Object value) {
-        @SuppressWarnings("unchecked")
-        T castedValue = (T) value;
-        world.setGameRule(rule, castedValue);
+    private static <T> void applyGameRule(World world, GameRuleEntry<T> entry) {
+        world.setGameRule(entry.rule(), entry.value());
     }
 
     /**

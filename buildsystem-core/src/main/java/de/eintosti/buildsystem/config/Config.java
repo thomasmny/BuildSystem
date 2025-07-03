@@ -37,14 +37,15 @@ import de.eintosti.buildsystem.config.migration.ConfigMigrationManager;
 import de.eintosti.buildsystem.world.backup.storage.LocalBackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.S3BackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.SftpBackupStorage;
+import de.eintosti.buildsystem.world.modification.GameRuleEntry;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
@@ -55,6 +56,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.LoggerFactory;
 
 /**
  * Manages the plugin's configuration, loading and providing access to various settings.
@@ -64,6 +66,7 @@ public class Config {
 
     private static final BuildSystemPlugin PLUGIN = JavaPlugin.getPlugin(BuildSystemPlugin.class);
     private static final FileConfiguration CONFIG = PLUGIN.getConfig();
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(Config.class);
 
     /**
      * Gets the plugin's configuration.
@@ -247,10 +250,10 @@ public class Config {
             /**
              * Default game rules for new worlds.
              */
-            public static Map<GameRule<?>, Object> gameRules = Map.of(
-                    GameRule.DO_DAYLIGHT_CYCLE, false,
-                    GameRule.DO_MOB_SPAWNING, false,
-                    GameRule.DO_FIRE_TICK, false
+            public static List<GameRuleEntry<?>> gameRules = List.of(
+                    new GameRuleEntry<>(GameRule.DO_DAYLIGHT_CYCLE, false),
+                    new GameRuleEntry<>(GameRule.DO_MOB_SPAWNING, false),
+                    new GameRuleEntry<>(GameRule.DO_FIRE_TICK, false)
             );
 
             /**
@@ -419,6 +422,8 @@ public class Config {
      * Loads the configuration values from the plugin's config.yml into the static fields.
      */
     public static void load() {
+        final Logger logger = PLUGIN.getLogger();
+
         // Messages
         Messages.spawnTeleportMessage = CONFIG.getBoolean("messages.spawn-teleport-message", false);
         Messages.joinQuitMessages = CONFIG.getBoolean("messages.join-quit-messages", true);
@@ -457,11 +462,37 @@ public class Config {
                 .entrySet()
                 .stream()
                 .map(entry -> {
-                    GameRule<?> rule = GameRule.getByName(entry.getKey());
-                    return rule != null ? Map.entry(rule, entry.getValue()) : null;
+                    String key = entry.getKey();
+                    Object value = entry.getValue();
+                    GameRule<?> rule = GameRule.getByName(key);
+                    if (rule == null || value == null) {
+                        logger.warning("Could not parse game rule '%s' with value '%s'".formatted(key, value));
+                        return null;
+                    }
+
+                    return switch (value) {
+                        case Boolean booleanValue -> {
+                            if (rule.getType() != Boolean.class) {
+                                PLUGIN.getLogger().warning("Game rule '%s' is not a boolean type, but a boolean value was provided".formatted(key));
+                                yield null;
+                            }
+                            yield (GameRuleEntry<?>) new GameRuleEntry<>((GameRule<Boolean>) rule, booleanValue);
+                        }
+                        case Integer integerValue -> {
+                            if (rule.getType() != Integer.class) {
+                                logger.warning("Game rule '%s' is not an integer type, but an integer value was provided".formatted(key));
+                                yield null;
+                            }
+                            yield (GameRuleEntry<?>) new GameRuleEntry<>((GameRule<Integer>) rule, integerValue);
+                        }
+                        default -> {
+                            logger.warning("Invalid game rule value type. Must be of type Boolean or Integer. Found %s".formatted(value.getClass().getName()));
+                            yield null;
+                        }
+                    };
                 })
                 .filter(Objects::nonNull)
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                .toList();
         // World - Default - Permission
         Permission.publicPermission = CONFIG.getString("world.default.permission.public", "-");
         Permission.privatePermission = CONFIG.getString("world.default.permission.private", "-");
