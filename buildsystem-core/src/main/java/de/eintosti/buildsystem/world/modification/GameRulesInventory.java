@@ -30,6 +30,7 @@ import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import de.eintosti.buildsystem.util.inventory.PaginatedInventory;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.bukkit.ChatColor;
 import org.bukkit.GameRule;
@@ -124,7 +125,7 @@ public class GameRulesInventory extends PaginatedInventory {
 
     private List<String> getLore(World world, GameRule<?> gameRule, Player player) {
         List<String> lore;
-        if (isBoolean(gameRule)) {
+        if (isOfType(gameRule, Boolean.class)) {
             lore = isEnabled(world, gameRule)
                     ? Messages.getStringList("worldeditor_gamerules_boolean_enabled", player)
                     : Messages.getStringList("worldeditor_gamerules_boolean_disabled", player);
@@ -224,43 +225,68 @@ public class GameRulesInventory extends PaginatedInventory {
 
         String rawName = ChatColor.stripColor(itemMeta.getDisplayName());
         GameRule<?> gameRule = GameRule.getByName(rawName);
+        if (gameRule == null) {
+            plugin.getLogger().warning("GameRule '%s' does not exist in world '%s'.".formatted(rawName, world.getName()));
+            return;
+        }
 
-        GameRule<Boolean> booleanRule = asBooleanRule(gameRule);
-        if (booleanRule != null) {
+        if (isOfType(gameRule, Boolean.class)) {
+            GameRule<Boolean> booleanRule = castRule(gameRule, Boolean.class);
             boolean currentValue = Boolean.TRUE.equals(world.getGameRuleValue(booleanRule));
             world.setGameRule(booleanRule, !currentValue);
-        } else {
-            GameRule<Integer> integerRule = asIntegerRule(gameRule);
+        } else if (isOfType(gameRule, Integer.class)) {
+            GameRule<Integer> integerRule = castRule(gameRule, Integer.class);
             int value = world.getGameRuleValue(integerRule);
             int delta = event.isShiftClick()
                     ? (event.isRightClick() ? 10 : event.isLeftClick() ? -10 : 0)
                     : (event.isRightClick() ? 1 : event.isLeftClick() ? -1 : 0);
             world.setGameRule(integerRule, value + delta);
+        } else {
+            plugin.getLogger().warning("GameRule '%s' is not a boolean or integer type and cannot be modified.".formatted(gameRule.getName()));
         }
     }
 
-    private static boolean isBoolean(@Nullable GameRule<?> gameRule) {
-        return gameRule != null && gameRule.getType().equals(Boolean.class);
-    }
-
+    /**
+     * Casts a {@link GameRule} to the specified type if it matches.
+     *
+     * @param rule The game rule to cast
+     * @param type The type to cast the game rule to
+     * @param <T>  The type to cast the game rule to
+     * @return The casted game rule if it matches the type, or {@code null} if it does not match
+     */
     @SuppressWarnings("unchecked")
     @Nullable
-    private static GameRule<Boolean> asBooleanRule(GameRule<?> gameRule) {
-        return isBoolean(gameRule) ? (GameRule<Boolean>) gameRule : null;
+    private static <T> GameRule<T> castRule(GameRule<?> rule, Class<T> type) {
+        return type.equals(rule.getType()) ? (GameRule<T>) rule : null;
     }
 
-    private boolean isEnabled(World world, GameRule<?> rule) {
-        GameRule<Boolean> booleanGameRule = asBooleanRule(rule);
+    /**
+     * Gets whether the given {@link GameRule} is of the given type.
+     *
+     * @param gameRule The game rule to check
+     * @param type     The type to check against
+     * @param <T>      The type to check against
+     * @return {@code true} if the game rule is of the given type, {@code false} otherwise
+     */
+    private static <T> boolean isOfType(@Nullable GameRule<?> gameRule, Class<T> type) {
+        return gameRule != null && Objects.equals(gameRule.getType(), type);
+    }
+
+    /**
+     * Checks if the {@link GameRule} is enabled in the given {@link World}.
+     * <p>
+     * If a game rule is not a boolean type, it is considered enabled by default.
+     *
+     * @param world    The world to check the game rule in
+     * @param gameRule The game rule to check
+     * @return {@code true} if the game rule is enabled, {@code false} otherwise
+     */
+    private boolean isEnabled(World world, GameRule<?> gameRule) {
+        GameRule<Boolean> booleanGameRule = castRule(gameRule, Boolean.class);
         if (booleanGameRule != null) {
             return Boolean.TRUE.equals(world.getGameRuleValue(booleanGameRule));
         }
         return true;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static GameRule<Integer> asIntegerRule(@Nullable GameRule<?> rule) {
-        return rule != null && rule.getType() == Integer.class ? (GameRule<Integer>) rule : null;
     }
 
     private static class GameRulesInventoryHolder extends BuildWorldHolder {
