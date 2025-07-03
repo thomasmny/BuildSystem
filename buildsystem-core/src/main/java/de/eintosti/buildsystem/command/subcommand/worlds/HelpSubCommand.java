@@ -22,7 +22,7 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.PagedCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter;
 import java.util.List;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
@@ -86,6 +86,6 @@ public class HelpSubCommand extends PagedCommand implements SubCommand {
 
     @Override
     public Argument getArgument() {
-        return WorldsTabComplete.WorldsArgument.HELP;
+        return WorldsTabCompleter.WorldsArgument.HELP;
     }
 }

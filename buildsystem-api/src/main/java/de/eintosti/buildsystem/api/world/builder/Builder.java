@@ -29,7 +29,7 @@ import org.jspecify.annotations.Nullable;
  * @since 3.0.0
  */
 @NullMarked
-public interface Builder {
+public sealed interface Builder permits BuilderImpl {
 
     /**
      * Creates a new {@link Builder} instance with the given uuid and name.
@@ -55,7 +55,7 @@ public interface Builder {
     /**
      * Creates a new {@link Builder} instance using a serialized string.
      * <p>
-     * The format of the string must be {@code <uuid>:<name>}.
+     * The format of the string must be {@code <uuid>,<name>}.
      *
      * @param serialized The serialized builder
      * @return The builder if all the input is valid, otherwise {@code null}

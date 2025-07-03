@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.api.navigator.settings;
+package de.eintosti.buildsystem.api.world.navigator.settings;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.util.function.Predicate;

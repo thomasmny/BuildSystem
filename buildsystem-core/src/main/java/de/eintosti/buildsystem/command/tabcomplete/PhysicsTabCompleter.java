@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.tabcomplete;
+package de.eintosti.buildsystem.command.tabcomplete;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import java.util.ArrayList;
 import java.util.List;
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -28,10 +28,13 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class BuildTabComplete extends ArgumentSorter implements TabCompleter {
+public class PhysicsTabCompleter extends ArgumentSorter implements TabCompleter {
 
-    public BuildTabComplete(BuildSystemPlugin plugin) {
-        plugin.getCommand("build").setTabCompleter(this);
+    private final WorldStorage worldStorage;
+
+    public PhysicsTabCompleter(BuildSystemPlugin plugin) {
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
+        plugin.getCommand("physics").setTabCompleter(this);
     }
 
     @Override
@@ -41,12 +44,10 @@ public class BuildTabComplete extends ArgumentSorter implements TabCompleter {
             return arrayList;
         }
 
-        if (!player.hasPermission("buildsystem.build")) {
-            return arrayList;
-        }
-
-        if (args.length == 1 && !player.hasPermission("buildsystem.build.other")) {
-            Bukkit.getOnlinePlayers().forEach(pl -> addArgument(args[0], pl.getName(), arrayList));
+        if (args.length == 1) {
+            worldStorage.getBuildWorlds().stream()
+                    .filter(world -> world.getPermissions().canPerformCommand(player, "buildsystem.physics"))
+                    .forEach(world -> addArgument(args[0], world.getName(), arrayList));
         }
 
         return arrayList;

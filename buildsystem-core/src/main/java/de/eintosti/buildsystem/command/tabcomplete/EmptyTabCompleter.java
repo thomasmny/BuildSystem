@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.tabcomplete;
+package de.eintosti.buildsystem.command.tabcomplete;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import java.util.ArrayList;
@@ -26,9 +26,9 @@ import org.bukkit.command.TabCompleter;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class EmptyTabComplete implements TabCompleter {
+public class EmptyTabCompleter implements TabCompleter {
 
-    public EmptyTabComplete(BuildSystemPlugin plugin) {
+    public EmptyTabCompleter(BuildSystemPlugin plugin) {
         plugin.getCommand("back").setTabCompleter(this);
         plugin.getCommand("blocks").setTabCompleter(this);
         plugin.getCommand("buildsystem").setTabCompleter(this);

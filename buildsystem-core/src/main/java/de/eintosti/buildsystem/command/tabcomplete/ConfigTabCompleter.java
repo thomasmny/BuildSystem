@@ -15,45 +15,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.tabcomplete;
+package de.eintosti.buildsystem.command.tabcomplete;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.api.storage.WorldStorage;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class TimeTabComplete extends ArgumentSorter implements TabCompleter {
+public class ConfigTabCompleter implements TabCompleter {
 
-    private final WorldStorage worldStorage;
-
-    public TimeTabComplete(BuildSystemPlugin plugin) {
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
-        plugin.getCommand("day").setTabCompleter(this);
-        plugin.getCommand("night").setTabCompleter(this);
+    public ConfigTabCompleter(BuildSystemPlugin plugin) {
+        plugin.getCommand("config").setTabCompleter(this);
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> arrayList = new ArrayList<>();
-        if (!(sender instanceof Player player)) {
-            return arrayList;
-        }
 
-        String labelLowerCase = label.toLowerCase(Locale.ROOT);
-        switch (labelLowerCase) {
-            case "day":
-            case "night":
-                worldStorage.getBuildWorlds().stream()
-                        .filter(world -> world.getPermissions().canPerformCommand(player, "buildsystem." + labelLowerCase))
-                        .forEach(world -> addArgument(args[0], world.getName(), arrayList));
-                break;
+        if (sender.hasPermission("buildsystem.config")) {
+            arrayList.add("reload");
         }
 
         return arrayList;

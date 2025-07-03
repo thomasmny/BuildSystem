@@ -40,7 +40,7 @@ import org.jspecify.annotations.Nullable;
 
 @SuppressWarnings("deprecation")
 @NullMarked
-public class UUIDFetcher {
+public final class UUIDFetcher {
 
     private static final String UUID_URL = "https://api.mojang.com/users/profiles/minecraft/%s";
     private static final String NAME_URL = "https://api.mojang.com/user/profiles/%s/names";

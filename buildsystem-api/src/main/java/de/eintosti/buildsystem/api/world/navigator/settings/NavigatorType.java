@@ -15,17 +15,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.tabcomplete;
+package de.eintosti.buildsystem.api.world.navigator.settings;
 
-import java.util.List;
-import org.jspecify.annotations.NullMarked;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.inventory.Inventory;
 
-@NullMarked
-abstract class ArgumentSorter {
+/**
+ * Represents the type of the navigator.
+ *
+ * @since 3.0.0
+ */
+public enum NavigatorType {
 
-    public void addArgument(String input, String argument, List<String> arrayList) {
-        if (input.isEmpty() || argument.toLowerCase().startsWith(input.toLowerCase())) {
-            arrayList.add(argument);
-        }
-    }
+    /**
+     * The old, {@link Inventory}-based navigator.
+     */
+    OLD,
+
+    /**
+     * The new, {@link ArmorStand}-based navigator.
+     */
+    NEW
 }
