@@ -25,7 +25,7 @@ import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.util.WorldPermissions;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter;
+import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
@@ -114,6 +114,6 @@ public class RemoveBuilderSubCommand implements SubCommand {
 
     @Override
     public Argument getArgument() {
-        return WorldsTabCompleter.WorldsArgument.REMOVE_BUILDER;
+        return WorldsArgument.REMOVE_BUILDER;
     }
 }

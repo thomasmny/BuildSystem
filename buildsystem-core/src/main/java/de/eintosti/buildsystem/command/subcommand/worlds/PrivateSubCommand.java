@@ -17,20 +17,22 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
-import de.eintosti.buildsystem.config.Config.Settings.Navigator;
-import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import de.eintosti.buildsystem.world.navigator.inventory.PrivateWorldsInventory;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class ItemSubCommand implements SubCommand {
+public class PrivateSubCommand implements SubCommand {
 
-    public ItemSubCommand() {
+    private final BuildSystemPlugin plugin;
+
+    public PrivateSubCommand(BuildSystemPlugin plugin) {
+        this.plugin = plugin;
     }
 
     @Override
@@ -40,16 +42,11 @@ public class ItemSubCommand implements SubCommand {
             return;
         }
 
-        ItemStack navigator = InventoryUtils.createItem(
-                Navigator.item,
-                Messages.getString("navigator_item", player)
-        );
-        player.getInventory().addItem(navigator);
-        Messages.sendMessage(player, "worlds_item_receive");
+        new PrivateWorldsInventory(plugin, player).openInventory();
     }
 
     @Override
     public Argument getArgument() {
-        return WorldsArgument.ITEM;
+        return WorldsArgument.PRIVATE;
     }
 }
