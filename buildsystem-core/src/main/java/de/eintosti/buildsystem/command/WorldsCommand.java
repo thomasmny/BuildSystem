@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
+import de.eintosti.buildsystem.command.subcommand.worlds.ArchiveSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.BackupsSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.BuildersSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.DeleteSubCommand;
@@ -32,6 +33,8 @@ import de.eintosti.buildsystem.command.subcommand.worlds.ImportAllSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.ImportSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.InfoSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.ItemSubCommand;
+import de.eintosti.buildsystem.command.subcommand.worlds.PrivateSubCommand;
+import de.eintosti.buildsystem.command.subcommand.worlds.PublicSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.RemoveBuilderSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.RemoveSpawnSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.RenameSubCommand;
@@ -90,6 +93,7 @@ public class WorldsCommand implements CommandExecutor {
         String worldName = args.length >= 2 ? args[1] : player.getWorld().getName();
 
         SubCommand subCommand = switch (argument) {
+            case ARCHIVE -> new ArchiveSubCommand(plugin);
             case ADD_BUILDER -> new AddBuilderSubCommand(plugin, player.getWorld().getName());
             case BACKUP -> new BackupsSubCommand(plugin);
             case BUILDERS -> new BuildersSubCommand(plugin, worldName);
@@ -101,6 +105,8 @@ public class WorldsCommand implements CommandExecutor {
             case IMPORT -> new ImportSubCommand(plugin, worldName);
             case INFO -> new InfoSubCommand(plugin, worldName);
             case ITEM -> new ItemSubCommand();
+            case PRIVATE -> new PrivateSubCommand(plugin);
+            case PUBLIC -> new PublicSubCommand(plugin);
             case REMOVE_BUILDER -> new RemoveBuilderSubCommand(plugin, player.getWorld().getName());
             case REMOVE_SPAWN -> new RemoveSpawnSubCommand(plugin);
             case RENAME -> new RenameSubCommand(plugin, worldName);

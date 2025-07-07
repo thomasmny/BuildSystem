@@ -246,6 +246,7 @@ public class WorldsTabCompleter extends ArgumentSorter implements TabCompleter {
 
     @NullMarked
     public enum WorldsArgument implements Argument {
+        ARCHIVE("archive", "buildsystem.navigator"),
         ADD_BUILDER("addBuilder", "buildsystem.addbuilder"),
         BACKUP("backup", "buildsystem.backup"),
         BUILDERS("builders", "buildsystem.builders"),
@@ -257,6 +258,8 @@ public class WorldsTabCompleter extends ArgumentSorter implements TabCompleter {
         IMPORT_ALL("importAll", "buildsystem.import.all"),
         INFO("info", "buildsystem.info"),
         ITEM("item", "buildsystem.navigator.item"),
+        PRIVATE("private", "buildsystem.navigator"),
+        PUBLIC("public", "buildsystem.navigator"),
         REMOVE_BUILDER("removeBuilder", "buildsystem.removebuilder"),
         RENAME("rename", "buildsystem.rename"),
         SET_CREATOR("setCreator", "buildsystem.setcreator"),
