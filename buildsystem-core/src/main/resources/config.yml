@@ -11,7 +11,7 @@ settings:
     # Options: "SURVIVAL", "CREATIVE", "ADVENTURE", "SPECTATOR"
     world-gamemode: "ADVENTURE"
   save-from-death:
-    enable: true
+    enabled: true
     teleport-to-map-spawn: true
   build-mode:
     drop-items: true
