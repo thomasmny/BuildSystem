@@ -43,6 +43,7 @@ public class FolderImpl implements Folder {
     private final long creation;
     private final NavigatorCategory category;
     private final List<UUID> worlds;
+    private final List<Folder> subfolders;
 
     @Nullable
     private Folder parent;
@@ -51,7 +52,7 @@ public class FolderImpl implements Folder {
     private String project;
 
     public FolderImpl(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
-        this(name, System.currentTimeMillis(), category, parent, creator, XMaterial.CHEST, "-", "-", new ArrayList<>());
+        this(name, System.currentTimeMillis(), category, parent, creator, XMaterial.CHEST, "-", "-", new ArrayList<>(), new ArrayList<>());
     }
 
     public FolderImpl(
@@ -63,17 +64,39 @@ public class FolderImpl implements Folder {
             XMaterial material,
             String permission,
             String project,
-            List<UUID> worlds
+            List<UUID> worlds,
+            List<Folder> subfolders
     ) {
         this.name = name;
         this.creation = creation;
         this.category = category;
         this.parent = parent;
+        if (parent != null && !parent.getSubFolders().contains(this)) {
+            ((FolderImpl) parent).subfolders.add(this);
+        }
         this.creator = creator;
         this.worlds = worlds;
         this.material = material;
         this.permission = permission;
         this.project = project;
+        this.subfolders = subfolders;
+    }
+
+    @Override
+    public String getName() {
+        return this.name;
+    }
+
+    @Override
+    public String getDisplayName(Player player) {
+        return Messages.getString("folder_item_title", player,
+                Map.entry("%folder%", name)
+        );
+    }
+
+    @Override
+    public long getCreation() {
+        return creation;
     }
 
     @Override
@@ -82,8 +105,22 @@ public class FolderImpl implements Folder {
     }
 
     @Override
-    public String getName() {
-        return this.name;
+    public XMaterial getIcon() {
+        return this.material;
+    }
+
+    @Override
+    public void setIcon(XMaterial material) {
+        this.material = material;
+    }
+
+    @Override
+    public List<String> getLore(Player player) {
+        return new ArrayList<>(Messages.getStringList("folder_item_lore", player,
+                Map.entry("%permission%", this.permission),
+                Map.entry("%project%", this.project),
+                Map.entry("%worlds%", String.valueOf(getWorldCount())))
+        );
     }
 
     @Override
@@ -98,13 +135,18 @@ public class FolderImpl implements Folder {
     }
 
     @Override
-    public boolean hasParent() {
-        return this.parent != null;
+    public void setParent(@Nullable Folder parent) {
+        if (parent != null && !parent.getSubFolders().contains(this)) {
+            ((FolderImpl) parent).subfolders.add(this);
+        } else if (parent == null && this.parent != null) {
+            ((FolderImpl) this.parent).subfolders.remove(this);
+        }
+        this.parent = parent;
     }
 
     @Override
-    public void setParent(@Nullable Folder parent) {
-        this.parent = parent;
+    public boolean hasParent() {
+        return this.parent != null;
     }
 
     @Override
@@ -137,30 +179,18 @@ public class FolderImpl implements Folder {
     }
 
     @Override
+    @Unmodifiable
+    public List<Folder> getSubFolders() {
+        return this.subfolders;
+    }
+
+    @Override
     public int getWorldCount() {
-        return this.worlds.size();
-    }
-
-    @Override
-    public String getDisplayName(Player player) {
-        return Messages.getString("folder_item_title", player,
-                Map.entry("%folder%", name)
-        );
-    }
-
-    @Override
-    public long getCreation() {
-        return creation;
-    }
-
-    @Override
-    public XMaterial getIcon() {
-        return this.material;
-    }
-
-    @Override
-    public void setIcon(XMaterial material) {
-        this.material = material;
+        int total = this.worlds.size();
+        for (Folder subfolder : this.subfolders) {
+            total += subfolder.getWorldCount();
+        }
+        return total;
     }
 
     @Override
@@ -196,15 +226,6 @@ public class FolderImpl implements Folder {
         }
 
         return player.hasPermission(this.permission);
-    }
-
-    @Override
-    public List<String> getLore(Player player) {
-        return new ArrayList<>(Messages.getStringList("folder_item_lore", player,
-                Map.entry("%permission%", this.permission),
-                Map.entry("%project%", this.project),
-                Map.entry("%worlds%", String.valueOf(getWorldCount())))
-        );
     }
 
     @Override
