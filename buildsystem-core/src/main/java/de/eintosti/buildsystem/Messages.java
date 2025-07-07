@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -41,6 +40,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.Nullable;
 
 public class Messages {
@@ -1021,6 +1021,7 @@ public class Messages {
      * @param placeholders The function which gets the placeholders to be injected into a given line
      * @return A list of messages using the given key
      */
+    @Unmodifiable
     public static List<String> getStringList(String key, @Nullable Player player, Function<String, Map.Entry<String, Object>[]> placeholders) {
         String message = MESSAGES.get(key).replace("%prefix%", getPrefix());
         return Arrays.stream(message.split("\n"))
@@ -1030,7 +1031,7 @@ public class Messages {
                         : line
                 )
                 .map(ColorAPI::process)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**

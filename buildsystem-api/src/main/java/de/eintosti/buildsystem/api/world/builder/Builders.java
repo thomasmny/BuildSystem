@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -80,10 +81,11 @@ public interface Builders {
     Builder getBuilder(UUID uuid);
 
     /**
-     * Get a list of all {@link Builder} names
+     * Get an unmodifiable list of all {@link Builder} names
      *
      * @return A list of all builder names
      */
+    @Unmodifiable
     List<String> getBuilderNames();
 
     /**

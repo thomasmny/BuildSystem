@@ -27,8 +27,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import net.md_5.bungee.api.ChatColor;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -84,8 +84,9 @@ public final class ColorAPI {
      * @param strings The collection of the strings we are processing
      * @return The list of processed strings
      */
+    @Unmodifiable
     public static List<String> process(Collection<String> strings) {
-        return strings.stream().map(ColorAPI::process).collect(Collectors.toList());
+        return strings.stream().map(ColorAPI::process).toList();
     }
 
     /**

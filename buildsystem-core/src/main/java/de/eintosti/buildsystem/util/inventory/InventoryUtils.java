@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -42,6 +41,7 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -243,12 +243,13 @@ public final class InventoryUtils {
      * @param player The player to check
      * @return A list of slot numbers containing navigator items
      */
+    @Unmodifiable
     public static List<Integer> getNavigatorSlots(Player player) {
         PlayerInventory playerInventory = player.getInventory();
         return IntStream.range(0, playerInventory.getSize())
                 .filter(i -> isNavigator(player, playerInventory.getItem(i)))
                 .boxed()
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**

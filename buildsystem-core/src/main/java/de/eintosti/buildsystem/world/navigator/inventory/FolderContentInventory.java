@@ -34,9 +34,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -87,18 +87,20 @@ public class FolderContentInventory extends DisplayablesInventory {
     }
 
     @Override
+    @Unmodifiable
     protected Collection<Folder> collectFolders() {
         return this.folder.getSubFolders().stream()
                 .filter(folder -> folder.canView(this.player))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
+    @Unmodifiable
     protected Collection<BuildWorld> collectWorlds() {
         return this.folder.getWorldUUIDs().stream()
                 .map(this.worldStorage::getBuildWorld)
                 .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

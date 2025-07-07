@@ -31,7 +31,6 @@ import de.eintosti.buildsystem.util.inventory.PaginatedInventory;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import org.bukkit.ChatColor;
 import org.bukkit.GameRule;
 import org.bukkit.Material;
@@ -132,7 +131,7 @@ public class GameRulesInventory extends PaginatedInventory {
         } else {
             lore = Messages.getStringList("worldeditor_gamerules_integer", player).stream()
                     .map(line -> line.replace("%value%", world.getGameRuleValue(gameRule).toString()))
-                    .collect(Collectors.toList());
+                    .toList();
         }
         return lore;
     }
