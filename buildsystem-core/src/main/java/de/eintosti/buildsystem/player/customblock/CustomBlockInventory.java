@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.player.customblocks;
+package de.eintosti.buildsystem.player.customblock;
 
 import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
@@ -26,23 +26,19 @@ import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
 import de.eintosti.buildsystem.util.inventory.InventoryHandler;
 import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class BlocksInventory implements InventoryHandler {
+public class CustomBlockInventory implements InventoryHandler {
 
-    private final BuildSystemPlugin plugin;
     private final InventoryManager inventoryManager;
 
-    public BlocksInventory(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+    public CustomBlockInventory(BuildSystemPlugin plugin) {
         this.inventoryManager = plugin.getInventoryManager();
     }
 
@@ -91,7 +87,7 @@ public class BlocksInventory implements InventoryHandler {
     }
 
     private void setCustomBlock(Inventory inventory, Player player, int position, CustomBlock customBlock) {
-        inventory.setItem(position, InventoryUtils.createSkull(Messages.getString(customBlock.getKey(), player), Profileable.detect(customBlock.getSkullUrl())));
+        inventory.setItem(position, InventoryUtils.createSkull(Messages.getString(customBlock.getMessageKey(), player), Profileable.detect(customBlock.getSkullUrl())));
     }
 
     private void fillGuiWithGlass(Player player, Inventory inventory) {
@@ -133,32 +129,32 @@ public class BlocksInventory implements InventoryHandler {
             case 29 -> giveCustomBlock(player, CustomBlock.BURNING_FURNACE);
             case 30 -> giveCustomBlock(player, CustomBlock.PISTON_HEAD);
             case 31 -> giveCustomBlock(player, CustomBlock.COMMAND_BLOCK);
-            case 32 -> giveCustomBlock(player, InventoryUtils.createItem(XMaterial.BARRIER, Messages.getString(CustomBlock.BARRIER.getKey(), player)));
-            case 33 -> {
-                ItemStack itemStack = InventoryUtils.createItem(XMaterial.ITEM_FRAME, Messages.getString(CustomBlock.INVISIBLE_ITEM_FRAME.getKey(), player));
-                ItemMeta itemMeta = itemStack.getItemMeta();
-                itemMeta.addEnchant(XEnchantment.UNBREAKING.get(), 1, true);
-                itemMeta.getPersistentDataContainer().set(
-                        new NamespacedKey(plugin, "invisible-itemframe"), PersistentDataType.BYTE, (byte) 1
-                );
-                itemStack.setItemMeta(itemMeta);
-                giveCustomBlock(player, itemStack);
-            }
+            case 32 -> giveCustomBlock(player, CustomBlock.BARRIER, XMaterial.BARRIER);
+            case 33 -> giveCustomBlock(player, CustomBlock.INVISIBLE_ITEM_FRAME, XMaterial.ITEM_FRAME);
 
             case 37 -> giveCustomBlock(player, CustomBlock.MOB_SPAWNER);
             case 38 -> giveCustomBlock(player, CustomBlock.NETHER_PORTAL);
             case 39 -> giveCustomBlock(player, CustomBlock.END_PORTAL);
             case 40 -> giveCustomBlock(player, CustomBlock.DRAGON_EGG);
-            case 41 -> giveCustomBlock(player, InventoryUtils.createItem(XMaterial.DEBUG_STICK, Messages.getString(CustomBlock.DEBUG_STICK.getKey(), player)));
+            case 41 -> giveCustomBlock(player, CustomBlock.DEBUG_STICK, XMaterial.DEBUG_STICK);
         }
     }
 
     private void giveCustomBlock(Player player, CustomBlock customBlock) {
-        giveCustomBlock(player, InventoryUtils.createSkull(Messages.getString(customBlock.getKey(), player), Profileable.detect(customBlock.getSkullUrl())));
+        giveCustomBlock(player, customBlock, XMaterial.PLAYER_HEAD);
     }
 
-    private void giveCustomBlock(Player player, ItemStack itemStack) {
-        player.getInventory().addItem(itemStack);
+    private void giveCustomBlock(Player player, CustomBlock customBlock, XMaterial material) {
+        ItemStack itemStack;
+        if (material == XMaterial.PLAYER_HEAD) {
+            itemStack = InventoryUtils.createSkull(Messages.getString(customBlock.getMessageKey(), player), Profileable.detect(customBlock.getSkullUrl()));
+        } else {
+            itemStack = InventoryUtils.createItem(material, Messages.getString(customBlock.getMessageKey(), player));
+            ItemMeta itemMeta = itemStack.getItemMeta();
+            itemMeta.addEnchant(XEnchantment.UNBREAKING.get(), 1, true);
+            itemStack.setItemMeta(itemMeta);
+        }
+        player.getInventory().addItem(customBlock.storeCustomBlock(itemStack));
     }
 
     private static class BlocksInventoryHolder extends BuildSystemHolder {

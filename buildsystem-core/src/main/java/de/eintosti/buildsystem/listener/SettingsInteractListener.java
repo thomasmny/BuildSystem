@@ -29,11 +29,12 @@ import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.config.Config;
-import de.eintosti.buildsystem.player.customblocks.CustomBlocksManager;
+import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.DirectionUtil;
 import de.eintosti.buildsystem.util.inventory.MaterialUtils;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -43,6 +44,9 @@ import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.MultipleFacing;
+import org.bukkit.block.data.Openable;
+import org.bukkit.block.data.type.Slab;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -54,6 +58,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.RayTraceResult;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -67,14 +72,14 @@ public class SettingsInteractListener implements Listener {
             XMaterial.BIG_DRIPLEAF, XMaterial.SMALL_DRIPLEAF, XMaterial.SEAGRASS, XMaterial.SWEET_BERRIES
     ), XMaterial.class);
 
-    private final CustomBlocksManager customBlocksManager;
+    private final CustomBlockManager customBlockManager;
     private final SettingsManager settingsManager;
     private final WorldStorageImpl worldStorage;
 
     private final Set<UUID> cachePlayers;
 
     public SettingsInteractListener(BuildSystemPlugin plugin) {
-        this.customBlocksManager = plugin.getCustomBlocksManager();
+        this.customBlockManager = plugin.getCustomBlockManager();
         this.settingsManager = plugin.getSettingsManager();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
 
@@ -114,10 +119,9 @@ public class SettingsInteractListener implements Listener {
         }
 
         event.setCancelled(true);
-        switch (material) {
-            case IRON_TRAPDOOR -> customBlocksManager.toggleIronTrapdoor(event);
-            case IRON_DOOR -> customBlocksManager.toggleIronDoor(event);
-        }
+        Openable openable = (Openable) block.getBlockData();
+        openable.setOpen(!openable.isOpen());
+        block.setBlockData(openable);
     }
 
     @EventHandler
@@ -126,18 +130,60 @@ public class SettingsInteractListener implements Listener {
             return;
         }
 
-        Player player = event.getPlayer();
         Action action = event.getAction();
-
-        Settings settings = settingsManager.getSettings(player);
-        if (settings.isSlabBreaking() && action == Action.LEFT_CLICK_BLOCK) {
-            customBlocksManager.modifySlab(event);
+        if (action != Action.LEFT_CLICK_BLOCK) {
+            return;
         }
+
+        Player player = event.getPlayer();
+        Settings settings = settingsManager.getSettings(player);
+        if (!settings.isSlabBreaking()) {
+            return;
+        }
+
+        Block block = event.getClickedBlock();
+        if (block == null || !(block.getBlockData() instanceof Slab slab) || slab.getType() != Slab.Type.DOUBLE) {
+            return;
+        }
+
+        event.setCancelled(true);
+
+        if (isTopHalf(player)) {
+            slab.setType(Slab.Type.BOTTOM);
+        } else {
+            slab.setType(Slab.Type.TOP);
+        }
+
+        block.setBlockData(slab);
+    }
+
+    /**
+     * Determines if the player's ray trace hit position is on the top half of a block.
+     *
+     * @param player The {@link Player} to check.
+     * @return {@code true} if the player's hit position is on the top half of a block, {@code false} otherwise.
+     */
+    public boolean isTopHalf(Player player) {
+        RayTraceResult result = player.rayTraceBlocks(6);
+        if (result == null) {
+            return false;
+        }
+        return Math.abs(result.getHitPosition().getY() % 1) < 0.5;
     }
 
     @EventHandler
     public void managePlacePlantsSetting(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || !isValid(event)) {
+        if (!isValid(event)) {
+            return;
+        }
+
+        Block block = event.getClickedBlock();
+        if (block == null || event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
+
+        Settings settings = settingsManager.getSettings(event.getPlayer());
+        if (!settings.isPlacePlants()) {
             return;
         }
 
@@ -152,17 +198,32 @@ public class SettingsInteractListener implements Listener {
                 && !XTag.ALIVE_CORAL_PLANTS.isTagged(xMaterial)
                 && !XTag.DEAD_CORAL_PLANTS.isTagged(xMaterial)
                 && !XTag.SAPLINGS.isTagged(xMaterial)
-                && !OTHER_PLANTS.contains(xMaterial)) {
-            return;
-        }
-
-        Settings settings = settingsManager.getSettings(event.getPlayer());
-        if (!settings.isPlacePlants()) {
+                && !OTHER_PLANTS.contains(xMaterial)
+        ) {
             return;
         }
 
         event.setCancelled(true);
-        customBlocksManager.setPlant(event);
+        Block adjacent = block.getRelative(event.getBlockFace());
+
+        switch (xMaterial) {
+            case SWEET_BERRIES:
+                adjacent.setType(XMaterial.SWEET_BERRY_BUSH.get());
+                break;
+            case VINE:
+                BlockFace toPlace = event.getBlockFace().getOppositeFace();
+                if (toPlace == BlockFace.DOWN) { // Cannot place vines facing down
+                    break;
+                }
+                adjacent.setType(xMaterial.get());
+                MultipleFacing multipleFacing = (MultipleFacing) adjacent.getBlockData();
+                Arrays.stream(DirectionUtil.BLOCK_SIDES).forEach(blockFace -> multipleFacing.setFace(blockFace, blockFace == toPlace));
+                adjacent.setBlockData(multipleFacing);
+                break;
+            default:
+                adjacent.setType(xMaterial.get());
+                break;
+        }
     }
 
     @EventHandler
@@ -210,14 +271,14 @@ public class SettingsInteractListener implements Listener {
                     return;
                 }
                 adjacent.setType(material);
-                customBlocksManager.rotateBlock(adjacent, DirectionUtil.getPlayerDirection(player).getOppositeFace());
+                customBlockManager.rotateBlock(adjacent, DirectionUtil.getPlayerDirection(player).getOppositeFace());
             }
             case DOWN -> {
                 if (!isHangingSign) {
                     return;
                 }
                 adjacent.setType(material);
-                customBlocksManager.rotateBlock(adjacent, getHangingSignDirection(event));
+                customBlockManager.rotateBlock(adjacent, getHangingSignDirection(event));
             }
             case NORTH, EAST, SOUTH, WEST -> {
                 String woodType = xMaterial.name()
@@ -226,7 +287,7 @@ public class SettingsInteractListener implements Listener {
                 String block = isHangingSign ? "_WALL_HANGING_SIGN" : "_WALL_SIGN";
                 BlockFace facing = isHangingSign ? getHangingSignDirection(event) : blockFace;
                 XMaterial.matchXMaterial(woodType + block).ifPresent(value -> adjacent.setType(value.get()));
-                customBlocksManager.rotateBlock(adjacent, facing);
+                customBlockManager.rotateBlock(adjacent, facing);
             }
         }
     }
@@ -286,7 +347,7 @@ public class SettingsInteractListener implements Listener {
         adjacent.setType(material);
         XBlock.setColor(adjacent, DyeColor.getByWoolData((byte) itemStack.getDurability()));
 
-        customBlocksManager.rotateBlock(adjacent, DirectionUtil.getBlockDirection(player, false));
+        customBlockManager.rotateBlock(adjacent, DirectionUtil.getBlockDirection(player, false));
 
         EquipmentSlot hand = event.getHand();
         if (hand == null) {
