@@ -60,7 +60,6 @@ import de.eintosti.buildsystem.expansion.placeholderapi.PlaceholderApiExpansion;
 import de.eintosti.buildsystem.listener.AsyncPlayerChatListener;
 import de.eintosti.buildsystem.listener.AsyncPlayerPreLoginListener;
 import de.eintosti.buildsystem.listener.BlockPhysicsListener;
-import de.eintosti.buildsystem.listener.BlockPlaceListener;
 import de.eintosti.buildsystem.listener.BuildModePreventationListener;
 import de.eintosti.buildsystem.listener.BuildWorldResetUnloadListener;
 import de.eintosti.buildsystem.listener.EditSessionListener;
@@ -85,7 +84,7 @@ import de.eintosti.buildsystem.listener.WorldManipulateByAxiomListener;
 import de.eintosti.buildsystem.listener.WorldManipulateListener;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.player.customblocks.CustomBlocksManager;
+import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
 import de.eintosti.buildsystem.player.settings.NoClipManager;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.util.UpdateChecker;
@@ -116,7 +115,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     public static final String ADMIN_PERMISSION = "buildsystem.admin";
 
     private ArmorStandManager armorStandManager;
-    private CustomBlocksManager customBlocksManager;
+    private CustomBlockManager customBlockManager;
     private InventoryManager inventoryManager;
     private PlayerServiceImpl playerService;
     private NoClipManager noClipManager;
@@ -204,7 +203,7 @@ public class BuildSystemPlugin extends JavaPlugin {
 
         this.inventoryManager = new InventoryManager();
         this.armorStandManager = new ArmorStandManager();
-        this.customBlocksManager = new CustomBlocksManager(this);
+        this.customBlockManager = new CustomBlockManager(this);
         (this.playerService = new PlayerServiceImpl(this)).init();
         this.noClipManager = new NoClipManager(this);
         (this.worldService = new WorldServiceImpl(this)).init();
@@ -249,7 +248,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         new AsyncPlayerChatListener(this);
         new AsyncPlayerPreLoginListener(this);
         new BlockPhysicsListener(this);
-        new BlockPlaceListener(this);
+        new CustomBlockManager(this);
         new BuildModePreventationListener(this);
         new BuildWorldResetUnloadListener(this);
         new EntitySpawnListener(this);
@@ -403,8 +402,8 @@ public class BuildSystemPlugin extends JavaPlugin {
         return armorStandManager;
     }
 
-    public CustomBlocksManager getCustomBlocksManager() {
-        return customBlocksManager;
+    public CustomBlockManager getCustomBlockManager() {
+        return customBlockManager;
     }
 
     public InventoryManager getInventoryManager() {

@@ -45,14 +45,11 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
-import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.generator.ChunkGenerator;
-import org.bukkit.plugin.Plugin;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -282,23 +279,6 @@ public class YamlWorldStorage extends WorldStorageImpl {
         }
 
         return builders;
-    }
-
-    /**
-     * Gets the {@link ChunkGenerator} for the generation of a {@link BuildWorld} with {@link BuildWorldType#CUSTOM}
-     *
-     * @param generator   The plugin's (generator) name
-     * @param generatorId Unique ID, if any, that was specified to indicate which generator was requested
-     * @param worldName   Name of the world that the chunk generator should be applied to.
-     */
-    @Nullable
-    public ChunkGenerator getChunkGenerator(String generator, String generatorId, String worldName) {
-        Plugin plugin = Bukkit.getPluginManager().getPlugin(generator);
-        if (plugin == null) {
-            return null;
-        }
-
-        return plugin.getDefaultWorldGenerator(worldName, generatorId);
     }
 
     @Override
