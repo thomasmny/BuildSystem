@@ -15,21 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.player.customblocks;
+package de.eintosti.buildsystem.player.customblock;
 
+import com.cryptomorin.xseries.XMaterial;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.util.DirectionUtil;
-import java.util.Arrays;
 import org.bukkit.Axis;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Furnace;
 import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.Lightable;
 import org.bukkit.block.data.MultipleFacing;
-import org.bukkit.block.data.Openable;
 import org.bukkit.block.data.Orientable;
 import org.bukkit.block.data.type.HangingSign;
 import org.bukkit.block.data.type.Sign;
@@ -40,34 +40,60 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.RayTraceResult;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class CustomBlocksManager implements Listener {
+public class CustomBlockManager implements Listener {
 
-    private final JavaPlugin plugin;
-    private final NamespacedKey invisibleFrameKey;
+    private final BuildSystemPlugin plugin;
 
-    public CustomBlocksManager(JavaPlugin plugin) {
+    public CustomBlockManager(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.invisibleFrameKey = new NamespacedKey(plugin, "invisible-itemframe");
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    public void setBlock(BlockPlaceEvent event, String key) {
-        CustomBlock customBlock = CustomBlock.getCustomBlock(key);
-        if (customBlock == null) {
-            plugin.getLogger().warning("Could not find custom block with key: " + key);
+    @EventHandler
+    public void onCustomBlockPlace(BlockPlaceEvent event) {
+        if (event.isCancelled()) {
             return;
         }
 
+        Player player = event.getPlayer();
+        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld());
+        boolean isBuildWorld = buildWorld != null;
+
+        ItemStack itemStack = event.getItemInHand();
+        XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
+        if (xMaterial != XMaterial.PLAYER_HEAD) {
+            return;
+        }
+
+        CustomBlock customBlock = CustomBlock.of(itemStack);
+        if (customBlock == null) {
+            return;
+        }
+
+        boolean hadToDisablePhysics = false;
+        if (isBuildWorld && !buildWorld.getData().physics().get()) {
+            hadToDisablePhysics = true;
+            buildWorld.getData().physics().set(true);
+        }
+
+        setBlock(event, customBlock);
+
+        if (isBuildWorld && hadToDisablePhysics) {
+            buildWorld.getData().physics().set(false);
+        }
+    }
+
+    /**
+     * Sets a custom block based on the provided {@link CustomBlock}.
+     *
+     * @param event       The {@link BlockPlaceEvent} triggered by the player
+     * @param customBlock The custom block to be placed
+     */
+    public void setBlock(BlockPlaceEvent event, CustomBlock customBlock) {
         Player player = event.getPlayer();
         Block block = event.getBlockPlaced();
 
@@ -178,104 +204,30 @@ public class CustomBlocksManager implements Listener {
         });
     }
 
+    /**
+     * Handles the placement of an invisible item frame, making it invisible.
+     *
+     * @param event The {@link HangingPlaceEvent} triggered when an item frame is placed
+     */
     @EventHandler
     public void onInvisibleItemFramePlacement(HangingPlaceEvent event) {
         if (!(event.getEntity() instanceof ItemFrame itemFrame)) {
             return;
         }
 
-        ItemStack itemStack = event.getItemStack();
-        if (itemStack == null) {
-            return;
-        }
-
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null || !itemMeta.getPersistentDataContainer().has(this.invisibleFrameKey, PersistentDataType.BYTE)) {
+        if (CustomBlock.of(event.getItemStack()) != CustomBlock.INVISIBLE_ITEM_FRAME) {
             return;
         }
 
         itemFrame.setVisible(false);
     }
 
-    public void setPlant(PlayerInteractEvent event) {
-        Block block = event.getClickedBlock();
-        if (block == null) {
-            return;
-        }
-
-        Material material = event.getItem().getType();
-        Block adjacent = block.getRelative(event.getBlockFace());
-
-        switch (material) {
-            case SWEET_BERRIES:
-                adjacent.setType(Material.SWEET_BERRY_BUSH);
-                break;
-            case VINE:
-                BlockFace toPlace = event.getBlockFace().getOppositeFace();
-                if (toPlace == BlockFace.DOWN) { // Cannot place vines facing down
-                    break;
-                }
-                adjacent.setType(material);
-                MultipleFacing multipleFacing = (MultipleFacing) adjacent.getBlockData();
-                Arrays.stream(DirectionUtil.BLOCK_SIDES).forEach(blockFace -> multipleFacing.setFace(blockFace, blockFace == toPlace));
-                adjacent.setBlockData(multipleFacing);
-                break;
-            default:
-                adjacent.setType(material);
-                break;
-        }
-    }
-
-    public void modifySlab(PlayerInteractEvent event) {
-        Block block = event.getClickedBlock();
-        if (block == null || !(block.getBlockData() instanceof Slab slab)) {
-            return;
-        }
-
-        if (slab.getType() != Slab.Type.DOUBLE) {
-            return;
-        }
-
-        event.setCancelled(true);
-        Player player = event.getPlayer();
-
-        if (isTopHalf(player)) {
-            slab.setType(Slab.Type.BOTTOM);
-        } else {
-            slab.setType(Slab.Type.TOP);
-        }
-
-        block.setBlockData(slab);
-    }
-
-    public boolean isTopHalf(Player player) {
-        RayTraceResult result = player.rayTraceBlocks(6);
-        if (result == null) {
-            return false;
-        }
-        return Math.abs(result.getHitPosition().getY() % 1) < 0.5;
-    }
-
-    public void toggleIronTrapdoor(PlayerInteractEvent event) {
-        event.setCancelled(true);
-        open(event.getClickedBlock());
-    }
-
-    public void toggleIronDoor(PlayerInteractEvent event) {
-        event.setCancelled(true);
-        open(event.getClickedBlock());
-    }
-
-    private void open(@Nullable Block block) {
-        if (block == null) {
-            return;
-        }
-
-        Openable openable = (Openable) block.getBlockData();
-        openable.setOpen(!openable.isOpen());
-        block.setBlockData(openable);
-    }
-
+    /**
+     * Rotates a block based on the provided {@link BlockFace} direction.
+     *
+     * @param block     The block to rotate
+     * @param direction The {@link BlockFace} representing the new direction or axis
+     */
     public void rotateBlock(Block block, BlockFace direction) {
         switch (block.getBlockData()) {
             case Directional directional -> {

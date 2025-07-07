@@ -15,10 +15,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.player.customblocks;
+package de.eintosti.buildsystem.player.customblock;
 
-import org.bukkit.Bukkit;
-import org.jetbrains.annotations.ApiStatus.Internal;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import java.util.Locale;
+import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -52,31 +58,68 @@ public enum CustomBlock {
     SMOOTH_STONE("blocks_smooth_stone", "8dd0cd158c2bb6618650e3954b2d29237f5b4c0ddc7d258e17380ab6979f071"),
     DEBUG_STICK("blocks_debug_stick", "badc048a7ce78f7dad72a07da27d85c0916881e5522eeed1e3daf217a38c1a");
 
-    private final String key;
+    public static final NamespacedKey CUSTOM_BLOCK_KEY = new NamespacedKey(JavaPlugin.getPlugin(BuildSystemPlugin.class), "custom-block");
+
+    private final String messageKey;
     private final String skullUrl;
 
-    CustomBlock(String key, String skullUrl) {
-        this.key = key;
+    CustomBlock(String messageKey, String skullUrl) {
+        this.messageKey = messageKey;
         this.skullUrl = skullUrl;
     }
 
     @Nullable
-    @Internal
-    public static CustomBlock getCustomBlock(String key) {
-        String customBlock = key.substring("blocks_".length()).toUpperCase();
+    public static CustomBlock of(@Nullable ItemStack itemStack) {
+        if (itemStack == null) {
+            return null;
+        }
+
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta == null) {
+            return null;
+        }
+
+        String identifier = itemMeta.getPersistentDataContainer().get(CUSTOM_BLOCK_KEY, PersistentDataType.STRING);
+        if (identifier == null) {
+            return null;
+        }
+
+        String customBlock = identifier.toUpperCase(Locale.ROOT);
         try {
             return CustomBlock.valueOf(customBlock);
         } catch (IllegalArgumentException e) {
-            Bukkit.getLogger().warning("[BuildSystem] Cannot find CustomBlock: " + customBlock);
             return null;
         }
     }
 
-    public String getKey() {
-        return key;
+    /**
+     * Gets the message key for this custom block.
+     *
+     * @return The message key associated with this custom block
+     */
+    public String getMessageKey() {
+        return messageKey;
     }
 
+    /**
+     * Gets the URL for the skull texture of this custom block.
+     *
+     * @return The URL of the skull texture for this custom block
+     */
     public String getSkullUrl() {
         return skullUrl;
+    }
+
+    /**
+     * Stores the custom block identifier in the provided item's {@link PersistentDataContainer}.
+     *
+     * @param itemStack The item to store the custom block identifier in
+     * @return The modified item stack with the custom block identifier stored
+     */
+    public ItemStack storeCustomBlock(ItemStack itemStack) {
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        itemMeta.getPersistentDataContainer().set(CUSTOM_BLOCK_KEY, PersistentDataType.STRING, this.name());
+        itemStack.setItemMeta(itemMeta);
+        return itemStack;
     }
 }

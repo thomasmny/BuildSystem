@@ -20,7 +20,7 @@ package de.eintosti.buildsystem.command;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.player.customblocks.BlocksInventory;
+import de.eintosti.buildsystem.player.customblock.CustomBlockInventory;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -50,7 +50,7 @@ public class BlocksCommand implements CommandExecutor {
         }
 
         XSound.BLOCK_CHEST_OPEN.play(player);
-        new BlocksInventory(plugin).openInventory(player);
+        new CustomBlockInventory(plugin).openInventory(player);
         return true;
     }
 }
