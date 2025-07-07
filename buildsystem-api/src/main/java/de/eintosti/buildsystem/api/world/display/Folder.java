@@ -101,9 +101,22 @@ public interface Folder extends Displayable {
     void removeWorld(BuildWorld buildWorld);
 
     /**
-     * Gets the count of {@link BuildWorld}s directly contained within this folder.
+     * Returns a list of all immediate subfolders contained within this folder.
+     * <p>
+     * This includes only direct children—folders whose {@link #getParent()} is exactly this folder. Nested subfolders (i.e., deeper levels of the folder hierarchy) are not
+     * included.
      *
-     * @return The number of worlds in this folder
+     * @return A list of immediate subfolders
+     */
+    @Unmodifiable
+    List<Folder> getSubFolders();
+
+    /**
+     * Gets the total number of {@link BuildWorld}s contained in this folder and all of its subfolders.
+     * <p>
+     * This includes both the worlds directly assigned to this folder and those assigned to any nested subfolders.
+     *
+     * @return The total number of worlds in this folder and its subfolders
      */
     int getWorldCount();
 

@@ -437,7 +437,7 @@ public class Config {
         Archive.changeGamemode = CONFIG.getBoolean("settings.archive.change-gamemode", true);
         Archive.worldGameMode = parseGameMode(CONFIG.getString("settings.archive.world-gamemode"));
         // Settings - Save from death
-        SaveFromDeath.enabled = CONFIG.getBoolean("settings.save-from-death.enable", true);
+        SaveFromDeath.enabled = CONFIG.getBoolean("settings.save-from-death.enabled", true);
         SaveFromDeath.teleportToMapSpawn = CONFIG.getBoolean("settings.save-from-death.teleport-to-map-spawn", true);
         // Settings - Build mode
         BuildMode.dropItems = CONFIG.getBoolean("settings.build-mode.drop-items", true);

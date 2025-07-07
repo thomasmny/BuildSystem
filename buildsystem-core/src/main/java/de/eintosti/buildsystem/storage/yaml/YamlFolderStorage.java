@@ -167,7 +167,9 @@ public class YamlFolderStorage extends FolderStorageImpl {
                 material,
                 permission,
                 project,
-                worlds);
+                worlds,
+                new ArrayList<>()
+        );
     }
 
     @Override
