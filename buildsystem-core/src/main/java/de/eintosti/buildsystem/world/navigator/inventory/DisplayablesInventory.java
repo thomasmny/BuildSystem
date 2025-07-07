@@ -511,7 +511,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
     private void updateAndReopenInventory() {
         resetInvIndex(player);
         initializeInventories();
-        player.openInventory(generatedInventories[getInvIndex(player)]);
+        openInventory();
     }
 
     /**
