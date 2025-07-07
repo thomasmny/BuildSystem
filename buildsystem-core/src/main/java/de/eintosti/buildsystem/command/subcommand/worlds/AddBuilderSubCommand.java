@@ -26,7 +26,7 @@ import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.util.WorldPermissions;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter;
+import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.builder.BuilderInventory;
@@ -125,6 +125,6 @@ public class AddBuilderSubCommand implements SubCommand {
 
     @Override
     public Argument getArgument() {
-        return WorldsTabCompleter.WorldsArgument.ADD_BUILDER;
+        return WorldsArgument.ADD_BUILDER;
     }
 }
