@@ -57,9 +57,12 @@ public interface Folder extends Displayable {
     Folder getParent();
 
     /**
-     * Sets the parent {@link Folder} for this folder. Setting to {@code null} will make this a top-level folder.
+     * Sets the parent {@link Folder} for this folder. Setting it to {@code null} will make this a top-level folder.
+     * <p>
+     * The parent folder must belong to the same {@link NavigatorCategory} as this folder. If the categories differ, an {@link IllegalArgumentException} is thrown.
      *
-     * @param parent The new parent {@link Folder} to set, or {@code null} to remove the current parent
+     * @param parent The new parent {@link Folder}, or {@code null} to remove the current parent
+     * @throws IllegalArgumentException if the parent has a different {@link NavigatorCategory}
      */
     void setParent(@Nullable Folder parent);
 
@@ -101,7 +104,7 @@ public interface Folder extends Displayable {
     void removeWorld(BuildWorld buildWorld);
 
     /**
-     * Returns a list of all immediate subfolders contained within this folder.
+     * Returns an unmodifiable list of all immediate subfolders contained within this folder.
      * <p>
      * This includes only direct children—folders whose {@link #getParent()} is exactly this folder. Nested subfolders (i.e., deeper levels of the folder hierarchy) are not
      * included.
@@ -149,7 +152,7 @@ public interface Folder extends Displayable {
     void setProject(String project);
 
     /**
-     * Checks if the specified {@link Player} has permission to view this folder. This takes into account the folder's permission setting.
+     * Checks if the given {@link Player} has permission to view this folder in the navigator.
      *
      * @param player The {@link Player} to check
      * @return {@code true} if the player can view the folder, {@code false} otherwise

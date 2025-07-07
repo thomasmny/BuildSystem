@@ -88,9 +88,7 @@ public class FolderContentInventory extends DisplayablesInventory {
 
     @Override
     protected Collection<Folder> collectFolders() {
-        return folderStorage.getFolders().stream()
-                .filter(folder -> folder.getCategory() == this.category)
-                .filter(folder -> Objects.equals(folder.getParent(), this.folder))
+        return this.folder.getSubFolders().stream()
                 .filter(folder -> folder.canView(this.player))
                 .collect(Collectors.toList());
     }
