@@ -136,11 +136,16 @@ public class FolderImpl implements Folder {
 
     @Override
     public void setParent(@Nullable Folder parent) {
+        if (parent != null && this.category != parent.getCategory()) {
+            throw new IllegalArgumentException("Cannot set parent folder: category mismatch (expected: %s, found: %s)".formatted(this.category, parent.getCategory()));
+        }
+
         if (parent != null && !parent.getSubFolders().contains(this)) {
             ((FolderImpl) parent).subfolders.add(this);
         } else if (parent == null && this.parent != null) {
             ((FolderImpl) this.parent).subfolders.remove(this);
         }
+
         this.parent = parent;
     }
 
