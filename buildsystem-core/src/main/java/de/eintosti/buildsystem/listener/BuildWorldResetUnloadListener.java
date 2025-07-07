@@ -39,17 +39,21 @@ public class BuildWorldResetUnloadListener implements Listener {
 
     @EventHandler
     public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
-        World from = event.getFrom();
-        BuildWorld buildWorld = worldStorage.getBuildWorld(from.getName());
-        if (buildWorld != null) {
-            buildWorld.getUnloader().resetUnloadTask();
-        }
+        resetUnloadTask(event.getFrom());
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        World from = event.getPlayer().getWorld();
-        BuildWorld buildWorld = worldStorage.getBuildWorld(from.getName());
+        resetUnloadTask(event.getPlayer().getWorld());
+    }
+
+    /**
+     * Resets the unload task for the given world.
+     *
+     * @param world The world for which the unload task should be reset
+     */
+    private void resetUnloadTask(World world) {
+        BuildWorld buildWorld = worldStorage.getBuildWorld(world.getName());
         if (buildWorld != null) {
             buildWorld.getUnloader().resetUnloadTask();
         }
