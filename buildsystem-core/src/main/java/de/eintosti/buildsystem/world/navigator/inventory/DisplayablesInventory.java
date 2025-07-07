@@ -57,7 +57,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -66,6 +65,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -243,12 +243,13 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
      *
      * @return A collection of root folders in the specified category
      */
+    @Unmodifiable
     protected Collection<Folder> collectFolders() {
         return folderStorage.getFolders().stream()
                 .filter(folder -> folder.getCategory() == this.category)
                 .filter(folder -> !folder.hasParent())
                 .filter(folder -> folder.canView(this.player))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -265,11 +266,12 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
      * @param worldDisplay The world display settings for the player
      * @return A collection of filtered and sorted {@link BuildWorld}s that are valid for display to the player
      */
+    @Unmodifiable
     protected Collection<BuildWorld> filterWorlds(Collection<BuildWorld> buildWorlds, WorldDisplay worldDisplay) {
         return buildWorlds.stream()
                 .filter(this::isWorldValidForDisplay)
                 .filter(worldDisplay.getWorldFilter().apply())
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**

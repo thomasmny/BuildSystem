@@ -12,6 +12,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -60,10 +61,11 @@ public class BuildersImpl implements Builders {
     }
 
     @Override
+    @Unmodifiable
     public List<String> getBuilderNames() {
         return getAllBuilders().stream()
                 .map(Builder::getName)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

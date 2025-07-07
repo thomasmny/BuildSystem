@@ -156,7 +156,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
         XMaterial material = XMaterial.matchXMaterial(config.getString(path + ".material", defaultMaterial.name())).orElse(defaultMaterial);
         String permission = config.getString(path + ".permission", "-");
         String project = config.getString(path + ".project", "-");
-        List<UUID> worlds = config.getStringList(path + ".worlds").stream().map(UUID::fromString).collect(Collectors.toList());
+        List<UUID> worlds = config.getStringList(path + ".worlds").stream().map(UUID::fromString).toList();
 
         return new FolderImpl(
                 folderName,

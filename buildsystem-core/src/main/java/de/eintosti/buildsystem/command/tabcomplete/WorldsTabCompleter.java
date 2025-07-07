@@ -37,7 +37,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -181,9 +180,9 @@ public class WorldsTabCompleter extends ArgumentSorter implements TabCompleter {
                 switch (args[0].toLowerCase(Locale.ROOT)) {
                     case "import": {
                         Map<String, List<String>> arguments = Map.of(
-                                "-g", Arrays.stream(Generator.values()).filter(generator -> generator != Generator.CUSTOM).map(Enum::name).collect(Collectors.toList()),
-                                "-c", Lists.newArrayList(),
-                                "-t", Arrays.stream(BuildWorldType.values()).map(Enum::name).collect(Collectors.toList())
+                                "-g", Arrays.stream(Generator.values()).filter(generator -> generator != Generator.CUSTOM).map(Enum::name).toList(),
+                                "-c", List.of(),
+                                "-t", Arrays.stream(BuildWorldType.values()).map(Enum::name).toList()
                         );
 
                         if (args.length % 2 == 1) {
