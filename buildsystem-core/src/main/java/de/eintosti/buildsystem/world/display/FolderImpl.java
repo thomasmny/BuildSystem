@@ -75,7 +75,7 @@ public class FolderImpl implements Folder {
             ((FolderImpl) parent).subfolders.add(this);
         }
         this.creator = creator;
-        this.worlds = worlds;
+        this.worlds = new ArrayList<>(worlds);
         this.material = material;
         this.permission = permission;
         this.project = project;
@@ -186,7 +186,7 @@ public class FolderImpl implements Folder {
     @Override
     @Unmodifiable
     public List<Folder> getSubFolders() {
-        return this.subfolders;
+        return Collections.unmodifiableList(this.subfolders);
     }
 
     @Override
