@@ -62,9 +62,6 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class PlayerServiceImpl implements PlayerService {
 
-    private static final double MIN_LOOK_HEIGHT = -0.16453003708696978;
-    private static final double MAX_LOOK_HEIGHT = 0.16481381407766063;
-
     private final BuildSystemPlugin plugin;
     private final PlayerStorageImpl playerStorage;
 
@@ -161,6 +158,11 @@ public class PlayerServiceImpl implements PlayerService {
         return max;
     }
 
+    /**
+     * Forces an update of the sidebar for all players in the given {@link BuildWorld}.
+     *
+     * @param buildWorld The world for which the sidebar should be updated
+     */
     public void forceUpdateSidebar(BuildWorld buildWorld) {
         if (!Settings.scoreboard) {
             return;
@@ -174,6 +176,11 @@ public class PlayerServiceImpl implements PlayerService {
         bukkitWorld.getPlayers().forEach(this::forceUpdateSidebar);
     }
 
+    /**
+     * Forces an update of the sidebar for a specific player.
+     *
+     * @param player The player for whom the sidebar should be updated
+     */
     public void forceUpdateSidebar(Player player) {
         SettingsManager settingsManager = plugin.getSettingsManager();
         if (!Settings.scoreboard || !settingsManager.getSettings(player).isScoreboard()) {
@@ -182,67 +189,30 @@ public class PlayerServiceImpl implements PlayerService {
         settingsManager.updateScoreboard(player);
     }
 
+    /**
+     * Gives the navigator item to the player if they have the permission and do not already have it in their inventory.
+     *
+     * @param player The player to whom the navigator item should be given
+     */
     public void giveNavigator(Player player) {
-        if (!Navigator.giveItemOnJoin) {
+        if (!Navigator.giveItemOnJoin || !player.hasPermission("buildsystem.navigator.item") || InventoryUtils.hasNavigator(player)) {
             return;
         }
 
-        if (!player.hasPermission("buildsystem.navigator.item")) {
-            return;
-        }
-
-        if (InventoryUtils.hasNavigator(player)) {
-            return;
-        }
-
-        ItemStack itemStack = InventoryUtils.createItem(
-                Navigator.item,
-                Messages.getString("navigator_item", player)
-        );
+        ItemStack navigatorItem = InventoryUtils.createNavigatorItem(player);
         PlayerInventory playerInventory = player.getInventory();
         ItemStack slot8 = playerInventory.getItem(8);
 
         if (slot8 == null || slot8.getType() == XMaterial.AIR.get()) {
-            playerInventory.setItem(8, itemStack);
+            playerInventory.setItem(8, navigatorItem);
         } else {
-            playerInventory.addItem(itemStack);
+            playerInventory.addItem(navigatorItem);
         }
     }
 
-    public void closeNavigator(Player player) {
-        if (!openNavigator.contains(player)) {
-            return;
-        }
-
-        BuildPlayer buildPlayer = playerStorage.getBuildPlayer(player);
-        buildPlayer.setLastLookedAt(null);
-        plugin.getArmorStandManager().removeArmorStands(player);
-
-        XSound.ENTITY_ITEM_BREAK.play(player);
-        displayActionBarMessage(player, "");
-        replaceBarrier(player);
-
-        CachedValues cachedValues = buildPlayer.getCachedValues();
-        cachedValues.resetWalkSpeedIfPresent(player);
-        cachedValues.resetFlySpeedIfPresent(player);
-        player.removePotionEffect(XPotion.JUMP_BOOST.get());
-        player.removePotionEffect(XPotion.BLINDNESS.get());
-
-        openNavigator.remove(player);
-    }
-
-    private void replaceBarrier(Player player) {
-        InventoryUtils.replaceItem(
-                player,
-                Messages.getString("barrier_item", player),
-                XMaterial.BARRIER,
-                InventoryUtils.createItem(
-                        Navigator.item,
-                        Messages.getString("navigator_item", player)
-                )
-        );
-    }
-
+    /**
+     * Initializes the entity checker that periodically checks if players with open navigators are looking at armor stands representing navigator categories.
+     */
     private void initEntityChecker() {
         Bukkit.getScheduler().runTaskTimer(plugin, this::checkForAmorStandNavigator, 0L, 2L);
     }
@@ -269,6 +239,13 @@ public class PlayerServiceImpl implements PlayerService {
         }
     }
 
+    /**
+     * Checks if the player is looking at the head of an armor stand within a 3-block radius.
+     *
+     * @param player     The player to check
+     * @param armorStand The armor stand to check against
+     * @return {@code true} if the player is looking at the armor stand's head, {@code false} otherwise
+     */
     private boolean isLookingAtArmorStandHead(Player player, ArmorStand armorStand) {
         Location eyeLocation = player.getEyeLocation();
         Vector direction = eyeLocation.getDirection().normalize();
@@ -296,11 +273,25 @@ public class PlayerServiceImpl implements PlayerService {
         return false;
     }
 
+    /**
+     * Finds the closest target entity that the player is looking at within a 3-block radius.
+     *
+     * @param entity The entity from which to find the target
+     * @return The closest target entity that the given entity is looking at, or {@code null} if no suitable target is found
+     */
     @Nullable
     private Entity getTargetEntity(Entity entity) {
         return getTarget(entity, entity.getNearbyEntities(3, 3, 3));
     }
 
+    /**
+     * Finds the closest target entity from a given entity collection within a specified threshold.
+     *
+     * @param entity   The entity from which to find the target
+     * @param entities The collection of entities to search through
+     * @param <T>      The type of entity to search for, which must extend {@link Entity}
+     * @return The closest target entity that the given entity is looking at, or {@code null} if no suitable target is found
+     */
     @Nullable
     @Contract("null, _ -> null")
     private <T extends Entity> T getTarget(@Nullable Entity entity, Iterable<T> entities) {
@@ -328,6 +319,12 @@ public class PlayerServiceImpl implements PlayerService {
         return target;
     }
 
+    /**
+     * Sends type information to the player based on the {@link NavigatorCategory} they are looking at in the navigator.
+     *
+     * @param player   The player to whom the type information should be sent
+     * @param category The {@link NavigatorCategory} that the player is looking at, or {@code null} if they are not looking at any category
+     */
     private void sendTypeInfo(Player player, @Nullable NavigatorCategory category) {
         BuildPlayer buildPlayer = playerStorage.getBuildPlayer(player);
         if (category == null) {
@@ -352,6 +349,35 @@ public class PlayerServiceImpl implements PlayerService {
 
     private void displayActionBarMessage(Player player, String message) {
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(message));
+    }
+
+    /**
+     * Closes the new navigator for the given player.
+     * <p>
+     * This method removes the armor stands, resets the player's cached values, and updates the player's inventory. It also plays a sound effect and clears the action bar message.
+     *
+     * @param player The player whose navigator should be closed
+     */
+    public void closeNewNavigator(Player player) {
+        if (!openNavigator.contains(player)) {
+            return;
+        }
+
+        BuildPlayer buildPlayer = playerStorage.getBuildPlayer(player);
+        buildPlayer.setLastLookedAt(null);
+        plugin.getArmorStandManager().removeArmorStands(player);
+
+        XSound.ENTITY_ITEM_BREAK.play(player);
+        displayActionBarMessage(player, "");
+        InventoryUtils.replaceItem(player, Messages.getString("barrier_item", player), XMaterial.BARRIER, InventoryUtils.createNavigatorItem(player));
+
+        CachedValues cachedValues = buildPlayer.getCachedValues();
+        cachedValues.resetWalkSpeedIfPresent(player);
+        cachedValues.resetFlySpeedIfPresent(player);
+        player.removePotionEffect(XPotion.JUMP_BOOST.get());
+        player.removePotionEffect(XPotion.BLINDNESS.get());
+
+        openNavigator.remove(player);
     }
 
     public void save() {

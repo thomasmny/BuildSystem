@@ -582,7 +582,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
      * @param buildWorld The BuildWorld to act upon.
      */
     private void performNonEditClick(BuildWorld buildWorld) {
-        playerService.closeNavigator(player);
+        playerService.closeNewNavigator(player);
         buildWorld.getTeleporter().teleport(player);
     }
 

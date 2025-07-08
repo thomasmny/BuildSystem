@@ -61,7 +61,7 @@ public class PlayerQuitListener implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        playerManager.closeNavigator(player);
+        playerManager.closeNewNavigator(player);
 
         Settings settings = settingsManager.getSettings(player);
         if (settings.isNoClip()) {
