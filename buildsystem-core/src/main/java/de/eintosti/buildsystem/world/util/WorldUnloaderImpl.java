@@ -30,6 +30,7 @@ import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -58,6 +59,7 @@ public class WorldUnloaderImpl implements WorldUnloader {
         return hours * 3600L + minutes * 60L + seconds;
     }
 
+    @Contract("_ -> new")
     public static WorldUnloaderImpl of(BuildWorld buildWorld) {
         return new WorldUnloaderImpl(buildWorld);
     }

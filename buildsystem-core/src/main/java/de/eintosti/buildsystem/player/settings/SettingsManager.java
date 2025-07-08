@@ -33,6 +33,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -117,6 +118,7 @@ public class SettingsManager {
         board.updateLines(body);
     }
 
+    @Contract("_, _ -> new")
     @SuppressWarnings("unchecked")
     private Map.Entry<String, Object>[] getPlaceholders(String originalString, Player player) {
         if (!originalString.matches(".*%*%.*")) {

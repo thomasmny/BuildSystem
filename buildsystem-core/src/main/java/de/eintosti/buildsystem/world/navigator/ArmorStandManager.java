@@ -20,28 +20,25 @@ package de.eintosti.buildsystem.world.navigator;
 import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.UUID;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class ArmorStandManager {
 
-    public static final Map<NavigatorCategory, String> ARMOR_STAND_NAMES;
-
-    static {
-        ARMOR_STAND_NAMES = new EnumMap<>(NavigatorCategory.class);
-        ARMOR_STAND_NAMES.put(NavigatorCategory.PUBLIC, "§aWorld Navigator");
-        ARMOR_STAND_NAMES.put(NavigatorCategory.ARCHIVE, "§6World Archive");
-        ARMOR_STAND_NAMES.put(NavigatorCategory.PRIVATE, "§bPrivate Worlds");
-    }
+    private static final JavaPlugin PLUGIN = JavaPlugin.getProvidingPlugin(ArmorStandManager.class);
+    private static final NamespacedKey OWNER_KEY = new NamespacedKey(PLUGIN, "owner");
+    private static final NamespacedKey CATEGORY_KEY = new NamespacedKey(PLUGIN, "category");
 
     private static final float RADIUS = 2.2f;
     private static final float SPREAD = 90.0f;
@@ -53,16 +50,15 @@ public class ArmorStandManager {
     }
 
     @Nullable
-    public static NavigatorCategory matchNavigatorCategory(Player player, String customName) {
-        String typeName = customName.replace(player.getName() + " × ", "");
+    public static NavigatorCategory matchNavigatorCategory(ArmorStand armorStand) {
+        String categoryName = armorStand.getPersistentDataContainer().get(CATEGORY_KEY, PersistentDataType.STRING);
+        return categoryName != null ? NavigatorCategory.valueOf(categoryName) : null;
+    }
 
-        for (Entry<NavigatorCategory, String> entry : ArmorStandManager.ARMOR_STAND_NAMES.entrySet()) {
-            if (entry.getValue().equalsIgnoreCase(typeName)) {
-                return entry.getKey();
-            }
-        }
-
-        return null;
+    @Nullable
+    public static UUID getOwner(ArmorStand armorStand) {
+        String ownerUUID = armorStand.getPersistentDataContainer().get(OWNER_KEY, PersistentDataType.STRING);
+        return ownerUUID != null ? UUID.fromString(ownerUUID) : null;
     }
 
     private Location calculatePosition(Player player, float angle) {
@@ -71,27 +67,28 @@ public class ArmorStandManager {
         float centerZ = (float) playerLocation.getZ();
         float yaw = playerLocation.getYaw() + 180 + angle;
         float xPos = RADIUS * (float) Math.cos(Math.toRadians(yaw - 90)) + centerX;
+        double yPos = playerLocation.getY() - 0.1;
         float zPos = RADIUS * (float) Math.sin(Math.toRadians(yaw - 90)) + centerZ;
 
-        Location location = new Location(player.getWorld(), xPos, playerLocation.getY(), zPos);
+        Location location = new Location(player.getWorld(), xPos, yPos, zPos);
         location.setYaw(yaw);
         return location;
     }
 
-    @SuppressWarnings("deprecation")
     private ArmorStand spawnArmorStand(Player player, Location location, NavigatorCategory category, boolean customSkull, String skullUrl) {
-        location.setY(location.getY() - 0.1);
-
         ArmorStand armorStand = location.getWorld().spawn(location, ArmorStand.class);
         armorStand.setVisible(false);
-        armorStand.setCustomName(player.getName() + " × " + ARMOR_STAND_NAMES.get(category));
-        armorStand.setCustomNameVisible(false);
         armorStand.setGravity(false);
         armorStand.setCanPickupItems(false);
-        armorStand.setHelmet(XSkull.createItem()
-                .profile(Profileable.detect(customSkull ? skullUrl : player.getName()))
-                .apply()
+        armorStand.getEquipment().setHelmet(
+                XSkull.createItem()
+                        .profile(Profileable.detect(customSkull ? skullUrl : player.getName()))
+                        .apply()
         );
+
+        PersistentDataContainer pdc = armorStand.getPersistentDataContainer();
+        pdc.set(OWNER_KEY, PersistentDataType.STRING, player.getUniqueId().toString());
+        pdc.set(CATEGORY_KEY, PersistentDataType.STRING, category.name());
 
         return armorStand;
     }
@@ -120,24 +117,13 @@ public class ArmorStandManager {
     }
 
     public void removeArmorStands(Player player) {
-        ArmorStand[] armorStands = this.armorStands.get(player.getUniqueId());
+        ArmorStand[] armorStands = this.armorStands.remove(player.getUniqueId());
         if (armorStands == null) {
             return;
         }
 
-        String playerName = player.getName();
         for (ArmorStand armorStand : armorStands) {
-            String customName = armorStand.getCustomName();
-            if (customName == null) {
-                continue;
-            }
-
-            for (NavigatorCategory category : NavigatorCategory.values()) {
-                if (customName.equals(playerName + " × " + ARMOR_STAND_NAMES.get(category))) {
-                    armorStand.remove();
-                    break;
-                }
-            }
+            armorStand.remove();
         }
     }
 }

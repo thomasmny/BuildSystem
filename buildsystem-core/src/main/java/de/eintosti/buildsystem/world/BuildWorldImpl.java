@@ -187,27 +187,22 @@ public final class BuildWorldImpl implements BuildWorld {
 
         List<String> lore = new ArrayList<>();
 
-        // Replace %builders% placeholder
         for (String line : messageList) {
+            // If the current line does not contain the %builders% placeholder, add it directly
             if (!line.contains("%builders%")) {
                 lore.add(line);
                 continue;
             }
 
-            List<String> builderLines = builders.formatBuildersForLore(player);
-            if (builderLines.isEmpty()) {
-                continue;
-            }
+            List<String> builderLines = builders.formatBuildersForLore(player, 3);
 
-            // Replace the placeholder in the first line only
-            lore.add(line.replace("%builders%", builderLines.getFirst().trim()));
+            // Replace the %builders% placeholder in the current line with the first generated builder line
+            lore.add(line.replace("%builders%", builderLines.getFirst()));
 
-            // Add any additional lines
+            // Add any further builder lines as new separate lore entries
+            // Start from the second element (index 1) of builderLines
             for (int i = 1; i < builderLines.size(); i++) {
-                String builderLine = builderLines.get(i).trim();
-                if (!builderLine.isEmpty()) {
-                    lore.add(builderLine);
-                }
+                lore.add(builderLines.get(i));
             }
         }
 

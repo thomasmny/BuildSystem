@@ -27,6 +27,7 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -77,6 +78,7 @@ public abstract class PagedCommand {
 
     protected abstract List<TextComponent> getCommands(Player player);
 
+    @Contract("_, _, _, _, _-> new")
     protected TextComponent createComponent(Player player, String command, String commandDescriptionKey, String suggest, String permission) {
         if (command.isEmpty()) {
             return new TextComponent();

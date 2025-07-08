@@ -30,6 +30,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -147,6 +148,7 @@ public final class UpdateChecker {
      *
      * @return a future update result
      */
+    @Contract("-> new")
     public CompletableFuture<UpdateResult> requestUpdateCheck() {
         return CompletableFuture.supplyAsync(() -> {
             int responseCode;

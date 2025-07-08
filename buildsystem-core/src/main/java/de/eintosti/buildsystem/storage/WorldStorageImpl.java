@@ -41,6 +41,7 @@ import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -66,6 +67,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
 
     @Override
     @Nullable
+    @Contract("null -> null")
     public BuildWorld getBuildWorld(@Nullable String name) {
         if (name == null || name.isEmpty()) {
             return null;
@@ -164,19 +166,17 @@ public abstract class WorldStorageImpl implements WorldStorage {
     public void loadWorlds() {
         try {
             load().get().forEach(this::addBuildWorld);
+            assignWorldsToFolders();
         } catch (InterruptedException | ExecutionException e) {
             logger.severe("Failed to load worlds from storage: " + e.getMessage());
             return;
         }
 
-        assignWorldsToFolders();
-
         boolean loadAllWorlds = !Unload.enabled;
         if (loadAllWorlds) {
             logger.info("*** All worlds will be loaded now ***");
         } else {
-            logger.info("*** 'Unload worlds' has been enabled in the config ***");
-            logger.info("*** Therefore, worlds will not be pre-loaded ***");
+            logger.info("*** World unloading is enabled ('world.unload.enabled' = true); skipping pre-loading of worlds ***");
         }
 
         List<BuildWorld> notLoaded = new ArrayList<>();
@@ -221,8 +221,9 @@ public abstract class WorldStorageImpl implements WorldStorage {
      */
     private LoadResult loadWorld(BuildWorld buildWorld, boolean alwaysLoad) {
         String worldName = buildWorld.getName();
-        if (!alwaysLoad && !Unload.blacklistedWorlds.contains(worldName)) {
-            return LoadResult.NOT_BLACKLISTED;
+        boolean shouldPreLoad = alwaysLoad || Unload.blacklistedWorlds.contains(worldName);
+        if (!shouldPreLoad) {
+            return LoadResult.NOT_LOADED;
         }
 
         World world = new BuildWorldCreatorImpl(plugin, buildWorld).generateBukkitWorld();
@@ -238,18 +239,22 @@ public abstract class WorldStorageImpl implements WorldStorage {
     private enum LoadResult {
 
         /**
-         * The world was loaded
+         * The {@link BuildWorld} was successfully loaded.
          */
         LOADED,
 
         /**
-         * The world was unable to be loaded
+         * The {@link BuildWorld} was attempted to be loaded, but failed.
          */
         FAILED,
 
         /**
-         * {@link Unload#enabled} is set to {@code true} and the world is not blacklisted to unload
+         * The {@link BuildWorld} was not attempted to be loaded because:
+         * <ul>
+         *   <li>{@link Unload#enabled} is set to {@code true}, and</li>
+         *   <li>{@link Unload#blacklistedWorlds} does not contain the world's name (therefore, it can remain unloaded)</li>
+         * </ul>
          */
-        NOT_BLACKLISTED
+        NOT_LOADED
     }
 }

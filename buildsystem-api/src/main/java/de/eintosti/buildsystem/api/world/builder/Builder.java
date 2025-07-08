@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.api.world.builder;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.util.UUID;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -38,6 +39,7 @@ public sealed interface Builder permits BuilderImpl {
      * @param name The name
      * @return The builder
      */
+    @Contract("_, _ -> new")
     static Builder of(UUID uuid, String name) {
         return new BuilderImpl(uuid, name);
     }
@@ -48,6 +50,7 @@ public sealed interface Builder permits BuilderImpl {
      * @param player The player
      * @return The builder
      */
+    @Contract("_ -> new")
     static Builder of(Player player) {
         return of(player.getUniqueId(), player.getName());
     }
@@ -67,6 +70,10 @@ public sealed interface Builder permits BuilderImpl {
         }
 
         String[] parts = serialized.split(BuilderImpl.SEPARATOR);
+        if (parts.length != 2) {
+            return null;
+        }
+
         return of(UUID.fromString(parts[0]), parts[1]);
     }
 
