@@ -47,6 +47,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -198,6 +199,7 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
         return new LogoutLocationImpl(worldName, x, y, z, yaw, pitch);
     }
 
+    @Contract("_, _ -> new")
     private SettingsImpl loadSettings(FileConfiguration configuration, String pathPrefix) {
         NavigatorType navigatorType = NavigatorType.valueOf(configuration.getString(pathPrefix + ".type"));
         DesignColor glassColor = DesignColor.matchColor(configuration.getString(pathPrefix + ".glass"));
@@ -221,6 +223,7 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
         );
     }
 
+    @Contract("_, _ -> new")
     private WorldDisplay loadWorldDisplay(FileConfiguration configuration, String pathPrefix) {
         WorldSort worldSort = WorldSort.matchWorldSort(configuration.getString(pathPrefix + ".sort", WorldSort.NEWEST_FIRST.name()));
         WorldFilter.Mode filterMode = WorldFilterImpl.Mode.valueOf(configuration.getString(pathPrefix + ".filter.mode", WorldFilter.Mode.NONE.name()));

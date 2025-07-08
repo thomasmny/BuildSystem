@@ -40,10 +40,11 @@ import de.eintosti.buildsystem.world.navigator.inventory.DisplayablesInventory;
 import de.eintosti.buildsystem.world.navigator.inventory.NavigatorInventory;
 import de.eintosti.buildsystem.world.navigator.inventory.PrivateWorldsInventory;
 import de.eintosti.buildsystem.world.navigator.inventory.PublicWorldsInventory;
+import java.util.Objects;
+import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
@@ -126,23 +127,23 @@ public class NavigatorListener implements Listener {
 
     private void openNavigator(Player player) {
         Settings settings = settingsManager.getSettings(player);
-        if (settings.getNavigatorType() == NavigatorType.OLD) {
-            new NavigatorInventory(plugin).openInventory(player);
-            XSound.BLOCK_CHEST_OPEN.play(player);
-            return;
+        switch (settings.getNavigatorType()) {
+            case OLD -> {
+                new NavigatorInventory(plugin).openInventory(player);
+                XSound.BLOCK_CHEST_OPEN.play(player);
+            }
+            case NEW -> {
+                if (playerService.getOpenNavigator().contains(player)) {
+                    Messages.sendMessage(player, "worlds_navigator_open");
+                    return;
+                }
+
+                summonNewNavigator(player);
+                String findItemName = Messages.getString("navigator_item", player);
+                ItemStack replaceItem = InventoryUtils.createItem(XMaterial.BARRIER, Messages.getString("barrier_item", player));
+                InventoryUtils.replaceItem(player, findItemName, Navigator.item, replaceItem);
+            }
         }
-
-        // NEW
-        if (playerService.getOpenNavigator().contains(player)) {
-            Messages.sendMessage(player, "worlds_navigator_open");
-            return;
-        }
-
-        summonNewNavigator(player);
-
-        String findItemName = Messages.getString("navigator_item", player);
-        ItemStack replaceItem = InventoryUtils.createItem(XMaterial.BARRIER, Messages.getString("barrier_item", player));
-        InventoryUtils.replaceItem(player, findItemName, Navigator.item, replaceItem);
     }
 
     private void summonNewNavigator(Player player) {
@@ -150,10 +151,14 @@ public class NavigatorListener implements Listener {
         cachedValues.saveWalkSpeed(player.getWalkSpeed());
         cachedValues.saveFlySpeed(player.getFlySpeed());
 
-        player.setWalkSpeed(0);
-        player.setFlySpeed(0);
-        player.addPotionEffect(new PotionEffect(XPotion.BLINDNESS.get(), Integer.MAX_VALUE, 0, false, false));
-        player.addPotionEffect(new PotionEffect(XPotion.JUMP_BOOST.get(), Integer.MAX_VALUE, 250, false, false));
+        // Cancel movement and disable flying
+        player.setSprinting(false);
+        player.setWalkSpeed(0.0f);
+        player.setFlySpeed(0.0f);
+        player.setVelocity(new Vector(0, 0, 0));
+        player.teleport(player.getLocation());
+        player.addPotionEffect(new PotionEffect(XPotion.BLINDNESS.get(), PotionEffect.INFINITE_DURATION, 0, false, false));
+        player.addPotionEffect(new PotionEffect(XPotion.JUMP_BOOST.get(), PotionEffect.INFINITE_DURATION, 250, false, false));
 
         armorStandManager.spawnArmorStands(player);
         playerService.getOpenNavigator().add(player);
@@ -169,9 +174,10 @@ public class NavigatorListener implements Listener {
         Player player = event.getPlayer();
         Entity entity = event.getRightClicked();
 
+        // Disable interaction entities in archived worlds
         disableArchivedWorlds(player, event);
 
-        if (!playerService.getOpenNavigator().contains(player) || entity.getType() != EntityType.ARMOR_STAND) {
+        if (!playerService.getOpenNavigator().contains(player) || !(entity instanceof ArmorStand armorStand)) {
             return;
         }
 
@@ -181,20 +187,15 @@ public class NavigatorListener implements Listener {
             return;
         }
 
-        String customName = entity.getCustomName();
-        if (customName == null || !customName.contains(" × ")) {
-            return;
-        }
-
-        event.setCancelled(true);
         Vector clickedPosition = event.getClickedPosition();
         if (clickedPosition.getY() > MIN_HEIGHT && clickedPosition.getY() < MAX_HEIGHT) {
-            if (!customName.startsWith(player.getName())) {
+            NavigatorCategory category = ArmorStandManager.matchNavigatorCategory(armorStand);
+            if (category == null) {
                 return;
             }
 
-            NavigatorCategory category = ArmorStandManager.matchNavigatorCategory(player, customName);
-            if (category == null) {
+            UUID ownerUUID = ArmorStandManager.getOwner(armorStand);
+            if (!Objects.equals(ownerUUID, player.getUniqueId())) {
                 return;
             }
 
@@ -210,17 +211,34 @@ public class NavigatorListener implements Listener {
     }
 
     /**
+     * Cancels an event if the player is in an archived world.
+     *
+     * @param player      The player object
+     * @param cancellable The event to cancel
+     */
+    private void disableArchivedWorlds(Player player, Cancellable cancellable) {
+        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
+        if (buildWorld == null || buildWorld.getData().status().get() != BuildWorldStatus.ARCHIVE) {
+            return;
+        }
+
+        if (!playerService.isInBuildMode(player)) {
+            cancellable.setCancelled(true);
+        }
+    }
+
+    /**
      * Disables players from manipulating with armor stands which make up the {@link NavigatorType#NEW} navigator.
      *
      * @param event The event which calls this method
      */
     @EventHandler
-    public void manageNewNavigatorManipulation(PlayerArmorStandManipulateEvent event) {
+    public void preventNewNavigatorManipulation(PlayerArmorStandManipulateEvent event) {
         ArmorStand armorStand = event.getRightClicked();
-        String customName = armorStand.getCustomName();
-        if (customName == null || !customName.contains(" × ")) {
+        if (ArmorStandManager.matchNavigatorCategory(armorStand) == null || ArmorStandManager.getOwner(armorStand) == null) {
             return;
         }
+
         event.setCancelled(true);
     }
 
@@ -263,22 +281,5 @@ public class NavigatorListener implements Listener {
         }
 
         return itemMeta.getDisplayName().equals(Messages.getString("barrier_item", player));
-    }
-
-    /**
-     * Cancels an event if the player is in an archived world.
-     *
-     * @param player      The player object
-     * @param cancellable The event to cancel
-     */
-    private void disableArchivedWorlds(Player player, Cancellable cancellable) {
-        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
-        if (buildWorld == null || buildWorld.getData().status().get() != BuildWorldStatus.ARCHIVE) {
-            return;
-        }
-
-        if (playerService.isInBuildMode(player)) {
-            cancellable.setCancelled(true);
-        }
     }
 }

@@ -21,6 +21,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlWorldStorage;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -41,6 +42,7 @@ public class WorldStorageFactory {
      * @param worldService The world service implementation to be used by the storage
      * @return The world storage implementation
      */
+    @Contract("_ -> new")
     public WorldStorageImpl createStorage(WorldServiceImpl worldService) {
         return new YamlWorldStorage(plugin, worldService);
     }

@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -115,6 +116,7 @@ public class FolderImpl implements Folder {
     }
 
     @Override
+    @Contract("_ -> new")
     public List<String> getLore(Player player) {
         return new ArrayList<>(Messages.getStringList("folder_item_lore", player,
                 Map.entry("%permission%", this.permission),

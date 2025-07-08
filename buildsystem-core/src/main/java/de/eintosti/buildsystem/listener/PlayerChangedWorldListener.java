@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.listener;
 
+import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
@@ -44,7 +45,6 @@ import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -102,9 +102,7 @@ public class PlayerChangedWorldListener implements Listener {
 
     private void removeOldNavigator(Player player) {
         armorStandManager.removeArmorStands(player);
-        if (player.hasPotionEffect(PotionEffectType.BLINDNESS)) {
-            player.removePotionEffect(PotionEffectType.BLINDNESS);
-        }
+        player.removePotionEffect(XPotion.BLINDNESS.get());
     }
 
     private void removeBuildMode(Player player) {
@@ -170,13 +168,11 @@ public class PlayerChangedWorldListener implements Listener {
             setSpectatorMode(player);
 
             if (Archive.vanish) {
-                player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, false, false), false);
+                player.addPotionEffect(new PotionEffect(XPotion.INVISIBILITY.get(), PotionEffect.INFINITE_DURATION, 0, false, false), false);
                 Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
             }
         } else {
-            if (player.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
-                player.removePotionEffect(PotionEffectType.INVISIBILITY);
-            }
+            player.removePotionEffect(XPotion.INVISIBILITY.get());
             Bukkit.getOnlinePlayers().forEach(pl -> pl.showPlayer(player));
         }
 

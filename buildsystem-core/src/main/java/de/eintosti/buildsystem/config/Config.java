@@ -54,6 +54,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
@@ -585,6 +586,7 @@ public class Config {
         return XMaterial.matchXMaterial(wand).orElse(defaultWand);
     }
 
+    @Contract("-> new")
     private static BackupStorage createBackupStorage() {
         String type = CONFIG.getString("world.backup.storage.type", "local").toLowerCase();
 
