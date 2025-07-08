@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.command;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.event.world.PlayerBuildModeToggleEvent;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.CachedValues;
 import de.eintosti.buildsystem.api.player.PlayerService;
@@ -32,7 +33,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class BuildCommand implements CommandExecutor {
@@ -49,7 +49,7 @@ public class BuildCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
+            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
             return true;
         }
 
@@ -60,7 +60,7 @@ public class BuildCommand implements CommandExecutor {
 
         switch (args.length) {
             case 0 -> {
-                toggleBuildMode(player, null);
+                toggleBuildMode(player, player);
             }
 
             case 1 -> {
@@ -86,36 +86,54 @@ public class BuildCommand implements CommandExecutor {
         return true;
     }
 
-    private void toggleBuildMode(Player target, @Nullable Player sender) {
+    /**
+     * Toggles the build mode for a target player.
+     *
+     * @param target The player whose build mode is being changed
+     * @param sender The player who initiated the action, may be the target player themselves
+     */
+    private void toggleBuildMode(Player target, Player sender) {
         UUID targetUuid = target.getUniqueId();
+        boolean isEnteringBuildMode = !playerService.getBuildModePlayers().contains(targetUuid);
+
+        PlayerBuildModeToggleEvent toggleEvent = new PlayerBuildModeToggleEvent(target, isEnteringBuildMode, sender);
+        Bukkit.getServer().getPluginManager().callEvent(toggleEvent);
+        if (toggleEvent.isCancelled()) {
+            return;
+        }
+
         BuildPlayer buildPlayer = playerService.getPlayerStorage().getBuildPlayer(target);
         CachedValues cachedValues = buildPlayer.getCachedValues();
 
-        if (playerService.getBuildModePlayers().remove(targetUuid)) {
-            cachedValues.resetGameModeIfPresent(target);
-            cachedValues.resetInventoryIfPresent(target);
-
-            XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
-            if (sender == null) {
-                Messages.sendMessage(target, "build_deactivated_self");
-            } else {
-                XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(sender);
-                Messages.sendMessage(sender, "build_deactivated_other_sender", Map.entry("%target%", target.getName()));
-                Messages.sendMessage(target, "build_deactivated_other_target", Map.entry("%sender%", sender.getName()));
-            }
-        } else {
+        if (isEnteringBuildMode) {
             playerService.getBuildModePlayers().add(targetUuid);
             cachedValues.saveGameMode(target.getGameMode());
             cachedValues.saveInventory(target.getInventory().getContents());
             target.setGameMode(GameMode.CREATIVE);
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
-            if (sender == null) {
+            if (sender.equals(target)) {
                 Messages.sendMessage(target, "build_activated_self");
             } else {
                 XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(sender);
                 Messages.sendMessage(sender, "build_activated_other_sender", Map.entry("%target%", target.getName()));
                 Messages.sendMessage(target, "build_activated_other_target", Map.entry("%sender%", sender.getName()));
+            }
+        } else {
+            if (!playerService.getBuildModePlayers().remove(targetUuid)) {
+                return;
+            }
+
+            cachedValues.resetGameModeIfPresent(target);
+            cachedValues.resetInventoryIfPresent(target);
+
+            XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
+            if (sender.equals(target)) {
+                Messages.sendMessage(target, "build_deactivated_self");
+            } else {
+                XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(sender);
+                Messages.sendMessage(sender, "build_deactivated_other_sender", Map.entry("%target%", target.getName()));
+                Messages.sendMessage(target, "build_deactivated_other_target", Map.entry("%sender%", sender.getName()));
             }
         }
     }

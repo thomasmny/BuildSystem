@@ -41,6 +41,7 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -56,6 +57,7 @@ public final class InventoryUtils {
 
     public final static NamespacedKey DISPLAYABLE_NAME_KEY = new NamespacedKey(PLUGIN, "displayable_name");
     public final static NamespacedKey DISPLAYABLE_TYPE_KEY = new NamespacedKey(PLUGIN, "displayable_type");
+    public static final NamespacedKey NAVIGATOR_KEY = new NamespacedKey(PLUGIN, "navigator");
 
     private InventoryUtils() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -220,11 +222,10 @@ public final class InventoryUtils {
     /**
      * Checks if an {@link ItemStack} is a navigator item.
      *
-     * @param player    The player to check for
      * @param itemStack The item to check
      * @return true if the item is a navigator, false otherwise
      */
-    public static boolean isNavigator(Player player, @Nullable ItemStack itemStack) {
+    public static boolean isNavigator(@Nullable ItemStack itemStack) {
         if (itemStack == null || itemStack.getType() != Navigator.item.get()) {
             return false;
         }
@@ -234,7 +235,20 @@ public final class InventoryUtils {
             return false;
         }
 
-        return itemMeta.getDisplayName().equals(Messages.getString("navigator_item", player));
+        return Boolean.TRUE.equals(itemStack.getItemMeta().getPersistentDataContainer().get(NAVIGATOR_KEY, PersistentDataType.BOOLEAN));
+    }
+
+    @Contract("_ -> new")
+    public static ItemStack createNavigatorItem(Player player) {
+        ItemStack itemStack = InventoryUtils.createItem(Navigator.item, Messages.getString("navigator_item", player));
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta == null) {
+            return itemStack;
+        }
+
+        itemMeta.getPersistentDataContainer().set(NAVIGATOR_KEY, PersistentDataType.BOOLEAN, true);
+        itemStack.setItemMeta(itemMeta);
+        return itemStack;
     }
 
     /**
@@ -247,7 +261,7 @@ public final class InventoryUtils {
     public static List<Integer> getNavigatorSlots(Player player) {
         PlayerInventory playerInventory = player.getInventory();
         return IntStream.range(0, playerInventory.getSize())
-                .filter(i -> isNavigator(player, playerInventory.getItem(i)))
+                .filter(i -> isNavigator(playerInventory.getItem(i)))
                 .boxed()
                 .toList();
     }
@@ -259,8 +273,7 @@ public final class InventoryUtils {
      * @return true if the inventory contains a navigator, false otherwise
      */
     public static boolean hasNavigator(Player player) {
-        return Arrays.stream(player.getInventory().getContents())
-                .anyMatch(itemStack -> isNavigator(player, itemStack));
+        return Arrays.stream(player.getInventory().getContents()).anyMatch(InventoryUtils::isNavigator);
     }
 
     /**

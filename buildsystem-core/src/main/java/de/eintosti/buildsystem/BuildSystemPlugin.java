@@ -181,7 +181,7 @@ public class BuildSystemPlugin extends JavaPlugin {
 
             settingsManager.stopScoreboard(pl);
             noClipManager.stopNoClip(pl.getUniqueId());
-            playerService.closeNavigator(pl);
+            playerService.closeNewNavigator(pl);
         });
 
         this.backupService.getStorage().close();

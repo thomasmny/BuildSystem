@@ -59,8 +59,8 @@ public interface PlayerService {
     /**
      * Gets whether the given player is allowed to create a new {@link BuildWorld}.<br> This depends on the following factors:
      * <ul>
-     *  <li>Is the maximum number of worlds set by the config less than the amount of existing worlds?</li>
-     *  <li>Is the maximum number of worlds created by the player less than the amount of worlds said player is allowed to create?</li>
+     *  <li>Is the maximum number of worlds set by the config lower than the number of existing worlds?</li>
+     *  <li>Is the maximum number of worlds created by the player less than the number of worlds said player is allowed to create?</li>
      * </ul>
      *
      * @param player     The player trying to create a world
@@ -76,8 +76,8 @@ public interface PlayerService {
      * <p>
      * To set the maximum of...
      * <ul>
-     *  <li>...public worlds, use {@literal buildsystem.create.public.<amount>}</li>
-     *  <li>...private worlds, use {@literal buildsystem.create.private.<amount>}</li>
+     *  <li>...public worlds, use {@code buildsystem.create.public.%amount%}.
+     *  <li>...private worlds, use {@code buildsystem.create.private.%amount%}.
      * </ul>
      *
      * @param player     The player object

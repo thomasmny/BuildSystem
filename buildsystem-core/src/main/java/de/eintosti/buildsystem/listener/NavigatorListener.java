@@ -100,29 +100,17 @@ public class NavigatorListener implements Listener {
             return;
         }
 
-        if (isCloseNavigatorItem(player, itemStack)) {
+        if (InventoryUtils.isNavigator(itemStack)) {
             event.setCancelled(true);
-            playerService.closeNavigator(player);
-            return;
+            if (!player.hasPermission("buildsystem.navigator.item")) {
+                Messages.sendPermissionError(player);
+                return;
+            }
+            openNavigator(player);
+        } else if (isCloseNavigatorItem(player, itemStack)) {
+            event.setCancelled(true);
+            playerService.closeNewNavigator(player);
         }
-
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null || !itemMeta.hasDisplayName()) {
-            return;
-        }
-
-        XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-        if (xMaterial != Navigator.item || !itemMeta.getDisplayName().equals(Messages.getString("navigator_item", player))) {
-            return;
-        }
-
-        if (!player.hasPermission("buildsystem.navigator.item")) {
-            Messages.sendPermissionError(player);
-            return;
-        }
-
-        event.setCancelled(true);
-        openNavigator(player);
     }
 
     private void openNavigator(Player player) {
@@ -183,7 +171,7 @@ public class NavigatorListener implements Listener {
 
         if (isCloseNavigatorItem(player, player.getInventory().getItemInMainHand())) {
             event.setCancelled(true);
-            playerService.closeNavigator(player);
+            playerService.closeNewNavigator(player);
             return;
         }
 

@@ -18,9 +18,7 @@
 package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import de.eintosti.buildsystem.config.Config.Settings.Navigator;
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
@@ -50,9 +48,7 @@ public class PlayerInventoryClearListener implements Listener {
         }
 
         PlayerInventory playerInventory = player.getInventory();
-        ItemStack navigatorItem = InventoryUtils.createItem(
-                Navigator.item, Messages.getString("navigator_item", player)
-        );
+        ItemStack navigatorItem = InventoryUtils.createNavigatorItem(player);
         event.getNavigatorSlots().forEach(slot -> playerInventory.setItem(slot, navigatorItem));
     }
 }
