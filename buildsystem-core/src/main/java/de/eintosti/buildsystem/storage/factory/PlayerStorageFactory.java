@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.storage.factory;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlPlayerStorage;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -39,6 +40,7 @@ public class PlayerStorageFactory {
      *
      * @return The folder storage implementation
      */
+    @Contract("-> new")
     public PlayerStorageImpl createStorage() {
         return new YamlPlayerStorage(plugin);
     }

@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.api.world.util.WorldPermissions;
 import java.util.function.Supplier;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -39,6 +40,7 @@ public class WorldPermissionsImpl implements WorldPermissions {
         this.buildWorld = buildWorld;
     }
 
+    @Contract("_ -> new")
     public static WorldPermissionsImpl of(@Nullable BuildWorld buildWorld) {
         return new WorldPermissionsImpl(buildWorld);
     }

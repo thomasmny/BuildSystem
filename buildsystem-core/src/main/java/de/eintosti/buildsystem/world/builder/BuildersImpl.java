@@ -114,39 +114,43 @@ public class BuildersImpl implements Builders {
     /**
      * Formats the builders for the lore of the world item.
      *
-     * @param player The player to display the lore to
+     * @param player          The player to display the lore to
+     * @param buildersPerLine The number of builders to display per line
      * @return A list of formatted builder lines, each containing up to 3 builders
      */
-    public List<String> formatBuildersForLore(Player player) {
-        final int buildersPerLine = 3;
+    public List<String> formatBuildersForLore(Player player, int buildersPerLine) {
         String template = Messages.getString("world_item_builders_builder_template", player); // e.g., "&b%builder%&7, "
 
         String[] templateParts = template.split("%builder%");
         String prefix = templateParts.length > 0 ? templateParts[0] : "";
         String suffix = templateParts.length > 1 ? templateParts[1] : "";
 
-        List<String> loreLines = new ArrayList<>();
         Collection<Builder> allBuilders = buildersByUuid.values();
-
         if (allBuilders.isEmpty()) {
-            loreLines.add((prefix + "-").trim());
-            return loreLines;
+            return List.of((prefix + "-").trim());
         }
 
+        List<String> loreLines = new ArrayList<>();
         List<String> currentLineBuilders = new ArrayList<>();
-        int index = 0;
+        int builderCount = 0;
 
         for (Builder builder : allBuilders) {
-            boolean isLastInLine = (index + 1) % buildersPerLine == 0 || (index + 1) == allBuilders.size();
-            String formattedBuilder = prefix + builder.getName() + (isLastInLine ? "" : suffix);
-            currentLineBuilders.add(formattedBuilder);
+            String formattedBuilder = prefix + builder.getName();
 
-            if (isLastInLine) {
-                loreLines.add(String.join("", currentLineBuilders).trim());
-                currentLineBuilders.clear();
+            boolean isLastBuilderInLine = (builderCount + 1) % buildersPerLine == 0;
+            boolean isLastOverallBuilder = (builderCount + 1) == allBuilders.size();
+
+            if (!isLastBuilderInLine && !isLastOverallBuilder) {
+                formattedBuilder += suffix;
             }
 
-            index++;
+            currentLineBuilders.add(formattedBuilder);
+            builderCount++;
+
+            if (isLastBuilderInLine || isLastOverallBuilder) {
+                loreLines.add(String.join("", currentLineBuilders).trim());
+                currentLineBuilders.clear(); // Clear for the next line
+            }
         }
 
         return loreLines;

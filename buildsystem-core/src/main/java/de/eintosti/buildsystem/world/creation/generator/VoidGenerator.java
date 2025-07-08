@@ -24,6 +24,7 @@ import org.bukkit.block.Biome;
 import org.bukkit.generator.BiomeProvider;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.generator.WorldInfo;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -48,6 +49,7 @@ public class VoidGenerator extends ChunkGenerator {
     }
 
     @Override
+    @Contract("_ -> new")
     public BiomeProvider getDefaultBiomeProvider(WorldInfo worldInfo) {
         return new SingleBiomeProvider(this.biome);
     }

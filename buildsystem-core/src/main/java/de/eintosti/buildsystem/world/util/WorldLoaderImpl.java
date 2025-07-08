@@ -29,6 +29,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -42,6 +43,7 @@ public class WorldLoaderImpl implements WorldLoader {
         this.buildWorld = buildWorld;
     }
 
+    @Contract("_ -> new")
     public static WorldLoaderImpl of(BuildWorld buildWorld) {
         return new WorldLoaderImpl(buildWorld);
     }

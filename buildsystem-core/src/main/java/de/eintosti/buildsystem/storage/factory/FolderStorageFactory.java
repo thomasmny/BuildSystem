@@ -21,6 +21,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlFolderStorage;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -41,6 +42,7 @@ public class FolderStorageFactory {
      * @param worldService The world service implementation to be used by the storage
      * @return The folder storage implementation
      */
+    @Contract("_ -> new")
     public FolderStorageImpl createStorage(WorldServiceImpl worldService) {
         return new YamlFolderStorage(plugin, worldService);
     }

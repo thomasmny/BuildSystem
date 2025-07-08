@@ -32,6 +32,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -45,6 +46,7 @@ public class WorldTeleporterImpl implements WorldTeleporter {
         this.buildWorld = buildWorld;
     }
 
+    @Contract("_ -> new")
     public static WorldTeleporterImpl of(BuildWorld buildWorld) {
         return new WorldTeleporterImpl(buildWorld);
     }

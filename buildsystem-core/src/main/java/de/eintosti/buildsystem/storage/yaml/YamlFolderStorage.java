@@ -43,6 +43,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -100,6 +101,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
     }
 
     @Override
+    @Contract("-> new")
     public CompletableFuture<Collection<Folder>> load() {
         return CompletableFuture.supplyAsync(() -> {
             Set<String> folders = loadFolderKeys();
@@ -146,6 +148,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
         return section.getKeys(false);
     }
 
+    @Contract("_ -> new")
     private Folder loadFolder(String folderName) {
         final String path = FOLDERS_KEY + "." + folderName;
 

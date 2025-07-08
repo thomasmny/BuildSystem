@@ -55,6 +55,7 @@ import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -113,54 +114,63 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
     }
 
     @Override
+    @Contract("_ -> this")
     public BuildWorldCreatorImpl setName(String name) {
         this.worldName = name;
         return this;
     }
 
     @Override
+    @Contract("_ -> this")
     public BuildWorldCreatorImpl setCreator(@Nullable Builder creator) {
         this.creator = creator;
         return this;
     }
 
     @Override
+    @Contract("_ -> this")
     public BuildWorldCreatorImpl setTemplate(@Nullable String template) {
         this.template = ChatColor.stripColor(template);
         return this;
     }
 
     @Override
+    @Contract("_ -> this")
     public BuildWorldCreatorImpl setType(BuildWorldType type) {
         this.worldType = type;
         return this;
     }
 
     @Override
+    @Contract("_ -> this")
     public BuildWorldCreatorImpl setCustomGenerator(@Nullable CustomGenerator customGenerator) {
         this.customGenerator = customGenerator;
         return this;
     }
 
     @Override
+    @Contract("_ -> this")
     public BuildWorldCreatorImpl setFolder(@Nullable Folder folder) {
         this.folder = folder;
         return this;
     }
 
     @Override
+    @Contract("_ -> this")
     public BuildWorldCreatorImpl setPrivate(boolean isPrivate) {
         this.isPrivate = isPrivate;
         return this;
     }
 
     @Override
+    @Contract("_ -> this")
     public BuildWorldCreatorImpl setDifficulty(Difficulty difficulty) {
         this.difficulty = difficulty;
         return this;
     }
 
     @Override
+    @Contract("_ -> this")
     public BuildWorldCreatorImpl setCreationDate(long creationDate) {
         this.creationDate = creationDate;
         return this;
@@ -521,6 +531,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
      * @return A {@link WorldGenerationData} object representing either a {@link PredefinedGeneratorData} or a {@link CustomGeneratorData}, or {@code null} if the file does not
      * exist or an error occurs while loading
      */
+    @Contract("_ -> new")
     private WorldGenerationData loadGenerationData(String worldName) {
         BuildWorldType defaultType = BuildWorldType.NORMAL;
 

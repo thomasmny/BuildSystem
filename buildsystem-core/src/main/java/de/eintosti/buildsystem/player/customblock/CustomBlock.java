@@ -25,6 +25,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -69,6 +70,7 @@ public enum CustomBlock {
     }
 
     @Nullable
+    @Contract("null -> null")
     public static CustomBlock of(@Nullable ItemStack itemStack) {
         if (itemStack == null) {
             return null;

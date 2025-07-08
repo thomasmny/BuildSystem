@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.player.settings;
 
 import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
@@ -39,7 +40,6 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -168,20 +168,16 @@ public class SettingsInventory implements InventoryHandler {
                 } else {
                     settings.setNavigatorType(NavigatorType.OLD);
                     plugin.getArmorStandManager().removeArmorStands(player);
-                    if (player.hasPotionEffect(PotionEffectType.BLINDNESS)) {
-                        player.removePotionEffect(PotionEffectType.BLINDNESS);
-                    }
+                    player.removePotionEffect(XPotion.BLINDNESS.get());
                 }
                 break;
             case 22:
                 if (!settings.isNightVision()) {
                     settings.setNightVision(true);
-                    player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0, false, false));
+                    player.addPotionEffect(new PotionEffect(XPotion.NIGHT_VISION.get(), PotionEffect.INFINITE_DURATION, 0, false, false));
                 } else {
                     settings.setNightVision(false);
-                    if (player.hasPotionEffect(PotionEffectType.NIGHT_VISION)) {
-                        player.removePotionEffect(PotionEffectType.NIGHT_VISION);
-                    }
+                    player.removePotionEffect(XPotion.NIGHT_VISION.get());
                 }
                 break;
             case 23:

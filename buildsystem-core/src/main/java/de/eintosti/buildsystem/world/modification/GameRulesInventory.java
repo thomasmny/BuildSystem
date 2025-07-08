@@ -41,6 +41,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -100,6 +101,7 @@ public class GameRulesInventory extends PaginatedInventory {
         }
     }
 
+    @Contract("_, _ -> new")
     private Inventory createInventory(BuildWorld buildWorld, Player player) {
         return new GameRulesInventoryHolder(buildWorld, player).getInventory();
     }

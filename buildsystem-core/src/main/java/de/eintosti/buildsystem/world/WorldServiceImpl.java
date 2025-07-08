@@ -57,6 +57,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -91,6 +92,7 @@ public class WorldServiceImpl implements WorldService {
     }
 
     @Override
+    @Contract("_ -> new")
     public BuildWorldCreatorImpl createWorld(String name) {
         return new BuildWorldCreatorImpl(plugin, name);
     }

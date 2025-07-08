@@ -23,6 +23,7 @@ import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -38,6 +39,7 @@ public class EmptyTabCompleter implements TabCompleter {
     }
 
     @Override
+    @Contract("_, _, _, _ -> new")
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         return new ArrayList<>();
     }

@@ -48,13 +48,14 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -218,7 +219,7 @@ public class PlayerServiceImpl implements PlayerService {
         plugin.getArmorStandManager().removeArmorStands(player);
 
         XSound.ENTITY_ITEM_BREAK.play(player);
-        sendActionBar(player, "");
+        displayActionBarMessage(player, "");
         replaceBarrier(player);
 
         CachedValues cachedValues = buildPlayer.getCachedValues();
@@ -233,7 +234,7 @@ public class PlayerServiceImpl implements PlayerService {
     private void replaceBarrier(Player player) {
         InventoryUtils.replaceItem(
                 player,
-                Messages.getString("navigator_back", player),
+                Messages.getString("barrier_item", player),
                 XMaterial.BARRIER,
                 InventoryUtils.createItem(
                         Navigator.item,
@@ -243,33 +244,65 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     private void initEntityChecker() {
-        Bukkit.getScheduler().runTaskTimer(plugin, this::checkForEntity, 0L, 1L);
+        Bukkit.getScheduler().runTaskTimer(plugin, this::checkForAmorStandNavigator, 0L, 2L);
     }
 
-    private void checkForEntity() {
+    /**
+     * Checks if players with open navigators are looking at armor stands that represent a {@link NavigatorCategory} and updates their UI accordingly.
+     * <p>
+     * This method iterates through all players who have the navigator open and determines if they are looking at an armor stand within the valid look height range. When a player
+     * looks at a different navigator category or stops looking at one entirely, appropriate UI updates are sent.
+     */
+    private void checkForAmorStandNavigator() {
         for (Player player : openNavigator) {
-            if (getEntityName(player).isEmpty()) {
+            if (!(getTargetEntity(player) instanceof ArmorStand armorStand)) {
                 continue;
             }
 
             BuildPlayer buildPlayer = playerStorage.getBuildPlayer(player);
-            double lookedPosition = player.getEyeLocation().getDirection().getY();
-            if (lookedPosition >= MIN_LOOK_HEIGHT && lookedPosition <= MAX_LOOK_HEIGHT) {
-                NavigatorCategory category = ArmorStandManager.matchNavigatorCategory(player, getEntityName(player));
-                NavigatorCategory lastLookedAt = buildPlayer.getLastLookedAt();
-
-                if (lastLookedAt == null || lastLookedAt != category) {
-                    buildPlayer.setLastLookedAt(category);
-                    sendTypeInfo(player, category);
-                }
+            if (isLookingAtArmorStandHead(player, armorStand)) {
+                NavigatorCategory category = ArmorStandManager.matchNavigatorCategory(armorStand);
+                sendTypeInfo(player, category);
             } else {
-                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(""));
-                buildPlayer.setLastLookedAt(null);
+                sendTypeInfo(player, null);
             }
         }
     }
 
+    private boolean isLookingAtArmorStandHead(Player player, ArmorStand armorStand) {
+        Location eyeLocation = player.getEyeLocation();
+        Vector direction = eyeLocation.getDirection().normalize();
+
+        Location standEyeLocation = armorStand.getEyeLocation().clone();
+        double boxHalfSize = 0.3;
+
+        double minX = standEyeLocation.getX() - boxHalfSize;
+        double maxX = standEyeLocation.getX() + boxHalfSize;
+        double minY = standEyeLocation.getY() - boxHalfSize;
+        double maxY = standEyeLocation.getY() + boxHalfSize;
+        double minZ = standEyeLocation.getZ() - boxHalfSize;
+        double maxZ = standEyeLocation.getZ() + boxHalfSize;
+
+        for (double distance = 0; distance <= 3; distance += 0.05) {
+            Vector point = eyeLocation.toVector().add(direction.clone().multiply(distance));
+
+            if (point.getX() >= minX && point.getX() <= maxX
+                    && point.getY() >= minY && point.getY() <= maxY
+                    && point.getZ() >= minZ && point.getZ() <= maxZ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     @Nullable
+    private Entity getTargetEntity(Entity entity) {
+        return getTarget(entity, entity.getNearbyEntities(3, 3, 3));
+    }
+
+    @Nullable
+    @Contract("null, _ -> null")
     private <T extends Entity> T getTarget(@Nullable Entity entity, Iterable<T> entities) {
         if (entity == null) {
             return null;
@@ -285,8 +318,8 @@ public class PlayerServiceImpl implements PlayerService {
 
             if (entityLocation.getDirection().normalize().crossProduct(vector).lengthSquared() < threshold
                     && vector.normalize().dot(entityLocation.getDirection().normalize()) >= 0) {
-                if (target == null || target.getLocation().distanceSquared(entityLocation)
-                        > otherLocation.distanceSquared(entityLocation)) {
+                if (target == null
+                        || target.getLocation().distanceSquared(entityLocation) > otherLocation.distanceSquared(entityLocation)) {
                     target = other;
                 }
             }
@@ -295,29 +328,18 @@ public class PlayerServiceImpl implements PlayerService {
         return target;
     }
 
-    @Nullable
-    private Entity getTargetEntity(Entity entity) {
-        return getTarget(entity, entity.getNearbyEntities(3, 3, 3));
-    }
-
-    private String getEntityName(Player player) {
-        Entity targetEntity = getTargetEntity(player);
-        if (targetEntity == null || targetEntity.getType() != EntityType.ARMOR_STAND) {
-            return "";
-        }
-
-        Entity entity = getTargetEntity(player);
-        if (entity == null || entity.getCustomName() == null) {
-            return "";
-        }
-
-        return entity.getCustomName();
-    }
-
     private void sendTypeInfo(Player player, @Nullable NavigatorCategory category) {
+        BuildPlayer buildPlayer = playerStorage.getBuildPlayer(player);
         if (category == null) {
-            sendActionBar(player, "");
+            buildPlayer.setLastLookedAt(null);
+            displayActionBarMessage(player, "§0");
             return;
+        }
+
+        NavigatorCategory lastLookedAt = buildPlayer.getLastLookedAt();
+        if (lastLookedAt == null || lastLookedAt != category) {
+            buildPlayer.setLastLookedAt(category);
+            XSound.ENTITY_CHICKEN_EGG.play(player);
         }
 
         String message = switch (category) {
@@ -325,12 +347,10 @@ public class PlayerServiceImpl implements PlayerService {
             case ARCHIVE -> "new_navigator_world_archive";
             case PRIVATE -> "new_navigator_private_worlds";
         };
-
-        sendActionBar(player, Messages.getString(message, player));
-        XSound.ENTITY_CHICKEN_EGG.play(player);
+        displayActionBarMessage(player, Messages.getString(message, player));
     }
 
-    private void sendActionBar(Player player, String message) {
+    private void displayActionBarMessage(Player player, String message) {
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(message));
     }
 
