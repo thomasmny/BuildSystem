@@ -24,7 +24,6 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.config.Config.Settings.Builder;
-import de.eintosti.buildsystem.config.Config.Settings.Navigator;
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -241,7 +240,7 @@ public class PlayerCommandPreprocessListener implements Listener {
         Player player = event.getPlayer();
 
         if (command.equalsIgnoreCase("/clear")) {
-            ItemStack navigatorItem = InventoryUtils.createItem(Navigator.item, Messages.getString("navigator_item", player));
+            ItemStack navigatorItem = InventoryUtils.createNavigatorItem(player);
             if (!player.getInventory().contains(navigatorItem)) {
                 return;
             }

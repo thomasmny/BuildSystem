@@ -39,7 +39,7 @@ public class SetupCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
+            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
             return true;
         }
 
