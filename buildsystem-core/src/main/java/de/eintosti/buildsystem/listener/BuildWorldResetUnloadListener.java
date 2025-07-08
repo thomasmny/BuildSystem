@@ -17,39 +17,45 @@
  */
 package de.eintosti.buildsystem.listener;
 
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class BuildWorldResetUnloadListener implements Listener {
 
-    private final WorldManager worldManager;
+    private final WorldStorageImpl worldStorage;
 
-    public BuildWorldResetUnloadListener(BuildSystem plugin) {
-        this.worldManager = plugin.getWorldManager();
+    public BuildWorldResetUnloadListener(BuildSystemPlugin plugin) {
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler
     public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
-        World from = event.getFrom();
-        BuildWorld buildWorld = worldManager.getBuildWorld(from.getName());
-        if (buildWorld != null) {
-            buildWorld.resetUnloadTask();
-        }
+        resetUnloadTask(event.getFrom());
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        World from = event.getPlayer().getWorld();
-        BuildWorld buildWorld = worldManager.getBuildWorld(from.getName());
+        resetUnloadTask(event.getPlayer().getWorld());
+    }
+
+    /**
+     * Resets the unload task for the given world.
+     *
+     * @param world The world for which the unload task should be reset
+     */
+    private void resetUnloadTask(World world) {
+        BuildWorld buildWorld = worldStorage.getBuildWorld(world.getName());
         if (buildWorld != null) {
-            buildWorld.resetUnloadTask();
+            buildWorld.getUnloader().resetUnloadTask();
         }
     }
 }

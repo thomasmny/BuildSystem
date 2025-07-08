@@ -18,31 +18,35 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
-import com.cryptomorin.xseries.messages.Titles;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
+import de.eintosti.buildsystem.world.modification.EditInventory;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class EditSubCommand implements SubCommand {
 
-    private final BuildSystem plugin;
-    private final String worldName;
+    private final BuildSystemPlugin plugin;
 
-    public EditSubCommand(BuildSystem plugin, String worldName) {
+    @Nullable
+    private final BuildWorld buildWorld;
+
+    public EditSubCommand(BuildSystemPlugin plugin, String worldName) {
         this.plugin = plugin;
-        this.worldName = worldName;
+        this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
     }
 
     @Override
     public void execute(Player player, String[] args) {
-        WorldManager worldManager = plugin.getWorldManager();
-        if (!worldManager.isPermitted(player, getArgument().getPermission(), worldName)) {
-            plugin.sendPermissionMessage(player);
+        if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
+            Messages.sendPermissionError(player);
             return;
         }
 
@@ -51,23 +55,22 @@ public class EditSubCommand implements SubCommand {
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
             Messages.sendMessage(player, "worlds_edit_unknown_world");
             return;
         }
 
         if (buildWorld.isLoaded()) {
-            plugin.getPlayerManager().getBuildPlayer(player).setCachedWorld(buildWorld);
-            plugin.getEditInventory().openInventory(player, buildWorld);
+            XSound.BLOCK_CHEST_OPEN.play(player);
+            new EditInventory(plugin).openInventory(player, buildWorld);
         } else {
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-            Titles.sendTitle(player, 5, 70, 20, " ", Messages.getString("world_not_loaded", player));
+            player.sendTitle(" ", Messages.getString("world_not_loaded", player), 5, 70, 20);
         }
     }
 
     @Override
     public Argument getArgument() {
-        return WorldsTabComplete.WorldsArgument.EDIT;
+        return WorldsArgument.EDIT;
     }
 }

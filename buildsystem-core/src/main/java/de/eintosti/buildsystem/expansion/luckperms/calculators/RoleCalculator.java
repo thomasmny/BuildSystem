@@ -17,9 +17,10 @@
  */
 package de.eintosti.buildsystem.expansion.luckperms.calculators;
 
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import java.util.Locale;
 import net.luckperms.api.context.ContextCalculator;
 import net.luckperms.api.context.ContextConsumer;
@@ -27,25 +28,26 @@ import net.luckperms.api.context.ContextSet;
 import net.luckperms.api.context.ImmutableContextSet;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class RoleCalculator implements ContextCalculator<Player> {
 
     private static final String KEY = "buildsystem:role";
 
-    private final WorldManager worldManager;
+    private final WorldStorageImpl worldStorage;
 
-    public RoleCalculator(BuildSystem plugin) {
-        this.worldManager = plugin.getWorldManager();
+    public RoleCalculator(BuildSystemPlugin plugin) {
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
     }
 
     @Override
     public void calculate(@NonNull Player player, @NonNull ContextConsumer contextConsumer) {
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld());
+        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
         contextConsumer.accept(KEY, Role.matchRole(player, buildWorld).toString());
     }
 
-    @NotNull
     @Override
     public ContextSet estimatePotentialContexts() {
         ImmutableContextSet.Builder builder = ImmutableContextSet.builder();
@@ -55,7 +57,9 @@ public class RoleCalculator implements ContextCalculator<Player> {
         return builder.build();
     }
 
+    @NullMarked
     private enum Role {
+
         /**
          * The creator of a {@link BuildWorld}.
          */
@@ -71,14 +75,15 @@ public class RoleCalculator implements ContextCalculator<Player> {
          */
         GUEST;
 
-        public static Role matchRole(Player player, BuildWorld buildWorld) {
+        public static Role matchRole(Player player, @Nullable BuildWorld buildWorld) {
             if (buildWorld == null) {
                 return GUEST;
             }
 
-            if (buildWorld.isCreator(player)) {
+            Builders builders = buildWorld.getBuilders();
+            if (builders.isCreator(player)) {
                 return CREATOR;
-            } else if (buildWorld.isBuilder(player.getUniqueId())) {
+            } else if (builders.isBuilder(player.getUniqueId())) {
                 return BUILDER;
             } else {
                 return GUEST;
