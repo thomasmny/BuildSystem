@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.config.Config.Settings.Archive;
 import de.eintosti.buildsystem.config.Config.Settings.BuildMode;
 import de.eintosti.buildsystem.config.Config.Settings.Builder;
+import de.eintosti.buildsystem.config.Config.Settings.DisabledPhysics;
 import de.eintosti.buildsystem.config.Config.Settings.Navigator;
 import de.eintosti.buildsystem.config.Config.Settings.SaveFromDeath;
 import de.eintosti.buildsystem.config.Config.World.Backup;
@@ -53,11 +54,9 @@ import org.bukkit.GameRule;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-import org.slf4j.LoggerFactory;
 
 /**
  * Manages the plugin's configuration, loading and providing access to various settings.
@@ -65,9 +64,8 @@ import org.slf4j.LoggerFactory;
 @NullMarked
 public class Config {
 
-    private static final BuildSystemPlugin PLUGIN = JavaPlugin.getPlugin(BuildSystemPlugin.class);
+    private static final BuildSystemPlugin PLUGIN = BuildSystemPlugin.get();
     private static final FileConfiguration CONFIG = PLUGIN.getConfig();
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(Config.class);
 
     /**
      * Gets the plugin's configuration.
@@ -149,6 +147,25 @@ public class Config {
              * The gamemode players are set to when entering an archived world.
              */
             public static GameMode worldGameMode = GameMode.ADVENTURE;
+        }
+
+        /**
+         * Stores settings related to worlds with disabled physics.
+         */
+        public static class DisabledPhysics {
+
+            /**
+             * Whether connections should be prevented in worlds with disabled physics.
+             */
+            public static boolean preventConnections = true;
+            /**
+             * Whether fluid flow should be prevented in worlds with disabled physics.
+             */
+            public static boolean preventFluidFlow = true;
+            /**
+             * Whether falling blocks should be prevented in worlds with disabled physics.
+             */
+            public static boolean preventFallingBlocks = true;
         }
 
         /**
@@ -437,6 +454,10 @@ public class Config {
         Archive.vanish = CONFIG.getBoolean("settings.archive.vanish", true);
         Archive.changeGamemode = CONFIG.getBoolean("settings.archive.change-gamemode", true);
         Archive.worldGameMode = parseGameMode(CONFIG.getString("settings.archive.world-gamemode"));
+        // Settings - Disabled physics
+        DisabledPhysics.preventConnections = CONFIG.getBoolean("settings.disabled-physics.prevent-connections", true);
+        DisabledPhysics.preventFluidFlow = CONFIG.getBoolean("settings.disabled-physics.prevent-fluid-flow", true);
+        DisabledPhysics.preventFallingBlocks = CONFIG.getBoolean("settings.disabled-physics.prevent-falling-blocks", true);
         // Settings - Save from death
         SaveFromDeath.enabled = CONFIG.getBoolean("settings.save-from-death.enabled", true);
         SaveFromDeath.teleportToMapSpawn = CONFIG.getBoolean("settings.save-from-death.teleport-to-map-spawn", true);

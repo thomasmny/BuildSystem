@@ -40,14 +40,13 @@ import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ExcludeFileFilter;
 import net.lingala.zip4j.model.ZipParameters;
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class FileUtils {
 
-    private static final Logger LOGGER = JavaPlugin.getPlugin(BuildSystemPlugin.class).getLogger();
+    private static final Logger LOGGER = BuildSystemPlugin.get().getLogger();
     private static final Set<String> IGNORE_FILES = Sets.newHashSet("uid.dat", "session.lock");
 
     private FileUtils() {

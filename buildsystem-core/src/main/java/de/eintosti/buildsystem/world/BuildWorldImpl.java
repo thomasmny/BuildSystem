@@ -48,14 +48,11 @@ import org.bukkit.Difficulty;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class BuildWorldImpl implements BuildWorld {
-
-    private static final BuildSystemPlugin PLUGIN = JavaPlugin.getPlugin(BuildSystemPlugin.class);
 
     private final UUID uuid;
     private String name;
@@ -89,7 +86,7 @@ public final class BuildWorldImpl implements BuildWorld {
                 new WorldDataImpl(
                         name,
                         privateWorld,
-                        privateWorld ? XMaterial.PLAYER_HEAD : PLUGIN.getCustomizableIcons().getIcon(worldType)
+                        privateWorld ? XMaterial.PLAYER_HEAD : BuildSystemPlugin.get().getCustomizableIcons().getIcon(worldType)
                 ),
                 creator,
                 new ArrayList<>(),

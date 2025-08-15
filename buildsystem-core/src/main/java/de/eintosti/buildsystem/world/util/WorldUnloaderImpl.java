@@ -23,12 +23,12 @@ import de.eintosti.buildsystem.api.event.world.BuildWorldUnloadEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.util.WorldUnloader;
 import de.eintosti.buildsystem.config.Config.World.Unload;
-import de.eintosti.buildsystem.world.SpawnManager;
 import java.util.Arrays;
+import java.util.Objects;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
@@ -45,7 +45,7 @@ public class WorldUnloaderImpl implements WorldUnloader {
     private BukkitTask unloadTask;
 
     private WorldUnloaderImpl(BuildWorld buildWorld) {
-        this.plugin = JavaPlugin.getPlugin(BuildSystemPlugin.class);
+        this.plugin = BuildSystemPlugin.get();
         this.buildWorld = buildWorld;
 
         this.secondsUntilUnload = calculateSecondsUntilUnload(Unload.timeUntilUnload);
@@ -146,11 +146,10 @@ public class WorldUnloaderImpl implements WorldUnloader {
     }
 
     private boolean isSpawnWorld(World bukkitWorld) {
-        SpawnManager spawnManager = plugin.getSpawnManager();
-        if (!spawnManager.spawnExists()) {
+        Location spawn = plugin.getSpawnManager().getSpawn();
+        if (spawn == null) {
             return false;
         }
-
-        return spawnManager.getSpawn().getWorld().equals(bukkitWorld);
+        return Objects.equals(spawn.getWorld(), bukkitWorld);
     }
 } 

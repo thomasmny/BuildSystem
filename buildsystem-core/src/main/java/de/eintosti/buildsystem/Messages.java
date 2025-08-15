@@ -43,7 +43,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -51,7 +50,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class Messages {
 
-    private static final BuildSystemPlugin PLUGIN = JavaPlugin.getPlugin(BuildSystemPlugin.class);
+    private static final BuildSystemPlugin PLUGIN = BuildSystemPlugin.get();
     private static final Map<String, String> MESSAGES = new HashMap<>();
     private static final boolean PLACEHOLDER_API_ENABLED = Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null;
 

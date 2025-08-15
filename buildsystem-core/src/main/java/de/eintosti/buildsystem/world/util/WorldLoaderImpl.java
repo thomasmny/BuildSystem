@@ -28,7 +28,6 @@ import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 
@@ -39,7 +38,7 @@ public class WorldLoaderImpl implements WorldLoader {
     private final BuildWorld buildWorld;
 
     private WorldLoaderImpl(BuildWorld buildWorld) {
-        this.plugin = JavaPlugin.getPlugin(BuildSystemPlugin.class);
+        this.plugin = BuildSystemPlugin.get();
         this.buildWorld = buildWorld;
     }
 

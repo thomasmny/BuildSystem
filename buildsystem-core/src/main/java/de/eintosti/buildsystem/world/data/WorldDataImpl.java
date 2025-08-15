@@ -36,7 +36,6 @@ import java.util.function.Function;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -360,7 +359,7 @@ public class WorldDataImpl implements WorldData {
                 return super.get();
             }
 
-            WorldService worldService = JavaPlugin.getPlugin(BuildSystemPlugin.class).getWorldService();
+            WorldService worldService = BuildSystemPlugin.get().getWorldService();
             BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(this.worldName);
             if (buildWorld != null) {
                 Folder assignedFolder = buildWorld.getFolder();

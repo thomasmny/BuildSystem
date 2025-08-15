@@ -25,7 +25,6 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.util.WorldPermissions;
 import java.util.function.Supplier;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -145,7 +144,6 @@ public class WorldPermissionsImpl implements WorldPermissions {
 
     @Override
     public boolean canBypassBuildRestriction(Player player) {
-        BuildSystemPlugin plugin = JavaPlugin.getPlugin(BuildSystemPlugin.class);
-        return plugin.getPlayerService().isInBuildMode(player);
+        return BuildSystemPlugin.get().getPlayerService().isInBuildMode(player);
     }
 } 

@@ -10,6 +10,10 @@ settings:
     change-gamemode: true
     # Options: "SURVIVAL", "CREATIVE", "ADVENTURE", "SPECTATOR"
     world-gamemode: "ADVENTURE"
+  disabled-physics:
+    prevent-connections: true
+    prevent-fluid-flow: true
+    prevent-falling-blocks: true
   save-from-death:
     enabled: true
     teleport-to-map-spawn: true
@@ -65,6 +69,10 @@ world:
     - world
     - world_nether
     - worth_the_end
+  disabled-physics:
+    prevent-connections: true
+    prevent-fluid-flow: true
+    prevent-falling-blocks: true
   backup:
     max-backups-per-world: 5 # Maximum: 18
     auto-backup:

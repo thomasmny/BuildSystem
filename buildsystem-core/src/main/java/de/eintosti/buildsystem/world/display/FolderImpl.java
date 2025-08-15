@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.world.display;
 
 import com.cryptomorin.xseries.XMaterial;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
@@ -164,7 +165,12 @@ public class FolderImpl implements Folder {
 
     @Override
     public boolean containsWorld(BuildWorld buildWorld) {
-        return this.worlds.contains(buildWorld.getUniqueId());
+        return containsWorld(buildWorld.getUniqueId());
+    }
+
+    @Override
+    public boolean containsWorld(UUID uuid) {
+        return this.worlds.contains(uuid);
     }
 
     @Override
@@ -178,11 +184,20 @@ public class FolderImpl implements Folder {
 
     @Override
     public void removeWorld(BuildWorld buildWorld) {
-        if (!containsWorld(buildWorld)) {
+        removeWorld(buildWorld.getUniqueId());
+    }
+
+    @Override
+    public void removeWorld(UUID uuid) {
+        if (!containsWorld(uuid)) {
             return;
         }
-        this.worlds.remove(buildWorld.getUniqueId());
-        buildWorld.setFolder(null);
+
+        this.worlds.remove(uuid);
+        BuildWorld buildWorld = BuildSystemPlugin.get().getWorldService().getWorldStorage().getBuildWorld(uuid);
+        if (buildWorld != null) {
+            buildWorld.setFolder(null);
+        }
     }
 
     @Override
