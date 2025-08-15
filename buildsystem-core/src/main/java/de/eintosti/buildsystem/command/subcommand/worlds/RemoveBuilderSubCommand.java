@@ -18,54 +18,55 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.api.world.util.WorldPermissions;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
+import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.UUIDFetcher;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
-import java.util.AbstractMap;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
+import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class RemoveBuilderSubCommand implements SubCommand {
 
-    private final BuildSystem plugin;
-    private final String worldName;
+    private final BuildSystemPlugin plugin;
 
-    public RemoveBuilderSubCommand(BuildSystem plugin, String worldName) {
+    @Nullable
+    private final BuildWorld buildWorld;
+    private final WorldPermissions permissions;
+
+    public RemoveBuilderSubCommand(BuildSystemPlugin plugin, String worldName) {
         this.plugin = plugin;
-        this.worldName = worldName;
+        this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
+        this.permissions = WorldPermissionsImpl.of(buildWorld);
     }
 
     @Override
     public void execute(Player player, String[] args) {
-        WorldManager worldManager = plugin.getWorldManager();
-        if (!worldManager.isPermitted(player, getArgument().getPermission(), worldName)) {
-            plugin.sendPermissionMessage(player);
+        if (!permissions.canPerformCommand(player, getArgument().getPermission())) {
+            Messages.sendPermissionError(player);
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
             Messages.sendMessage(player, "worlds_removebuilder_unknown_world");
             return;
         }
 
         switch (args.length) {
-            case 1:
-                getRemoveBuilderInput(player, buildWorld);
-                break;
-            case 2:
-                removeBuilder(player, buildWorld, args[1]);
-                break;
-            default:
-                Messages.sendMessage(player, "worlds_removebuilder_usage");
-                break;
+            case 1 -> getRemoveBuilderInput(player, buildWorld);
+            case 2 -> removeBuilder(player, buildWorld, args[1]);
+            default -> Messages.sendMessage(player, "worlds_removebuilder_usage");
         }
     }
 
@@ -84,21 +85,22 @@ public class RemoveBuilderSubCommand implements SubCommand {
             builderId = builderPlayer.getUniqueId();
         }
 
-        if (builderId.equals(player.getUniqueId()) && buildWorld.isCreator(player)) {
+        Builders builders = buildWorld.getBuilders();
+        if (builderId.equals(player.getUniqueId()) && builders.isCreator(player)) {
             Messages.sendMessage(player, "worlds_removebuilder_not_yourself");
             player.closeInventory();
             return;
         }
 
-        if (!buildWorld.isBuilder(builderId)) {
+        if (!builders.isBuilder(builderId)) {
             Messages.sendMessage(player, "worlds_removebuilder_not_builder");
             player.closeInventory();
             return;
         }
 
-        buildWorld.removeBuilder(builderId);
+        builders.removeBuilder(builderId);
         XSound.ENTITY_PLAYER_LEVELUP.play(player);
-        Messages.sendMessage(player, "worlds_removebuilder_removed", new AbstractMap.SimpleEntry<>("%builder%", builderName));
+        Messages.sendMessage(player, "worlds_removebuilder_removed", Map.entry("%builder%", builderName));
 
         player.closeInventory();
     }
@@ -112,6 +114,6 @@ public class RemoveBuilderSubCommand implements SubCommand {
 
     @Override
     public Argument getArgument() {
-        return WorldsTabComplete.WorldsArgument.REMOVE_BUILDER;
+        return WorldsArgument.REMOVE_BUILDER;
     }
 }

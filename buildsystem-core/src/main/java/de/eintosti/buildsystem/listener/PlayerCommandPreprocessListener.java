@@ -18,15 +18,16 @@
 package de.eintosti.buildsystem.listener;
 
 import com.google.common.collect.Sets;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.config.ConfigValues;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.config.Config.Settings.Builder;
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
-import de.eintosti.buildsystem.settings.SettingsManager;
-import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldStatus;
+import de.eintosti.buildsystem.player.settings.SettingsManager;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import java.util.List;
 import java.util.Set;
 import org.bukkit.Bukkit;
@@ -36,7 +37,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.inventory.ItemStack;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class PlayerCommandPreprocessListener implements Listener {
 
     private static final Set<String> DISABLED_COMMANDS = Sets.newHashSet(
@@ -216,20 +219,14 @@ public class PlayerCommandPreprocessListener implements Listener {
             "/vr--"
     );
 
-    private final BuildSystem plugin;
-    private final ConfigValues configValues;
-    private final InventoryUtils inventoryUtils;
+    private final BuildSystemPlugin plugin;
     private final SettingsManager settingsManager;
-    private final WorldManager worldManager;
+    private final WorldStorageImpl worldStorage;
 
-    public PlayerCommandPreprocessListener(BuildSystem plugin) {
+    public PlayerCommandPreprocessListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.configValues = plugin.getConfigValues();
-
-        this.inventoryUtils = plugin.getInventoryUtil();
         this.settingsManager = plugin.getSettingsManager();
-        this.worldManager = plugin.getWorldManager();
-
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -243,13 +240,13 @@ public class PlayerCommandPreprocessListener implements Listener {
         Player player = event.getPlayer();
 
         if (command.equalsIgnoreCase("/clear")) {
-            ItemStack navigatorItem = inventoryUtils.getItemStack(configValues.getNavigatorItem(), Messages.getString("navigator_item", player));
+            ItemStack navigatorItem = InventoryUtils.createNavigatorItem(player);
             if (!player.getInventory().contains(navigatorItem)) {
                 return;
             }
 
             if (settingsManager.getSettings(player).isKeepNavigator()) {
-                List<Integer> navigatorSlots = inventoryUtils.getNavigatorSlots(player);
+                List<Integer> navigatorSlots = InventoryUtils.getNavigatorSlots(player);
                 Bukkit.getScheduler().runTaskLater(plugin, () -> {
                     PlayerInventoryClearEvent playerInventoryClearEvent = new PlayerInventoryClearEvent(player, navigatorSlots);
                     Bukkit.getServer().getPluginManager().callEvent(playerInventoryClearEvent);
@@ -258,12 +255,12 @@ public class PlayerCommandPreprocessListener implements Listener {
             return;
         }
 
-        if (configValues.isBlockWorldEditNonBuilder()) {
+        if (Builder.blockWorldEditNonBuilder) {
             if (!DISABLED_COMMANDS.contains(command)) {
                 return;
             }
 
-            BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+            BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
             if (buildWorld == null) {
                 return;
             }
@@ -276,11 +273,11 @@ public class PlayerCommandPreprocessListener implements Listener {
     }
 
     private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
-        if (worldManager.canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.archive")) {
+        if (buildWorld.getPermissions().canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.archive")) {
             return false;
         }
 
-        if (buildWorld.getData().status().get() == WorldStatus.ARCHIVE) {
+        if (buildWorld.getData().status().get() == BuildWorldStatus.ARCHIVE) {
             event.setCancelled(true);
             Messages.sendMessage(player, "command_archive_world");
             return true;
@@ -289,15 +286,16 @@ public class PlayerCommandPreprocessListener implements Listener {
     }
 
     private void checkBuilders(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
-        if (worldManager.canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.builders")) {
+        if (buildWorld.getPermissions().canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.builders")) {
             return;
         }
 
-        if (buildWorld.isCreator(player)) {
+        Builders builders = buildWorld.getBuilders();
+        if (builders.isCreator(player)) {
             return;
         }
 
-        if (buildWorld.getData().buildersEnabled().get() && !buildWorld.isBuilder(player)) {
+        if (buildWorld.getData().buildersEnabled().get() && !builders.isBuilder(player)) {
             event.setCancelled(true);
             Messages.sendMessage(player, "command_not_builder");
         }

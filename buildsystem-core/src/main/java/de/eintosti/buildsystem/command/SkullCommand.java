@@ -18,63 +18,61 @@
 package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.util.InventoryUtils;
-import java.util.AbstractMap;
+import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import java.util.Map;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class SkullCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
-    private final InventoryUtils inventoryUtils;
+    private final BuildSystemPlugin plugin;
 
-    public SkullCommand(BuildSystem plugin) {
+    public SkullCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.inventoryUtils = plugin.getInventoryUtil();
         plugin.getCommand("skull").setExecutor(this);
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (!(sender instanceof Player player)) {
+            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
             return true;
         }
 
-        Player player = (Player) sender;
         if (!player.hasPermission("buildsystem.skull")) {
-            plugin.sendPermissionMessage(player);
+            Messages.sendPermissionError(player);
             return true;
         }
 
         switch (args.length) {
-            case 0:
+            case 0 -> {
                 addSkull(player, "§b" + player.getName(), Profileable.of(player));
-                Messages.sendMessage(player, "skull_player_received", new AbstractMap.SimpleEntry<>("%player%", player.getName()));
-                break;
-            case 1:
+                Messages.sendMessage(player, "skull_player_received", Map.entry("%player%", player.getName()));
+            }
+            case 1 -> {
                 String identifier = args[0];
                 if (identifier.length() > 16) {
                     addSkull(player, Messages.getString("custom_skull_item", player), Profileable.detect(identifier));
                     Messages.sendMessage(player, "skull_custom_received");
                 } else {
                     addSkull(player, "§b" + identifier, Profileable.detect(identifier));
-                    Messages.sendMessage(player, "skull_player_received", new AbstractMap.SimpleEntry<>("%player%", identifier));
+                    Messages.sendMessage(player, "skull_player_received", Map.entry("%player%", identifier));
                 }
-                break;
-            default:
+            }
+            default -> {
                 Messages.sendMessage(player, "skull_usage");
-                break;
+            }
         }
         return true;
     }
 
     private void addSkull(Player player, String displayName, Profileable profileable) {
-        player.getInventory().addItem(inventoryUtils.getSkull(displayName, profileable));
+        player.getInventory().addItem(InventoryUtils.createSkull(displayName, profileable));
     }
 }

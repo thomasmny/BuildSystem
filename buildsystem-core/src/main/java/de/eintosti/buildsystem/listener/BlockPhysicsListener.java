@@ -18,14 +18,20 @@
 package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.version.util.DirectionUtil;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.config.Config.Settings.DisabledPhysics;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.util.DirectionUtil;
 import java.util.List;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.type.Fence;
+import org.bukkit.block.data.type.Gate;
+import org.bukkit.block.data.type.GlassPane;
+import org.bukkit.block.data.type.Stairs;
+import org.bukkit.block.data.type.Wall;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -42,43 +48,58 @@ import org.bukkit.event.block.LeavesDecayEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.metadata.MetadataValue;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class BlockPhysicsListener implements Listener {
 
-    private final WorldManager worldManager;
+    private final WorldStorageImpl worldStorage;
 
-    public BlockPhysicsListener(BuildSystem plugin) {
-        this.worldManager = plugin.getWorldManager();
+    public BlockPhysicsListener(BuildSystemPlugin plugin) {
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler
     public void onBlockPhysics(BlockPhysicsEvent event) {
         Block block = event.getBlock();
-        String worldName = block.getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(block.getWorld());
         if (buildWorld == null || buildWorld.getData().physics().get()) {
             return;
         }
 
-        XMaterial xMaterial = XMaterial.matchXMaterial(block.getType());
-        switch (xMaterial) {
-            case REDSTONE_BLOCK:
+        if (!DisabledPhysics.preventConnections) {
+            boolean canConnect = switch (block.getBlockData()) {
+                case Fence fence -> true;
+                case Gate gate -> true;
+                case GlassPane glassPane -> true;
+                case Stairs stairs -> true;
+                case Wall wall -> true;
+                default -> false;
+            };
+            if (canConnect) {
+                event.setCancelled(false);
+                return;
+            }
+        }
+
+        switch (XMaterial.matchXMaterial(block.getType())) {
+            case REDSTONE_BLOCK -> {
                 for (BlockFace blockFace : DirectionUtil.BLOCK_SIDES) {
                     if (isCustomRedstoneLamp(block.getRelative(blockFace))) {
                         event.setCancelled(false);
                         return;
                     }
                 }
-                break;
-            case REDSTONE_LAMP:
+            }
+            case REDSTONE_LAMP -> {
                 for (BlockFace blockFace : DirectionUtil.BLOCK_SIDES) {
                     if (block.getRelative(blockFace).getType() == XMaterial.REDSTONE_BLOCK.get()) {
                         event.setCancelled(false);
                         return;
                     }
                 }
-                break;
+            }
         }
 
         event.setCancelled(true);
@@ -86,67 +107,72 @@ public class BlockPhysicsListener implements Listener {
 
     @EventHandler
     public void onLeavesDecay(LeavesDecayEvent event) {
-        String worldName = event.getBlock().getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
-        if (buildWorld != null && !buildWorld.getData().physics().get()) {
-            event.setCancelled(true);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(event.getBlock().getWorld());
+        if (buildWorld == null || buildWorld.getData().physics().get()) {
+            return;
         }
+        event.setCancelled(true);
     }
 
     @EventHandler
     public void onBlockFade(BlockFadeEvent event) {
-        String worldName = event.getBlock().getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
-        if (buildWorld != null && !buildWorld.getData().physics().get()) {
-            event.setCancelled(true);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(event.getBlock().getWorld());
+        if (buildWorld == null || buildWorld.getData().physics().get()) {
+            return;
         }
+        event.setCancelled(true);
     }
 
     @EventHandler
     public void onBlockForm(BlockFormEvent event) {
-        String worldName = event.getBlock().getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
-        if (buildWorld != null && !buildWorld.getData().physics().get()) {
-            event.setCancelled(true);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(event.getBlock().getWorld());
+        if (buildWorld == null || buildWorld.getData().physics().get()) {
+            return;
         }
+        event.setCancelled(true);
     }
 
     @EventHandler
     public void onBlockFromTo(BlockFromToEvent event) {
-        String worldName = event.getBlock().getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
-        if (buildWorld != null && !buildWorld.getData().physics().get()) {
-            event.setCancelled(true);
-        }
-    }
-
-    @EventHandler
-    public void onBlockGrow(BlockGrowEvent event) {
-        String worldName = event.getBlock().getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
-        if (buildWorld != null && !buildWorld.getData().physics().get()) {
-            event.setCancelled(true);
-        }
-    }
-
-    @EventHandler
-    public void onBlockSpread(BlockSpreadEvent event) {
-        String worldName = event.getBlock().getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
-        if (buildWorld != null && !buildWorld.getData().physics().get()) {
-            event.setCancelled(true);
-        }
-    }
-
-    @EventHandler
-    public void onEntityChangeBlock(EntityChangeBlockEvent event) {
-        String worldName = event.getBlock().getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(event.getBlock().getWorld());
         if (buildWorld == null || buildWorld.getData().physics().get()) {
             return;
         }
 
-        if (event.getEntityType() == EntityType.FALLING_BLOCK) {
+        if (event.getBlock().isLiquid() && !DisabledPhysics.preventFluidFlow) {
+            event.setCancelled(false);
+            return;
+        }
+
+        event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onBlockGrow(BlockGrowEvent event) {
+        BuildWorld buildWorld = worldStorage.getBuildWorld(event.getBlock().getWorld());
+        if (buildWorld == null || buildWorld.getData().physics().get()) {
+            return;
+        }
+        event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onBlockSpread(BlockSpreadEvent event) {
+        BuildWorld buildWorld = worldStorage.getBuildWorld(event.getBlock().getWorld());
+        if (buildWorld == null || buildWorld.getData().physics().get()) {
+            return;
+        }
+        event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onEntityChangeBlock(EntityChangeBlockEvent event) {
+        BuildWorld buildWorld = worldStorage.getBuildWorld(event.getBlock().getWorld());
+        if (buildWorld == null || buildWorld.getData().physics().get()) {
+            return;
+        }
+
+        if (event.getEntityType() == EntityType.FALLING_BLOCK && DisabledPhysics.preventFallingBlocks) {
             event.setCancelled(true);
             event.getBlock().getState().update(false, false);
         }
@@ -173,11 +199,11 @@ public class BlockPhysicsListener implements Listener {
 
     @EventHandler
     public void onBlockExplode(BlockExplodeEvent event) {
-        String worldName = event.getBlock().getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
-        if (buildWorld != null && !buildWorld.getData().explosions().get()) {
-            event.setCancelled(true);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(event.getBlock().getWorld());
+        if (buildWorld == null || buildWorld.getData().physics().get()) {
+            return;
         }
+        event.setCancelled(true);
     }
 
     @EventHandler
@@ -187,10 +213,12 @@ public class BlockPhysicsListener implements Listener {
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(world.getName());
-        if (buildWorld != null && !buildWorld.getData().explosions().get()) {
-            event.setCancelled(true);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(world);
+        if (buildWorld == null || buildWorld.getData().physics().get()) {
+            return;
         }
+
+        event.setCancelled(true);
     }
 
     private boolean isCustomRedstoneLamp(Block block) {

@@ -17,31 +17,34 @@
  */
 package de.eintosti.buildsystem.listener;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.player.BuildPlayer;
-import de.eintosti.buildsystem.player.CachedValues;
-import de.eintosti.buildsystem.player.LogoutLocation;
-import de.eintosti.buildsystem.player.PlayerManager;
-import de.eintosti.buildsystem.settings.Settings;
-import de.eintosti.buildsystem.settings.SettingsManager;
-import java.util.AbstractMap;
+import de.eintosti.buildsystem.api.player.BuildPlayer;
+import de.eintosti.buildsystem.api.player.CachedValues;
+import de.eintosti.buildsystem.api.player.settings.Settings;
+import de.eintosti.buildsystem.config.Config;
+import de.eintosti.buildsystem.player.LogoutLocationImpl;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.player.settings.SettingsManager;
+import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class PlayerQuitListener implements Listener {
 
-    private final BuildSystem plugin;
-    private final PlayerManager playerManager;
+    private final BuildSystemPlugin plugin;
+    private final PlayerServiceImpl playerManager;
     private final SettingsManager settingsManager;
 
-    public PlayerQuitListener(BuildSystem plugin) {
+    public PlayerQuitListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.playerManager = plugin.getPlayerManager();
+        this.playerManager = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -49,8 +52,8 @@ public class PlayerQuitListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void sendPlayerQuitMessage(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        String message = plugin.getConfigValues().isJoinQuitMessages()
-                ? Messages.getString("player_quit", player, new AbstractMap.SimpleEntry<>("%player%", player.getName()))
+        String message = Config.Messages.joinQuitMessages
+                ? Messages.getString("player_quit", player, Map.entry("%player%", player.getName()))
                 : null;
         event.setQuitMessage(message);
     }
@@ -58,7 +61,7 @@ public class PlayerQuitListener implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        playerManager.closeNavigator(player);
+        playerManager.closeNewNavigator(player);
 
         Settings settings = settingsManager.getSettings(player);
         if (settings.isNoClip()) {
@@ -73,8 +76,8 @@ public class PlayerQuitListener implements Listener {
             player.getInventory().clear();
         }
 
-        BuildPlayer buildPlayer = playerManager.getBuildPlayer(player);
-        buildPlayer.setLogoutLocation(new LogoutLocation(
+        BuildPlayer buildPlayer = playerManager.getPlayerStorage().getBuildPlayer(player);
+        buildPlayer.setLogoutLocation(new LogoutLocationImpl(
                 player.getWorld().getName(),
                 player.getLocation()
         ));

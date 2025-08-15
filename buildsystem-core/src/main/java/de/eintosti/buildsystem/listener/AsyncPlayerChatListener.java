@@ -17,17 +17,19 @@
  */
 package de.eintosti.buildsystem.listener;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class AsyncPlayerChatListener implements Listener {
 
-    public AsyncPlayerChatListener(BuildSystem plugin) {
+    public AsyncPlayerChatListener(BuildSystemPlugin plugin) {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 

@@ -17,33 +17,32 @@
  */
 package de.eintosti.buildsystem.expansion.luckperms.calculators;
 
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.player.PlayerManager;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import net.luckperms.api.context.ContextCalculator;
 import net.luckperms.api.context.ContextConsumer;
 import net.luckperms.api.context.ContextSet;
 import net.luckperms.api.context.ImmutableContextSet;
 import org.bukkit.entity.Player;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class BuildModeCalculator implements ContextCalculator<Player> {
 
     private static final String KEY = "buildsystem:build-mode";
 
-    private final PlayerManager playerManager;
+    private final PlayerServiceImpl playerManager;
 
-    public BuildModeCalculator(BuildSystem plugin) {
-        this.playerManager = plugin.getPlayerManager();
+    public BuildModeCalculator(BuildSystemPlugin plugin) {
+        this.playerManager = plugin.getPlayerService();
     }
 
     @Override
-    public void calculate(@NonNull Player player, @NonNull ContextConsumer contextConsumer) {
+    public void calculate(Player player, ContextConsumer contextConsumer) {
         boolean isInBuildMode = playerManager.isInBuildMode(player);
         contextConsumer.accept(KEY, String.valueOf(isInBuildMode));
     }
 
-    @NotNull
     @Override
     public ContextSet estimatePotentialContexts() {
         return ImmutableContextSet.builder()

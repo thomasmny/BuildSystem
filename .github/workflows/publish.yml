@@ -1,0 +1,51 @@
+name: Publish to Sonatype
+
+on:
+  push:
+    branches: [ master, dev/v3 ]
+
+jobs:
+  publish:
+    if: github.repository_owner_id == 29168243
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ 21 ]
+      fail-fast: true
+    steps:
+      - name: Checkout Git Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Get Project Version
+        id: version
+        run: |
+          VERSION=$(./gradlew -q properties --no-daemon | grep "^version:" | awk '{print $2}')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Publish to Sonatype
+        env:
+          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
+          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingKeyId: ${{ secrets.SIGNING_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
+        run: |
+          PROJECT_VERSION="${{ steps.version.outputs.version }}"
+          echo "Detected project version: $PROJECT_VERSION"
+
+          if [[ "$PROJECT_VERSION" == *-SNAPSHOT ]]; then
+            echo "Publishing SNAPSHOT version to Sonatype..."
+            ./gradlew publishAllPublicationsToSonatypeRepository --no-daemon --no-configuration-cache
+          else
+            echo "Publishing RELEASE version to Sonatype and closing staging repository..."
+            ./gradlew publishAllPublicationsToSonatypeRepository closeAndReleaseSonatypeStagingRepository --no-daemon --no-configuration-cache
+          fi

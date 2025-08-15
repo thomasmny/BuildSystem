@@ -17,27 +17,29 @@
  */
 package de.eintosti.buildsystem.listener;
 
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.navigator.settings.NavigatorType;
-import de.eintosti.buildsystem.player.PlayerManager;
-import de.eintosti.buildsystem.settings.Settings;
-import de.eintosti.buildsystem.settings.SettingsManager;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.player.settings.Settings;
+import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.player.settings.SettingsManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class PlayerMoveListener implements Listener {
 
-    private final BuildSystem plugin;
-    private final PlayerManager playerManager;
+    private final BuildSystemPlugin plugin;
+    private final PlayerServiceImpl playerManager;
     private final SettingsManager settingsManager;
 
-    public PlayerMoveListener(BuildSystem plugin) {
+    public PlayerMoveListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.playerManager = plugin.getPlayerManager();
+        this.playerManager = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -61,7 +63,7 @@ public class PlayerMoveListener implements Listener {
 
         Location from = event.getFrom();
         if (from.getBlockX() != to.getBlockX() || from.getBlockZ() != to.getBlockZ()) {
-            Bukkit.getServer().getScheduler().runTaskLater(plugin, () -> playerManager.closeNavigator(player), 5L);
+            Bukkit.getServer().getScheduler().runTaskLater(plugin, () -> playerManager.closeNewNavigator(player), 5L);
         }
     }
 }

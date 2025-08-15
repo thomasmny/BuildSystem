@@ -17,7 +17,7 @@
  */
 package de.eintosti.buildsystem.expansion.luckperms;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.expansion.luckperms.calculators.BuildModeCalculator;
 import de.eintosti.buildsystem.expansion.luckperms.calculators.RoleCalculator;
 import java.util.ArrayList;
@@ -27,14 +27,16 @@ import net.luckperms.api.LuckPerms;
 import net.luckperms.api.context.ContextCalculator;
 import net.luckperms.api.context.ContextManager;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class LuckPermsExpansion {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final ContextManager contextManager;
     private final List<ContextCalculator<Player>> registeredCalculators;
 
-    public LuckPermsExpansion(BuildSystem plugin) {
+    public LuckPermsExpansion(BuildSystemPlugin plugin) {
         LuckPerms luckPerms = plugin.getServer().getServicesManager().load(LuckPerms.class);
         if (luckPerms == null) {
             throw new IllegalStateException("LuckPerms API not loaded.");
@@ -48,6 +50,7 @@ public class LuckPermsExpansion {
     public void registerAll() {
         register("build-mode", () -> new BuildModeCalculator(plugin));
         register("role", () -> new RoleCalculator(plugin));
+        plugin.getLogger().info("LuckPerms expansion initialized");
     }
 
     private void register(String option, Supplier<ContextCalculator<Player>> calculatorSupplier) {

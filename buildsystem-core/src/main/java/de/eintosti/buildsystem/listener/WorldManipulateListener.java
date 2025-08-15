@@ -18,14 +18,15 @@
 package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.data.Type;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.config.Config.Settings.Builder;
 import de.eintosti.buildsystem.event.EventDispatcher;
 import de.eintosti.buildsystem.event.world.BuildWorldManipulationEvent;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.Builder;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldData;
-import de.eintosti.buildsystem.world.data.WorldStatus;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -40,17 +41,19 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class WorldManipulateListener implements Listener {
 
-    private final BuildSystem plugin;
-    private final WorldManager worldManager;
+    private final BuildSystemPlugin plugin;
+    private final WorldStorageImpl worldStorage;
     private final EventDispatcher dispatcher;
 
-    public WorldManipulateListener(BuildSystem plugin) {
+    public WorldManipulateListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.worldManager = plugin.getWorldManager();
-        this.dispatcher = new EventDispatcher(worldManager);
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
+        this.dispatcher = new EventDispatcher(worldStorage);
 
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -67,175 +70,83 @@ public class WorldManipulateListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-        if (!(event.getDamager() instanceof Player)) {
-            return;
-        }
-        Player player = (Player) event.getDamager();
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
-        if (buildWorld == null) {
+        if (!(event.getDamager() instanceof Player player) || !(event.getEntity() instanceof ArmorStand)) {
             return;
         }
 
-        if (event.getEntity() instanceof ArmorStand) {
-            manageWorldInteraction(player, event, buildWorld.getData().blockInteractions().get());
-        }
+        dispatcher.dispatchManipulationEventIfPlayerInBuildWorld(player, event);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerArmorStandManipulate(PlayerArmorStandManipulateEvent event) {
-        Player player = event.getPlayer();
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
-        if (buildWorld == null) {
-            return;
-        }
-
-        manageWorldInteraction(player, event, buildWorld.getData().blockInteractions().get());
+        dispatcher.dispatchManipulationEventIfPlayerInBuildWorld(event.getPlayer(), event);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(PlayerInteractEvent event) {
         ItemStack itemStack = event.getItem();
-        if (itemStack != null && itemStack.getType() == plugin.getConfigValues().getWorldEditWand().get()) {
+        if (itemStack != null && itemStack.getType() == Builder.worldEditWand.get()) {
             return;
         }
 
         Player player = event.getPlayer();
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
         if (buildWorld == null) {
             return;
         }
 
-        WorldData worldData = buildWorld.getData();
-        manageWorldInteraction(player, event, worldData.blockInteractions().get());
+        dispatcher.dispatchManipulationEventIfPlayerInBuildWorld(player, event);
 
-        if (!worldData.physics().get() && event.getClickedBlock() != null) {
+        if (!buildWorld.getData().physics().get() && event.getClickedBlock() != null) {
             if (event.getAction() == Action.PHYSICAL && event.getClickedBlock().getType() == XMaterial.FARMLAND.get()) {
                 event.setCancelled(true);
             }
         }
     }
 
-
     @EventHandler(priority = EventPriority.LOW)
     public void onWorldManipulation(BuildWorldManipulationEvent event) {
         if (event.isCancelled()) {
             return;
         }
+
         Player player = event.getPlayer();
         BuildWorld buildWorld = event.getBuildWorld();
         WorldData worldData = buildWorld.getData();
 
-        if (!manageWorldInteraction(player, event, getRelatedWorldSetting(event.getParentEvent(), worldData))) {
-            worldData.lastEdited().set(System.currentTimeMillis());
-            updateStatus(worldData, player);
+        Cancellable parentEvent = event.getParentEvent();
+        boolean canModify = buildWorld.getPermissions().canModify(player, () -> getRelatedWorldSetting(parentEvent, worldData).get());
+        if (!canModify) {
+            parentEvent.setCancelled(true);
+            denyPlayerInteraction(event);
+            return;
         }
+
+        worldData.lastEdited().set(System.currentTimeMillis());
+        updateStatus(worldData, player);
     }
 
-    private boolean getRelatedWorldSetting(Cancellable event, WorldData data) {
+    private Type<Boolean> getRelatedWorldSetting(Cancellable event, WorldData data) {
         if (event instanceof BlockBreakEvent) {
-            return data.blockBreaking().get();
+            return data.blockBreaking();
         }
         if (event instanceof BlockPlaceEvent) {
-            return data.blockPlacement().get();
+            return data.blockPlacement();
         }
-        return data.blockInteractions().get();
-    }
-
-
-    /**
-     * Not every player can always interact with the {@link BuildWorld} they are in.
-     * <p>
-     * Reasons an interaction could be cancelled:
-     * <ul>
-     *     <li>The world has its {@link WorldStatus} set to archive;</li>
-     *     <li>The world has a setting enabled which disallows certain events;</li>
-     *     <li>The world only allows {@link Builder}s to build and the player is not such a builder.</li>
-     * </ul>
-     * <p>
-     * However, a player can override these reasons if:
-     * <ul>
-     *     <li>The player has the permission {@code buildsystem.admin};</li>
-     *     <li>The player has the permission {@code buildsystem.bypass.archive};</li>
-     *     <li>The player has used {@code /build} to enter build-mode.</li>
-     * </ul>
-     *
-     * @param player the player who manipulated the world
-     * @param event  the event which was called by the world manipulation
-     * @return if the event called when the player performs an action was cancelled
-     */
-    private boolean manageWorldInteraction(Player player, Event event, boolean worldSetting) {
-        String worldName = player.getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
-        if (buildWorld == null) {
-            return false;
-        }
-
-        if (disableArchivedWorlds(buildWorld, player, event)) {
-            return true;
-        }
-        if (checkWorldSettings(player, event, worldSetting)) {
-            return true;
-        }
-        return checkBuilders(buildWorld, player, event);
-    }
-
-    private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, Event event) {
-        if (worldManager.canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.archive")) {
-            return false;
-        }
-
-        if (buildWorld.getData().status().get() == WorldStatus.ARCHIVE) {
-            ((Cancellable) event).setCancelled(true);
-            denyPlayerInteraction(event);
-            return true;
-        }
-
-        return false;
-    }
-
-    private boolean checkWorldSettings(Player player, Event event, boolean worldSetting) {
-        if (worldManager.canBypassBuildRestriction(player)) {
-            return false;
-        }
-
-        if (!worldSetting) {
-            ((Cancellable) event).setCancelled(true);
-            denyPlayerInteraction(event);
-            return true;
-        }
-
-        return false;
-    }
-
-    private boolean checkBuilders(BuildWorld buildWorld, Player player, Event event) {
-        if (worldManager.canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.builders")) {
-            return false;
-        }
-
-        if (buildWorld.isCreator(player)) {
-            return false;
-        }
-
-        if (buildWorld.getData().buildersEnabled().get() && !buildWorld.isBuilder(player)) {
-            ((Cancellable) event).setCancelled(true);
-            denyPlayerInteraction(event);
-            return true;
-        }
-
-        return false;
+        return data.blockInteractions();
     }
 
     private void denyPlayerInteraction(Event event) {
-        if (event instanceof PlayerInteractEvent) {
-            ((PlayerInteractEvent) event).setUseItemInHand(Event.Result.DENY);
-            ((PlayerInteractEvent) event).setUseInteractedBlock(Event.Result.DENY);
+        if (event instanceof PlayerInteractEvent interactEvent) {
+            interactEvent.setUseItemInHand(Event.Result.DENY);
+            interactEvent.setUseInteractedBlock(Event.Result.DENY);
         }
     }
 
     private void updateStatus(WorldData worldData, Player player) {
-        if (worldData.status().get() == WorldStatus.NOT_STARTED) {
-            worldData.status().set(WorldStatus.IN_PROGRESS);
-            plugin.getPlayerManager().forceUpdateSidebar(player);
+        if (worldData.status().get() == BuildWorldStatus.NOT_STARTED) {
+            worldData.status().set(BuildWorldStatus.IN_PROGRESS);
+            plugin.getPlayerService().forceUpdateSidebar(player);
         }
     }
 }

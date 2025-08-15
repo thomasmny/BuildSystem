@@ -18,33 +18,34 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
-import java.util.AbstractMap;
+import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
+import java.util.Map;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class SetItemSubCommand implements SubCommand {
 
-    private final BuildSystem plugin;
-    private final String worldName;
+    @Nullable
+    private final BuildWorld buildWorld;
 
-    public SetItemSubCommand(BuildSystem plugin, String worldName) {
-        this.plugin = plugin;
-        this.worldName = worldName;
+    public SetItemSubCommand(BuildSystemPlugin plugin, String worldName) {
+        this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
     }
 
     @Override
     public void execute(Player player, String[] args) {
-        WorldManager worldManager = plugin.getWorldManager();
-        if (!worldManager.isPermitted(player, getArgument().getPermission(), worldName)) {
-            plugin.sendPermissionMessage(player);
+        if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
+            Messages.sendPermissionError(player);
             return;
         }
 
@@ -53,13 +54,12 @@ public class SetItemSubCommand implements SubCommand {
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
             Messages.sendMessage(player, "worlds_setitem_unknown_world");
             return;
         }
 
-        ItemStack itemStack = player.getItemInHand();
+        ItemStack itemStack = player.getInventory().getItemInMainHand();
         if (itemStack.getType() == Material.AIR) {
             Messages.sendMessage(player, "worlds_setitem_hand_empty");
             return;
@@ -67,12 +67,12 @@ public class SetItemSubCommand implements SubCommand {
 
         buildWorld.getData().material().set(XMaterial.matchXMaterial(itemStack));
         Messages.sendMessage(player, "worlds_setitem_set",
-                new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName())
+                Map.entry("%world%", buildWorld.getName())
         );
     }
 
     @Override
     public Argument getArgument() {
-        return WorldsTabComplete.WorldsArgument.SET_ITEM;
+        return WorldsArgument.SET_ITEM;
     }
 }

@@ -17,67 +17,64 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldData;
-import java.util.AbstractMap;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
+import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class ExplosionsCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
-    private final WorldManager worldManager;
+    private final BuildSystemPlugin plugin;
+    private final WorldStorageImpl worldStorage;
 
-    public ExplosionsCommand(BuildSystem plugin) {
+    public ExplosionsCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getCommand("explosions").setExecutor(this);
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (!(sender instanceof Player player)) {
+            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
             return true;
         }
 
-        Player player = (Player) sender;
         String worldName = args.length == 0 ? player.getWorld().getName() : args[0];
-        if (!worldManager.isPermitted(player, "buildsystem.explosions", worldName)) {
-            plugin.sendPermissionMessage(player);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
+        if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, "buildsystem.explosions")) {
+            Messages.sendPermissionError(player);
             return true;
         }
 
         switch (args.length) {
-            case 0:
-                toggleExplosions(player, player.getWorld());
-                break;
-            case 1:
-                toggleExplosions(player, Bukkit.getWorld(args[0]));
-                break;
-            default:
-                Messages.sendMessage(player, "explosions_usage");
-                break;
+            case 0 -> toggleExplosions(player, player.getWorld());
+            case 1 -> toggleExplosions(player, Bukkit.getWorld(args[0]));
+            default -> Messages.sendMessage(player, "explosions_usage");
         }
 
         return true;
     }
 
-    private void toggleExplosions(Player player, World bukkitWorld) {
-        if (bukkitWorld == null) {
+    private void toggleExplosions(Player player, @Nullable World world) {
+        if (world == null) {
             Messages.sendMessage(player, "explosions_unknown_world");
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
+        BuildWorld buildWorld = worldStorage.getBuildWorld(world);
         if (buildWorld == null) {
             Messages.sendMessage(player, "explosions_world_not_imported");
             return;
@@ -86,10 +83,10 @@ public class ExplosionsCommand implements CommandExecutor {
         WorldData worldData = buildWorld.getData();
         if (!worldData.explosions().get()) {
             worldData.explosions().set(true);
-            Messages.sendMessage(player, "explosions_activated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+            Messages.sendMessage(player, "explosions_activated", Map.entry("%world%", buildWorld.getName()));
         } else {
             worldData.explosions().set(false);
-            Messages.sendMessage(player, "explosions_deactivated", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
+            Messages.sendMessage(player, "explosions_deactivated", Map.entry("%world%", buildWorld.getName()));
         }
     }
 }

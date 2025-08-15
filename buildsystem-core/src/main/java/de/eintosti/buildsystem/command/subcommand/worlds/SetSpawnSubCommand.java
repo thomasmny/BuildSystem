@@ -17,50 +17,51 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
-import java.util.AbstractMap;
+import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
+import java.util.Map;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class SetSpawnSubCommand implements SubCommand {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
-    public SetSpawnSubCommand(BuildSystem plugin) {
+    public SetSpawnSubCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
     }
 
     @Override
     public void execute(Player player, String[] args) {
-        WorldManager worldManager = plugin.getWorldManager();
-        String playerWorldName = player.getWorld().getName();
-        if (!worldManager.isPermitted(player, getArgument().getPermission(), playerWorldName)) {
-            plugin.sendPermissionMessage(player);
+        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld());
+        if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
+            Messages.sendPermissionError(player);
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(playerWorldName);
         if (buildWorld == null) {
             Messages.sendMessage(player, "worlds_setspawn_world_not_imported");
             return;
         }
 
-        Location loc = player.getLocation();
-        String locString = loc.getX() + ";" + loc.getY() + ";" + loc.getZ() + ";" + loc.getYaw() + ";" + loc.getPitch();
-        buildWorld.getData().customSpawn().set(locString);
+        Location playerLocation = player.getLocation();
+        buildWorld.getData().customSpawn().set("%s;%s;%s;%s;%s".formatted(
+                playerLocation.getX(), playerLocation.getY(), playerLocation.getZ(), playerLocation.getYaw(), playerLocation.getPitch()
+        ));
         Messages.sendMessage(player, "worlds_setspawn_world_spawn_set",
-                new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName())
+                Map.entry("%world%", buildWorld.getName())
         );
     }
 
     @Override
     public Argument getArgument() {
-        return WorldsTabComplete.WorldsArgument.SET_SPAWN;
+        return WorldsArgument.SET_SPAWN;
     }
 }

@@ -21,19 +21,20 @@ import com.cryptomorin.xseries.XBlock;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XTag;
 import com.google.common.collect.Sets;
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.config.ConfigValues;
-import de.eintosti.buildsystem.settings.Settings;
-import de.eintosti.buildsystem.settings.SettingsManager;
-import de.eintosti.buildsystem.util.MaterialUtils;
-import de.eintosti.buildsystem.version.customblocks.CustomBlocks;
-import de.eintosti.buildsystem.version.util.DirectionUtil;
-import de.eintosti.buildsystem.version.util.MinecraftVersion;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.Builder;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldData;
-import de.eintosti.buildsystem.world.data.WorldStatus;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.player.settings.Settings;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builder;
+import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.config.Config;
+import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
+import de.eintosti.buildsystem.player.settings.SettingsManager;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.util.DirectionUtil;
+import de.eintosti.buildsystem.util.inventory.MaterialUtils;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -43,6 +44,9 @@ import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.MultipleFacing;
+import org.bukkit.block.data.Openable;
+import org.bukkit.block.data.type.Slab;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -54,7 +58,10 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.RayTraceResult;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class SettingsInteractListener implements Listener {
 
     private static final EnumSet<XMaterial> OTHER_PLANTS = Sets.newEnumSet(Sets.newHashSet(
@@ -65,20 +72,16 @@ public class SettingsInteractListener implements Listener {
             XMaterial.BIG_DRIPLEAF, XMaterial.SMALL_DRIPLEAF, XMaterial.SEAGRASS, XMaterial.SWEET_BERRIES
     ), XMaterial.class);
 
-    private final ConfigValues configValues;
-    private final CustomBlocks customBlocks;
-
+    private final CustomBlockManager customBlockManager;
     private final SettingsManager settingsManager;
-    private final WorldManager worldManager;
+    private final WorldStorageImpl worldStorage;
 
     private final Set<UUID> cachePlayers;
 
-    public SettingsInteractListener(BuildSystem plugin) {
-        this.configValues = plugin.getConfigValues();
-        this.customBlocks = plugin.getCustomBlocks();
-
+    public SettingsInteractListener(BuildSystemPlugin plugin) {
+        this.customBlockManager = plugin.getCustomBlockManager();
         this.settingsManager = plugin.getSettingsManager();
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
 
         this.cachePlayers = new HashSet<>();
 
@@ -96,8 +99,7 @@ public class SettingsInteractListener implements Listener {
             return;
         }
 
-        boolean duelHanded = MinecraftVersion.getCurrent().isEqualOrHigherThan(MinecraftVersion.COMBAT_9);
-        if (duelHanded && event.getHand() != EquipmentSlot.valueOf("HAND")) {
+        if (event.getHand() != EquipmentSlot.HAND) {
             return;
         }
 
@@ -107,7 +109,7 @@ public class SettingsInteractListener implements Listener {
         }
 
         Settings settings = settingsManager.getSettings(player);
-        if (!settings.isTrapDoor()) {
+        if (!settings.isOpenTrapDoors()) {
             return;
         }
 
@@ -117,16 +119,9 @@ public class SettingsInteractListener implements Listener {
         }
 
         event.setCancelled(true);
-        switch (material) {
-            case IRON_TRAPDOOR:
-                customBlocks.toggleIronTrapdoor(event);
-                break;
-            case IRON_DOOR:
-                customBlocks.toggleIronDoor(event);
-                break;
-            default:
-                break;
-        }
+        Openable openable = (Openable) block.getBlockData();
+        openable.setOpen(!openable.isOpen());
+        block.setBlockData(openable);
     }
 
     @EventHandler
@@ -135,18 +130,60 @@ public class SettingsInteractListener implements Listener {
             return;
         }
 
-        Player player = event.getPlayer();
         Action action = event.getAction();
-
-        Settings settings = settingsManager.getSettings(player);
-        if (settings.isSlabBreaking() && action == Action.LEFT_CLICK_BLOCK) {
-            customBlocks.modifySlab(event);
+        if (action != Action.LEFT_CLICK_BLOCK) {
+            return;
         }
+
+        Player player = event.getPlayer();
+        Settings settings = settingsManager.getSettings(player);
+        if (!settings.isSlabBreaking()) {
+            return;
+        }
+
+        Block block = event.getClickedBlock();
+        if (block == null || !(block.getBlockData() instanceof Slab slab) || slab.getType() != Slab.Type.DOUBLE) {
+            return;
+        }
+
+        event.setCancelled(true);
+
+        if (isTopHalf(player)) {
+            slab.setType(Slab.Type.BOTTOM);
+        } else {
+            slab.setType(Slab.Type.TOP);
+        }
+
+        block.setBlockData(slab);
+    }
+
+    /**
+     * Determines if the player's ray trace hit position is on the top half of a block.
+     *
+     * @param player The {@link Player} to check.
+     * @return {@code true} if the player's hit position is on the top half of a block, {@code false} otherwise.
+     */
+    public boolean isTopHalf(Player player) {
+        RayTraceResult result = player.rayTraceBlocks(6);
+        if (result == null) {
+            return false;
+        }
+        return Math.abs(result.getHitPosition().getY() % 1) < 0.5;
     }
 
     @EventHandler
     public void managePlacePlantsSetting(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || !isValid(event)) {
+        if (!isValid(event)) {
+            return;
+        }
+
+        Block block = event.getClickedBlock();
+        if (block == null || event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
+
+        Settings settings = settingsManager.getSettings(event.getPlayer());
+        if (!settings.isPlacePlants()) {
             return;
         }
 
@@ -161,17 +198,32 @@ public class SettingsInteractListener implements Listener {
                 && !XTag.ALIVE_CORAL_PLANTS.isTagged(xMaterial)
                 && !XTag.DEAD_CORAL_PLANTS.isTagged(xMaterial)
                 && !XTag.SAPLINGS.isTagged(xMaterial)
-                && !OTHER_PLANTS.contains(xMaterial)) {
-            return;
-        }
-
-        Settings settings = settingsManager.getSettings(event.getPlayer());
-        if (!settings.isPlacePlants()) {
+                && !OTHER_PLANTS.contains(xMaterial)
+        ) {
             return;
         }
 
         event.setCancelled(true);
-        customBlocks.setPlant(event);
+        Block adjacent = block.getRelative(event.getBlockFace());
+
+        switch (xMaterial) {
+            case SWEET_BERRIES:
+                adjacent.setType(XMaterial.SWEET_BERRY_BUSH.get());
+                break;
+            case VINE:
+                BlockFace toPlace = event.getBlockFace().getOppositeFace();
+                if (toPlace == BlockFace.DOWN) { // Cannot place vines facing down
+                    break;
+                }
+                adjacent.setType(xMaterial.get());
+                MultipleFacing multipleFacing = (MultipleFacing) adjacent.getBlockData();
+                Arrays.stream(DirectionUtil.BLOCK_SIDES).forEach(blockFace -> multipleFacing.setFace(blockFace, blockFace == toPlace));
+                adjacent.setBlockData(multipleFacing);
+                break;
+            default:
+                adjacent.setType(xMaterial.get());
+                break;
+        }
     }
 
     @EventHandler
@@ -214,37 +266,29 @@ public class SettingsInteractListener implements Listener {
         boolean isHangingSign = XTag.HANGING_SIGNS.isTagged(xMaterial);
 
         switch (blockFace) {
-            case UP:
+            case UP -> {
                 if (isHangingSign) {
                     return;
                 }
-                if (MinecraftVersion.getCurrent().isLowerThan(MinecraftVersion.AQUATIC_13)) {
-                    material = Material.getMaterial("SIGN_POST") != null ? Material.valueOf("SIGN_POST") : material;
-                }
                 adjacent.setType(material);
-                customBlocks.rotateBlock(adjacent, player, DirectionUtil.getPlayerDirection(player).getOppositeFace());
-                break;
-            case DOWN:
+                customBlockManager.rotateBlock(adjacent, DirectionUtil.getPlayerDirection(player).getOppositeFace());
+            }
+            case DOWN -> {
                 if (!isHangingSign) {
                     return;
                 }
                 adjacent.setType(material);
-                customBlocks.rotateBlock(adjacent, player, getHangingSignDirection(event));
-                break;
-            case NORTH:
-            case EAST:
-            case SOUTH:
-            case WEST:
+                customBlockManager.rotateBlock(adjacent, getHangingSignDirection(event));
+            }
+            case NORTH, EAST, SOUTH, WEST -> {
                 String woodType = xMaterial.name()
                         .replace("_HANGING", "") // Replace hanging if present
                         .replace("_SIGN", ""); // Get wood type
                 String block = isHangingSign ? "_WALL_HANGING_SIGN" : "_WALL_SIGN";
                 BlockFace facing = isHangingSign ? getHangingSignDirection(event) : blockFace;
                 XMaterial.matchXMaterial(woodType + block).ifPresent(value -> adjacent.setType(value.get()));
-                customBlocks.rotateBlock(adjacent, player, facing);
-                break;
-            default:
-                break;
+                customBlockManager.rotateBlock(adjacent, facing);
+            }
         }
     }
 
@@ -281,7 +325,7 @@ public class SettingsInteractListener implements Listener {
 
         Material material = itemStack.getType();
         XMaterial xMaterial = XMaterial.matchXMaterial(material);
-        if (xMaterial == configValues.getWorldEditWand()) {
+        if (xMaterial == Config.Settings.Builder.worldEditWand) {
             return;
         }
 
@@ -290,18 +334,9 @@ public class SettingsInteractListener implements Listener {
         event.setUseItemInHand(Event.Result.DENY);
         event.setUseInteractedBlock(Event.Result.DENY);
 
-        boolean preFlattening = MinecraftVersion.getCurrent().isLowerThan(MinecraftVersion.AQUATIC_13);
-        if (preFlattening && XTag.isItem(xMaterial)) {
-            material = Material.valueOf(material.toString().replace("_ITEM", ""));
-        }
-
         if (XTag.SIGNS.isTagged(xMaterial) && event.getBlockFace() != BlockFace.UP) {
-            if (preFlattening) {
-                material = Material.valueOf("WALL_SIGN");
-            } else {
-                String[] splitMaterial = material.toString().split("_");
-                material = Material.valueOf(splitMaterial[0] + "_WALL_SIGN");
-            }
+            String[] splitMaterial = material.toString().split("_");
+            material = Material.valueOf(splitMaterial[0] + "_WALL_SIGN");
         }
 
         if (!material.isBlock()) {
@@ -312,18 +347,23 @@ public class SettingsInteractListener implements Listener {
         adjacent.setType(material);
         XBlock.setColor(adjacent, DyeColor.getByWoolData((byte) itemStack.getDurability()));
 
-        customBlocks.rotateBlock(adjacent, player, DirectionUtil.getBlockDirection(player, false));
+        customBlockManager.rotateBlock(adjacent, DirectionUtil.getBlockDirection(player, false));
 
-        BlockPlaceEvent blockPlaceEvent = new BlockPlaceEvent(adjacent, adjacent.getState(), block, itemStack, player, true);
+        EquipmentSlot hand = event.getHand();
+        if (hand == null) {
+            hand = EquipmentSlot.HAND;
+        }
+
+        BlockPlaceEvent blockPlaceEvent = new BlockPlaceEvent(adjacent, adjacent.getState(), block, itemStack, player, true, hand);
         Bukkit.getServer().getPluginManager().callEvent(blockPlaceEvent);
     }
 
     /**
      * Not every player can always interact with the {@link BuildWorld} they are in.
      * <p>
-     * Reasons an interaction could be cancelled:
+     * Reasons an interaction could be canceled:
      * <ul>
-     *   <li>The world has its {@link WorldStatus} set to archived</li>
+     *   <li>The world has its {@link BuildWorldStatus} set to archive</li>
      *   <li>The world has a setting enabled which disallows certain events</li>
      *   <li>The world only allows {@link Builder}s to build and the player is not such a builder</li>
      * </ul>
@@ -344,17 +384,17 @@ public class SettingsInteractListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        if (worldManager.canBypassBuildRestriction(player)) {
-            return true;
-        }
-
-        BuildWorld buildWorld = worldManager.getBuildWorld(player.getWorld().getName());
+        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld().getName());
         if (buildWorld == null) {
             return true;
         }
 
+        if (buildWorld.getPermissions().canBypassBuildRestriction(player)) {
+            return true;
+        }
+
         WorldData worldData = buildWorld.getData();
-        if (worldData.status().get() == WorldStatus.ARCHIVE && !player.hasPermission("buildsystem.bypass.archive")) {
+        if (worldData.status().get() == BuildWorldStatus.ARCHIVE && !player.hasPermission("buildsystem.bypass.archive")) {
             return false;
         }
 
@@ -362,17 +402,18 @@ public class SettingsInteractListener implements Listener {
             return false;
         }
 
+        Builders builders = buildWorld.getBuilders();
         if (buildWorld.getData().buildersEnabled().get()
-                && !buildWorld.isBuilder(player)
+                && !builders.isBuilder(player)
                 && !player.hasPermission("buildsystem.bypass.builders")) {
-            return buildWorld.isCreator(player);
+            return builders.isCreator(player);
         }
 
         return true;
     }
 
     /**
-     * Stop {@link Player} from opening {@link Inventory} because the event should be cancelled as it was fired due to an interaction caused in
+     * Stop {@link Player} from opening {@link Inventory} because the event should be canceled as it was fired due to an interaction caused in
      * {@link SettingsInteractListener#manageDisabledInteractSetting}
      */
     @EventHandler
