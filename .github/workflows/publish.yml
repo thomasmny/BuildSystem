@@ -44,8 +44,8 @@ jobs:
 
           if [[ "$PROJECT_VERSION" == *-SNAPSHOT ]]; then
             echo "Publishing SNAPSHOT version to Sonatype..."
-            ./gradlew publishAllPublicationsToSonatypeRepository --no-daemon
+            ./gradlew publishAllPublicationsToSonatypeRepository --no-daemon --no-configuration-cache
           else
             echo "Publishing RELEASE version to Sonatype and closing staging repository..."
-            ./gradlew publishAllPublicationsToSonatypeRepository closeAndReleaseSonatypeStagingRepository --no-daemon
+            ./gradlew publishAllPublicationsToSonatypeRepository closeAndReleaseSonatypeStagingRepository --no-daemon --no-configuration-cache
           fi
