@@ -114,6 +114,8 @@ public class BuildSystemPlugin extends JavaPlugin {
     public static final int METRICS_ID = 7427;
     public static final String ADMIN_PERMISSION = "buildsystem.admin";
 
+    private static BuildSystemPlugin instance;
+
     private ArmorStandManager armorStandManager;
     private CustomBlockManager customBlockManager;
     private InventoryManager inventoryManager;
@@ -132,6 +134,8 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     @Override
     public void onLoad() {
+        instance = this;
+
         new ConfigMigrationManager(this).migrate();
         this.getConfig().options().copyDefaults(true);
         this.saveConfig();
@@ -196,6 +200,15 @@ public class BuildSystemPlugin extends JavaPlugin {
         Bukkit.getConsoleSender().sendMessage(
                 "%sBuildSystem » Plugin %sdisabled%s!".formatted(ChatColor.RESET, ChatColor.RED, ChatColor.RESET)
         );
+
+        instance = null;
+    }
+
+    public static BuildSystemPlugin get() {
+        if (instance == null) {
+            throw new IllegalStateException("BuildSystemPlugin instance is not initialized. Make sure the plugin is enabled.");
+        }
+        return instance;
     }
 
     private void initClasses() {
