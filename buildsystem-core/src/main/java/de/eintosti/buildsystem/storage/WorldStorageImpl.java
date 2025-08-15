@@ -198,17 +198,21 @@ public abstract class WorldStorageImpl implements WorldStorage {
      * Must be called after all folders and worlds have been loaded.
      */
     private void assignWorldsToFolders() {
-        worldService.getFolderStorage().getFolders().forEach(folder ->
-                folder.getWorldUUIDs().stream()
-                        .map(worldUUID -> {
-                            BuildWorld buildWorld = getBuildWorld(worldUUID);
-                            if (buildWorld == null) {
-                                logger.warning("World with UUID " + worldUUID + " does not exist.");
-                            }
-                            return buildWorld;
-                        })
-                        .filter(Objects::nonNull)
-                        .forEach(buildWorld -> buildWorld.setFolder(folder))
+        worldService.getFolderStorage().getFolders().forEach(folder -> {
+                    List<UUID> invalidWorlds = new ArrayList<>();
+                    folder.getWorldUUIDs().stream()
+                            .map(worldUUID -> {
+                                BuildWorld buildWorld = getBuildWorld(worldUUID);
+                                if (buildWorld == null) {
+                                    invalidWorlds.add(worldUUID);
+                                    logger.warning("World with UUID " + worldUUID + " does not exist. Removing from folder: " + folder.getName());
+                                }
+                                return buildWorld;
+                            })
+                            .filter(Objects::nonNull)
+                            .forEach(buildWorld -> buildWorld.setFolder(folder));
+                    invalidWorlds.forEach(folder::removeWorld);
+                }
         );
     }
 

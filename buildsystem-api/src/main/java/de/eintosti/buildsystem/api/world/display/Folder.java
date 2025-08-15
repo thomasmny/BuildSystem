@@ -90,6 +90,14 @@ public interface Folder extends Displayable {
     boolean containsWorld(BuildWorld buildWorld);
 
     /**
+     * Checks if this folder contains the {@link BuildWorld} with the specified UUID.
+     *
+     * @param uuid The unique identifier of the {@link BuildWorld} to check for
+     * @return {@code true} if the folder contains the world, {@code false} otherwise
+     */
+    boolean containsWorld(UUID uuid);
+
+    /**
      * Adds a {@link BuildWorld} to this folder.
      *
      * @param buildWorld The {@link BuildWorld} to add
@@ -102,6 +110,13 @@ public interface Folder extends Displayable {
      * @param buildWorld The {@link BuildWorld} to remove
      */
     void removeWorld(BuildWorld buildWorld);
+
+    /**
+     * Removes a {@link BuildWorld} with the specified UUID from this folder.
+     *
+     * @param uuid The unique identifier of the {@link BuildWorld} to remove
+     */
+    void removeWorld(UUID uuid);
 
     /**
      * Returns an unmodifiable list of all immediate subfolders contained within this folder.
