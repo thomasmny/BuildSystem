@@ -1,0 +1,127 @@
+/*
+ * Copyright (c) 2018-2025, Thomas Meaney
+ * Copyright (c) contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+package de.eintosti.buildsystem.player.settings;
+
+import com.cryptomorin.xseries.XSound;
+import com.cryptomorin.xseries.profiles.objects.Profileable;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
+import de.eintosti.buildsystem.util.inventory.InventoryHandler;
+import de.eintosti.buildsystem.util.inventory.InventoryManager;
+import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import java.util.Map;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
+public class SpeedInventory implements InventoryHandler {
+
+    private final InventoryManager inventoryManager;
+
+    public SpeedInventory(BuildSystemPlugin plugin) {
+        this.inventoryManager = plugin.getInventoryManager();
+    }
+
+    public void openInventory(Player player) {
+        Inventory inventory = getInventory(player);
+        this.inventoryManager.registerInventoryHandler(inventory, this);
+        player.openInventory(inventory);
+    }
+
+    private Inventory getInventory(Player player) {
+        Inventory inventory = new SpeedInventoryHolder(player).getInventory();
+        fillGuiWithGlass(player, inventory);
+
+        inventory.setItem(11, InventoryUtils.createSkull(Messages.getString("speed_1", player), Profileable.detect("71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530")));
+        inventory.setItem(12, InventoryUtils.createSkull(Messages.getString("speed_2", player), Profileable.detect("4cd9eeee883468881d83848a46bf3012485c23f75753b8fbe8487341419847")));
+        inventory.setItem(13, InventoryUtils.createSkull(Messages.getString("speed_3", player), Profileable.detect("1d4eae13933860a6df5e8e955693b95a8c3b15c36b8b587532ac0996bc37e5")));
+        inventory.setItem(14, InventoryUtils.createSkull(Messages.getString("speed_4", player), Profileable.detect("d2e78fb22424232dc27b81fbcb47fd24c1acf76098753f2d9c28598287db5")));
+        inventory.setItem(15, InventoryUtils.createSkull(Messages.getString("speed_5", player), Profileable.detect("6d57e3bc88a65730e31a14e3f41e038a5ecf0891a6c243643b8e5476ae2")));
+
+        return inventory;
+    }
+
+    private void fillGuiWithGlass(Player player, Inventory inventory) {
+        for (int i = 0; i <= 26; i++) {
+            InventoryUtils.addGlassPane(player, inventory, i);
+        }
+    }
+
+    @Override
+    public void onClick(InventoryClickEvent event) {
+        if (!(event.getInventory().getHolder() instanceof SpeedInventoryHolder)) {
+            return;
+        }
+
+        ItemStack itemStack = event.getCurrentItem();
+        if (itemStack == null) {
+            return;
+        }
+
+        event.setCancelled(true);
+        Player player = (Player) event.getWhoClicked();
+        if (!player.hasPermission("buildsystem.speed")) {
+            player.closeInventory();
+            return;
+        }
+
+        switch (event.getSlot()) {
+            case 11:
+                setSpeed(player, 0.2f, 1);
+                break;
+            case 12:
+                setSpeed(player, 0.4f, 2);
+                break;
+            case 13:
+                setSpeed(player, 0.6f, 3);
+                break;
+            case 14:
+                setSpeed(player, 0.8f, 4);
+                break;
+            case 15:
+                setSpeed(player, 1.0f, 5);
+                break;
+            default:
+                return;
+        }
+
+        XSound.ENTITY_CHICKEN_EGG.play(player);
+        player.closeInventory();
+    }
+
+    private void setSpeed(Player player, float speed, int num) {
+        if (player.isFlying()) {
+            player.setFlySpeed(speed - 0.1f);
+            Messages.sendMessage(player, "speed_set_flying", Map.entry("%speed%", num));
+        } else {
+            player.setWalkSpeed(speed);
+            Messages.sendMessage(player, "speed_set_walking", Map.entry("%speed%", num));
+        }
+    }
+
+    private static class SpeedInventoryHolder extends BuildSystemHolder {
+
+        public SpeedInventoryHolder(Player player) {
+            super(27, Messages.getString("speed_title", player));
+        }
+    }
+}

@@ -23,6 +23,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.util.ServerModeChecker.ServerMode;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -34,11 +35,14 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
 import org.bukkit.Bukkit;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @SuppressWarnings("deprecation")
-public class UUIDFetcher {
+@NullMarked
+public final class UUIDFetcher {
 
     private static final String UUID_URL = "https://api.mojang.com/users/profiles/minecraft/%s";
     private static final String NAME_URL = "https://api.mojang.com/user/profiles/%s/names";
@@ -66,7 +70,7 @@ public class UUIDFetcher {
         }
 
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(String.format(Locale.ROOT, UUID_URL, name)).openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URL(UUID_URL.formatted(name)).openConnection();
             connection.setReadTimeout(5000);
 
             JsonObject jsonObject;
@@ -81,7 +85,7 @@ public class UUIDFetcher {
             cacheUser(uuid, name);
             return uuid;
         } catch (Exception e) {
-            e.printStackTrace();
+            BuildSystemPlugin.get().getLogger().log(Level.SEVERE, "Failed to fetch UUID for player: " + name, e);
         }
 
         return null;
@@ -108,7 +112,7 @@ public class UUIDFetcher {
         }
 
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(String.format(Locale.ROOT, NAME_URL, UUIDTypeAdapter.fromUUID(uuid))).openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URL(NAME_URL.formatted(UUIDTypeAdapter.fromUUID(uuid))).openConnection();
             connection.setReadTimeout(5000);
 
             JsonArray nameHistory;
@@ -124,7 +128,7 @@ public class UUIDFetcher {
             cacheUser(uuid, name);
             return name;
         } catch (Exception e) {
-            e.printStackTrace();
+            BuildSystemPlugin.get().getLogger().log(Level.SEVERE, "Failed to fetch name for UUID: " + uuid, e);
         }
 
         return null;

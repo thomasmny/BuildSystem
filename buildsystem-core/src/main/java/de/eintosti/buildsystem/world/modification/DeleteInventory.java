@@ -19,91 +19,93 @@ package de.eintosti.buildsystem.world.modification;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.BuildWorld;
-import java.util.AbstractMap;
-import org.bukkit.Bukkit;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
+import de.eintosti.buildsystem.util.inventory.InventoryHandler;
+import de.eintosti.buildsystem.util.inventory.InventoryManager;
+import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import java.util.Map;
+import java.util.stream.IntStream;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
+import org.jspecify.annotations.NullMarked;
 
-public class DeleteInventory implements Listener {
+@NullMarked
+public class DeleteInventory implements InventoryHandler {
 
-    private final BuildSystem plugin;
-    private final InventoryUtils inventoryUtils;
+    private final BuildSystemPlugin plugin;
+    private final InventoryManager inventoryManager;
 
-    public DeleteInventory(BuildSystem plugin) {
+    public DeleteInventory(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.inventoryUtils = plugin.getInventoryUtil();
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        this.inventoryManager = plugin.getInventoryManager();
+    }
+
+    public void openInventory(Player player, BuildWorld buildWorld) {
+        Inventory inventory = getInventory(player, buildWorld);
+        this.inventoryManager.registerInventoryHandler(inventory, this);
+        player.openInventory(inventory);
     }
 
     private Inventory getInventory(Player player, BuildWorld buildWorld) {
-        Inventory inventory = Bukkit.createInventory(null, 27, Messages.getString("delete_title", player));
+        Inventory inventory = new DeleteInventoryHolder(buildWorld, player).getInventory();
         fillGuiWithGlass(inventory);
 
-        inventoryUtils.addItemStack(inventory, 11, XMaterial.LIME_DYE,
-                Messages.getString("delete_world_confirm", player)
+        inventory.setItem(11, InventoryUtils.createItem(XMaterial.LIME_DYE,
+                Messages.getString("delete_world_confirm", player))
         );
-        inventoryUtils.addItemStack(inventory, 13, XMaterial.FILLED_MAP,
-                Messages.getString("delete_world_name", player, new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName())),
+        inventory.setItem(13, InventoryUtils.createItem(XMaterial.FILLED_MAP,
+                Messages.getString("delete_world_name", player, Map.entry("%world%", buildWorld.getName())),
                 Messages.getStringList("delete_world_name_lore", player)
-        );
-        inventoryUtils.addItemStack(inventory, 15, XMaterial.RED_DYE,
-                Messages.getString("delete_world_cancel", player)
+        ));
+        inventory.setItem(15, InventoryUtils.createItem(XMaterial.RED_DYE,
+                Messages.getString("delete_world_cancel", player))
         );
 
         return inventory;
     }
 
-    public void openInventory(Player player, BuildWorld buildWorld) {
-        player.openInventory(getInventory(player, buildWorld));
-    }
-
     private void fillGuiWithGlass(Inventory inventory) {
-        final int[] greenSlots = new int[]{0, 1, 2, 3, 9, 10, 12, 18, 19, 20, 21};
-        final int[] blackSlots = new int[]{4, 22};
-        final int[] redSlots = new int[]{5, 6, 7, 8, 14, 16, 17, 23, 24, 25, 26};
+        final int[] greenSlots = {0, 1, 2, 3, 9, 10, 12, 18, 19, 20, 21};
+        final int[] blackSlots = {4, 22};
+        final int[] redSlots = {5, 6, 7, 8, 14, 16, 17, 23, 24, 25, 26};
 
-        for (int slot : greenSlots) {
-            inventoryUtils.addItemStack(inventory, slot, XMaterial.LIME_STAINED_GLASS_PANE, "§f");
+        IntStream.of(greenSlots).forEach(slot -> inventory.setItem(slot, InventoryUtils.createItem(XMaterial.LIME_STAINED_GLASS_PANE, "§f")));
+        IntStream.of(blackSlots).forEach(slot -> inventory.setItem(slot, InventoryUtils.createItem(XMaterial.BLACK_STAINED_GLASS_PANE, "§f")));
+        IntStream.of(redSlots).forEach(slot -> inventory.setItem(slot, InventoryUtils.createItem(XMaterial.RED_STAINED_GLASS_PANE, "§f")));
+    }
+
+    @Override
+    public void onClick(InventoryClickEvent event) {
+        if (!(event.getInventory().getHolder() instanceof DeleteInventoryHolder holder)) {
+            return;
         }
-        for (int slot : blackSlots) {
-            inventoryUtils.addItemStack(inventory, slot, XMaterial.BLACK_STAINED_GLASS_PANE, "§f");
-        }
-        for (int slot : redSlots) {
-            inventoryUtils.addItemStack(inventory, slot, XMaterial.RED_STAINED_GLASS_PANE, "§f");
+
+        event.setCancelled(true);
+        Player player = (Player) event.getWhoClicked();
+        BuildWorld buildWorld = holder.getBuildWorld();
+
+        switch (event.getSlot()) {
+            case 11 -> {
+                XSound.ENTITY_PLAYER_LEVELUP.play(player);
+                player.closeInventory();
+                plugin.getWorldService().deleteWorld(player, buildWorld);
+            }
+            case 15 -> {
+                XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
+                player.closeInventory();
+                Messages.sendMessage(player, "worlds_delete_canceled", Map.entry("%world%", buildWorld.getName()));
+            }
         }
     }
 
-    @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
-        if (!inventoryUtils.checkIfValidClick(event, "delete_title")) {
-            return;
-        }
+    private static class DeleteInventoryHolder extends BuildWorldHolder {
 
-        Player player = (Player) event.getWhoClicked();
-        BuildWorld buildWorld = plugin.getPlayerManager().getBuildPlayer(player).getCachedWorld();
-        if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_delete_error");
-            player.closeInventory();
-            return;
-        }
-
-        int slot = event.getSlot();
-        if (slot == 11) {
-            XSound.ENTITY_PLAYER_LEVELUP.play(player);
-            player.closeInventory();
-            plugin.getWorldManager().deleteWorld(player, buildWorld);
-        } else if (slot == 15) {
-            XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-            player.closeInventory();
-            Messages.sendMessage(player, "worlds_delete_canceled", new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()));
-
+        public DeleteInventoryHolder(BuildWorld buildWorld, Player player) {
+            super(buildWorld, 27, Messages.getString("delete_title", player));
         }
     }
 }

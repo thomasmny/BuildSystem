@@ -17,17 +17,19 @@
  */
 package de.eintosti.buildsystem.listener;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.SignChangeEvent;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class SignChangeListener implements Listener {
 
-    public SignChangeListener(BuildSystem plugin) {
+    public SignChangeListener(BuildSystemPlugin plugin) {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -40,10 +42,12 @@ public class SignChangeListener implements Listener {
 
         for (int i = 0; i < event.getLines().length; i++) {
             String line = event.getLine(i);
-            if (line != null) {
-                String coloredLine = ChatColor.translateAlternateColorCodes('&', ColorAPI.process(line));
-                event.setLine(i, coloredLine);
+            if (line == null) {
+                continue;
             }
+
+            String coloredLine = ChatColor.translateAlternateColorCodes('&', ColorAPI.process(line));
+            event.setLine(i, coloredLine);
         }
     }
 }

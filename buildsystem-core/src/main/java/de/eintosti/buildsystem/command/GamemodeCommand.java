@@ -17,35 +17,35 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import java.util.AbstractMap;
 import java.util.Locale;
+import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class GamemodeCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
-    public GamemodeCommand(BuildSystem plugin) {
+    public GamemodeCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         plugin.getCommand("gamemode").setExecutor(this);
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (!(sender instanceof Player player)) {
+            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
             return true;
         }
 
-        Player player = (Player) sender;
         if (args.length == 0) {
             sendUsageMessage(player);
             return true;
@@ -82,15 +82,9 @@ public class GamemodeCommand implements CommandExecutor {
 
     private void setGamemode(Player player, String[] args, GameMode gameMode, String gameModeName) {
         switch (args.length) {
-            case 1:
-                this.setPlayerGamemode(player, gameMode, gameModeName);
-                break;
-            case 2:
-                this.setTargetGamemode(player, args, gameMode, gameModeName);
-                break;
-            default:
-                this.sendUsageMessage(player);
-                break;
+            case 1 -> this.setPlayerGamemode(player, gameMode, gameModeName);
+            case 2 -> this.setTargetGamemode(player, args, gameMode, gameModeName);
+            default -> this.sendUsageMessage(player);
         }
     }
 
@@ -99,18 +93,18 @@ public class GamemodeCommand implements CommandExecutor {
     }
 
     private void setPlayerGamemode(Player player, GameMode gameMode, String gameModeName) {
-        if (!player.hasPermission(String.format("buildsystem.gamemode.%s", gameMode.name().toLowerCase(Locale.ROOT)))) {
-            plugin.sendPermissionMessage(player);
+        if (!player.hasPermission("buildsystem.gamemode.%s".formatted(gameMode.name().toLowerCase(Locale.ROOT)))) {
+            Messages.sendPermissionError(player);
             return;
         }
 
         player.setGameMode(gameMode);
-        Messages.sendMessage(player, "gamemode_set_self", new AbstractMap.SimpleEntry<>("%gamemode%", gameModeName));
+        Messages.sendMessage(player, "gamemode_set_self", Map.entry("%gamemode%", gameModeName));
     }
 
     private void setTargetGamemode(Player player, String[] args, GameMode gameMode, String gameModeName) {
-        if (!player.hasPermission(String.format("buildsystem.gamemode.%s.other", gameMode.name().toLowerCase(Locale.ROOT)))) {
-            plugin.sendPermissionMessage(player);
+        if (!player.hasPermission("buildsystem.gamemode.%s.other".formatted(gameMode.name().toLowerCase(Locale.ROOT)))) {
+            Messages.sendPermissionError(player);
             return;
         }
 
@@ -121,10 +115,10 @@ public class GamemodeCommand implements CommandExecutor {
         }
 
         target.setGameMode(gameMode);
-        Messages.sendMessage(target, "gamemode_set_self", new AbstractMap.SimpleEntry<>("%gamemode%", gameModeName));
+        Messages.sendMessage(target, "gamemode_set_self", Map.entry("%gamemode%", gameModeName));
         Messages.sendMessage(player, "gamemode_set_other",
-                new AbstractMap.SimpleEntry<>("%target%", target.getName()),
-                new AbstractMap.SimpleEntry<>("%gamemode%", gameModeName)
+                Map.entry("%target%", target.getName()),
+                Map.entry("%gamemode%", gameModeName)
         );
     }
 }

@@ -21,11 +21,12 @@ import java.util.List;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerEvent;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
- * Thrown when a player's inventory is cleared.
+ * Called when a player's inventory is cleared.
  */
+@NullMarked
 public class PlayerInventoryClearEvent extends PlayerEvent {
 
     private static final HandlerList HANDLERS = new HandlerList();
@@ -41,11 +42,15 @@ public class PlayerInventoryClearEvent extends PlayerEvent {
         return HANDLERS;
     }
 
+    /**
+     * Gets all slots containing a navigator item in a player's inventory.
+     *
+     * @return A list of slot numbers containing navigator items
+     */
     public List<Integer> getNavigatorSlots() {
         return navigatorSlots;
     }
 
-    @NotNull
     @Override
     public HandlerList getHandlers() {
         return HANDLERS;

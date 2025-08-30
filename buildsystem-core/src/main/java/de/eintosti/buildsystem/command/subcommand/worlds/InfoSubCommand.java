@@ -17,34 +17,36 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builder;
+import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.tabcomplete.WorldsTabComplete;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.Builder;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldData;
-import java.util.AbstractMap;
+import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
+import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
+import java.util.Map;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class InfoSubCommand implements SubCommand {
 
-    private final BuildSystem plugin;
-    private final String worldName;
+    @Nullable
+    private final BuildWorld buildWorld;
 
-    public InfoSubCommand(BuildSystem plugin, String worldName) {
-        this.plugin = plugin;
-        this.worldName = worldName;
+    public InfoSubCommand(BuildSystemPlugin plugin, String worldName) {
+        this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
     }
 
     @Override
     public void execute(Player player, String[] args) {
-        WorldManager worldManager = plugin.getWorldManager();
-        if (!worldManager.isPermitted(player, getArgument().getPermission(), worldName)) {
-            plugin.sendPermissionMessage(player);
+        if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
+            Messages.sendPermissionError(player);
             return;
         }
 
@@ -53,41 +55,42 @@ public class InfoSubCommand implements SubCommand {
             return;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
         if (buildWorld == null) {
             Messages.sendMessage(player, "worlds_info_unknown_world");
             return;
         }
 
         //TODO: Print information about the custom generator?
+        Builders builders = buildWorld.getBuilders();
         WorldData worldData = buildWorld.getData();
         Messages.sendMessage(player, "world_info",
-                new AbstractMap.SimpleEntry<>("%world%", buildWorld.getName()),
-                new AbstractMap.SimpleEntry<>("%creator%", getCreator(buildWorld)),
-                new AbstractMap.SimpleEntry<>("%item%", worldData.material().get().name()),
-                new AbstractMap.SimpleEntry<>("%type%", buildWorld.getType().getName(player)),
-                new AbstractMap.SimpleEntry<>("%private%", worldData.privateWorld().get()),
-                new AbstractMap.SimpleEntry<>("%builders_enabled%", worldData.buildersEnabled().get()),
-                new AbstractMap.SimpleEntry<>("%builders%", buildWorld.getBuildersInfo(player)),
-                new AbstractMap.SimpleEntry<>("%block_breaking%", worldData.blockBreaking().get()),
-                new AbstractMap.SimpleEntry<>("%block_placement%", worldData.blockPlacement().get()),
-                new AbstractMap.SimpleEntry<>("%status%", worldData.status().get().getName(player)),
-                new AbstractMap.SimpleEntry<>("%project%", worldData.project().get()),
-                new AbstractMap.SimpleEntry<>("%permission%", worldData.permission().get()),
-                new AbstractMap.SimpleEntry<>("%time%", buildWorld.getWorldTime()),
-                new AbstractMap.SimpleEntry<>("%creation%", Messages.formatDate(buildWorld.getCreationDate())),
-                new AbstractMap.SimpleEntry<>("%physics%", worldData.physics().get()),
-                new AbstractMap.SimpleEntry<>("%explosions%", worldData.explosions().get()),
-                new AbstractMap.SimpleEntry<>("%mobai%", worldData.mobAi().get()),
-                new AbstractMap.SimpleEntry<>("%custom_spawn%", getCustomSpawn(buildWorld)),
-                new AbstractMap.SimpleEntry<>("%lastedited%", Messages.formatDate(worldData.lastEdited().get())),
-                new AbstractMap.SimpleEntry<>("%lastloaded%", Messages.formatDate(worldData.lastLoaded().get())),
-                new AbstractMap.SimpleEntry<>("%lastunloaded%", Messages.formatDate(worldData.lastUnloaded().get()))
+                Map.entry("%world%", buildWorld.getName()),
+                Map.entry("%uuid%", buildWorld.getUniqueId().toString()),
+                Map.entry("%creator%", getCreator(builders)),
+                Map.entry("%item%", worldData.material().get().name()),
+                Map.entry("%type%", Messages.getString(Messages.getMessageKey(buildWorld.getType()), player)),
+                Map.entry("%private%", worldData.privateWorld().get()),
+                Map.entry("%builders_enabled%", worldData.buildersEnabled().get()),
+                Map.entry("%builders%", builders.asPlaceholder(player)),
+                Map.entry("%block_breaking%", worldData.blockBreaking().get()),
+                Map.entry("%block_placement%", worldData.blockPlacement().get()),
+                Map.entry("%status%", Messages.getString(Messages.getMessageKey(worldData.status().get()), player)),
+                Map.entry("%project%", worldData.project().get()),
+                Map.entry("%permission%", worldData.permission().get()),
+                Map.entry("%time%", buildWorld.getWorldTime()),
+                Map.entry("%creation%", Messages.formatDate(buildWorld.getCreation())),
+                Map.entry("%physics%", worldData.physics().get()),
+                Map.entry("%explosions%", worldData.explosions().get()),
+                Map.entry("%mobai%", worldData.mobAi().get()),
+                Map.entry("%custom_spawn%", getCustomSpawn(buildWorld)),
+                Map.entry("%lastedited%", Messages.formatDate(worldData.lastEdited().get())),
+                Map.entry("%lastloaded%", Messages.formatDate(worldData.lastLoaded().get())),
+                Map.entry("%lastunloaded%", Messages.formatDate(worldData.lastUnloaded().get()))
         );
     }
 
-    private String getCreator(BuildWorld buildWorld) {
-        Builder creator = buildWorld.getCreator();
+    private String getCreator(Builders builders) {
+        Builder creator = builders.getCreator();
         if (creator == null) {
             return "-";
         }
@@ -110,6 +113,6 @@ public class InfoSubCommand implements SubCommand {
 
     @Override
     public Argument getArgument() {
-        return WorldsTabComplete.WorldsArgument.INFO;
+        return WorldsArgument.INFO;
     }
 }

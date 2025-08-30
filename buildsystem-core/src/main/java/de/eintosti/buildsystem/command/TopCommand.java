@@ -18,38 +18,36 @@
 package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.world.util.WorldTeleporterImpl;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class TopCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
-    private final WorldManager worldManager;
+    private final BuildSystemPlugin plugin;
 
-    public TopCommand(BuildSystem plugin) {
+    public TopCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.worldManager = plugin.getWorldManager();
         plugin.getCommand("top").setExecutor(this);
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (!(sender instanceof Player player)) {
+            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
             return true;
         }
 
-        Player player = (Player) sender;
         if (!player.hasPermission("buildsystem.top")) {
-            plugin.sendPermissionMessage(player);
+            Messages.sendPermissionError(player);
             return true;
         }
 
@@ -68,8 +66,7 @@ public class TopCommand implements CommandExecutor {
                 .getHighestBlockAt(playerLocation.getBlockX(), playerLocation.getBlockZ())
                 .getLocation();
 
-        boolean failed = !worldManager.isSafeLocation(blockLocation)
-                || blockLocation.getBlock().getY() < playerLocation.getBlock().getY();
+        boolean failed = !WorldTeleporterImpl.isSafeLocation(blockLocation) || blockLocation.getBlock().getY() < playerLocation.getBlock().getY();
         if (failed) {
             Messages.sendMessage(player, "top_failed");
             return;

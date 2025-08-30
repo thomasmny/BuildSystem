@@ -18,40 +18,47 @@
 package de.eintosti.buildsystem.world;
 
 import com.cryptomorin.xseries.XSound;
-import com.cryptomorin.xseries.messages.Titles;
-import de.eintosti.buildsystem.BuildSystem;
-import de.eintosti.buildsystem.config.SpawnConfig;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.storage.yaml.YamlSpawnStorage;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class SpawnManager {
 
-    private final BuildSystem plugin;
-    private final WorldManager worldManager;
-    private final SpawnConfig spawnConfig;
+    private final BuildSystemPlugin plugin;
+    private final WorldStorage worldStorage;
+    private final YamlSpawnStorage spawnStorage;
 
+    @Nullable
     private String spawnName;
+    @Nullable
     private Location spawn;
 
-    public SpawnManager(BuildSystem plugin) {
+    public SpawnManager(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.worldManager = plugin.getWorldManager();
-        this.spawnConfig = new SpawnConfig(plugin);
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
+        this.spawnStorage = new YamlSpawnStorage(plugin);
+        load();
     }
 
     public boolean teleport(Player player) {
-        if (!spawnExists()) {
+        if (spawn == null || spawnName == null) {
             return false;
         }
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(spawnName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(spawnName);
         if (buildWorld != null) {
             if (!buildWorld.isLoaded()) {
-                buildWorld.load(player);
+                buildWorld.getLoader().loadForPlayer(player);
             }
         }
 
@@ -62,7 +69,7 @@ public class SpawnManager {
                         return;
                     }
                     XSound.ENTITY_ZOMBIE_INFECT.play(player);
-                    Titles.clearTitle(player);
+                    player.resetTitle();
                 });
         return true;
     }
@@ -71,11 +78,16 @@ public class SpawnManager {
         return spawn != null;
     }
 
+    @Nullable
     public Location getSpawn() {
         return spawn;
     }
 
+    @Nullable
     public World getSpawnWorld() {
+        if (this.spawn == null) {
+            return null;
+        }
         return spawn.getWorld();
     }
 
@@ -89,14 +101,13 @@ public class SpawnManager {
     }
 
     public void save() {
-        spawnConfig.saveSpawn(spawn);
+        spawnStorage.saveSpawn(spawn);
     }
 
-    public void load() {
-        FileConfiguration configuration = spawnConfig.getFile();
+    private void load() {
+        FileConfiguration configuration = spawnStorage.getFile();
         String string = configuration.getString("spawn");
-
-        if (string == null || string.trim().equals("")) {
+        if (string == null || string.trim().isEmpty()) {
             return;
         }
 
@@ -112,14 +123,13 @@ public class SpawnManager {
         float yaw = Float.parseFloat(parts[4]);
         float pitch = Float.parseFloat(parts[5]);
 
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (buildWorld == null) {
-            plugin.getLogger()
-                    .warning("Could load spawn world \"" + worldName + "\". Please check logs for possible errors.");
+            plugin.getLogger().warning("Could load spawn world \"" + worldName + "\". Please check logs for possible errors.");
             return;
         }
 
-        buildWorld.load();
+        buildWorld.getLoader().load();
         this.spawnName = worldName;
         this.spawn = new Location(Bukkit.getWorld(worldName), x, y, z, yaw, pitch);
     }

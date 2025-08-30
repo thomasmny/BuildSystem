@@ -21,25 +21,30 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.inventory.XInventoryView;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.config.ConfigValues;
-import de.eintosti.buildsystem.navigator.ArmorStandManager;
-import de.eintosti.buildsystem.navigator.settings.NavigatorInventoryType;
-import de.eintosti.buildsystem.navigator.settings.NavigatorType;
-import de.eintosti.buildsystem.player.CachedValues;
-import de.eintosti.buildsystem.player.PlayerManager;
-import de.eintosti.buildsystem.settings.Settings;
-import de.eintosti.buildsystem.settings.SettingsManager;
-import de.eintosti.buildsystem.util.InventoryUtils;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
-import de.eintosti.buildsystem.world.data.WorldStatus;
+import de.eintosti.buildsystem.api.player.CachedValues;
+import de.eintosti.buildsystem.api.player.settings.Settings;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
+import de.eintosti.buildsystem.config.Config.Settings.Navigator;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.player.settings.SettingsManager;
+import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import de.eintosti.buildsystem.world.navigator.ArmorStandManager;
+import de.eintosti.buildsystem.world.navigator.inventory.ArchivedWorldsInventory;
+import de.eintosti.buildsystem.world.navigator.inventory.DisplayablesInventory;
+import de.eintosti.buildsystem.world.navigator.inventory.NavigatorInventory;
+import de.eintosti.buildsystem.world.navigator.inventory.PrivateWorldsInventory;
+import de.eintosti.buildsystem.world.navigator.inventory.PublicWorldsInventory;
+import java.util.Objects;
+import java.util.UUID;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
@@ -53,31 +58,27 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class NavigatorListener implements Listener {
 
     private static final double MAX_HEIGHT = 2.074631929397583;
     private static final double MIN_HEIGHT = 1.4409877061843872;
 
-    private final BuildSystem plugin;
-    private final ConfigValues configValues;
-
+    private final BuildSystemPlugin plugin;
     private final ArmorStandManager armorStandManager;
-    private final InventoryUtils inventoryUtils;
-    private final PlayerManager playerManager;
+    private final PlayerServiceImpl playerService;
     private final SettingsManager settingsManager;
-    private final WorldManager worldManager;
+    private final WorldStorage worldStorage;
 
-    public NavigatorListener(BuildSystem plugin) {
+    public NavigatorListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.configValues = plugin.getConfigValues();
-
         this.armorStandManager = plugin.getArmorStandManager();
-        this.inventoryUtils = plugin.getInventoryUtil();
-        this.playerManager = plugin.getPlayerManager();
+        this.playerService = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsManager();
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
 
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -99,65 +100,56 @@ public class NavigatorListener implements Listener {
             return;
         }
 
-        if (isCloseNavigatorItem(player, itemStack)) {
+        if (InventoryUtils.isNavigator(itemStack)) {
             event.setCancelled(true);
-            playerManager.closeNavigator(player);
-            return;
+            if (!player.hasPermission("buildsystem.navigator.item")) {
+                Messages.sendPermissionError(player);
+                return;
+            }
+            openNavigator(player);
+        } else if (isCloseNavigatorItem(player, itemStack)) {
+            event.setCancelled(true);
+            playerService.closeNewNavigator(player);
         }
-
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null || !itemMeta.hasDisplayName()) {
-            return;
-        }
-
-        XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-        if (xMaterial != configValues.getNavigatorItem()
-                || !itemMeta.getDisplayName().equals(Messages.getString("navigator_item", player))) {
-            return;
-        }
-
-        if (!player.hasPermission("buildsystem.navigator.item")) {
-            plugin.sendPermissionMessage(player);
-            return;
-        }
-
-        event.setCancelled(true);
-        openNavigator(player);
     }
 
     private void openNavigator(Player player) {
         Settings settings = settingsManager.getSettings(player);
-        if (settings.getNavigatorType() == NavigatorType.OLD) {
-            plugin.getNavigatorInventory().openInventory(player);
-            XSound.BLOCK_CHEST_OPEN.play(player);
-            return;
+        switch (settings.getNavigatorType()) {
+            case OLD -> {
+                new NavigatorInventory(plugin).openInventory(player);
+                XSound.BLOCK_CHEST_OPEN.play(player);
+            }
+            case NEW -> {
+                if (playerService.getOpenNavigator().contains(player)) {
+                    Messages.sendMessage(player, "worlds_navigator_open");
+                    return;
+                }
+
+                summonNewNavigator(player);
+                String findItemName = Messages.getString("navigator_item", player);
+                ItemStack replaceItem = InventoryUtils.createItem(XMaterial.BARRIER, Messages.getString("barrier_item", player));
+                InventoryUtils.replaceItem(player, findItemName, Navigator.item, replaceItem);
+            }
         }
-
-        // NEW
-        if (playerManager.getOpenNavigator().contains(player)) {
-            Messages.sendMessage(player, "worlds_navigator_open");
-            return;
-        }
-
-        summonNewNavigator(player);
-
-        String findItemName = Messages.getString("navigator_item", player);
-        ItemStack replaceItem = inventoryUtils.getItemStack(XMaterial.BARRIER, Messages.getString("barrier_item", player));
-        inventoryUtils.replaceItem(player, findItemName, configValues.getNavigatorItem(), replaceItem);
     }
 
     private void summonNewNavigator(Player player) {
-        CachedValues cachedValues = playerManager.getBuildPlayer(player).getCachedValues();
+        CachedValues cachedValues = playerService.getPlayerStorage().getBuildPlayer(player).getCachedValues();
         cachedValues.saveWalkSpeed(player.getWalkSpeed());
         cachedValues.saveFlySpeed(player.getFlySpeed());
 
-        player.setWalkSpeed(0);
-        player.setFlySpeed(0);
-        player.addPotionEffect(new PotionEffect(XPotion.BLINDNESS.getPotionEffectType(), Integer.MAX_VALUE, 0, false, false));
-        player.addPotionEffect(new PotionEffect(XPotion.JUMP_BOOST.getPotionEffectType(), Integer.MAX_VALUE, 250, false, false));
+        // Cancel movement and disable flying
+        player.setSprinting(false);
+        player.setWalkSpeed(0.0f);
+        player.setFlySpeed(0.0f);
+        player.setVelocity(new Vector(0, 0, 0));
+        player.teleport(player.getLocation());
+        player.addPotionEffect(new PotionEffect(XPotion.BLINDNESS.get(), PotionEffect.INFINITE_DURATION, 0, false, false));
+        player.addPotionEffect(new PotionEffect(XPotion.JUMP_BOOST.get(), PotionEffect.INFINITE_DURATION, 250, false, false));
 
         armorStandManager.spawnArmorStands(player);
-        playerManager.getOpenNavigator().add(player);
+        playerService.getOpenNavigator().add(player);
     }
 
     /**
@@ -170,49 +162,56 @@ public class NavigatorListener implements Listener {
         Player player = event.getPlayer();
         Entity entity = event.getRightClicked();
 
+        // Disable interaction entities in archived worlds
         disableArchivedWorlds(player, event);
 
-        if (!playerManager.getOpenNavigator().contains(player) || entity.getType() != EntityType.ARMOR_STAND) {
+        if (!playerService.getOpenNavigator().contains(player) || !(entity instanceof ArmorStand armorStand)) {
             return;
         }
 
-        if (isCloseNavigatorItem(player, player.getItemInHand())) {
+        if (isCloseNavigatorItem(player, player.getInventory().getItemInMainHand())) {
             event.setCancelled(true);
-            playerManager.closeNavigator(player);
+            playerService.closeNewNavigator(player);
             return;
         }
 
-        String customName = entity.getCustomName();
-        if (customName == null || !customName.contains(" × ")) {
-            return;
-        }
-
-        event.setCancelled(true);
         Vector clickedPosition = event.getClickedPosition();
         if (clickedPosition.getY() > MIN_HEIGHT && clickedPosition.getY() < MAX_HEIGHT) {
-            if (!customName.startsWith(player.getName())) {
+            NavigatorCategory category = ArmorStandManager.matchNavigatorCategory(armorStand);
+            if (category == null) {
                 return;
             }
 
-            NavigatorInventoryType inventoryType = NavigatorInventoryType.matchInventoryType(player, customName);
-            if (inventoryType == null) {
+            UUID ownerUUID = ArmorStandManager.getOwner(armorStand);
+            if (!Objects.equals(ownerUUID, player.getUniqueId())) {
                 return;
             }
 
-            switch (inventoryType) {
-                case NAVIGATOR:
-                    XSound.BLOCK_CHEST_OPEN.play(player);
-                    plugin.getWorldsInventory().openInventory(player);
-                    break;
-                case ARCHIVE:
-                    XSound.BLOCK_CHEST_OPEN.play(player);
-                    plugin.getArchiveInventory().openInventory(player);
-                    break;
-                case PRIVATE:
-                    XSound.BLOCK_CHEST_OPEN.play(player);
-                    plugin.getPrivateInventory().openInventory(player);
-                    break;
-            }
+            DisplayablesInventory inventory = switch (category) {
+                case PUBLIC -> new PublicWorldsInventory(plugin, player);
+                case ARCHIVE -> new ArchivedWorldsInventory(plugin, player);
+                case PRIVATE -> new PrivateWorldsInventory(plugin, player);
+            };
+
+            XSound.BLOCK_CHEST_OPEN.play(player);
+            inventory.openInventory();
+        }
+    }
+
+    /**
+     * Cancels an event if the player is in an archived world.
+     *
+     * @param player      The player object
+     * @param cancellable The event to cancel
+     */
+    private void disableArchivedWorlds(Player player, Cancellable cancellable) {
+        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
+        if (buildWorld == null || buildWorld.getData().status().get() != BuildWorldStatus.ARCHIVE) {
+            return;
+        }
+
+        if (!playerService.isInBuildMode(player)) {
+            cancellable.setCancelled(true);
         }
     }
 
@@ -222,12 +221,12 @@ public class NavigatorListener implements Listener {
      * @param event The event which calls this method
      */
     @EventHandler
-    public void manageNewNavigatorManipulation(PlayerArmorStandManipulateEvent event) {
+    public void preventNewNavigatorManipulation(PlayerArmorStandManipulateEvent event) {
         ArmorStand armorStand = event.getRightClicked();
-        String customName = armorStand.getCustomName();
-        if (customName == null || !customName.contains(" × ")) {
+        if (ArmorStandManager.matchNavigatorCategory(armorStand) == null || ArmorStandManager.getOwner(armorStand) == null) {
             return;
         }
+
         event.setCancelled(true);
     }
 
@@ -239,7 +238,7 @@ public class NavigatorListener implements Listener {
     @EventHandler
     public void preventBarrierDrop(PlayerDropItemEvent event) {
         Player player = event.getPlayer();
-        if (!playerManager.getOpenNavigator().contains(player)) {
+        if (!playerService.getOpenNavigator().contains(player)) {
             return;
         }
 
@@ -249,7 +248,7 @@ public class NavigatorListener implements Listener {
     }
 
     /**
-     * Checks if the given item is the item which is used to close the {@link NavigatorType#NEW} navigator.
+     * Checks if the given item is the item that is used to close the {@link NavigatorType#NEW} navigator.
      *
      * @param player    The player used to get the item name
      * @param itemStack The item stack to check
@@ -270,23 +269,5 @@ public class NavigatorListener implements Listener {
         }
 
         return itemMeta.getDisplayName().equals(Messages.getString("barrier_item", player));
-    }
-
-    /**
-     * Cancels an event if the player is in an archived world.
-     *
-     * @param player      The player object
-     * @param cancellable The event to cancel
-     */
-    private void disableArchivedWorlds(Player player, Cancellable cancellable) {
-        World bukkitWorld = player.getWorld();
-        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
-        if (buildWorld == null || buildWorld.getData().status().get() != WorldStatus.ARCHIVE) {
-            return;
-        }
-
-        if (playerManager.isInBuildMode(player)) {
-            cancellable.setCancelled(true);
-        }
     }
 }

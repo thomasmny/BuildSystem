@@ -18,28 +18,30 @@
 package de.eintosti.buildsystem.listener;
 
 import com.moulberry.axiom.event.AxiomModifyWorldEvent;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.event.EventDispatcher;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Only register if axiom is available
  */
+@NullMarked
 public class WorldManipulateByAxiomListener implements Listener {
 
     private final EventDispatcher dispatcher;
 
-
     /**
+     * Creates a new {@link WorldManipulateByAxiomListener} instance.
+     *
      * @param plugin plugin to register.
      */
-    public WorldManipulateByAxiomListener(@NotNull BuildSystem plugin) {
-        this.dispatcher = new EventDispatcher(plugin.getWorldManager());
+    public WorldManipulateByAxiomListener(BuildSystemPlugin plugin) {
+        this.dispatcher = new EventDispatcher(plugin.getWorldService().getWorldStorage());
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        plugin.getLogger().info("Axiom build-world manipulation prevention has been enabled.");
     }
-
 
     @EventHandler()
     public void onWorldModification(AxiomModifyWorldEvent event) {

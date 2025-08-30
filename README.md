@@ -7,8 +7,8 @@
 * [Introduction](#introduction)
 * [Links and Contacts](#links-and-contacts)
 * [Features](#features)
-* [Screenshots](#screenshots)
 * [Statistics](#statistics)
+* [Developer API](#developer-api)
 * [Contributing](#contributing)
     * [To compile...](#to-compile)
     * [Then you will find...](#then-you-will-find)
@@ -49,8 +49,8 @@ building can start!
 * Powerful navigator which allows for an overview of all worlds. Extra GUIs for:
     - **_Not Started_**, **_In Progress_**, **_Almost Finished_** and **_Finished_** maps
     - Maps that have been put to the **_Archive_**
-  - **_Private_** player maps: Each player can create their own map, if a map with their name
-    doesn't exist
+    - **_Private_** player maps: Each player can create their own map, if a map with their name
+      doesn't exist
 * **Create worlds with ease**: When creating a world, choose from:
     - **_Predefined worlds_** _or_
     - **_Custom generators_** provided by 3rd party plugins _or_
@@ -79,47 +79,34 @@ building can start!
     - Night vision
     - Disable interactions with certain blocks
 
-## Screenshots
-
-### Navigator
-
-![Screenshot](.github/images/navigator.png)
-
-### World Navigator
-
-![Screenshot](.github/images/worlds.png)
-
-### Create predefined worlds
-
-![Screenshot](.github/images/predefined_worlds.png)
-
-### Create worlds with the help of custom templates
-
-![Screenshot](.github/images/templates.png)
-
-### Receive secret blocks
-
-![Screenshot](.github/images/blocks.png)
-
-### Change which status each world has
-
-![Screenshot](.github/images/status.png)
-
-### Per player settings
-
-![Screenshot](.github/images/settings.png)
-
-### Change the default items
-
-![Screenshot](.github/images/setup.png)
-
-### Custom scoreboard
-
-![Screenshot](.github/images/scoreboard.png)
-
 ## Statistics
 
 ![Graph](https://bstats.org/signatures/bukkit/BuildSystem.svg)
+
+## Developer API
+
+**Maven:**
+
+```xml
+
+<dependency>
+    <groupId>de.eintosti</groupId>
+    <artifactId>buildsystem-api</artifactId>
+    <version>version</version>
+</dependency>
+ ```
+
+**Or alternatively, with Gradle:**
+
+```kotlin
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly("de.eintosti:buildsystem-api:version")
+}
+```
 
 ## Contributing
 

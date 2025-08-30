@@ -18,8 +18,7 @@
 package de.eintosti.buildsystem.util;
 
 import com.cryptomorin.xseries.XSound;
-import com.cryptomorin.xseries.messages.Titles;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,10 +31,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class PlayerChatInput implements Listener {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
     private final BukkitTask taskId;
     private final InputRunnable runWhenComplete;
@@ -44,7 +45,7 @@ public class PlayerChatInput implements Listener {
 
     private final Map<UUID, PlayerChatInput> inputs = new HashMap<>();
 
-    public PlayerChatInput(BuildSystem plugin, Player player, String titleKey, InputRunnable runWhenComplete) {
+    public PlayerChatInput(BuildSystemPlugin plugin, Player player, String titleKey, InputRunnable runWhenComplete) {
         this.plugin = plugin;
 
         String title = Messages.getString(titleKey, player);
@@ -52,7 +53,7 @@ public class PlayerChatInput implements Listener {
 
         this.taskId = new BukkitRunnable() {
             public void run() {
-                Titles.sendTitle(player, 0, 30, 0, title, subtitle);
+                player.sendTitle(title, subtitle, 0, 30, 0);
             }
         }.runTaskTimer(plugin, 0L, 20L);
 
@@ -88,14 +89,14 @@ public class PlayerChatInput implements Listener {
             current.unregister();
 
             XSound.ENTITY_ITEM_BREAK.play(player);
-            Titles.clearTitle(player);
+            player.resetTitle();
             Messages.sendMessage(player, "input_cancelled");
             return;
         }
 
         current.taskId.cancel();
         Bukkit.getScheduler().runTask(current.plugin, () -> current.runWhenComplete.run(input));
-        Titles.clearTitle(player);
+        player.resetTitle();
         current.unregister();
     }
 

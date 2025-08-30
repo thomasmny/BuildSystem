@@ -17,11 +17,11 @@
  */
 package de.eintosti.buildsystem.listener;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.player.PlayerManager;
-import de.eintosti.buildsystem.world.BuildWorld;
-import de.eintosti.buildsystem.world.WorldManager;
+import de.eintosti.buildsystem.api.storage.PlayerStorage;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -29,15 +29,17 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class PlayerTeleportListener implements Listener {
 
-    private final PlayerManager playerManager;
-    private final WorldManager worldManager;
+    private final PlayerStorage playerStorage;
+    private final WorldStorage worldStorage;
 
-    public PlayerTeleportListener(BuildSystem plugin) {
-        this.playerManager = plugin.getPlayerManager();
-        this.worldManager = plugin.getWorldManager();
+    public PlayerTeleportListener(BuildSystemPlugin plugin) {
+        this.playerStorage = plugin.getPlayerService().getPlayerStorage();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -46,7 +48,7 @@ public class PlayerTeleportListener implements Listener {
         Player player = event.getPlayer();
 
         if (event.getCause() != PlayerTeleportEvent.TeleportCause.UNKNOWN) {
-            playerManager.getBuildPlayer(player).setPreviousLocation(event.getFrom());
+            playerStorage.getBuildPlayer(player).setPreviousLocation(event.getFrom());
         }
 
         Location to = event.getTo();
@@ -59,17 +61,19 @@ public class PlayerTeleportListener implements Listener {
             return;
         }
 
-        String worldName = to.getWorld().getName();
-        BuildWorld buildWorld = worldManager.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(toWorld);
         if (buildWorld == null) {
             return;
         }
 
-        if (!Bukkit.getWorlds().get(0).equals(Bukkit.getWorld(worldName))) {
-            if (!worldManager.canEnter(player, buildWorld)) {
-                Messages.sendMessage(player, "worlds_tp_entry_forbidden");
-                event.setCancelled(true);
-            }
+        // Users can always teleport to the main server world
+        if (Bukkit.getWorlds().getFirst().equals(toWorld)) {
+            return;
+        }
+
+        if (!buildWorld.getPermissions().canEnter(player)) {
+            Messages.sendMessage(player, "worlds_tp_entry_forbidden");
+            event.setCancelled(true);
         }
     }
 }

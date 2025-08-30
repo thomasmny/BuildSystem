@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.command;
 
 import com.google.common.collect.Lists;
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import java.util.List;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -26,13 +26,14 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class BuildSystemCommand extends PagedCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
 
-    public BuildSystemCommand(BuildSystem plugin) {
+    public BuildSystemCommand(BuildSystemPlugin plugin) {
         super("buildsystem_title_with_page", "buildsystem_permission");
 
         this.plugin = plugin;
@@ -40,15 +41,14 @@ public class BuildSystemCommand extends PagedCommand implements CommandExecutor 
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (!(sender instanceof Player player)) {
+            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
             return true;
         }
 
-        Player player = (Player) sender;
         if (!player.hasPermission("buildsystem.help.buildsystem")) {
-            plugin.sendPermissionMessage(player);
+            Messages.sendPermissionError(player);
             return true;
         }
 

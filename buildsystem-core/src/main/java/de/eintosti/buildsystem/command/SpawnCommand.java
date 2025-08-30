@@ -17,64 +17,68 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystem;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.config.Config;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.SpawnManager;
-import de.eintosti.buildsystem.world.WorldManager;
-import java.util.AbstractMap;
 import java.util.Locale;
+import java.util.Map;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class SpawnCommand implements CommandExecutor {
 
-    private final BuildSystem plugin;
+    private final BuildSystemPlugin plugin;
     private final SpawnManager spawnManager;
-    private final WorldManager worldManager;
+    private final WorldStorageImpl worldStorage;
 
-    public SpawnCommand(BuildSystem plugin) {
+    public SpawnCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.spawnManager = plugin.getSpawnManager();
-        this.worldManager = plugin.getWorldManager();
+        this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getCommand("spawn").setExecutor(this);
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", null));
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (!(sender instanceof Player player)) {
+            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
             return true;
         }
 
-        Player player = (Player) sender;
-
         switch (args.length) {
-            case 0:
+            case 0 -> {
                 if (!spawnManager.teleport(player)) {
                     Messages.sendMessage(player, "spawn_unavailable");
-                } else if (plugin.getConfigValues().isSpawnTeleportMessage()) {
+                } else if (Config.Messages.spawnTeleportMessage) {
                     Messages.sendMessage(player, "spawn_teleported");
                 }
-                break;
+            }
 
-            case 1:
+            case 1 -> {
                 if (!player.hasPermission("buildsystem.spawn")) {
                     Messages.sendMessage(player, "spawn_usage");
                     return true;
                 }
 
                 switch (args[0].toLowerCase(Locale.ROOT)) {
-                    case "set":
+                    case "set" -> {
                         Location playerLocation = player.getLocation();
                         World bukkitWorld = playerLocation.getWorld();
-                        BuildWorld buildWorld = worldManager.getBuildWorld(bukkitWorld.getName());
+                        if (bukkitWorld == null) {
+                            Messages.sendMessage(player, "spawn_world_not_imported");
+                            return true;
+                        }
 
+                        BuildWorld buildWorld = worldStorage.getBuildWorld(bukkitWorld);
                         if (buildWorld == null) {
                             Messages.sendMessage(player, "spawn_world_not_imported");
                             return true;
@@ -82,26 +86,26 @@ public class SpawnCommand implements CommandExecutor {
 
                         spawnManager.set(playerLocation, buildWorld.getName());
                         Messages.sendMessage(player, "spawn_set",
-                                new AbstractMap.SimpleEntry<>("%x%", round(playerLocation.getX())),
-                                new AbstractMap.SimpleEntry<>("%y%", round(playerLocation.getY())),
-                                new AbstractMap.SimpleEntry<>("%z%", round(playerLocation.getZ())),
-                                new AbstractMap.SimpleEntry<>("%world%", playerLocation.getWorld().getName())
+                                Map.entry("%x%", round(playerLocation.getX())),
+                                Map.entry("%y%", round(playerLocation.getY())),
+                                Map.entry("%z%", round(playerLocation.getZ())),
+                                Map.entry("%world%", playerLocation.getWorld().getName())
                         );
-                        break;
-                    case "remove":
+                    }
+                    case "remove" -> {
                         spawnManager.remove();
                         Messages.sendMessage(player, "spawn_remove");
-                        break;
-                    default:
+                    }
+                    default -> {
                         Messages.sendMessage(player, "spawn_admin");
-                        break;
+                    }
                 }
-                break;
+            }
 
-            default:
+            default -> {
                 String key = player.hasPermission("buildsystem.spawn") ? "spawn_admin" : "spawn_usage";
                 Messages.sendMessage(player, key);
-                break;
+            }
         }
         return true;
     }
