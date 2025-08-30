@@ -27,8 +27,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.bukkit.entity.Player;
@@ -51,13 +51,14 @@ public abstract class PlayerStorageImpl implements PlayerStorage {
     }
 
     public void loadPlayers() {
-        try {
-            this.buildPlayers.putAll(
-                    load().get().stream().collect(Collectors.toMap(BuildPlayer::getUniqueId, Function.identity()))
-            );
-        } catch (InterruptedException | ExecutionException e) {
-            logger.severe("Failed to load players from storage: " + e.getMessage());
-        }
+        load().thenAccept(players -> {
+            Map<UUID, BuildPlayer> loadedPlayers = players.stream().collect(Collectors.toMap(BuildPlayer::getUniqueId, Function.identity()));
+            this.buildPlayers.putAll(loadedPlayers);
+            logger.info("Loaded " + players.size() + " players from storage");
+        }).exceptionally(throwable -> {
+            logger.log(Level.SEVERE, "Failed to load players from storage", throwable);
+            return null;
+        });
     }
 
     @Override

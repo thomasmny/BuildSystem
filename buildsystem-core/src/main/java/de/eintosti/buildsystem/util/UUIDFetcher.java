@@ -23,6 +23,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.util.ServerModeChecker.ServerMode;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -34,6 +35,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -83,7 +85,7 @@ public final class UUIDFetcher {
             cacheUser(uuid, name);
             return uuid;
         } catch (Exception e) {
-            e.printStackTrace();
+            BuildSystemPlugin.get().getLogger().log(Level.SEVERE, "Failed to fetch UUID for player: " + name, e);
         }
 
         return null;
@@ -126,7 +128,7 @@ public final class UUIDFetcher {
             cacheUser(uuid, name);
             return name;
         } catch (Exception e) {
-            e.printStackTrace();
+            BuildSystemPlugin.get().getLogger().log(Level.SEVERE, "Failed to fetch name for UUID: " + uuid, e);
         }
 
         return null;

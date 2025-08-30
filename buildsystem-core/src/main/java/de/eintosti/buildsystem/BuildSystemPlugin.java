@@ -107,6 +107,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 public class BuildSystemPlugin extends JavaPlugin {
 
@@ -131,6 +132,8 @@ public class BuildSystemPlugin extends JavaPlugin {
     private PlaceholderApiExpansion placeholderApiExpansion;
 
     private BuildSystemApi api;
+
+    private BukkitTask configSaveTask;
 
     @Override
     public void onLoad() {
@@ -169,7 +172,7 @@ public class BuildSystemPlugin extends JavaPlugin {
 
         registerStats();
 
-        Bukkit.getScheduler().runTaskTimer(this, this::saveBuildConfig, 6000L, 6000L);
+        this.configSaveTask = Bukkit.getScheduler().runTaskTimer(this, this::saveBuildConfig, 6000L, 6000L);
 
         Bukkit.getConsoleSender().sendMessage(
                 "%sBuildSystem » Plugin %senabled%s!".formatted(ChatColor.RESET, ChatColor.GREEN, ChatColor.RESET)
@@ -193,6 +196,10 @@ public class BuildSystemPlugin extends JavaPlugin {
         reloadConfigData(false);
         saveConfig();
         saveBuildConfig();
+
+        if (this.configSaveTask != null) {
+            this.configSaveTask.cancel();
+        }
 
         unregisterExpansions();
         this.api.unregister();

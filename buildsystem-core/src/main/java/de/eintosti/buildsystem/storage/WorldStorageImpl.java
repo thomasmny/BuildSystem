@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -164,32 +164,29 @@ public abstract class WorldStorageImpl implements WorldStorage {
     }
 
     public void loadWorlds() {
-        try {
-            load().get().forEach(this::addBuildWorld);
+        load().thenAccept(worlds -> {
+            worlds.forEach(this::addBuildWorld);
             assignWorldsToFolders();
-        } catch (InterruptedException | ExecutionException e) {
-            logger.severe("Failed to load worlds from storage: " + e.getMessage());
-            return;
-        }
 
-        boolean loadAllWorlds = !Unload.enabled;
-        if (loadAllWorlds) {
-            logger.info("*** All worlds will be loaded now ***");
-        } else {
-            logger.info("*** World unloading is enabled ('world.unload.enabled' = true); skipping pre-loading of worlds ***");
-        }
-
-        List<BuildWorld> notLoaded = new ArrayList<>();
-        getBuildWorlds().forEach(buildWorld -> {
-            if (loadWorld(buildWorld, loadAllWorlds) == LoadResult.FAILED) {
-                notLoaded.add(buildWorld);
+            boolean loadAllWorlds = !Unload.enabled;
+            if (loadAllWorlds) {
+                logger.info("*** All worlds will be loaded now ***");
             }
-        });
-        notLoaded.forEach(this::removeBuildWorld);
 
-        if (loadAllWorlds) {
-            logger.info("*** All worlds have been loaded ***");
-        }
+            List<BuildWorld> notLoaded = new ArrayList<>();
+            getBuildWorlds().forEach(buildWorld -> {
+                LoadResult loadResult = loadWorld(buildWorld, loadAllWorlds);
+                if (loadResult == LoadResult.FAILED) {
+                    notLoaded.add(buildWorld);
+                }
+            });
+            notLoaded.forEach(this::removeBuildWorld);
+
+            logger.info("Loaded " + worlds.size() + " worlds from storage");
+        }).exceptionally(throwable -> {
+            logger.log(Level.SEVERE, "Failed to load worlds from storage", throwable);
+            return null;
+        });
     }
 
     /**

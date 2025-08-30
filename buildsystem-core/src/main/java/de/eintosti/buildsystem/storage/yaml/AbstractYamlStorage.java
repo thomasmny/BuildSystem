@@ -20,6 +20,8 @@ package de.eintosti.buildsystem.storage.yaml;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -31,10 +33,12 @@ public abstract class AbstractYamlStorage {
 
     private final File file;
     private final FileConfiguration configuration;
+    private final Logger logger;
 
     public AbstractYamlStorage(BuildSystemPlugin plugin, String fileName) {
         this.file = new File(plugin.getDataFolder(), fileName);
         this.configuration = YamlConfiguration.loadConfiguration(file);
+        this.logger = plugin.getLogger();
         loadFile();
     }
 
@@ -48,7 +52,7 @@ public abstract class AbstractYamlStorage {
         try {
             configuration.load(file);
         } catch (IOException | InvalidConfigurationException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Failed to load configuration file: " + file.getName(), e);
         }
     }
 
@@ -56,7 +60,7 @@ public abstract class AbstractYamlStorage {
         try {
             configuration.save(file);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Failed to save configuration file: " + file.getName(), e);
         }
     }
 
