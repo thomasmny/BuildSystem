@@ -9,7 +9,7 @@ worldedit = "7.3.16"
 placeholderapi = "2.11.6"
 axiompaper = "4.0.1-1.21.1"
 # Third Party
-annotations = "26.0.2"
+annotations = "26.0.2-1"
 authlib = "3.13.56"
 aws-sdk = "2.33.0"
 bouncycastle = "1.81"
