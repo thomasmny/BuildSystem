@@ -18,7 +18,7 @@ fastboard = "2.1.5"
 jspecify = "1.0.0"
 nbt = "1.5.1"
 sshd-sftp = "2.16.0"
-xseries = "13.3.3"
+xseries = "13.4.0"
 zip4j = "2.11.5"
 
 [libraries]
