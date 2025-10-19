@@ -18,12 +18,14 @@
 package de.eintosti.buildsystem.world.util;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.data.Bypassable;
+import de.eintosti.buildsystem.api.data.Type;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.util.WorldPermissions;
-import java.util.function.Supplier;
+import de.eintosti.buildsystem.world.data.type.ConfigurableType;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
@@ -68,20 +70,20 @@ public class WorldPermissionsImpl implements WorldPermissions {
     }
 
     @Override
-    public boolean canModify(Player player, Supplier<Boolean> additionalCheck) {
+    public boolean canModify(Player player, Type<Boolean> check) {
         if (this.buildWorld == null) {
             return true;
         }
 
-        if (hasAdminPermission(player) || canBypassBuildRestriction(player)) {
+        if (canBypassModification(player, check)) {
             return true;
         }
 
-        if (!additionalCheck.get()) {
+        if (!check.get()) {
             return false;
         }
 
-        if (buildWorld.getData().status().get() == BuildWorldStatus.ARCHIVE) {
+        if (buildWorld.getData().status().get() == BuildWorldStatus.ARCHIVE && !player.hasPermission("buildsystem.bypass.archive")) {
             return false;
         }
 
@@ -94,7 +96,25 @@ public class WorldPermissionsImpl implements WorldPermissions {
             return true;
         }
 
+        if (player.hasPermission("buildsystem.bypass.builders")) {
+            return true;
+        }
+
         return builders.isBuilder(player);
+    }
+
+    private boolean canBypassModification(Player player, Type<Boolean> check) {
+        if (hasAdminPermission(player) || canBypassBuildRestriction(player)) {
+            return true;
+        }
+
+        if (!(check instanceof ConfigurableType<Boolean> configurableType)) {
+            return false;
+        }
+
+        return configurableType.getCapability(Bypassable.class)
+                .map(bypassable -> player.hasPermission(bypassable.permission()))
+                .orElse(false);
     }
 
     @Override
@@ -146,4 +166,4 @@ public class WorldPermissionsImpl implements WorldPermissions {
     public boolean canBypassBuildRestriction(Player player) {
         return BuildSystemPlugin.get().getPlayerService().isInBuildMode(player);
     }
-} 
+}

@@ -64,7 +64,8 @@ public class EditSessionListener implements Listener {
             return;
         }
 
-        if (!disableArchivedWorlds(buildWorld, player, event) && !disableNonBuilders(buildWorld, player, event)) {
+        boolean hasAdminPermission = buildWorld.getPermissions().hasAdminPermission(player);
+        if (hasAdminPermission || (!disableArchivedWorlds(buildWorld, player, event) && !disableNonBuilders(buildWorld, player, event))) {
             buildWorld.getData().lastEdited().set(System.currentTimeMillis());
         }
     }

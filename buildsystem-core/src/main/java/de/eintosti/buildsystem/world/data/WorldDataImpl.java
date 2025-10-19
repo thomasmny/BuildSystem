@@ -19,6 +19,8 @@ package de.eintosti.buildsystem.world.data;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.data.Bypassable;
+import de.eintosti.buildsystem.api.data.Overridable;
 import de.eintosti.buildsystem.api.data.Type;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.WorldService;
@@ -27,12 +29,12 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.config.Config.World.Default;
-import de.eintosti.buildsystem.config.Config.World.Default.Permission;
 import de.eintosti.buildsystem.config.Config.World.Default.Settings;
 import de.eintosti.buildsystem.config.Config.World.Default.Settings.BuildersEnabled;
+import de.eintosti.buildsystem.world.data.type.ConfigurableType;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.Objects;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
@@ -43,10 +45,11 @@ import org.jspecify.annotations.Nullable;
 public class WorldDataImpl implements WorldData {
 
     private final Map<String, Type<?>> data = new HashMap<>();
+    private String worldName;
 
     private final Type<String> customSpawn;
-    private final OverridableType<String> permission;
-    private final OverridableType<String> project;
+    private final Type<String> permission;
+    private final Type<String> project;
 
     private final Type<Difficulty> difficulty;
     private final Type<XMaterial> material;
@@ -62,125 +65,82 @@ public class WorldDataImpl implements WorldData {
     private final Type<Boolean> privateWorld;
 
     private final Type<Integer> timeSinceBackup;
-
     private final Type<Long> lastEdited;
     private final Type<Long> lastLoaded;
     private final Type<Long> lastUnloaded;
 
-    private String worldName;
+    private WorldDataImpl(WorldDataBuilder builder) {
+        this.worldName = builder.worldName;
 
-    public WorldDataImpl(String worldName, boolean privateWorld, XMaterial material) {
-        this(
-                worldName,
-                "",
-                (privateWorld ? Permission.privatePermission : Permission.publicPermission).replace("%world%", worldName),
-                "-",
-                Default.difficulty,
-                material,
-                BuildWorldStatus.NOT_STARTED,
-                Settings.blockBreaking,
-                Settings.blockInteractions,
-                Settings.blockPlacement,
-                (privateWorld ? BuildersEnabled.privateBuilders : BuildersEnabled.publicBuilders),
-                Settings.explosions,
-                Settings.mobAi,
-                Settings.physics,
-                privateWorld,
-                0,
-                -1L,
-                -1L,
-                -1L
+        this.customSpawn = register("spawn", new ConfigurableType<>(builder.customSpawn));
+        this.permission = register("permission", new ConfigurableType<>(builder.permission)
+                .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.permission"))
+                .withCapability(Overridable.class, new Overridable<>(
+                        () -> Config.Folder.overridePermissions,
+                        () -> {
+                            Folder folder = getAssignedFolder();
+                            return (folder != null) ? folder.getPermission() : null;
+                        }
+                ))
         );
-    }
+        this.project = register("project", new ConfigurableType<>(builder.project)
+                .withCapability(Overridable.class, new Overridable<>(
+                        () -> Config.Folder.overrideProjects,
+                        () -> {
+                            Folder folder = getAssignedFolder();
+                            return (folder != null) ? folder.getProject() : null;
+                        }
+                ))
+        );
 
-    public WorldDataImpl(
-            String worldName,
-            String customSpawn,
-            String permission,
-            String project,
-            Difficulty difficulty,
-            XMaterial material,
-            BuildWorldStatus worldStatus,
-            boolean blockBreaking,
-            boolean blockInteractions,
-            boolean blockPlacement,
-            boolean buildersEnabled,
-            boolean explosions,
-            boolean mobAi,
-            boolean physics,
-            boolean privateWorld,
-            int timeSinceBackup,
-            long lastLoaded,
-            long lastUnloaded,
-            long lastEdited
-    ) {
-        this.customSpawn = register("spawn", customSpawn);
-        this.permission = registerOverridable("permission", permission, Config.Folder.overridePermissions, worldName, Folder::getPermission);
-        this.project = registerOverridable("project", project, Config.Folder.overrideProjects, worldName, Folder::getProject);
+        this.difficulty = register("difficulty", new ConfigurableType<>(builder.difficulty)
+                .withConfigFormatter(Difficulty::name)
+        );
+        this.material = register("material", new ConfigurableType<>(builder.material)
+                .withConfigFormatter(XMaterial::name)
+        );
+        this.status = register("status", new ConfigurableType<>(builder.status)
+                .withConfigFormatter(BuildWorldStatus::name)
+                .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.archive"))
+        );
 
-        this.difficulty = register("difficulty", new DifficultyType(difficulty));
-        this.material = register("material", new MaterialType(material));
-        this.status = register("status", new StatusType(worldStatus));
+        this.blockBreaking = register("block-breaking", new ConfigurableType<>(builder.blockBreaking)
+                .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.settings"))
+        );
+        this.blockInteractions = register("block-interactions", new ConfigurableType<>(builder.blockInteractions)
+                .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.settings"))
+        );
+        this.blockPlacement = register("block-placement", new ConfigurableType<>(builder.blockPlacement)
+                .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.settings"))
+        );
+        this.buildersEnabled = register("builders-enabled", new ConfigurableType<>(builder.buildersEnabled));
+        this.explosions = register("explosions", new ConfigurableType<>(builder.explosions));
+        this.mobAi = register("mob-ai", new ConfigurableType<>(builder.mobAi));
+        this.physics = register("physics", new ConfigurableType<>(builder.physics));
+        this.privateWorld = register("private", new ConfigurableType<>(builder.privateWorld));
 
-        this.blockBreaking = register("block-breaking", blockBreaking);
-        this.blockInteractions = register("block-interactions", blockInteractions);
-        this.blockPlacement = register("block-placement", blockPlacement);
-        this.buildersEnabled = register("builders-enabled", buildersEnabled);
-        this.explosions = register("explosions", explosions);
-        this.mobAi = register("mob-ai", mobAi);
-        this.physics = register("physics", physics);
-        this.privateWorld = register("private", privateWorld);
-
-        this.timeSinceBackup = register("time-since-backup", timeSinceBackup);
-
-        this.lastEdited = register("last-edited", lastEdited);
-        this.lastLoaded = register("last-loaded", lastLoaded);
-        this.lastUnloaded = register("last-unloaded", lastUnloaded);
-
-        this.worldName = worldName;
+        this.timeSinceBackup = register("time-since-backup", new ConfigurableType<>(builder.timeSinceBackup));
+        this.lastEdited = register("last-edited", new ConfigurableType<>(builder.lastEdited));
+        this.lastLoaded = register("last-loaded", new ConfigurableType<>(builder.lastLoaded));
+        this.lastUnloaded = register("last-unloaded", new ConfigurableType<>(builder.lastUnloaded));
     }
 
     /**
-     * Registers a new {@link Type} instance with a given key.
+     * Gets the {@link Folder} assigned to this world, if any.
      *
-     * @param key  The string identifier for the data type
-     * @param type The {@link Type} instance to register
-     * @param <T>  The type of the value held by the {@link Type}
-     * @return The registered type instance
+     * @return The assigned folder, or {@code null} if not found or not loaded
      */
-    public <T> Type<T> register(String key, Type<T> type) {
-        this.data.put(key, type);
-        return type;
+    @Nullable
+    private Folder getAssignedFolder() {
+        WorldService worldService = BuildSystemPlugin.get().getWorldService();
+        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(this.worldName);
+        if (buildWorld != null) {
+            return buildWorld.getFolder();
+        }
+        return null;
     }
 
-    /**
-     * Registers a new {@link Type} instance with a given key and a default value.
-     *
-     * @param key          The string identifier for the data type
-     * @param defaultValue The initial default value for this type
-     * @param <T>          The type of the value
-     * @return The registered type instance
-     */
-    public <T> Type<T> register(String key, T defaultValue) {
-        Type<T> type = new TypeImpl<>(defaultValue);
-        this.data.put(key, type);
-        return type;
-    }
-
-    /**
-     * Registers a new {@link OverridableType} instance with a given key, default value, override enablement flag, world name, and a function to provide the override value from a
-     * {@link Folder}.
-     *
-     * @param key              The string identifier for the overridable data type
-     * @param defaultValue     The initial default value for this type
-     * @param enableOverride   Whether overriding this values is to be enabled or not
-     * @param worldName        The name of the world this data belongs to, used for context in override resolution
-     * @param overrideProvider A {@link Function} that, given a {@link Folder}, returns the overridden value
-     * @param <T>              The type of the value
-     * @return The registered type instance
-     */
-    public <T> OverridableType<T> registerOverridable(String key, T defaultValue, boolean enableOverride, String worldName, Function<Folder, T> overrideProvider) {
-        OverridableType<T> type = new OverridableType<>(defaultValue, enableOverride, worldName, overrideProvider);
+    private <T> ConfigurableType<T> register(String key, ConfigurableType<T> type) {
         this.data.put(key, type);
         return type;
     }
@@ -210,12 +170,12 @@ public class WorldDataImpl implements WorldData {
     }
 
     @Override
-    public OverridableType<String> permission() {
+    public Type<String> permission() {
         return permission;
     }
 
     @Override
-    public OverridableType<String> project() {
+    public Type<String> project() {
         return project;
     }
 
@@ -303,123 +263,135 @@ public class WorldDataImpl implements WorldData {
         return data;
     }
 
-    /**
-     * A basic implementation of the {@link Type} interface. It holds a single value of a generic type {@code T} and provides methods to get and set its value.
-     *
-     * @param <T> The type of the value held by this {@link TypeImpl}
-     */
-    public static class TypeImpl<T> implements Type<T> {
+    public static class WorldDataBuilder {
 
-        private T value;
-
-        public TypeImpl(T defaultValue) {
-            this.value = defaultValue;
-        }
-
-        @Override
-        public T get() {
-            return value;
-        }
-
-        @Override
-        public void set(T value) {
-            this.value = value;
-        }
-
-        @Override
-        public Object getConfigFormat() {
-            return value;
-        }
-    }
-
-    /**
-     * An extension of {@link TypeImpl} that allows its value to be overridden dynamically based on a {@link Folder}'s settings.
-     * <p>
-     * The override behavior is enabled or disabled by a configuration flag. If enabled and an associated folder exists, the value is retrieved from the folder; otherwise, it falls
-     * back to the locally stored value.
-     *
-     * @param <T> The type of the value held by this overridable type
-     */
-    public static class OverridableType<T> extends TypeImpl<T> {
-
-        private final boolean enabledOverride;
         private final String worldName;
-        private final Function<Folder, T> overrideProvider;
 
-        public OverridableType(T defaultValue, boolean enabledOverride, String worldName, Function<Folder, T> overrideProvider) {
-            super(defaultValue);
-            this.enabledOverride = enabledOverride;
-            this.worldName = worldName;
-            this.overrideProvider = overrideProvider;
+        private String customSpawn = "";
+        private String permission = "-";
+        private String project = "-";
+        private Difficulty difficulty = Default.difficulty;
+        private XMaterial material = XMaterial.GRASS_BLOCK;
+        private BuildWorldStatus status = BuildWorldStatus.NOT_STARTED;
+        private boolean blockBreaking = Settings.blockBreaking;
+        private boolean blockInteractions = Settings.blockInteractions;
+        private boolean blockPlacement = Settings.blockPlacement;
+        private boolean buildersEnabled = BuildersEnabled.publicBuilders;
+        private boolean explosions = Settings.explosions;
+        private boolean mobAi = Settings.mobAi;
+        private boolean physics = Settings.physics;
+        private boolean privateWorld = false;
+        private int timeSinceBackup = 0;
+        private long lastEdited = -1L;
+        private long lastLoaded = -1L;
+        private long lastUnloaded = -1L;
+
+        /**
+         * Creates a new builder for {@link WorldData}.
+         *
+         * @param worldName The name of the world, which is required.
+         */
+        public WorldDataBuilder(String worldName) {
+            this.worldName = Objects.requireNonNull(worldName, "World name cannot be null");
         }
 
-        @Override
-        public T get() {
-            if (!enabledOverride) {
-                return super.get();
-            }
-
-            WorldService worldService = BuildSystemPlugin.get().getWorldService();
-            BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(this.worldName);
-            if (buildWorld != null) {
-                Folder assignedFolder = buildWorld.getFolder();
-                if (assignedFolder != null) {
-                    return this.overrideProvider.apply(assignedFolder);
-                }
-            }
-
-            return super.get();
-        }
-    }
-
-    /**
-     * A specific {@link TypeImpl} for handling {@link Difficulty} values.
-     * <p>
-     * Overrides {@link #getConfigFormat()} to return the difficulty's name.
-     */
-    public static class DifficultyType extends TypeImpl<Difficulty> {
-
-        public DifficultyType(Difficulty difficulty) {
-            super(difficulty);
+        /**
+         * Builds the final {@link WorldDataImpl} instance.
+         *
+         * @return A new, immutable {@link WorldDataImpl} object
+         */
+        public WorldDataImpl build() {
+            return new WorldDataImpl(this);
         }
 
-        @Override
-        public Object getConfigFormat() {
-            return super.get().name();
-        }
-    }
-
-    /**
-     * A specific {@link TypeImpl} for handling {@link XMaterial} values.
-     * <p>
-     * Overrides {@link #getConfigFormat()} to return the material's name.
-     */
-    public static class MaterialType extends TypeImpl<XMaterial> {
-
-        public MaterialType(XMaterial material) {
-            super(material);
+        public WorldDataBuilder withCustomSpawn(String customSpawn) {
+            this.customSpawn = customSpawn;
+            return this;
         }
 
-        @Override
-        public Object getConfigFormat() {
-            return super.get().name();
-        }
-    }
-
-    /**
-     * A specific {@link TypeImpl} for handling {@link BuildWorldStatus} values.
-     * <p>
-     * Overrides {@link #getConfigFormat()} to return the status's name.
-     */
-    public static class StatusType extends TypeImpl<BuildWorldStatus> {
-
-        public StatusType(BuildWorldStatus status) {
-            super(status);
+        public WorldDataBuilder withPermission(String permission) {
+            this.permission = permission;
+            return this;
         }
 
-        @Override
-        public Object getConfigFormat() {
-            return super.get().name();
+        public WorldDataBuilder withProject(String project) {
+            this.project = project;
+            return this;
+        }
+
+        public WorldDataBuilder withDifficulty(Difficulty difficulty) {
+            this.difficulty = difficulty;
+            return this;
+        }
+
+        public WorldDataBuilder withMaterial(XMaterial material) {
+            this.material = material;
+            return this;
+        }
+
+        public WorldDataBuilder withStatus(BuildWorldStatus status) {
+            this.status = status;
+            return this;
+        }
+
+        public WorldDataBuilder withBlockBreaking(boolean blockBreaking) {
+            this.blockBreaking = blockBreaking;
+            return this;
+        }
+
+        public WorldDataBuilder withBlockInteractions(boolean blockInteractions) {
+            this.blockInteractions = blockInteractions;
+            return this;
+        }
+
+        public WorldDataBuilder withBlockPlacement(boolean blockPlacement) {
+            this.blockPlacement = blockPlacement;
+            return this;
+        }
+
+        public WorldDataBuilder withBuildersEnabled(boolean buildersEnabled) {
+            this.buildersEnabled = buildersEnabled;
+            return this;
+        }
+
+        public WorldDataBuilder withExplosions(boolean explosions) {
+            this.explosions = explosions;
+            return this;
+        }
+
+        public WorldDataBuilder withMobAi(boolean mobAi) {
+            this.mobAi = mobAi;
+            return this;
+        }
+
+        public WorldDataBuilder withPhysics(boolean physics) {
+            this.physics = physics;
+            return this;
+        }
+
+        public WorldDataBuilder withPrivateWorld(boolean privateWorld) {
+            this.privateWorld = privateWorld;
+            return this;
+        }
+
+        public WorldDataBuilder withTimeSinceBackup(int timeSinceBackup) {
+            this.timeSinceBackup = timeSinceBackup;
+            return this;
+        }
+
+        public WorldDataBuilder withLastEdited(long lastEdited) {
+            this.lastEdited = lastEdited;
+            return this;
+        }
+
+        public WorldDataBuilder withLastLoaded(long lastLoaded) {
+            this.lastLoaded = lastLoaded;
+            return this;
+        }
+
+        public WorldDataBuilder withLastUnloaded(long lastUnloaded) {
+            this.lastUnloaded = lastUnloaded;
+            return this;
         }
     }
 }

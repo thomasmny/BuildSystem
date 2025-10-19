@@ -66,7 +66,7 @@ public class BackupService {
         if (AutoBackup.onlyActiveWorlds) {
             for (Player pl : Bukkit.getOnlinePlayers()) {
                 BuildWorld buildWorld = worldStorage.getBuildWorld(pl.getWorld().getName());
-                if (buildWorld != null && buildWorld.getPermissions().canModify(pl, () -> true)) {
+                if (buildWorld != null && buildWorld.getPermissions().canModify(pl, Type.TRUE)) {
                     worlds.add(buildWorld);
                 }
             }

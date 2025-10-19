@@ -166,8 +166,8 @@ public class BuildSystemPlugin extends JavaPlugin {
         Bukkit.getOnlinePlayers().forEach(pl -> {
             BuildPlayer buildPlayer = playerService.getPlayerStorage().createBuildPlayer(pl);
             Settings settings = buildPlayer.getSettings();
-            settingsManager.startScoreboard(pl, settings);
             noClipManager.startNoClip(pl, settings);
+            settingsManager.displayScoreboard(pl);
         });
 
         registerStats();
@@ -186,7 +186,7 @@ public class BuildSystemPlugin extends JavaPlugin {
             buildPlayer.getCachedValues().resetCachedValues(pl);
             buildPlayer.setLogoutLocation(new LogoutLocationImpl(pl.getWorld().getName(), pl.getLocation()));
 
-            settingsManager.stopScoreboard(pl);
+            settingsManager.hideScoreboard(pl);
             noClipManager.stopNoClip(pl.getUniqueId());
             playerService.closeNewNavigator(pl);
         });
@@ -401,7 +401,7 @@ public class BuildSystemPlugin extends JavaPlugin {
      */
     public void reloadConfigData(boolean init) {
         for (Player pl : Bukkit.getOnlinePlayers()) {
-            getSettingsManager().stopScoreboard(pl);
+            getSettingsManager().hideScoreboard(pl);
         }
 
         reloadConfig();
@@ -411,9 +411,9 @@ public class BuildSystemPlugin extends JavaPlugin {
             worldService.getWorldStorage().getBuildWorlds().forEach(buildWorld -> buildWorld.getUnloader().manageUnload());
 
             if (Config.Settings.scoreboard) {
-                getSettingsManager().startScoreboard();
+                getSettingsManager().displayScoreboard();
             } else {
-                getSettingsManager().stopScoreboard();
+                getSettingsManager().hideScoreboards();
             }
         }
     }

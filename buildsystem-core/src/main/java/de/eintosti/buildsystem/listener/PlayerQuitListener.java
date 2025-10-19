@@ -69,7 +69,7 @@ public class PlayerQuitListener implements Listener {
         }
 
         if (settings.isScoreboard()) {
-            settingsManager.stopScoreboard(player);
+            settingsManager.hideScoreboard(player);
         }
 
         if (settings.isClearInventory()) {

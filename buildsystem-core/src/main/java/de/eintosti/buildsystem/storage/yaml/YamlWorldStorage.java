@@ -31,6 +31,7 @@ import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
+import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -188,35 +189,26 @@ public class YamlWorldStorage extends WorldStorageImpl {
     @Contract("_ -> new")
     private WorldDataImpl parseWorldData(String worldName) {
         final String path = WORLDS_KEY + "." + worldName + ".data";
-
-        String customSpawn = config.getString(WORLDS_KEY + "." + worldName + ".spawn", "");
-        String permission = config.getString(path + ".permission", "-");
-        String project = config.getString(path + ".project", "-");
-
-        Difficulty difficulty = Difficulty.valueOf(config.getString(path + ".difficulty", "PEACEFUL").toUpperCase(Locale.ROOT));
-        XMaterial material = parseMaterial(path + ".material", worldName);
-        BuildWorldStatus worldStatus = BuildWorldStatus.valueOf(config.getString(path + ".status"));
-
-        boolean blockBreaking = config.getBoolean(path + ".block-breaking");
-        boolean blockInteractions = config.getBoolean(path + ".block-interactions");
-        boolean blockPlacement = config.getBoolean(path + ".block-placement");
-        boolean buildersEnabled = config.getBoolean(path + ".builders-enabled");
-        boolean explosions = config.getBoolean(path + ".explosions");
-        boolean mobAi = config.getBoolean(path + ".mob-ai");
-        boolean physics = config.getBoolean(path + ".physics");
-        boolean privateWorld = config.getBoolean(path + ".private");
-
-        int timeSinceBackup = config.getInt(path + ".time-since-backup", 0);
-
-        long lastLoaded = config.getLong(path + ".last-loaded");
-        long lastUnloaded = config.getLong(path + ".last-unloaded");
-        long lastEdited = config.getLong(path + ".last-edited");
-
-        return new WorldDataImpl(
-                worldName, customSpawn, permission, project, difficulty, material, worldStatus, blockBreaking,
-                blockInteractions, blockPlacement, buildersEnabled, explosions, mobAi, physics, privateWorld,
-                timeSinceBackup, lastLoaded, lastUnloaded, lastEdited
-        );
+        return new WorldDataBuilder(worldName)
+                .withCustomSpawn(config.getString(WORLDS_KEY + "." + worldName + ".spawn", ""))
+                .withPermission(config.getString(path + ".permission", "-"))
+                .withProject(config.getString(path + ".project", "-"))
+                .withDifficulty(Difficulty.valueOf(config.getString(path + ".difficulty", "PEACEFUL").toUpperCase(Locale.ROOT)))
+                .withMaterial(parseMaterial(path + ".material", worldName))
+                .withStatus(BuildWorldStatus.valueOf(config.getString(path + ".status")))
+                .withBlockBreaking(config.getBoolean(path + ".block-breaking"))
+                .withBlockInteractions(config.getBoolean(path + ".block-interactions"))
+                .withBlockPlacement(config.getBoolean(path + ".block-placement"))
+                .withBuildersEnabled(config.getBoolean(path + ".builders-enabled"))
+                .withExplosions(config.getBoolean(path + ".explosions"))
+                .withMobAi(config.getBoolean(path + ".mob-ai"))
+                .withPhysics(config.getBoolean(path + ".physics"))
+                .withPrivateWorld(config.getBoolean(path + ".private"))
+                .withTimeSinceBackup(config.getInt(path + ".time-since-backup", 0))
+                .withLastLoaded(config.getLong(path + ".last-loaded"))
+                .withLastUnloaded(config.getLong(path + ".last-unloaded"))
+                .withLastEdited(config.getLong(path + ".last-edited"))
+                .build();
     }
 
     private XMaterial parseMaterial(String path, String worldName) {

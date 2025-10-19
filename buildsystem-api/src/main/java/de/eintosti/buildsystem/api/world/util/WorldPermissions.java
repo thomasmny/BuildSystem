@@ -17,10 +17,10 @@
  */
 package de.eintosti.buildsystem.api.world.util;
 
+import de.eintosti.buildsystem.api.data.Type;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
-import java.util.function.Supplier;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -52,7 +52,7 @@ public interface WorldPermissions {
     boolean canEnter(Player player);
 
     /**
-     * Determines if the given {@link Player} can modify the {@link BuildWorld} they are currently in.
+     * Checks if a {@link Player} is allowed to perform a specific modification in the {@link BuildWorld}.
      * <p>
      * Modifications might be disallowed due to:
      * <ul>
@@ -60,18 +60,19 @@ public interface WorldPermissions {
      *     <li>A world setting is enabled that specifically prohibits certain events (e.g., block placement/breaking).</li>
      *     <li>The world is configured to only allow designated {@link Builder}s, and the player is neither a builder nor the world's creator.</li>
      * </ul>
+     * <p>
      * However, a player can bypass these restrictions if:
      * <ul>
      *     <li>They have the administrative permission ({@link #hasAdminPermission(Player)}).</li>
      *     <li>They are in a "build mode" that allows them to bypass building restrictions ({@link #canBypassBuildRestriction(Player)}).</li>
+     *     <li>They have the bypass permission for the check</li>
      * </ul>
      *
-     * @param player          The {@link Player} attempting to modify the world
-     * @param additionalCheck An optional {@link Supplier} that provides an additional boolean check for modification permission. This check does not apply if bypass permissions
-     *                        are active.
+     * @param player The player attempting to modify the world
+     * @param check  The specific data type representing the modification to be checked
      * @return {@code true} if the player is allowed to modify the world, {@code false} otherwise
      */
-    boolean canModify(Player player, Supplier<Boolean> additionalCheck);
+    boolean canModify(Player player, Type<Boolean> check);
 
     /**
      * Checks if the given {@link Player} is permitted to execute a specific command within the context of the current world.
@@ -114,4 +115,4 @@ public interface WorldPermissions {
      * @return {@code true} if the player can bypass build restrictions, {@code false} otherwise
      */
     boolean canBypassBuildRestriction(Player player);
-} 
+}

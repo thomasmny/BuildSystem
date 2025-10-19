@@ -204,10 +204,10 @@ public class SettingsInventory implements InventoryHandler {
                 }
                 if (settings.isScoreboard()) {
                     settings.setScoreboard(false);
-                    settingsManager.stopScoreboard(player);
+                    settingsManager.hideScoreboard(player);
                 } else {
                     settings.setScoreboard(true);
-                    settingsManager.startScoreboard(player);
+                    settingsManager.displayScoreboard(player);
                     plugin.getPlayerService().forceUpdateSidebar(player);
                 }
                 break;

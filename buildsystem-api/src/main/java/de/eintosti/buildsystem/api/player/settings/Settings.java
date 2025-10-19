@@ -73,13 +73,6 @@ public interface Settings {
     WorldDisplay getWorldDisplay();
 
     /**
-     * Sets the world display rule set
-     *
-     * @param worldDisplay The world display
-     */
-    void setWorldDisplay(WorldDisplay worldDisplay);
-
-    /**
      * Gets whether the player's inventory is to be cleared when joining the server.
      *
      * @return {@code true} if enabled, otherwise {@code false}

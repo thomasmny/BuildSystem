@@ -115,7 +115,7 @@ public class WorldManipulateListener implements Listener {
         WorldData worldData = buildWorld.getData();
 
         Cancellable parentEvent = event.getParentEvent();
-        boolean canModify = buildWorld.getPermissions().canModify(player, () -> getRelatedWorldSetting(parentEvent, worldData).get());
+        boolean canModify = buildWorld.getPermissions().canModify(player, getRelatedWorldSetting(parentEvent, worldData));
         if (!canModify) {
             parentEvent.setCancelled(true);
             denyPlayerInteraction(event);
@@ -127,13 +127,12 @@ public class WorldManipulateListener implements Listener {
     }
 
     private Type<Boolean> getRelatedWorldSetting(Cancellable event, WorldData data) {
-        if (event instanceof BlockBreakEvent) {
-            return data.blockBreaking();
-        }
-        if (event instanceof BlockPlaceEvent) {
-            return data.blockPlacement();
-        }
-        return data.blockInteractions();
+        return switch (event) {
+            case BlockBreakEvent ignored -> data.blockBreaking();
+            case BlockPlaceEvent ignored -> data.blockPlacement();
+            case PlayerInteractEvent ignored -> data.blockInteractions();
+            default -> throw new IllegalStateException("Unexpected event type: " + event.getClass().getName());
+        };
     }
 
     private void denyPlayerInteraction(Event event) {

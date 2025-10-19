@@ -170,7 +170,7 @@ public class PlayerJoinListener implements Listener {
         }
 
         if (settings.isScoreboard()) {
-            settingsManager.startScoreboard(player);
+            settingsManager.displayScoreboard(player);
             plugin.getPlayerService().forceUpdateSidebar(player);
         }
 

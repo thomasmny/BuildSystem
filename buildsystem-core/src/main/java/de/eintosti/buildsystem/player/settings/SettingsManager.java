@@ -35,7 +35,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class SettingsManager {
@@ -57,26 +56,11 @@ public class SettingsManager {
     }
 
     /**
-     * Only set a player's scoreboard if {@link SettingsImpl#isScoreboard} is equal to {@code true}.
-     *
-     * @param player   The player object
-     * @param settings The player's settings
-     */
-    public void startScoreboard(Player player, Settings settings) {
-        if (!settings.isScoreboard()) {
-            stopScoreboard(player, settings);
-            return;
-        }
-
-        startScoreboard(player);
-    }
-
-    /**
-     * Only set a player's scoreboard if {@link SettingsImpl#isScoreboard} is equal to {@code true}.
+     * Displays the player's scoreboard if enabled in the config and in their {@link Settings}.
      *
      * @param player The player object
      */
-    public void startScoreboard(Player player) {
+    public void displayScoreboard(Player player) {
         if (!Config.Settings.scoreboard) {
             return;
         }
@@ -86,7 +70,7 @@ public class SettingsManager {
         this.boards.put(player.getUniqueId(), board);
 
         if (!settings.isScoreboard()) {
-            stopScoreboard(player, settings);
+            hideScoreboard(player);
             return;
         }
 
@@ -96,14 +80,14 @@ public class SettingsManager {
     }
 
     /**
-     * Set each player's scoreboard if they have {@link SettingsImpl#isScoreboard} enabled.
+     * Displays scoreboards for all online players who have it enabled and if enabled in the config.
      */
-    public void startScoreboard() {
+    public void displayScoreboard() {
         if (!Config.Settings.scoreboard) {
             return;
         }
 
-        Bukkit.getOnlinePlayers().forEach(this::startScoreboard);
+        Bukkit.getOnlinePlayers().forEach(this::displayScoreboard);
     }
 
     public void updateScoreboard(Player player) {
@@ -128,41 +112,45 @@ public class SettingsManager {
         String worldName = player.getWorld().getName();
         BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(worldName);
 
-        return new Map.Entry[]{
-                Map.entry("%world%", worldName),
-                Map.entry("%status%", parseWorldInformation(player, buildWorld, "%status%")),
-                Map.entry("%permission%", parseWorldInformation(player, buildWorld, "%permission%")),
-                Map.entry("%project%", parseWorldInformation(player, buildWorld, "%project%")),
-                Map.entry("%creator%", parseWorldInformation(player, buildWorld, "%creator%")),
-                Map.entry("%creation%", parseWorldInformation(player, buildWorld, "%creation%")),
-                Map.entry("%lastedited%", parseWorldInformation(player, buildWorld, "%lastedited%")),
-                Map.entry("%lastloaded%", parseWorldInformation(player, buildWorld, "%lastloaded%")),
-                Map.entry("%lastunloaded%", parseWorldInformation(player, buildWorld, "%lastunloaded%"))
-        };
-    }
+        final String defaultVal = "§f-";
+        String status = defaultVal;
+        String permission = defaultVal;
+        String project = defaultVal;
+        String creator = defaultVal;
+        String creation = defaultVal;
+        String lastEdited = defaultVal;
+        String lastLoaded = defaultVal;
+        String lastUnloaded = defaultVal;
 
-    // Is there an easier way of doing this?
-    private String parseWorldInformation(Player player, @Nullable BuildWorld buildWorld, String input) {
-        if (buildWorld == null) {
-            return "§f-";
+        if (buildWorld != null) {
+            WorldData worldData = buildWorld.getData();
+            Builders builders = buildWorld.getBuilders();
+
+            status = Messages.getString(Messages.getMessageKey(worldData.status().get()), player);
+            permission = worldData.permission().get();
+            project = worldData.project().get();
+            creator = builders.hasCreator() ? builders.getCreator().getName() : "-";
+            creation = Messages.formatDate(buildWorld.getCreation());
+            lastEdited = Messages.formatDate(worldData.lastEdited().get());
+            lastLoaded = Messages.formatDate(worldData.lastLoaded().get());
+            lastUnloaded = Messages.formatDate(worldData.lastUnloaded().get());
         }
 
-        Builders builders = buildWorld.getBuilders();
-        WorldData worldData = buildWorld.getData();
-        return switch (input) {
-            case "%status%" -> Messages.getString(Messages.getMessageKey(worldData.status().get()), player);
-            case "%permission%" -> worldData.permission().get();
-            case "%project%" -> worldData.project().get();
-            case "%creator%" -> builders.hasCreator() ? builders.getCreator().getName() : "-";
-            case "%creation%" -> Messages.formatDate(buildWorld.getCreation());
-            case "%lastedited%" -> Messages.formatDate(worldData.lastEdited().get());
-            case "%lastloaded%" -> Messages.formatDate(worldData.lastLoaded().get());
-            case "%lastunloaded%" -> Messages.formatDate(worldData.lastUnloaded().get());
-            default -> "§f-";
+        return new Map.Entry[]{
+                Map.entry("%world%", worldName),
+                Map.entry("%status%", status),
+                Map.entry("%permission%", permission),
+                Map.entry("%project%", project),
+                Map.entry("%creator%", creator),
+                Map.entry("%creation%", creation),
+                Map.entry("%lastedited%", lastEdited),
+                Map.entry("%lastloaded%", lastLoaded),
+                Map.entry("%lastunloaded%", lastUnloaded)
         };
     }
 
-    private void stopScoreboard(Player player, Settings settings) {
+    public void hideScoreboard(Player player) {
+        Settings settings = getSettings(player);
         BukkitTask scoreboardTask = settings.getScoreboardTask();
         if (scoreboardTask != null) {
             scoreboardTask.cancel();
@@ -175,11 +163,7 @@ public class SettingsManager {
         }
     }
 
-    public void stopScoreboard(Player player) {
-        stopScoreboard(player, getSettings(player));
-    }
-
-    public void stopScoreboard() {
-        Bukkit.getOnlinePlayers().forEach(this::stopScoreboard);
+    public void hideScoreboards() {
+        Bukkit.getOnlinePlayers().forEach(this::hideScoreboard);
     }
 }

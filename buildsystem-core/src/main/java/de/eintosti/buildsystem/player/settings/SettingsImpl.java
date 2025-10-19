@@ -126,11 +126,6 @@ public class SettingsImpl implements Settings {
     }
 
     @Override
-    public void setWorldDisplay(WorldDisplay worldDisplay) {
-        this.worldDisplay = worldDisplay;
-    }
-
-    @Override
     public boolean isClearInventory() {
         return clearInventory;
     }

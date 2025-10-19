@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.api.data;
 
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -26,6 +27,52 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public interface Type<T> {
+
+    /**
+     * An immutable implementation of the {@link Type} interface using a Java Record. This class holds a final, read-only value.
+     *
+     * @param <T>   The type of the value held
+     * @param value The immutable value
+     */
+    record ImmutableType<T>(T value) implements Type<T> {
+
+        /**
+         * Gets the immutable value.
+         *
+         * @return The value
+         */
+        @Override
+        public T get() {
+            return value;
+        }
+
+        /**
+         * Throws {@link UnsupportedOperationException} as this type is immutable.
+         *
+         * @param value The value to set (which is ignored)
+         * @throws UnsupportedOperationException Always, as this type cannot be modified
+         */
+        @Contract("_ -> fail")
+        @Override
+        public void set(T value) {
+            throw new UnsupportedOperationException("This Type is immutable and cannot be modified.");
+        }
+
+        /**
+         * Gets the immutable value formatted for storage.
+         *
+         * @return The immutable value
+         */
+        @Override
+        public Object getConfigFormat() {
+            return value;
+        }
+    }
+
+    /**
+     * An immutable {@link Type} representing the boolean value {@code true}.
+     */
+    Type<Boolean> TRUE = new ImmutableType<>(true);
 
     /**
      * Gets the current value of this data point.
@@ -42,7 +89,8 @@ public interface Type<T> {
     void set(T value);
 
     /**
-     * Gets the value of this data point formatted for storage in a configuration file. This might involve converting complex objects into simpler types (e.g., enums to strings).
+     * Gets the value of this data point formatted for storage in a configuration file.
+     * This might involve converting complex objects into simpler types (e.g., enums to strings).
      *
      * @return The value formatted for a config file
      */

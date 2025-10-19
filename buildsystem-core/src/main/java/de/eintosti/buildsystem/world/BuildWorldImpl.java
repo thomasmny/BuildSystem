@@ -31,9 +31,12 @@ import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.util.WorldPermissions;
 import de.eintosti.buildsystem.api.world.util.WorldTeleporter;
 import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter;
+import de.eintosti.buildsystem.config.Config.World.Default.Permission;
+import de.eintosti.buildsystem.config.Config.World.Default.Settings.BuildersEnabled;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import de.eintosti.buildsystem.world.builder.BuildersImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
+import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
 import de.eintosti.buildsystem.world.util.WorldLoaderImpl;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import de.eintosti.buildsystem.world.util.WorldTeleporterImpl;
@@ -83,11 +86,12 @@ public final class BuildWorldImpl implements BuildWorld {
                 UUID.randomUUID(),
                 name,
                 worldType,
-                new WorldDataImpl(
-                        name,
-                        privateWorld,
-                        privateWorld ? XMaterial.PLAYER_HEAD : BuildSystemPlugin.get().getCustomizableIcons().getIcon(worldType)
-                ),
+                new WorldDataBuilder(name)
+                        .withPrivateWorld(privateWorld)
+                        .withMaterial(privateWorld ? XMaterial.PLAYER_HEAD : BuildSystemPlugin.get().getCustomizableIcons().getIcon(worldType))
+                        .withPermission((privateWorld ? Permission.privatePermission : Permission.publicPermission).replace("%world%", name))
+                        .withBuildersEnabled(privateWorld ? BuildersEnabled.privateBuilders : BuildersEnabled.publicBuilders)
+                        .build(),
                 creator,
                 new ArrayList<>(),
                 creation,
