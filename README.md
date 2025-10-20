@@ -29,9 +29,9 @@ building can start!
   You can find a full guide with tutorials, commands and
   permissions [here](https://eintosti.gitbook.io/buildsystem/).
 * **Downloads:**
-    * [SpigotMC](https://spigotmc.org/resources/buildsystem-1-8-1-18.60441/)
-    * [Chunkfactory](https://chunkfactory.com/product/buildsystem-1-8-1-15.1049/)
-    * [MC-Market](https://www.mc-market.org/resources/12399/)
+    * [SpigotMC](https://spigotmc.org/resources/60441/)
+    * [Chunkfactory](https://chunkfactory.com/product/1049/)
+    * [BuiltByBit](https://builtbybit.com/resources/12399/)
     * Snapshots are available on [Jenkins](https://ci.eintosti.de/job/BuildSystem/).
 * **Support:**
     * [GitHub issue tracker](https://github.com/einTosti/BuildSystem/issues)
@@ -84,6 +84,8 @@ building can start!
 ![Graph](https://bstats.org/signatures/bukkit/BuildSystem.svg)
 
 ## Developer API
+
+![maven-central](https://img.shields.io/maven-central/v/de.eintosti/buildsystem-api)
 
 **Maven:**
 
