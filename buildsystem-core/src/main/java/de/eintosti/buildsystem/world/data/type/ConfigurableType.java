@@ -89,15 +89,19 @@ public class ConfigurableType<T> implements Type<T> {
         return Optional.ofNullable(this.capabilities.get(clazz)).map(clazz::cast);
     }
 
+    /**
+     * Gets the effective value for this type, taking into account any active {@link Overridable} capability.
+     *
+     * @return The current value
+     */
     @Override
     @SuppressWarnings({"unchecked"})
     public T get() {
-        Optional<T> override = getCapability(Overridable.class)
+        return getCapability(Overridable.class)
                 .map(raw -> (Overridable<T>) raw)
                 .filter(overridable -> overridable.isEnabled().getAsBoolean())
-                .map(overridable -> overridable.provider().get());
-
-        return override.orElse(this.value);
+                .map(overridable -> overridable.provider().get())
+                .orElse(this.value);
     }
 
     /**

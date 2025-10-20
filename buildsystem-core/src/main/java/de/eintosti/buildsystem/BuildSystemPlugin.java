@@ -95,9 +95,8 @@ import de.eintosti.buildsystem.world.backup.BackupService;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import de.eintosti.buildsystem.world.navigator.ArmorStandManager;
 import java.io.File;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.AdvancedPie;
 import org.bstats.charts.SimplePie;
@@ -300,20 +299,15 @@ public class BuildSystemPlugin extends JavaPlugin {
         metrics.addCustomChart(new SimplePie("scoreboard", () -> String.valueOf(Config.Settings.scoreboard)));
         metrics.addCustomChart(new SimplePie("update_checker", () -> String.valueOf(Config.Settings.updateChecker)));
         metrics.addCustomChart(new SimplePie("unload_worlds", () -> String.valueOf(Unload.enabled)));
-        metrics.addCustomChart(new AdvancedPie("navigator_type", new Callable<>() {
-            @Override
-            public Map<String, Integer> call() {
-                Map<String, Integer> valueMap = new HashMap<>();
-                valueMap.put("Old", getPlayersWithNavigator(NavigatorType.OLD));
-                valueMap.put("New", getPlayersWithNavigator(NavigatorType.NEW));
-                return valueMap;
-            }
-
-            private int getPlayersWithNavigator(NavigatorType navigatorType) {
-                return (int) playerService.getPlayerStorage().getBuildPlayers().stream()
-                        .filter(buildPlayer -> buildPlayer.getSettings().getNavigatorType() == navigatorType)
-                        .count();
-            }
+        metrics.addCustomChart(new AdvancedPie("navigator_type", () -> {
+            Map<NavigatorType, Long> countsByType = playerService.getPlayerStorage().getBuildPlayers().stream()
+                    .collect(Collectors.groupingBy(
+                            buildPlayer -> buildPlayer.getSettings().getNavigatorType(),
+                            Collectors.counting()
+                    ));
+            int oldCount = countsByType.getOrDefault(NavigatorType.OLD, 0L).intValue();
+            int newCount = countsByType.getOrDefault(NavigatorType.NEW, 0L).intValue();
+            return Map.of("Old", oldCount, "New", newCount);
         }));
         metrics.addCustomChart(new SimplePie("folder_override_permissions", () -> String.valueOf(Folder.overridePermissions)));
         metrics.addCustomChart(new SimplePie("folder_override_projects", () -> String.valueOf(Folder.overrideProjects)));
