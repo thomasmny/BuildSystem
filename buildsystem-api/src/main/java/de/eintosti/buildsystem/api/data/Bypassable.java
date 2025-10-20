@@ -23,7 +23,7 @@ import org.jspecify.annotations.NullMarked;
  * A {@link Capability} that marks a {@link Type} as being bypassable with a specific permission.
  *
  * @param permission The permission node required to bypass this type
- * @since TODO
+ * @since 3.0.1
  */
 @NullMarked
 public record Bypassable(String permission) implements Capability {

@@ -28,7 +28,7 @@ import org.jspecify.annotations.Nullable;
  * @param <T>       The type of the value being overridden
  * @param isEnabled A supplier that returns {@code true} if the override is active
  * @param provider  A supplier that returns the override value or {@code null} if no override is set
- * @since TODO
+ * @since 3.0.1
  */
 @NullMarked
 public record Overridable<T>(
