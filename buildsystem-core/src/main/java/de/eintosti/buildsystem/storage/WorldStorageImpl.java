@@ -164,7 +164,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
     }
 
     public void loadWorlds() {
-        load().thenAccept(worlds -> {
+        load().thenAccept(worlds -> Bukkit.getScheduler().runTask(plugin, () -> {
             worlds.forEach(this::addBuildWorld);
             assignWorldsToFolders();
 
@@ -183,7 +183,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
             notLoaded.forEach(this::removeBuildWorld);
 
             logger.info("Loaded " + worlds.size() + " worlds from storage");
-        }).exceptionally(throwable -> {
+        })).exceptionally(throwable -> {
             logger.log(Level.SEVERE, "Failed to load worlds from storage", throwable);
             return null;
         });
