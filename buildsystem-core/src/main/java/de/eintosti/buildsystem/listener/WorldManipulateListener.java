@@ -130,8 +130,7 @@ public class WorldManipulateListener implements Listener {
         return switch (event) {
             case BlockBreakEvent ignored -> data.blockBreaking();
             case BlockPlaceEvent ignored -> data.blockPlacement();
-            case PlayerInteractEvent ignored -> data.blockInteractions();
-            default -> throw new IllegalStateException("Unexpected event type: " + event.getClass().getName());
+            default -> data.blockInteractions();
         };
     }
 
