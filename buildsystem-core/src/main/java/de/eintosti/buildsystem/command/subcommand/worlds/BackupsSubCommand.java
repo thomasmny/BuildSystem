@@ -68,7 +68,7 @@ public class BackupsSubCommand implements SubCommand {
                     Entry<String, Object> worldNamePlaceholder = Map.entry("%world%", buildWorld.getName());
                     plugin.getBackupService().backup(buildWorld,
                             () -> Messages.sendMessage(player, "worlds_backup_created", worldNamePlaceholder),
-                            () -> Messages.sendMessage(player, "worlds_backup_failed", worldNamePlaceholder)
+                            () -> Messages.sendMessage(player, "worlds_backup_creation_failed", worldNamePlaceholder)
                     );
                 } else {
                     Messages.sendMessage(player, "worlds_backup_usage");

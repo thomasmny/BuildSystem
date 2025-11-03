@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import java.io.File;
 import org.bukkit.Difficulty;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -60,8 +61,18 @@ public interface BuildWorldCreator {
      *
      * @param template The template name, may be {@code null} if no template is used
      * @return The creator object
+     * @deprecated Use {@link #setReference(File)} instead.
      */
+    @Deprecated(forRemoval = true, since = "TODO")
     BuildWorldCreator setTemplate(@Nullable String template);
+
+    /**
+     * Sets the reference file to be copied when the world is created.
+     *
+     * @param reference The reference file or directory to copy. If {@code null}, a new, default world will be generated.
+     * @return This creator object
+     */
+    BuildWorldCreator setReference(@Nullable File reference);
 
     /**
      * Sets the type of the world.

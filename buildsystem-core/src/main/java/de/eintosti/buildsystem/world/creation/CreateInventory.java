@@ -47,6 +47,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class CreateInventory extends PaginatedInventory {
 
+    private static final String TEMPLATES_DIRECTORY = "templates";
     private static final int MAX_TEMPLATES = 5;
 
     private final BuildSystemPlugin plugin;
@@ -225,14 +226,14 @@ public class CreateInventory extends PaginatedInventory {
                     return;
                 }
 
-                worldService.startWorldNameInput(player, worldType, null, this.createPrivateWorld, this.folder);
+                worldService.startWorldNameInput(player, worldType, null, this.createPrivateWorld, this.folder, null);
                 XSound.ENTITY_CHICKEN_EGG.play(player);
                 break;
             }
 
             case GENERATOR: {
                 if (slot == 31) {
-                    worldService.startWorldNameInput(player, BuildWorldType.CUSTOM, null, this.createPrivateWorld, this.folder);
+                    worldService.startWorldNameInput(player, BuildWorldType.CUSTOM, null, this.createPrivateWorld, this.folder, null);
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                 }
                 break;
@@ -247,7 +248,9 @@ public class CreateInventory extends PaginatedInventory {
                 XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
                 switch (xMaterial) {
                     case FILLED_MAP:
-                        this.worldService.startWorldNameInput(player, BuildWorldType.TEMPLATE, itemStack.getItemMeta().getDisplayName(), this.createPrivateWorld, this.folder);
+                        String templateName = ChatColor.stripColor(itemStack.getItemMeta().getDisplayName());
+                        File templateReference = new File(this.plugin.getDataFolder(), TEMPLATES_DIRECTORY + File.separator + templateName);
+                        this.worldService.startWorldNameInput(player, BuildWorldType.TEMPLATE, templateReference, this.createPrivateWorld, this.folder, null);
                         break;
                     case PLAYER_HEAD:
                         if (slot == 28 && !decrementInv(player, numTemplates, MAX_TEMPLATES)) {

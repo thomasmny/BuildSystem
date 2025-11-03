@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.config;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.config.Config.Settings.Archive;
 import de.eintosti.buildsystem.config.Config.Settings.BuildMode;
 import de.eintosti.buildsystem.config.Config.Settings.Builder;
@@ -35,6 +34,7 @@ import de.eintosti.buildsystem.config.Config.World.Default.Time;
 import de.eintosti.buildsystem.config.Config.World.Limits;
 import de.eintosti.buildsystem.config.Config.World.Unload;
 import de.eintosti.buildsystem.config.migration.ConfigMigrationManager;
+import de.eintosti.buildsystem.world.backup.storage.GenericBackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.LocalBackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.S3BackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.SftpBackupStorage;
@@ -401,7 +401,7 @@ public class Config {
             /**
              * The storage for backups.
              */
-            public static BackupStorage storage = createBackupStorage();
+            public static GenericBackupStorage storage = createBackupStorage();
 
             public static class AutoBackup {
 
@@ -608,7 +608,7 @@ public class Config {
     }
 
     @Contract("-> new")
-    private static BackupStorage createBackupStorage() {
+    private static GenericBackupStorage createBackupStorage() {
         String type = CONFIG.getString("world.backup.storage.type", "local").toLowerCase();
 
         switch (type) {

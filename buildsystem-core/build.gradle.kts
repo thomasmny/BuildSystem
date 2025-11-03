@@ -7,6 +7,7 @@ plugins {
     id("java-library")
     id("com.gradleup.shadow") version "9.2.2"
     id("de.eldoria.plugin-yml.bukkit") version "0.8.0"
+    id("xyz.jpenilla.run-paper") version "3.0.2"
 }
 
 project.description = "Core"
@@ -82,6 +83,10 @@ tasks.processResources {
     filesMatching("plugin.yml") {
         expand(props)
     }
+}
+
+tasks.runServer {
+    minecraftVersion("1.21.10")
 }
 
 bukkit {

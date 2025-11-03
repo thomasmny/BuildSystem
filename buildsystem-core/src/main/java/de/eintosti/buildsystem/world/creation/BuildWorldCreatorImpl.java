@@ -47,6 +47,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -63,7 +64,6 @@ import org.jspecify.annotations.Nullable;
 public class BuildWorldCreatorImpl implements BuildWorldCreator {
 
     private static final String LEVEL_DAT_FILE_NAME = "level.dat";
-    private static final String TEMPLATES_DIRECTORY = "templates";
     private static final String WORLD_TYPE_FILE_NAME = ".buildsystem-generator-data.txt";
     private static final String CUSTOM_GENERATOR_PREFIX = "GENERATOR:";
 
@@ -71,27 +71,25 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
     private final WorldStorageImpl worldStorage;
 
     private String worldName;
-    @Nullable
-    private Builder creator;
+    private @Nullable Builder creator;
     private boolean isPrivate = false;
     private BuildWorldType worldType = BuildWorldType.NORMAL;
-    @Nullable
-    private CustomGenerator customGenerator = null;
+    private @Nullable CustomGenerator customGenerator = null;
     private long creationDate = System.currentTimeMillis();
-    @Nullable
-    private String template = null;
-    @Nullable
-    private Folder folder;
+    private @Nullable File reference = null;
+    private @Nullable Folder folder;
 
-    @Nullable
-    private Difficulty difficulty;
-    @Nullable
-    private Integer time;
-    @Nullable
-    private Integer worldBoarderSize;
+    private @Nullable Difficulty difficulty;
+    private @Nullable Integer time;
+    private @Nullable Integer worldBoarderSize;
 
-    @Nullable
-    private BuildWorld buildWorld;
+    /**
+     * The {@link BuildWorld} associated with this creator.
+     * <p>
+     * This field is set by the second constructor (for existing worlds) OR by {@link #createWorld(Player)} and {@link #importWorld(Player, boolean)}. It is required for
+     * {@link #generateBukkitWorld(boolean)} to function, allowing worlds to be loaded by the plugin after a restart.
+     */
+    private @Nullable BuildWorld buildWorld;
 
     public BuildWorldCreatorImpl(BuildSystemPlugin plugin, String name) {
         this.plugin = plugin;
@@ -127,10 +125,22 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
         return this;
     }
 
+    @SuppressWarnings("removal")
     @Override
     @Contract("_ -> this")
     public BuildWorldCreatorImpl setTemplate(@Nullable String template) {
-        this.template = ChatColor.stripColor(template);
+        if (template == null) {
+            this.reference = null;
+        } else {
+            this.reference = new File(this.plugin.getDataFolder(), "templates" + File.separator + ChatColor.stripColor(template));
+        }
+        return this;
+    }
+
+    @Override
+    @Contract("_ -> this")
+    public BuildWorldCreatorImpl setReference(@Nullable File reference) {
+        this.reference = reference;
         return this;
     }
 
@@ -178,16 +188,28 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
 
     @Override
     public void createWorld(Player player) {
-        if (this.worldStorage.worldAndFolderExist(this.worldName)) {
+        if (this.worldStorage.worldExists(this.worldName) || this.worldStorage.worldAndFolderExist(this.worldName)) {
             Messages.sendMessage(player, "worlds_world_exists");
             return;
         }
 
-        boolean success = (this.worldType == BuildWorldType.TEMPLATE)
-                ? createWorldFromTemplate(player)
-                : createWorldFromGenerator(player);
+        if (this.reference != null && !this.reference.exists()) {
+            Messages.sendMessage(player, "worlds_template_does_not_exist");
+            return;
+        }
 
-        if (success) {
+        Messages.sendMessage(player, "worlds_world_creation_started",
+                Map.entry("%world%", this.worldName),
+                Map.entry("%type%", Messages.getString(Messages.getMessageKey(this.worldType), player))
+        );
+
+        if (this.reference != null) {
+            File worldFile = new File(Bukkit.getWorldContainer(), this.worldName);
+            FileUtils.copy(this.reference, worldFile);
+        }
+
+        this.buildWorld = createAndRegisterBuildWorld(player);
+        if (generateBukkitWorld(true) != null) {
             teleportAfterCreation(player);
             Messages.sendMessage(player, "worlds_creation_finished");
         }
@@ -196,57 +218,11 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
     @Override
     public void importWorld(Player player, boolean teleport) {
         this.buildWorld = createAndRegisterBuildWorld(player);
-        generateBukkitWorld(true);
-        if (teleport) {
-            teleportAfterCreation(player);
+        if (generateBukkitWorld(true) != null) {
+            if (teleport) {
+                teleportAfterCreation(player);
+            }
         }
-    }
-
-    /**
-     * Handles the creation of worlds that use a generator (i.e., not a template).
-     *
-     * @param player The player creating the world
-     * @return true if the process started successfully, false otherwise
-     */
-    private boolean createWorldFromGenerator(Player player) {
-        Messages.sendMessage(player, "worlds_world_creation_started",
-                Map.entry("%world%", this.worldName),
-                Map.entry("%type%", Messages.getString(Messages.getMessageKey(this.worldType), player))
-        );
-
-        this.buildWorld = createAndRegisterBuildWorld(player);
-        generateBukkitWorld(false); // Version check is not needed for new worlds.
-        return true;
-    }
-
-    /**
-     * Handles the creation of worlds from a template file.
-     *
-     * @param player The player creating the world
-     * @return {@code true} if the creation was successful, {@code false} otherwise
-     */
-    private boolean createWorldFromTemplate(Player player) {
-        if (this.template == null || this.template.isEmpty()) {
-            throw new IllegalStateException("Attempted to create a template world without a template name");
-        }
-
-        File templateFile = new File(this.plugin.getDataFolder(), TEMPLATES_DIRECTORY + File.separator + template);
-        if (!templateFile.exists()) {
-            Messages.sendMessage(player, "worlds_template_does_not_exist");
-            return false;
-        }
-
-        Messages.sendMessage(player, "worlds_template_creation_started",
-                Map.entry("%world%", this.worldName),
-                Map.entry("%template%", this.template)
-        );
-
-        File worldFile = new File(Bukkit.getWorldContainer(), this.worldName);
-        FileUtils.copy(templateFile, worldFile);
-
-        this.buildWorld = createAndRegisterBuildWorld(player);
-        generateBukkitWorld(true);
-        return true;
     }
 
     /**
@@ -321,39 +297,25 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
      */
     private WorldCreator createBukkitWorldCreator() {
         WorldCreator worldCreator = new WorldCreator(this.worldName);
-        BuildWorldType worldType = this.worldType;
 
-        if (worldType == BuildWorldType.IMPORTED && this.customGenerator != null) {
-            worldType = BuildWorldType.valueOf(this.customGenerator.chunkGeneratorName().toUpperCase(Locale.ROOT));
+        ResolvedGeneratorSettings settings = resolveGeneratorSettings();
+        BuildWorldType effectiveType = settings.type();
+        CustomGenerator effectiveGenerator = settings.generator();
+
+        if (effectiveGenerator != null && effectiveGenerator.chunkGenerator() != null) {
+            worldCreator.generator(effectiveGenerator.chunkGenerator());
+            plugin.getLogger().info("Using custom chunk generator '%s' for world '%s'".formatted(effectiveGenerator, this.worldName));
         }
 
-        if (worldType == BuildWorldType.TEMPLATE) {
-            switch (loadGenerationData(this.worldName)) {
-                case PredefinedGeneratorData predefinedData -> {
-                    worldType = predefinedData.type();
+        switch (effectiveType) {
+            case CUSTOM:
+                if (effectiveGenerator == null || effectiveGenerator.chunkGenerator() == null) {
+                    plugin.getLogger().warning("World '%s' is type CUSTOM but no valid generator was found. Defaulting to NORMAL.".formatted(this.worldName));
+                    worldCreator.type(WorldType.NORMAL);
+                    worldCreator.generateStructures(true);
+                    worldCreator.environment(World.Environment.NORMAL);
                 }
-                case CustomGeneratorData customGeneratorData -> {
-                    this.customGenerator = customGeneratorData.getCustomGenerator(this.worldName);
-                    if (this.customGenerator == null) {
-                        plugin.getLogger().warning(
-                                "Custom generator '%s:%s' not found. Defaulting to NORMAL type.".formatted(customGeneratorData.pluginName(), customGeneratorData.chunkGeneratorName())
-                        );
-                        worldType = BuildWorldType.NORMAL;
-                    }
-                }
-                default -> {
-                    plugin.getLogger().warning("Failed to load world generation data for '%s'. Defaulting to NORMAL type.".formatted(this.worldName));
-                    worldType = BuildWorldType.NORMAL;
-                }
-            }
-        }
-
-        if (this.customGenerator != null && this.customGenerator.chunkGenerator() != null) {
-            worldCreator.generator(this.customGenerator.chunkGenerator());
-            plugin.getLogger().info("Using custom chunk generator '%s' for world '%s'".formatted(this.customGenerator.toString(), this.worldName));
-        }
-
-        switch (worldType) {
+                break;
             case VOID:
                 worldCreator.type(WorldType.FLAT);
                 worldCreator.generateStructures(false);
@@ -383,6 +345,53 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
     }
 
     /**
+     * Resolves the effective world type and custom generator.
+     * <p>
+     * This is needed because {@link BuildWorldType#TEMPLATE} and {@link BuildWorldType#IMPORTED} can modify which {@link CustomGenerator} or {@link BuildWorldType} is used.
+     *
+     * @return The resolved generator settings
+     */
+    private ResolvedGeneratorSettings resolveGeneratorSettings() {
+        BuildWorldType effectiveType = this.worldType;
+        CustomGenerator effectiveGenerator = this.customGenerator;
+
+        if (effectiveType == BuildWorldType.IMPORTED && effectiveGenerator != null) {
+            try {
+                effectiveType = BuildWorldType.valueOf(effectiveGenerator.chunkGeneratorName().toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("Invalid custom generator name '%s' for imported world '%s'. Defaulting to NORMAL."
+                        .formatted(effectiveGenerator.chunkGeneratorName(), this.worldName)
+                );
+                effectiveType = BuildWorldType.NORMAL;
+            }
+        } else if (effectiveType == BuildWorldType.TEMPLATE) {
+            WorldGenerationData genData = loadGenerationData(this.worldName);
+            switch (genData) {
+                case PredefinedGeneratorData predefined -> effectiveType = predefined.type();
+                case CustomGeneratorData custom -> {
+                    effectiveGenerator = custom.getCustomGenerator(this.worldName);
+                    if (effectiveGenerator == null) {
+                        plugin.getLogger().warning(
+                                "Custom generator '%s:%s' not found for template world '%s'. Defaulting to NORMAL type."
+                                        .formatted(custom.pluginName(), custom.chunkGeneratorName(), this.worldName)
+                        );
+                        effectiveType = BuildWorldType.NORMAL;
+                    } else {
+                        // When a template resolves to a custom generator, treat its *type* as CUSTOM for generator selection.
+                        effectiveType = BuildWorldType.CUSTOM;
+                    }
+                }
+                default -> {
+                    plugin.getLogger().warning("Failed to load world generation data for '%s'. Defaulting to NORMAL type.".formatted(this.worldName));
+                    effectiveType = BuildWorldType.NORMAL;
+                }
+            }
+        }
+
+        return new ResolvedGeneratorSettings(effectiveType, effectiveGenerator);
+    }
+
+    /**
      * Applies standard server settings (difficulty, time, border, gamerules) to a newly created world.
      *
      * @param bukkitWorld The world to configure
@@ -402,7 +411,11 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
     }
 
     private static <T> void applyGameRule(World world, GameRuleEntry<T> entry) {
-        world.setGameRule(entry.rule(), entry.value());
+        try {
+            world.setGameRule(entry.rule(), entry.value());
+        } catch (Exception e) {
+            BuildSystemPlugin.get().getLogger().warning("Failed to set gamerule " + entry.rule().getName() + " for world " + world.getName());
+        }
     }
 
     /**
@@ -444,6 +457,11 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
         try {
             CompoundTag level = new Nbt().fromFile(levelFile);
             CompoundTag data = level.get("Data");
+            if (data == null) {
+                plugin.getLogger().log(Level.WARNING, "Failed to parse level.dat for world " + this.worldName + ": 'Data' tag not found.");
+                return -1;
+            }
+
             IntTag dataVersion = data.getInt("DataVersion");
             return dataVersion != null ? dataVersion.getValue() : -1;
         } catch (IOException e) {
@@ -462,8 +480,14 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
             Nbt nbt = new Nbt();
             CompoundTag level = nbt.fromFile(levelFile);
             CompoundTag data = level.get("Data");
+            if (data == null) {
+                plugin.getLogger().log(Level.WARNING, "Failed to update level.dat for world " + this.worldName + ": 'Data' tag not found.");
+                return;
+            }
+
             IntTag dataVersionTag = data.getInt("DataVersion");
             if (dataVersionTag == null) {
+                plugin.getLogger().log(Level.INFO, "No 'DataVersion' tag found in level.dat for world " + worldName + ". Skipping update.");
                 return;
             }
 
@@ -586,16 +610,22 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
     }
 
     private void teleportAfterCreation(Player player) {
-        BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
-        if (buildWorld == null) {
-            return;
-        }
-
-        buildWorld.getUnloader().manageUnload();
-        buildWorld.getTeleporter().teleport(player);
+        BuildWorld worldToTeleport = Objects.requireNonNull(this.buildWorld);
+        worldToTeleport.getUnloader().manageUnload();
+        worldToTeleport.getTeleporter().teleport(player);
     }
 
-    public interface WorldGenerationData {
+    /**
+     * Internal record to hold the resolved generator settings without mutating the class state.
+     */
+    private record ResolvedGeneratorSettings(BuildWorldType type, @Nullable CustomGenerator generator) {
+
+    }
+
+    /**
+     * Represents the data loaded from the {@code .buildsystem-generator-data.txt} file. This can either be a predefined type or a custom generator.
+     */
+    interface WorldGenerationData {
 
         record PredefinedGeneratorData(BuildWorldType type) implements WorldGenerationData {
 

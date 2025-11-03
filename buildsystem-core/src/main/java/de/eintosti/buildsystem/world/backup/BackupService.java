@@ -14,9 +14,9 @@ import de.eintosti.buildsystem.api.data.Type;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
-import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.config.Config.World.Backup;
 import de.eintosti.buildsystem.config.Config.World.Backup.AutoBackup;
+import de.eintosti.buildsystem.world.backup.storage.GenericBackupStorage;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
@@ -37,7 +37,7 @@ public class BackupService {
     private static final long UPDATE_PERIOD = Duration.ofSeconds(5).getSeconds();
 
     private final BuildSystemPlugin plugin;
-    private final BackupStorage backupStorage;
+    private final GenericBackupStorage backupStorage;
     private final WorldStorage worldStorage;
 
     private final Cache<UUID, BackupProfile> backupProfileCache = CacheBuilder.newBuilder().expireAfterAccess(3, TimeUnit.MINUTES).build();
@@ -52,7 +52,7 @@ public class BackupService {
         }
     }
 
-    public BackupStorage getStorage() {
+    public GenericBackupStorage getStorage() {
         return this.backupStorage;
     }
 

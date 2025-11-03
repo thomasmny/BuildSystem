@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.world.backup.storage;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
-import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.backup.BackupImpl;
@@ -52,21 +51,17 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
 @NullMarked
-public class S3BackupStorage implements BackupStorage {
-
-    private final BuildSystemPlugin plugin;
+public class S3BackupStorage extends GenericBackupStorage {
 
     private final S3Client s3Client;
     private final String bucket;
     private final String pathPrefix;
-    private final Path tmpDownloadDirectory;
 
     public S3BackupStorage(BuildSystemPlugin plugin, @Nullable String url, String accessKey, String secretKey, String region, String bucket, String pathPrefix) {
-        this.plugin = plugin;
+        super(plugin);
 
         this.bucket = bucket;
         this.pathPrefix = pathPrefix.endsWith("/") ? pathPrefix : pathPrefix + "/";
-        this.tmpDownloadDirectory = FileUtils.resolve(plugin.getDataFolder(), ".tmp_backup_downloads");
 
         S3ClientBuilder builder = S3Client.builder()
                 .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
@@ -148,7 +143,7 @@ public class S3BackupStorage implements BackupStorage {
     public CompletableFuture<File> downloadBackup(Backup backup) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Path target = this.tmpDownloadDirectory.resolve(UUID.randomUUID() + ".zip");
+                Path target = this.tmpDownloadPath.resolve(UUID.randomUUID() + ".zip");
                 this.s3Client.getObject(
                         GetObjectRequest.builder()
                                 .bucket(this.bucket)
@@ -182,7 +177,7 @@ public class S3BackupStorage implements BackupStorage {
         disconnect();
 
         try {
-            FileUtils.deleteDirectory(this.tmpDownloadDirectory);
+            FileUtils.deleteDirectory(this.tmpDownloadPath);
         } catch (IOException e) {
             plugin.getLogger().log(Level.WARNING, "Failed to delete temporary download directory", e);
         }

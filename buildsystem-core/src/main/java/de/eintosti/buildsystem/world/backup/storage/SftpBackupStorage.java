@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.world.backup.storage;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
-import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.backup.BackupImpl;
@@ -56,20 +55,17 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class SftpBackupStorage implements BackupStorage {
+public class SftpBackupStorage extends GenericBackupStorage {
 
     private static final Duration CONNECTION_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration AUTH_TIMEOUT = Duration.ofSeconds(5);
     private static final int BUFFER_SIZE = 8192;
-
-    private final BuildSystemPlugin plugin;
 
     private final String host;
     private final int port;
     private final String username;
     private final String password;
     private final String remoteBasePath;
-    private final Path tmpDownloadPath;
 
     @Nullable
     private volatile SshClient sshClient;
@@ -79,14 +75,13 @@ public class SftpBackupStorage implements BackupStorage {
     private volatile SftpClient sftpClient;
 
     public SftpBackupStorage(BuildSystemPlugin plugin, String host, int port, String username, String password, String remoteBasePath) {
-        this.plugin = plugin;
+        super(plugin);
 
         this.host = host;
         this.port = validatePort(port);
         this.username = username;
         this.password = password;
         this.remoteBasePath = normalizeBasePath(remoteBasePath);
-        this.tmpDownloadPath = FileUtils.resolve(plugin.getDataFolder().toPath(), ".tmp_backup_downloads");
 
         Security.addProvider(new BouncyCastleProvider());
         establishConnection();

@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.world.backup.storage;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
-import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.backup.BackupImpl;
@@ -39,13 +38,12 @@ import java.util.stream.Stream;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class LocalBackupStorage implements BackupStorage {
+public class LocalBackupStorage extends GenericBackupStorage {
 
-    private final BuildSystemPlugin plugin;
     private final Path backupPath;
 
     public LocalBackupStorage(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
 
         this.backupPath = plugin.getDataFolder().toPath().resolve("backups");
         if (!Files.exists(backupPath)) {

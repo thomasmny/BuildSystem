@@ -247,7 +247,8 @@ public class Messages {
         setMessage(config, sb, "worlds_backup_unknown_world", "%prefix% &cUnknown world.");
         setMessage(config, sb, "worlds_backup_world_not_imported", "%prefix% &cWorld must be imported: /worlds import <world>");
         setMessage(config, sb, "worlds_backup_created", "%prefix% &7Successfully &acreated &7a backup of &b%world%&7.");
-        setMessage(config, sb, "worlds_backup_failed", "%prefix% &cUnable to create a backup of %world%.");
+        setMessage(config, sb, "worlds_backup_creation_failed", "%prefix% &cUnable to create a backup of %world%.");
+        setMessage(config, sb, "worlds_backup_download_failed", "%prefix% &cUnable to download backup of %world%.");
         setMessage(config, sb, "worlds_backup_restoration_in_progress", "%prefix% &7&oThe world you are in is being restored...");
         setMessage(config, sb, "worlds_backup_restoration_successful", "%prefix% &7The world has been successfully reset to the state from &a%timestamp%&7.");
         addSpacer(sb, "");
@@ -537,6 +538,10 @@ public class Messages {
                 "&7Next backup in: &a%remaining%"
         ));
         setMessage(config, sb, "backups_backup_name", "&a%timestamp%");
+        setMessage(config, sb, "backups_backup_lore", Arrays.asList(
+                "&8- &7&oLeft click&8: &7Restore Backup",
+                "&8- &7&oRight click&8: &7Create New World"
+        ));
         setMessage(config, sb, "restore_backup_title", "&3» &8Restore Backup");
         setMessage(config, sb, "restore_backup_confirm_name", "&aConfirm");
         setMessage(config, sb, "restore_backup_confirm_lore", Arrays.asList(

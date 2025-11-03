@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
@@ -64,7 +65,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class WorldServiceImpl implements WorldService {
 
-    private static boolean importingAllWorlds = false;
+    private final AtomicBoolean isImportingAll = new AtomicBoolean(false);
 
     private final BuildSystemPlugin plugin;
     private final FolderStorageImpl folderStorage;
@@ -97,7 +98,18 @@ public class WorldServiceImpl implements WorldService {
         return new BuildWorldCreatorImpl(plugin, name);
     }
 
-    public void startWorldNameInput(Player player, BuildWorldType worldType, @Nullable String template, boolean privateWorld, @Nullable Folder folder) {
+    /**
+     * Starts the process of creating a new world by prompting the player for a name.
+     *
+     * @param player          The player who is creating the world and will be prompted for its name
+     * @param worldType       The type of world to create
+     * @param reference       The optional reference file or directory to copy for the new world. May be {@code null} to generate a new world
+     * @param privateWorld    Whether the new world should be private to the player
+     * @param folder          The optional folder to organize this world into. May be {@code null}
+     * @param customGenerator The custom generator to use. This parameter is ignored if {@code worldType} is {@link BuildWorldType#CUSTOM}, as the user will be prompted for one in
+     *                        the next step.
+     */
+    public void startWorldNameInput(Player player, BuildWorldType worldType, @Nullable File reference, boolean privateWorld, @Nullable Folder folder, @Nullable CustomGenerator customGenerator) {
         player.closeInventory();
         new PlayerChatInput(plugin, player, "enter_world_name", input -> {
             if (StringCleaner.hasInvalidNameCharacters(input)) {
@@ -111,19 +123,20 @@ public class WorldServiceImpl implements WorldService {
             }
 
             if (worldType == BuildWorldType.CUSTOM) {
-                startCustomGeneratorInput(player, worldName, template, privateWorld, folder);
+                startCustomGeneratorInput(player, worldName, reference, privateWorld, folder);
             } else {
                 createWorld(worldName)
                         .setType(worldType)
-                        .setTemplate(template)
+                        .setReference(reference)
                         .setPrivate(privateWorld)
                         .setFolder(folder)
+                        .setCustomGenerator(customGenerator)
                         .createWorld(player);
             }
         });
     }
 
-    private void startCustomGeneratorInput(Player player, String worldName, @Nullable String template, boolean privateWorld, @Nullable Folder folder) {
+    private void startCustomGeneratorInput(Player player, String worldName, @Nullable File reference, boolean privateWorld, @Nullable Folder folder) {
         new PlayerChatInput(plugin, player, "enter_generator_name", input -> {
             CustomGenerator customGenerator = CustomGeneratorImpl.of(input, worldName);
             if (customGenerator == null) {
@@ -134,7 +147,7 @@ public class WorldServiceImpl implements WorldService {
 
             createWorld(worldName)
                     .setType(BuildWorldType.CUSTOM)
-                    .setTemplate(template)
+                    .setReference(reference)
                     .setPrivate(privateWorld)
                     .setCustomGenerator(customGenerator)
                     .setFolder(folder)
@@ -181,7 +194,7 @@ public class WorldServiceImpl implements WorldService {
         Messages.sendMessage(player, "worlds_importall_delay",
                 Map.entry("%delay%", String.valueOf(delay))
         );
-        importingAllWorlds = true;
+        isImportingAll.set(true);
 
         AtomicInteger worldsImported = new AtomicInteger(0);
         new BukkitRunnable() {
@@ -190,7 +203,7 @@ public class WorldServiceImpl implements WorldService {
                 int i = worldsImported.getAndIncrement();
                 if (i >= worlds) {
                     this.cancel();
-                    importingAllWorlds = false;
+                    isImportingAll.set(false);
                     Messages.sendMessage(player, "worlds_importall_finished");
                     return;
                 }
@@ -220,7 +233,7 @@ public class WorldServiceImpl implements WorldService {
     }
 
     public boolean isImportingAllWorlds() {
-        return importingAllWorlds;
+        return isImportingAll.get();
     }
 
     @Override

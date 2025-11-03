@@ -19,15 +19,22 @@ import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
 import de.eintosti.buildsystem.util.inventory.InventoryHandler;
 import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
+import de.eintosti.buildsystem.world.backup.storage.GenericBackupStorage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.logging.Level;
+import net.lingala.zip4j.ZipFile;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -39,12 +46,16 @@ public class BackupsInventory implements InventoryHandler {
 
     private static final int FIRST_BACKUP_SLOT = 9;
 
+    private final BuildSystemPlugin plugin;
     private final InventoryManager inventoryManager;
     private final BackupService backupService;
+    private final WorldServiceImpl worldService;
 
     public BackupsInventory(BuildSystemPlugin plugin) {
+        this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
         this.backupService = plugin.getBackupService();
+        this.worldService = plugin.getWorldService();
     }
 
     public void openBackupsInventory(Player player, BuildWorld buildWorld) {
@@ -86,16 +97,19 @@ public class BackupsInventory implements InventoryHandler {
      */
     private void loadBackups(BackupsHolder backupsHolder, BuildWorld buildWorld, Player player) {
         backupService.getProfile(buildWorld).listBackups().thenAcceptAsync(backups -> {
-            backupsHolder.getBackups().addAll(backups);
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                backupsHolder.getBackups().addAll(backups);
 
-            Inventory inventory = backupsHolder.getInventory();
-            for (int i = 0; i < backups.size(); i++) {
-                inventory.setItem(FIRST_BACKUP_SLOT + i, InventoryUtils.createItem(XMaterial.GRASS_BLOCK,
-                        Messages.getString("backups_backup_name", player,
-                                Map.entry("%timestamp%", StringUtils.formatTime(backups.get(i).creationTime()))
-                        )
-                ));
-            }
+                Inventory inventory = backupsHolder.getInventory();
+                for (int i = 0; i < backups.size(); i++) {
+                    inventory.setItem(FIRST_BACKUP_SLOT + i, InventoryUtils.createItem(XMaterial.GRASS_BLOCK,
+                            Messages.getString("backups_backup_name", player,
+                                    Map.entry("%timestamp%", StringUtils.formatTime(backups.get(i).creationTime()))
+                            ),
+                            Messages.getString("backups_backup_lore", player)
+                    ));
+                }
+            });
         });
     }
 
@@ -108,10 +122,15 @@ public class BackupsInventory implements InventoryHandler {
     private String getDurationUntilBackup(BuildWorld buildWorld) {
         int timeUntilBackup = AutoBackup.interval;
         int timeSinceBackup = buildWorld.getData().timeSinceBackup().get();
+        long remainingSeconds = (long) timeUntilBackup - timeSinceBackup;
 
-        Date date = new Date((timeUntilBackup - timeSinceBackup) * 1000L);
-        DateFormat formatter = new SimpleDateFormat("mm:ss");
-        return formatter.format(date);
+        if (remainingSeconds < 0) {
+            remainingSeconds = 0;
+        }
+
+        long minutes = remainingSeconds / 60;
+        long seconds = remainingSeconds % 60;
+        return String.format("%02d:%02d", minutes, seconds);
     }
 
     public void openConfirmationInventory(Player player, Backup backup) {
@@ -161,25 +180,120 @@ public class BackupsInventory implements InventoryHandler {
             int slot = event.getSlot();
             if (slot >= FIRST_BACKUP_SLOT && slot < FIRST_BACKUP_SLOT + 18 && itemStack.getType() == XMaterial.GRASS_BLOCK.get()) {
                 Backup backup = backupsHolder.getBackups().get(slot - FIRST_BACKUP_SLOT);
-                player.closeInventory();
-                openConfirmationInventory(player, backup);
+                handleBackupClick(player, backupsHolder.getBuildWorld(), backup, event.getClick());
             }
         }
 
         if (holder instanceof ConfirmationHolder confirmationHolder) {
             event.setCancelled(true);
+            Backup backup = confirmationHolder.getBackup();
+            handleConfirmationClick(player, backup, event.getSlot());
+        }
+    }
 
-            switch (event.getSlot()) {
-                case 11 -> {
-                    player.closeInventory();
-                    player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
-                    Backup backup = confirmationHolder.getBackup();
-                    backup.owner().restoreBackup(backup, player);
-                }
-                case 15 -> {
-                    player.closeInventory();
-                    player.playSound(player, Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 1f, 1f);
-                }
+    /**
+     * Handles a player's click on a specific backup item in the inventory.
+     * <p>
+     * This method performs two different actions based on the click type:
+     * <ul>
+     * <li><b>Left Click:</b> Opens a confirmation menu to restore the backup over the original world.</li>
+     * <li><b>Right Click:</b> Create a new world using the selected backup as a reference.
+     * </ul>
+     *
+     * @param player     The player who clicked the backup item
+     * @param buildWorld The build world to which the backup belongs
+     * @param backup     The specific backup that was clicked
+     * @param clickType  The {@link ClickType} (e.g., LEFT, RIGHT) that determines the action.
+     */
+    private void handleBackupClick(Player player, BuildWorld buildWorld, Backup backup, ClickType clickType) {
+        player.closeInventory();
+
+        if (clickType.isLeftClick()) {
+            openConfirmationInventory(player, backup);
+            return;
+        }
+
+        if (!clickType.isRightClick()) {
+            return;
+        }
+
+        GenericBackupStorage backupStorage = backupService.getStorage();
+        backupStorage.downloadBackup(backup)
+                .thenApplyAsync(downloadedZipFile -> {
+                    String outputName = UUID.randomUUID().toString();
+                    File outputDest = backupStorage.getTmpDownloadPath().resolve(outputName).toFile();
+
+                    try (ZipFile zip = new ZipFile(downloadedZipFile)) {
+                        zip.extractAll(outputDest.getAbsolutePath());
+                    } catch (IOException e) {
+                        throw new RuntimeException("Failed to unzip backup: " + downloadedZipFile.getAbsolutePath(), e);
+                    }
+
+                    return findWorldFolder(outputDest);
+                }, BackupService.BACKUP_EXECUTOR)
+                .thenAccept(worldReferenceFolder -> {
+                    Bukkit.getScheduler().runTask(plugin, () -> {
+                        worldService.startWorldNameInput(
+                                player,
+                                buildWorld.getType(),
+                                worldReferenceFolder,
+                                buildWorld.getData().privateWorld().get(),
+                                buildWorld.getFolder(),
+                                buildWorld.getCustomGenerator()
+                        );
+                    });
+                })
+                .exceptionally(e -> {
+                    plugin.getLogger().log(Level.SEVERE, "Failed to download backup '%s'".formatted(backup.key()), e);
+                    Bukkit.getScheduler().runTask(plugin, () -> {
+                        Messages.sendMessage(player, "worlds_backup_download_failed",
+                                Map.entry("%world%", buildWorld.getName())
+                        );
+                    });
+                    return null;
+                });
+    }
+
+    /**
+     * Finds the single root world folder within an unzipped backup directory.
+     * <p>
+     * This method expects the unzipped directory to contain exactly one non-hidden directory, which is the world folder (e.g., "my-world/").
+     *
+     * @param unzippedBackupDir The temporary directory where the backup was extracted (e.g., /tmp/123e4567-abcd.../)
+     * @return The File object pointing to the root world folder (e.g., /tmp/123e4567-abcd.../my-world/)
+     * @throws RuntimeException If exactly one world folder is not found
+     */
+    private File findWorldFolder(File unzippedBackupDir) {
+        File[] files = unzippedBackupDir.listFiles();
+        if (files == null) {
+            throw new RuntimeException("Failed to read unzipped backup directory: " + unzippedBackupDir.getAbsolutePath());
+        }
+
+        List<File> directories = Arrays.stream(files)
+                .filter(File::isDirectory)
+                .filter(f -> !f.isHidden())
+                .toList();
+
+        if (directories.size() == 1) {
+            return directories.getFirst();
+        }
+
+        throw new RuntimeException(
+                "Expected exactly one world folder in the backup, but found %d. (%s)"
+                        .formatted(directories.size(), unzippedBackupDir.getAbsolutePath())
+        );
+    }
+
+    private void handleConfirmationClick(Player player, Backup backup, int slot) {
+        switch (slot) {
+            case 11 -> {
+                player.closeInventory();
+                player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+                backup.owner().restoreBackup(backup, player);
+            }
+            case 15 -> {
+                player.closeInventory();
+                player.playSound(player, Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 1f, 1f);
             }
         }
     }
