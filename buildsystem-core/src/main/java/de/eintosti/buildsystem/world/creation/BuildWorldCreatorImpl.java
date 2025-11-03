@@ -64,7 +64,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
 
     private static final String LEVEL_DAT_FILE_NAME = "level.dat";
     private static final String TEMPLATES_DIRECTORY = "templates";
-    private static final String WORLD_TYPE_FILE_NAME = ".buildsystem-generator-date.txt";
+    private static final String WORLD_TYPE_FILE_NAME = ".buildsystem-generator-data.txt";
     private static final String CUSTOM_GENERATOR_PREFIX = "GENERATOR:";
 
     private final BuildSystemPlugin plugin;
@@ -493,6 +493,8 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
      *                        {@link BuildWorldType#CUSTOM}
      */
     private void saveGenerationData(World world, BuildWorldType worldType, @Nullable CustomGenerator customGenerator) {
+        renameIncorrectWorldTypeFile(world);
+
         Path path = Path.of(world.getWorldFolder() + File.separator + WORLD_TYPE_FILE_NAME);
         if (path.toFile().exists()) {
             return;
@@ -518,6 +520,23 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
                     "Failed to save world generation setting for world %s (type: %s, generator: %s)".formatted(world.getName(), worldType.name(), customGenerator),
                     e
             );
+        }
+    }
+
+    // TODO: Remove this eventually
+    // The old file was accidentally named incorrectly. Rename it to the correct name.
+    private void renameIncorrectWorldTypeFile(World world) {
+        Path parentDir = world.getWorldFolder().toPath();
+
+        Path sourceFile = parentDir.resolve(".buildsystem-generator-date.txt");
+        Path targetFile = parentDir.resolve(".buildsystem-generator-data.txt");
+
+        try {
+            if (Files.exists(sourceFile) && !Files.exists(targetFile)) {
+                Files.move(sourceFile, targetFile);
+            }
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to rename generator data file for world " + world.getName(), e);
         }
     }
 
