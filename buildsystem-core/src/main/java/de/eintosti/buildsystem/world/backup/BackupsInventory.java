@@ -106,7 +106,7 @@ public class BackupsInventory implements InventoryHandler {
                             Messages.getString("backups_backup_name", player,
                                     Map.entry("%timestamp%", StringUtils.formatTime(backups.get(i).creationTime()))
                             ),
-                            Messages.getString("backups_backup_lore", player)
+                            Messages.getStringList("backups_backup_lore", player)
                     ));
                 }
             });
