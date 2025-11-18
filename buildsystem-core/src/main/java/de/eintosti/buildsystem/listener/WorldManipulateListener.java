@@ -60,12 +60,12 @@ public class WorldManipulateListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBreak(BlockBreakEvent event) {
-        dispatcher.dispatchManipulationEventIfPlayerInBuildWorld(event.getPlayer(), event);
+        dispatcher.tryDispatchManipulationEvent(event.getPlayer(), event);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockPlace(BlockPlaceEvent event) {
-        dispatcher.dispatchManipulationEventIfPlayerInBuildWorld(event.getPlayer(), event);
+        dispatcher.tryDispatchManipulationEvent(event.getPlayer(), event);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -74,12 +74,12 @@ public class WorldManipulateListener implements Listener {
             return;
         }
 
-        dispatcher.dispatchManipulationEventIfPlayerInBuildWorld(player, event);
+        dispatcher.tryDispatchManipulationEvent(player, event);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerArmorStandManipulate(PlayerArmorStandManipulateEvent event) {
-        dispatcher.dispatchManipulationEventIfPlayerInBuildWorld(event.getPlayer(), event);
+        dispatcher.tryDispatchManipulationEvent(event.getPlayer(), event);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -95,7 +95,7 @@ public class WorldManipulateListener implements Listener {
             return;
         }
 
-        dispatcher.dispatchManipulationEventIfPlayerInBuildWorld(player, event);
+        dispatcher.tryDispatchManipulationEvent(player, event);
 
         if (!buildWorld.getData().physics().get() && event.getClickedBlock() != null) {
             if (event.getAction() == Action.PHYSICAL && event.getClickedBlock().getType() == XMaterial.FARMLAND.get()) {
@@ -113,10 +113,10 @@ public class WorldManipulateListener implements Listener {
         Player player = event.getPlayer();
         BuildWorld buildWorld = event.getBuildWorld();
         WorldData worldData = buildWorld.getData();
-
         Cancellable parentEvent = event.getParentEvent();
-        boolean canModify = buildWorld.getPermissions().canModify(player, getRelatedWorldSetting(parentEvent, worldData));
-        if (!canModify) {
+
+        Type<Boolean> setting = worldSettingFor(parentEvent, worldData);
+        if (!buildWorld.getPermissions().canModify(player, setting)) {
             parentEvent.setCancelled(true);
             denyPlayerInteraction(event);
             return;
@@ -126,7 +126,7 @@ public class WorldManipulateListener implements Listener {
         updateStatus(worldData, player);
     }
 
-    private Type<Boolean> getRelatedWorldSetting(Cancellable event, WorldData data) {
+    private Type<Boolean> worldSettingFor(Cancellable event, WorldData data) {
         return switch (event) {
             case BlockBreakEvent ignored -> data.blockBreaking();
             case BlockPlaceEvent ignored -> data.blockPlacement();

@@ -43,7 +43,7 @@ public class EventDispatcher {
     }
 
     /**
-     * <p>Dispatches a build world manipulation event if the player is in a build world
+     * <p>Dispatches a build world manipulation event if the player is in a {@link BuildWorld}
      * and the parent event has not been canceled.</p>
      *
      * <p>This method checks if:</p>
@@ -58,7 +58,7 @@ public class EventDispatcher {
      * @param player      The player who performed the manipulation
      * @param parentEvent The original event that triggered this potential manipulation
      */
-    public void dispatchManipulationEventIfPlayerInBuildWorld(Player player, Cancellable parentEvent) {
+    public void tryDispatchManipulationEvent(Player player, Cancellable parentEvent) {
         if (parentEvent.isCancelled()) {
             return;
         }

@@ -50,6 +50,6 @@ public class WorldManipulateByAxiomListener implements Listener {
             event.setCancelled(true);
             throw new IllegalStateException("Player modifies a world in which he is not present! The event got cancelled for safety reasons.");
         }
-        dispatcher.dispatchManipulationEventIfPlayerInBuildWorld(event.getPlayer(), event);
+        dispatcher.tryDispatchManipulationEvent(event.getPlayer(), event);
     }
 }
