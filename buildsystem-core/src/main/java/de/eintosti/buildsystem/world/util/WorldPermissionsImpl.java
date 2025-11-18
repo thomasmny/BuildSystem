@@ -71,8 +71,12 @@ public class WorldPermissionsImpl implements WorldPermissions {
 
     @Override
     public boolean canModify(Player player, Type<Boolean> check) {
-        if (this.buildWorld == null) {
+        if (buildWorld == null) {
             return true;
+        }
+
+        if (buildWorld.getData().status().get() == BuildWorldStatus.ARCHIVE && !player.hasPermission("buildsystem.bypass.archive")) {
+            return false;
         }
 
         if (canBypassModification(player, check)) {
@@ -83,24 +87,11 @@ public class WorldPermissionsImpl implements WorldPermissions {
             return false;
         }
 
-        if (buildWorld.getData().status().get() == BuildWorldStatus.ARCHIVE && !player.hasPermission("buildsystem.bypass.archive")) {
-            return false;
-        }
-
         Builders builders = buildWorld.getBuilders();
-        if (builders.isCreator(player)) {
-            return true;
-        }
-
-        if (!buildWorld.getData().buildersEnabled().get()) {
-            return true;
-        }
-
-        if (player.hasPermission("buildsystem.bypass.builders")) {
-            return true;
-        }
-
-        return builders.isBuilder(player);
+        return builders.isCreator(player)
+                || builders.isBuilder(player)
+                || player.hasPermission("buildsystem.bypass.builders")
+                || !buildWorld.getData().buildersEnabled().get();
     }
 
     private boolean canBypassModification(Player player, Type<Boolean> check) {
