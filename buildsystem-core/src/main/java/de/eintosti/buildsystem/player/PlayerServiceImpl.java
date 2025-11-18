@@ -41,7 +41,7 @@ import de.eintosti.buildsystem.world.navigator.ArmorStandManager;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -380,12 +380,13 @@ public class PlayerServiceImpl implements PlayerService {
         openNavigator.remove(player);
     }
 
-    public void save() {
-        this.playerStorage
+    public CompletableFuture<Void> save() {
+        return this.playerStorage
                 .save(this.playerStorage.getBuildPlayers())
-                .exceptionally(e -> {
-                    plugin.getLogger().log(Level.SEVERE, "Failed to save player data", e);
-                    throw new CompletionException("Failed to save player data", e);
+                .whenComplete((r, e) -> {
+                    if (e != null) {
+                        plugin.getLogger().log(Level.SEVERE, "Failed to save player data", e);
+                    }
                 });
     }
 }

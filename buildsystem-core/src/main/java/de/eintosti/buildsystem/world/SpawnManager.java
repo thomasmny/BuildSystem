@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.storage.yaml.YamlSpawnStorage;
 import io.papermc.lib.PaperLib;
+import java.util.concurrent.CompletableFuture;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -100,8 +101,8 @@ public class SpawnManager {
         this.spawn = null;
     }
 
-    public void save() {
-        spawnStorage.saveSpawn(spawn);
+    public CompletableFuture<Void> save() {
+        return CompletableFuture.runAsync(() -> spawnStorage.saveSpawn(spawn));
     }
 
     private void load() {

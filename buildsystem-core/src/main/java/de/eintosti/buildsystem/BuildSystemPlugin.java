@@ -96,6 +96,8 @@ import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import de.eintosti.buildsystem.world.navigator.ArmorStandManager;
 import java.io.File;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.AdvancedPie;
@@ -171,7 +173,7 @@ public class BuildSystemPlugin extends JavaPlugin {
 
         registerStats();
 
-        this.configSaveTask = Bukkit.getScheduler().runTaskTimer(this, this::saveBuildConfig, 6000L, 6000L);
+        this.configSaveTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this, this::saveBuildConfig, 6000L, 6000L); // Every 5 minutes
 
         Bukkit.getConsoleSender().sendMessage(
                 "%sBuildSystem » Plugin %senabled%s!".formatted(ChatColor.RESET, ChatColor.GREEN, ChatColor.RESET)
@@ -194,7 +196,11 @@ public class BuildSystemPlugin extends JavaPlugin {
 
         reloadConfigData(false);
         saveConfig();
-        saveBuildConfig();
+        try {
+            saveBuildConfig().join();
+        } catch (CompletionException e) {
+            getLogger().severe("Error while waiting for saves: " + e.getCause());
+        }
 
         if (this.configSaveTask != null) {
             this.configSaveTask.cancel();
@@ -382,10 +388,11 @@ public class BuildSystemPlugin extends JavaPlugin {
         }
     }
 
-    private void saveBuildConfig() {
-        worldService.save();
-        playerService.save();
-        spawnManager.save();
+    private CompletableFuture<Void> saveBuildConfig() {
+        CompletableFuture<Void> worldSave = worldService.save();
+        CompletableFuture<Void> playerSave = playerService.save();
+        CompletableFuture<Void> spawnSave = spawnManager.save();
+        return CompletableFuture.allOf(worldSave, playerSave, spawnSave);
     }
 
     /**

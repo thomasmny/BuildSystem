@@ -413,19 +413,23 @@ public class WorldServiceImpl implements WorldService {
         return affectedPlayers;
     }
 
-    public void save() {
-        this.worldStorage
+    public CompletableFuture<Void> save() {
+        CompletableFuture<Void> worldFuture = this.worldStorage
                 .save(this.worldStorage.getBuildWorlds())
-                .exceptionally(e -> {
-                    plugin.getLogger().log(Level.SEVERE, "Failed to save world data", e);
-                    throw new CompletionException("Failed to save world data", e);
+                .whenComplete((r, e) -> {
+                    if (e != null) {
+                        plugin.getLogger().log(Level.SEVERE, "Failed to save world data", e);
+                    }
                 });
 
-        this.folderStorage
+        CompletableFuture<Void> folderFuture = this.folderStorage
                 .save(this.folderStorage.getFolders())
-                .exceptionally(e -> {
-                    plugin.getLogger().log(Level.SEVERE, "Failed to save folder data", e);
-                    throw new CompletionException("Failed to save folder data", e);
+                .whenComplete((r, e) -> {
+                    if (e != null) {
+                        plugin.getLogger().log(Level.SEVERE, "Failed to save folder data", e);
+                    }
                 });
+
+        return CompletableFuture.allOf(worldFuture, folderFuture);
     }
 }
