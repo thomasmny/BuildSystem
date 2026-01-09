@@ -323,14 +323,11 @@ public class WorldServiceImpl implements WorldService {
         }
         Bukkit.unloadWorld(oldWorld, true);
         Bukkit.getWorlds().remove(oldWorld);
-        this.worldStorage.removeBuildWorld(buildWorld);
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> this.worldStorage.delete(oldName));
 
         File oldWorldFile = new File(Bukkit.getWorldContainer(), oldName);
         File newWorldFile = new File(Bukkit.getWorldContainer(), sanitizedNewName);
         CompletableFuture.runAsync(() -> {
             try {
-                worldStorage.delete(oldName).join();
                 FileUtils.copy(oldWorldFile, newWorldFile);
                 FileUtils.deleteDirectory(oldWorldFile);
             } catch (Exception e) {
