@@ -27,7 +27,6 @@ import net.luckperms.api.context.ContextConsumer;
 import net.luckperms.api.context.ContextSet;
 import net.luckperms.api.context.ImmutableContextSet;
 import org.bukkit.entity.Player;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -43,7 +42,7 @@ public class RoleCalculator implements ContextCalculator<Player> {
     }
 
     @Override
-    public void calculate(@NonNull Player player, @NonNull ContextConsumer contextConsumer) {
+    public void calculate(Player player, ContextConsumer contextConsumer) {
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
         contextConsumer.accept(KEY, Role.matchRole(player, buildWorld).toString());
     }
