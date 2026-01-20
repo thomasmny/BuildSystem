@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.player;
 
 import de.eintosti.buildsystem.api.player.CachedValues;
+import java.util.Arrays;
 import java.util.List;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
@@ -53,7 +54,7 @@ public class CachedValuesImpl implements CachedValues {
 
     @Override
     public void saveInventory(ItemStack[] inventory) {
-        this.inventory = List.of(inventory);
+        this.inventory = Arrays.asList(inventory);
     }
 
     @Override
