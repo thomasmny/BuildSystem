@@ -75,6 +75,10 @@ public class WorldPermissionsImpl implements WorldPermissions {
             return true;
         }
 
+        if (hasAdminPermission(player) || canBypassBuildRestriction(player)) {
+            return true;
+        }
+
         if (buildWorld.getData().status().get() == BuildWorldStatus.ARCHIVE && !player.hasPermission("buildsystem.bypass.archive")) {
             return false;
         }
@@ -94,11 +98,14 @@ public class WorldPermissionsImpl implements WorldPermissions {
                 || !buildWorld.getData().buildersEnabled().get();
     }
 
+    /**
+     * Checks if the player has the bypass permission for the given check.
+     *
+     * @param player The player to check
+     * @param check  The specific data type representing the modification to be checked
+     * @return {@code true} if the player can bypass the modification, otherwise {@code false}
+     */
     private boolean canBypassModification(Player player, Type<Boolean> check) {
-        if (hasAdminPermission(player) || canBypassBuildRestriction(player)) {
-            return true;
-        }
-
         if (!(check instanceof ConfigurableType<Boolean> configurableType)) {
             return false;
         }
