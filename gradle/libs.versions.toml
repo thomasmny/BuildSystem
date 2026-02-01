@@ -11,7 +11,7 @@ axiompaper = "4.0.1-1.21.1"
 # Third Party
 annotations = "26.0.2-1"
 authlib = "3.13.56"
-aws-sdk = "2.39.6"
+aws-sdk = "2.41.19"
 bouncycastle = "1.83"
 bstats = "3.1.0"
 fastboard = "2.1.5"
