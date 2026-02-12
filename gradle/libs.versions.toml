@@ -19,7 +19,7 @@ jspecify = "1.0.0"
 nbt = "1.5.1"
 sshd-sftp = "2.17.1"
 xseries = "13.6.0"
-zip4j = "2.11.5"
+zip4j = "2.11.6"
 
 [libraries]
 # Platform expectations
