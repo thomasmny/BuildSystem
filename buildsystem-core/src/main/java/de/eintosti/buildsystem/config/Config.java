@@ -65,7 +65,7 @@ import org.jspecify.annotations.Nullable;
 public class Config {
 
     private static final BuildSystemPlugin PLUGIN = BuildSystemPlugin.get();
-    private static final FileConfiguration CONFIG = PLUGIN.getConfig();
+    private static FileConfiguration CONFIG = PLUGIN.getConfig();
 
     /**
      * Gets the plugin's configuration.
@@ -440,6 +440,7 @@ public class Config {
      * Loads the configuration values from the plugin's config.yml into the static fields.
      */
     public static void load() {
+        CONFIG = PLUGIN.getConfig();
         final Logger logger = PLUGIN.getLogger();
 
         // Messages
