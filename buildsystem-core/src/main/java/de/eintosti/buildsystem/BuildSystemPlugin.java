@@ -407,6 +407,7 @@ public class BuildSystemPlugin extends JavaPlugin {
 
         reloadConfig();
         Config.load();
+        backupService.reload();
 
         if (init) {
             worldService.getWorldStorage().getBuildWorlds().forEach(buildWorld -> buildWorld.getUnloader().manageUnload());

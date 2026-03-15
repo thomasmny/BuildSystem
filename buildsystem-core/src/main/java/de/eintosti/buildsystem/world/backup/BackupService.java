@@ -28,7 +28,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class BackupService {
@@ -42,13 +44,31 @@ public class BackupService {
 
     private final Cache<UUID, BackupProfile> backupProfileCache = CacheBuilder.newBuilder().expireAfterAccess(3, TimeUnit.MINUTES).build();
 
+    @Nullable
+    private BukkitTask autoBackupTask;
+
     public BackupService(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.backupStorage = Backup.storage;
         this.worldStorage = plugin.getWorldService().getWorldStorage();
 
         if (AutoBackup.enabled) {
-            Bukkit.getScheduler().runTaskTimer(plugin, this::incrementTimeSinceBackup, UPDATE_PERIOD * 20, UPDATE_PERIOD * 20);
+            this.autoBackupTask = Bukkit.getScheduler().runTaskTimer(plugin, this::incrementTimeSinceBackup, UPDATE_PERIOD * 20, UPDATE_PERIOD * 20);
+        }
+    }
+
+    /**
+     * Reloads the auto-backup scheduler based on the current {@link AutoBackup} configuration.
+     * If auto-backup was previously running and is now disabled, the task is cancelled.
+     * If auto-backup was not running and is now enabled, a new task is started.
+     */
+    public void reload() {
+        if (autoBackupTask != null) {
+            autoBackupTask.cancel();
+            autoBackupTask = null;
+        }
+        if (AutoBackup.enabled) {
+            this.autoBackupTask = Bukkit.getScheduler().runTaskTimer(plugin, this::incrementTimeSinceBackup, UPDATE_PERIOD * 20, UPDATE_PERIOD * 20);
         }
     }
 
