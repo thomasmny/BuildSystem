@@ -6,7 +6,7 @@ applyCoreConfiguration()
 plugins {
     id("java-library")
     id("com.gradleup.shadow") version "9.4.0"
-    id("de.eldoria.plugin-yml.bukkit") version "0.8.0"
+    id("de.eldoria.plugin-yml.bukkit") version "0.9.0"
 }
 
 project.description = "Core"
