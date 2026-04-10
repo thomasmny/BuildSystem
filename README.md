@@ -112,6 +112,8 @@ dependencies {
 
 ## Contributing
 
+Build requires **Java 25**.
+
 ### To compile...
 
 #### On Windows

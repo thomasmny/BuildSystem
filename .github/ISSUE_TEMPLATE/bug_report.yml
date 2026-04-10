@@ -20,7 +20,7 @@ body:
     attributes:
       label: Steps to reproduce
       description: |
-        What do we need to do in order to make the bug happen? Clear and concise reproduction instructions are important for us to be able to triage your issue in a timely manner. 
+        What do we need to do in order to make the bug happen? Clear and concise reproduction instructions are important for us to be able to triage your issue in a timely manner.
       placeholder: Steps to reproduce
     validations:
       required: true
@@ -40,9 +40,9 @@ body:
     id: server-info
     attributes:
       label: Server Info
-      description: "Minecraft version: (e.g. 1.21.4), Server version (e.g. Spigot, Paper), Plugin version (e.g. 2.17.1)"
+      description: "Minecraft version: (e.g. 26.1), Server version (e.g. Spigot, Paper), Plugin version (e.g. 3.0.0)"
       render: shell
-      placeholder: "Minecraft version 1.21.4 on the server version Paper-386 with the Plugin version 2.17.1"
+      placeholder: "Minecraft version 26.1 on the server version Paper-386 with the Plugin version 3.0.0"
     validations:
       required: true
   - type: textarea
