@@ -26,10 +26,10 @@ tasks.withType<Javadoc> {
     opt.overview("javadoc/overview.html")
     opt.encoding("UTF-8")
     opt.charSet("UTF-8")
-    opt.links("https://docs.oracle.com/en/java/javase/21/docs/api/")
+    opt.links("https://docs.oracle.com/en/java/javase/25/docs/api/")
     opt.links("https://hub.spigotmc.org/javadocs/spigot/")
-    opt.links("https://javadoc.io/static/org.jetbrains/annotations/")
-    opt.links("https://javadoc.io/doc/org.jspecify/jspecify")
+    opt.links("https://javadoc.io/doc/org.jetbrains/annotations/26.1.0/")
+    opt.links("https://javadoc.io/doc/org.jspecify/jspecify/1.0.0/")
     opt.isLinkSource = true
     opt.isUse = true
     opt.keyWords()

@@ -269,9 +269,9 @@ public class Config {
              * Default game rules for new worlds.
              */
             public static List<GameRuleEntry<?>> gameRules = List.of(
-                    new GameRuleEntry<>(GameRule.DO_DAYLIGHT_CYCLE, false),
-                    new GameRuleEntry<>(GameRule.DO_MOB_SPAWNING, false),
-                    new GameRuleEntry<>(GameRule.DO_FIRE_TICK, false)
+                    new GameRuleEntry<>(GameRule.ADVANCE_TIME, false),
+                    new GameRuleEntry<>(GameRule.SPAWN_MOBS, false),
+                    new GameRuleEntry<>(GameRule.FIRE_SPREAD_RADIUS_AROUND_PLAYER, 0)
             );
 
             /**
