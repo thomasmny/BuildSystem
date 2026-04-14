@@ -49,9 +49,4 @@ zip4j = { group = "net.lingala.zip4j", name = "zip4j", version.ref = "zip4j" }
 xseries = { group = "com.github.cryptomorin", name = "XSeries", version.ref = "xseries" }
 
 [bundles]
-aws = [
-    "aws-s3",
-    "aws-auth",
-    "aws-regions",
-    # "aws-core", Unable to find the dependency at runtime
-]
+aws = ["aws-s3", "aws-auth", "aws-regions", "aws-core"]

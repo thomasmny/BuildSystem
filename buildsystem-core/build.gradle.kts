@@ -48,17 +48,15 @@ dependencies {
     compileOnly(libs.worldedit)
     compileOnly(libs.axiompaper)
 
-    implementation(libs.paperlib)
-    implementation(libs.xseries)
+    implementation(libs.bouncycastle)
+    implementation(libs.bstats)
+    implementation(libs.bundles.aws)
     implementation(libs.fastboard)
     implementation(libs.nbt) { isTransitive = false }
-    implementation(libs.bstats)
-    implementation(libs.aws.core) // Unable to find the dependency at runtime, so we add it here
-
-    library(libs.bundles.aws)
-    library(libs.bouncycastle)
-    library(libs.sftp)
-    library(libs.zip4j)
+    implementation(libs.paperlib)
+    implementation(libs.sftp)
+    implementation(libs.xseries)
+    implementation(libs.zip4j)
 }
 
 tasks.named("assemble") {
@@ -69,12 +67,23 @@ tasks.named<ShadowJar>("shadowJar") {
     minimize()
     archiveFileName.set("${rootProject.name}-${project.version}.jar")
 
-    val shadePath = "de.eintosti.buildsystem.util.external"
-    relocate("io.papermc.lib", "$shadePath.paperlib")
+    val shadePath = "de.eintosti.buildsystem.external"
     relocate("com.cryptomorin.xseries", "$shadePath.xseries")
-    relocate("fr.mrmicky.fastboard", "$shadePath.fastboard")
     relocate("dev.dewy.nbt", "$shadePath.nbt")
+    relocate("fr.mrmicky.fastboard", "$shadePath.fastboard")
+    relocate("io.netty", "$shadePath.netty")
+    relocate("io.papermc.lib", "$shadePath.paperlib")
+    relocate("net.lingala.zip4j", "$shadePath.zip4j")
+    relocate("org.apache.commons.codec", "$shadePath.apache.commons.codec")
+    relocate("org.apache.commons.logging", "$shadePath.apache.commons.logging")
+    relocate("org.apache.http", "$shadePath.apache.http")
+    relocate("org.apache.sshd", "$shadePath.sshd")
+    relocate("org.bouncycastle", "$shadePath.bouncycastle")
     relocate("org.bstats", "$shadePath.bstats")
+    relocate("org.reactivestreams", "$shadePath.reactivestreams")
+    relocate("org.slf4j", "$shadePath.slf4j")
+    relocate("software.amazon.awssdk", "$shadePath.awssdk")
+    relocate("software.amazon.eventstream", "$shadePath.awssdk.eventstream")
 }
 
 tasks.processResources {
