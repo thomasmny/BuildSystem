@@ -6,8 +6,8 @@
 > report — do not improvise. When done, update the status row for this plan
 > in `plans/README.md`.
 >
-> **Drift check (run first)**: confirm plans 002–015 are marked DONE in
-> `plans/README.md`. This plan is the closing pass; running it early produces
+> **Drift check (run first)**: confirm plans 002–015, 017, and 018 are marked DONE
+> in `plans/README.md`. This plan is the closing pass; running it early produces
 > conflicts with everything else. If any predecessor is not DONE, STOP.
 
 ## Status
@@ -15,7 +15,7 @@
 - **Priority**: P3
 - **Effort**: M
 - **Risk**: LOW (moves + mechanical modernization + docs; behavior frozen)
-- **Depends on**: ALL of 002–015
+- **Depends on**: ALL of 002–015, 017, 018 (this plan runs LAST)
 - **Category**: tech-debt / dx / docs
 - **Planned at**: commit `67beca7`, 2026-06-11
 
@@ -34,17 +34,17 @@ Cannot be known precisely at planning time (it depends on 002–015 execution).
 Authoritative inputs:
 
 - `plans/000-target-architecture.md` §4 — the target tree.
-- Expected residual moves at `67beca7` coordinates (verify each still exists):
-  - `expansion/` (luckperms, placeholderapi) → `integration/`
-    (plan 009 created `integration/worldedit/`; the rest moves here)
+- Expected residual moves at `67beca7` coordinates (verify each still exists;
+  `expansion/` → `integration/` is plan 018's job, not this plan's):
   - `world/modification/*Menu`-style classes → `world/menu/`,
     `player/settings/*Menu` → `player/menu/` (if plan 008 left them in place)
   - `world/navigator/inventory/*` → `world/menu/` or `navigator/` per 000 §4
   - `world/util/` lifecycle classes → `world/lifecycle/` (loader/unloader/teleporter)
   - `command/subcommand/worlds/` stays (it matches the tree)
-- Modernization targets — sweep whatever 002–015 didn't touch:
-  - `util/color/**` (ColorAPI + patterns), `util/UUIDFetcher`, `util/DirectionUtil`,
-    `expansion/**` (pre-move), remaining listeners, `player/` data classes.
+- Modernization targets — sweep whatever 002–018 didn't touch:
+  - `util/UUIDFetcher`, `util/DirectionUtil`, remaining listeners,
+    `player/` data classes (`LogoutLocationImpl`, `CachedValuesImpl` — record
+    candidates if immutable; read first).
 - Docs: no `CLAUDE.md`, no `ARCHITECTURE.md` in the repo (verified at `67beca7`).
 
 ## Commands you will need
@@ -94,7 +94,7 @@ plan made a *better* call, prefer reality and record the delta in
 
 ### Step 2: Modernization sweep
 
-For every `.java` file in core not modified by plans 002–015
+For every `.java` file in core not modified by plans 002–018
 (`git log --since="<plan-002 start date>" --name-only` to compute the untouched
 set), apply mechanically:
 
