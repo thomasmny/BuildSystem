@@ -273,7 +273,6 @@ public class BuildSystemPlugin extends JavaPlugin {
         new AsyncPlayerChatListener(this);
         new AsyncPlayerPreLoginListener(this);
         new BlockPhysicsListener(this);
-        new CustomBlockManager(this);
         new BuildModePreventationListener(this);
         new BuildWorldResetUnloadListener(this);
         new EntitySpawnListener(this);
