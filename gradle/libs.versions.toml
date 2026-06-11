@@ -1,6 +1,9 @@
 [versions]
 # Platform expectations
 spigot = "26.1.2-R0.1-SNAPSHOT"
+# Test
+junit = "5.13.4"
+mockito = "5.20.0"
 paperlib = "1.0.8"
 
 # Plugins
@@ -22,6 +25,12 @@ xseries = "13.7.0"
 zip4j = "2.11.6"
 
 [libraries]
+# Test
+junit-bom = { group = "org.junit", name = "junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+mockito = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
+
 # Platform expectations
 spigot = { group = "org.spigotmc", name = "spigot-api", version.ref = "spigot" }
 paperlib = { group = "io.papermc", name = "paperlib", version.ref = "paperlib" }
