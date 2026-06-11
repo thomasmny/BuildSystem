@@ -33,7 +33,7 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class InventoryManager {
 
-    public final Map<Inventory, InventoryHandler> activeInventories;
+    private final Map<Inventory, InventoryHandler> activeInventories;
 
     /**
      * Constructs a new {@link InventoryManager} instance.
@@ -97,7 +97,6 @@ public class InventoryManager {
         InventoryHandler handler = this.activeInventories.remove(inventory);
         if (handler != null) {
             handler.onClose(event);
-            unregisterInventoryHandler(inventory);
         }
     }
 }
