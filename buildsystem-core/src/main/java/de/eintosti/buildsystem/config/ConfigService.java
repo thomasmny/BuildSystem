@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -109,6 +110,21 @@ public class ConfigService {
      * @return The parsed {@link PluginConfig}
      */
     PluginConfig parse(FileConfiguration config, Logger logger) {
+        return parse(config, logger, plugin.getDataFolder().getParentFile());
+    }
+
+    /**
+     * Parses a config for testing purposes (WorldEdit wand detection skipped — returns default {@link XMaterial#WOODEN_AXE}).
+     *
+     * @param config The file configuration to parse
+     * @param logger The logger to use for warnings
+     * @return The parsed {@link PluginConfig}
+     */
+    static PluginConfig parseForTest(FileConfiguration config, Logger logger) {
+        return parse(config, logger, null);
+    }
+
+    private static PluginConfig parse(FileConfiguration config, Logger logger, @Nullable File pluginParentDir) {
         // Messages
         PluginConfig.Messages messages = new PluginConfig.Messages(
                 config.getBoolean("messages.spawn-teleport-message", false),
@@ -145,7 +161,7 @@ public class ConfigService {
         // Settings - Builder
         PluginConfig.Settings.Builder builder = new PluginConfig.Settings.Builder(
                 config.getBoolean("settings.builder.block-worldedit-non-builder", true),
-                parseWorldEditWand(config)
+                parseWorldEditWand(pluginParentDir)
         );
 
         // Settings - Navigator
@@ -196,9 +212,9 @@ public class ConfigService {
         );
 
         // World - Default - GameRules
-        List<GameRuleEntry<?>> gameRules = config.getConfigurationSection("world.default.gamerules")
-                .getValues(true)
-                .entrySet()
+        var gameRulesSection = config.getConfigurationSection("world.default.gamerules");
+        Map<String, Object> gameRulesMap = gameRulesSection == null ? Map.of() : gameRulesSection.getValues(true);
+        List<GameRuleEntry<?>> gameRules = gameRulesMap.entrySet()
                 .stream()
                 .map(entry -> {
                     String key = entry.getKey();
@@ -297,31 +313,25 @@ public class ConfigService {
         return new PluginConfig(messages, settings, world, folder);
     }
 
-    private PluginConfig.World.Backup.StorageSettings parseStorageSettings(FileConfiguration config, Logger logger) {
+    private static PluginConfig.World.Backup.StorageSettings parseStorageSettings(FileConfiguration config, Logger logger) {
         String type = Objects.requireNonNullElse(config.getString("world.backup.storage.type"), "local").toLowerCase();
 
         return switch (type) {
-            case "s3" -> {
-                var s3 = config.getConfigurationSection("world.backup.storage.s3");
-                yield new PluginConfig.World.Backup.S3(
-                        s3.getString("url"),
-                        s3.getString("access-key"),
-                        s3.getString("secret-key"),
-                        s3.getString("region"),
-                        s3.getString("bucket"),
-                        s3.getString("path")
-                );
-            }
-            case "sftp" -> {
-                var sftp = config.getConfigurationSection("world.backup.storage.sftp");
-                yield new PluginConfig.World.Backup.Sftp(
-                        sftp.getString("host"),
-                        sftp.getInt("port"),
-                        sftp.getString("username"),
-                        sftp.getString("password"),
-                        sftp.getString("path")
-                );
-            }
+            case "s3" -> new PluginConfig.World.Backup.S3(
+                    config.getString("world.backup.storage.s3.url"),
+                    config.getString("world.backup.storage.s3.access-key"),
+                    config.getString("world.backup.storage.s3.secret-key"),
+                    config.getString("world.backup.storage.s3.region"),
+                    config.getString("world.backup.storage.s3.bucket"),
+                    config.getString("world.backup.storage.s3.path")
+            );
+            case "sftp" -> new PluginConfig.World.Backup.Sftp(
+                    config.getString("world.backup.storage.sftp.host"),
+                    config.getInt("world.backup.storage.sftp.port", 22),
+                    config.getString("world.backup.storage.sftp.username"),
+                    config.getString("world.backup.storage.sftp.password"),
+                    config.getString("world.backup.storage.sftp.path")
+            );
             default -> {
                 if (!type.equals("local")) {
                     logger.warning("Unknown backup storage type '" + type + "', defaulting to local storage.");
@@ -334,21 +344,22 @@ public class ConfigService {
     /**
      * Parses the WorldEdit wand material from the WorldEdit or FastAsyncWorldEdit config file.
      *
-     * @param config The plugin config (used for fallback only)
+     * @param pluginDir The parent directory of all plugins, or null to skip WorldEdit detection
      * @return The parsed {@link XMaterial} for the WorldEdit wand
      */
-    private XMaterial parseWorldEditWand(FileConfiguration config) {
-        File pluginDir = plugin.getDataFolder().getParentFile();
+    static XMaterial parseWorldEditWand(@Nullable File pluginDir) {
         File configFile = null;
 
-        File weConfig = new File(pluginDir + File.separator + "WorldEdit", "config.yml");
-        if (weConfig.exists()) {
-            configFile = weConfig;
-        }
+        if (pluginDir != null) {
+            File weConfig = new File(pluginDir + File.separator + "WorldEdit", "config.yml");
+            if (weConfig.exists()) {
+                configFile = weConfig;
+            }
 
-        File faweConfig = new File(pluginDir + File.separator + "FastAsyncWorldEdit", "worldedit-config.yml");
-        if (faweConfig.exists()) {
-            configFile = faweConfig;
+            File faweConfig = new File(pluginDir + File.separator + "FastAsyncWorldEdit", "worldedit-config.yml");
+            if (faweConfig.exists()) {
+                configFile = faweConfig;
+            }
         }
 
         XMaterial defaultWand = XMaterial.WOODEN_AXE;

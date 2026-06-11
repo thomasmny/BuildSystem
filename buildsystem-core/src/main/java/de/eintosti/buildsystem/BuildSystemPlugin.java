@@ -48,12 +48,8 @@ import de.eintosti.buildsystem.command.tabcomplete.SpawnTabCompleter;
 import de.eintosti.buildsystem.command.tabcomplete.SpeedTabCompleter;
 import de.eintosti.buildsystem.command.tabcomplete.TimeTabCompleter;
 import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter;
-import de.eintosti.buildsystem.config.Config;
-import de.eintosti.buildsystem.config.Config.Folder;
-import de.eintosti.buildsystem.config.Config.Settings.Archive;
-import de.eintosti.buildsystem.config.Config.Settings.Builder;
-import de.eintosti.buildsystem.config.Config.World;
-import de.eintosti.buildsystem.config.Config.World.Unload;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.config.migration.ConfigMigrationManager;
 import de.eintosti.buildsystem.expansion.luckperms.LuckPermsExpansion;
 import de.eintosti.buildsystem.expansion.placeholderapi.PlaceholderApiExpansion;
@@ -118,6 +114,8 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     private static BuildSystemPlugin instance;
 
+    private ConfigService configService;
+
     private ArmorStandManager armorStandManager;
     private CustomBlockManager customBlockManager;
     private InventoryManager inventoryManager;
@@ -140,10 +138,11 @@ public class BuildSystemPlugin extends JavaPlugin {
     public void onLoad() {
         instance = this;
 
+        this.configService = new ConfigService(this);
         new ConfigMigrationManager(this).migrate();
         this.getConfig().options().copyDefaults(true);
         this.saveConfig();
-        Config.load();
+        this.configService.load();
 
         Messages.createMessageFile();
         createTemplateFolder();
@@ -297,13 +296,13 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     private void registerStats() {
         Metrics metrics = new Metrics(this, METRICS_ID);
-        metrics.addCustomChart(new SimplePie("archive_vanish", () -> String.valueOf(Archive.vanish)));
-        metrics.addCustomChart(new SimplePie("block_world_edit", () -> String.valueOf(Builder.blockWorldEditNonBuilder)));
-        metrics.addCustomChart(new SimplePie("join_quit_messages", () -> String.valueOf(Config.Messages.joinQuitMessages)));
-        metrics.addCustomChart(new SimplePie("lock_weather", () -> String.valueOf(World.lockWeather)));
-        metrics.addCustomChart(new SimplePie("scoreboard", () -> String.valueOf(Config.Settings.scoreboard)));
-        metrics.addCustomChart(new SimplePie("update_checker", () -> String.valueOf(Config.Settings.updateChecker)));
-        metrics.addCustomChart(new SimplePie("unload_worlds", () -> String.valueOf(Unload.enabled)));
+        metrics.addCustomChart(new SimplePie("archive_vanish", () -> String.valueOf(configService.current().settings().archive().vanish())));
+        metrics.addCustomChart(new SimplePie("block_world_edit", () -> String.valueOf(configService.current().settings().builder().blockWorldEditNonBuilder())));
+        metrics.addCustomChart(new SimplePie("join_quit_messages", () -> String.valueOf(configService.current().messages().joinQuitMessages())));
+        metrics.addCustomChart(new SimplePie("lock_weather", () -> String.valueOf(configService.current().world().lockWeather())));
+        metrics.addCustomChart(new SimplePie("scoreboard", () -> String.valueOf(configService.current().settings().scoreboard())));
+        metrics.addCustomChart(new SimplePie("update_checker", () -> String.valueOf(configService.current().settings().updateChecker())));
+        metrics.addCustomChart(new SimplePie("unload_worlds", () -> String.valueOf(configService.current().world().unload().enabled())));
         metrics.addCustomChart(new AdvancedPie("navigator_type", () -> {
             Map<NavigatorType, Long> countsByType = playerService.getPlayerStorage().getBuildPlayers().stream()
                     .collect(Collectors.groupingBy(
@@ -314,8 +313,8 @@ public class BuildSystemPlugin extends JavaPlugin {
             int newCount = countsByType.getOrDefault(NavigatorType.NEW, 0L).intValue();
             return Map.of("Old", oldCount, "New", newCount);
         }));
-        metrics.addCustomChart(new SimplePie("folder_override_permissions", () -> String.valueOf(Folder.overridePermissions)));
-        metrics.addCustomChart(new SimplePie("folder_override_projects", () -> String.valueOf(Folder.overrideProjects)));
+        metrics.addCustomChart(new SimplePie("folder_override_permissions", () -> String.valueOf(configService.current().folder().overridePermissions())));
+        metrics.addCustomChart(new SimplePie("folder_override_projects", () -> String.valueOf(configService.current().folder().overrideProjects())));
     }
 
     private void registerExpansions() {
@@ -337,7 +336,7 @@ public class BuildSystemPlugin extends JavaPlugin {
 
         boolean isWorldEdit = pluginManager.getPlugin("WorldEdit") != null
                 || pluginManager.getPlugin("FastAsyncWorldEdit") != null;
-        if (isWorldEdit && Builder.blockWorldEditNonBuilder) {
+        if (isWorldEdit && configService.current().settings().builder().blockWorldEditNonBuilder()) {
             new EditSessionListener(this);
         }
     }
@@ -353,7 +352,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     }
 
     private void performUpdateCheck() {
-        if (!Config.Settings.updateChecker) {
+        if (!configService.current().settings().updateChecker()) {
             return;
         }
 
@@ -405,7 +404,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         }
 
         reloadConfig();
-        Config.load();
+        configService.load();
         if (isEnabled()) {
             backupService.reload();
         }
@@ -413,7 +412,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         if (init) {
             worldService.getWorldStorage().getBuildWorlds().forEach(buildWorld -> buildWorld.getUnloader().manageUnload());
 
-            if (Config.Settings.scoreboard) {
+            if (configService.current().settings().scoreboard()) {
                 getSettingsManager().displayScoreboard();
             } else {
                 getSettingsManager().hideScoreboards();
@@ -455,6 +454,10 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     public BackupService getBackupService() {
         return backupService;
+    }
+
+    public ConfigService getConfigService() {
+        return configService;
     }
 
     public CustomizableIcons getCustomizableIcons() {
