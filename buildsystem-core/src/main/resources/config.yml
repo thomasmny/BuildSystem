@@ -38,9 +38,9 @@ world:
       size: 6000000
     difficulty: "PEACEFUL"
     gamerules:
-      doDaylightCycle: false
-      doMobSpawning: false
-      doFireTick: false
+      advance_time: false
+      spawn_mobs: false
+      fire_damage: false
     settings:
       physics: true
       explosions: true
@@ -64,11 +64,11 @@ world:
     blacklisted-worlds:
       - world
       - world_nether
-      - worth_the_end
+      - world_the_end
   deletion-blacklist:
     - world
     - world_nether
-    - worth_the_end
+    - world_the_end
   disabled-physics:
     prevent-connections: true
     prevent-fluid-flow: true
