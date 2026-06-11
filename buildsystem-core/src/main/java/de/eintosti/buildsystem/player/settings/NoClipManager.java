@@ -50,7 +50,7 @@ public class NoClipManager {
     }
 
     private void runBlockCheckTask() {
-        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::checkForBlocks, 0L, 4L);
+        Bukkit.getScheduler().runTaskTimer(plugin, this::checkForBlocks, 0L, 4L);
     }
 
     private void checkForBlocks() {
@@ -80,15 +80,12 @@ public class NoClipManager {
                 continue;
             }
 
-            GameMode finalGameMode = gameMode;
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                player.setGameMode(finalGameMode);
-                if (gameMode == GameMode.SURVIVAL || gameMode == GameMode.ADVENTURE) {
-                    if (player.getAllowFlight()) {
-                        player.setFlying(true);
-                    }
+            player.setGameMode(gameMode);
+            if (gameMode == GameMode.SURVIVAL || gameMode == GameMode.ADVENTURE) {
+                if (player.getAllowFlight()) {
+                    player.setFlying(true);
                 }
-            });
+            }
         }
 
         toRemove.forEach(this::stopNoClip);
