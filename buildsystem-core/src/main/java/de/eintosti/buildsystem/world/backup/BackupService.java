@@ -32,8 +32,10 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
 import de.eintosti.buildsystem.api.world.backup.BackupStorage;
-import de.eintosti.buildsystem.config.Config.World.Backup;
-import de.eintosti.buildsystem.config.Config.World.Backup.AutoBackup;
+import de.eintosti.buildsystem.config.PluginConfig;
+import de.eintosti.buildsystem.world.backup.storage.LocalBackupStorage;
+import de.eintosti.buildsystem.world.backup.storage.S3BackupStorage;
+import de.eintosti.buildsystem.world.backup.storage.SftpBackupStorage;
 
 @NullMarked
 public class BackupService {
@@ -42,7 +44,7 @@ public class BackupService {
     private static final long UPDATE_PERIOD = Duration.ofSeconds(5).getSeconds();
 
     private final BuildSystemPlugin plugin;
-    private final BackupStorage backupStorage;
+    private BackupStorage backupStorage;
     private final WorldStorage worldStorage;
 
     private final Cache<UUID, BackupProfile> backupProfileCache = CacheBuilder.newBuilder().expireAfterAccess(3, TimeUnit.MINUTES).build();
@@ -52,12 +54,21 @@ public class BackupService {
 
     public BackupService(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.backupStorage = Backup.storage;
+        PluginConfig.World.Backup backupConfig = plugin.getConfigService().current().world().backup();
+        this.backupStorage = createStorage(plugin, backupConfig.storage());
         this.worldStorage = plugin.getWorldService().getWorldStorage();
 
-        if (AutoBackup.enabled) {
+        if (backupConfig.autoBackup().enabled()) {
             this.autoBackupTask = Bukkit.getScheduler().runTaskTimer(plugin, this::incrementTimeSinceBackup, UPDATE_PERIOD * 20, UPDATE_PERIOD * 20);
         }
+    }
+
+    private static BackupStorage createStorage(BuildSystemPlugin plugin, PluginConfig.World.Backup.StorageSettings settings) {
+        return switch (settings) {
+            case PluginConfig.World.Backup.Local l -> new LocalBackupStorage(plugin);
+            case PluginConfig.World.Backup.Sftp s -> new SftpBackupStorage(plugin, s.host(), s.port(), s.username(), s.password(), s.path());
+            case PluginConfig.World.Backup.S3 s3 -> new S3BackupStorage(plugin, s3.url(), s3.accessKey(), s3.secretKey(), s3.region(), s3.bucket(), s3.path());
+        };
     }
 
     /**
@@ -70,7 +81,10 @@ public class BackupService {
             autoBackupTask.cancel();
             autoBackupTask = null;
         }
-        if (AutoBackup.enabled && plugin.isEnabled()) {
+        this.backupStorage.close();
+        PluginConfig.World.Backup backupConfig = plugin.getConfigService().current().world().backup();
+        this.backupStorage = createStorage(plugin, backupConfig.storage());
+        if (backupConfig.autoBackup().enabled() && plugin.isEnabled()) {
             this.autoBackupTask = Bukkit.getScheduler().runTaskTimer(plugin, this::incrementTimeSinceBackup, UPDATE_PERIOD * 20, UPDATE_PERIOD * 20);
         }
     }
@@ -86,7 +100,8 @@ public class BackupService {
     private void incrementTimeSinceBackup() {
         Set<BuildWorld> worlds = new HashSet<>();
 
-        if (AutoBackup.onlyActiveWorlds) {
+        PluginConfig.World.Backup.AutoBackup autoBackup = plugin.getConfigService().current().world().backup().autoBackup();
+        if (autoBackup.onlyActiveWorlds()) {
             for (Player pl : Bukkit.getOnlinePlayers()) {
                 BuildWorld buildWorld = worldStorage.getBuildWorld(pl.getWorld().getName());
                 if (buildWorld != null && buildWorld.getPermissions().canModify(pl, Type.TRUE)) {
@@ -101,7 +116,7 @@ public class BackupService {
             Type<Integer> timeSinceBackup = buildWorld.getData().timeSinceBackup();
             timeSinceBackup.set((int) (timeSinceBackup.get() + UPDATE_PERIOD));
 
-            if (timeSinceBackup.get() > AutoBackup.interval) {
+            if (timeSinceBackup.get() > autoBackup.interval()) {
                 getProfile(buildWorld).createBackup();
                 timeSinceBackup.set(0);
             }

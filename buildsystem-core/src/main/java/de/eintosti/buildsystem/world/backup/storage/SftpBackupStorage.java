@@ -21,7 +21,6 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.backup.BackupStorage;
-import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.backup.BackupImpl;
 import de.eintosti.buildsystem.world.backup.BackupService;
@@ -162,7 +161,7 @@ public class SftpBackupStorage implements BackupStorage {
     @Override
     public synchronized CompletableFuture<List<Backup>> listBackups(BuildWorld buildWorld) {
         return CompletableFuture.supplyAsync(() -> {
-            List<Backup> backups = new ArrayList<>(Config.World.Backup.maxBackupsPerWorld);
+            List<Backup> backups = new ArrayList<>(plugin.getConfigService().current().world().backup().maxBackupsPerWorld());
             String backupDirectory = getBackupDirectory(buildWorld);
 
             try {

@@ -14,7 +14,6 @@ import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
 import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.api.world.util.WorldTeleporter;
-import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.world.SpawnManager;
@@ -69,7 +68,7 @@ public class BackupProfileImpl implements BackupProfile {
         this.listBackups()
                 .thenComposeAsync(backups -> {
                     synchronized (this.backupLock) {
-                        int maxBackups = Config.World.Backup.maxBackupsPerWorld;
+                        int maxBackups = plugin.getConfigService().current().world().backup().maxBackupsPerWorld();
                         int excess = backups.size() - maxBackups + 1;
 
                         List<CompletableFuture<Void>> deleteFutures = Collections.emptyList();

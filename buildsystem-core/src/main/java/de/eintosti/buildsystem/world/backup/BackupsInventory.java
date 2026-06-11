@@ -12,7 +12,6 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
-import de.eintosti.buildsystem.config.Config.World.Backup.AutoBackup;
 import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
 import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
@@ -39,10 +38,12 @@ public class BackupsInventory implements InventoryHandler {
 
     private static final int FIRST_BACKUP_SLOT = 9;
 
+    private final BuildSystemPlugin plugin;
     private final InventoryManager inventoryManager;
     private final BackupService backupService;
 
     public BackupsInventory(BuildSystemPlugin plugin) {
+        this.plugin = plugin;
         this.inventoryManager = plugin.getInventoryManager();
         this.backupService = plugin.getBackupService();
     }
@@ -65,7 +66,7 @@ public class BackupsInventory implements InventoryHandler {
         inventory.setItem(4, InventoryUtils.createItem(XMaterial.OAK_HANGING_SIGN,
                 Messages.getString("backups_information_name", player),
                 Messages.getStringList("backups_information_lore", player,
-                        Map.entry("%interval%", AutoBackup.interval / 60),
+                        Map.entry("%interval%", plugin.getConfigService().current().world().backup().autoBackup().interval() / 60),
                         Map.entry("%remaining%", getDurationUntilBackup(buildWorld))
                 )
         ));
@@ -106,7 +107,7 @@ public class BackupsInventory implements InventoryHandler {
      * @return A string representing the duration until the next backup
      */
     private String getDurationUntilBackup(BuildWorld buildWorld) {
-        int timeUntilBackup = AutoBackup.interval;
+        int timeUntilBackup = plugin.getConfigService().current().world().backup().autoBackup().interval();
         int timeSinceBackup = buildWorld.getData().timeSinceBackup().get();
 
         Date date = new Date((timeUntilBackup - timeSinceBackup) * 1000L);
