@@ -321,8 +321,8 @@ public class WorldServiceImpl implements WorldService {
         for (Chunk chunk : oldWorld.getLoadedChunks()) {
             chunk.unload(true);
         }
+        Location oldSpawnLocation = oldWorld.getSpawnLocation();
         Bukkit.unloadWorld(oldWorld, true);
-        Bukkit.getWorlds().remove(oldWorld);
 
         File oldWorldFile = new File(Bukkit.getWorldContainer(), oldName);
         File newWorldFile = new File(Bukkit.getWorldContainer(), sanitizedNewName);
@@ -333,13 +333,12 @@ public class WorldServiceImpl implements WorldService {
             } catch (Exception e) {
                 throw new RuntimeException("Failed to rename world directory", e);
             }
-        }).thenRunAsync(() -> {
+        }).thenRun(() -> Bukkit.getScheduler().runTask(plugin, () -> {
             buildWorld.setName(sanitizedNewName);
             worldStorage.addBuildWorld(buildWorld);
             worldStorage.save(buildWorld);
-        }).thenRun(() -> Bukkit.getScheduler().runTask(plugin, () -> {
             World newWorld = new BuildWorldCreatorImpl(plugin, buildWorld).generateBukkitWorld(false);
-            Location spawnLocation = oldWorld.getSpawnLocation();
+            Location spawnLocation = oldSpawnLocation;
             spawnLocation.setWorld(newWorld);
 
             removedPlayers.stream()
