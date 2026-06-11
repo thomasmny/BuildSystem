@@ -20,6 +20,7 @@ package de.eintosti.buildsystem;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.Config;
+import de.eintosti.buildsystem.util.Placeholders;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -1085,14 +1086,7 @@ public class Messages {
 
     @SafeVarargs
     private static String replacePlaceholders(String query, Entry<String, Object>... placeholders) {
-        if (placeholders.length == 0) {
-            return query;
-        }
-
-        return Arrays.stream(placeholders)
-                .map(entry -> (Function<String, String>) data -> data.replaceAll(entry.getKey(), String.valueOf(entry.getValue())))
-                .reduce(Function.identity(), Function::andThen)
-                .apply(query);
+        return Placeholders.apply(query, placeholders);
     }
 
     public static String formatDate(long millis) {
