@@ -141,14 +141,16 @@ public class SftpBackupStorage implements BackupStorage {
         this.sshClient.start();
     }
 
-    @Nullable
-    private SftpClient getSftpClient() {
+    private SftpClient getSftpClient() throws IOException {
         if (sftpClient == null || !sftpClient.isOpen()) {
             synchronized (this) {
                 if (sftpClient == null || !sftpClient.isOpen()) {
                     establishConnection();
                 }
             }
+        }
+        if (sftpClient == null || !sftpClient.isOpen()) {
+            throw new IOException("SFTP connection could not be established");
         }
         return sftpClient;
     }
@@ -274,17 +276,19 @@ public class SftpBackupStorage implements BackupStorage {
     @Override
     public synchronized CompletableFuture<File> downloadBackup(Backup backup) {
         return CompletableFuture.supplyAsync(() -> {
-            SftpClient sftp = getSftpClient();
-            Path target = tmpDownloadPath.resolve(UUID.randomUUID() + ".zip");
+            try {
+                SftpClient sftp = getSftpClient();
+                Path target = tmpDownloadPath.resolve(UUID.randomUUID() + ".zip");
 
-            try (
-                    InputStream in = sftp.read(backup.key());
-                    BufferedInputStream bufferedIn = new BufferedInputStream(in, BUFFER_SIZE);
-                    OutputStream out = Files.newOutputStream(target);
-                    BufferedOutputStream bufferedOut = new BufferedOutputStream(out, BUFFER_SIZE)
-            ) {
-                bufferedIn.transferTo(bufferedOut);
-                return target.toFile();
+                try (
+                        InputStream in = sftp.read(backup.key());
+                        BufferedInputStream bufferedIn = new BufferedInputStream(in, BUFFER_SIZE);
+                        OutputStream out = Files.newOutputStream(target);
+                        BufferedOutputStream bufferedOut = new BufferedOutputStream(out, BUFFER_SIZE)
+                ) {
+                    bufferedIn.transferTo(bufferedOut);
+                    return target.toFile();
+                }
             } catch (IOException e) {
                 disconnectAll();
                 throw new RuntimeException("Failed to download SFTP backup: " + backup.key(), e);
