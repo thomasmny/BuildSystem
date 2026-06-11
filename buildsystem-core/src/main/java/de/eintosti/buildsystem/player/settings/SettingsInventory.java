@@ -26,8 +26,6 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
-import de.eintosti.buildsystem.config.Config;
-import de.eintosti.buildsystem.config.Config.Settings.Navigator;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
 import de.eintosti.buildsystem.util.inventory.InventoryHandler;
 import de.eintosti.buildsystem.util.inventory.InventoryManager;
@@ -72,14 +70,14 @@ public class SettingsInventory implements InventoryHandler {
         addSettingsItem(player, inventory, 14, XMaterial.ENDER_EYE, settings.isHidePlayers(), "settings_hideplayers_item", "settings_hideplayers_lore");
         addSettingsItem(player, inventory, 15, XMaterial.OAK_SIGN, settings.isInstantPlaceSigns(), "settings_instantplacesigns_item", "settings_instantplacesigns_lore");
         addSettingsItem(player, inventory, 20, XMaterial.SLIME_BLOCK, settings.isKeepNavigator(), "settings_keep_navigator_item", "settings_keep_navigator_lore");
-        addSettingsItem(player, inventory, 21, Navigator.item, settings.getNavigatorType() == NavigatorType.NEW, "settings_new_navigator_item", "settings_new_navigator_lore");
+        addSettingsItem(player, inventory, 21, plugin.getConfigService().current().settings().navigator().item(), settings.getNavigatorType() == NavigatorType.NEW, "settings_new_navigator_item", "settings_new_navigator_lore");
         addSettingsItem(player, inventory, 22, XMaterial.GOLDEN_CARROT, settings.isNightVision(), "settings_nightvision_item", "settings_nightvision_lore");
         addSettingsItem(player, inventory, 23, XMaterial.BRICKS, settings.isNoClip(), "settings_no_clip_item", "settings_no_clip_lore");
         addSettingsItem(player, inventory, 24, XMaterial.IRON_TRAPDOOR, settings.isOpenTrapDoors(), "settings_open_trapdoors_item", "settings_open_trapdoors_lore");
         addSettingsItem(player, inventory, 29, XMaterial.FERN, settings.isPlacePlants(), "settings_placeplants_item", "settings_placeplants_lore");
         addSettingsItem(player, inventory, 30, XMaterial.PAPER, settings.isScoreboard(),
-                Config.Settings.scoreboard ? "settings_scoreboard_item" : "settings_scoreboard_disabled_item",
-                Config.Settings.scoreboard ? "settings_scoreboard_lore" : "settings_scoreboard_disabled_lore");
+                plugin.getConfigService().current().settings().scoreboard() ? "settings_scoreboard_item" : "settings_scoreboard_disabled_item",
+                plugin.getConfigService().current().settings().scoreboard() ? "settings_scoreboard_lore" : "settings_scoreboard_disabled_lore");
         addSettingsItem(player, inventory, 31, XMaterial.SMOOTH_STONE_SLAB, settings.isSlabBreaking(), "settings_slab_breaking_item", "settings_slab_breaking_lore");
         addSettingsItem(player, inventory, 32, XMaterial.MAGMA_CREAM, settings.isSpawnTeleport(), "settings_spawnteleport_item", "settings_spawnteleport_lore");
 
@@ -198,7 +196,7 @@ public class SettingsInventory implements InventoryHandler {
                 settings.setPlacePlants(!settings.isPlacePlants());
                 break;
             case 30:
-                if (!Config.Settings.scoreboard) {
+                if (!plugin.getConfigService().current().settings().scoreboard()) {
                     XSound.ENTITY_ITEM_BREAK.play(player);
                     return;
                 }

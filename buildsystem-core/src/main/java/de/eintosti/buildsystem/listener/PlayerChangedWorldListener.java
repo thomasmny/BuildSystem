@@ -25,8 +25,6 @@ import de.eintosti.buildsystem.api.player.CachedValues;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
-import de.eintosti.buildsystem.config.Config.Settings.Archive;
-import de.eintosti.buildsystem.config.Config.World.Unload;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -51,6 +49,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class PlayerChangedWorldListener implements Listener {
 
+    private final BuildSystemPlugin plugin;
     private final ArmorStandManager armorStandManager;
     private final PlayerServiceImpl playerManager;
     private final SettingsManager settingsManager;
@@ -61,6 +60,7 @@ public class PlayerChangedWorldListener implements Listener {
     private final Map<UUID, ItemStack[]> playerArmor;
 
     public PlayerChangedWorldListener(BuildSystemPlugin plugin) {
+        this.plugin = plugin;
         this.armorStandManager = plugin.getArmorStandManager();
         this.playerManager = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsManager();
@@ -81,7 +81,7 @@ public class PlayerChangedWorldListener implements Listener {
         event.getPlayer().setAllowFlight(true);
 
         BuildWorld oldWorld = worldStorage.getBuildWorld(event.getFrom());
-        if (oldWorld != null && Unload.enabled) {
+        if (oldWorld != null && plugin.getConfigService().current().world().unload().enabled()) {
             oldWorld.getUnloader().resetUnloadTask();
         }
 
@@ -167,7 +167,7 @@ public class PlayerChangedWorldListener implements Listener {
             playerInventory.clear();
             setSpectatorMode(player);
 
-            if (Archive.vanish) {
+            if (plugin.getConfigService().current().settings().archive().vanish()) {
                 player.addPotionEffect(new PotionEffect(XPotion.INVISIBILITY.get(), PotionEffect.INFINITE_DURATION, 0, false, false), false);
                 Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
             }
@@ -181,8 +181,8 @@ public class PlayerChangedWorldListener implements Listener {
 
     private void setSpectatorMode(Player player) {
         // Checking if the game mode should be set to adventure mode on archive worlds
-        if (Archive.changeGamemode) {
-            player.setGameMode(Archive.worldGameMode);
+        if (plugin.getConfigService().current().settings().archive().changeGamemode()) {
+            player.setGameMode(plugin.getConfigService().current().settings().archive().worldGameMode());
         }
         player.setSaturation(20);
         player.setHealth(20);

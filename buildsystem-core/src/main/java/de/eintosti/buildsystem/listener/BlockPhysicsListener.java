@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.listener;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.config.Config.Settings.DisabledPhysics;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.DirectionUtil;
 import java.util.List;
@@ -53,9 +52,11 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class BlockPhysicsListener implements Listener {
 
+    private final BuildSystemPlugin plugin;
     private final WorldStorageImpl worldStorage;
 
     public BlockPhysicsListener(BuildSystemPlugin plugin) {
+        this.plugin = plugin;
         this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -68,7 +69,7 @@ public class BlockPhysicsListener implements Listener {
             return;
         }
 
-        if (!DisabledPhysics.preventConnections) {
+        if (!plugin.getConfigService().current().settings().disabledPhysics().preventConnections()) {
             boolean canConnect = switch (block.getBlockData()) {
                 case Fence fence -> true;
                 case Gate gate -> true;
@@ -139,7 +140,7 @@ public class BlockPhysicsListener implements Listener {
             return;
         }
 
-        if (event.getBlock().isLiquid() && !DisabledPhysics.preventFluidFlow) {
+        if (event.getBlock().isLiquid() && !plugin.getConfigService().current().settings().disabledPhysics().preventFluidFlow()) {
             event.setCancelled(false);
             return;
         }
@@ -172,7 +173,7 @@ public class BlockPhysicsListener implements Listener {
             return;
         }
 
-        if (event.getEntityType() == EntityType.FALLING_BLOCK && DisabledPhysics.preventFallingBlocks) {
+        if (event.getEntityType() == EntityType.FALLING_BLOCK && plugin.getConfigService().current().settings().disabledPhysics().preventFallingBlocks()) {
             event.setCancelled(true);
             event.getBlock().getState().update(false, false);
         }

@@ -23,7 +23,6 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
-import de.eintosti.buildsystem.config.Config.World;
 import de.eintosti.buildsystem.world.modification.DeleteInventory;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import org.bukkit.entity.Player;
@@ -60,7 +59,7 @@ public class DeleteSubCommand implements SubCommand {
             return;
         }
 
-        if (World.deletionBlacklist.contains(buildWorld.getName().toLowerCase())) {
+        if (plugin.getConfigService().current().world().deletionBlacklist().contains(buildWorld.getName().toLowerCase())) {
             Messages.sendMessage(player, "worlds_delete_forbidden");
             return;
         }

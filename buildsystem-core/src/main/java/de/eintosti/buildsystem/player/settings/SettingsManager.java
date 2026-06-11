@@ -23,7 +23,6 @@ import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.WorldData;
-import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import fr.mrmicky.fastboard.FastBoard;
 import java.util.HashMap;
@@ -61,7 +60,7 @@ public class SettingsManager {
      * @param player The player object
      */
     public void displayScoreboard(Player player) {
-        if (!Config.Settings.scoreboard) {
+        if (!plugin.getConfigService().current().settings().scoreboard()) {
             return;
         }
 
@@ -83,7 +82,7 @@ public class SettingsManager {
      * Displays scoreboards for all online players who have it enabled and if enabled in the config.
      */
     public void displayScoreboard() {
-        if (!Config.Settings.scoreboard) {
+        if (!plugin.getConfigService().current().settings().scoreboard()) {
             return;
         }
 

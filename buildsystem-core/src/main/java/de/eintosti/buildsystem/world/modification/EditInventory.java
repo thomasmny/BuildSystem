@@ -29,7 +29,6 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.command.subcommand.worlds.SetPermissionSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
-import de.eintosti.buildsystem.config.Config.World.Default;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
 import de.eintosti.buildsystem.util.inventory.InventoryHandler;
@@ -198,7 +197,7 @@ public class EditInventory implements InventoryHandler {
 
     public Time getWorldTime(BuildWorld buildWorld) {
         int worldTime = (int) buildWorld.getWorld().getTime();
-        int noonTime = Default.Time.noon;
+        int noonTime = plugin.getConfigService().current().world().defaults().time().noon();
 
         if (worldTime >= 0 && worldTime < noonTime) {
             return Time.SUNRISE;
@@ -411,9 +410,9 @@ public class EditInventory implements InventoryHandler {
 
     private void changeTime(Player player, BuildWorld buildWorld) {
         int time = switch (getWorldTime(buildWorld)) {
-            case SUNRISE -> Default.Time.noon;
-            case NOON -> Default.Time.night;
-            case NIGHT -> Default.Time.sunrise;
+            case SUNRISE -> plugin.getConfigService().current().world().defaults().time().noon();
+            case NOON -> plugin.getConfigService().current().world().defaults().time().night();
+            case NIGHT -> plugin.getConfigService().current().world().defaults().time().sunrise();
         };
         buildWorld.getWorld().setTime(time);
         openInventory(player, buildWorld);

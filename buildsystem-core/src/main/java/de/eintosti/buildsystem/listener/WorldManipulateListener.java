@@ -23,7 +23,6 @@ import de.eintosti.buildsystem.api.data.Type;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
-import de.eintosti.buildsystem.config.Config.Settings.Builder;
 import de.eintosti.buildsystem.event.EventDispatcher;
 import de.eintosti.buildsystem.event.world.BuildWorldManipulationEvent;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -85,7 +84,7 @@ public class WorldManipulateListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(PlayerInteractEvent event) {
         ItemStack itemStack = event.getItem();
-        if (itemStack != null && itemStack.getType() == Builder.worldEditWand.get()) {
+        if (itemStack != null && itemStack.getType() == plugin.getConfigService().current().settings().builder().worldEditWand().get()) {
             return;
         }
 

@@ -30,7 +30,6 @@ import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.factory.FolderStorageFactory;
@@ -173,7 +172,7 @@ public class WorldServiceImpl implements WorldService {
 
     public void importWorlds(Player player, String[] worldList, Generator generator, @Nullable Builder creator) {
         int worlds = worldList.length;
-        int delay = Config.World.importAllDelay;
+        int delay = plugin.getConfigService().current().world().importAllDelay();
 
         Messages.sendMessage(player, "worlds_importall_started",
                 Map.entry("%amount%", String.valueOf(worlds))

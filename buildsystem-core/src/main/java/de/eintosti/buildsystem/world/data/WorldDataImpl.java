@@ -27,10 +27,7 @@ import de.eintosti.buildsystem.api.world.WorldService;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.config.Config;
-import de.eintosti.buildsystem.config.Config.World.Default;
-import de.eintosti.buildsystem.config.Config.World.Default.Settings;
-import de.eintosti.buildsystem.config.Config.World.Default.Settings.BuildersEnabled;
+import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.world.data.type.ConfigurableType;
 import java.util.HashMap;
 import java.util.Map;
@@ -76,7 +73,7 @@ public class WorldDataImpl implements WorldData {
         this.permission = register("permission", new ConfigurableType<>(builder.permission)
                 .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.permission"))
                 .withCapability(Overridable.class, new Overridable<>(
-                        () -> Config.Folder.overridePermissions,
+                        () -> BuildSystemPlugin.get().getConfigService().current().folder().overridePermissions(),
                         () -> {
                             Folder folder = getAssignedFolder();
                             return (folder != null) ? folder.getPermission() : null;
@@ -85,7 +82,7 @@ public class WorldDataImpl implements WorldData {
         );
         this.project = register("project", new ConfigurableType<>(builder.project)
                 .withCapability(Overridable.class, new Overridable<>(
-                        () -> Config.Folder.overrideProjects,
+                        () -> BuildSystemPlugin.get().getConfigService().current().folder().overrideProjects(),
                         () -> {
                             Folder folder = getAssignedFolder();
                             return (folder != null) ? folder.getProject() : null;
@@ -270,16 +267,16 @@ public class WorldDataImpl implements WorldData {
         private String customSpawn = "";
         private String permission = "-";
         private String project = "-";
-        private Difficulty difficulty = Default.difficulty;
+        private Difficulty difficulty = defaultsConfig().difficulty();
         private XMaterial material = XMaterial.GRASS_BLOCK;
         private BuildWorldStatus status = BuildWorldStatus.NOT_STARTED;
-        private boolean blockBreaking = Settings.blockBreaking;
-        private boolean blockInteractions = Settings.blockInteractions;
-        private boolean blockPlacement = Settings.blockPlacement;
-        private boolean buildersEnabled = BuildersEnabled.publicBuilders;
-        private boolean explosions = Settings.explosions;
-        private boolean mobAi = Settings.mobAi;
-        private boolean physics = Settings.physics;
+        private boolean blockBreaking = defaultsConfig().settings().blockBreaking();
+        private boolean blockInteractions = defaultsConfig().settings().blockInteractions();
+        private boolean blockPlacement = defaultsConfig().settings().blockPlacement();
+        private boolean buildersEnabled = defaultsConfig().settings().buildersEnabled().publicBuilders();
+        private boolean explosions = defaultsConfig().settings().explosions();
+        private boolean mobAi = defaultsConfig().settings().mobAi();
+        private boolean physics = defaultsConfig().settings().physics();
         private boolean privateWorld = false;
         private int timeSinceBackup = 0;
         private long lastEdited = -1L;
@@ -293,6 +290,10 @@ public class WorldDataImpl implements WorldData {
          */
         public WorldDataBuilder(String worldName) {
             this.worldName = Objects.requireNonNull(worldName, "World name cannot be null");
+        }
+
+        private static PluginConfig.World.Default defaultsConfig() {
+            return BuildSystemPlugin.get().getConfigService().current().world().defaults();
         }
 
         /**

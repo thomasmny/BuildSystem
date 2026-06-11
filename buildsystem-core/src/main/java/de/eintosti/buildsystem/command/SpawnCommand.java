@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.command;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.SpawnManager;
 import java.util.Locale;
@@ -58,7 +57,7 @@ public class SpawnCommand implements CommandExecutor {
             case 0 -> {
                 if (!spawnManager.teleport(player)) {
                     Messages.sendMessage(player, "spawn_unavailable");
-                } else if (Config.Messages.spawnTeleportMessage) {
+                } else if (plugin.getConfigService().current().messages().spawnTeleportMessage()) {
                     Messages.sendMessage(player, "spawn_teleported");
                 }
             }

@@ -28,7 +28,6 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
-import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -72,6 +71,7 @@ public class SettingsInteractListener implements Listener {
             XMaterial.BIG_DRIPLEAF, XMaterial.SMALL_DRIPLEAF, XMaterial.SEAGRASS, XMaterial.SWEET_BERRIES
     ), XMaterial.class);
 
+    private final BuildSystemPlugin plugin;
     private final CustomBlockManager customBlockManager;
     private final SettingsManager settingsManager;
     private final WorldStorageImpl worldStorage;
@@ -79,6 +79,7 @@ public class SettingsInteractListener implements Listener {
     private final Set<UUID> cachePlayers;
 
     public SettingsInteractListener(BuildSystemPlugin plugin) {
+        this.plugin = plugin;
         this.customBlockManager = plugin.getCustomBlockManager();
         this.settingsManager = plugin.getSettingsManager();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
@@ -325,7 +326,7 @@ public class SettingsInteractListener implements Listener {
 
         Material material = itemStack.getType();
         XMaterial xMaterial = XMaterial.matchXMaterial(material);
-        if (xMaterial == Config.Settings.Builder.worldEditWand) {
+        if (xMaterial == plugin.getConfigService().current().settings().builder().worldEditWand()) {
             return;
         }
 

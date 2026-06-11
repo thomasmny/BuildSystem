@@ -17,7 +17,7 @@
  */
 package de.eintosti.buildsystem.util;
 
-import de.eintosti.buildsystem.config.Config.World;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import java.util.Arrays;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -26,18 +26,33 @@ import org.jspecify.annotations.Nullable;
 public final class StringCleaner {
 
     public static final String INVALID_NAME_CHARACTERS = "[^A-Za-z\\d/_-]";
+    private static final String DEFAULT_INVALID_CHARACTERS = "^\b$";
 
     private StringCleaner() {
     }
 
     /**
-     * Checks if the input string contains any invalid characters as defined by {@link #INVALID_NAME_CHARACTERS} and {@link World#invalidCharacters}.
+     * Gets the configured invalid characters pattern, falling back to the default if the plugin is not available (e.g. in tests).
+     *
+     * @return The invalid characters regex pattern
+     */
+    private static String getInvalidCharacters() {
+        try {
+            return BuildSystemPlugin.get().getConfigService().current().world().invalidCharacters();
+        } catch (Exception e) {
+            return DEFAULT_INVALID_CHARACTERS;
+        }
+    }
+
+    /**
+     * Checks if the input string contains any invalid characters as defined by {@link #INVALID_NAME_CHARACTERS} and the configured invalid-characters pattern.
      *
      * @param input The input string to check
      * @return {@code true} if the input contains invalid characters, {@code false} otherwise
      */
     public static boolean hasInvalidNameCharacters(String input) {
-        return Arrays.stream(input.split("")).anyMatch(c -> c.matches(INVALID_NAME_CHARACTERS) || c.matches(World.invalidCharacters));
+        String invalidChars = getInvalidCharacters();
+        return Arrays.stream(input.split("")).anyMatch(c -> c.matches(INVALID_NAME_CHARACTERS) || c.matches(invalidChars));
     }
 
     /**
@@ -48,8 +63,9 @@ public final class StringCleaner {
      */
     @Nullable
     public static String firstInvalidChar(String input) {
+        String invalidChars = getInvalidCharacters();
         return Arrays.stream(input.split(""))
-                .filter(c -> c.matches(INVALID_NAME_CHARACTERS) || c.matches(World.invalidCharacters))
+                .filter(c -> c.matches(INVALID_NAME_CHARACTERS) || c.matches(invalidChars))
                 .findFirst()
                 .orElse(null);
     }
@@ -61,9 +77,10 @@ public final class StringCleaner {
      * @return A sanitized version of the input string
      */
     public static String sanitize(String input) {
+        String invalidChars = getInvalidCharacters();
         return input
                 .replaceAll(INVALID_NAME_CHARACTERS, "")
-                .replaceAll(World.invalidCharacters, "")
+                .replaceAll(invalidChars, "")
                 .replace(" ", "_")
                 .trim();
     }

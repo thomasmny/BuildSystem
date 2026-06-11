@@ -29,9 +29,6 @@ import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.config.Config.Settings;
-import de.eintosti.buildsystem.config.Config.Settings.Navigator;
-import de.eintosti.buildsystem.config.Config.World.Limits;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -107,8 +104,8 @@ public class PlayerServiceImpl implements PlayerService {
         WorldStorageImpl worldStorage = plugin.getWorldService().getWorldStorage();
 
         int maxWorldAmountConfig = showPrivateWorlds
-                ? Limits.privateWorlds
-                : Limits.publicWorlds;
+                ? plugin.getConfigService().current().world().limits().privateWorlds()
+                : plugin.getConfigService().current().world().limits().publicWorlds();
         if (maxWorldAmountConfig >= 0 && worldStorage.getBuildWorlds().size() >= maxWorldAmountConfig) {
             return false;
         }
@@ -164,7 +161,7 @@ public class PlayerServiceImpl implements PlayerService {
      * @param buildWorld The world for which the sidebar should be updated
      */
     public void forceUpdateSidebar(BuildWorld buildWorld) {
-        if (!Settings.scoreboard) {
+        if (!plugin.getConfigService().current().settings().scoreboard()) {
             return;
         }
 
@@ -183,7 +180,7 @@ public class PlayerServiceImpl implements PlayerService {
      */
     public void forceUpdateSidebar(Player player) {
         SettingsManager settingsManager = plugin.getSettingsManager();
-        if (!Settings.scoreboard || !settingsManager.getSettings(player).isScoreboard()) {
+        if (!plugin.getConfigService().current().settings().scoreboard() || !settingsManager.getSettings(player).isScoreboard()) {
             return;
         }
         settingsManager.updateScoreboard(player);
@@ -195,7 +192,7 @@ public class PlayerServiceImpl implements PlayerService {
      * @param player The player to whom the navigator item should be given
      */
     public void giveNavigator(Player player) {
-        if (!Navigator.giveItemOnJoin || !player.hasPermission("buildsystem.navigator.item") || InventoryUtils.hasNavigator(player)) {
+        if (!plugin.getConfigService().current().settings().navigator().giveItemOnJoin() || !player.hasPermission("buildsystem.navigator.item") || InventoryUtils.hasNavigator(player)) {
             return;
         }
 

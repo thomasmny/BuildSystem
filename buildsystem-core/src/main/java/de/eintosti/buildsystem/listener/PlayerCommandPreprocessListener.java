@@ -23,7 +23,7 @@ import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
-import de.eintosti.buildsystem.config.Config.Settings.Builder;
+
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -255,7 +255,7 @@ public class PlayerCommandPreprocessListener implements Listener {
             return;
         }
 
-        if (Builder.blockWorldEditNonBuilder) {
+        if (plugin.getConfigService().current().settings().builder().blockWorldEditNonBuilder()) {
             if (!DISABLED_COMMANDS.contains(command)) {
                 return;
             }

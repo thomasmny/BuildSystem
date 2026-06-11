@@ -19,7 +19,6 @@ package de.eintosti.buildsystem;
 
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
-import de.eintosti.buildsystem.config.Config;
 import de.eintosti.buildsystem.util.Placeholders;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.io.File;
@@ -1090,8 +1089,9 @@ public class Messages {
     }
 
     public static String formatDate(long millis) {
+        // TODO(plan-014): inject
         return millis > 0
-                ? new SimpleDateFormat(Config.Messages.dateFormat).format(millis)
+                ? new SimpleDateFormat(BuildSystemPlugin.get().getConfigService().current().messages().dateFormat()).format(millis)
                 : "-";
     }
 }

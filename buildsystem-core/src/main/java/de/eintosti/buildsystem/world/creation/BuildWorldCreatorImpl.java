@@ -26,8 +26,6 @@ import de.eintosti.buildsystem.api.world.creation.BuildWorldCreator;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.config.Config.World.Default;
-import de.eintosti.buildsystem.config.Config.World.Default.Time;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
@@ -98,9 +96,9 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
         this.worldStorage = plugin.getWorldService().getWorldStorage();
 
         this.worldName = name;
-        this.difficulty = Default.difficulty;
-        this.time = Time.noon;
-        this.worldBoarderSize = Default.worldBoarderSize;
+        this.difficulty = plugin.getConfigService().current().world().defaults().difficulty();
+        this.time = plugin.getConfigService().current().world().defaults().time().noon();
+        this.worldBoarderSize = plugin.getConfigService().current().world().defaults().worldBorderSize();
     }
 
     public BuildWorldCreatorImpl(BuildSystemPlugin plugin, BuildWorld buildWorld) {
@@ -395,10 +393,10 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
             bukkitWorld.setTime(this.time);
         }
         if (this.worldBoarderSize != null) {
-            bukkitWorld.getWorldBorder().setSize(Default.worldBoarderSize);
+            bukkitWorld.getWorldBorder().setSize(plugin.getConfigService().current().world().defaults().worldBorderSize());
         }
         bukkitWorld.setKeepSpawnInMemory(true);
-        Default.gameRules.forEach(gameRule -> applyGameRule(bukkitWorld, gameRule));
+        plugin.getConfigService().current().world().defaults().gameRules().forEach(gameRule -> applyGameRule(bukkitWorld, gameRule));
     }
 
     private static <T> void applyGameRule(World world, GameRuleEntry<T> entry) {

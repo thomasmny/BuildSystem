@@ -26,8 +26,6 @@ import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
-import de.eintosti.buildsystem.config.Config;
-import de.eintosti.buildsystem.config.Config.Settings.Archive;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
@@ -69,7 +67,7 @@ public class PlayerJoinListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void sendPlayerJoinMessage(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        String message = Config.Messages.joinQuitMessages
+        String message = plugin.getConfigService().current().messages().joinQuitMessages()
                 ? Messages.getString("player_join", player, Map.entry("%player%", player.getName()))
                 : null;
         event.setJoinMessage(message);
@@ -95,7 +93,7 @@ public class PlayerJoinListener implements Listener {
                 Messages.sendMessage(player, "physics_deactivated_in_world", Map.entry("%world%", worldName));
             }
 
-            if (Archive.vanish && worldData.status().get() == BuildWorldStatus.ARCHIVE) {
+            if (plugin.getConfigService().current().settings().archive().vanish() && worldData.status().get() == BuildWorldStatus.ARCHIVE) {
                 player.addPotionEffect(new PotionEffect(XPotion.INVISIBILITY.get(), PotionEffect.INFINITE_DURATION, 0, false, false), false);
                 Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
             }
@@ -180,7 +178,7 @@ public class PlayerJoinListener implements Listener {
     }
 
     private void performUpdateCheck(Player player) {
-        if (!Config.Settings.updateChecker) {
+        if (!plugin.getConfigService().current().settings().updateChecker()) {
             return;
         }
 
