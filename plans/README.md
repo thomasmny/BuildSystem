@@ -17,7 +17,7 @@ row here when done.
 |------|-------|----------|--------|------------|--------|
 | 000 | Target architecture (design reference — not executable) | — | — | — | REFERENCE |
 | 001 | Test infrastructure + utility characterization tests | P1 | M | — | DONE |
-| 002 | Fix seven verified bugs before restructuring | P1 | M | 001 | TODO |
+| 002 | Fix seven verified bugs before restructuring | P1 | M | 001 | DONE |
 | 003 | Immutable PluginConfig snapshot + ConfigService | P1 | L | 001, 002 | TODO |
 | 004 | messages.yml resource + injected Messages service | P1 | L | 002, 003 | TODO |
 | 005 | Command framework; migrate 17 commands; delete tabcomplete/ | P1 | L | 003, 004 | TODO |
