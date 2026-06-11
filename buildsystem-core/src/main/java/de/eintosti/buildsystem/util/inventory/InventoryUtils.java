@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.OptionalInt;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -201,7 +202,7 @@ public final class InventoryUtils {
                     itemMeta.setLore(lore);
                     itemStack.setItemMeta(itemMeta);
                     storeWorldInformation(itemStack, buildWorld);
-                    inventory.setItem(slot, itemStack);
+                    Bukkit.getScheduler().runTask(PLUGIN, () -> inventory.setItem(slot, itemStack));
                 });
     }
 
