@@ -17,13 +17,12 @@
  */
 package de.eintosti.buildsystem.config;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.cryptomorin.xseries.XMaterial;
+import java.util.logging.Logger;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
-
-import java.util.logging.Logger;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class PluginConfigTest {
 

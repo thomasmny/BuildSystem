@@ -25,12 +25,11 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import java.util.Locale;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.Locale;
 
 @NullMarked
 public class PlaceholderApiExpansion extends PlaceholderExpansion {
@@ -91,8 +90,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
     }
 
     @Override
-    @Nullable
-    public String onPlaceholderRequest(@Nullable Player player, String identifier) {
+    @Nullable public String onPlaceholderRequest(@Nullable Player player, String identifier) {
         if (player == null) {
             return "";
         }
@@ -104,8 +102,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
         }
     }
 
-    @Nullable
-    private String settingsPlaceholder(Player player, String identifier) {
+    @Nullable private String settingsPlaceholder(Player player, String identifier) {
         Settings settings = settingsService.getSettings(player);
         String settingIdentifier = identifier.split("_")[1];
 
@@ -129,8 +126,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
         };
     }
 
-    @Nullable
-    private String worldPlaceholder(Player player, String identifier) {
+    @Nullable private String worldPlaceholder(Player player, String identifier) {
         String worldName = player.getWorld().getName();
         if (identifier.matches(".*_.*")) {
             String[] splitString = identifier.split("_");

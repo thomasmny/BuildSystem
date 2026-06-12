@@ -19,12 +19,11 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.player.menu.SpeedMenu;
-import org.bukkit.entity.Player;
-import org.jspecify.annotations.NullMarked;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class SpeedCommand extends CommandBase {

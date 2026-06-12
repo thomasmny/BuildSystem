@@ -20,12 +20,11 @@ package de.eintosti.buildsystem.world.data.type;
 import de.eintosti.buildsystem.api.data.Capability;
 import de.eintosti.buildsystem.api.data.Overridable;
 import de.eintosti.buildsystem.api.data.Type;
-import org.jspecify.annotations.NullMarked;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * A single, concrete implementation of {@link Type} that uses a composition-based {@link Capability} model.

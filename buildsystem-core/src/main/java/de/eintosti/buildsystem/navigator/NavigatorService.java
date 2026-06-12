@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
+import java.util.*;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -42,8 +43,6 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.*;
 
 @NullMarked
 public class NavigatorService {
@@ -69,14 +68,12 @@ public class NavigatorService {
 
     // -- ArmorStand helpers -----------------------------------------------
 
-    @Nullable
-    public NavigatorCategory matchNavigatorCategory(ArmorStand armorStand) {
+    @Nullable public NavigatorCategory matchNavigatorCategory(ArmorStand armorStand) {
         String categoryName = armorStand.getPersistentDataContainer().get(categoryKey, PersistentDataType.STRING);
         return categoryName != null ? NavigatorCategory.valueOf(categoryName) : null;
     }
 
-    @Nullable
-    public UUID getOwner(ArmorStand armorStand) {
+    @Nullable public UUID getOwner(ArmorStand armorStand) {
         String ownerUUID = armorStand.getPersistentDataContainer().get(ownerKey, PersistentDataType.STRING);
         return ownerUUID != null ? UUID.fromString(ownerUUID) : null;
     }
@@ -261,13 +258,11 @@ public class NavigatorService {
         return false;
     }
 
-    @Nullable
-    private Entity getTargetEntity(Entity entity) {
+    @Nullable private Entity getTargetEntity(Entity entity) {
         return getTarget(entity, entity.getNearbyEntities(3, 3, 3));
     }
 
-    @Nullable
-    @Contract("null, _ -> null")
+    @Nullable @Contract("null, _ -> null")
     private <T extends Entity> T getTarget(@Nullable Entity entity, Iterable<T> entities) {
         if (entity == null) {
             return null;

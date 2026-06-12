@@ -48,8 +48,7 @@ public interface FolderStorage extends Storage<Folder> {
      * @param name The name of the folder to retrieve
      * @return The folder if it exists, or {@code null} if it does not
      */
-    @Nullable
-    Folder getFolder(String name);
+    @Nullable Folder getFolder(String name);
 
     /**
      * Checks if a {@link Folder} with the given name (case-insensitive) exists.

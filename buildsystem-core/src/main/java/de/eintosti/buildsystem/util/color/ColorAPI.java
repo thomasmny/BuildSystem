@@ -21,13 +21,12 @@ import de.eintosti.buildsystem.util.color.patterns.GradientPattern;
 import de.eintosti.buildsystem.util.color.patterns.HexPattern;
 import de.eintosti.buildsystem.util.color.patterns.RainbowPattern;
 import de.eintosti.buildsystem.util.color.patterns.SolidPattern;
-import net.md_5.bungee.api.ChatColor;
-import org.jetbrains.annotations.Unmodifiable;
-import org.jspecify.annotations.NullMarked;
-
 import java.awt.*;
 import java.util.Collection;
 import java.util.List;
+import net.md_5.bungee.api.ChatColor;
+import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public final class ColorAPI {

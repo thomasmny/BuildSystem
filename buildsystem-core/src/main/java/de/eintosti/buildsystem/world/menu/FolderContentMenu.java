@@ -26,13 +26,12 @@ import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.navigator.settings.WorldDisplay;
+import java.util.*;
+import java.util.AbstractMap.SimpleEntry;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
-
-import java.util.AbstractMap.SimpleEntry;
-import java.util.*;
 
 @NullMarked
 public class FolderContentMenu extends DisplayablesMenu {

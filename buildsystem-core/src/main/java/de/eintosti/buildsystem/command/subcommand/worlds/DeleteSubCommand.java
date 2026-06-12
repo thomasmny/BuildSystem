@@ -22,10 +22,9 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.world.menu.DeleteMenu;
+import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-
-import java.util.List;
 
 @NullMarked
 public class DeleteSubCommand implements SubCommand {

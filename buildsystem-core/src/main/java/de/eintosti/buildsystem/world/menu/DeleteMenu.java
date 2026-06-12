@@ -23,12 +23,11 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.Menu;
+import java.util.Map;
+import java.util.stream.IntStream;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
-
-import java.util.Map;
-import java.util.stream.IntStream;
 
 @NullMarked
 public class DeleteMenu extends Menu {

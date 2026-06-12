@@ -28,13 +28,12 @@ import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldLoader;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldUnloader;
+import java.util.UUID;
 import org.bukkit.Difficulty;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.UUID;
 
 /**
  * Represents a world managed by the BuildSystem plugin, extending the {@link Displayable} interface. This interface provides comprehensive access to world-specific properties,

@@ -24,6 +24,9 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import org.bukkit.ChatColor;
 import org.bukkit.GameRule;
 import org.bukkit.Material;
@@ -36,10 +39,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
 
 @NullMarked
 public class GameRulesMenu extends PaginatedMenu {
@@ -239,8 +238,7 @@ public class GameRulesMenu extends PaginatedMenu {
      * @return The casted game rule if it matches the type, or {@code null} if it does not match
      */
     @SuppressWarnings("unchecked")
-    @Nullable
-    @Contract("_, _ -> _")
+    @Nullable @Contract("_, _ -> _")
     private static <T> GameRule<T> castRule(GameRule<?> rule, Class<T> type) {
         return type.equals(rule.getType()) ? (GameRule<T>) rule : null;
     }

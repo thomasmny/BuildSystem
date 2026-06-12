@@ -58,8 +58,7 @@ public enum WorldsArgument implements Argument {
         this.permission = permission;
     }
 
-    @Nullable
-    public static WorldsArgument matchArgument(String input) {
+    @Nullable public static WorldsArgument matchArgument(String input) {
         return Arrays.stream(values())
                 .filter(argument -> argument.getName().equalsIgnoreCase(input))
                 .findFirst()

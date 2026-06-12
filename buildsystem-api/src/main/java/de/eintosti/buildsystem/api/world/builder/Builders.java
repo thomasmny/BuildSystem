@@ -46,8 +46,7 @@ public interface Builders {
      *
      * @return The creator of the world, or {@code null} if there is none
      */
-    @Nullable
-    Builder getCreator();
+    @Nullable Builder getCreator();
 
     /**
      * Sets the creator of the world.
@@ -77,8 +76,7 @@ public interface Builders {
      * @param uuid The UUID to search for
      * @return The builder if found, {@code null} otherwise
      */
-    @Nullable
-    Builder getBuilder(UUID uuid);
+    @Nullable Builder getBuilder(UUID uuid);
 
     /**
      * Get an unmodifiable list of all {@link Builder} names

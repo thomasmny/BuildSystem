@@ -23,14 +23,13 @@ import de.eintosti.buildsystem.api.event.world.BuildWorldPostLoadEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldLoader;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
-
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 @NullMarked
 public class WorldLoaderImpl implements WorldLoader {

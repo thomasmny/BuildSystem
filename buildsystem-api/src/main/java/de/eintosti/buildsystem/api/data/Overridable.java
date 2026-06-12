@@ -17,11 +17,10 @@
  */
 package de.eintosti.buildsystem.api.data;
 
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
-
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A {@link Capability} that marks a {@link Type} as being overridable by an external source.

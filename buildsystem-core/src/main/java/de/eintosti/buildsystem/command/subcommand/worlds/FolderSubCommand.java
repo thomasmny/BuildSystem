@@ -29,13 +29,12 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import java.util.*;
+import java.util.Map.Entry;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
-
-import java.util.*;
-import java.util.Map.Entry;
 
 @NullMarked
 public class FolderSubCommand implements SubCommand {

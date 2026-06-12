@@ -28,6 +28,9 @@ import de.eintosti.buildsystem.api.world.display.Displayable.DisplayableType;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import java.util.List;
+import java.util.OptionalInt;
+import java.util.stream.IntStream;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -43,10 +46,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.List;
-import java.util.OptionalInt;
-import java.util.stream.IntStream;
 
 /**
  * Builds and inspects stateful menu items. Holds the dependencies the item builders need (config, messages, settings) so menus do not reach for the plugin singleton. Pure,

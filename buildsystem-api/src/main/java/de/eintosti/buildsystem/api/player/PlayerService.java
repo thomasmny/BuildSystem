@@ -20,11 +20,10 @@ package de.eintosti.buildsystem.api.player;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
-import org.bukkit.entity.Player;
-import org.jspecify.annotations.NullMarked;
-
 import java.util.Set;
 import java.util.UUID;
+import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Service for managing {@link BuildPlayer}.

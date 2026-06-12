@@ -19,13 +19,12 @@ package de.eintosti.buildsystem.config;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
+import java.util.List;
+import java.util.Set;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.List;
-import java.util.Set;
 
 @NullMarked
 public record PluginConfig(Settings settings, World world, Folder folder) {

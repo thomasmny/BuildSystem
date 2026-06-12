@@ -17,12 +17,11 @@
  */
 package de.eintosti.buildsystem.i18n;
 
-import org.jspecify.annotations.NullMarked;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.Test;
 
 @NullMarked
 class PlaceholdersTest {

@@ -55,8 +55,7 @@ public interface PlayerStorage extends Storage<BuildPlayer> {
      * @param uuid The uuid of the player
      * @return The player, if found, otherwise {@code null}
      */
-    @Nullable
-    BuildPlayer getBuildPlayer(UUID uuid);
+    @Nullable BuildPlayer getBuildPlayer(UUID uuid);
 
     /**
      * Gets the {@link BuildPlayer} which wraps the given player.

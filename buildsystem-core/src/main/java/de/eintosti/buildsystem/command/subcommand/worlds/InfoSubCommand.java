@@ -26,12 +26,11 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.i18n.Messages;
+import java.util.List;
+import java.util.Map;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-
-import java.util.List;
-import java.util.Map;
 
 @NullMarked
 public class InfoSubCommand implements SubCommand {

@@ -23,15 +23,14 @@ import de.eintosti.buildsystem.api.event.world.PlayerBuildModeToggleEvent;
 import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.entity.Player;
-import org.jspecify.annotations.NullMarked;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class BuildCommand extends CommandBase {

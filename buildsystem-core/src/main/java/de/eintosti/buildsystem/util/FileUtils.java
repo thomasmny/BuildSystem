@@ -19,13 +19,6 @@ package de.eintosti.buildsystem.util;
 
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.model.ExcludeFileFilter;
-import net.lingala.zip4j.model.ZipParameters;
-import org.bukkit.Bukkit;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,6 +31,12 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.model.ExcludeFileFilter;
+import net.lingala.zip4j.model.ZipParameters;
+import org.bukkit.Bukkit;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class FileUtils {

@@ -17,13 +17,12 @@
  */
 package de.eintosti.buildsystem.world.builder;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import de.eintosti.buildsystem.api.world.builder.Builder;
+import java.util.UUID;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
-
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @NullMarked
 class BuilderSerializationTest {

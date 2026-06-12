@@ -18,12 +18,11 @@
 package de.eintosti.buildsystem.config.migration;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import org.jspecify.annotations.NullMarked;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Manages the migration of configurations. It holds a registry of available migration steps and applies them sequentially.

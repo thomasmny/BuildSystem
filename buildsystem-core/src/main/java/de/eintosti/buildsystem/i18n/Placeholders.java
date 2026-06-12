@@ -17,9 +17,8 @@
  */
 package de.eintosti.buildsystem.i18n;
 
-import org.jspecify.annotations.NullMarked;
-
 import java.util.Map.Entry;
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public final class Placeholders {

@@ -25,11 +25,10 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.world.menu.EditMenu;
-import org.bukkit.entity.Player;
-import org.jspecify.annotations.NullMarked;
-
 import java.util.List;
 import java.util.Map;
+import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class SetProjectSubCommand implements SubCommand {

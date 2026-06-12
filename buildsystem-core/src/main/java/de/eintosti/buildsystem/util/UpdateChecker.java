@@ -50,8 +50,7 @@ public final class UpdateChecker {
     /**
      * The default version scheme for this update checker
      */
-    @Nullable
-    public static final VersionScheme VERSION_SCHEME_DECIMAL = (first, second) -> {
+    @Nullable public static final VersionScheme VERSION_SCHEME_DECIMAL = (first, second) -> {
         String[] firstSplit = splitVersionInfo(first), secondSplit = splitVersionInfo(second);
         if (firstSplit == null || secondSplit == null) {
             return null;
@@ -74,8 +73,7 @@ public final class UpdateChecker {
     private final int pluginID;
     private final VersionScheme versionScheme;
 
-    @Nullable
-    private UpdateResult lastResult = null;
+    @Nullable private UpdateResult lastResult = null;
 
     public UpdateChecker(JavaPlugin plugin, int pluginID) {
         this(plugin, pluginID, VERSION_SCHEME_DECIMAL);
@@ -146,8 +144,7 @@ public final class UpdateChecker {
      *
      * @return the last update check result. {@code null} if none.
      */
-    @Nullable
-    public UpdateResult getLastResult() {
+    @Nullable public UpdateResult getLastResult() {
         return lastResult;
     }
 
@@ -211,8 +208,7 @@ public final class UpdateChecker {
          * @param second the second version to check
          * @return the greater of the two versions. {@code null} if unsupported version schemes
          */
-        @Nullable
-        String compareVersions(String first, String second);
+        @Nullable String compareVersions(String first, String second);
     }
 
     /**

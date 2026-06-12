@@ -17,14 +17,13 @@
  */
 package de.eintosti.buildsystem.player;
 
+import java.util.Arrays;
+import java.util.List;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Snapshots a player's gameplay state (gamemode, inventory, walk/fly speed) before build mode mutates it, so it can be restored when build mode ends. Internal to BuildSystem; not
@@ -33,17 +32,13 @@ import java.util.List;
 @NullMarked
 public class CachedValues {
 
-    @Nullable
-    private GameMode gameMode;
+    @Nullable private GameMode gameMode;
 
-    @Nullable
-    private List<ItemStack> inventory;
+    @Nullable private List<ItemStack> inventory;
 
-    @Nullable
-    private Float walkSpeed;
+    @Nullable private Float walkSpeed;
 
-    @Nullable
-    private Float flySpeed;
+    @Nullable private Float flySpeed;
 
     public void saveGameMode(GameMode gameMode) {
         this.gameMode = gameMode;

@@ -46,6 +46,8 @@ import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.menu.CreateMenu.Page;
+import java.util.*;
+import java.util.function.Function;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -57,9 +59,6 @@ import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.*;
-import java.util.function.Function;
 
 @NullMarked
 public abstract class DisplayablesMenu extends PaginatedMenu {
@@ -86,11 +85,9 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     protected final Visibility requiredVisibility;
     protected final Set<BuildWorldStatus> validStatuses;
 
-    @Nullable
-    private final String noWorldsMessage;
+    @Nullable private final String noWorldsMessage;
 
-    @Nullable
-    private List<Displayable> cachedDisplayables;
+    @Nullable private List<Displayable> cachedDisplayables;
 
     protected DisplayablesMenu(
             BuildSystemPlugin plugin,

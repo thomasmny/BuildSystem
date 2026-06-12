@@ -17,18 +17,17 @@
  */
 package de.eintosti.buildsystem.command;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import de.eintosti.buildsystem.i18n.Messages;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @NullMarked
 class CommandBaseTest {

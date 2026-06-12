@@ -17,6 +17,8 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
+import static de.eintosti.buildsystem.world.menu.CreatableWorldsMenu.CREATE_FOLDER_PROFILE;
+
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
@@ -27,8 +29,6 @@ import de.eintosti.buildsystem.menu.InventoryUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
-
-import static de.eintosti.buildsystem.world.menu.CreatableWorldsMenu.CREATE_FOLDER_PROFILE;
 
 @NullMarked
 public class ArchivedWorldsMenu extends DisplayablesMenu {

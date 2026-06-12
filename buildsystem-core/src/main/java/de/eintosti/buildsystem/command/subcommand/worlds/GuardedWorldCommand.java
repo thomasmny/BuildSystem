@@ -45,8 +45,7 @@ final class GuardedWorldCommand {
      * @param messageKeyPrefix The message key prefix, e.g. {@code "worlds_edit"}; {@code _usage}/{@code _unknown_world} are appended
      * @return The world if all checks pass, otherwise {@code null} (an error message has already been sent)
      */
-    @Nullable
-    static BuildWorld requireWorld(
+    @Nullable static BuildWorld requireWorld(
             BuildSystemPlugin plugin,
             Player player,
             String worldName,

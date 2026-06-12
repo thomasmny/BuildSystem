@@ -18,9 +18,8 @@
 package de.eintosti.buildsystem.integration.worldedit;
 
 import com.google.common.collect.Sets;
-import org.jspecify.annotations.NullMarked;
-
 import java.util.Set;
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public final class WorldEditCommands {

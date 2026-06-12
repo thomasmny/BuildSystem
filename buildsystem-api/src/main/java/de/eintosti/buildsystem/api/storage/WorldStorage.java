@@ -42,8 +42,7 @@ public interface WorldStorage extends Storage<BuildWorld> {
      * @param name The name of the world
      * @return The world object if one was found, {@code null} otherwise
      */
-    @Nullable
-    BuildWorld getBuildWorld(String name);
+    @Nullable BuildWorld getBuildWorld(String name);
 
     /**
      * Gets the {@link BuildWorld} by the given {@link World}.
@@ -51,8 +50,7 @@ public interface WorldStorage extends Storage<BuildWorld> {
      * @param world The bukkit world object
      * @return The world object if one was found, {@code null} otherwise
      */
-    @Nullable
-    BuildWorld getBuildWorld(World world);
+    @Nullable BuildWorld getBuildWorld(World world);
 
     /**
      * Gets the {@link BuildWorld} by the given {@link UUID}.
@@ -60,8 +58,7 @@ public interface WorldStorage extends Storage<BuildWorld> {
      * @param uuid The build world's unique identifier
      * @return The world object if one was found, {@code null} otherwise
      */
-    @Nullable
-    BuildWorld getBuildWorld(UUID uuid);
+    @Nullable BuildWorld getBuildWorld(UUID uuid);
 
     /**
      * Gets a list of all {@link BuildWorld}s.

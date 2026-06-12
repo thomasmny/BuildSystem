@@ -18,10 +18,9 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import java.util.Objects;
 import org.bukkit.command.PluginCommand;
 import org.jspecify.annotations.NullMarked;
-
-import java.util.Objects;
 
 @NullMarked
 public final class CommandRegistrar {

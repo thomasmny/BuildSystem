@@ -236,8 +236,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
     }
 
     @Override
-    @Nullable
-    public World generateBukkitWorld(boolean checkVersion) {
+    @Nullable public World generateBukkitWorld(boolean checkVersion) {
         if (buildWorld == null) {
             throw new IllegalStateException("BuildWorld must be set before generating the Bukkit world.");
         }

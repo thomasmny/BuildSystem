@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.player.customblock;
 
+import java.util.Locale;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -25,8 +26,6 @@ import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.Locale;
 
 @NullMarked
 public enum CustomBlock {

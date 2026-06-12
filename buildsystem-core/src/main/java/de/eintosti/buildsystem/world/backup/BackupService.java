@@ -19,12 +19,6 @@ import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.world.backup.storage.LocalBackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.S3BackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.SftpBackupStorage;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
-
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
@@ -34,6 +28,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class BackupService {
@@ -48,12 +47,11 @@ public class BackupService {
     private final Cache<UUID, BackupProfile> backupProfileCache =
             CacheBuilder.newBuilder().expireAfterAccess(3, TimeUnit.MINUTES).build();
 
-    @Nullable
-    private BukkitTask autoBackupTask;
+    @Nullable private BukkitTask autoBackupTask;
 
     public BackupService(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.executor = Executors.newCachedThreadPool();
+        this.executor = Executors.newFixedThreadPool(3);
 
         PluginConfig.World.Backup backupConfig =
                 plugin.getConfigService().current().world().backup();

@@ -25,6 +25,9 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiConsumer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -33,10 +36,6 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
-
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.BiConsumer;
 
 @NullMarked
 public class SetupMenu extends Menu {

@@ -25,12 +25,11 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import java.util.Set;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.Set;
 
 @NullMarked
 public abstract class CreatableWorldsMenu extends DisplayablesMenu {

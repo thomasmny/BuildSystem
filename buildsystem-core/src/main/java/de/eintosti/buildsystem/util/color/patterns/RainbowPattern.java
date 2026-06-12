@@ -19,10 +19,9 @@ package de.eintosti.buildsystem.util.color.patterns;
 
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.util.color.ColorPattern;
-import org.jspecify.annotations.NullMarked;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class RainbowPattern implements ColorPattern {

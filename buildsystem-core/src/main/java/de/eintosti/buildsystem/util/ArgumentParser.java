@@ -17,10 +17,9 @@
  */
 package de.eintosti.buildsystem.util;
 
+import java.util.*;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.*;
 
 @NullMarked
 public class ArgumentParser {

@@ -34,8 +34,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public abstract class AbstractBackupStorage implements BackupStorage {
 
-    @Nullable
-    protected final BuildSystemPlugin plugin;
+    @Nullable protected final BuildSystemPlugin plugin;
 
     protected final Logger logger;
     private final Executor executor;

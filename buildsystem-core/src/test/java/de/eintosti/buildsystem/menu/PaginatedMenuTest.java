@@ -17,14 +17,14 @@
  */
 package de.eintosti.buildsystem.menu;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+
 import de.eintosti.buildsystem.i18n.Messages;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 
 @NullMarked
 class PaginatedMenuTest {

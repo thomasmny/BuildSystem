@@ -29,6 +29,9 @@ import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.DirectionUtil;
 import de.eintosti.buildsystem.util.MaterialUtils;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -44,10 +47,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 
 @NullMarked
 public class DisabledInteractionsListener implements Listener {

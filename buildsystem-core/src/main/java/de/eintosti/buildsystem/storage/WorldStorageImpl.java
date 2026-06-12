@@ -24,6 +24,11 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
+import java.io.File;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -32,22 +37,14 @@ import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.io.File;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 @NullMarked
 public abstract class WorldStorageImpl implements WorldStorage {
 
     protected final Logger logger;
 
-    @Nullable
-    protected final BuildSystemPlugin plugin;
+    @Nullable protected final BuildSystemPlugin plugin;
 
-    @Nullable
-    protected final WorldServiceImpl worldService;
+    @Nullable protected final WorldServiceImpl worldService;
 
     private final ConcurrentHashMap<UUID, BuildWorld> buildWorldsByUuid;
     private final ConcurrentHashMap<String, UUID> uuidByName;
@@ -70,8 +67,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
     }
 
     @Override
-    @Nullable
-    @Contract("null -> null")
+    @Nullable @Contract("null -> null")
     public BuildWorld getBuildWorld(@Nullable String name) {
         if (name == null || name.isEmpty()) {
             return null;
@@ -86,14 +82,12 @@ public abstract class WorldStorageImpl implements WorldStorage {
     }
 
     @Override
-    @Nullable
-    public BuildWorld getBuildWorld(World world) {
+    @Nullable public BuildWorld getBuildWorld(World world) {
         return getBuildWorld(world.getName());
     }
 
     @Override
-    @Nullable
-    public BuildWorld getBuildWorld(UUID uuid) {
+    @Nullable public BuildWorld getBuildWorld(UUID uuid) {
         return this.buildWorldsByUuid.get(uuid);
     }
 

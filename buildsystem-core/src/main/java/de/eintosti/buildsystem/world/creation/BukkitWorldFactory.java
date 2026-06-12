@@ -46,17 +46,13 @@ public class BukkitWorldFactory {
     private final String worldName;
     private BuildWorldType worldType;
 
-    @Nullable
-    private CustomGenerator customGenerator;
+    @Nullable private CustomGenerator customGenerator;
 
-    @Nullable
-    private final Difficulty difficulty;
+    @Nullable private final Difficulty difficulty;
 
-    @Nullable
-    private final Integer time;
+    @Nullable private final Integer time;
 
-    @Nullable
-    private final Integer worldBorderSize;
+    @Nullable private final Integer worldBorderSize;
 
     private final WorldDataVersionGuard versionGuard;
     private final GenerationDataStore generationDataStore;
@@ -98,8 +94,7 @@ public class BukkitWorldFactory {
         this.generationDataStore = new GenerationDataStore(plugin.getLogger(), Bukkit.getWorldContainer());
     }
 
-    @Nullable
-    public World generate(VersionCheck versionCheck) {
+    @Nullable public World generate(VersionCheck versionCheck) {
         if (versionCheck == VersionCheck.REQUIRED && versionGuard.isDataVersionTooHigh()) {
             plugin.getLogger()
                     .warning("\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping..."

@@ -21,10 +21,9 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.command.subcommand.worlds.*;
 import de.eintosti.buildsystem.world.menu.NavigatorMenu;
+import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-
-import java.util.List;
 
 @NullMarked
 public class WorldsCommand extends CommandBase {

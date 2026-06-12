@@ -66,14 +66,11 @@ public class SftpBackupStorage extends AbstractBackupStorage {
     private final String remoteBasePath;
     private final Path tmpDownloadPath;
 
-    @Nullable
-    private volatile SshClient sshClient;
+    @Nullable private volatile SshClient sshClient;
 
-    @Nullable
-    private volatile ClientSession clientSession;
+    @Nullable private volatile ClientSession clientSession;
 
-    @Nullable
-    private volatile SftpClient sftpClient;
+    @Nullable private volatile SftpClient sftpClient;
 
     public SftpBackupStorage(
             BuildSystemPlugin plugin,

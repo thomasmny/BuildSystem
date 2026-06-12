@@ -24,10 +24,6 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Unmodifiable;
-import org.jspecify.annotations.NullMarked;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -36,14 +32,16 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public abstract class FolderStorageImpl implements FolderStorage {
 
     protected final Logger logger;
 
-    @org.jspecify.annotations.Nullable
-    protected final BuildSystemPlugin plugin;
+    @org.jspecify.annotations.Nullable protected final BuildSystemPlugin plugin;
 
     protected final WorldStorage worldStorage;
 
@@ -81,8 +79,7 @@ public abstract class FolderStorageImpl implements FolderStorage {
         return Collections.unmodifiableCollection(foldersByName.values());
     }
 
-    @Nullable
-    @Override
+    @Nullable @Override
     public Folder getFolder(String name) {
         return foldersByName.get(name.toLowerCase());
     }

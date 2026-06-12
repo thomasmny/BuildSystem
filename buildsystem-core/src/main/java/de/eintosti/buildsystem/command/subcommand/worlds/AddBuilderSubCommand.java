@@ -27,14 +27,13 @@ import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import de.eintosti.buildsystem.world.menu.BuilderMenu;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.jspecify.annotations.NullMarked;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class AddBuilderSubCommand implements SubCommand {

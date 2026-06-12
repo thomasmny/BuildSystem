@@ -17,18 +17,17 @@
  */
 package de.eintosti.buildsystem.storage;
 
-import de.eintosti.buildsystem.api.player.BuildPlayer;
-import org.jspecify.annotations.NullMarked;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
+import de.eintosti.buildsystem.api.player.BuildPlayer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.*;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 @NullMarked
 class PlayerStorageImplTest {

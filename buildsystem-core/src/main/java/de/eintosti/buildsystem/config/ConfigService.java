@@ -20,6 +20,10 @@ package de.eintosti.buildsystem.config;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
+import java.io.File;
+import java.util.*;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
 import org.bukkit.GameRule;
@@ -27,11 +31,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.io.File;
-import java.util.*;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 @NullMarked
 public class ConfigService {

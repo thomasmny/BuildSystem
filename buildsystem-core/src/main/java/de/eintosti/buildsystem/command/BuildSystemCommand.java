@@ -19,11 +19,10 @@ package de.eintosti.buildsystem.command;
 
 import com.google.common.collect.Lists;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import java.util.List;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-
-import java.util.List;
 
 @NullMarked
 public class BuildSystemCommand extends PagedCommand {
