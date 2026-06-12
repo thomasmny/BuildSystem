@@ -38,7 +38,6 @@ import de.eintosti.buildsystem.world.lifecycle.WorldLoaderImpl;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import de.eintosti.buildsystem.world.lifecycle.WorldTeleporterImpl;
 import de.eintosti.buildsystem.world.lifecycle.WorldUnloaderImpl;
-import java.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.World;
@@ -47,6 +46,8 @@ import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.util.*;
+
 @NullMarked
 public final class BuildWorldImpl implements BuildWorld {
 
@@ -54,13 +55,13 @@ public final class BuildWorldImpl implements BuildWorld {
     private String name;
     private boolean loaded;
 
-    @Nullable private Folder folder;
+    private @Nullable Folder folder;
 
     private final BuildWorldType worldType;
     private final WorldDataImpl worldData;
     private final BuildersImpl builders;
 
-    @Nullable private final CustomGenerator customGenerator;
+    private final @Nullable CustomGenerator customGenerator;
 
     private final long creation;
 
@@ -159,7 +160,7 @@ public final class BuildWorldImpl implements BuildWorld {
      *
      * @return The Bukkit world, or {@code null} if not loaded
      */
-    @Nullable public World getWorld() {
+    public @Nullable World getWorld() {
         return Bukkit.getWorld(name);
     }
 
@@ -278,7 +279,7 @@ public final class BuildWorldImpl implements BuildWorld {
     }
 
     @Override
-    @Nullable public CustomGenerator getCustomGenerator() {
+    public @Nullable CustomGenerator getCustomGenerator() {
         return customGenerator;
     }
 
@@ -340,7 +341,7 @@ public final class BuildWorldImpl implements BuildWorld {
     }
 
     @Override
-    @Nullable public Folder getFolder() {
+    public @Nullable Folder getFolder() {
         return folder;
     }
 

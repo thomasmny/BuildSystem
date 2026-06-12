@@ -21,6 +21,11 @@ import com.google.common.base.Preconditions;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -29,10 +34,6 @@ import java.net.URL;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.Contract;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
  * A utility class to assist in checking for updates for plugins uploaded to <a
@@ -50,7 +51,7 @@ public final class UpdateChecker {
     /**
      * The default version scheme for this update checker
      */
-    @Nullable public static final VersionScheme VERSION_SCHEME_DECIMAL = (first, second) -> {
+    public static final @Nullable VersionScheme VERSION_SCHEME_DECIMAL = (first, second) -> {
         String[] firstSplit = splitVersionInfo(first), secondSplit = splitVersionInfo(second);
         if (firstSplit == null || secondSplit == null) {
             return null;
@@ -73,7 +74,7 @@ public final class UpdateChecker {
     private final int pluginID;
     private final VersionScheme versionScheme;
 
-    @Nullable private UpdateResult lastResult = null;
+    private @Nullable UpdateResult lastResult = null;
 
     public UpdateChecker(JavaPlugin plugin, int pluginID) {
         this(plugin, pluginID, VERSION_SCHEME_DECIMAL);
@@ -145,7 +146,7 @@ public final class UpdateChecker {
      *
      * @return the last update check result. {@code null} if none.
      */
-    @Nullable public UpdateResult getLastResult() {
+    public @Nullable UpdateResult getLastResult() {
         return lastResult;
     }
 

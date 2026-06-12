@@ -27,14 +27,9 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
-import de.eintosti.buildsystem.api.world.display.Displayable;
+import de.eintosti.buildsystem.api.world.display.*;
 import de.eintosti.buildsystem.api.world.display.Displayable.DisplayableType;
-import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.api.world.display.WorldDisplay;
-import de.eintosti.buildsystem.api.world.display.WorldFilter;
 import de.eintosti.buildsystem.api.world.display.WorldFilter.Mode;
-import de.eintosti.buildsystem.api.world.display.WorldSort;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
@@ -45,7 +40,6 @@ import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.menu.CreateMenu.Page;
-import java.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -57,6 +51,8 @@ import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.*;
 
 @NullMarked
 public abstract class DisplayablesMenu extends PaginatedMenu {
@@ -83,9 +79,8 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     protected final Visibility requiredVisibility;
     protected final Set<BuildWorldStatus> validStatuses;
 
-    @Nullable private final String noWorldsMessage;
-
-    @Nullable private List<Displayable> cachedDisplayables;
+    private final @Nullable String noWorldsMessage;
+    private @Nullable List<Displayable> cachedDisplayables;
 
     protected DisplayablesMenu(
             BuildSystemPlugin plugin,

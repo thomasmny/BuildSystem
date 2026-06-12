@@ -56,7 +56,7 @@ public class LogoutLocation {
         return worldName;
     }
 
-    @Nullable public Location location() {
+    public @Nullable Location location() {
         World world = Bukkit.getWorld(worldName);
         if (world == null) {
             return null;

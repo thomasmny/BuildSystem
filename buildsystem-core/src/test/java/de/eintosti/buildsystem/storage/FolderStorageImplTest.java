@@ -17,22 +17,23 @@
  */
 package de.eintosti.buildsystem.storage;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.logging.Logger;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.logging.Logger;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @NullMarked
 class FolderStorageImplTest {
@@ -157,7 +158,7 @@ class FolderStorageImplTest {
         private final NavigatorCategory category;
         private final Builder creator;
 
-        @Nullable private Folder parent;
+        private @Nullable Folder parent;
 
         SimpleTestFolder(String name, NavigatorCategory category, Builder creator) {
             this.name = name;
@@ -191,7 +192,7 @@ class FolderStorageImplTest {
         }
 
         @Override
-        @Nullable public Folder getParent() {
+        public @Nullable Folder getParent() {
             return parent;
         }
 

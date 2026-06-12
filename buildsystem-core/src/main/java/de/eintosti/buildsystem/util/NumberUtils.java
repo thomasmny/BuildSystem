@@ -65,7 +65,7 @@ public final class NumberUtils {
      * @return the int represented by the string, or the default if conversion fails
      * @since 2.1
      */
-    public static int toInt(@Nullable final String str, final int defaultValue) {
+    public static int toInt(final @Nullable String str, final int defaultValue) {
         if (str == null) {
             return defaultValue;
         }

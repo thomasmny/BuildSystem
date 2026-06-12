@@ -17,11 +17,12 @@
  */
 package de.eintosti.buildsystem.util;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class StringCleaner {
@@ -36,7 +37,7 @@ public final class StringCleaner {
                 .anyMatch(c -> c.matches(INVALID_NAME_CHARACTERS) || c.matches(configuredPattern));
     }
 
-    @Nullable public static String firstInvalidChar(String input, String configuredPattern) {
+    public static @Nullable String firstInvalidChar(String input, String configuredPattern) {
         return Arrays.stream(input.split(""))
                 .filter(c -> c.matches(INVALID_NAME_CHARACTERS) || c.matches(configuredPattern))
                 .findFirst()

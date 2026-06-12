@@ -20,10 +20,11 @@ package de.eintosti.buildsystem.player;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import java.util.UUID;
 import org.bukkit.Location;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.UUID;
 
 /**
  * BuildSystem's only {@link BuildPlayer} implementation. Beyond the public API ({@code getUniqueId()},
@@ -41,11 +42,9 @@ public final class BuildPlayerImpl implements BuildPlayer {
     private final Settings settings;
     private final CachedValues cachedValues;
 
-    @Nullable private LogoutLocation logoutLocation;
-
-    @Nullable private Location previousLocation;
-
-    @Nullable private NavigatorCategory lastLookedAt;
+    private @Nullable LogoutLocation logoutLocation;
+    private @Nullable Location previousLocation;
+    private @Nullable NavigatorCategory lastLookedAt;
 
     public BuildPlayerImpl(UUID uuid, Settings settings) {
         this.uuid = uuid;
@@ -60,7 +59,7 @@ public final class BuildPlayerImpl implements BuildPlayer {
      * @param buildPlayer The API view
      * @return The same instance, typed as the impl
      */
-    @Nullable public static BuildPlayerImpl of(@Nullable BuildPlayer buildPlayer) {
+    public static @Nullable BuildPlayerImpl of(@Nullable BuildPlayer buildPlayer) {
         if (buildPlayer == null) {
             return null;
         }
@@ -81,7 +80,7 @@ public final class BuildPlayerImpl implements BuildPlayer {
         return cachedValues;
     }
 
-    @Nullable public LogoutLocation getLogoutLocation() {
+    public @Nullable LogoutLocation getLogoutLocation() {
         return logoutLocation;
     }
 
@@ -89,7 +88,7 @@ public final class BuildPlayerImpl implements BuildPlayer {
         this.logoutLocation = logoutLocation;
     }
 
-    @Nullable public Location getPreviousLocation() {
+    public @Nullable Location getPreviousLocation() {
         return previousLocation;
     }
 
@@ -97,7 +96,7 @@ public final class BuildPlayerImpl implements BuildPlayer {
         this.previousLocation = location;
     }
 
-    @Nullable public NavigatorCategory getLastLookedAt() {
+    public @Nullable NavigatorCategory getLastLookedAt() {
         return lastLookedAt;
     }
 

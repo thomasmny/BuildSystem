@@ -31,12 +31,6 @@ import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.world.display.WorldDisplayImpl;
 import de.eintosti.buildsystem.world.display.WorldFilterImpl;
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -44,6 +38,13 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 @NullMarked
 public class YamlPlayerStorage extends PlayerStorageImpl {
@@ -169,7 +170,7 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
         return buildPlayer;
     }
 
-    @Nullable private LogoutLocation loadLogoutLocation(FileConfiguration configuration, String pathPrefix) {
+    private @Nullable LogoutLocation loadLogoutLocation(FileConfiguration configuration, String pathPrefix) {
         String location = configuration.getString(pathPrefix);
         if (location == null || location.trim().isEmpty()) {
             return null;

@@ -27,7 +27,6 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
-import java.util.*;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -42,6 +41,8 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Vector;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.*;
 
 @NullMarked
 public class NavigatorService {
@@ -65,14 +66,12 @@ public class NavigatorService {
         initEntityChecker();
     }
 
-    // -- ArmorStand helpers -----------------------------------------------
-
-    @Nullable public NavigatorCategory matchNavigatorCategory(ArmorStand armorStand) {
+    public @Nullable NavigatorCategory matchNavigatorCategory(ArmorStand armorStand) {
         String categoryName = armorStand.getPersistentDataContainer().get(categoryKey, PersistentDataType.STRING);
         return categoryName != null ? NavigatorCategory.valueOf(categoryName) : null;
     }
 
-    @Nullable public UUID getOwner(ArmorStand armorStand) {
+    public @Nullable UUID getOwner(ArmorStand armorStand) {
         String ownerUUID = armorStand.getPersistentDataContainer().get(ownerKey, PersistentDataType.STRING);
         return ownerUUID != null ? UUID.fromString(ownerUUID) : null;
     }
@@ -143,8 +142,6 @@ public class NavigatorService {
         return armorStand;
     }
 
-    // -- Navigator open/close logic ----------------------------------------
-
     public Set<Player> getOpenNavigator() {
         return openNavigator;
     }
@@ -194,8 +191,6 @@ public class NavigatorService {
 
         openNavigator.remove(player);
     }
-
-    // -- Entity-checker tick -----------------------------------------------
 
     private void initEntityChecker() {
         Bukkit.getScheduler().runTaskTimer(plugin, this::checkForArmorStandNavigator, 0L, 2L);

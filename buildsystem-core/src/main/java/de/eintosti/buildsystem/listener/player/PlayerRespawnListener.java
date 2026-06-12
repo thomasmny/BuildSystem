@@ -21,6 +21,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -42,9 +43,15 @@ public class PlayerRespawnListener implements Listener {
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();
         Settings settings = settingsManager.getSettings(player);
-
-        if (settings.isSpawnTeleport() && spawnService.spawnExists()) {
-            event.setRespawnLocation(spawnService.getSpawn());
+        if (!settings.isSpawnTeleport()) {
+            return;
         }
+
+        Location spawn = spawnService.getSpawn();
+        if (spawn == null) {
+            return;
+        }
+
+        event.setRespawnLocation(spawn);
     }
 }

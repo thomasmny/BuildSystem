@@ -22,15 +22,6 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.backup.BackupImpl;
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.security.Security;
-import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.logging.Level;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.signature.BuiltinSignatures;
@@ -41,6 +32,16 @@ import org.apache.sshd.sftp.client.SftpClientFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.Security;
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.logging.Level;
 
 @NullMarked
 public class SftpBackupStorage extends AbstractBackupStorage {
@@ -56,11 +57,9 @@ public class SftpBackupStorage extends AbstractBackupStorage {
     private final String remoteBasePath;
     private final Path tmpDownloadPath;
 
-    @Nullable private volatile SshClient sshClient;
-
-    @Nullable private volatile ClientSession clientSession;
-
-    @Nullable private volatile SftpClient sftpClient;
+    private volatile @Nullable SshClient sshClient;
+    private volatile @Nullable ClientSession clientSession;
+    private volatile @Nullable SftpClient sftpClient;
 
     public SftpBackupStorage(
             BuildSystemPlugin plugin,

@@ -34,8 +34,6 @@ import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.world.menu.*;
-import java.util.Objects;
-import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -54,6 +52,9 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.Objects;
+import java.util.UUID;
 
 @NullMarked
 public class NavigatorListener implements Listener {
@@ -78,7 +79,7 @@ public class NavigatorListener implements Listener {
     /**
      * Called whenever the player interacts with the navigator item.
      *
-     * @param event The event which calls this method
+     * @param event The event that calls this method
      */
     @EventHandler
     public void manageNavigatorItemInteraction(PlayerInteractEvent event) {
@@ -160,7 +161,7 @@ public class NavigatorListener implements Listener {
     /**
      * Manages a player's interaction with the {@link NavigatorType#NEW} navigator.
      *
-     * @param event The event which calls this method
+     * @param event The event that calls this method
      */
     @EventHandler
     public void manageNewNavigatorInteraction(PlayerInteractAtEntityEvent event) {

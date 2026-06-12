@@ -25,10 +25,11 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.world.creation.GenerationDataStore.WorldGenerationData;
 import de.eintosti.buildsystem.world.creation.generator.VoidGenerator;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
-import java.util.Locale;
 import org.bukkit.*;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.Locale;
 
 @NullMarked
 public class BukkitWorldFactory {
@@ -42,13 +43,10 @@ public class BukkitWorldFactory {
     private final String worldName;
     private BuildWorldType worldType;
 
-    @Nullable private CustomGenerator customGenerator;
-
-    @Nullable private final Difficulty difficulty;
-
-    @Nullable private final Integer time;
-
-    @Nullable private final Integer worldBorderSize;
+    private @Nullable CustomGenerator customGenerator;
+    private final @Nullable Difficulty difficulty;
+    private final @Nullable Integer time;
+    private final @Nullable Integer worldBorderSize;
 
     private final WorldDataVersionGuard versionGuard;
     private final GenerationDataStore generationDataStore;
@@ -90,7 +88,7 @@ public class BukkitWorldFactory {
         this.generationDataStore = new GenerationDataStore(plugin.getLogger(), Bukkit.getWorldContainer());
     }
 
-    @Nullable public World generate(VersionCheck versionCheck) {
+    public @Nullable World generate(VersionCheck versionCheck) {
         if (versionCheck == VersionCheck.REQUIRED && versionGuard.isDataVersionTooHigh()) {
             plugin.getLogger()
                     .warning("\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping..."

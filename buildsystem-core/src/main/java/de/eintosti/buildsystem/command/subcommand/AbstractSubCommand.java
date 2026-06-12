@@ -51,7 +51,7 @@ public abstract class AbstractSubCommand implements SubCommand {
      *     are appended
      * @return The world if all checks pass, otherwise {@code null} (an error message has already been sent)
      */
-    @Nullable protected BuildWorld requireWorld(
+    protected @Nullable BuildWorld requireWorld(
             Player player, String worldName, String[] args, int maxArgs, String messageKeyPrefix) {
         BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
         if (!WorldPermissionsImpl.of(plugin, buildWorld)

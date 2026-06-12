@@ -19,14 +19,11 @@ package de.eintosti.buildsystem.player.noclip;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import java.util.*;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.*;
 
 @NullMarked
 public class NoClipService {
@@ -87,6 +84,10 @@ public class NoClipService {
     private boolean checkNoClip(Player player) {
         Location loc = player.getLocation();
         World world = loc.getWorld();
+        if (world == null) {
+            return false;
+        }
+
         double x = loc.getX();
         double y = loc.getY();
         double z = loc.getZ();
@@ -143,7 +144,7 @@ public class NoClipService {
 
     /**
      * Only remove a player from the list of No-Clip players if said player has No-Clip enabled, i.e.
-     * {@link NoClipManager#isNoClip} is equal to {@code true}.
+     * {@link #isNoClip} is equal to {@code true}.
      *
      * <p>Will also set the player to their previous {@link GameMode}.
      *

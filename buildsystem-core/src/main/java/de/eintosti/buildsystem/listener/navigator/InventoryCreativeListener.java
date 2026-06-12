@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.listener.navigator;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
-import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -29,6 +28,8 @@ import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.List;
 
 @NullMarked
 public class InventoryCreativeListener implements Listener {
@@ -53,11 +54,9 @@ public class InventoryCreativeListener implements Listener {
         Bukkit.getScheduler()
                 .runTaskLater(
                         plugin,
-                        () -> {
-                            PlayerInventoryClearEvent playerInventoryClearEvent =
-                                    new PlayerInventoryClearEvent(player, navigatorSlots);
-                            Bukkit.getServer().getPluginManager().callEvent(playerInventoryClearEvent);
-                        },
+                        () -> Bukkit.getServer()
+                                .getPluginManager()
+                                .callEvent(new PlayerInventoryClearEvent(player, navigatorSlots)),
                         2L);
     }
 }

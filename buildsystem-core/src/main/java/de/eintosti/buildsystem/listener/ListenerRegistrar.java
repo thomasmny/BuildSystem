@@ -25,27 +25,9 @@ import de.eintosti.buildsystem.listener.color.SignChangeListener;
 import de.eintosti.buildsystem.listener.navigator.InventoryCreativeListener;
 import de.eintosti.buildsystem.listener.navigator.NavigatorListener;
 import de.eintosti.buildsystem.listener.navigator.PlayerMoveListener;
-import de.eintosti.buildsystem.listener.player.AsyncPlayerPreLoginListener;
-import de.eintosti.buildsystem.listener.player.BuildModePreventationListener;
-import de.eintosti.buildsystem.listener.player.EntityDamageListener;
-import de.eintosti.buildsystem.listener.player.PlayerChangedWorldListener;
-import de.eintosti.buildsystem.listener.player.PlayerJoinListener;
-import de.eintosti.buildsystem.listener.player.PlayerQuitListener;
-import de.eintosti.buildsystem.listener.player.PlayerRespawnListener;
-import de.eintosti.buildsystem.listener.player.PlayerTeleportListener;
-import de.eintosti.buildsystem.listener.settings.DisabledInteractionsListener;
-import de.eintosti.buildsystem.listener.settings.InstantSignPlacementListener;
-import de.eintosti.buildsystem.listener.settings.IronDoorListener;
-import de.eintosti.buildsystem.listener.settings.PlantPlacementListener;
-import de.eintosti.buildsystem.listener.settings.PlayerInventoryClearListener;
-import de.eintosti.buildsystem.listener.settings.SlabListener;
-import de.eintosti.buildsystem.listener.world.BlockPhysicsListener;
-import de.eintosti.buildsystem.listener.world.BuildWorldResetUnloadListener;
-import de.eintosti.buildsystem.listener.world.EntitySpawnListener;
-import de.eintosti.buildsystem.listener.world.FoodLevelChangeListener;
-import de.eintosti.buildsystem.listener.world.PlayerCommandPreprocessListener;
-import de.eintosti.buildsystem.listener.world.WeatherChangeListener;
-import de.eintosti.buildsystem.listener.world.WorldManipulateListener;
+import de.eintosti.buildsystem.listener.player.*;
+import de.eintosti.buildsystem.listener.settings.*;
+import de.eintosti.buildsystem.listener.world.*;
 import de.eintosti.buildsystem.menu.MenuListener;
 import org.bukkit.plugin.PluginManager;
 import org.jspecify.annotations.NullMarked;
@@ -62,7 +44,7 @@ public final class ListenerRegistrar {
     }
 
     public void registerAll() {
-        pluginManager.registerEvents(new AsyncPlayerChatListener(plugin), plugin);
+        pluginManager.registerEvents(new AsyncPlayerChatListener(), plugin);
         pluginManager.registerEvents(new AsyncPlayerPreLoginListener(plugin), plugin);
         pluginManager.registerEvents(new BlockPhysicsListener(plugin), plugin);
         pluginManager.registerEvents(new BuildModePreventationListener(plugin), plugin);
@@ -85,7 +67,7 @@ public final class ListenerRegistrar {
         pluginManager.registerEvents(new PlayerRespawnListener(plugin), plugin);
         pluginManager.registerEvents(new PlayerTeleportListener(plugin), plugin);
         pluginManager.registerEvents(new PlantPlacementListener(plugin), plugin);
-        pluginManager.registerEvents(new SignChangeListener(plugin), plugin);
+        pluginManager.registerEvents(new SignChangeListener(), plugin);
         pluginManager.registerEvents(new SlabListener(plugin), plugin);
         pluginManager.registerEvents(new WeatherChangeListener(plugin), plugin);
         pluginManager.registerEvents(new WorldManipulateListener(plugin), plugin);

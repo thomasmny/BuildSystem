@@ -21,10 +21,6 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import java.io.File;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -32,6 +28,14 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 @NullMarked
 public abstract class WorldStorageImpl implements WorldStorage {
@@ -63,12 +67,12 @@ public abstract class WorldStorageImpl implements WorldStorage {
     }
 
     @Override
-    @Nullable public BuildWorld getBuildWorld(World world) {
+    public @Nullable BuildWorld getBuildWorld(World world) {
         return getBuildWorld(world.getName());
     }
 
     @Override
-    @Nullable public BuildWorld getBuildWorld(UUID uuid) {
+    public @Nullable BuildWorld getBuildWorld(UUID uuid) {
         return this.buildWorldsByUuid.get(uuid);
     }
 

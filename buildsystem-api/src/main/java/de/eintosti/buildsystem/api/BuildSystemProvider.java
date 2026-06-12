@@ -39,7 +39,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class BuildSystemProvider {
 
-    @Nullable private static BuildSystem instance = null;
+    private static @Nullable BuildSystem instance = null;
 
     private BuildSystemProvider() {
         throw new AssertionError("This class is not meant to be instantiated");

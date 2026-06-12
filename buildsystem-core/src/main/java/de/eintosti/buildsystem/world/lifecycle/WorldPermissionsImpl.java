@@ -36,7 +36,7 @@ public class WorldPermissionsImpl implements WorldPermissions {
 
     private final BuildSystemPlugin plugin;
 
-    @Nullable private final BuildWorld buildWorld;
+    private final @Nullable BuildWorld buildWorld;
 
     private WorldPermissionsImpl(BuildSystemPlugin plugin, @Nullable BuildWorld buildWorld) {
         this.plugin = plugin;

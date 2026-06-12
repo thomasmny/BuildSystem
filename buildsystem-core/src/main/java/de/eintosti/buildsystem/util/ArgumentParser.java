@@ -17,9 +17,10 @@
  */
 package de.eintosti.buildsystem.util;
 
-import java.util.*;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.*;
 
 @NullMarked
 public class ArgumentParser {
@@ -66,7 +67,7 @@ public class ArgumentParser {
      * @param name The name of the argument
      * @return The argument value if present, otherwise {@code null}.
      */
-    @Nullable public String getValue(String name) {
+    public @Nullable String getValue(String name) {
         List<String> value = map.get(name);
         if (value != null) {
             return String.join(" ", value);

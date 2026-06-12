@@ -17,8 +17,9 @@
  */
 package de.eintosti.buildsystem;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.DataInputStream;
 import java.io.InputStream;
@@ -26,9 +27,10 @@ import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import org.jspecify.annotations.NullMarked;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Compile-guard: ensures BuildSystemPlugin has no static self-referencing singleton. Fails if someone re-adds a static
@@ -122,8 +124,9 @@ class BuildSystemPluginSingletonGuardTest {
             int accessFlags = field[0];
             if ((accessFlags & Modifier.STATIC) == 0) continue;
             String descriptor = constantPool[field[2]];
-            assertFalse(
-                    SELF_DESCRIPTOR.equals(descriptor),
+            assertNotEquals(
+                    SELF_DESCRIPTOR,
+                    descriptor,
                     "BuildSystemPlugin has a static field of type BuildSystemPlugin — singleton was re-added (field name: "
                             + constantPool[field[1]] + ")");
         }

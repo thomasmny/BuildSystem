@@ -25,12 +25,13 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
-import java.util.*;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.*;
 
 @NullMarked
 public class FolderImpl implements Folder {
@@ -43,7 +44,7 @@ public class FolderImpl implements Folder {
     private final List<UUID> worlds;
     private final List<Folder> subfolders;
 
-    @Nullable private Folder parent;
+    private @Nullable Folder parent;
 
     private XMaterial material;
     private String permission;
@@ -153,7 +154,7 @@ public class FolderImpl implements Folder {
     }
 
     @Override
-    @Nullable public Folder getParent() {
+    public @Nullable Folder getParent() {
         return this.parent;
     }
 

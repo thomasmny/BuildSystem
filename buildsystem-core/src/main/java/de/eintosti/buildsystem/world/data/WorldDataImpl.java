@@ -25,16 +25,17 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.world.data.type.ConfigurableType;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 
 @NullMarked
 public class WorldDataImpl implements WorldData {
@@ -42,7 +43,7 @@ public class WorldDataImpl implements WorldData {
     private final Map<String, Type<?>> data = new HashMap<>();
     private String worldName;
 
-    @Nullable private Supplier<@Nullable Folder> folderResolver;
+    private @Nullable Supplier<@Nullable Folder> folderResolver;
 
     private final Type<String> customSpawn;
     private final Type<String> permission;
@@ -124,7 +125,7 @@ public class WorldDataImpl implements WorldData {
         this.folderResolver = resolver;
     }
 
-    @Nullable private Folder getAssignedFolder() {
+    private @Nullable Folder getAssignedFolder() {
         Supplier<@Nullable Folder> resolver = this.folderResolver;
         return resolver != null ? resolver.get() : null;
     }
@@ -140,7 +141,7 @@ public class WorldDataImpl implements WorldData {
     }
 
     @Override
-    @Nullable public Location getCustomSpawnLocation() {
+    public @Nullable Location getCustomSpawnLocation() {
         String customSpawn = customSpawn().get();
         if (customSpawn.isBlank()) {
             return null;

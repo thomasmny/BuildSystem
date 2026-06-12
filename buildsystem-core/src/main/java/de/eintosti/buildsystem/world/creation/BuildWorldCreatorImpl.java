@@ -31,8 +31,6 @@ import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
-import java.io.File;
-import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Difficulty;
@@ -41,6 +39,9 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.io.File;
+import java.util.Map;
 
 /**
  * Shared implementation backing both {@link WorldBuilder} (generating a fresh world) and {@link WorldImporter}
@@ -145,6 +146,20 @@ public class BuildWorldCreatorImpl implements WorldBuilder, WorldImporter {
 
     @Override
     @Contract("_ -> this")
+    public BuildWorldCreatorImpl time(int time) {
+        this.time = time;
+        return this;
+    }
+
+    @Override
+    @Contract("_ -> this")
+    public BuildWorldCreatorImpl worldBorderSize(int worldBorderSize) {
+        this.worldBorderSize = worldBorderSize;
+        return this;
+    }
+
+    @Override
+    @Contract("_ -> this")
     public BuildWorldCreatorImpl creationDate(long creationDate) {
         this.creationDate = creationDate;
         return this;
@@ -158,7 +173,7 @@ public class BuildWorldCreatorImpl implements WorldBuilder, WorldImporter {
     }
 
     @Override
-    @Nullable public BuildWorld build() {
+    public @Nullable BuildWorld build() {
         return importMode ? buildImported() : buildGenerated();
     }
 

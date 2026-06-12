@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.listener.color;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -28,8 +27,6 @@ import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class SignChangeListener implements Listener {
-
-    public SignChangeListener(BuildSystemPlugin plugin) {}
 
     @EventHandler
     public void onSignChange(SignChangeEvent event) {

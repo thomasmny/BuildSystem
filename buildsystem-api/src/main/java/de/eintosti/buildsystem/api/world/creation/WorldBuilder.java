@@ -83,6 +83,22 @@ public interface WorldBuilder {
     WorldBuilder difficulty(Difficulty difficulty);
 
     /**
+     * Sets the time of the world.
+     *
+     * @param time The time in ticks
+     * @return This builder
+     */
+    WorldBuilder time(int time);
+
+    /**
+     * Sets the world border size of the world.
+     *
+     * @param worldBorderSize The world border size in blocks
+     * @return This builder
+     */
+    WorldBuilder worldBorderSize(int worldBorderSize);
+
+    /**
      * Sets the creator (owner) of the world. When {@code null} the world has no recorded creator.
      *
      * @param creator The creator, or {@code null}

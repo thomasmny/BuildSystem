@@ -17,13 +17,11 @@
  */
 package de.eintosti.buildsystem.storage;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -31,9 +29,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
-import org.jspecify.annotations.NullMarked;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @NullMarked
 class WorldStorageImplTest {
@@ -145,31 +144,32 @@ class WorldStorageImplTest {
     void concurrentAddRemoveIsConsistent() throws InterruptedException {
         int threads = 4;
         int opsPerThread = 250;
-        ExecutorService exec = Executors.newFixedThreadPool(threads);
-        CountDownLatch ready = new CountDownLatch(threads);
-        CountDownLatch done = new CountDownLatch(threads);
 
-        for (int t = 0; t < threads; t++) {
-            exec.submit(() -> {
-                ready.countDown();
-                try {
-                    ready.await();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return;
-                }
-                for (int i = 0; i < opsPerThread; i++) {
-                    BuildWorld w = world("World-" + Thread.currentThread().getId() + "-" + i);
-                    storage.addBuildWorld(w);
-                    assertNotNull(storage.getBuildWorld(w.getUniqueId()));
-                    storage.removeBuildWorld(w);
-                    assertNull(storage.getBuildWorld(w.getUniqueId()));
-                }
-                done.countDown();
-            });
+        try (ExecutorService exec = Executors.newFixedThreadPool(threads)) {
+            CountDownLatch ready = new CountDownLatch(threads);
+            CountDownLatch done = new CountDownLatch(threads);
+
+            for (int t = 0; t < threads; t++) {
+                exec.submit(() -> {
+                    ready.countDown();
+                    try {
+                        ready.await();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                    for (int i = 0; i < opsPerThread; i++) {
+                        BuildWorld w = world("World-" + Thread.currentThread().threadId() + "-" + i);
+                        storage.addBuildWorld(w);
+                        assertNotNull(storage.getBuildWorld(w.getUniqueId()));
+                        storage.removeBuildWorld(w);
+                        assertNull(storage.getBuildWorld(w.getUniqueId()));
+                    }
+                    done.countDown();
+                });
+            }
+
+            done.await();
         }
-
-        done.await();
-        exec.shutdown();
     }
 }
