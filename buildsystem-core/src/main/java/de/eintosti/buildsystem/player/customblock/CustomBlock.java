@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.player.customblock;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import java.util.Locale;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -58,7 +57,7 @@ public enum CustomBlock {
     SMOOTH_STONE("blocks_smooth_stone", "8dd0cd158c2bb6618650e3954b2d29237f5b4c0ddc7d258e17380ab6979f071"),
     DEBUG_STICK("blocks_debug_stick", "badc048a7ce78f7dad72a07da27d85c0916881e5522eeed1e3daf217a38c1a");
 
-    public static final NamespacedKey CUSTOM_BLOCK_KEY = new NamespacedKey(BuildSystemPlugin.get(), "custom-block");
+    public static final NamespacedKey CUSTOM_BLOCK_KEY = new NamespacedKey("buildsystem", "custom-block");
 
     private final String messageKey;
     private final String skullUrl;

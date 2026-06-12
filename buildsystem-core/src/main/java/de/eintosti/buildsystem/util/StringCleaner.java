@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.util;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import java.util.Arrays;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -31,56 +30,22 @@ public final class StringCleaner {
     private StringCleaner() {
     }
 
-    /**
-     * Gets the configured invalid characters pattern, falling back to the default if the plugin is not available (e.g. in tests).
-     *
-     * @return The invalid characters regex pattern
-     */
-    private static String getInvalidCharacters() {
-        try {
-            return BuildSystemPlugin.get().getConfigService().current().world().invalidCharacters();
-        } catch (Exception e) {
-            return DEFAULT_INVALID_CHARACTERS;
-        }
+    public static boolean hasInvalidNameCharacters(String input, String configuredPattern) {
+        return Arrays.stream(input.split("")).anyMatch(c -> c.matches(INVALID_NAME_CHARACTERS) || c.matches(configuredPattern));
     }
 
-    /**
-     * Checks if the input string contains any invalid characters as defined by {@link #INVALID_NAME_CHARACTERS} and the configured invalid-characters pattern.
-     *
-     * @param input The input string to check
-     * @return {@code true} if the input contains invalid characters, {@code false} otherwise
-     */
-    public static boolean hasInvalidNameCharacters(String input) {
-        String invalidChars = getInvalidCharacters();
-        return Arrays.stream(input.split("")).anyMatch(c -> c.matches(INVALID_NAME_CHARACTERS) || c.matches(invalidChars));
-    }
-
-    /**
-     * Finds the first invalid character in the input string based on the defined invalid characters.
-     *
-     * @param input The input string to check for invalid characters
-     * @return The first invalid character found, or {@code null} if no invalid characters are present
-     */
     @Nullable
-    public static String firstInvalidChar(String input) {
-        String invalidChars = getInvalidCharacters();
+    public static String firstInvalidChar(String input, String configuredPattern) {
         return Arrays.stream(input.split(""))
-                .filter(c -> c.matches(INVALID_NAME_CHARACTERS) || c.matches(invalidChars))
+                .filter(c -> c.matches(INVALID_NAME_CHARACTERS) || c.matches(configuredPattern))
                 .findFirst()
                 .orElse(null);
     }
 
-    /**
-     * Sanitizes the input string by removing invalid characters, replacing spaces with underscores, and trimming whitespace.
-     *
-     * @param input The input string to sanitize
-     * @return A sanitized version of the input string
-     */
-    public static String sanitize(String input) {
-        String invalidChars = getInvalidCharacters();
+    public static String sanitize(String input, String configuredPattern) {
         return input
                 .replaceAll(INVALID_NAME_CHARACTERS, "")
-                .replaceAll(invalidChars, "")
+                .replaceAll(configuredPattern, "")
                 .replace(" ", "_")
                 .trim();
     }

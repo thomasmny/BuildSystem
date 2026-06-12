@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.util;
 
 import com.google.common.collect.Sets;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -46,7 +45,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class FileUtils {
 
-    private static final Logger LOGGER = BuildSystemPlugin.get().getLogger();
+    private static final Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
     private static final Set<String> IGNORE_FILES = Sets.newHashSet("uid.dat", "session.lock");
 
     private FileUtils() {

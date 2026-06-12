@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.util;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -35,10 +34,9 @@ public final class StringUtils {
      * @param millis The time in milliseconds to format
      * @return A formatted string representing the date and time
      */
-    public static String formatTime(long millis) {
+    public static String formatTime(long millis, String dateFormat) {
         Date date = new Date(millis);
-        // TODO(plan-014): inject
-        DateFormat formatter = new SimpleDateFormat(BuildSystemPlugin.get().getConfigService().current().messages().dateFormat() + " HH:mm:ss");
+        DateFormat formatter = new SimpleDateFormat(dateFormat + " HH:mm:ss");
         return formatter.format(date);
     }
 }

@@ -31,14 +31,17 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class SpeedInventory extends Menu {
 
+    private final SettingsService settingsService;
+
     public SpeedInventory(BuildSystemPlugin plugin, Player player) {
         super(plugin.getMessages(), 27, plugin.getMessages().getString("speed_title", player));
+        this.settingsService = plugin.getSettingsService();
     }
 
     @Override
     protected void populate(Player player) {
         for (int i = 0; i <= 26; i++) {
-            getInventory().setItem(i, ItemBuilder.glassPane(player).build());
+            getInventory().setItem(i, ItemBuilder.glassPane(player, settingsService).build());
         }
 
         getInventory().setItem(11, ItemBuilder.skull(Profileable.detect("71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530"))

@@ -101,11 +101,11 @@ public class WorldServiceImpl implements WorldService {
     public void startWorldNameInput(Player player, BuildWorldType worldType, @Nullable String template, boolean privateWorld, @Nullable Folder folder) {
         player.closeInventory();
         new PlayerChatInput(plugin, player, "enter_world_name", input -> {
-            if (StringCleaner.hasInvalidNameCharacters(input)) {
+            if (StringCleaner.hasInvalidNameCharacters(input, plugin.getConfigService().current().world().invalidCharacters())) {
                 plugin.getMessages().sendMessage(player, "worlds_world_creation_invalid_characters");
             }
 
-            String worldName = StringCleaner.sanitize(input);
+            String worldName = StringCleaner.sanitize(input, plugin.getConfigService().current().world().invalidCharacters());
             if (worldName.isEmpty()) {
                 plugin.getMessages().sendMessage(player, "worlds_world_creation_name_bank");
                 return;
@@ -204,7 +204,7 @@ public class WorldServiceImpl implements WorldService {
                     return;
                 }
 
-                String invalidChar = StringCleaner.firstInvalidChar(worldName);
+                String invalidChar = StringCleaner.firstInvalidChar(worldName, plugin.getConfigService().current().world().invalidCharacters());
                 if (invalidChar != null) {
                     plugin.getMessages().sendMessage(player, "worlds_importall_invalid_character",
                             Map.entry("%world%", worldName),
@@ -300,10 +300,10 @@ public class WorldServiceImpl implements WorldService {
             return;
         }
 
-        if (StringCleaner.hasInvalidNameCharacters(newName)) {
+        if (StringCleaner.hasInvalidNameCharacters(newName, plugin.getConfigService().current().world().invalidCharacters())) {
             plugin.getMessages().sendMessage(player, "worlds_world_creation_invalid_characters");
         }
-        String sanitizedNewName = StringCleaner.sanitize(newName);
+        String sanitizedNewName = StringCleaner.sanitize(newName, plugin.getConfigService().current().world().invalidCharacters());
         if (sanitizedNewName.isEmpty()) {
             plugin.getMessages().sendMessage(player, "worlds_world_creation_name_bank");
             return;

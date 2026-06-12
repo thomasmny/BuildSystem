@@ -74,7 +74,7 @@ public class ImportSubCommand implements SubCommand {
             return;
         }
 
-        String invalidChar = StringCleaner.firstInvalidChar(worldName);
+        String invalidChar = StringCleaner.firstInvalidChar(worldName, plugin.getConfigService().current().world().invalidCharacters());
         if (invalidChar != null) {
             plugin.getMessages().sendMessage(player, "worlds_import_invalid_character",
                     Map.entry("%world%", worldName),
@@ -146,7 +146,7 @@ public class ImportSubCommand implements SubCommand {
         List<String> result = new ArrayList<>();
         if (args.length == 2) {
             String[] directories = Bukkit.getWorldContainer().list((dir, name) -> {
-                if (de.eintosti.buildsystem.util.StringCleaner.hasInvalidNameCharacters(name)) return false;
+                if (de.eintosti.buildsystem.util.StringCleaner.hasInvalidNameCharacters(name, plugin.getConfigService().current().world().invalidCharacters())) return false;
                 File worldFolder = new File(dir, name);
                 if (!worldFolder.isDirectory()) return false;
                 if (!new File(worldFolder, "level.dat").exists()) return false;

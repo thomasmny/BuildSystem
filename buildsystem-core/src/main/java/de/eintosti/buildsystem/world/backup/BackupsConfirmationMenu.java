@@ -33,10 +33,12 @@ import org.jspecify.annotations.NullMarked;
 public class BackupsConfirmationMenu extends Menu {
 
     private final Backup backup;
+    private final String dateFormat;
 
     public BackupsConfirmationMenu(BuildSystemPlugin plugin, Backup backup, Player player) {
         super(plugin.getMessages(), 27, plugin.getMessages().getString("restore_backup_title", player));
         this.backup = backup;
+        this.dateFormat = plugin.getConfigService().current().messages().dateFormat();
     }
 
     @Override
@@ -54,7 +56,7 @@ public class BackupsConfirmationMenu extends Menu {
         getInventory().setItem(11, InventoryUtils.createItem(XMaterial.LIME_DYE,
                 messages.getString("restore_backup_confirm_name", player),
                 messages.getStringList("restore_backup_confirm_lore", player,
-                        Map.entry("%timestamp%", StringUtils.formatTime(backup.creationTime()))
+                        Map.entry("%timestamp%", StringUtils.formatTime(backup.creationTime(), dateFormat))
                 )
         ));
         getInventory().setItem(15, InventoryUtils.createItem(XMaterial.RED_DYE,

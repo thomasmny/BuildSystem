@@ -308,11 +308,11 @@ public abstract class DisplayablesInventory extends PaginatedMenu {
     private void beginFolderCreation(Player player) {
         player.closeInventory();
         new PlayerChatInput(plugin, player, "enter_folder_name", input -> {
-            if (StringCleaner.hasInvalidNameCharacters(input)) {
+            if (StringCleaner.hasInvalidNameCharacters(input, plugin.getConfigService().current().world().invalidCharacters())) {
                 plugin.getMessages().sendMessage(player, "worlds_folder_creation_invalid_characters");
             }
 
-            String sanitizedName = StringCleaner.sanitize(input);
+            String sanitizedName = StringCleaner.sanitize(input, plugin.getConfigService().current().world().invalidCharacters());
             if (sanitizedName.isEmpty()) {
                 plugin.getMessages().sendMessage(player, "worlds_folder_creation_name_bank");
                 return;

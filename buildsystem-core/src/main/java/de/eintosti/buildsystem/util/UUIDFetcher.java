@@ -23,7 +23,6 @@ import com.google.gson.JsonParser;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.util.ServerModeChecker.ServerMode;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -36,6 +35,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -44,6 +44,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class UUIDFetcher {
 
+    private static final Logger LOGGER = Logger.getLogger(UUIDFetcher.class.getName());
     private static final String UUID_URL = "https://api.mojang.com/users/profiles/minecraft/%s";
     private static final String NAME_URL = "https://api.mojang.com/user/profiles/%s/names";
 
@@ -85,7 +86,7 @@ public final class UUIDFetcher {
             cacheUser(uuid, name);
             return uuid;
         } catch (Exception e) {
-            BuildSystemPlugin.get().getLogger().log(Level.SEVERE, "Failed to fetch UUID for player: " + name, e);
+            LOGGER.log(Level.SEVERE, "Failed to fetch UUID for player: " + name, e);
         }
 
         return null;
@@ -128,7 +129,7 @@ public final class UUIDFetcher {
             cacheUser(uuid, name);
             return name;
         } catch (Exception e) {
-            BuildSystemPlugin.get().getLogger().log(Level.SEVERE, "Failed to fetch name for UUID: " + uuid, e);
+            LOGGER.log(Level.SEVERE, "Failed to fetch name for UUID: " + uuid, e);
         }
 
         return null;

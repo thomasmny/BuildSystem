@@ -20,12 +20,12 @@ package de.eintosti.buildsystem.menu;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.display.Displayable.DisplayableType;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import java.util.List;
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -42,7 +42,7 @@ public final class Heads {
      * Sets a world-icon item at the given slot, loading the skull texture asynchronously.
      * If the player has closed the inventory before the async load completes, the update is skipped.
      */
-    public static void setWorldItem(Player player, Inventory inventory, int slot,
+    public static void setWorldItem(JavaPlugin plugin, Player player, Inventory inventory, int slot,
                                     BuildWorld buildWorld, String displayName, List<String> lore) {
         XMaterial material = buildWorld.getData().material().get();
         if (material != XMaterial.PLAYER_HEAD) {
@@ -70,7 +70,6 @@ public final class Heads {
                     meta.setLore(lore);
                     itemStack.setItemMeta(meta);
                     storeWorldInfo(itemStack, buildWorld);
-                    BuildSystemPlugin plugin = BuildSystemPlugin.get();
                     Bukkit.getScheduler().runTask(plugin, () -> {
                         // Skip if the player has already closed this inventory
                         if (player.getOpenInventory().getTopInventory().equals(inventory)) {
