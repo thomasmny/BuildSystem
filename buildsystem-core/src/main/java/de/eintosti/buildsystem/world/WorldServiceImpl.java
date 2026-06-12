@@ -38,8 +38,9 @@ import de.eintosti.buildsystem.storage.yaml.YamlFolderStorage;
 import de.eintosti.buildsystem.storage.yaml.YamlWorldStorage;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
-import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
+import de.eintosti.buildsystem.world.creation.WorldBuilderImpl;
+import de.eintosti.buildsystem.world.creation.WorldImporterImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import de.eintosti.buildsystem.world.lifecycle.WorldRenamer;
 import de.eintosti.buildsystem.world.lifecycle.WorldUnloaderImpl;
@@ -201,13 +202,13 @@ public class WorldServiceImpl implements WorldService {
     @Override
     @Contract("_ -> new")
     public WorldBuilder newWorld(String name) {
-        return new BuildWorldCreatorImpl(plugin, name);
+        return new WorldBuilderImpl(plugin, name);
     }
 
     @Override
     @Contract("_ -> new")
     public WorldImporter importWorld(String name) {
-        return new BuildWorldCreatorImpl(plugin, name, true);
+        return new WorldImporterImpl(plugin, name);
     }
 
     public void startWorldNameInput(
@@ -284,25 +285,23 @@ public class WorldServiceImpl implements WorldService {
             }
         }
 
-        BuildWorldCreatorImpl worldCreator = new BuildWorldCreatorImpl(plugin, worldName, true);
-        worldCreator
+        WorldImporterImpl worldImporter = new WorldImporterImpl(plugin, worldName)
                 .type(worldType)
                 .creator(creator)
                 .customGenerator(
                         customGenerator != null
                                 ? customGenerator
                                 : new CustomGeneratorImpl("BuildSystem", generatorData, null))
-                .privateWorld(false)
-                .creationDate(FileUtils.getDirectoryCreation(new File(Bukkit.getWorldContainer(), worldName)));
+                .privateWorld(false);
 
-        if (worldCreator.isDataVersionTooHigh()) {
+        if (worldImporter.isDataVersionTooHigh()) {
             String key = single ? "import" : "importall";
             plugin.getMessages()
                     .sendMessage(player, "worlds_" + key + "_newer_version", Map.entry("%world%", worldName));
             return false;
         }
 
-        BuildWorld world = worldCreator.build();
+        BuildWorld world = worldImporter.build();
         if (world == null) {
             return false;
         }

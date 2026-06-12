@@ -33,6 +33,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -137,7 +138,7 @@ public class BackupsMenu extends Menu {
 
     @Override
     public void handleClick(InventoryClickEvent event) {
-        org.bukkit.inventory.ItemStack itemStack = event.getCurrentItem();
+        ItemStack itemStack = event.getCurrentItem();
         if (itemStack == null || itemStack.getType() == Material.AIR || !itemStack.hasItemMeta()) {
             return;
         }

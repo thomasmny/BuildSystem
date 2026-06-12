@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.api.world.creation;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
+import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -53,6 +54,15 @@ public interface WorldImporter {
      * @return This importer
      */
     WorldImporter creator(@Nullable Builder creator);
+
+    /**
+     * Sets the type the imported world is registered as. When omitted, the world is registered as
+     * {@link BuildWorldType#IMPORTED}.
+     *
+     * @param type The world type
+     * @return This importer
+     */
+    WorldImporter type(BuildWorldType type);
 
     /**
      * Sets the custom generator used to load the world's chunks. When omitted, the world is loaded with a void
