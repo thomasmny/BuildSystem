@@ -88,7 +88,16 @@ public final class BuildWorldImpl implements BuildWorld {
                         .withPrivateWorld(privateWorld)
                         .withMaterial(privateWorld ? XMaterial.PLAYER_HEAD : BuildSystemPlugin.get().getCustomizableIcons().getIcon(worldType))
                         .withPermission((privateWorld ? BuildSystemPlugin.get().getConfigService().current().world().defaults().permission().privatePermission() : BuildSystemPlugin.get().getConfigService().current().world().defaults().permission().publicPermission()).replace("%world%", name))
+                        .withDifficulty(BuildSystemPlugin.get().getConfigService().current().world().defaults().difficulty())
+                        .withBlockBreaking(BuildSystemPlugin.get().getConfigService().current().world().defaults().settings().blockBreaking())
+                        .withBlockInteractions(BuildSystemPlugin.get().getConfigService().current().world().defaults().settings().blockInteractions())
+                        .withBlockPlacement(BuildSystemPlugin.get().getConfigService().current().world().defaults().settings().blockPlacement())
+                        .withExplosions(BuildSystemPlugin.get().getConfigService().current().world().defaults().settings().explosions())
+                        .withMobAi(BuildSystemPlugin.get().getConfigService().current().world().defaults().settings().mobAi())
+                        .withPhysics(BuildSystemPlugin.get().getConfigService().current().world().defaults().settings().physics())
                         .withBuildersEnabled(privateWorld ? BuildSystemPlugin.get().getConfigService().current().world().defaults().settings().buildersEnabled().privateBuilders() : BuildSystemPlugin.get().getConfigService().current().world().defaults().settings().buildersEnabled().publicBuilders())
+                        .withPermissionOverrideEnabled(() -> BuildSystemPlugin.get().getConfigService().current().folder().overridePermissions())
+                        .withProjectOverrideEnabled(() -> BuildSystemPlugin.get().getConfigService().current().folder().overrideProjects())
                         .build(),
                 creator,
                 new ArrayList<>(),
@@ -118,6 +127,7 @@ public final class BuildWorldImpl implements BuildWorld {
         this.customGenerator = customGenerator;
         this.folder = folder;
 
+        this.worldData.setFolderResolver(this::getFolder);
         this.worldLoader = WorldLoaderImpl.of(this);
         this.worldUnloader = WorldUnloaderImpl.of(this);
         this.worldUnloader.manageUnload();

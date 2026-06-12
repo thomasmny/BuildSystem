@@ -17,8 +17,6 @@
  */
 package de.eintosti.buildsystem.storage;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -30,11 +28,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
@@ -49,19 +47,29 @@ import org.jspecify.annotations.Nullable;
 public abstract class WorldStorageImpl implements WorldStorage {
 
     protected final Logger logger;
+    @Nullable
     protected final BuildSystemPlugin plugin;
+    @Nullable
     protected final WorldServiceImpl worldService;
 
-    private final Map<UUID, BuildWorld> buildWorldsByUuid;
-    private final BiMap<UUID, String> worldIdentifiers;
+    private final ConcurrentHashMap<UUID, BuildWorld> buildWorldsByUuid;
+    private final ConcurrentHashMap<String, UUID> uuidByName;
 
     public WorldStorageImpl(BuildSystemPlugin plugin, WorldServiceImpl worldService) {
         this.logger = plugin.getLogger();
         this.plugin = plugin;
         this.worldService = worldService;
 
-        this.buildWorldsByUuid = new HashMap<>();
-        this.worldIdentifiers = HashBiMap.create();
+        this.buildWorldsByUuid = new ConcurrentHashMap<>();
+        this.uuidByName = new ConcurrentHashMap<>();
+    }
+
+    WorldStorageImpl(Logger logger) {
+        this.logger = logger;
+        this.plugin = null;
+        this.worldService = null;
+        this.buildWorldsByUuid = new ConcurrentHashMap<>();
+        this.uuidByName = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -72,7 +80,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
             return null;
         }
 
-        UUID uuid = this.worldIdentifiers.inverse().get(name.toLowerCase());
+        UUID uuid = this.uuidByName.get(name.toLowerCase());
         if (uuid != null) {
             return this.buildWorldsByUuid.get(uuid);
         }
@@ -98,21 +106,26 @@ public abstract class WorldStorageImpl implements WorldStorage {
         return Collections.unmodifiableCollection(buildWorldsByUuid.values());
     }
 
-    public void addBuildWorld(BuildWorld buildWorld) {
+    public synchronized void addBuildWorld(BuildWorld buildWorld) {
         this.buildWorldsByUuid.put(buildWorld.getUniqueId(), buildWorld);
-        this.worldIdentifiers.put(buildWorld.getUniqueId(), buildWorld.getName().toLowerCase());
+        this.uuidByName.put(buildWorld.getName().toLowerCase(), buildWorld.getUniqueId());
     }
 
-    public void removeBuildWorld(BuildWorld buildWorld) {
+    public synchronized void removeBuildWorld(BuildWorld buildWorld) {
         UUID worldId = buildWorld.getUniqueId();
         this.buildWorldsByUuid.remove(worldId);
-        this.worldIdentifiers.remove(worldId);
+        this.uuidByName.remove(buildWorld.getName().toLowerCase());
 
         // Also remove world from any folder it may be in
         Folder assignedFolder = buildWorld.getFolder();
         if (assignedFolder != null) {
             assignedFolder.removeWorld(buildWorld);
         }
+    }
+
+    public synchronized void rename(BuildWorld buildWorld, String oldName, String newName) {
+        this.uuidByName.remove(oldName.toLowerCase());
+        this.uuidByName.put(newName.toLowerCase(), buildWorld.getUniqueId());
     }
 
     @Override

@@ -18,20 +18,18 @@
 package de.eintosti.buildsystem.world.data;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.data.Bypassable;
 import de.eintosti.buildsystem.api.data.Overridable;
 import de.eintosti.buildsystem.api.data.Type;
-import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.WorldService;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.world.data.type.ConfigurableType;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
@@ -43,6 +41,8 @@ public class WorldDataImpl implements WorldData {
 
     private final Map<String, Type<?>> data = new HashMap<>();
     private String worldName;
+    @Nullable
+    private Supplier<@Nullable Folder> folderResolver;
 
     private final Type<String> customSpawn;
     private final Type<String> permission;
@@ -73,7 +73,7 @@ public class WorldDataImpl implements WorldData {
         this.permission = register("permission", new ConfigurableType<>(builder.permission)
                 .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.permission"))
                 .withCapability(Overridable.class, new Overridable<>(
-                        () -> BuildSystemPlugin.get().getConfigService().current().folder().overridePermissions(),
+                        builder.permissionOverrideEnabled,
                         () -> {
                             Folder folder = getAssignedFolder();
                             return (folder != null) ? folder.getPermission() : null;
@@ -82,7 +82,7 @@ public class WorldDataImpl implements WorldData {
         );
         this.project = register("project", new ConfigurableType<>(builder.project)
                 .withCapability(Overridable.class, new Overridable<>(
-                        () -> BuildSystemPlugin.get().getConfigService().current().folder().overrideProjects(),
+                        builder.projectOverrideEnabled,
                         () -> {
                             Folder folder = getAssignedFolder();
                             return (folder != null) ? folder.getProject() : null;
@@ -122,19 +122,14 @@ public class WorldDataImpl implements WorldData {
         this.lastUnloaded = register("last-unloaded", new ConfigurableType<>(builder.lastUnloaded));
     }
 
-    /**
-     * Gets the {@link Folder} assigned to this world, if any.
-     *
-     * @return The assigned folder, or {@code null} if not found or not loaded
-     */
+    public void setFolderResolver(Supplier<@Nullable Folder> resolver) {
+        this.folderResolver = resolver;
+    }
+
     @Nullable
     private Folder getAssignedFolder() {
-        WorldService worldService = BuildSystemPlugin.get().getWorldService();
-        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(this.worldName);
-        if (buildWorld != null) {
-            return buildWorld.getFolder();
-        }
-        return null;
+        Supplier<@Nullable Folder> resolver = this.folderResolver;
+        return resolver != null ? resolver.get() : null;
     }
 
     private <T> ConfigurableType<T> register(String key, ConfigurableType<T> type) {
@@ -267,21 +262,23 @@ public class WorldDataImpl implements WorldData {
         private String customSpawn = "";
         private String permission = "-";
         private String project = "-";
-        private Difficulty difficulty = defaultsConfig().difficulty();
+        private Difficulty difficulty = Difficulty.PEACEFUL;
         private XMaterial material = XMaterial.GRASS_BLOCK;
         private BuildWorldStatus status = BuildWorldStatus.NOT_STARTED;
-        private boolean blockBreaking = defaultsConfig().settings().blockBreaking();
-        private boolean blockInteractions = defaultsConfig().settings().blockInteractions();
-        private boolean blockPlacement = defaultsConfig().settings().blockPlacement();
-        private boolean buildersEnabled = defaultsConfig().settings().buildersEnabled().publicBuilders();
-        private boolean explosions = defaultsConfig().settings().explosions();
-        private boolean mobAi = defaultsConfig().settings().mobAi();
-        private boolean physics = defaultsConfig().settings().physics();
+        private boolean blockBreaking = true;
+        private boolean blockInteractions = true;
+        private boolean blockPlacement = true;
+        private boolean buildersEnabled = false;
+        private boolean explosions = true;
+        private boolean mobAi = true;
+        private boolean physics = true;
         private boolean privateWorld = false;
         private int timeSinceBackup = 0;
         private long lastEdited = -1L;
         private long lastLoaded = -1L;
         private long lastUnloaded = -1L;
+        BooleanSupplier permissionOverrideEnabled = () -> false;
+        BooleanSupplier projectOverrideEnabled = () -> false;
 
         /**
          * Creates a new builder for {@link WorldData}.
@@ -290,10 +287,6 @@ public class WorldDataImpl implements WorldData {
          */
         public WorldDataBuilder(String worldName) {
             this.worldName = Objects.requireNonNull(worldName, "World name cannot be null");
-        }
-
-        private static PluginConfig.World.Default defaultsConfig() {
-            return BuildSystemPlugin.get().getConfigService().current().world().defaults();
         }
 
         /**
@@ -392,6 +385,16 @@ public class WorldDataImpl implements WorldData {
 
         public WorldDataBuilder withLastUnloaded(long lastUnloaded) {
             this.lastUnloaded = lastUnloaded;
+            return this;
+        }
+
+        public WorldDataBuilder withPermissionOverrideEnabled(BooleanSupplier supplier) {
+            this.permissionOverrideEnabled = supplier;
+            return this;
+        }
+
+        public WorldDataBuilder withProjectOverrideEnabled(BooleanSupplier supplier) {
+            this.projectOverrideEnabled = supplier;
             return this;
         }
     }

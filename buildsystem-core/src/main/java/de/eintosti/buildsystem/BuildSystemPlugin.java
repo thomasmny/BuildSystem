@@ -142,6 +142,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         });
 
         this.backupService.getStorage().close();
+        worldService.cancelAllUnloadTasks();
 
         reloadConfigData(false);
         saveConfig();
@@ -292,7 +293,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         }
 
         if (init) {
-            worldService.getWorldStorage().getBuildWorlds().forEach(buildWorld -> buildWorld.getUnloader().manageUnload());
+            worldService.remanageAllUnloadTasks();
 
             if (configService.current().settings().scoreboard()) {
                 getSettingsManager().displayScoreboard();

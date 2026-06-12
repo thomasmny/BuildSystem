@@ -85,11 +85,15 @@ public class WorldUnloaderImpl implements WorldUnloader {
 
     @Override
     public void resetUnloadTask() {
+        cancelScheduledTask();
+        startUnloadTask();
+    }
+
+    public void cancelScheduledTask() {
         if (this.unloadTask != null) {
             this.unloadTask.cancel();
+            this.unloadTask = null;
         }
-
-        startUnloadTask();
     }
 
     @Override

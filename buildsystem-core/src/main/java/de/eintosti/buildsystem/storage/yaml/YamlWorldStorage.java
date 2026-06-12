@@ -208,6 +208,8 @@ public class YamlWorldStorage extends WorldStorageImpl {
                 .withLastLoaded(config.getLong(path + ".last-loaded"))
                 .withLastUnloaded(config.getLong(path + ".last-unloaded"))
                 .withLastEdited(config.getLong(path + ".last-edited"))
+                .withPermissionOverrideEnabled(() -> plugin.getConfigService().current().folder().overridePermissions())
+                .withProjectOverrideEnabled(() -> plugin.getConfigService().current().folder().overrideProjects())
                 .build();
     }
 

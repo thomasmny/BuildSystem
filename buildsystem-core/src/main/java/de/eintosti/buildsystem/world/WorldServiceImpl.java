@@ -37,6 +37,7 @@ import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl;
+import de.eintosti.buildsystem.world.util.WorldUnloaderImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import io.papermc.lib.PaperLib;
 import java.io.File;
@@ -263,16 +264,17 @@ public class WorldServiceImpl implements WorldService {
         buildWorld.setFolder(null);
         removePlayersFromWorld(worldName, "worlds_delete_players_world");
 
-        return CompletableFuture.allOf(
-                unimportWorld(buildWorld, false),
-                CompletableFuture.runAsync(() -> {
+        // Registry removal and metadata persistence are awaited before folder deletion
+        // so a crash mid-delete leaves an orphaned folder (re-importable) rather than
+        // an orphaned registry entry pointing at a deleted folder.
+        return unimportWorld(buildWorld, false)
+                .thenRunAsync(() -> {
                     try {
                         FileUtils.deleteDirectory(deleteFolder);
                     } catch (IOException e) {
                         throw new CompletionException(new WorldDeletionException("An unexpected error occurred during directory deletion for world: " + worldName, e));
                     }
-                })
-        );
+                });
     }
 
     /**
@@ -332,8 +334,8 @@ public class WorldServiceImpl implements WorldService {
                 throw new RuntimeException("Failed to rename world directory", e);
             }
         }).thenRun(() -> Bukkit.getScheduler().runTask(plugin, () -> {
+            worldStorage.rename(buildWorld, oldName, sanitizedNewName);
             buildWorld.setName(sanitizedNewName);
-            worldStorage.addBuildWorld(buildWorld);
             worldStorage.save(buildWorld);
             World newWorld = new BuildWorldCreatorImpl(plugin, buildWorld).generateBukkitWorld(false);
             Location spawnLocation = oldSpawnLocation;
@@ -370,7 +372,11 @@ public class WorldServiceImpl implements WorldService {
             return List.of();
         }
 
-        World fallbackWorld = Bukkit.getWorlds().getFirst();
+        List<World> serverWorlds = Bukkit.getWorlds();
+        if (serverWorlds.isEmpty()) {
+            return List.of();
+        }
+        World fallbackWorld = serverWorlds.getFirst();
         Location fallbackSpawn = fallbackWorld.getHighestBlockAt(fallbackWorld.getSpawnLocation()).getLocation().add(0.5, 1, 0.5);
 
         SpawnManager spawnManager = plugin.getSpawnManager();
@@ -405,6 +411,18 @@ public class WorldServiceImpl implements WorldService {
         });
 
         return affectedPlayers;
+    }
+
+    public void remanageAllUnloadTasks() {
+        worldStorage.getBuildWorlds().forEach(w -> w.getUnloader().manageUnload());
+    }
+
+    public void cancelAllUnloadTasks() {
+        worldStorage.getBuildWorlds().forEach(w -> {
+            if (w.getUnloader() instanceof WorldUnloaderImpl impl) {
+                impl.cancelScheduledTask();
+            }
+        });
     }
 
     public CompletableFuture<Void> save() {
