@@ -98,27 +98,25 @@ public final class ColorAPI {
         StringBuilder specialColors = new StringBuilder();
         StringBuilder stringBuilder = new StringBuilder();
 
-        String[] characters = source.split("");
+        char[] characters = source.toCharArray();
         int outIndex = 0;
 
         for (int i = 0; i < characters.length; i++) {
-            if (characters[i].equals("&") || characters[i].equals("§")) {
+            char current = characters[i];
+            if (current == '&' || current == '§') {
                 if (i + 1 < characters.length) {
-                    if (characters[i + 1].equals("r")) {
+                    if (characters[i + 1] == 'r') {
                         specialColors.setLength(0);
                     } else {
-                        specialColors.append(characters[i]);
+                        specialColors.append(current);
                         specialColors.append(characters[i + 1]);
                     }
                     i++;
                 } else {
-                    stringBuilder
-                            .append(colors[outIndex++])
-                            .append(specialColors)
-                            .append(characters[i]);
+                    stringBuilder.append(colors[outIndex++]).append(specialColors).append(current);
                 }
             } else {
-                stringBuilder.append(colors[outIndex++]).append(specialColors).append(characters[i]);
+                stringBuilder.append(colors[outIndex++]).append(specialColors).append(current);
             }
         }
 

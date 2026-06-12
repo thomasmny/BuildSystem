@@ -111,7 +111,7 @@ public class SettingsService {
     @Contract("_, _ -> new")
     @SuppressWarnings("unchecked")
     private Map.Entry<String, Object>[] getPlaceholders(String originalString, Player player) {
-        if (!originalString.matches(".*%*%.*")) {
+        if (!originalString.contains("%")) {
             return new Map.Entry[0]; // Don't replace anything
         }
 

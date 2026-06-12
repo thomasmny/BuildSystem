@@ -55,6 +55,8 @@ public class CreateMenu extends PaginatedMenu {
 
     private int numTemplates = 0;
 
+    private File @Nullable [] templateFiles;
+
     public CreateMenu(
             BuildSystemPlugin plugin, Page initialPage, Visibility visibility, @Nullable Folder folder, Player player) {
         super(plugin.getMessages(), 45, plugin.getMessages().getString("create_title", player));
@@ -167,9 +169,13 @@ public class CreateMenu extends PaginatedMenu {
                                 messages.getString("gui_next_page", player),
                                 Profileable.detect(SkullTextures.NEXT_PAGE)));
 
-        File[] templateFiles = FileUtils.resolve(plugin.getDataFolder(), "templates")
-                .toFile()
-                .listFiles((file) -> file.isDirectory() && !file.isHidden());
+        // Listed once per menu instance so page flips do not repeat directory I/O on the main thread
+        if (this.templateFiles == null) {
+            this.templateFiles = FileUtils.resolve(plugin.getDataFolder(), "templates")
+                    .toFile()
+                    .listFiles((file) -> file.isDirectory() && !file.isHidden());
+        }
+        File[] templateFiles = this.templateFiles;
 
         this.numTemplates = templateFiles != null ? templateFiles.length : 0;
 
