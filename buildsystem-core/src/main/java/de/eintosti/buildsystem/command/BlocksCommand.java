@@ -37,6 +37,6 @@ public class BlocksCommand extends CommandBase {
         }
 
         XSound.BLOCK_CHEST_OPEN.play(player);
-        new CustomBlockInventory(plugin).openInventory(player);
+        new CustomBlockInventory(plugin, player).open(player);
     }
 }

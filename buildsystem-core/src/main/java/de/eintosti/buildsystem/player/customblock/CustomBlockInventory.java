@@ -21,87 +21,72 @@ import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
-import de.eintosti.buildsystem.util.inventory.InventoryHandler;
-import de.eintosti.buildsystem.util.inventory.InventoryManager;
+import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class CustomBlockInventory implements InventoryHandler {
+public class CustomBlockInventory extends Menu {
 
-    private final InventoryManager inventoryManager;
+    private final BuildSystemPlugin plugin;
 
-    public CustomBlockInventory(BuildSystemPlugin plugin) {
-        this.inventoryManager = plugin.getInventoryManager();
-    }
-
-    public void openInventory(Player player) {
-        Inventory inventory = getInventory(player);
-        this.inventoryManager.registerInventoryHandler(inventory, this);
-        player.openInventory(inventory);
-    }
-
-    private Inventory getInventory(Player player) {
-        Inventory inventory = new BlocksInventoryHolder(player).getInventory();
-        fillGuiWithGlass(player, inventory);
-
-        setCustomBlock(inventory, player, 1, CustomBlock.FULL_OAK_BARCH);
-        setCustomBlock(inventory, player, 2, CustomBlock.FULL_SPRUCE_BARCH);
-        setCustomBlock(inventory, player, 3, CustomBlock.FULL_BIRCH_BARCH);
-        setCustomBlock(inventory, player, 4, CustomBlock.FULL_JUNGLE_BARCH);
-        setCustomBlock(inventory, player, 5, CustomBlock.FULL_ACACIA_BARCH);
-        setCustomBlock(inventory, player, 6, CustomBlock.FULL_DARK_OAK_BARCH);
-
-        setCustomBlock(inventory, player, 10, CustomBlock.RED_MUSHROOM);
-        setCustomBlock(inventory, player, 11, CustomBlock.BROWN_MUSHROOM);
-        setCustomBlock(inventory, player, 12, CustomBlock.FULL_MUSHROOM_STEM);
-        setCustomBlock(inventory, player, 13, CustomBlock.MUSHROOM_STEM);
-        setCustomBlock(inventory, player, 14, CustomBlock.MUSHROOM_BLOCK);
-
-        setCustomBlock(inventory, player, 19, CustomBlock.SMOOTH_STONE);
-        setCustomBlock(inventory, player, 20, CustomBlock.DOUBLE_STONE_SLAB);
-        setCustomBlock(inventory, player, 21, CustomBlock.SMOOTH_SANDSTONE);
-        setCustomBlock(inventory, player, 22, CustomBlock.SMOOTH_RED_SANDSTONE);
-
-        setCustomBlock(inventory, player, 28, CustomBlock.POWERED_REDSTONE_LAMP);
-        setCustomBlock(inventory, player, 29, CustomBlock.BURNING_FURNACE);
-        setCustomBlock(inventory, player, 30, CustomBlock.PISTON_HEAD);
-        setCustomBlock(inventory, player, 31, CustomBlock.COMMAND_BLOCK);
-        setCustomBlock(inventory, player, 32, CustomBlock.BARRIER);
-        setCustomBlock(inventory, player, 33, CustomBlock.INVISIBLE_ITEM_FRAME);
-
-        setCustomBlock(inventory, player, 37, CustomBlock.MOB_SPAWNER);
-        setCustomBlock(inventory, player, 38, CustomBlock.NETHER_PORTAL);
-        setCustomBlock(inventory, player, 39, CustomBlock.END_PORTAL);
-        setCustomBlock(inventory, player, 40, CustomBlock.DRAGON_EGG);
-        setCustomBlock(inventory, player, 41, CustomBlock.DEBUG_STICK);
-
-        return inventory;
-    }
-
-    private void setCustomBlock(Inventory inventory, Player player, int position, CustomBlock customBlock) {
-        inventory.setItem(position, InventoryUtils.createSkull(BuildSystemPlugin.get().getMessages().getString(customBlock.getMessageKey(), player), Profileable.detect(customBlock.getSkullUrl())));
-    }
-
-    private void fillGuiWithGlass(Player player, Inventory inventory) {
-        int[] glassSlots = {0, 8, 9, 17, 18, 26, 27, 35, 36, 44};
-        for (int i : glassSlots) {
-            InventoryUtils.addGlassPane(player, inventory, i);
-        }
+    public CustomBlockInventory(BuildSystemPlugin plugin, Player player) {
+        super(plugin.getMessages(), 45, plugin.getMessages().getString("blocks_title", player));
+        this.plugin = plugin;
     }
 
     @Override
-    public void onClick(InventoryClickEvent event) {
-        if (!(event.getInventory().getHolder() instanceof BlocksInventoryHolder)) {
-            return;
+    protected void populate(Player player) {
+        int[] glassSlots = {0, 8, 9, 17, 18, 26, 27, 35, 36, 44};
+        for (int i : glassSlots) {
+            InventoryUtils.addGlassPane(player, getInventory(), i);
         }
 
+        setCustomBlock(player, 1, CustomBlock.FULL_OAK_BARCH);
+        setCustomBlock(player, 2, CustomBlock.FULL_SPRUCE_BARCH);
+        setCustomBlock(player, 3, CustomBlock.FULL_BIRCH_BARCH);
+        setCustomBlock(player, 4, CustomBlock.FULL_JUNGLE_BARCH);
+        setCustomBlock(player, 5, CustomBlock.FULL_ACACIA_BARCH);
+        setCustomBlock(player, 6, CustomBlock.FULL_DARK_OAK_BARCH);
+
+        setCustomBlock(player, 10, CustomBlock.RED_MUSHROOM);
+        setCustomBlock(player, 11, CustomBlock.BROWN_MUSHROOM);
+        setCustomBlock(player, 12, CustomBlock.FULL_MUSHROOM_STEM);
+        setCustomBlock(player, 13, CustomBlock.MUSHROOM_STEM);
+        setCustomBlock(player, 14, CustomBlock.MUSHROOM_BLOCK);
+
+        setCustomBlock(player, 19, CustomBlock.SMOOTH_STONE);
+        setCustomBlock(player, 20, CustomBlock.DOUBLE_STONE_SLAB);
+        setCustomBlock(player, 21, CustomBlock.SMOOTH_SANDSTONE);
+        setCustomBlock(player, 22, CustomBlock.SMOOTH_RED_SANDSTONE);
+
+        setCustomBlock(player, 28, CustomBlock.POWERED_REDSTONE_LAMP);
+        setCustomBlock(player, 29, CustomBlock.BURNING_FURNACE);
+        setCustomBlock(player, 30, CustomBlock.PISTON_HEAD);
+        setCustomBlock(player, 31, CustomBlock.COMMAND_BLOCK);
+        setCustomBlock(player, 32, CustomBlock.BARRIER);
+        setCustomBlock(player, 33, CustomBlock.INVISIBLE_ITEM_FRAME);
+
+        setCustomBlock(player, 37, CustomBlock.MOB_SPAWNER);
+        setCustomBlock(player, 38, CustomBlock.NETHER_PORTAL);
+        setCustomBlock(player, 39, CustomBlock.END_PORTAL);
+        setCustomBlock(player, 40, CustomBlock.DRAGON_EGG);
+        setCustomBlock(player, 41, CustomBlock.DEBUG_STICK);
+    }
+
+    private void setCustomBlock(Player player, int position, CustomBlock customBlock) {
+        getInventory().setItem(position, InventoryUtils.createSkull(
+                messages.getString(customBlock.getMessageKey(), player),
+                Profileable.detect(customBlock.getSkullUrl())
+        ));
+    }
+
+    @Override
+    public void handleClick(InventoryClickEvent event) {
         event.setCancelled(true);
         Player player = (Player) event.getWhoClicked();
 
@@ -146,20 +131,13 @@ public class CustomBlockInventory implements InventoryHandler {
     private void giveCustomBlock(Player player, CustomBlock customBlock, XMaterial material) {
         ItemStack itemStack;
         if (material == XMaterial.PLAYER_HEAD) {
-            itemStack = InventoryUtils.createSkull(BuildSystemPlugin.get().getMessages().getString(customBlock.getMessageKey(), player), Profileable.detect(customBlock.getSkullUrl()));
+            itemStack = InventoryUtils.createSkull(messages.getString(customBlock.getMessageKey(), player), Profileable.detect(customBlock.getSkullUrl()));
         } else {
-            itemStack = InventoryUtils.createItem(material, BuildSystemPlugin.get().getMessages().getString(customBlock.getMessageKey(), player));
+            itemStack = InventoryUtils.createItem(material, messages.getString(customBlock.getMessageKey(), player));
             ItemMeta itemMeta = itemStack.getItemMeta();
             itemMeta.addEnchant(XEnchantment.UNBREAKING.get(), 1, true);
             itemStack.setItemMeta(itemMeta);
         }
         player.getInventory().addItem(customBlock.storeCustomBlock(itemStack));
-    }
-
-    private static class BlocksInventoryHolder extends BuildSystemHolder {
-
-        public BlocksInventoryHolder(Player player) {
-            super(45, BuildSystemPlugin.get().getMessages().getString("blocks_title", player));
-        }
     }
 }

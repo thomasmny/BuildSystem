@@ -91,7 +91,7 @@ public class WorldsCommand extends CommandBase {
             if (!requirePermission(player, "buildsystem.navigator")) {
                 return;
             }
-            new NavigatorInventory(plugin).openInventory(player);
+            new NavigatorInventory(plugin, player).open(player);
             XSound.BLOCK_CHEST_OPEN.play(player);
             return;
         }

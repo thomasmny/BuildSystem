@@ -23,7 +23,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
-import de.eintosti.buildsystem.world.backup.BackupsInventory;
+import de.eintosti.buildsystem.world.backup.BackupsMenu;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -56,7 +56,7 @@ public class BackupsSubCommand implements SubCommand {
         switch (args.length) {
             case 1 -> {
                 XSound.BLOCK_CHEST_OPEN.play(player);
-                new BackupsInventory(plugin).openBackupsInventory(player, buildWorld);
+                new BackupsMenu(plugin, buildWorld, player).open(player);
             }
             case 2 -> {
                 if (args[1].equalsIgnoreCase("create")) {

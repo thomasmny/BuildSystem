@@ -25,11 +25,9 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.util.FileUtils;
-import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
-import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
-import de.eintosti.buildsystem.util.inventory.PaginatedInventory;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
 import java.util.Arrays;
@@ -38,68 +36,111 @@ import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class CreateInventory extends PaginatedInventory {
+public class CreateInventory extends PaginatedMenu {
 
     private static final int MAX_TEMPLATES = 5;
 
     private final BuildSystemPlugin plugin;
-    private final InventoryManager inventoryManager;
     private final WorldServiceImpl worldService;
+    private final Page currentPage;
+    private final boolean createPrivateWorld;
 
     @Nullable
     private final Folder folder;
-    private final boolean createPrivateWorld;
 
     private int numTemplates = 0;
 
-    public CreateInventory(BuildSystemPlugin plugin, Visibility visibility) {
-        this(plugin, visibility, null);
-    }
-
-    public CreateInventory(BuildSystemPlugin plugin, Visibility visibility, @Nullable Folder folder) {
+    public CreateInventory(BuildSystemPlugin plugin, Page initialPage, Visibility visibility, @Nullable Folder folder, Player player) {
+        super(plugin.getMessages(), 45, plugin.getMessages().getString("create_title", player));
         this.plugin = plugin;
-        this.inventoryManager = plugin.getInventoryManager();
         this.worldService = plugin.getWorldService();
-
+        this.currentPage = initialPage;
         this.createPrivateWorld = visibility == Visibility.PRIVATE;
         this.folder = folder;
     }
 
-    public void openInventory(Player player, Page page) {
-        Inventory inventory;
-        if (page == Page.TEMPLATES) {
-            addTemplates(player, page);
-            inventory = inventories[getInvIndex(player)];
-        } else {
-            inventory = getBaseInventory(player, page);
-        }
-        this.inventoryManager.registerInventoryHandler(inventory, this);
-        player.openInventory(inventory);
+    @Override
+    protected int totalItems() {
+        return currentPage == Page.TEMPLATES ? numTemplates : 0;
     }
 
-    private void addTemplates(Player player, Page page) {
+    @Override
+    protected void populate(Player player) {
+        for (int i = 0; i <= 28; i++) {
+            InventoryUtils.addGlassPane(player, getInventory(), i);
+        }
+        for (int i = 34; i <= 44; i++) {
+            InventoryUtils.addGlassPane(player, getInventory(), i);
+        }
+
+        addPageItem(Page.PREDEFINED, InventoryUtils.createSkull(messages.getString("create_predefined_worlds", player), Profileable.detect("2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78")));
+        addPageItem(Page.GENERATOR, InventoryUtils.createSkull(messages.getString("create_generators", player), Profileable.detect("b2f79016cad84d1ae21609c4813782598e387961be13c15682752f126dce7a")));
+        addPageItem(Page.TEMPLATES, InventoryUtils.createSkull(messages.getString("create_templates", player), Profileable.detect("d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c")));
+
+        switch (currentPage) {
+            case PREDEFINED -> populatePredefined(player);
+            case GENERATOR -> populateGenerator(player);
+            case TEMPLATES -> populateTemplates(player);
+        }
+    }
+
+    private void addPageItem(Page page, ItemStack itemStack) {
+        if (currentPage == page) {
+            itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.get(), 1);
+        }
+        getInventory().setItem(page.getSlot(), itemStack);
+    }
+
+    private void populatePredefined(Player player) {
+        addPredefinedWorldItem(player, 29, BuildWorldType.NORMAL, messages.getString("create_normal_world", player));
+        addPredefinedWorldItem(player, 30, BuildWorldType.FLAT, messages.getString("create_flat_world", player));
+        addPredefinedWorldItem(player, 31, BuildWorldType.NETHER, messages.getString("create_nether_world", player));
+        addPredefinedWorldItem(player, 32, BuildWorldType.END, messages.getString("create_end_world", player));
+        addPredefinedWorldItem(player, 33, BuildWorldType.VOID, messages.getString("create_void_world", player));
+    }
+
+    private void addPredefinedWorldItem(Player player, int position, BuildWorldType worldType, String displayName) {
+        XMaterial material = plugin.getCustomizableIcons().getIcon(worldType);
+
+        if (!player.hasPermission("buildsystem.create.type." + worldType.name().toLowerCase(Locale.ROOT))) {
+            material = XMaterial.BARRIER;
+            displayName = "§c§m" + ChatColor.stripColor(displayName);
+        }
+
+        getInventory().setItem(position, InventoryUtils.createItem(material, displayName));
+    }
+
+    private void populateGenerator(Player player) {
+        InventoryUtils.addGlassPane(player, getInventory(), 29);
+        InventoryUtils.addGlassPane(player, getInventory(), 30);
+        InventoryUtils.addGlassPane(player, getInventory(), 32);
+        InventoryUtils.addGlassPane(player, getInventory(), 33);
+        getInventory().setItem(31, InventoryUtils.createSkull(messages.getString("create_generators_create_world", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716")));
+    }
+
+    private void populateTemplates(Player player) {
+        getInventory().setItem(28, InventoryUtils.createSkull(messages.getString("gui_previous_page", player), Profileable.detect("f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2")));
+        getInventory().setItem(34, InventoryUtils.createSkull(messages.getString("gui_next_page", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158")));
+
         File[] templateFiles = FileUtils.resolve(plugin.getDataFolder(), "templates")
                 .toFile()
                 .listFiles((file) -> file.isDirectory() && !file.isHidden());
 
         this.numTemplates = templateFiles != null ? templateFiles.length : 0;
-        int numPages = calculateNumPages(numTemplates, MAX_TEMPLATES);
 
-        int index = 0;
-        Inventory inventory = getBaseInventory(player, page);
-        this.inventories = new Inventory[numPages];
-        this.inventories[index] = inventory;
+        for (int i = 29; i <= 33; i++) {
+            InventoryUtils.addGlassPane(player, getInventory(), i);
+        }
 
         if (numTemplates == 0) {
-            ItemStack barrier = InventoryUtils.createItem(XMaterial.BARRIER, plugin.getMessages().getString("create_no_templates", player));
+            ItemStack barrier = InventoryUtils.createItem(XMaterial.BARRIER, messages.getString("create_no_templates", player));
             for (int i = 29; i <= 33; i++) {
-                inventory.setItem(i, barrier);
+                getInventory().setItem(i, barrier);
             }
             return;
         }
@@ -108,107 +149,31 @@ public class CreateInventory extends PaginatedInventory {
             return;
         }
 
-        int columnTemplate = 29, maxColumnTemplate = 33;
-        for (File templateFile : templateFiles) {
-            inventory.setItem(columnTemplate++,
-                    InventoryUtils.createItem(XMaterial.FILLED_MAP, plugin.getMessages().getString("create_template", player,
-                            Map.entry("%template%", templateFile.getName()))
+        int startIndex = page() * MAX_TEMPLATES;
+        for (int i = 0; i < MAX_TEMPLATES && startIndex + i < templateFiles.length; i++) {
+            getInventory().setItem(29 + i, InventoryUtils.createItem(XMaterial.FILLED_MAP,
+                    messages.getString("create_template", player,
+                            Map.entry("%template%", templateFiles[startIndex + i].getName())
                     )
-            );
-
-            if (columnTemplate > maxColumnTemplate) {
-                columnTemplate = 29;
-                inventory = getBaseInventory(player, page);
-                inventories[++index] = inventory;
-            }
-        }
-    }
-
-    private Inventory getBaseInventory(Player player, Page page) {
-        Inventory inventory = new CreateInventoryHolder(player, page).getInventory();
-        fillGuiWithGlass(player, inventory, page);
-
-        addPageItem(inventory, page, Page.PREDEFINED, InventoryUtils.createSkull(plugin.getMessages().getString("create_predefined_worlds", player), Profileable.detect("2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78")));
-        addPageItem(inventory, page, Page.GENERATOR, InventoryUtils.createSkull(plugin.getMessages().getString("create_generators", player), Profileable.detect("b2f79016cad84d1ae21609c4813782598e387961be13c15682752f126dce7a")));
-        addPageItem(inventory, page, Page.TEMPLATES, InventoryUtils.createSkull(plugin.getMessages().getString("create_templates", player), Profileable.detect("d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c")));
-
-        switch (page) {
-            case PREDEFINED:
-                addPredefinedWorldItem(player, inventory, 29, BuildWorldType.NORMAL, plugin.getMessages().getString("create_normal_world", player));
-                addPredefinedWorldItem(player, inventory, 30, BuildWorldType.FLAT, plugin.getMessages().getString("create_flat_world", player));
-                addPredefinedWorldItem(player, inventory, 31, BuildWorldType.NETHER, plugin.getMessages().getString("create_nether_world", player));
-                addPredefinedWorldItem(player, inventory, 32, BuildWorldType.END, plugin.getMessages().getString("create_end_world", player));
-                addPredefinedWorldItem(player, inventory, 33, BuildWorldType.VOID, plugin.getMessages().getString("create_void_world", player));
-                break;
-            case GENERATOR:
-                inventory.setItem(31, InventoryUtils.createSkull(plugin.getMessages().getString("create_generators_create_world", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716")));
-                break;
-            case TEMPLATES:
-                // Template stuff is done during inventory open
-                break;
-        }
-
-        return inventory;
-    }
-
-    private void addPageItem(Inventory inventory, Page currentPage, Page page, ItemStack itemStack) {
-        if (currentPage == page) {
-            itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.get(), 1);
-        }
-        inventory.setItem(page.getSlot(), itemStack);
-    }
-
-    private void addPredefinedWorldItem(Player player, Inventory inventory, int position, BuildWorldType worldType, String displayName) {
-        XMaterial material = plugin.getCustomizableIcons().getIcon(worldType);
-
-        if (!player.hasPermission("buildsystem.create.type." + worldType.name().toLowerCase(Locale.ROOT))) {
-            material = XMaterial.BARRIER;
-            displayName = "§c§m" + ChatColor.stripColor(displayName);
-        }
-
-        inventory.setItem(position, InventoryUtils.createItem(material, displayName));
-    }
-
-    private void fillGuiWithGlass(Player player, Inventory inventory, Page page) {
-        for (int i = 0; i <= 28; i++) {
-            InventoryUtils.addGlassPane(player, inventory, i);
-        }
-        for (int i = 34; i <= 44; i++) {
-            InventoryUtils.addGlassPane(player, inventory, i);
-        }
-
-        switch (page) {
-            case GENERATOR:
-                InventoryUtils.addGlassPane(player, inventory, 29);
-                InventoryUtils.addGlassPane(player, inventory, 30);
-                InventoryUtils.addGlassPane(player, inventory, 32);
-                InventoryUtils.addGlassPane(player, inventory, 33);
-                break;
-            case TEMPLATES:
-                inventory.setItem(28, InventoryUtils.createSkull(plugin.getMessages().getString("gui_previous_page", player), Profileable.detect("f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2")));
-                inventory.setItem(34, InventoryUtils.createSkull(plugin.getMessages().getString("gui_next_page", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158")));
-                break;
+            ));
         }
     }
 
     @Override
-    public void onClick(InventoryClickEvent event) {
-        if (!(event.getInventory().getHolder() instanceof CreateInventoryHolder holder)) {
-            return;
-        }
-
+    public void handleClick(InventoryClickEvent event) {
         event.setCancelled(true);
         Player player = (Player) event.getWhoClicked();
 
         int slot = event.getSlot();
-        CreateInventory.Page newPage = Page.of(slot);
+        Page newPage = Page.of(slot);
         if (newPage != null) {
-            openInventory(player, newPage);
+            Visibility vis = createPrivateWorld ? Visibility.PRIVATE : Visibility.PUBLIC;
+            new CreateInventory(plugin, newPage, vis, folder, player).open(player);
             XSound.ENTITY_CHICKEN_EGG.play(player);
             return;
         }
 
-        switch (holder.getPage()) {
+        switch (currentPage) {
             case PREDEFINED: {
                 BuildWorldType worldType = switch (slot) {
                     case 29 -> BuildWorldType.NORMAL;
@@ -249,12 +214,16 @@ public class CreateInventory extends PaginatedInventory {
                         this.worldService.startWorldNameInput(player, BuildWorldType.TEMPLATE, itemStack.getItemMeta().getDisplayName(), this.createPrivateWorld, this.folder);
                         break;
                     case PLAYER_HEAD:
-                        if (slot == 28 && !decrementInv(player, numTemplates, MAX_TEMPLATES)) {
-                            return;
-                        } else if (slot == 34 && !incrementInv(player, numTemplates, MAX_TEMPLATES)) {
-                            return;
+                        if (slot == 28) {
+                            if (!previousPage(player, MAX_TEMPLATES)) {
+                                return;
+                            }
+                        } else if (slot == 34) {
+                            if (!nextPage(player, MAX_TEMPLATES)) {
+                                return;
+                            }
                         }
-                        openInventory(player, CreateInventory.Page.TEMPLATES);
+                        populateTemplates(player);
                         break;
                     default:
                         return;
@@ -291,20 +260,6 @@ public class CreateInventory extends PaginatedInventory {
 
         public int getSlot() {
             return slot;
-        }
-    }
-
-    private static class CreateInventoryHolder extends BuildSystemHolder {
-
-        private final Page page;
-
-        public CreateInventoryHolder(Player player, Page page) {
-            super(45, BuildSystemPlugin.get().getMessages().getString("create_title", player));
-            this.page = page;
-        }
-
-        public Page getPage() {
-            return page;
         }
     }
 }

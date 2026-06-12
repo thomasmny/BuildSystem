@@ -35,6 +35,6 @@ public class SettingsCommand extends CommandBase {
             return;
         }
 
-        new SettingsInventory(plugin).openInventory(player);
+        new SettingsInventory(plugin, player).open(player);
     }
 }

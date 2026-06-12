@@ -22,9 +22,7 @@ import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
-import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
-import de.eintosti.buildsystem.util.inventory.InventoryHandler;
-import de.eintosti.buildsystem.util.inventory.InventoryManager;
+import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import java.util.Map;
@@ -40,7 +38,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class SetupInventory implements InventoryHandler {
+public class SetupInventory extends Menu {
 
     private static final Map<BuildWorldType, Integer> CREATE_ITEM_SLOTS = Map.of(
             BuildWorldType.NORMAL, 11,
@@ -61,57 +59,41 @@ public class SetupInventory implements InventoryHandler {
     );
 
     private final BuildSystemPlugin plugin;
-    private final InventoryManager inventoryManager;
     private final CustomizableIcons icons;
 
-    public SetupInventory(BuildSystemPlugin plugin) {
+    public SetupInventory(BuildSystemPlugin plugin, Player player) {
+        super(plugin.getMessages(), 36, plugin.getMessages().getString("setup_title", player));
         this.plugin = plugin;
-        this.inventoryManager = plugin.getInventoryManager();
         this.icons = plugin.getCustomizableIcons();
     }
 
-    private Inventory getInventory(Player player) {
-        Inventory inventory = new SetupInventoryHolder(player).getInventory();
-        fillGuiWithGlass(player, inventory);
-
-        inventory.setItem(10, InventoryUtils.createSkull(plugin.getMessages().getString("setup_default_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), plugin.getMessages().getStringList("setup_default_item_lore", player)));
-        inventory.setItem(19, InventoryUtils.createSkull(plugin.getMessages().getString("setup_status_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), plugin.getMessages().getStringList("setup_status_item_name_lore", player)));
-
-        inventory.setItem(11, InventoryUtils.createItem(icons.getIcon(BuildWorldType.NORMAL), plugin.getMessages().getString("setup_normal_world", player)));
-        inventory.setItem(12, InventoryUtils.createItem(icons.getIcon(BuildWorldType.FLAT), plugin.getMessages().getString("setup_flat_world", player)));
-        inventory.setItem(13, InventoryUtils.createItem(icons.getIcon(BuildWorldType.NETHER), plugin.getMessages().getString("setup_nether_world", player)));
-        inventory.setItem(14, InventoryUtils.createItem(icons.getIcon(BuildWorldType.END), plugin.getMessages().getString("setup_end_world", player)));
-        inventory.setItem(15, InventoryUtils.createItem(icons.getIcon(BuildWorldType.VOID), plugin.getMessages().getString("setup_void_world", player)));
-        inventory.setItem(16, InventoryUtils.createItem(icons.getIcon(BuildWorldType.IMPORTED), plugin.getMessages().getString("setup_imported_world", player)));
-
-        inventory.setItem(20, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.NOT_STARTED), plugin.getMessages().getString("status_not_started", player)));
-        inventory.setItem(21, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.IN_PROGRESS), plugin.getMessages().getString("status_in_progress", player)));
-        inventory.setItem(22, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.ALMOST_FINISHED), plugin.getMessages().getString("status_almost_finished", player)));
-        inventory.setItem(23, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.FINISHED), plugin.getMessages().getString("status_finished", player)));
-        inventory.setItem(24, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.ARCHIVE), plugin.getMessages().getString("status_archive", player)));
-        inventory.setItem(25, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.HIDDEN), plugin.getMessages().getString("status_hidden", player)));
-
-        return inventory;
-    }
-
-    public void openInventory(Player player) {
-        Inventory inventory = getInventory(player);
-        this.inventoryManager.registerInventoryHandler(inventory, this);
-        player.openInventory(inventory);
-    }
-
-    private void fillGuiWithGlass(Player player, Inventory inventory) {
-        for (int i = 0; i < inventory.getSize(); i++) {
-            InventoryUtils.addGlassPane(player, inventory, i);
+    @Override
+    protected void populate(Player player) {
+        Inventory inv = getInventory();
+        for (int i = 0; i < inv.getSize(); i++) {
+            InventoryUtils.addGlassPane(player, inv, i);
         }
+
+        inv.setItem(10, InventoryUtils.createSkull(messages.getString("setup_default_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), messages.getStringList("setup_default_item_lore", player)));
+        inv.setItem(19, InventoryUtils.createSkull(messages.getString("setup_status_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), messages.getStringList("setup_status_item_name_lore", player)));
+
+        inv.setItem(11, InventoryUtils.createItem(icons.getIcon(BuildWorldType.NORMAL), messages.getString("setup_normal_world", player)));
+        inv.setItem(12, InventoryUtils.createItem(icons.getIcon(BuildWorldType.FLAT), messages.getString("setup_flat_world", player)));
+        inv.setItem(13, InventoryUtils.createItem(icons.getIcon(BuildWorldType.NETHER), messages.getString("setup_nether_world", player)));
+        inv.setItem(14, InventoryUtils.createItem(icons.getIcon(BuildWorldType.END), messages.getString("setup_end_world", player)));
+        inv.setItem(15, InventoryUtils.createItem(icons.getIcon(BuildWorldType.VOID), messages.getString("setup_void_world", player)));
+        inv.setItem(16, InventoryUtils.createItem(icons.getIcon(BuildWorldType.IMPORTED), messages.getString("setup_imported_world", player)));
+
+        inv.setItem(20, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.NOT_STARTED), messages.getString("status_not_started", player)));
+        inv.setItem(21, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.IN_PROGRESS), messages.getString("status_in_progress", player)));
+        inv.setItem(22, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.ALMOST_FINISHED), messages.getString("status_almost_finished", player)));
+        inv.setItem(23, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.FINISHED), messages.getString("status_finished", player)));
+        inv.setItem(24, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.ARCHIVE), messages.getString("status_archive", player)));
+        inv.setItem(25, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.HIDDEN), messages.getString("status_hidden", player)));
     }
 
     @Override
-    public void onClick(InventoryClickEvent event) {
-        if (!(event.getInventory().getHolder() instanceof SetupInventoryHolder)) {
-            return;
-        }
-
+    public void handleClick(InventoryClickEvent event) {
         InventoryAction action = event.getAction();
         switch (action) {
             case PICKUP_ALL, PICKUP_ONE, PICKUP_SOME, PICKUP_HALF, PLACE_ALL, PLACE_SOME, PLACE_ONE, SWAP_WITH_CURSOR -> {
@@ -139,14 +121,10 @@ public class SetupInventory implements InventoryHandler {
     }
 
     @Override
-    public void onClose(InventoryCloseEvent event) {
-        Inventory inventory = event.getInventory();
-        if (!(inventory.getHolder() instanceof SetupInventoryHolder)) {
-            return;
-        }
-
-        processIconMapping(inventory, CREATE_ITEM_SLOTS, icons::setIcon);
-        processIconMapping(inventory, STATUS_ITEM_SLOTS, icons::setIcon);
+    public void handleClose(InventoryCloseEvent event) {
+        Inventory inv = getInventory();
+        processIconMapping(inv, CREATE_ITEM_SLOTS, icons::setIcon);
+        processIconMapping(inv, STATUS_ITEM_SLOTS, icons::setIcon);
     }
 
     /**
@@ -167,12 +145,5 @@ public class SetupInventory implements InventoryHandler {
             }
             setter.accept(enumConstant, material);
         });
-    }
-
-    private static class SetupInventoryHolder extends BuildSystemHolder {
-
-        public SetupInventoryHolder(Player player) {
-            super(36, BuildSystemPlugin.get().getMessages().getString("setup_title", player));
-        }
     }
 }

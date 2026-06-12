@@ -57,7 +57,7 @@ public class SetStatusSubCommand implements SubCommand {
             return;
         }
 
-        new StatusInventory(plugin).openInventory(player, buildWorld);
+        new StatusInventory(plugin, buildWorld, player).open(player);
     }
 
     @Override

@@ -35,6 +35,6 @@ public class SetupCommand extends CommandBase {
             return;
         }
 
-        new SetupInventory(plugin).openInventory(player);
+        new SetupInventory(plugin, player).open(player);
     }
 }

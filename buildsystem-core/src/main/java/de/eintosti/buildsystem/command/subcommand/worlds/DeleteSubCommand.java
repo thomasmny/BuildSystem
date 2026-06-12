@@ -61,7 +61,7 @@ public class DeleteSubCommand implements SubCommand {
             return;
         }
 
-        new DeleteInventory(plugin).openInventory(player, buildWorld);
+        new DeleteInventory(plugin, buildWorld, player).open(player);
     }
 
     @Override

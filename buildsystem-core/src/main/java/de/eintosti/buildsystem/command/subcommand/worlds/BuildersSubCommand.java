@@ -57,7 +57,7 @@ public class BuildersSubCommand implements SubCommand {
             return;
         }
 
-        new BuilderInventory(plugin).openInventory(buildWorld, player);
+        new BuilderInventory(plugin, buildWorld, player).open(player);
     }
 
     @Override

@@ -25,9 +25,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
-import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
-import de.eintosti.buildsystem.util.inventory.InventoryHandler;
-import de.eintosti.buildsystem.util.inventory.InventoryManager;
+import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -40,61 +38,49 @@ import org.bukkit.potion.PotionEffect;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class SettingsInventory implements InventoryHandler {
+public class SettingsInventory extends Menu {
 
     private final BuildSystemPlugin plugin;
-    private final InventoryManager inventoryManager;
     private final SettingsManager settingsManager;
 
-    public SettingsInventory(BuildSystemPlugin plugin) {
+    public SettingsInventory(BuildSystemPlugin plugin, Player player) {
+        super(plugin.getMessages(), 45, plugin.getMessages().getString("settings_title", player));
         this.plugin = plugin;
-        this.inventoryManager = plugin.getInventoryManager();
         this.settingsManager = plugin.getSettingsManager();
     }
 
-    public void openInventory(Player player) {
-        Inventory inventory = getInventory(player);
-        this.inventoryManager.registerInventoryHandler(inventory, this);
-        player.openInventory(inventory);
-    }
-
-    private Inventory getInventory(Player player) {
-        Inventory inventory = new SettingsInventoryHolder(player).getInventory();
-        fillGuiWithGlass(player, inventory);
+    @Override
+    protected void populate(Player player) {
+        Inventory inv = getInventory();
+        for (int i = 0; i <= 44; i++) {
+            InventoryUtils.addGlassPane(player, inv, i);
+        }
 
         Settings settings = settingsManager.getSettings(player);
-        addDesignItem(inventory, player);
-        addClearInventoryItem(inventory, player);
-        addSettingsItem(player, inventory, 13, XMaterial.DIAMOND_AXE, settings.isDisableInteract(), "settings_disableinteract_item", "settings_disableinteract_lore");
-        addSettingsItem(player, inventory, 14, XMaterial.ENDER_EYE, settings.isHidePlayers(), "settings_hideplayers_item", "settings_hideplayers_lore");
-        addSettingsItem(player, inventory, 15, XMaterial.OAK_SIGN, settings.isInstantPlaceSigns(), "settings_instantplacesigns_item", "settings_instantplacesigns_lore");
-        addSettingsItem(player, inventory, 20, XMaterial.SLIME_BLOCK, settings.isKeepNavigator(), "settings_keep_navigator_item", "settings_keep_navigator_lore");
-        addSettingsItem(player, inventory, 21, plugin.getConfigService().current().settings().navigator().item(), settings.getNavigatorType() == NavigatorType.NEW, "settings_new_navigator_item", "settings_new_navigator_lore");
-        addSettingsItem(player, inventory, 22, XMaterial.GOLDEN_CARROT, settings.isNightVision(), "settings_nightvision_item", "settings_nightvision_lore");
-        addSettingsItem(player, inventory, 23, XMaterial.BRICKS, settings.isNoClip(), "settings_no_clip_item", "settings_no_clip_lore");
-        addSettingsItem(player, inventory, 24, XMaterial.IRON_TRAPDOOR, settings.isOpenTrapDoors(), "settings_open_trapdoors_item", "settings_open_trapdoors_lore");
-        addSettingsItem(player, inventory, 29, XMaterial.FERN, settings.isPlacePlants(), "settings_placeplants_item", "settings_placeplants_lore");
-        addSettingsItem(player, inventory, 30, XMaterial.PAPER, settings.isScoreboard(),
+        addDesignItem(inv, player);
+        addClearInventoryItem(inv, player);
+        addSettingsItem(player, inv, 13, XMaterial.DIAMOND_AXE, settings.isDisableInteract(), "settings_disableinteract_item", "settings_disableinteract_lore");
+        addSettingsItem(player, inv, 14, XMaterial.ENDER_EYE, settings.isHidePlayers(), "settings_hideplayers_item", "settings_hideplayers_lore");
+        addSettingsItem(player, inv, 15, XMaterial.OAK_SIGN, settings.isInstantPlaceSigns(), "settings_instantplacesigns_item", "settings_instantplacesigns_lore");
+        addSettingsItem(player, inv, 20, XMaterial.SLIME_BLOCK, settings.isKeepNavigator(), "settings_keep_navigator_item", "settings_keep_navigator_lore");
+        addSettingsItem(player, inv, 21, plugin.getConfigService().current().settings().navigator().item(), settings.getNavigatorType() == NavigatorType.NEW, "settings_new_navigator_item", "settings_new_navigator_lore");
+        addSettingsItem(player, inv, 22, XMaterial.GOLDEN_CARROT, settings.isNightVision(), "settings_nightvision_item", "settings_nightvision_lore");
+        addSettingsItem(player, inv, 23, XMaterial.BRICKS, settings.isNoClip(), "settings_no_clip_item", "settings_no_clip_lore");
+        addSettingsItem(player, inv, 24, XMaterial.IRON_TRAPDOOR, settings.isOpenTrapDoors(), "settings_open_trapdoors_item", "settings_open_trapdoors_lore");
+        addSettingsItem(player, inv, 29, XMaterial.FERN, settings.isPlacePlants(), "settings_placeplants_item", "settings_placeplants_lore");
+        addSettingsItem(player, inv, 30, XMaterial.PAPER, settings.isScoreboard(),
                 plugin.getConfigService().current().settings().scoreboard() ? "settings_scoreboard_item" : "settings_scoreboard_disabled_item",
                 plugin.getConfigService().current().settings().scoreboard() ? "settings_scoreboard_lore" : "settings_scoreboard_disabled_lore");
-        addSettingsItem(player, inventory, 31, XMaterial.SMOOTH_STONE_SLAB, settings.isSlabBreaking(), "settings_slab_breaking_item", "settings_slab_breaking_lore");
-        addSettingsItem(player, inventory, 32, XMaterial.MAGMA_CREAM, settings.isSpawnTeleport(), "settings_spawnteleport_item", "settings_spawnteleport_lore");
-
-        return inventory;
-    }
-
-    private void fillGuiWithGlass(Player player, Inventory inventory) {
-        for (int i = 0; i <= 44; i++) {
-            InventoryUtils.addGlassPane(player, inventory, i);
-        }
+        addSettingsItem(player, inv, 31, XMaterial.SMOOTH_STONE_SLAB, settings.isSlabBreaking(), "settings_slab_breaking_item", "settings_slab_breaking_lore");
+        addSettingsItem(player, inv, 32, XMaterial.MAGMA_CREAM, settings.isSpawnTeleport(), "settings_spawnteleport_item", "settings_spawnteleport_lore");
     }
 
     private void addSettingsItem(Player player, Inventory inventory, int position, XMaterial material, boolean enabled, String displayNameKey, String loreKey) {
         ItemStack itemStack = material.parseItem();
         ItemMeta itemMeta = itemStack.getItemMeta();
 
-        itemMeta.setDisplayName(plugin.getMessages().getString(displayNameKey, player));
-        itemMeta.setLore(plugin.getMessages().getStringList(loreKey, player));
+        itemMeta.setDisplayName(messages.getString(displayNameKey, player));
+        itemMeta.setLore(messages.getStringList(loreKey, player));
         itemMeta.addItemFlags(ItemFlag.values());
         itemStack.setItemMeta(itemMeta);
 
@@ -114,13 +100,13 @@ public class SettingsInventory implements InventoryHandler {
     }
 
     private void addDesignItem(Inventory inventory, Player player) {
-        DesignColor color = plugin.getSettingsManager().getSettings(player).getDesignColor();
+        DesignColor color = settingsManager.getSettings(player).getDesignColor();
         XMaterial material = XMaterial.matchXMaterial(color.name() + "_STAINED_GLASS").orElse(XMaterial.BLACK_STAINED_GLASS);
-        ItemStack itemStack = InventoryUtils.createItem(material, plugin.getMessages().getString("settings_change_design_item", player));
+        ItemStack itemStack = InventoryUtils.createItem(material, messages.getString("settings_change_design_item", player));
         ItemMeta itemMeta = itemStack.getItemMeta();
 
         itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        itemMeta.setLore(plugin.getMessages().getStringList("settings_change_design_lore", player));
+        itemMeta.setLore(messages.getStringList("settings_change_design_lore", player));
         itemStack.setItemMeta(itemMeta);
         itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.get(), 1);
 
@@ -128,18 +114,14 @@ public class SettingsInventory implements InventoryHandler {
     }
 
     @Override
-    public void onClick(InventoryClickEvent event) {
-        if (!(event.getInventory().getHolder() instanceof SettingsInventoryHolder)) {
-            return;
-        }
-
+    public void handleClick(InventoryClickEvent event) {
         event.setCancelled(true);
         Player player = (Player) event.getWhoClicked();
         Settings settings = settingsManager.getSettings(player);
 
         switch (event.getSlot()) {
             case 11:
-                new DesignInventory(plugin).openInventory(player);
+                new DesignInventory(plugin, player).open(player);
                 XSound.ENTITY_ITEM_PICKUP.play(player);
                 return;
             case 12:
@@ -219,7 +201,7 @@ public class SettingsInventory implements InventoryHandler {
         }
 
         XSound.ENTITY_ITEM_PICKUP.play(player);
-        new SettingsInventory(plugin).openInventory(player);
+        new SettingsInventory(plugin, player).open(player);
     }
 
     @SuppressWarnings("deprecation")
@@ -228,13 +210,6 @@ public class SettingsInventory implements InventoryHandler {
             Bukkit.getOnlinePlayers().forEach(player::hidePlayer);
         } else {
             Bukkit.getOnlinePlayers().forEach(player::showPlayer);
-        }
-    }
-
-    private static class SettingsInventoryHolder extends BuildSystemHolder {
-
-        public SettingsInventoryHolder(Player player) {
-            super(45, BuildSystemPlugin.get().getMessages().getString("settings_title", player));
         }
     }
 }
