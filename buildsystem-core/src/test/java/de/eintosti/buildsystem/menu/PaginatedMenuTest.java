@@ -17,14 +17,16 @@
  */
 package de.eintosti.buildsystem.menu;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+
 import de.eintosti.buildsystem.i18n.Messages;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @NullMarked
 class PaginatedMenuTest {
@@ -53,13 +55,16 @@ class PaginatedMenuTest {
         }
 
         @Override
-        protected void populate(Player player) {}
+        protected void populate(Player player) {
+        }
 
         @Override
-        protected void playPageSound(Player player) {}
+        protected void playPageSound(Player player) {
+        }
 
         @Override
-        protected void playRefuseSound(Player player) {}
+        protected void playRefuseSound(Player player) {
+        }
     }
 
     @Test

@@ -239,7 +239,8 @@ public final class InventoryUtils {
 
     @Contract("_ -> new")
     public static ItemStack createNavigatorItem(Player player) {
-        ItemStack itemStack = InventoryUtils.createItem(PLUGIN.getConfigService().current().settings().navigator().item(), PLUGIN.getMessages().getString("navigator_item", player));
+        ItemStack itemStack = InventoryUtils.createItem(PLUGIN.getConfigService().current().settings().navigator().item(), PLUGIN.getMessages()
+                .getString("navigator_item", player));
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta == null) {
             return itemStack;

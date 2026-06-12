@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.world.builder;
 
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.i18n.Messages;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,16 +32,17 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 
 @NullMarked
 public class BuildersImpl implements Builders {
 
+    private final Messages messages;
     @Nullable
     private Builder creator;
     private final Map<UUID, Builder> buildersByUuid;
 
-    public BuildersImpl(@Nullable Builder creator, List<Builder> builders) {
+    public BuildersImpl(Messages messages, @Nullable Builder creator, List<Builder> builders) {
+        this.messages = messages;
         this.creator = creator;
         this.buildersByUuid = builders.stream().collect(Collectors.toMap(Builder::getUniqueId, Function.identity()));
     }
@@ -112,7 +114,7 @@ public class BuildersImpl implements Builders {
 
     @Override
     public String asPlaceholder(Player player) {
-        String template = BuildSystemPlugin.get().getMessages().getString("world_item_builders_builder_template", player);
+        String template = messages.getString("world_item_builders_builder_template", player);
         List<String> builderNames = getBuilderNames();
 
         String string = "";
@@ -136,7 +138,7 @@ public class BuildersImpl implements Builders {
      * @return A list of formatted builder lines, each containing up to 3 builders
      */
     public List<String> formatBuildersForLore(Player player, int buildersPerLine) {
-        String template = BuildSystemPlugin.get().getMessages().getString("world_item_builders_builder_template", player); // e.g., "&b%builder%&7, "
+        String template = messages.getString("world_item_builders_builder_template", player); // e.g., "&b%builder%&7, "
 
         String[] templateParts = template.split("%builder%");
         String prefix = templateParts.length > 0 ? templateParts[0] : "";

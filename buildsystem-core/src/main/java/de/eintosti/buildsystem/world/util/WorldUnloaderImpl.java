@@ -43,8 +43,8 @@ public class WorldUnloaderImpl implements WorldUnloader {
     @Nullable
     private BukkitTask unloadTask;
 
-    private WorldUnloaderImpl(BuildWorld buildWorld) {
-        this.plugin = BuildSystemPlugin.get();
+    private WorldUnloaderImpl(BuildSystemPlugin plugin, BuildWorld buildWorld) {
+        this.plugin = plugin;
         this.buildWorld = buildWorld;
 
         this.secondsUntilUnload = calculateSecondsUntilUnload(plugin.getConfigService().current().world().unload().timeUntilUnload());
@@ -58,9 +58,9 @@ public class WorldUnloaderImpl implements WorldUnloader {
         return hours * 3600L + minutes * 60L + seconds;
     }
 
-    @Contract("_ -> new")
-    public static WorldUnloaderImpl of(BuildWorld buildWorld) {
-        return new WorldUnloaderImpl(buildWorld);
+    @Contract("_, _ -> new")
+    public static WorldUnloaderImpl of(BuildSystemPlugin plugin, BuildWorld buildWorld) {
+        return new WorldUnloaderImpl(plugin, buildWorld);
     }
 
     @Override

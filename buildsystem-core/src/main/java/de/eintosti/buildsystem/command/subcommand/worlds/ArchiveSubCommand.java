@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.world.navigator.inventory.ArchivedWorldsInventory;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;

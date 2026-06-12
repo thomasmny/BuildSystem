@@ -47,7 +47,7 @@ public class TimeCommand extends CommandBase {
         }
 
         BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(world);
-        WorldPermissions permissions = WorldPermissionsImpl.of(buildWorld);
+        WorldPermissions permissions = WorldPermissionsImpl.of(plugin, buildWorld);
 
         switch (label.toLowerCase(Locale.ROOT)) {
             case "day" -> {

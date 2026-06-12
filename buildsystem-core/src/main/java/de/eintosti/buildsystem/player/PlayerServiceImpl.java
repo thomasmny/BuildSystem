@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.player;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
-import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -54,7 +53,9 @@ public class PlayerServiceImpl implements PlayerService {
         this.buildModePlayers = new HashSet<>();
     }
 
-    /** Package-private for unit tests — only getMaxWorlds logic is available. */
+    /**
+     * Package-private for unit tests — only getMaxWorlds logic is available.
+     */
     PlayerServiceImpl(Logger logger) {
         this.plugin = null;
         this.logger = logger;

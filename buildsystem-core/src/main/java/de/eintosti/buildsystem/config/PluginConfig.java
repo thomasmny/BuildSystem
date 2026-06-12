@@ -38,7 +38,9 @@ public record PluginConfig(
             boolean spawnTeleportMessage,
             boolean joinQuitMessages,
             String dateFormat
-    ) {}
+    ) {
+
+    }
 
     public record Settings(
             boolean updateChecker,
@@ -50,12 +52,30 @@ public record PluginConfig(
             Builder builder,
             Navigator navigator
     ) {
-        public record Archive(boolean vanish, boolean changeGamemode, GameMode worldGameMode) {}
-        public record DisabledPhysics(boolean preventConnections, boolean preventFluidFlow, boolean preventFallingBlocks) {}
-        public record SaveFromDeath(boolean enabled, boolean teleportToMapSpawn) {}
-        public record BuildMode(boolean dropItems, boolean moveItems) {}
-        public record Builder(boolean blockWorldEditNonBuilder, XMaterial worldEditWand) {}
-        public record Navigator(XMaterial item, boolean giveItemOnJoin) {}
+
+        public record Archive(boolean vanish, boolean changeGamemode, GameMode worldGameMode) {
+
+        }
+
+        public record DisabledPhysics(boolean preventConnections, boolean preventFluidFlow, boolean preventFallingBlocks) {
+
+        }
+
+        public record SaveFromDeath(boolean enabled, boolean teleportToMapSpawn) {
+
+        }
+
+        public record BuildMode(boolean dropItems, boolean moveItems) {
+
+        }
+
+        public record Builder(boolean blockWorldEditNonBuilder, XMaterial worldEditWand) {
+
+        }
+
+        public record Navigator(XMaterial item, boolean giveItemOnJoin) {
+
+        }
     }
 
     public record World(
@@ -68,6 +88,7 @@ public record PluginConfig(
             Unload unload,
             Backup backup
     ) {
+
         public World {
             deletionBlacklist = Set.copyOf(deletionBlacklist);
         }
@@ -80,8 +101,15 @@ public record PluginConfig(
                 Time time,
                 DefaultSettings settings
         ) {
-            public record Permission(String publicPermission, String privatePermission) {}
-            public record Time(int sunrise, int noon, int night) {}
+
+            public record Permission(String publicPermission, String privatePermission) {
+
+            }
+
+            public record Time(int sunrise, int noon, int night) {
+
+            }
+
             public record DefaultSettings(
                     boolean physics,
                     boolean explosions,
@@ -91,13 +119,19 @@ public record PluginConfig(
                     boolean blockInteractions,
                     BuildersEnabled buildersEnabled
             ) {
-                public record BuildersEnabled(boolean publicBuilders, boolean privateBuilders) {}
+
+                public record BuildersEnabled(boolean publicBuilders, boolean privateBuilders) {
+
+                }
             }
         }
 
-        public record Limits(int publicWorlds, int privateWorlds) {}
+        public record Limits(int publicWorlds, int privateWorlds) {
+
+        }
 
         public record Unload(boolean enabled, String timeUntilUnload, Set<String> blacklistedWorlds) {
+
             public Unload {
                 blacklistedWorlds = Set.copyOf(blacklistedWorlds);
             }
@@ -108,13 +142,31 @@ public record PluginConfig(
                 StorageSettings storage,
                 AutoBackup autoBackup
         ) {
-            public sealed interface StorageSettings permits Local, Sftp, S3 {}
-            public record Local() implements StorageSettings {}
-            public record Sftp(@Nullable String host, int port, @Nullable String username, @Nullable String password, @Nullable String path) implements StorageSettings {}
-            public record S3(@Nullable String url, @Nullable String accessKey, @Nullable String secretKey, @Nullable String region, @Nullable String bucket, @Nullable String path) implements StorageSettings {}
-            public record AutoBackup(boolean enabled, boolean onlyActiveWorlds, int interval) {}
+
+            public sealed interface StorageSettings permits Local, Sftp, S3 {
+
+            }
+
+            public record Local() implements StorageSettings {
+
+            }
+
+            public record Sftp(@Nullable String host, int port, @Nullable String username, @Nullable String password, @Nullable String path) implements StorageSettings {
+
+            }
+
+            public record S3(@Nullable String url, @Nullable String accessKey, @Nullable String secretKey, @Nullable String region, @Nullable String bucket,
+                             @Nullable String path) implements StorageSettings {
+
+            }
+
+            public record AutoBackup(boolean enabled, boolean onlyActiveWorlds, int interval) {
+
+            }
         }
     }
 
-    public record Folder(boolean overridePermissions, boolean overrideProjects) {}
+    public record Folder(boolean overridePermissions, boolean overrideProjects) {
+
+    }
 }

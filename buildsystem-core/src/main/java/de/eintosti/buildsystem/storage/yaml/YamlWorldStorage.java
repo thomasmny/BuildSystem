@@ -174,6 +174,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
                 : null;
 
         return new BuildWorldImpl(
+                plugin,
                 uuid,
                 worldName,
                 worldType,

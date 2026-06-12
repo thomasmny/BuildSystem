@@ -47,8 +47,7 @@ public class GenerationDataStore {
     }
 
     /**
-     * Saves the world generation setting for a given {@link World} to a dedicated file within the world's folder.
-     * If the file already exists, no action is taken.
+     * Saves the world generation setting for a given {@link World} to a dedicated file within the world's folder. If the file already exists, no action is taken.
      */
     public void save(World world, BuildWorldType worldType, @Nullable CustomGenerator customGenerator) {
         renameIncorrectWorldTypeFile(world);
@@ -133,7 +132,9 @@ public class GenerationDataStore {
 
     public sealed interface WorldGenerationData permits WorldGenerationData.PredefinedGeneratorData, WorldGenerationData.CustomGeneratorData {
 
-        record PredefinedGeneratorData(BuildWorldType type) implements WorldGenerationData {}
+        record PredefinedGeneratorData(BuildWorldType type) implements WorldGenerationData {
+
+        }
 
         record CustomGeneratorData(String pluginName, String chunkGeneratorName) implements WorldGenerationData {
 

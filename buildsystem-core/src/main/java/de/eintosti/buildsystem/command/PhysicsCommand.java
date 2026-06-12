@@ -45,7 +45,7 @@ public class PhysicsCommand extends CommandBase {
     protected void run(Player player, String label, String[] args) {
         String worldName = worldNameFromArgs(player, args, 0);
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
-        if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, "buildsystem.physics")) {
+        if (!WorldPermissionsImpl.of(plugin, buildWorld).canPerformCommand(player, "buildsystem.physics")) {
             messages.sendPermissionError(player);
             return;
         }

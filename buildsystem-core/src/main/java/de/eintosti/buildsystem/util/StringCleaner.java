@@ -25,7 +25,7 @@ import org.jspecify.annotations.Nullable;
 public final class StringCleaner {
 
     public static final String INVALID_NAME_CHARACTERS = "[^A-Za-z\\d/_-]";
-    private static final String DEFAULT_INVALID_CHARACTERS = "^\b$";
+    public static final String DEFAULT_INVALID_CHARACTERS = "^\b$";
 
     private StringCleaner() {
     }

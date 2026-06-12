@@ -65,9 +65,11 @@ public abstract class CommandBase implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    protected void run(Player player, String label, String[] args) {}
+    protected void run(Player player, String label, String[] args) {
+    }
 
-    protected void run(CommandSender sender, String label, String[] args) {}
+    protected void run(CommandSender sender, String label, String[] args) {
+    }
 
     @Override
     public final List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {

@@ -28,11 +28,11 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 final class WorldsCompletions {
 
-    private WorldsCompletions() {}
+    private WorldsCompletions() {
+    }
 
     /**
-     * Returns world names the player may act on, filtered by world-level permission and a
-     * command-specific permission (e.g. "buildsystem.edit").
+     * Returns world names the player may act on, filtered by world-level permission and a command-specific permission (e.g. "buildsystem.edit").
      */
     static List<String> permittedWorldNames(Player player, WorldStorage worldStorage, String commandPermission, String input) {
         List<String> result = new ArrayList<>();
@@ -47,8 +47,7 @@ final class WorldsCompletions {
     }
 
     /**
-     * Returns world names the player can delete (no world-level access check, only command
-     * permission), matching the original delete completion branch.
+     * Returns world names the player can delete (no world-level access check, only command permission), matching the original delete completion branch.
      */
     static List<String> deletableWorldNames(Player player, WorldStorage worldStorage, String input) {
         List<String> result = new ArrayList<>();

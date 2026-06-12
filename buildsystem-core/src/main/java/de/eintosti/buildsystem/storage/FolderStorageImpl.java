@@ -89,7 +89,7 @@ public abstract class FolderStorageImpl implements FolderStorage {
 
     @Override
     public Folder createFolder(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
-        Folder folder = new FolderImpl(name, category, parent, creator);
+        Folder folder = new FolderImpl(plugin, name, category, parent, creator);
         foldersByName.put(name.toLowerCase(), folder);
         return folder;
     }

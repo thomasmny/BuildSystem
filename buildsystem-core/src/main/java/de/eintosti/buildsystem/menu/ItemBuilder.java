@@ -100,7 +100,9 @@ public final class ItemBuilder {
     }
 
     public ItemBuilder glow(boolean enabled) {
-        if (!enabled) return this;
+        if (!enabled) {
+            return this;
+        }
         ensureMeta();
         if (itemMeta != null) {
             var enchantment = XEnchantment.UNBREAKING.get();

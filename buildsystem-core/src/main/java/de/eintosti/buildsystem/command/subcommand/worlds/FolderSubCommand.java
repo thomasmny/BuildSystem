@@ -26,7 +26,6 @@ import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.ArrayList;
@@ -260,9 +259,13 @@ public class FolderSubCommand implements SubCommand {
         }
         if (args.length == 4) {
             String op = args[2].toLowerCase(Locale.ROOT);
-            if (!op.equals("add") && !op.equals("remove")) return result;
+            if (!op.equals("add") && !op.equals("remove")) {
+                return result;
+            }
             Folder folder = folderStorage.getFolder(args[1]);
-            if (folder == null) return result;
+            if (folder == null) {
+                return result;
+            }
             worldService.getWorldStorage().getBuildWorlds().stream()
                     .filter(bw -> NavigatorCategory.of(bw) == folder.getCategory())
                     .filter(bw -> op.equals("add") ? !bw.isAssignedToFolder() : folder.containsWorld(bw))

@@ -23,17 +23,16 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-import java.util.List;
-import java.util.ArrayList;
 
 @NullMarked
 public class RemoveBuilderSubCommand implements SubCommand {
@@ -47,7 +46,7 @@ public class RemoveBuilderSubCommand implements SubCommand {
     @Override
     public void execute(Player player, String worldName, String[] args) {
         BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld().getName());
-        var permissions = WorldPermissionsImpl.of(buildWorld);
+        var permissions = WorldPermissionsImpl.of(plugin, buildWorld);
         if (!permissions.canPerformCommand(player, getArgument().getPermission())) {
             plugin.getMessages().sendPermissionError(player);
             return;
@@ -109,11 +108,17 @@ public class RemoveBuilderSubCommand implements SubCommand {
 
     @Override
     public List<String> complete(Player player, String[] args) {
-        if (args.length != 2) return List.of();
+        if (args.length != 2) {
+            return List.of();
+        }
         BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld().getName());
-        if (buildWorld == null) return List.of();
+        if (buildWorld == null) {
+            return List.of();
+        }
         Builders builders = buildWorld.getBuilders();
-        if (!builders.isCreator(player)) return List.of();
+        if (!builders.isCreator(player)) {
+            return List.of();
+        }
         List<String> result = new ArrayList<>();
         builders.getBuilderNames().forEach(name -> WorldsCompletions.addIfStartsWith(args[1], name, result));
         return result;

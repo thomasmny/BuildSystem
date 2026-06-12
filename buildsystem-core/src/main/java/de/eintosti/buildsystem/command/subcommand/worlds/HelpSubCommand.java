@@ -18,15 +18,14 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.google.common.collect.Lists;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.command.PagedCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import java.util.List;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 
 @NullMarked
 public class HelpSubCommand extends PagedCommand implements SubCommand {

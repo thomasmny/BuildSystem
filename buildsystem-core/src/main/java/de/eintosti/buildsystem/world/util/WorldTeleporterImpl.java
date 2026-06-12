@@ -38,14 +38,14 @@ public class WorldTeleporterImpl implements WorldTeleporter {
     private final BuildSystemPlugin plugin;
     private final BuildWorld buildWorld;
 
-    private WorldTeleporterImpl(BuildWorld buildWorld) {
-        this.plugin = BuildSystemPlugin.get();
+    private WorldTeleporterImpl(BuildSystemPlugin plugin, BuildWorld buildWorld) {
+        this.plugin = plugin;
         this.buildWorld = buildWorld;
     }
 
-    @Contract("_ -> new")
-    public static WorldTeleporterImpl of(BuildWorld buildWorld) {
-        return new WorldTeleporterImpl(buildWorld);
+    @Contract("_, _ -> new")
+    public static WorldTeleporterImpl of(BuildSystemPlugin plugin, BuildWorld buildWorld) {
+        return new WorldTeleporterImpl(plugin, buildWorld);
     }
 
     @Override

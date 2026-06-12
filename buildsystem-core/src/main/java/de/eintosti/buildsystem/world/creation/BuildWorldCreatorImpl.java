@@ -24,10 +24,10 @@ import de.eintosti.buildsystem.api.world.creation.BuildWorldCreator;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
-import de.eintosti.buildsystem.i18n.Messages;
 import java.io.File;
 import java.util.Map;
 import org.bukkit.Bukkit;
@@ -49,27 +49,20 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
     private final WorldDataVersionGuard versionGuard;
 
     private String worldName;
-    @Nullable
-    private Builder creator;
+    private @Nullable Builder creator;
     private boolean isPrivate = false;
     private BuildWorldType worldType = BuildWorldType.NORMAL;
-    @Nullable
-    private CustomGenerator customGenerator = null;
+    private @Nullable CustomGenerator customGenerator = null;
     private long creationDate = System.currentTimeMillis();
-    @Nullable
-    private String template = null;
-    @Nullable
-    private Folder folder;
 
-    @Nullable
-    private Difficulty difficulty;
-    @Nullable
-    private Integer time;
-    @Nullable
-    private Integer worldBorderSize;
+    private @Nullable String template = null;
+    private @Nullable Folder folder;
 
-    @Nullable
-    private BuildWorld buildWorld;
+    private @Nullable Difficulty difficulty;
+    private @Nullable Integer time;
+    private @Nullable Integer worldBorderSize;
+
+    private @Nullable BuildWorld buildWorld;
 
     public BuildWorldCreatorImpl(BuildSystemPlugin plugin, String name) {
         this.plugin = plugin;
@@ -218,6 +211,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
 
     private BuildWorld createAndRegisterBuildWorld(Player player) {
         BuildWorldImpl bw = new BuildWorldImpl(
+                plugin,
                 worldName,
                 creator == null ? Builder.of(player) : creator,
                 worldType,

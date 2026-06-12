@@ -34,16 +34,18 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class WorldPermissionsImpl implements WorldPermissions {
 
+    private final BuildSystemPlugin plugin;
     @Nullable
     private final BuildWorld buildWorld;
 
-    private WorldPermissionsImpl(@Nullable BuildWorld buildWorld) {
+    private WorldPermissionsImpl(BuildSystemPlugin plugin, @Nullable BuildWorld buildWorld) {
+        this.plugin = plugin;
         this.buildWorld = buildWorld;
     }
 
-    @Contract("_ -> new")
-    public static WorldPermissionsImpl of(@Nullable BuildWorld buildWorld) {
-        return new WorldPermissionsImpl(buildWorld);
+    @Contract("_, _ -> new")
+    public static WorldPermissionsImpl of(BuildSystemPlugin plugin, @Nullable BuildWorld buildWorld) {
+        return new WorldPermissionsImpl(plugin, buildWorld);
     }
 
     @Override
@@ -162,6 +164,6 @@ public class WorldPermissionsImpl implements WorldPermissions {
 
     @Override
     public boolean canBypassBuildRestriction(Player player) {
-        return BuildSystemPlugin.get().getPlayerService().isInBuildMode(player);
+        return plugin.getPlayerService().isInBuildMode(player);
     }
 }

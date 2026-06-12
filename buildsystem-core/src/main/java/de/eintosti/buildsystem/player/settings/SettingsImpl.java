@@ -31,7 +31,7 @@ public class SettingsImpl implements Settings {
 
     private DesignColor designColor;
     private NavigatorType navigatorType;
-    private WorldDisplay worldDisplay;
+    private final WorldDisplay worldDisplay;
     private boolean clearInventory;
     private boolean disableInteract;
     private boolean hidePlayers;

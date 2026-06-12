@@ -109,22 +109,54 @@ public class DesignInventory extends Menu {
         Settings settings = plugin.getSettingsService().getSettings(player);
 
         switch (event.getSlot()) {
-            case 10: settings.setDesignColor(DesignColor.RED); break;
-            case 11: settings.setDesignColor(DesignColor.ORANGE); break;
-            case 12: settings.setDesignColor(DesignColor.YELLOW); break;
-            case 13: settings.setDesignColor(DesignColor.PINK); break;
-            case 14: settings.setDesignColor(DesignColor.MAGENTA); break;
-            case 15: settings.setDesignColor(DesignColor.PURPLE); break;
-            case 16: settings.setDesignColor(DesignColor.BROWN); break;
-            case 18: settings.setDesignColor(DesignColor.LIME); break;
-            case 19: settings.setDesignColor(DesignColor.GREEN); break;
-            case 20: settings.setDesignColor(DesignColor.BLUE); break;
-            case 21: settings.setDesignColor(DesignColor.CYAN); break;
-            case 22: settings.setDesignColor(DesignColor.LIGHT_BLUE); break;
-            case 23: settings.setDesignColor(DesignColor.WHITE); break;
-            case 24: settings.setDesignColor(DesignColor.LIGHT_GRAY); break;
-            case 25: settings.setDesignColor(DesignColor.GRAY); break;
-            case 26: settings.setDesignColor(DesignColor.BLACK); break;
+            case 10:
+                settings.setDesignColor(DesignColor.RED);
+                break;
+            case 11:
+                settings.setDesignColor(DesignColor.ORANGE);
+                break;
+            case 12:
+                settings.setDesignColor(DesignColor.YELLOW);
+                break;
+            case 13:
+                settings.setDesignColor(DesignColor.PINK);
+                break;
+            case 14:
+                settings.setDesignColor(DesignColor.MAGENTA);
+                break;
+            case 15:
+                settings.setDesignColor(DesignColor.PURPLE);
+                break;
+            case 16:
+                settings.setDesignColor(DesignColor.BROWN);
+                break;
+            case 18:
+                settings.setDesignColor(DesignColor.LIME);
+                break;
+            case 19:
+                settings.setDesignColor(DesignColor.GREEN);
+                break;
+            case 20:
+                settings.setDesignColor(DesignColor.BLUE);
+                break;
+            case 21:
+                settings.setDesignColor(DesignColor.CYAN);
+                break;
+            case 22:
+                settings.setDesignColor(DesignColor.LIGHT_BLUE);
+                break;
+            case 23:
+                settings.setDesignColor(DesignColor.WHITE);
+                break;
+            case 24:
+                settings.setDesignColor(DesignColor.LIGHT_GRAY);
+                break;
+            case 25:
+                settings.setDesignColor(DesignColor.GRAY);
+                break;
+            case 26:
+                settings.setDesignColor(DesignColor.BLACK);
+                break;
         }
 
         new DesignInventory(plugin, player).open(player);

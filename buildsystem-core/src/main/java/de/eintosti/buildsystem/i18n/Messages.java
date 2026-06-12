@@ -152,7 +152,7 @@ public final class Messages {
     }
 
     @Unmodifiable
-    public final List<String> getStringList(String key, @Nullable Player player, Function<String, Entry<String, Object>[]> placeholders) {
+    public List<String> getStringList(String key, @Nullable Player player, Function<String, Entry<String, Object>[]> placeholders) {
         String message = messages.getOrDefault(key, "").replace("%prefix%", getPrefix());
         boolean papiEnabled = Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null;
         return Arrays.stream(message.split("\n"))

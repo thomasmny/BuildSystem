@@ -39,6 +39,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class FolderImpl implements Folder {
 
+    private final BuildSystemPlugin plugin;
     private final String name;
     private final Builder creator;
     private final long creation;
@@ -52,11 +53,12 @@ public class FolderImpl implements Folder {
     private String permission;
     private String project;
 
-    public FolderImpl(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
-        this(name, System.currentTimeMillis(), category, parent, creator, XMaterial.CHEST, "-", "-", new ArrayList<>(), new ArrayList<>());
+    public FolderImpl(BuildSystemPlugin plugin, String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
+        this(plugin, name, System.currentTimeMillis(), category, parent, creator, XMaterial.CHEST, "-", "-", new ArrayList<>(), new ArrayList<>());
     }
 
     public FolderImpl(
+            BuildSystemPlugin plugin,
             String name,
             long creation,
             NavigatorCategory category,
@@ -68,6 +70,7 @@ public class FolderImpl implements Folder {
             List<UUID> worlds,
             List<Folder> subfolders
     ) {
+        this.plugin = plugin;
         this.name = name;
         this.creation = creation;
         this.category = category;
@@ -90,7 +93,7 @@ public class FolderImpl implements Folder {
 
     @Override
     public String getDisplayName(Player player) {
-        return BuildSystemPlugin.get().getMessages().getString("folder_item_title", player,
+        return plugin.getMessages().getString("folder_item_title", player,
                 Map.entry("%folder%", name)
         );
     }
@@ -118,7 +121,7 @@ public class FolderImpl implements Folder {
     @Override
     @Contract("_ -> new")
     public List<String> getLore(Player player) {
-        return new ArrayList<>(BuildSystemPlugin.get().getMessages().getStringList("folder_item_lore", player,
+        return new ArrayList<>(plugin.getMessages().getStringList("folder_item_lore", player,
                 Map.entry("%permission%", this.permission),
                 Map.entry("%project%", this.project),
                 Map.entry("%worlds%", String.valueOf(getWorldCount())))
@@ -193,7 +196,7 @@ public class FolderImpl implements Folder {
         }
 
         this.worlds.remove(uuid);
-        BuildWorld buildWorld = BuildSystemPlugin.get().getWorldService().getWorldStorage().getBuildWorld(uuid);
+        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(uuid);
         if (buildWorld != null) {
             buildWorld.setFolder(null);
         }
@@ -237,7 +240,7 @@ public class FolderImpl implements Folder {
     @Override
     public boolean canView(Player player) {
         // We can pass null as a world since we are only checking for bypass permissions
-        WorldPermissions permissions = WorldPermissionsImpl.of(null);
+        WorldPermissions permissions = WorldPermissionsImpl.of(plugin, null);
         if (permissions.hasAdminPermission(player) || permissions.canBypassViewPermission(player)) {
             return true;
         }

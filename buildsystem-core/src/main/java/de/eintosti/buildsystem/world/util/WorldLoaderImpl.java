@@ -36,14 +36,14 @@ public class WorldLoaderImpl implements WorldLoader {
     private final BuildSystemPlugin plugin;
     private final BuildWorld buildWorld;
 
-    private WorldLoaderImpl(BuildWorld buildWorld) {
-        this.plugin = BuildSystemPlugin.get();
+    private WorldLoaderImpl(BuildSystemPlugin plugin, BuildWorld buildWorld) {
+        this.plugin = plugin;
         this.buildWorld = buildWorld;
     }
 
-    @Contract("_ -> new")
-    public static WorldLoaderImpl of(BuildWorld buildWorld) {
-        return new WorldLoaderImpl(buildWorld);
+    @Contract("_, _ -> new")
+    public static WorldLoaderImpl of(BuildSystemPlugin plugin, BuildWorld buildWorld) {
+        return new WorldLoaderImpl(plugin, buildWorld);
     }
 
     @Override

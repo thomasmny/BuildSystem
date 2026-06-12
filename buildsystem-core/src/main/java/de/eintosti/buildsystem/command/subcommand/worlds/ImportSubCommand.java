@@ -17,18 +17,17 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
+import com.google.common.collect.Lists;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
-import com.google.common.collect.Lists;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -146,10 +145,16 @@ public class ImportSubCommand implements SubCommand {
         List<String> result = new ArrayList<>();
         if (args.length == 2) {
             String[] directories = Bukkit.getWorldContainer().list((dir, name) -> {
-                if (de.eintosti.buildsystem.util.StringCleaner.hasInvalidNameCharacters(name, plugin.getConfigService().current().world().invalidCharacters())) return false;
+                if (de.eintosti.buildsystem.util.StringCleaner.hasInvalidNameCharacters(name, plugin.getConfigService().current().world().invalidCharacters())) {
+                    return false;
+                }
                 File worldFolder = new File(dir, name);
-                if (!worldFolder.isDirectory()) return false;
-                if (!new File(worldFolder, "level.dat").exists()) return false;
+                if (!worldFolder.isDirectory()) {
+                    return false;
+                }
+                if (!new File(worldFolder, "level.dat").exists()) {
+                    return false;
+                }
                 return !plugin.getWorldService().getWorldStorage().worldExists(name);
             });
             if (directories != null) {

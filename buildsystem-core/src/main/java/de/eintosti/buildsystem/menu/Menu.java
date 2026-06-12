@@ -56,9 +56,12 @@ public abstract class Menu implements InventoryHolder {
         player.openInventory(inventory);
     }
 
-    public void handleClick(InventoryClickEvent event) {}
+    public void handleClick(InventoryClickEvent event) {
+    }
 
-    public void handleClose(InventoryCloseEvent event) {}
+    public void handleClose(InventoryCloseEvent event) {
+    }
 
-    public void handleOpen(InventoryOpenEvent event) {}
+    public void handleOpen(InventoryOpenEvent event) {
+    }
 }

@@ -17,17 +17,17 @@
  */
 package de.eintosti.buildsystem.protection;
 
+import de.eintosti.buildsystem.api.data.Type;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
-import de.eintosti.buildsystem.api.data.Type;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public final class WorldProtectionPolicy {
 
-    public enum Denial { NONE, ARCHIVED, NOT_A_BUILDER, SETTING_DISABLED }
+    public enum Denial {NONE, ARCHIVED, NOT_A_BUILDER, SETTING_DISABLED}
 
     public Denial checkArchive(Player player, BuildWorld world) {
         if (world.getPermissions().canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.archive")) {

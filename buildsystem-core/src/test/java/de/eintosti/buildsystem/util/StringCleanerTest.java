@@ -17,69 +17,71 @@
  */
 package de.eintosti.buildsystem.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @NullMarked
 class StringCleanerTest {
 
+    private static final String NO_OP = StringCleaner.DEFAULT_INVALID_CHARACTERS;
+
     @Test
     void hasInvalidNameCharacters_validInput_returnsFalse() {
-        assertFalse(StringCleaner.hasInvalidNameCharacters("valid_World-1/x"));
+        assertFalse(StringCleaner.hasInvalidNameCharacters("valid_World-1/x", NO_OP));
     }
 
     @Test
     void hasInvalidNameCharacters_spaceAndExclamation_returnsTrue() {
-        assertTrue(StringCleaner.hasInvalidNameCharacters("bad name!"));
+        assertTrue(StringCleaner.hasInvalidNameCharacters("bad name!", NO_OP));
     }
 
     @Test
     void hasInvalidNameCharacters_emptyString_returnsFalse() {
-        assertFalse(StringCleaner.hasInvalidNameCharacters(""));
+        assertFalse(StringCleaner.hasInvalidNameCharacters("", NO_OP));
     }
 
     @Test
     void hasInvalidNameCharacters_onlySpecialChars_returnsTrue() {
-        assertTrue(StringCleaner.hasInvalidNameCharacters("@#%"));
+        assertTrue(StringCleaner.hasInvalidNameCharacters("@#%", NO_OP));
     }
 
     @Test
     void firstInvalidChar_stringWithSpace_returnsSpace() {
-        assertEquals(" ", StringCleaner.firstInvalidChar("abc def"));
+        assertEquals(" ", StringCleaner.firstInvalidChar("abc def", NO_OP));
     }
 
     @Test
     void firstInvalidChar_validString_returnsNull() {
-        assertNull(StringCleaner.firstInvalidChar("valid_World-1"));
+        assertNull(StringCleaner.firstInvalidChar("valid_World-1", NO_OP));
     }
 
     @Test
     void firstInvalidChar_multipleInvalid_returnsFirst() {
-        assertEquals("!", StringCleaner.firstInvalidChar("hello!world?"));
+        assertEquals("!", StringCleaner.firstInvalidChar("hello!world?", NO_OP));
     }
 
     @Test
     void sanitize_removesInvalidCharactersAndSpace() {
-        // space is matched by INVALID_NAME_CHARACTERS and removed before replace(" ", "_") runs
-        assertEquals("myworld", StringCleaner.sanitize("my world!"));
+        assertEquals("myworld", StringCleaner.sanitize("my world!", NO_OP));
     }
 
     @Test
     void sanitize_alreadyClean_returnsUnchanged() {
-        assertEquals("clean_World-1/x", StringCleaner.sanitize("clean_World-1/x"));
+        assertEquals("clean_World-1/x", StringCleaner.sanitize("clean_World-1/x", NO_OP));
     }
 
     @Test
     void sanitize_onlyInvalidChars_returnsEmpty() {
-        assertEquals("", StringCleaner.sanitize("!!!"));
+        assertEquals("", StringCleaner.sanitize("!!!", NO_OP));
     }
 
     @Test
     void sanitize_trailingWhitespace_trimmed() {
-        // Leading/trailing whitespace: replaceAll removes them (they match INVALID_NAME_CHARACTERS),
-        // then trim() catches any residual whitespace (e.g. non-breaking spaces not caught by regex).
-        assertEquals("abc", StringCleaner.sanitize("  abc  "));
+        assertEquals("abc", StringCleaner.sanitize("  abc  ", NO_OP));
     }
 }

@@ -17,6 +17,12 @@
  */
 package de.eintosti.buildsystem.storage;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.util.Collection;
 import java.util.UUID;
@@ -28,12 +34,6 @@ import java.util.logging.Logger;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @NullMarked
 class WorldStorageImplTest {
@@ -47,18 +47,22 @@ class WorldStorageImplTest {
             public CompletableFuture<Void> save(BuildWorld object) {
                 return CompletableFuture.completedFuture(null);
             }
+
             @Override
             public CompletableFuture<Void> save(Collection<BuildWorld> objects) {
                 return CompletableFuture.completedFuture(null);
             }
+
             @Override
             public CompletableFuture<Collection<BuildWorld>> load() {
                 return CompletableFuture.completedFuture(java.util.List.of());
             }
+
             @Override
             public CompletableFuture<Void> delete(BuildWorld object) {
                 return CompletableFuture.completedFuture(null);
             }
+
             @Override
             public CompletableFuture<Void> delete(String key) {
                 return CompletableFuture.completedFuture(null);

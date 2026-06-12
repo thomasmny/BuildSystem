@@ -25,25 +25,26 @@ import de.eintosti.buildsystem.api.world.display.Displayable.DisplayableType;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import java.util.List;
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public final class Heads {
 
-    private Heads() {}
+    private Heads() {
+    }
 
     /**
-     * Sets a world-icon item at the given slot, loading the skull texture asynchronously.
-     * If the player has closed the inventory before the async load completes, the update is skipped.
+     * Sets a world-icon item at the given slot, loading the skull texture asynchronously. If the player has closed the inventory before the async load completes, the update is
+     * skipped.
      */
     public static void setWorldItem(JavaPlugin plugin, Player player, Inventory inventory, int slot,
-                                    BuildWorld buildWorld, String displayName, List<String> lore) {
+            BuildWorld buildWorld, String displayName, List<String> lore) {
         XMaterial material = buildWorld.getData().material().get();
         if (material != XMaterial.PLAYER_HEAD) {
             inventory.setItem(slot, ItemBuilder.of(material).name(displayName).lore(lore).build());

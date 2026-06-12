@@ -7,25 +7,8 @@
  */
 package de.eintosti.buildsystem.world.backup;
 
-import java.time.Duration;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.data.Type;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
@@ -36,6 +19,20 @@ import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.world.backup.storage.LocalBackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.S3BackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.SftpBackupStorage;
+import java.time.Duration;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class BackupService {
@@ -73,9 +70,8 @@ public class BackupService {
     }
 
     /**
-     * Reloads the auto-backup scheduler based on the current {@link AutoBackup} configuration.
-     * If auto-backup was previously running and is now disabled, the task is cancelled.
-     * If auto-backup was not running and is now enabled, a new task is started.
+     * Reloads the auto-backup scheduler based on the current {@link AutoBackup} configuration. If auto-backup was previously running and is now disabled, the task is cancelled. If
+     * auto-backup was not running and is now enabled, a new task is started.
      */
     public void reload() {
         if (autoBackupTask != null) {

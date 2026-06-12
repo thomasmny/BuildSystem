@@ -28,9 +28,8 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Generic dispatcher for slash-command subcommands. The command name is matched
- * case-insensitively; worldName is resolved as {@code args[1]} when present,
- * otherwise the player's current world name.
+ * Generic dispatcher for slash-command subcommands. The command name is matched case-insensitively; worldName is resolved as {@code args[1]} when present, otherwise the player's
+ * current world name.
  */
 @NullMarked
 public final class SubCommandDispatcher {
@@ -47,8 +46,7 @@ public final class SubCommandDispatcher {
     }
 
     /**
-     * Dispatches to the matched subcommand and returns {@code true} if a subcommand
-     * was found (even if it rejected the invocation internally).
+     * Dispatches to the matched subcommand and returns {@code true} if a subcommand was found (even if it rejected the invocation internally).
      */
     public boolean dispatch(Player player, String[] args) {
         SubCommand subCommand = byName.get(args[0].toLowerCase(Locale.ROOT));

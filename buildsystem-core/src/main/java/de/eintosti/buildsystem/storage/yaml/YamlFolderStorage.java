@@ -162,6 +162,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
         List<UUID> worlds = config.getStringList(path + ".worlds").stream().map(UUID::fromString).toList();
 
         return new FolderImpl(
+                plugin,
                 folderName,
                 creation,
                 category,

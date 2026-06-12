@@ -87,9 +87,11 @@ public abstract class DisplayablesInventory extends PaginatedMenu {
     protected final NavigatorCategory category;
     protected final Visibility requiredVisibility;
     protected final Set<BuildWorldStatus> validStatuses;
-    @Nullable private final String noWorldsMessage;
+    @Nullable
+    private final String noWorldsMessage;
 
-    @Nullable private List<Displayable> cachedDisplayables;
+    @Nullable
+    private List<Displayable> cachedDisplayables;
 
     protected DisplayablesInventory(
             BuildSystemPlugin plugin,
@@ -144,12 +146,15 @@ public abstract class DisplayablesInventory extends PaginatedMenu {
         int endIndex = Math.min(startIndex + MAX_WORLDS_PER_PAGE, cachedDisplayables.size());
         int currentSlot = FIRST_WORD_SLOT;
         for (int i = startIndex; i < endIndex; i++) {
-            if (currentSlot > LAST_WORLD_SLOT) break;
+            if (currentSlot > LAST_WORLD_SLOT) {
+                break;
+            }
             cachedDisplayables.get(i).addToInventory(inv, currentSlot++, player);
         }
     }
 
-    protected void addExtraItems(Inventory inventory, Player player) {}
+    protected void addExtraItems(Inventory inventory, Player player) {
+    }
 
     protected List<Displayable> collectDisplayables() {
         WorldDisplay worldDisplay = settingsManager.getSettings(player).getWorldDisplay();
@@ -216,7 +221,8 @@ public abstract class DisplayablesInventory extends PaginatedMenu {
             case OLDEST_FIRST -> "world_sort_date_oldest";
         };
 
-        inventory.setItem(45, InventoryUtils.createItem(XMaterial.BOOK, plugin.getMessages().getString("world_sort_title", player), plugin.getMessages().getString(messageKey, player)));
+        inventory.setItem(45, InventoryUtils.createItem(XMaterial.BOOK, plugin.getMessages().getString("world_sort_title", player), plugin.getMessages()
+                .getString(messageKey, player)));
     }
 
     private void addWorldFilterItem(Inventory inventory) {

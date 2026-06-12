@@ -76,7 +76,9 @@ public class SpeedInventory extends Menu {
             case 13 -> setSpeed(player, 0.6f, 3);
             case 14 -> setSpeed(player, 0.8f, 4);
             case 15 -> setSpeed(player, 1.0f, 5);
-            default -> { return; }
+            default -> {
+                return;
+            }
         }
 
         XSound.ENTITY_CHICKEN_EGG.play(player);

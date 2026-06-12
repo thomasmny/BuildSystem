@@ -18,21 +18,20 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
+import java.util.List;
 import java.util.Map;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-import de.eintosti.buildsystem.i18n.Messages;
-import java.util.List;
-import de.eintosti.buildsystem.api.storage.WorldStorage;
 
 @NullMarked
 public class InfoSubCommand implements SubCommand {
@@ -46,7 +45,7 @@ public class InfoSubCommand implements SubCommand {
     @Override
     public void execute(Player player, String worldName, String[] args) {
         BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
-        if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
+        if (!WorldPermissionsImpl.of(plugin, buildWorld).canPerformCommand(player, getArgument().getPermission())) {
             BuildSystemPlugin.get().getMessages().sendPermissionError(player);
             return;
         }
@@ -114,7 +113,9 @@ public class InfoSubCommand implements SubCommand {
 
     @Override
     public List<String> complete(Player player, String[] args) {
-        if (args.length != 2) return List.of();
+        if (args.length != 2) {
+            return List.of();
+        }
         WorldStorage ws = plugin.getWorldService().getWorldStorage();
         return WorldsCompletions.permittedWorldNames(player, ws, "buildsystem.info", args[1]);
     }
