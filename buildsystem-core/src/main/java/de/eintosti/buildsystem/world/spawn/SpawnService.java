@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.world;
+package de.eintosti.buildsystem.world.spawn;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
@@ -33,7 +33,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class SpawnManager {
+public class SpawnService {
 
     private final BuildSystemPlugin plugin;
     private final WorldStorage worldStorage;
@@ -44,7 +44,7 @@ public class SpawnManager {
     @Nullable
     private Location spawn;
 
-    public SpawnManager(BuildSystemPlugin plugin) {
+    public SpawnService(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.worldStorage = plugin.getWorldService().getWorldStorage();
         this.spawnStorage = new YamlSpawnStorage(plugin);

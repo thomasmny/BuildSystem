@@ -22,6 +22,7 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
@@ -160,13 +161,13 @@ public class SettingsInventory extends Menu {
                 }
                 break;
             case 23:
-                NoClipManager noClipManager = plugin.getNoClipManager();
+                NoClipService noClipService = plugin.getNoClipService();
                 if (!settings.isNoClip()) {
                     settings.setNoClip(true);
-                    noClipManager.startNoClip(player);
+                    noClipService.startNoClip(player);
                 } else {
                     settings.setNoClip(false);
-                    noClipManager.stopNoClip(player.getUniqueId());
+                    noClipService.stopNoClip(player.getUniqueId());
                 }
                 break;
             case 24:

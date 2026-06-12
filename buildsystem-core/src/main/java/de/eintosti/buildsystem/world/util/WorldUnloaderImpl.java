@@ -149,7 +149,7 @@ public class WorldUnloaderImpl implements WorldUnloader {
     }
 
     private boolean isSpawnWorld(World bukkitWorld) {
-        Location spawn = plugin.getSpawnManager().getSpawn();
+        Location spawn = plugin.getSpawnService().getSpawn();
         if (spawn == null) {
             return false;
         }

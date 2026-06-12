@@ -20,7 +20,7 @@ package de.eintosti.buildsystem.command;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.world.SpawnManager;
+import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -33,12 +33,12 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class SpawnCommand extends CommandBase {
 
-    private final SpawnManager spawnManager;
+    private final SpawnService spawnService;
     private final WorldStorageImpl worldStorage;
 
     public SpawnCommand(BuildSystemPlugin plugin) {
         super(plugin, true);
-        this.spawnManager = plugin.getSpawnManager();
+        this.spawnService = plugin.getSpawnService();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
     }
 
@@ -46,7 +46,7 @@ public class SpawnCommand extends CommandBase {
     protected void run(Player player, String label, String[] args) {
         switch (args.length) {
             case 0 -> {
-                if (!spawnManager.teleport(player)) {
+                if (!spawnService.teleport(player)) {
                     messages.sendMessage(player, "spawn_unavailable");
                 } else if (plugin.getConfigService().current().messages().spawnTeleportMessage()) {
                     messages.sendMessage(player, "spawn_teleported");
@@ -74,7 +74,7 @@ public class SpawnCommand extends CommandBase {
                             return;
                         }
 
-                        spawnManager.set(playerLocation, buildWorld.getName());
+                        spawnService.set(playerLocation, buildWorld.getName());
                         messages.sendMessage(player, "spawn_set",
                                 Map.entry("%x%", round(playerLocation.getX())),
                                 Map.entry("%y%", round(playerLocation.getY())),
@@ -83,7 +83,7 @@ public class SpawnCommand extends CommandBase {
                         );
                     }
                     case "remove" -> {
-                        spawnManager.remove();
+                        spawnService.remove();
                         messages.sendMessage(player, "spawn_remove");
                     }
                     default -> messages.sendMessage(player, "spawn_admin");

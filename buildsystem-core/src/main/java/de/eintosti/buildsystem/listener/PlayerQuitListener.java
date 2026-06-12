@@ -65,7 +65,7 @@ public class PlayerQuitListener implements Listener {
 
         Settings settings = settingsManager.getSettings(player);
         if (settings.isNoClip()) {
-            plugin.getNoClipManager().stopNoClip(player.getUniqueId());
+            plugin.getNoClipService().stopNoClip(player.getUniqueId());
         }
 
         if (settings.isScoreboard()) {

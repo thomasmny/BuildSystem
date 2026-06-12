@@ -33,7 +33,7 @@ import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.util.UpdateChecker;
-import de.eintosti.buildsystem.world.SpawnManager;
+import de.eintosti.buildsystem.world.spawn.SpawnService;
 import io.papermc.lib.PaperLib;
 import java.util.Map;
 import org.bukkit.Bukkit;
@@ -53,7 +53,7 @@ public class PlayerJoinListener implements Listener {
     private final PlayerServiceImpl playerManager;
     private final SettingsService settingsManager;
     private final NavigatorService navigatorService;
-    private final SpawnManager spawnManager;
+    private final SpawnService spawnService;
     private final WorldStorageImpl worldStorage;
 
     public PlayerJoinListener(BuildSystemPlugin plugin) {
@@ -61,7 +61,7 @@ public class PlayerJoinListener implements Listener {
         this.playerManager = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsService();
         this.navigatorService = plugin.getNavigatorService();
-        this.spawnManager = plugin.getSpawnManager();
+        this.spawnService = plugin.getSpawnService();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
     }
 
@@ -117,8 +117,8 @@ public class PlayerJoinListener implements Listener {
      * @param buildPlayer The build-player for the given player
      */
     private void teleportToCorrectLocation(Player player, BuildPlayer buildPlayer) {
-        if (buildPlayer.getSettings().isSpawnTeleport() && spawnManager.spawnExists()) {
-            spawnManager.teleport(player);
+        if (buildPlayer.getSettings().isSpawnTeleport() && spawnService.spawnExists()) {
+            spawnService.teleport(player);
             return;
         }
 
@@ -165,7 +165,7 @@ public class PlayerJoinListener implements Listener {
      */
     private void manageSettings(Player player, Settings settings) {
         if (settings.isNoClip()) {
-            plugin.getNoClipManager().startNoClip(player);
+            plugin.getNoClipService().startNoClip(player);
         }
 
         if (settings.isScoreboard()) {

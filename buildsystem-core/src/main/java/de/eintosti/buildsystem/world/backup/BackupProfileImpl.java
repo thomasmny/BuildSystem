@@ -15,7 +15,7 @@ import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.api.world.util.WorldTeleporter;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringUtils;
-import de.eintosti.buildsystem.world.SpawnManager;
+import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -115,9 +115,9 @@ public class BackupProfileImpl implements BackupProfile {
             return;
         }
 
-        SpawnManager spawnManager = plugin.getSpawnManager();
-        Location spawn = spawnManager.getSpawn();
-        boolean isSpawn = spawnManager.spawnExists() && spawnManager.getSpawnWorld().equals(world);
+        SpawnService spawnService = plugin.getSpawnService();
+        Location spawn = spawnService.getSpawn();
+        boolean isSpawn = spawnService.spawnExists() && spawnService.getSpawnWorld().equals(world);
 
         this.buildWorld.getUnloader().forceUnload(false);
         try {
@@ -139,7 +139,7 @@ public class BackupProfileImpl implements BackupProfile {
 
         if (isSpawn) {
             spawn.setWorld(Bukkit.getWorld(worldName));
-            spawnManager.set(spawn, worldName);
+            spawnService.set(spawn, worldName);
         }
 
         plugin.getMessages().sendMessage(player, "worlds_backup_restoration_successful",

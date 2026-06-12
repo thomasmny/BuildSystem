@@ -39,6 +39,7 @@ import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
 import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl;
 import de.eintosti.buildsystem.world.util.WorldUnloaderImpl;
+import de.eintosti.buildsystem.world.spawn.SpawnService;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import io.papermc.lib.PaperLib;
 import java.io.File;
@@ -346,9 +347,9 @@ public class WorldServiceImpl implements WorldService {
                     .filter(Objects::nonNull)
                     .forEach(pl -> PaperLib.teleportAsync(pl, spawnLocation.clone().add(0.5, 0, 0.5)));
 
-            SpawnManager spawnManager = plugin.getSpawnManager();
-            Location oldSpawn = spawnManager.getSpawn();
-            if (oldSpawn != null && Objects.equals(spawnManager.getSpawnWorld(), oldWorld)) {
+            SpawnService spawnService = plugin.getSpawnService();
+            Location oldSpawn = spawnService.getSpawn();
+            if (oldSpawn != null && Objects.equals(spawnService.getSpawnWorld(), oldWorld)) {
                 Location newSpawn = new Location(
                         newWorld,
                         oldSpawn.getX(),
@@ -357,7 +358,7 @@ public class WorldServiceImpl implements WorldService {
                         oldSpawn.getYaw(),
                         oldSpawn.getPitch()
                 );
-                spawnManager.set(newSpawn, sanitizedNewName);
+                spawnService.set(newSpawn, sanitizedNewName);
             }
 
             plugin.getMessages().sendMessage(player, "worlds_rename_set",
@@ -380,7 +381,7 @@ public class WorldServiceImpl implements WorldService {
         World fallbackWorld = serverWorlds.getFirst();
         Location fallbackSpawn = fallbackWorld.getHighestBlockAt(fallbackWorld.getSpawnLocation()).getLocation().add(0.5, 1, 0.5);
 
-        SpawnManager spawnManager = plugin.getSpawnManager();
+        SpawnService spawnService = plugin.getSpawnService();
         List<Player> affectedPlayers = new ArrayList<>();
 
         Bukkit.getOnlinePlayers().forEach(player -> {
@@ -390,9 +391,9 @@ public class WorldServiceImpl implements WorldService {
 
             boolean teleported = false;
 
-            if (spawnManager.spawnExists()) {
+            if (spawnService.spawnExists()) {
                 // Spawn exists -> always teleport to it
-                spawnManager.teleport(player);
+                spawnService.teleport(player);
                 teleported = true;
             } else if (!fallbackWorld.equals(worldToRemove)) {
                 // Spawn doesn't exist, the fallback world is usable -> teleport
@@ -402,7 +403,7 @@ public class WorldServiceImpl implements WorldService {
 
             if (!teleported) {
                 // No valid spawn and fallback world is the one being deleted -> kick
-                spawnManager.remove();
+                spawnService.remove();
                 player.kickPlayer(plugin.getMessages().getString(messageKey, player));
                 return;
             }

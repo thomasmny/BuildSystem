@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.player.settings;
+package de.eintosti.buildsystem.player.noclip;
 
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
@@ -36,13 +36,13 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class NoClipManager {
+public class NoClipService {
 
     private final BuildSystemPlugin plugin;
     private final Map<UUID, GameMode> previousGameMode;
     private final Set<UUID> noClipPlayers;
 
-    public NoClipManager(BuildSystemPlugin plugin) {
+    public NoClipService(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.noClipPlayers = new HashSet<>();
         this.previousGameMode = new HashMap<>();

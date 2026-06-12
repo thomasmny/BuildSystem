@@ -20,7 +20,7 @@ package de.eintosti.buildsystem.listener;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.player.settings.SettingsService;
-import de.eintosti.buildsystem.world.SpawnManager;
+import de.eintosti.buildsystem.world.spawn.SpawnService;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -31,11 +31,11 @@ import org.jspecify.annotations.NullMarked;
 public class PlayerRespawnListener implements Listener {
 
     private final SettingsService settingsManager;
-    private final SpawnManager spawnManager;
+    private final SpawnService spawnService;
 
     public PlayerRespawnListener(BuildSystemPlugin plugin) {
         this.settingsManager = plugin.getSettingsService();
-        this.spawnManager = plugin.getSpawnManager();
+        this.spawnService = plugin.getSpawnService();
     }
 
     @EventHandler
@@ -43,8 +43,8 @@ public class PlayerRespawnListener implements Listener {
         Player player = event.getPlayer();
         Settings settings = settingsManager.getSettings(player);
 
-        if (settings.isSpawnTeleport() && spawnManager.spawnExists()) {
-            event.setRespawnLocation(spawnManager.getSpawn());
+        if (settings.isSpawnTeleport() && spawnService.spawnExists()) {
+            event.setRespawnLocation(spawnService.getSpawn());
         }
     }
 }

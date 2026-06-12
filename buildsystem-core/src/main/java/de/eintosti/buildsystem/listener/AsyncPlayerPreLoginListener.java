@@ -24,7 +24,7 @@ import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.world.SpawnManager;
+import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -37,13 +37,13 @@ public class AsyncPlayerPreLoginListener implements Listener {
 
     private final BuildSystemPlugin plugin;
     private final PlayerStorage playerStorage;
-    private final SpawnManager spawnManager;
+    private final SpawnService spawnService;
     private final WorldStorageImpl worldStorage;
 
     public AsyncPlayerPreLoginListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.playerStorage = plugin.getPlayerService().getPlayerStorage();
-        this.spawnManager = plugin.getSpawnManager();
+        this.spawnService = plugin.getSpawnService();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
     }
 
@@ -56,7 +56,7 @@ public class AsyncPlayerPreLoginListener implements Listener {
         }
 
         Settings settings = buildPlayer.getSettings();
-        if (settings.isSpawnTeleport() && spawnManager.spawnExists()) {
+        if (settings.isSpawnTeleport() && spawnService.spawnExists()) {
             return;
         }
 
