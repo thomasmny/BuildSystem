@@ -15,7 +15,6 @@ nexusPublishing {
 subprojects {
     plugins.withId("java") {
         pluginManager.apply("com.diffplug.spotless")
-
         configure<com.diffplug.gradle.spotless.SpotlessExtension> {
             java {
                 palantirJavaFormat("2.92.0")
