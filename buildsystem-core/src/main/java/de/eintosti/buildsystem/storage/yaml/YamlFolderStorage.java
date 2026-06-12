@@ -45,13 +45,20 @@ public class YamlFolderStorage extends FolderStorageImpl {
 
     private static final String FOLDERS_KEY = "folders";
 
+    private final BuildSystemPlugin plugin;
     private final File file;
     private final FileConfiguration config;
 
     public YamlFolderStorage(BuildSystemPlugin plugin, WorldStorage worldStorage) {
-        super(plugin, worldStorage);
+        super(plugin.getLogger(), worldStorage);
+        this.plugin = plugin;
         this.file = new File(plugin.getDataFolder(), "folders.yml");
         this.config = YamlConfiguration.loadConfiguration(file);
+    }
+
+    @Override
+    protected Folder newFolder(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
+        return new FolderImpl(plugin, name, category, parent, creator);
     }
 
     @Override

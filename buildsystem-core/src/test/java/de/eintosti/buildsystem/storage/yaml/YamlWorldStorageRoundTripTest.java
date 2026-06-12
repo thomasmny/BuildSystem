@@ -27,7 +27,6 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
 import java.io.File;
@@ -53,13 +52,11 @@ class YamlWorldStorageRoundTripTest {
     File dataFolder;
 
     private BuildSystemPlugin plugin;
-    private WorldServiceImpl worldService;
 
     @BeforeEach
     void setUp() {
         plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
-        worldService = mock(WorldServiceImpl.class);
         // Deep stubs return false for world().unload().enabled(), so BuildWorldImpl construction
         // never touches the Bukkit scheduler (manageUnload short-circuits). The unload time string
         // is parsed unconditionally in the WorldUnloader constructor, so it must be a real value.
@@ -68,7 +65,7 @@ class YamlWorldStorageRoundTripTest {
     }
 
     private YamlWorldStorage newStorage() {
-        return new YamlWorldStorage(plugin, worldService);
+        return new YamlWorldStorage(plugin);
     }
 
     private BuildWorldImpl sampleWorld(UUID uuid, String name) {

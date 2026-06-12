@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.storage;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
@@ -38,23 +37,12 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public abstract class PlayerStorageImpl implements PlayerStorage {
 
-    @org.jspecify.annotations.Nullable protected final BuildSystemPlugin plugin;
-
     protected final Logger logger;
 
     private final ConcurrentHashMap<UUID, BuildPlayer> buildPlayers;
 
-    public PlayerStorageImpl(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        this.logger = plugin.getLogger();
-
-        this.buildPlayers = new ConcurrentHashMap<>();
-    }
-
-    /** Package-private for unit tests only. */
-    PlayerStorageImpl() {
-        this.plugin = null;
-        this.logger = java.util.logging.Logger.getLogger(PlayerStorageImpl.class.getName());
+    protected PlayerStorageImpl(Logger logger) {
+        this.logger = logger;
         this.buildPlayers = new ConcurrentHashMap<>();
     }
 

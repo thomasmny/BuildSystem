@@ -51,11 +51,13 @@ public class YamlWorldStorage extends WorldStorageImpl {
 
     private static final String WORLDS_KEY = "worlds";
 
+    private final BuildSystemPlugin plugin;
     private final File file;
     private final FileConfiguration config;
 
-    public YamlWorldStorage(BuildSystemPlugin plugin, WorldServiceImpl worldService) {
-        super(plugin, worldService);
+    public YamlWorldStorage(BuildSystemPlugin plugin) {
+        super(plugin.getLogger());
+        this.plugin = plugin;
         this.file = new File(plugin.getDataFolder(), "worlds.yml");
         this.config = YamlConfiguration.loadConfiguration(file);
     }

@@ -54,7 +54,7 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
     private final FileConfiguration config;
 
     public YamlPlayerStorage(BuildSystemPlugin plugin) {
-        super(plugin);
+        super(plugin.getLogger());
         this.file = new File(plugin.getDataFolder(), "players.yml");
         this.config = YamlConfiguration.loadConfiguration(file);
     }

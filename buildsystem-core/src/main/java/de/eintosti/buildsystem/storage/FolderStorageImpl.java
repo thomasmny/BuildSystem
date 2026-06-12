@@ -17,13 +17,11 @@
  */
 package de.eintosti.buildsystem.storage;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -40,27 +38,13 @@ import org.jspecify.annotations.NullMarked;
 public abstract class FolderStorageImpl implements FolderStorage {
 
     protected final Logger logger;
-
-    @org.jspecify.annotations.Nullable protected final BuildSystemPlugin plugin;
-
     protected final WorldStorage worldStorage;
 
     private final ConcurrentHashMap<String, Folder> foldersByName;
 
-    public FolderStorageImpl(BuildSystemPlugin plugin, WorldStorage worldStorage) {
-        this.logger = plugin.getLogger();
-        this.plugin = plugin;
-        this.worldStorage = worldStorage;
-
-        this.foldersByName = new ConcurrentHashMap<>();
-    }
-
-    /** Package-private for unit tests only. */
-    FolderStorageImpl(Logger logger, WorldStorage worldStorage) {
+    protected FolderStorageImpl(Logger logger, WorldStorage worldStorage) {
         this.logger = logger;
-        this.plugin = null;
         this.worldStorage = worldStorage;
-
         this.foldersByName = new ConcurrentHashMap<>();
     }
 
@@ -101,9 +85,9 @@ public abstract class FolderStorageImpl implements FolderStorage {
         return folder;
     }
 
-    protected Folder newFolder(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
-        return new FolderImpl(plugin, name, category, parent, creator);
-    }
+    /** Creates the folder instance to register; implementations decide the concrete type and its dependencies. */
+    protected abstract Folder newFolder(
+            String name, NavigatorCategory category, @Nullable Folder parent, Builder creator);
 
     @Override
     public void removeFolder(String name) {

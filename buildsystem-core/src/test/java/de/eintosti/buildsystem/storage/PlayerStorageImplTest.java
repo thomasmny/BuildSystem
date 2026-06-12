@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Logger;
 import java.util.concurrent.*;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +37,7 @@ class PlayerStorageImplTest {
 
     @BeforeEach
     void setUp() {
-        storage = new PlayerStorageImpl() {
+        storage = new PlayerStorageImpl(Logger.getLogger("test")) {
             @Override
             public CompletableFuture<Collection<BuildPlayer>> load() {
                 return CompletableFuture.completedFuture(List.of());

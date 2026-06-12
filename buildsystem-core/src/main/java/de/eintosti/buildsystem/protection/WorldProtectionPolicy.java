@@ -39,9 +39,11 @@ public final class WorldProtectionPolicy {
                 || player.hasPermission("buildsystem.bypass.archive")) {
             return Denial.NONE;
         }
+
         if (world.getData().status().get() == BuildWorldStatus.ARCHIVE) {
             return Denial.ARCHIVED;
         }
+
         return Denial.NONE;
     }
 
@@ -50,13 +52,16 @@ public final class WorldProtectionPolicy {
                 || player.hasPermission("buildsystem.bypass.builders")) {
             return Denial.NONE;
         }
+
         Builders builders = world.getBuilders();
         if (builders.isCreator(player)) {
             return Denial.NONE;
         }
+
         if (world.getData().buildersEnabled().get() && !builders.isBuilder(player)) {
             return Denial.NOT_A_BUILDER;
         }
+
         return Denial.NONE;
     }
 
@@ -64,9 +69,11 @@ public final class WorldProtectionPolicy {
         if (world.getPermissions().canBypassBuildRestriction(player)) {
             return Denial.NONE;
         }
+
         if (!setting.get()) {
             return Denial.SETTING_DISABLED;
         }
+
         return Denial.NONE;
     }
 
@@ -74,10 +81,12 @@ public final class WorldProtectionPolicy {
         if (world.getPermissions().canBypassBuildRestriction(player)) {
             return Denial.NONE;
         }
+
         Denial archive = checkArchive(player, world);
         if (archive != Denial.NONE) {
             return archive;
         }
+
         return checkBuilders(player, world);
     }
 
@@ -85,14 +94,17 @@ public final class WorldProtectionPolicy {
         if (world.getPermissions().canBypassBuildRestriction(player)) {
             return Denial.NONE;
         }
+
         Denial archive = checkArchive(player, world);
         if (archive != Denial.NONE) {
             return archive;
         }
+
         Denial sett = checkSetting(player, world, setting);
         if (sett != Denial.NONE) {
             return sett;
         }
+
         return checkBuilders(player, world);
     }
 }

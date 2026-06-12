@@ -17,17 +17,13 @@
  */
 package de.eintosti.buildsystem.storage;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
-import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -42,26 +38,11 @@ public abstract class WorldStorageImpl implements WorldStorage {
 
     protected final Logger logger;
 
-    @Nullable protected final BuildSystemPlugin plugin;
-
-    @Nullable protected final WorldServiceImpl worldService;
-
     private final ConcurrentHashMap<UUID, BuildWorld> buildWorldsByUuid;
     private final ConcurrentHashMap<String, UUID> uuidByName;
 
-    public WorldStorageImpl(BuildSystemPlugin plugin, WorldServiceImpl worldService) {
-        this.logger = plugin.getLogger();
-        this.plugin = plugin;
-        this.worldService = worldService;
-
-        this.buildWorldsByUuid = new ConcurrentHashMap<>();
-        this.uuidByName = new ConcurrentHashMap<>();
-    }
-
-    WorldStorageImpl(Logger logger) {
+    protected WorldStorageImpl(Logger logger) {
         this.logger = logger;
-        this.plugin = null;
-        this.worldService = null;
         this.buildWorldsByUuid = new ConcurrentHashMap<>();
         this.uuidByName = new ConcurrentHashMap<>();
     }
@@ -164,109 +145,5 @@ public abstract class WorldStorageImpl implements WorldStorage {
             case PUBLIC -> !privateWorld;
             case IGNORE -> true;
         };
-    }
-
-    public void loadWorlds() {
-        load().thenAccept(worlds -> Bukkit.getScheduler().runTask(plugin, () -> {
-                    worlds.forEach(this::addBuildWorld);
-                    assignWorldsToFolders();
-
-                    boolean loadAllWorlds = !plugin.getConfigService()
-                            .current()
-                            .world()
-                            .unload()
-                            .enabled();
-                    if (loadAllWorlds) {
-                        logger.info("*** All worlds will be loaded now ***");
-                    }
-
-                    List<BuildWorld> notLoaded = new ArrayList<>();
-                    getBuildWorlds().forEach(buildWorld -> {
-                        LoadResult loadResult = loadWorld(buildWorld, loadAllWorlds);
-                        if (loadResult == LoadResult.FAILED) {
-                            notLoaded.add(buildWorld);
-                        }
-                    });
-                    notLoaded.forEach(this::removeBuildWorld);
-
-                    logger.info("Loaded " + worlds.size() + " worlds from storage");
-                }))
-                .exceptionally(throwable -> {
-                    logger.log(Level.SEVERE, "Failed to load worlds from storage", throwable);
-                    return null;
-                });
-    }
-
-    /**
-     * Assigns all {@link BuildWorld}s to their respective {@link Folder}s.
-     *
-     * <p>Must be called after all folders and worlds have been loaded.
-     */
-    private void assignWorldsToFolders() {
-        worldService.getFolderStorage().getFolders().forEach(folder -> {
-            List<UUID> invalidWorlds = new ArrayList<>();
-            folder.getWorldUUIDs().stream()
-                    .map(worldUUID -> {
-                        BuildWorld buildWorld = getBuildWorld(worldUUID);
-                        if (buildWorld == null) {
-                            invalidWorlds.add(worldUUID);
-                            logger.warning("World with UUID " + worldUUID + " does not exist. Removing from folder: "
-                                    + folder.getName());
-                        }
-                        return buildWorld;
-                    })
-                    .filter(Objects::nonNull)
-                    .forEach(buildWorld -> buildWorld.setFolder(folder));
-            invalidWorlds.forEach(folder::removeWorld);
-        });
-    }
-
-    /**
-     * Attempts to load the {@link World} with the given {@link BuildWorld}.
-     *
-     * @param buildWorld The world to load
-     * @param alwaysLoad Whether the world should always be loaded, regardless of being blacklisted
-     * @return The result of the load attempt
-     */
-    private LoadResult loadWorld(BuildWorld buildWorld, boolean alwaysLoad) {
-        String worldName = buildWorld.getName();
-        boolean shouldPreLoad = alwaysLoad
-                || plugin.getConfigService()
-                        .current()
-                        .world()
-                        .unload()
-                        .blacklistedWorlds()
-                        .contains(worldName);
-        if (!shouldPreLoad) {
-            return LoadResult.NOT_LOADED;
-        }
-
-        World world = new BukkitWorldFactory(plugin, buildWorld).generate(BukkitWorldFactory.VersionCheck.REQUIRED);
-        if (world == null) {
-            return LoadResult.FAILED;
-        }
-
-        buildWorld.getData().lastLoaded().set(System.currentTimeMillis());
-        logger.info("✔ World loaded: " + worldName);
-        return LoadResult.LOADED;
-    }
-
-    private enum LoadResult {
-
-        /** The {@link BuildWorld} was successfully loaded. */
-        LOADED,
-
-        /** The {@link BuildWorld} was attempted to be loaded, but failed. */
-        FAILED,
-
-        /**
-         * The {@link BuildWorld} was not attempted to be loaded because:
-         *
-         * <ul>
-         *   <li>{@link Unload#enabled} is set to {@code true}, and
-         *   <li>{@link Unload#blacklistedWorlds} does not contain the world's name (therefore, it can remain unloaded)
-         * </ul>
-         */
-        NOT_LOADED
     }
 }
