@@ -38,8 +38,8 @@ public class ArchivedWorldsInventory extends DisplayablesInventory {
                 plugin,
                 player,
                 NavigatorCategory.ARCHIVE,
-                BuildSystemPlugin.get().getMessages().getString("archive_title", player),
-                BuildSystemPlugin.get().getMessages().getString("archive_no_worlds", player),
+                plugin.getMessages().getString("archive_title", player),
+                plugin.getMessages().getString("archive_no_worlds", player),
                 Visibility.IGNORE,
                 Sets.newHashSet(BuildWorldStatus.ARCHIVE)
         );

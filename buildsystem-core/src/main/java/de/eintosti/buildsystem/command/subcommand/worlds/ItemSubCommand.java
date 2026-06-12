@@ -17,29 +17,33 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 
 @NullMarked
 public class ItemSubCommand implements SubCommand {
 
-    public ItemSubCommand() {
+    private final Messages messages;
+
+    public ItemSubCommand(BuildSystemPlugin plugin) {
+        this.messages = plugin.getMessages();
     }
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
         if (!hasPermission(player)) {
-            BuildSystemPlugin.get().getMessages().sendPermissionError(player);
+            messages.sendPermissionError(player);
             return;
         }
 
         player.getInventory().addItem(InventoryUtils.createNavigatorItem(player));
-        BuildSystemPlugin.get().getMessages().sendMessage(player, "worlds_item_receive");
+        messages.sendMessage(player, "worlds_item_receive");
     }
 
     @Override

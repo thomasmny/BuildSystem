@@ -49,7 +49,7 @@ public abstract class PagedCommand extends CommandBase {
 
         List<TextComponent> page = createPage(commands, numPages, pageNum);
         page.add(0, new TextComponent("§7§m----------------------------------------------------"));
-        page.add(1, new TextComponent(BuildSystemPlugin.get().getMessages().getString(this.title, player)
+        page.add(1, new TextComponent(messages.getString(this.title, player)
                 .replace("%page%", String.valueOf(pageNum))
                 .replace("%max%", String.valueOf(numPages))
                 .concat("\n"))
@@ -86,11 +86,11 @@ public abstract class PagedCommand extends CommandBase {
         }
 
         TextComponent commandComponent = new TextComponent("§b" + command);
-        TextComponent textComponent = new TextComponent(" §8» " + BuildSystemPlugin.get().getMessages().getString(commandDescriptionKey, player));
+        TextComponent textComponent = new TextComponent(" §8» " + messages.getString(commandDescriptionKey, player));
 
         commandComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, suggest));
         commandComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new Text(BuildSystemPlugin.get().getMessages().getString(this.permissionTemplate, player, Map.entry("%permission%", permission)))
+                new Text(messages.getString(this.permissionTemplate, player, Map.entry("%permission%", permission)))
         ));
         commandComponent.addExtra(textComponent);
         return commandComponent;

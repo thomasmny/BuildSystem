@@ -41,8 +41,8 @@ public class PrivateWorldsInventory extends CreatableWorldsInventory {
                 plugin,
                 player,
                 NavigatorCategory.PRIVATE,
-                BuildSystemPlugin.get().getMessages().getString("private_title", player),
-                BuildSystemPlugin.get().getMessages().getString("private_no_worlds", player),
+                plugin.getMessages().getString("private_title", player),
+                plugin.getMessages().getString("private_no_worlds", player),
                 Visibility.PRIVATE
         );
     }

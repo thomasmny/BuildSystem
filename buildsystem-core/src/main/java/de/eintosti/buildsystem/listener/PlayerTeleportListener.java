@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.listener;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -33,10 +34,12 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class PlayerTeleportListener implements Listener {
 
+    private final Messages messages;
     private final PlayerStorage playerStorage;
     private final WorldStorage worldStorage;
 
     public PlayerTeleportListener(BuildSystemPlugin plugin) {
+        this.messages = plugin.getMessages();
         this.playerStorage = plugin.getPlayerService().getPlayerStorage();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
     }
@@ -70,7 +73,7 @@ public class PlayerTeleportListener implements Listener {
         }
 
         if (!buildWorld.getPermissions().canEnter(player)) {
-            BuildSystemPlugin.get().getMessages().sendMessage(player, "worlds_tp_entry_forbidden");
+            messages.sendMessage(player, "worlds_tp_entry_forbidden");
             event.setCancelled(true);
         }
     }

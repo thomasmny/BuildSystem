@@ -57,7 +57,7 @@ public class FolderContentInventory extends DisplayablesInventory {
                 plugin,
                 player,
                 category,
-                BuildSystemPlugin.get().getMessages().getString("folder_title", player, new SimpleEntry<>("%folder%", folder.getName())),
+                plugin.getMessages().getString("folder_title", player, new SimpleEntry<>("%folder%", folder.getName())),
                 null,
                 requiredVisibility,
                 validStatuses

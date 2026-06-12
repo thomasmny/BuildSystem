@@ -31,14 +31,14 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 @NullMarked
 public class HelpSubCommand extends PagedCommand implements SubCommand {
 
-    public HelpSubCommand() {
-        super(BuildSystemPlugin.get(), "worlds_help_title_with_page", "worlds_help_permission");
+    public HelpSubCommand(BuildSystemPlugin plugin) {
+        super(plugin, "worlds_help_title_with_page", "worlds_help_permission");
     }
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
         if (!hasPermission(player)) {
-            BuildSystemPlugin.get().getMessages().sendPermissionError(player);
+            messages.sendPermissionError(player);
             return;
         }
 
@@ -49,10 +49,10 @@ public class HelpSubCommand extends PagedCommand implements SubCommand {
                 int page = Integer.parseInt(args[1]);
                 sendMessage(player, page);
             } catch (NumberFormatException e) {
-                BuildSystemPlugin.get().getMessages().sendMessage(player, "worlds_help_invalid_page");
+                messages.sendMessage(player, "worlds_help_invalid_page");
             }
         } else {
-            BuildSystemPlugin.get().getMessages().sendMessage(player, "worlds_help_usage");
+            messages.sendMessage(player, "worlds_help_usage");
         }
     }
 
