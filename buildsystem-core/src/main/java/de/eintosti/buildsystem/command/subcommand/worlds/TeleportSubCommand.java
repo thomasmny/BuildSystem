@@ -75,7 +75,7 @@ public class TeleportSubCommand implements SubCommand {
             return List.of();
         }
         WorldStorage ws = plugin.getWorldService().getWorldStorage();
-        return WorldsCompletions.permittedWorldNames(player, ws, "buildsystem.tp", args[1]);
+        return WorldsCompletions.permittedWorldNames(player, ws, getArgument().getPermission(), args[1]);
     }
 
     @Override
