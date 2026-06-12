@@ -47,6 +47,17 @@ public interface Displayable {
     String getName();
 
     /**
+     * Sets the name of this displayable item.
+     *
+     * <p><b>Note:</b> this only updates the in-memory name. Persisted storage is keyed by the name, so a durable rename
+     * additionally requires re-saving under the new key (delete the old storage entry, then save under the new name).
+     *
+     * @param name The new name for this item
+     * @throws IllegalArgumentException if the name is {@code null} or blank
+     */
+    void setName(String name);
+
+    /**
      * Gets the name used to display this item in an inventory.
      *
      * @param player The player viewing the item

@@ -120,10 +120,40 @@ class FolderStorageImplTest {
         assertEquals(2, storage.getFolders().size());
     }
 
+    @Test
+    void setName_updatesFolderName() {
+        Folder folder = storage.createFolder("Original", NavigatorCategory.PUBLIC, creator);
+        folder.setName("Renamed");
+        assertEquals("Renamed", folder.getName());
+    }
+
+    @Test
+    void removeFolder_removesFromRegistry() {
+        storage.createFolder("ToDelete", NavigatorCategory.PUBLIC, creator);
+        assertTrue(storage.folderExists("ToDelete"));
+
+        storage.removeFolder("ToDelete");
+
+        assertFalse(storage.folderExists("ToDelete"));
+        assertNull(storage.getFolder("ToDelete"));
+    }
+
+    @Test
+    void removeFolder_cascadesToSubfolders() {
+        Folder parent = storage.createFolder("Parent", NavigatorCategory.PUBLIC, creator);
+        Folder child = storage.createFolder("Child", NavigatorCategory.PUBLIC, creator);
+        child.setParent(parent);
+
+        storage.removeFolder(parent);
+
+        assertFalse(storage.folderExists("Parent"));
+        assertFalse(storage.folderExists("Child"));
+    }
+
     // Minimal Folder implementation for tests
     @NullMarked
     private static final class SimpleTestFolder implements Folder {
-        private final String name;
+        private String name;
         private final NavigatorCategory category;
         private final Builder creator;
 
@@ -138,6 +168,11 @@ class FolderStorageImplTest {
         @Override
         public String getName() {
             return name;
+        }
+
+        @Override
+        public void setName(String name) {
+            this.name = name;
         }
 
         @Override

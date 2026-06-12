@@ -61,13 +61,6 @@ public interface BuildWorld extends Displayable {
     UUID getUniqueId();
 
     /**
-     * Sets the name of this world.
-     *
-     * @param name The name of the world
-     */
-    void setName(String name);
-
-    /**
      * Gets the {@link Profileable} representation of this build world which is applied when
      * {@link WorldData#material()} is set to {@link Material#PLAYER_HEAD}.
      *

@@ -36,7 +36,7 @@ import org.jspecify.annotations.Nullable;
 public class FolderImpl implements Folder {
 
     private final BuildSystemPlugin plugin;
-    private final String name;
+    private String name;
     private final Builder creator;
     private final long creation;
     private final NavigatorCategory category;
@@ -100,6 +100,14 @@ public class FolderImpl implements Folder {
     @Override
     public String getName() {
         return this.name;
+    }
+
+    @Override
+    public void setName(String name) {
+        if (name.isBlank()) {
+            throw new IllegalArgumentException("Folder name must not be blank");
+        }
+        this.name = name;
     }
 
     @Override
