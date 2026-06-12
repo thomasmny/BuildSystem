@@ -34,14 +34,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -205,18 +203,19 @@ public class NavigatorService {
 
     private void checkForArmorStandNavigator() {
         for (Player player : openNavigator) {
-            if (!(getTargetEntity(player) instanceof ArmorStand armorStand)) {
+            ArmorStand[] stands = armorStands.get(player.getUniqueId());
+            if (stands == null) {
                 continue;
             }
 
-            BuildPlayerImpl buildPlayer = BuildPlayerImpl.of(
-                    plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player));
-            if (isLookingAtArmorStandHead(player, armorStand)) {
-                NavigatorCategory category = matchNavigatorCategory(armorStand);
-                sendTypeInfo(player, category);
-            } else {
-                sendTypeInfo(player, null);
+            NavigatorCategory lookedAt = null;
+            for (ArmorStand armorStand : stands) {
+                if (!armorStand.isDead() && isLookingAtArmorStandHead(player, armorStand)) {
+                    lookedAt = matchNavigatorCategory(armorStand);
+                    break;
+                }
             }
+            sendTypeInfo(player, lookedAt);
         }
     }
 
@@ -248,37 +247,6 @@ public class NavigatorService {
         }
 
         return false;
-    }
-
-    @Nullable private Entity getTargetEntity(Entity entity) {
-        return getTarget(entity, entity.getNearbyEntities(3, 3, 3));
-    }
-
-    @Nullable @Contract("null, _ -> null")
-    private <T extends Entity> T getTarget(@Nullable Entity entity, Iterable<T> entities) {
-        if (entity == null) {
-            return null;
-        }
-
-        T target = null;
-        final Location entityLocation = entity.getLocation();
-        final double threshold = 0.5;
-
-        for (T other : entities) {
-            final Location otherLocation = other.getLocation();
-            final Vector vector = otherLocation.toVector().subtract(entityLocation.toVector());
-
-            if (entityLocation.getDirection().normalize().crossProduct(vector).lengthSquared() < threshold
-                    && vector.normalize().dot(entityLocation.getDirection().normalize()) >= 0) {
-                if (target == null
-                        || target.getLocation().distanceSquared(entityLocation)
-                                > otherLocation.distanceSquared(entityLocation)) {
-                    target = other;
-                }
-            }
-        }
-
-        return target;
     }
 
     private void sendTypeInfo(Player player, @Nullable NavigatorCategory category) {
