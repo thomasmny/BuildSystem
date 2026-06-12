@@ -18,6 +18,8 @@
 package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.integration.axiom.WorldManipulateByAxiomListener;
+import de.eintosti.buildsystem.integration.worldedit.EditSessionListener;
 import de.eintosti.buildsystem.menu.MenuListener;
 import org.bukkit.plugin.PluginManager;
 import org.jspecify.annotations.NullMarked;
@@ -26,47 +28,47 @@ import org.jspecify.annotations.NullMarked;
 public final class ListenerRegistrar {
 
     private final BuildSystemPlugin plugin;
-    private final PluginManager pm;
+    private final PluginManager pluginManager;
 
     public ListenerRegistrar(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.pm = plugin.getServer().getPluginManager();
+        this.pluginManager = plugin.getServer().getPluginManager();
     }
 
     public void registerAll() {
-        pm.registerEvents(new AsyncPlayerChatListener(plugin), plugin);
-        pm.registerEvents(new AsyncPlayerPreLoginListener(plugin), plugin);
-        pm.registerEvents(new BlockPhysicsListener(plugin), plugin);
-        pm.registerEvents(new BuildModePreventationListener(plugin), plugin);
-        pm.registerEvents(new BuildWorldResetUnloadListener(plugin), plugin);
-        pm.registerEvents(new DisabledInteractionsListener(plugin), plugin);
-        pm.registerEvents(new EntityDamageListener(plugin), plugin);
-        pm.registerEvents(new EntitySpawnListener(plugin), plugin);
-        pm.registerEvents(new FoodLevelChangeListener(plugin), plugin);
-        pm.registerEvents(new InstantSignPlacementListener(plugin), plugin);
-        pm.registerEvents(new InventoryCreativeListener(plugin), plugin);
-        pm.registerEvents(new IronDoorListener(plugin), plugin);
-        pm.registerEvents(new MenuListener(), plugin);
-        pm.registerEvents(new NavigatorListener(plugin), plugin);
-        pm.registerEvents(new PlayerChangedWorldListener(plugin), plugin);
-        pm.registerEvents(new PlayerCommandPreprocessListener(plugin), plugin);
-        pm.registerEvents(new PlayerInventoryClearListener(plugin), plugin);
-        pm.registerEvents(new PlayerJoinListener(plugin), plugin);
-        pm.registerEvents(new PlayerMoveListener(plugin), plugin);
-        pm.registerEvents(new PlayerQuitListener(plugin), plugin);
-        pm.registerEvents(new PlayerRespawnListener(plugin), plugin);
-        pm.registerEvents(new PlayerTeleportListener(plugin), plugin);
-        pm.registerEvents(new PlantPlacementListener(plugin), plugin);
-        pm.registerEvents(new SignChangeListener(plugin), plugin);
-        pm.registerEvents(new SlabListener(plugin), plugin);
-        pm.registerEvents(new WeatherChangeListener(plugin), plugin);
-        pm.registerEvents(new WorldManipulateListener(plugin), plugin);
+        pluginManager.registerEvents(new AsyncPlayerChatListener(plugin), plugin);
+        pluginManager.registerEvents(new AsyncPlayerPreLoginListener(plugin), plugin);
+        pluginManager.registerEvents(new BlockPhysicsListener(plugin), plugin);
+        pluginManager.registerEvents(new BuildModePreventationListener(plugin), plugin);
+        pluginManager.registerEvents(new BuildWorldResetUnloadListener(plugin), plugin);
+        pluginManager.registerEvents(new DisabledInteractionsListener(plugin), plugin);
+        pluginManager.registerEvents(new EntityDamageListener(plugin), plugin);
+        pluginManager.registerEvents(new EntitySpawnListener(plugin), plugin);
+        pluginManager.registerEvents(new FoodLevelChangeListener(plugin), plugin);
+        pluginManager.registerEvents(new InstantSignPlacementListener(plugin), plugin);
+        pluginManager.registerEvents(new InventoryCreativeListener(plugin), plugin);
+        pluginManager.registerEvents(new IronDoorListener(plugin), plugin);
+        pluginManager.registerEvents(new MenuListener(), plugin);
+        pluginManager.registerEvents(new NavigatorListener(plugin), plugin);
+        pluginManager.registerEvents(new PlayerChangedWorldListener(plugin), plugin);
+        pluginManager.registerEvents(new PlayerCommandPreprocessListener(plugin), plugin);
+        pluginManager.registerEvents(new PlayerInventoryClearListener(plugin), plugin);
+        pluginManager.registerEvents(new PlayerJoinListener(plugin), plugin);
+        pluginManager.registerEvents(new PlayerMoveListener(plugin), plugin);
+        pluginManager.registerEvents(new PlayerQuitListener(plugin), plugin);
+        pluginManager.registerEvents(new PlayerRespawnListener(plugin), plugin);
+        pluginManager.registerEvents(new PlayerTeleportListener(plugin), plugin);
+        pluginManager.registerEvents(new PlantPlacementListener(plugin), plugin);
+        pluginManager.registerEvents(new SignChangeListener(plugin), plugin);
+        pluginManager.registerEvents(new SlabListener(plugin), plugin);
+        pluginManager.registerEvents(new WeatherChangeListener(plugin), plugin);
+        pluginManager.registerEvents(new WorldManipulateListener(plugin), plugin);
 
-        if (pm.getPlugin("AxiomPaper") != null) {
-            pm.registerEvents(new WorldManipulateByAxiomListener(plugin), plugin);
+        if (pluginManager.getPlugin("AxiomPaper") != null) {
+            pluginManager.registerEvents(new WorldManipulateByAxiomListener(plugin), plugin);
         }
 
-        boolean isWorldEdit = pm.getPlugin("WorldEdit") != null || pm.getPlugin("FastAsyncWorldEdit") != null;
+        boolean isWorldEdit = pluginManager.getPlugin("WorldEdit") != null || pluginManager.getPlugin("FastAsyncWorldEdit") != null;
         if (isWorldEdit && plugin.getConfigService().current().settings().builder().blockWorldEditNonBuilder()) {
             new EditSessionListener(plugin);
         }

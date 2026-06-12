@@ -15,11 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.expansion.luckperms;
+package de.eintosti.buildsystem.integration.luckperms;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.expansion.luckperms.calculators.BuildModeCalculator;
-import de.eintosti.buildsystem.expansion.luckperms.calculators.RoleCalculator;
+import de.eintosti.buildsystem.integration.luckperms.calculators.BuildModeCalculator;
+import de.eintosti.buildsystem.integration.luckperms.calculators.RoleCalculator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;

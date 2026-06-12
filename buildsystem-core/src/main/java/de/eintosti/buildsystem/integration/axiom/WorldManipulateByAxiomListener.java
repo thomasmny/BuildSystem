@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.listener;
+package de.eintosti.buildsystem.integration.axiom;
 
 import com.moulberry.axiom.event.AxiomModifyWorldEvent;
 import de.eintosti.buildsystem.BuildSystemPlugin;

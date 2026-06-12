@@ -62,6 +62,7 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.mockito)
     testImplementation(libs.spigot)
+    testImplementation(libs.placeholderapi)
     testRuntimeOnly(libs.junit.platform.launcher)
 }
 

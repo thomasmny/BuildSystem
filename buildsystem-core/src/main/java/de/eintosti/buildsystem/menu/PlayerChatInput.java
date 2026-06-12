@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.util;
+package de.eintosti.buildsystem.menu;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
@@ -28,6 +28,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.jspecify.annotations.NullMarked;
@@ -97,6 +98,15 @@ public class PlayerChatInput implements Listener {
         Bukkit.getScheduler().runTask(current.plugin, () -> current.runWhenComplete.run(input));
         player.resetTitle();
         current.unregister();
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        PlayerChatInput current = inputs.remove(event.getPlayer().getUniqueId());
+        if (current != null) {
+            current.taskId.cancel();
+            HandlerList.unregisterAll(current);
+        }
     }
 
     private void register() {

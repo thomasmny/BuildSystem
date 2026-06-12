@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.expansion.placeholderapi;
+package de.eintosti.buildsystem.integration.placeholderapi;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.Settings;
@@ -36,77 +36,54 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
 
     private static final String SETTINGS_KEY = "settings";
 
-    private final BuildSystemPlugin plugin;
-    private final SettingsService settingsManager;
+    private final String author;
+    private final String version;
+    private final SettingsService settingsService;
     private final WorldStorageImpl worldStorage;
+    private final Messages messages;
 
     public PlaceholderApiExpansion(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        this.settingsManager = plugin.getSettingsService();
+        this.author = plugin.getDescription().getAuthors().toString();
+        this.version = plugin.getDescription().getVersion();
+        this.settingsService = plugin.getSettingsService();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
+        this.messages = plugin.getMessages();
         plugin.getLogger().info("PlaceholderAPI expansion initialized");
     }
 
-    /**
-     * Because this is an internal class, you must override this method to let PlaceholderAPI know to not unregister your expansion class when PlaceholderAPI is reloaded
-     *
-     * @return true to persist through reloads
-     */
+    PlaceholderApiExpansion(String author, String version, SettingsService settingsService, WorldStorageImpl worldStorage, Messages messages) {
+        this.author = author;
+        this.version = version;
+        this.settingsService = settingsService;
+        this.worldStorage = worldStorage;
+        this.messages = messages;
+    }
+
     @Override
     public boolean persist() {
         return true;
     }
 
-    /**
-     * Because this is an internal class, this check is not needed, and we can simply return {@code true}
-     *
-     * @return Always true since it's an internal class.
-     */
     @Override
     public boolean canRegister() {
         return true;
     }
 
-    /**
-     * The name of the person who created this expansion should go here. For convenience do we return the author from the plugin.yml
-     *
-     * @return The name of the author as a String.
-     */
     @Override
     public String getAuthor() {
-        return plugin.getDescription().getAuthors().toString();
+        return author;
     }
 
-    /**
-     * The placeholder identifier should go here. This is what tells PlaceholderAPI to call our onRequest method to get a value if a placeholder starts with our identifier. This
-     * must be unique and cannot contain % or _
-     *
-     * @return The identifier in {@code %<identifier>_<value>%} as String.
-     */
     @Override
     public String getIdentifier() {
         return "buildsystem";
     }
 
-    /**
-     * This is the version of the expansion. You don't have to use numbers since it is set as a String.
-     * <p>
-     * For convenience do we return the version from the plugin.yml
-     *
-     * @return The version as a string.
-     */
     @Override
     public String getVersion() {
-        return plugin.getDescription().getVersion();
+        return version;
     }
 
-    /**
-     * This is the method called when a placeholder with our identifier is found and needs a value. We specify the value identifier in this method.
-     *
-     * @param player     The player for which the placeholder is requested.
-     * @param identifier The identifier of the placeholder
-     * @return The value of the placeholder as a string, or {@code null} if the identifier is not recognized.
-     */
     @Override
     @Nullable
     public String onPlaceholderRequest(@Nullable Player player, String identifier) {
@@ -115,22 +92,15 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
         }
 
         if (identifier.matches(".*_.*") && identifier.split("_")[0].equalsIgnoreCase(SETTINGS_KEY)) {
-            return parseSettingsPlaceholder(player, identifier);
+            return settingsPlaceholder(player, identifier);
         } else {
-            return parseBuildWorldPlaceholder(player, identifier);
+            return worldPlaceholder(player, identifier);
         }
     }
 
-    /**
-     * This is the method called when a placeholder with the identifier {@code %buildsystem_settings_<setting>%} is found.
-     *
-     * @param player     The player for which the placeholder is requested
-     * @param identifier The identifier
-     * @return The requested setting as a string, or {@code null} if the setting is not recognized
-     */
     @Nullable
-    private String parseSettingsPlaceholder(Player player, String identifier) {
-        Settings settings = settingsManager.getSettings(player);
+    private String settingsPlaceholder(Player player, String identifier) {
+        Settings settings = settingsService.getSettings(player);
         String settingIdentifier = identifier.split("_")[1];
 
         return switch (settingIdentifier.toLowerCase(Locale.ROOT)) {
@@ -153,18 +123,8 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
         };
     }
 
-    /**
-     * This is the method called when a placeholder with the identifier needed for {@link PlaceholderApiExpansion#parseSettingsPlaceholder(Player, String)} is not found.
-     * <p>
-     * The default layout for a world placeholder is {@code %buildsystem_<value>%}. If a world is not specified by using the format {@code %buildsystem_<value>_<world>%} then the
-     * world the player is currently in will be used.
-     *
-     * @param player     The player for which the placeholder is requested
-     * @param identifier The identifier
-     * @return The requested value as a string, or {@code null} if the identifier is not recognized or the world does not exist
-     */
     @Nullable
-    private String parseBuildWorldPlaceholder(Player player, String identifier) {
+    private String worldPlaceholder(Player player, String identifier) {
         String worldName = player.getWorld().getName();
         if (identifier.matches(".*_.*")) {
             String[] splitString = identifier.split("_");
@@ -184,13 +144,13 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "blockplacement" -> String.valueOf(worldData.blockPlacement().get());
             case "builders" -> builders.asPlaceholder(player);
             case "buildersenabled" -> String.valueOf(worldData.buildersEnabled().get());
-            case "creation" -> plugin.getMessages().formatDate(buildWorld.getCreation());
+            case "creation" -> messages.formatDate(buildWorld.getCreation());
             case "creator" -> builders.hasCreator() ? builders.getCreator().getName() : "-";
             case "creatorid" -> builders.hasCreator() ? String.valueOf(builders.getCreator().getUniqueId()) : "-";
             case "explosions" -> String.valueOf(worldData.explosions().get());
-            case "lastedited" -> plugin.getMessages().formatDate(worldData.lastEdited().get());
-            case "lastloaded" -> plugin.getMessages().formatDate(worldData.lastLoaded().get());
-            case "lastunloaded" -> plugin.getMessages().formatDate(worldData.lastUnloaded().get());
+            case "lastedited" -> messages.formatDate(worldData.lastEdited().get());
+            case "lastloaded" -> messages.formatDate(worldData.lastLoaded().get());
+            case "lastunloaded" -> messages.formatDate(worldData.lastUnloaded().get());
             case "loaded" -> String.valueOf(buildWorld.isLoaded());
             case "material" -> worldData.material().get().name();
             case "mobai" -> String.valueOf(worldData.mobAi().get());
@@ -199,9 +159,9 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "project" -> worldData.project().get();
             case "physics" -> String.valueOf(worldData.physics().get());
             case "spawn" -> worldData.customSpawn().get();
-            case "status" -> plugin.getMessages().getString(Messages.getMessageKey(worldData.status().get()), player);
+            case "status" -> messages.getString(Messages.getMessageKey(worldData.status().get()), player);
             case "time" -> buildWorld.getWorldTime();
-            case "type" -> plugin.getMessages().getString(Messages.getMessageKey(buildWorld.getType()), player);
+            case "type" -> messages.getString(Messages.getMessageKey(buildWorld.getType()), player);
             case "world" -> buildWorld.getName();
             default -> null;
         };

@@ -25,8 +25,7 @@ import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
 import de.eintosti.buildsystem.command.CommandRegistrar;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.migration.ConfigMigrationManager;
-import de.eintosti.buildsystem.expansion.luckperms.LuckPermsExpansion;
-import de.eintosti.buildsystem.expansion.placeholderapi.PlaceholderApiExpansion;
+import de.eintosti.buildsystem.integration.Integrations;
 import de.eintosti.buildsystem.listener.ListenerRegistrar;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
@@ -50,7 +49,6 @@ import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -76,8 +74,7 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     private UpdateChecker updateChecker;
 
-    private LuckPermsExpansion luckPermsExpansion;
-    private PlaceholderApiExpansion placeholderApiExpansion;
+    private Integrations integrations;
 
     private BuildSystemApi api;
 
@@ -102,7 +99,7 @@ public class BuildSystemPlugin extends JavaPlugin {
 
         new CommandRegistrar(this).registerAll();
         new ListenerRegistrar(this).registerAll();
-        registerExpansions();
+        (this.integrations = new Integrations(this)).activate();
 
         performUpdateCheck();
 
@@ -153,7 +150,7 @@ public class BuildSystemPlugin extends JavaPlugin {
             this.configSaveTask.cancel();
         }
 
-        unregisterExpansions();
+        this.integrations.deactivate();
         this.api.unregister();
 
         Bukkit.getConsoleSender().sendMessage(
@@ -196,31 +193,6 @@ public class BuildSystemPlugin extends JavaPlugin {
         }));
         metrics.addCustomChart(new SimplePie("folder_override_permissions", () -> String.valueOf(configService.current().folder().overridePermissions())));
         metrics.addCustomChart(new SimplePie("folder_override_projects", () -> String.valueOf(configService.current().folder().overrideProjects())));
-    }
-
-    private void registerExpansions() {
-        PluginManager pluginManager = Bukkit.getPluginManager();
-
-        if (pluginManager.getPlugin("PlaceholderAPI") != null) {
-            this.placeholderApiExpansion = new PlaceholderApiExpansion(this);
-            this.placeholderApiExpansion.register();
-        }
-
-        if (pluginManager.getPlugin("LuckPerms") != null) {
-            this.luckPermsExpansion = new LuckPermsExpansion(this);
-            this.luckPermsExpansion.registerAll();
-        }
-
-    }
-
-    private void unregisterExpansions() {
-        if (this.placeholderApiExpansion != null) {
-            this.placeholderApiExpansion.unregister();
-        }
-
-        if (this.luckPermsExpansion != null) {
-            this.luckPermsExpansion.unregisterAll();
-        }
     }
 
     public UpdateChecker getUpdateChecker() {
