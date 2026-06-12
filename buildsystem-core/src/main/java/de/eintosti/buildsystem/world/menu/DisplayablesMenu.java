@@ -43,11 +43,9 @@ import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.menu.CreateMenu.Page;
 import java.util.*;
-import java.util.function.Function;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -268,9 +266,8 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
 
         switch (event.getSlot()) {
             case 45 -> {
-                Function<WorldSort, WorldSort> newSortFunction =
-                        event.isLeftClick() ? this::getNextSort : this::getPreviousSort;
-                worldDisplay.setWorldSort(newSortFunction.apply(worldDisplay.getWorldSort()));
+                WorldSort currentSort = worldDisplay.getWorldSort();
+                worldDisplay.setWorldSort(event.isLeftClick() ? currentSort.getNext() : currentSort.getPrevious());
                 resetPage();
                 open(player);
             }
@@ -325,28 +322,23 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
 
     private void beginFolderCreation(Player player) {
         player.closeInventory();
-        new PlayerChatInput(plugin, player, "enter_folder_name", input -> {
-            if (StringCleaner.hasInvalidNameCharacters(
-                    input, plugin.getConfigService().current().world().invalidCharacters())) {
-                plugin.getMessages().sendMessage(player, "worlds_folder_creation_invalid_characters");
-            }
+        PlayerChatInput.requestSanitizedName(
+                plugin,
+                player,
+                "enter_folder_name",
+                "worlds_folder_creation_invalid_characters",
+                "worlds_folder_creation_name_bank",
+                folderName -> {
+                    if (folderStorage.folderExists(folderName)) {
+                        plugin.getMessages().sendMessage(player, "worlds_folder_exists");
+                        return;
+                    }
 
-            String sanitizedName = StringCleaner.sanitize(
-                    input, plugin.getConfigService().current().world().invalidCharacters());
-            if (sanitizedName.isEmpty()) {
-                plugin.getMessages().sendMessage(player, "worlds_folder_creation_name_bank");
-                return;
-            }
-
-            if (folderStorage.folderExists(sanitizedName)) {
-                plugin.getMessages().sendMessage(player, "worlds_folder_exists");
-                return;
-            }
-
-            Folder folder = createFolder(sanitizedName);
-            plugin.getMessages().sendMessage(player, "worlds_folder_created", Map.entry("%folder%", folder.getName()));
-            open(player);
-        });
+                    Folder folder = createFolder(folderName);
+                    plugin.getMessages()
+                            .sendMessage(player, "worlds_folder_created", Map.entry("%folder%", folder.getName()));
+                    open(player);
+                });
     }
 
     protected Folder createFolder(String folderName) {
@@ -432,31 +424,5 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
             player.sendTitle(" ", plugin.getMessages().getString("world_not_loaded", player), 5, 70, 20);
         }
-    }
-
-    private WorldSort getNextSort(WorldSort currentSort) {
-        return switch (currentSort) {
-            case NEWEST_FIRST -> WorldSort.OLDEST_FIRST;
-            case OLDEST_FIRST -> WorldSort.NAME_A_TO_Z;
-            case PROJECT_A_TO_Z -> WorldSort.PROJECT_Z_TO_A;
-            case PROJECT_Z_TO_A -> WorldSort.STATUS_NOT_STARTED;
-            case STATUS_NOT_STARTED -> WorldSort.STATUS_FINISHED;
-            case STATUS_FINISHED -> WorldSort.NEWEST_FIRST;
-            case NAME_A_TO_Z -> WorldSort.NAME_Z_TO_A;
-            case NAME_Z_TO_A -> WorldSort.PROJECT_A_TO_Z;
-        };
-    }
-
-    public WorldSort getPreviousSort(WorldSort currentSort) {
-        return switch (currentSort) {
-            case NEWEST_FIRST -> WorldSort.STATUS_FINISHED;
-            case OLDEST_FIRST -> WorldSort.NEWEST_FIRST;
-            case PROJECT_A_TO_Z -> WorldSort.NAME_Z_TO_A;
-            case PROJECT_Z_TO_A -> WorldSort.PROJECT_A_TO_Z;
-            case STATUS_NOT_STARTED -> WorldSort.PROJECT_Z_TO_A;
-            case STATUS_FINISHED -> WorldSort.STATUS_NOT_STARTED;
-            case NAME_A_TO_Z -> WorldSort.OLDEST_FIRST;
-            case NAME_Z_TO_A -> WorldSort.NAME_A_TO_Z;
-        };
     }
 }

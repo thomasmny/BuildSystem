@@ -65,6 +65,68 @@ public class EditMenu extends Menu {
             XEntityType.TNT_MINECART,
             XEntityType.PLAYER);
 
+    /**
+     * Slots whose only action is "check permission, flip a boolean world setting, re-open". They are rendered as toggle
+     * items and handled uniformly; heterogeneous slots (sub-menus, time, butcher, difficulty) are populated and handled
+     * individually.
+     */
+    private static final Map<Integer, Toggle> TOGGLES = Map.ofEntries(
+            entry(
+                    20,
+                    new Toggle(
+                            XMaterial.OAK_PLANKS,
+                            "buildsystem.edit.breaking",
+                            "worldeditor_blockbreaking_item",
+                            "worldeditor_blockbreaking_lore",
+                            WorldData::blockBreaking)),
+            entry(
+                    21,
+                    new Toggle(
+                            XMaterial.POLISHED_ANDESITE,
+                            "buildsystem.edit.placement",
+                            "worldeditor_blockplacement_item",
+                            "worldeditor_blockplacement_lore",
+                            WorldData::blockPlacement)),
+            entry(
+                    22,
+                    new Toggle(
+                            XMaterial.SAND,
+                            "buildsystem.edit.physics",
+                            "worldeditor_physics_item",
+                            "worldeditor_physics_lore",
+                            WorldData::physics)),
+            entry(
+                    24,
+                    new Toggle(
+                            XMaterial.TNT,
+                            "buildsystem.edit.explosions",
+                            "worldeditor_explosions_item",
+                            "worldeditor_explosions_lore",
+                            WorldData::explosions)),
+            entry(
+                    31,
+                    new Toggle(
+                            XMaterial.ARMOR_STAND,
+                            "buildsystem.edit.mobai",
+                            "worldeditor_mobai_item",
+                            "worldeditor_mobai_lore",
+                            WorldData::mobAi)),
+            entry(
+                    33,
+                    new Toggle(
+                            XMaterial.TRIPWIRE_HOOK,
+                            "buildsystem.edit.interactions",
+                            "worldeditor_blockinteractions_item",
+                            "worldeditor_blockinteractions_lore",
+                            WorldData::blockInteractions)));
+
+    private record Toggle(
+            XMaterial material,
+            String permission,
+            String itemKey,
+            String loreKey,
+            Function<WorldData, Type<Boolean>> data) {}
+
     private final BuildSystemPlugin plugin;
     private final PlayerServiceImpl playerManager;
     private final BuildWorld buildWorld;
@@ -84,43 +146,17 @@ public class EditMenu extends Menu {
         plugin.getMenuItems().fillAll(player, inv);
         addBuildWorldInfoItem(player, inv);
 
-        plugin.getMenuItems()
+        TOGGLES.forEach((slot, toggle) -> plugin.getMenuItems()
                 .addToggleItem(
                         player,
                         inv,
-                        20,
-                        XMaterial.OAK_PLANKS,
-                        worldData.blockBreaking().get(),
-                        "worldeditor_blockbreaking_item",
-                        "worldeditor_blockbreaking_lore");
-        plugin.getMenuItems()
-                .addToggleItem(
-                        player,
-                        inv,
-                        21,
-                        XMaterial.POLISHED_ANDESITE,
-                        worldData.blockPlacement().get(),
-                        "worldeditor_blockplacement_item",
-                        "worldeditor_blockplacement_lore");
-        plugin.getMenuItems()
-                .addToggleItem(
-                        player,
-                        inv,
-                        22,
-                        XMaterial.SAND,
-                        worldData.physics().get(),
-                        "worldeditor_physics_item",
-                        "worldeditor_physics_lore");
+                        slot,
+                        toggle.material(),
+                        toggle.data().apply(worldData).get(),
+                        toggle.itemKey(),
+                        toggle.loreKey()));
+
         addTimeItem(player, inv);
-        plugin.getMenuItems()
-                .addToggleItem(
-                        player,
-                        inv,
-                        24,
-                        XMaterial.TNT,
-                        worldData.explosions().get(),
-                        "worldeditor_explosions_item",
-                        "worldeditor_explosions_lore");
         inv.setItem(
                 29,
                 InventoryUtils.createItem(
@@ -128,25 +164,7 @@ public class EditMenu extends Menu {
                         messages.getString("worldeditor_butcher_item", player),
                         messages.getStringList("worldeditor_butcher_lore", player)));
         addBuildersItem(player, inv);
-        plugin.getMenuItems()
-                .addToggleItem(
-                        player,
-                        inv,
-                        31,
-                        XMaterial.ARMOR_STAND,
-                        worldData.mobAi().get(),
-                        "worldeditor_mobai_item",
-                        "worldeditor_mobai_lore");
         addVisibilityItem(player, inv);
-        plugin.getMenuItems()
-                .addToggleItem(
-                        player,
-                        inv,
-                        33,
-                        XMaterial.TRIPWIRE_HOOK,
-                        worldData.blockInteractions().get(),
-                        "worldeditor_blockinteractions_item",
-                        "worldeditor_blockinteractions_lore");
         inv.setItem(
                 38,
                 InventoryUtils.createItem(
@@ -310,20 +328,6 @@ public class EditMenu extends Menu {
             case HARD -> messages.getString("difficulty_hard", player);
         };
     }
-
-    /**
-     * Slots whose only action is "check permission, flip a boolean world setting, re-open". Heterogeneous slots
-     * (sub-menus, time, butcher, difficulty) stay in the switch below.
-     */
-    private static final Map<Integer, Toggle> TOGGLES = Map.ofEntries(
-            entry(20, new Toggle("buildsystem.edit.breaking", WorldData::blockBreaking)),
-            entry(21, new Toggle("buildsystem.edit.placement", WorldData::blockPlacement)),
-            entry(22, new Toggle("buildsystem.edit.physics", WorldData::physics)),
-            entry(24, new Toggle("buildsystem.edit.explosions", WorldData::explosions)),
-            entry(31, new Toggle("buildsystem.edit.mobai", WorldData::mobAi)),
-            entry(33, new Toggle("buildsystem.edit.interactions", WorldData::blockInteractions)));
-
-    private record Toggle(String permission, Function<WorldData, Type<Boolean>> data) {}
 
     @Override
     public void handleClick(InventoryClickEvent event) {

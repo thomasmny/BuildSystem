@@ -52,6 +52,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -111,35 +112,25 @@ public class WorldServiceImpl implements WorldService {
             boolean privateWorld,
             @Nullable Folder folder) {
         player.closeInventory();
-        new PlayerChatInput(plugin, player, "enter_world_name", input -> {
-            if (StringCleaner.hasInvalidNameCharacters(
-                    input, plugin.getConfigService().current().world().invalidCharacters())) {
-                plugin.getMessages().sendMessage(player, "worlds_world_creation_invalid_characters");
-            }
-
-            String worldName = StringCleaner.sanitize(
-                    input, plugin.getConfigService().current().world().invalidCharacters());
-            if (worldName.isEmpty()) {
-                plugin.getMessages().sendMessage(player, "worlds_world_creation_name_bank");
-                return;
-            }
-
-            if (worldType == BuildWorldType.CUSTOM) {
-                startCustomGeneratorInput(player, worldName, template, privateWorld, folder);
-            } else {
-                BuildWorld world = newWorld(worldName)
-                        .type(worldType)
-                        .template(template)
-                        .privateWorld(privateWorld)
-                        .folder(folder)
-                        .creator(Builder.of(player))
-                        .notify(player)
-                        .build();
-                if (world != null) {
-                    world.getTeleporter().teleport(player);
-                }
-            }
-        });
+        PlayerChatInput.requestSanitizedName(
+                plugin,
+                player,
+                "enter_world_name",
+                "worlds_world_creation_invalid_characters",
+                "worlds_world_creation_name_bank",
+                worldName -> {
+                    if (worldType == BuildWorldType.CUSTOM) {
+                        startCustomGeneratorInput(player, worldName, template, privateWorld, folder);
+                    } else {
+                        buildAndTeleport(
+                                player,
+                                newWorld(worldName)
+                                        .type(worldType)
+                                        .template(template)
+                                        .privateWorld(privateWorld)
+                                        .folder(folder));
+                    }
+                });
     }
 
     private void startCustomGeneratorInput(
@@ -152,19 +143,23 @@ public class WorldServiceImpl implements WorldService {
                 return;
             }
 
-            BuildWorld world = newWorld(worldName)
-                    .type(BuildWorldType.CUSTOM)
-                    .template(template)
-                    .privateWorld(privateWorld)
-                    .customGenerator(customGenerator)
-                    .folder(folder)
-                    .creator(Builder.of(player))
-                    .notify(player)
-                    .build();
-            if (world != null) {
-                world.getTeleporter().teleport(player);
-            }
+            buildAndTeleport(
+                    player,
+                    newWorld(worldName)
+                            .type(BuildWorldType.CUSTOM)
+                            .template(template)
+                            .privateWorld(privateWorld)
+                            .customGenerator(customGenerator)
+                            .folder(folder));
         });
+    }
+
+    private void buildAndTeleport(Player player, WorldBuilder worldBuilder) {
+        BuildWorld world =
+                worldBuilder.creator(Builder.of(player)).notify(player).build();
+        if (world != null) {
+            world.getTeleporter().teleport(player);
+        }
     }
 
     public boolean importWorld(
@@ -213,52 +208,43 @@ public class WorldServiceImpl implements WorldService {
     }
 
     public void importWorlds(Player player, String[] worldList, Generator generator, @Nullable Builder creator) {
-        int worlds = worldList.length;
         int delay = plugin.getConfigService().current().world().importAllDelay();
-
         plugin.getMessages()
-                .sendMessage(player, "worlds_importall_started", Map.entry("%amount%", String.valueOf(worlds)));
+                .sendMessage(
+                        player, "worlds_importall_started", Map.entry("%amount%", String.valueOf(worldList.length)));
         plugin.getMessages().sendMessage(player, "worlds_importall_delay", Map.entry("%delay%", String.valueOf(delay)));
+
         importingAllWorlds.set(true);
-
-        AtomicInteger worldsImported = new AtomicInteger(0);
-        new BukkitRunnable() {
+        BulkImportListener listener = new BulkImportListener() {
             @Override
-            public void run() {
-                int i = worldsImported.getAndIncrement();
-                if (i >= worlds) {
-                    this.cancel();
-                    importingAllWorlds.set(false);
-                    plugin.getMessages().sendMessage(player, "worlds_importall_finished");
-                    return;
-                }
-
-                String worldName = worldList[i];
-                if (worldStorage.worldExists(worldName)) {
-                    plugin.getMessages()
-                            .sendMessage(
-                                    player, "worlds_importall_world_already_imported", Map.entry("%world%", worldName));
-                    return;
-                }
-
-                String invalidChar = StringCleaner.firstInvalidChar(
-                        worldName, plugin.getConfigService().current().world().invalidCharacters());
-                if (invalidChar != null) {
-                    plugin.getMessages()
-                            .sendMessage(
-                                    player,
-                                    "worlds_importall_invalid_character",
-                                    Map.entry("%world%", worldName),
-                                    Map.entry("%char%", invalidChar));
-                    return;
-                }
-
-                if (importWorld(player, worldName, creator, BuildWorldType.IMPORTED, generator, "void", false)) {
-                    plugin.getMessages()
-                            .sendMessage(player, "worlds_importall_world_imported", Map.entry("%world%", worldName));
-                }
+            public void skippedExisting(String worldName) {
+                plugin.getMessages()
+                        .sendMessage(
+                                player, "worlds_importall_world_already_imported", Map.entry("%world%", worldName));
             }
-        }.runTaskTimer(plugin, 0, 20L * delay);
+
+            @Override
+            public void invalidName(String worldName, String invalidChar) {
+                plugin.getMessages()
+                        .sendMessage(
+                                player,
+                                "worlds_importall_invalid_character",
+                                Map.entry("%world%", worldName),
+                                Map.entry("%char%", invalidChar));
+            }
+
+            @Override
+            public void imported(String worldName) {
+                plugin.getMessages()
+                        .sendMessage(player, "worlds_importall_world_imported", Map.entry("%world%", worldName));
+            }
+        };
+        importStaggered(
+                        worldList,
+                        listener,
+                        worldName -> importWorld(
+                                player, worldName, creator, BuildWorldType.IMPORTED, generator, "void", false))
+                .thenRun(() -> plugin.getMessages().sendMessage(player, "worlds_importall_finished"));
     }
 
     public boolean isImportingAllWorlds() {
@@ -277,7 +263,32 @@ public class WorldServiceImpl implements WorldService {
             return CompletableFuture.completedFuture(0);
         }
 
+        return importStaggered(
+                directories,
+                new BulkImportListener() {},
+                worldName -> importWorld(worldName).build() != null);
+    }
+
+    /** Per-world progress callbacks for a staggered bulk import. */
+    private interface BulkImportListener {
+
+        default void skippedExisting(String worldName) {}
+
+        default void invalidName(String worldName, String invalidChar) {}
+
+        default void imported(String worldName) {}
+    }
+
+    /**
+     * Imports the given worlds one per configured delay interval, skipping names that are already imported or contain
+     * invalid characters. Clears {@link #importingAllWorlds} and completes with the import count once all names have
+     * been processed.
+     */
+    private CompletableFuture<Integer> importStaggered(
+            String[] worldNames, BulkImportListener listener, Predicate<String> importer) {
         int delay = plugin.getConfigService().current().world().importAllDelay();
+        String invalidCharacters = plugin.getConfigService().current().world().invalidCharacters();
+
         CompletableFuture<Integer> result = new CompletableFuture<>();
         AtomicInteger index = new AtomicInteger(0);
         AtomicInteger imported = new AtomicInteger(0);
@@ -286,26 +297,28 @@ public class WorldServiceImpl implements WorldService {
             @Override
             public void run() {
                 int i = index.getAndIncrement();
-                if (i >= directories.length) {
+                if (i >= worldNames.length) {
                     this.cancel();
                     importingAllWorlds.set(false);
                     result.complete(imported.get());
                     return;
                 }
 
-                String worldName = directories[i];
+                String worldName = worldNames[i];
                 if (worldStorage.worldExists(worldName)) {
-                    return;
-                }
-                if (StringCleaner.firstInvalidChar(
-                                worldName,
-                                plugin.getConfigService().current().world().invalidCharacters())
-                        != null) {
+                    listener.skippedExisting(worldName);
                     return;
                 }
 
-                if (importWorld(worldName).build() != null) {
+                String invalidChar = StringCleaner.firstInvalidChar(worldName, invalidCharacters);
+                if (invalidChar != null) {
+                    listener.invalidName(worldName, invalidChar);
+                    return;
+                }
+
+                if (importer.test(worldName)) {
                     imported.incrementAndGet();
+                    listener.imported(worldName);
                 }
             }
         }.runTaskTimer(plugin, 0, 20L * delay);
@@ -424,11 +437,9 @@ public class WorldServiceImpl implements WorldService {
             boolean teleported = false;
 
             if (spawnService.spawnExists()) {
-                // Spawn exists -> always teleport to it
                 spawnService.teleport(player);
                 teleported = true;
             } else if (!fallbackWorld.equals(worldToRemove)) {
-                // Spawn doesn't exist, the fallback world is usable -> teleport
                 player.teleport(fallbackSpawn);
                 teleported = true;
             }

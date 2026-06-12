@@ -232,19 +232,14 @@ public final class BuildWorldImpl implements BuildWorld {
         List<String> lore = new ArrayList<>();
 
         for (String line : messageList) {
-            // If the current line does not contain the %builders% placeholder, add it directly
             if (!line.contains("%builders%")) {
                 lore.add(line);
                 continue;
             }
 
+            // The first builder line replaces the placeholder in-line; overflow lines become own lore entries
             List<String> builderLines = builders.formatBuildersForLore(player, 3);
-
-            // Replace the %builders% placeholder in the current line with the first generated builder line
             lore.add(line.replace("%builders%", builderLines.getFirst()));
-
-            // Add any further builder lines as new separate lore entries
-            // Start from the second element (index 1) of builderLines
             for (int i = 1; i < builderLines.size(); i++) {
                 lore.add(builderLines.get(i));
             }
@@ -357,30 +352,17 @@ public final class BuildWorldImpl implements BuildWorld {
     @Override
     public void setFolder(@Nullable Folder folder) {
         if (Objects.equals(this.folder, folder)) {
-            // No change in folder assignment, do nothing
             return;
         }
 
         Folder oldFolder = this.folder;
-
-        // World is not assigned to any folder, assign it to the new folder
-        if (this.folder == null) {
-            this.folder = folder;
-            folder.addWorld(this);
-            return;
-        }
-
-        // World is currently assigned to a folder, remove it from the old folder
-        if (folder == null) {
-            this.folder = null;
-            oldFolder.removeWorld(this);
-            return;
-        }
-
-        // World is being moved to a new folder, remove it from the old folder and assign it to the new one
         this.folder = folder;
-        oldFolder.removeWorld(this);
-        folder.addWorld(this);
+        if (oldFolder != null) {
+            oldFolder.removeWorld(this);
+        }
+        if (folder != null) {
+            folder.addWorld(this);
+        }
     }
 
     @Override

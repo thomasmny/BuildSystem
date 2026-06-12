@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.menu;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.util.StringCleaner;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -65,6 +66,41 @@ public class PlayerChatInput implements Listener {
         XSound.ENTITY_PLAYER_LEVELUP.play(player);
 
         this.register();
+    }
+
+    /**
+     * Requests a chat input that names a world or folder. The raw input is sanitized against the configured invalid
+     * characters before being handed to {@code onValidName}; the player is warned when characters were stripped and the
+     * input is rejected entirely when nothing survives sanitization.
+     *
+     * @param plugin The plugin instance
+     * @param player The player to request input from
+     * @param titleKey The message key for the input prompt title
+     * @param invalidCharactersMessageKey The message key sent when invalid characters were stripped
+     * @param emptyNameMessageKey The message key sent when the sanitized name is empty
+     * @param onValidName Receives the sanitized, non-empty name
+     */
+    public static void requestSanitizedName(
+            BuildSystemPlugin plugin,
+            Player player,
+            String titleKey,
+            String invalidCharactersMessageKey,
+            String emptyNameMessageKey,
+            InputRunnable onValidName) {
+        String invalidCharacters = plugin.getConfigService().current().world().invalidCharacters();
+        new PlayerChatInput(plugin, player, titleKey, input -> {
+            if (StringCleaner.hasInvalidNameCharacters(input, invalidCharacters)) {
+                plugin.getMessages().sendMessage(player, invalidCharactersMessageKey);
+            }
+
+            String sanitizedName = StringCleaner.sanitize(input, invalidCharacters);
+            if (sanitizedName.isEmpty()) {
+                plugin.getMessages().sendMessage(player, emptyNameMessageKey);
+                return;
+            }
+
+            onValidName.run(sanitizedName);
+        });
     }
 
     @EventHandler

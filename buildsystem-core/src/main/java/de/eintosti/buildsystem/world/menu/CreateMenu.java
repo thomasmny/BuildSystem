@@ -105,23 +105,39 @@ public class CreateMenu extends PaginatedMenu {
         getInventory().setItem(page.getSlot(), itemStack);
     }
 
+    private static final Map<Integer, BuildWorldType> PREDEFINED_SLOTS = Map.of(
+            29, BuildWorldType.NORMAL,
+            30, BuildWorldType.FLAT,
+            31, BuildWorldType.NETHER,
+            32, BuildWorldType.END,
+            33, BuildWorldType.VOID);
+
+    private static final Map<BuildWorldType, String> PREDEFINED_MESSAGE_KEYS = Map.of(
+            BuildWorldType.NORMAL, "create_normal_world",
+            BuildWorldType.FLAT, "create_flat_world",
+            BuildWorldType.NETHER, "create_nether_world",
+            BuildWorldType.END, "create_end_world",
+            BuildWorldType.VOID, "create_void_world");
+
     private void populatePredefined(Player player) {
-        addPredefinedWorldItem(player, 29, BuildWorldType.NORMAL, messages.getString("create_normal_world", player));
-        addPredefinedWorldItem(player, 30, BuildWorldType.FLAT, messages.getString("create_flat_world", player));
-        addPredefinedWorldItem(player, 31, BuildWorldType.NETHER, messages.getString("create_nether_world", player));
-        addPredefinedWorldItem(player, 32, BuildWorldType.END, messages.getString("create_end_world", player));
-        addPredefinedWorldItem(player, 33, BuildWorldType.VOID, messages.getString("create_void_world", player));
+        PREDEFINED_SLOTS.forEach((slot, worldType) -> addPredefinedWorldItem(
+                player, slot, worldType, messages.getString(PREDEFINED_MESSAGE_KEYS.get(worldType), player)));
     }
 
     private void addPredefinedWorldItem(Player player, int position, BuildWorldType worldType, String displayName) {
         XMaterial material = plugin.getCustomizableIcons().getIcon(worldType);
 
-        if (!player.hasPermission("buildsystem.create.type." + worldType.name().toLowerCase(Locale.ROOT))) {
+        if (!canCreateType(player, worldType)) {
             material = XMaterial.BARRIER;
             displayName = "§c§m" + ChatColor.stripColor(displayName);
         }
 
         getInventory().setItem(position, InventoryUtils.createItem(material, displayName));
+    }
+
+    private static boolean canCreateType(Player player, BuildWorldType worldType) {
+        return player.hasPermission(
+                "buildsystem.create.type." + worldType.name().toLowerCase(Locale.ROOT));
     }
 
     private void populateGenerator(Player player) {
@@ -202,19 +218,8 @@ public class CreateMenu extends PaginatedMenu {
 
         switch (currentPage) {
             case PREDEFINED: {
-                BuildWorldType worldType =
-                        switch (slot) {
-                            case 29 -> BuildWorldType.NORMAL;
-                            case 30 -> BuildWorldType.FLAT;
-                            case 31 -> BuildWorldType.NETHER;
-                            case 32 -> BuildWorldType.END;
-                            case 33 -> BuildWorldType.VOID;
-                            default -> null;
-                        };
-
-                if (worldType == null
-                        || !player.hasPermission(
-                                "buildsystem.create.type." + worldType.name().toLowerCase(Locale.ROOT))) {
+                BuildWorldType worldType = PREDEFINED_SLOTS.get(slot);
+                if (worldType == null || !canCreateType(player, worldType)) {
                     XSound.ENTITY_ITEM_BREAK.play(player);
                     return;
                 }
