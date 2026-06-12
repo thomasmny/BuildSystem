@@ -61,13 +61,7 @@ public class ImportSubCommand extends AbstractSubCommand {
             return;
         }
 
-        File worldFolder = new File(Bukkit.getWorldContainer(), args[1]);
-        File levelFile = new File(worldFolder, "level.dat");
-        if (!worldFolder.isDirectory() || !levelFile.exists()) {
-            messages.sendMessage(player, "worlds_import_unknown_world");
-            return;
-        }
-
+        // Validate the name before touching the filesystem so invalid input cannot probe directory existence
         String invalidChar = StringCleaner.firstInvalidChar(
                 worldName, plugin.getConfigService().current().world().invalidCharacters());
         if (invalidChar != null) {
@@ -76,6 +70,15 @@ public class ImportSubCommand extends AbstractSubCommand {
                     "worlds_import_invalid_character",
                     Map.entry("%world%", worldName),
                     Map.entry("%char%", invalidChar));
+            return;
+        }
+
+        File worldFolder = new File(Bukkit.getWorldContainer(), args[1]);
+        File levelFile = new File(worldFolder, "level.dat");
+        if (StringCleaner.isPathEscape(Bukkit.getWorldContainer(), worldFolder)
+                || !worldFolder.isDirectory()
+                || !levelFile.exists()) {
+            messages.sendMessage(player, "worlds_import_unknown_world");
             return;
         }
 

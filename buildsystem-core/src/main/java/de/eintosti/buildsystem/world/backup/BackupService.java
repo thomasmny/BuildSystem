@@ -69,27 +69,31 @@ public class BackupService {
         return switch (settings) {
             case PluginConfig.World.Backup.Local l -> new LocalBackupStorage(plugin, executor);
             case PluginConfig.World.Backup.Sftp s -> {
+                String password = envOrConfig("BUILDSYSTEM_SFTP_PASSWORD", s.password());
                 requireNonBlank(s.host(), "backup.sftp.host");
                 requireNonBlank(s.username(), "backup.sftp.username");
-                requireNonBlank(s.password(), "backup.sftp.password");
-                yield new SftpBackupStorage(plugin, executor, s.host(), s.port(), s.username(), s.password(), s.path());
+                requireNonBlank(password, "backup.sftp.password (or BUILDSYSTEM_SFTP_PASSWORD)");
+                yield new SftpBackupStorage(plugin, executor, s.host(), s.port(), s.username(), password, s.path());
             }
             case PluginConfig.World.Backup.S3 s3 -> {
-                requireNonBlank(s3.accessKey(), "backup.s3.access-key");
-                requireNonBlank(s3.secretKey(), "backup.s3.secret-key");
+                String accessKey = envOrConfig("AWS_ACCESS_KEY_ID", s3.accessKey());
+                String secretKey = envOrConfig("AWS_SECRET_ACCESS_KEY", s3.secretKey());
+                requireNonBlank(accessKey, "backup.s3.access-key (or AWS_ACCESS_KEY_ID)");
+                requireNonBlank(secretKey, "backup.s3.secret-key (or AWS_SECRET_ACCESS_KEY)");
                 requireNonBlank(s3.region(), "backup.s3.region");
                 requireNonBlank(s3.bucket(), "backup.s3.bucket");
                 yield new S3BackupStorage(
-                        plugin,
-                        executor,
-                        s3.url(),
-                        s3.accessKey(),
-                        s3.secretKey(),
-                        s3.region(),
-                        s3.bucket(),
-                        s3.path());
+                        plugin, executor, s3.url(), accessKey, secretKey, s3.region(), s3.bucket(), s3.path());
             }
         };
+    }
+
+    /**
+     * Prefers the environment variable over the config value so operators can keep secrets out of config.yml.
+     */
+    private static @Nullable String envOrConfig(String envKey, @Nullable String configValue) {
+        String env = System.getenv(envKey);
+        return env != null && !env.isBlank() ? env : configValue;
     }
 
     private static void requireNonBlank(@Nullable String value, String configKey) {

@@ -32,6 +32,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import org.apache.sshd.client.SshClient;
+import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
+import org.apache.sshd.client.keyverifier.KnownHostsServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.signature.BuiltinSignatures;
 import org.apache.sshd.sftp.client.SftpClient;
@@ -130,6 +132,11 @@ public class SftpBackupStorage extends AbstractBackupStorage {
     private void initializeSshClient() {
         sshClient = SshClient.setUpDefaultClient();
         sshClient.setSignatureFactories(Arrays.asList(BuiltinSignatures.rsa, BuiltinSignatures.ed25519));
+        // Trust-on-first-use: unknown hosts are accepted and recorded; a later key change is rejected,
+        // so a man-in-the-middle cannot silently impersonate a previously seen backup server.
+        sshClient.setServerKeyVerifier(new KnownHostsServerKeyVerifier(
+                AcceptAllServerKeyVerifier.INSTANCE,
+                plugin.getDataFolder().toPath().resolve(".sftp_known_hosts")));
         sshClient.start();
     }
 

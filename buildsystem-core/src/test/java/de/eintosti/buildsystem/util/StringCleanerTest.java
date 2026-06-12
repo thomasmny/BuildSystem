@@ -30,7 +30,8 @@ class StringCleanerTest {
 
     @Test
     void hasInvalidNameCharacters_validInput_returnsFalse() {
-        assertFalse(StringCleaner.hasInvalidNameCharacters("valid_World-1/x", NO_OP));
+        assertFalse(StringCleaner.hasInvalidNameCharacters("valid_World-1", NO_OP));
+        assertTrue(StringCleaner.hasInvalidNameCharacters("nested/world", NO_OP));
     }
 
     @Test
@@ -70,7 +71,7 @@ class StringCleanerTest {
 
     @Test
     void sanitize_alreadyClean_returnsUnchanged() {
-        assertEquals("clean_World-1/x", StringCleaner.sanitize("clean_World-1/x", NO_OP));
+        assertEquals("clean_World-1x", StringCleaner.sanitize("clean_World-1/x", NO_OP));
     }
 
     @Test
