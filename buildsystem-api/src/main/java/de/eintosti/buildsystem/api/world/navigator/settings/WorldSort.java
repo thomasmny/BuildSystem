@@ -131,4 +131,46 @@ public enum WorldSort {
     public Comparator<Displayable> getComparator() {
         return this.comparator;
     }
+
+    /**
+     * The order in which the navigator cycles through sort options. Differs from the declaration order, which is
+     * dictated by comparator initialization (a reversed comparator must be declared after its base).
+     */
+    private static final WorldSort[] CYCLE = {
+        NAME_A_TO_Z,
+        NAME_Z_TO_A,
+        PROJECT_A_TO_Z,
+        PROJECT_Z_TO_A,
+        STATUS_NOT_STARTED,
+        STATUS_FINISHED,
+        NEWEST_FIRST,
+        OLDEST_FIRST
+    };
+
+    /**
+     * Gets the next sort order in the navigator's cycle.
+     *
+     * @return The next {@link WorldSort} in the cycle
+     */
+    public WorldSort getNext() {
+        return CYCLE[(cycleIndex() + 1) % CYCLE.length];
+    }
+
+    /**
+     * Gets the previous sort order in the navigator's cycle.
+     *
+     * @return The previous {@link WorldSort} in the cycle
+     */
+    public WorldSort getPrevious() {
+        return CYCLE[(cycleIndex() + CYCLE.length - 1) % CYCLE.length];
+    }
+
+    private int cycleIndex() {
+        for (int i = 0; i < CYCLE.length; i++) {
+            if (CYCLE[i] == this) {
+                return i;
+            }
+        }
+        throw new AssertionError("Sort order missing from cycle: " + this);
+    }
 }
