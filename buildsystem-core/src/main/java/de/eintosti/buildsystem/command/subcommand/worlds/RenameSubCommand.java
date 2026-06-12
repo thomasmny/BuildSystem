@@ -24,7 +24,6 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
-import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -41,19 +40,8 @@ public class RenameSubCommand implements SubCommand {
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
-        if (!WorldPermissionsImpl.of(plugin, buildWorld).canPerformCommand(player, getArgument().getPermission())) {
-            plugin.getMessages().sendPermissionError(player);
-            return;
-        }
-
-        if (args.length > 2) {
-            plugin.getMessages().sendMessage(player, "worlds_rename_usage");
-            return;
-        }
-
+        BuildWorld buildWorld = GuardedWorldCommand.requireWorld(plugin, player, worldName, args, 2, getArgument(), "worlds_rename");
         if (buildWorld == null) {
-            plugin.getMessages().sendMessage(player, "worlds_rename_unknown_world");
             return;
         }
 
@@ -70,7 +58,7 @@ public class RenameSubCommand implements SubCommand {
             return List.of();
         }
         WorldStorage ws = plugin.getWorldService().getWorldStorage();
-        return WorldsCompletions.permittedWorldNames(player, ws, "buildsystem.rename", args[1]);
+        return WorldsCompletions.permittedWorldNames(player, ws, getArgument().getPermission(), args[1]);
     }
 
     @Override

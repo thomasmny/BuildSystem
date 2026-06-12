@@ -26,7 +26,6 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.i18n.Messages;
-import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.Location;
@@ -44,19 +43,8 @@ public class InfoSubCommand implements SubCommand {
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
-        if (!WorldPermissionsImpl.of(plugin, buildWorld).canPerformCommand(player, getArgument().getPermission())) {
-            plugin.getMessages().sendPermissionError(player);
-            return;
-        }
-
-        if (args.length > 2) {
-            plugin.getMessages().sendMessage(player, "worlds_info_usage");
-            return;
-        }
-
+        BuildWorld buildWorld = GuardedWorldCommand.requireWorld(plugin, player, worldName, args, 2, getArgument(), "worlds_info");
         if (buildWorld == null) {
-            plugin.getMessages().sendMessage(player, "worlds_info_unknown_world");
             return;
         }
 
@@ -117,7 +105,7 @@ public class InfoSubCommand implements SubCommand {
             return List.of();
         }
         WorldStorage ws = plugin.getWorldService().getWorldStorage();
-        return WorldsCompletions.permittedWorldNames(player, ws, "buildsystem.info", args[1]);
+        return WorldsCompletions.permittedWorldNames(player, ws, getArgument().getPermission(), args[1]);
     }
 
     @Override

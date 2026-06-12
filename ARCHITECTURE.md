@@ -119,7 +119,12 @@ de.eintosti.buildsystem
 ### Add a command
 1. Create `command/subcommand/<feature>/<Name>SubCommand.java` implementing `SubCommand`.
 2. Register it in `CommandRegistrar.registerAll()`.
-3. Colocate tab completion in the same file.
+3. Colocate tab completion in the same file. Derive the permission from
+   `getArgument().getPermission()` — never hardcode the node, so command and
+   completion can never drift.
+4. For a world-scoped `/worlds` subcommand, run the shared preamble via
+   `GuardedWorldCommand.requireWorld(...)` instead of re-checking
+   permission/usage/existence by hand.
 
 ### Add a menu
 1. Extend `Menu` (or `PaginatedMenu`) in the appropriate `*/menu/` package.

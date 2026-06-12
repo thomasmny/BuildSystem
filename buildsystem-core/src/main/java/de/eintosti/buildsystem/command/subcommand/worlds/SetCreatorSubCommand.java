@@ -25,7 +25,6 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
-import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.Bukkit;
@@ -45,19 +44,8 @@ public class SetCreatorSubCommand implements SubCommand {
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
-        if (!WorldPermissionsImpl.of(plugin, buildWorld).canPerformCommand(player, getArgument().getPermission())) {
-            plugin.getMessages().sendPermissionError(player);
-            return;
-        }
-
-        if (args.length > 2) {
-            plugin.getMessages().sendMessage(player, "worlds_setcreator_usage");
-            return;
-        }
-
+        BuildWorld buildWorld = GuardedWorldCommand.requireWorld(plugin, player, worldName, args, 2, getArgument(), "worlds_setcreator");
         if (buildWorld == null) {
-            plugin.getMessages().sendMessage(player, "worlds_setcreator_unknown_world");
             return;
         }
 
@@ -97,7 +85,7 @@ public class SetCreatorSubCommand implements SubCommand {
             return List.of();
         }
         WorldStorage ws = plugin.getWorldService().getWorldStorage();
-        return WorldsCompletions.permittedWorldNames(player, ws, "buildsystem.setcreator", args[1]);
+        return WorldsCompletions.permittedWorldNames(player, ws, getArgument().getPermission(), args[1]);
     }
 
     @Override
