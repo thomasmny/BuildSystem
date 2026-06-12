@@ -202,9 +202,7 @@ public class ImportSubCommand implements SubCommand {
                 entry("-c", List.of()),
                 entry(
                         "-t",
-                        Arrays.stream(de.eintosti.buildsystem.api.world.data.BuildWorldType.values())
-                                .map(Enum::name)
-                                .toList()));
+                        Arrays.stream(BuildWorldType.values()).map(Enum::name).toList()));
 
         if (args.length % 2 == 1) {
             flags.keySet().stream()

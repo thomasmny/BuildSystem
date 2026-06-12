@@ -82,85 +82,49 @@ public final class BuildWorldImpl implements BuildWorld {
                 UUID.randomUUID(),
                 name,
                 worldType,
-                new WorldDataBuilder(name)
-                        .withPrivateWorld(privateWorld)
-                        .withMaterial(
-                                privateWorld
-                                        ? XMaterial.PLAYER_HEAD
-                                        : plugin.getCustomizableIcons().getIcon(worldType))
-                        .withPermission((privateWorld
-                                        ? plugin.getConfigService()
-                                                .current()
-                                                .world()
-                                                .defaults()
-                                                .permission()
-                                                .privatePermission()
-                                        : plugin.getConfigService()
-                                                .current()
-                                                .world()
-                                                .defaults()
-                                                .permission()
-                                                .publicPermission())
-                                .replace("%world%", name))
-                        .withDifficulty(plugin.getConfigService()
-                                .current()
-                                .world()
-                                .defaults()
-                                .difficulty())
-                        .withBlockBreaking(plugin.getConfigService()
-                                .current()
-                                .world()
-                                .defaults()
-                                .blockBreaking())
-                        .withBlockInteractions(plugin.getConfigService()
-                                .current()
-                                .world()
-                                .defaults()
-                                .blockInteractions())
-                        .withBlockPlacement(plugin.getConfigService()
-                                .current()
-                                .world()
-                                .defaults()
-                                .blockPlacement())
-                        .withExplosions(plugin.getConfigService()
-                                .current()
-                                .world()
-                                .defaults()
-                                .explosions())
-                        .withMobAi(plugin.getConfigService()
-                                .current()
-                                .world()
-                                .defaults()
-                                .mobAi())
-                        .withPhysics(plugin.getConfigService()
-                                .current()
-                                .world()
-                                .defaults()
-                                .physics())
-                        .withBuildersEnabled(
-                                privateWorld
-                                        ? plugin.getConfigService()
-                                                .current()
-                                                .world()
-                                                .defaults()
-                                                .buildersEnabled()
-                                                .privateBuilders()
-                                        : plugin.getConfigService()
-                                                .current()
-                                                .world()
-                                                .defaults()
-                                                .buildersEnabled()
-                                                .publicBuilders())
-                        .withPermissionOverrideEnabled(() ->
-                                plugin.getConfigService().current().folder().overridePermissions())
-                        .withProjectOverrideEnabled(() ->
-                                plugin.getConfigService().current().folder().overrideProjects())
-                        .build(),
+                defaultWorldData(plugin, name, worldType, privateWorld),
                 creator,
                 new ArrayList<>(),
                 creation,
                 customGenerator,
                 folder);
+    }
+
+    /**
+     * Builds the {@link WorldDataImpl} for a freshly created world, seeded from the configured world
+     * defaults. Extracted from the constructor so the repeated {@code config.world().defaults()}
+     * lookup can be bound to a single local instead of being re-walked for every field.
+     */
+    private static WorldDataImpl defaultWorldData(
+            BuildSystemPlugin plugin, String name, BuildWorldType worldType, boolean privateWorld) {
+        var defaults = plugin.getConfigService().current().world().defaults();
+        String permission = (privateWorld
+                        ? defaults.permission().privatePermission()
+                        : defaults.permission().publicPermission())
+                .replace("%world%", name);
+        boolean buildersEnabled = privateWorld
+                ? defaults.buildersEnabled().privateBuilders()
+                : defaults.buildersEnabled().publicBuilders();
+        return new WorldDataBuilder(name)
+                .withPrivateWorld(privateWorld)
+                .withMaterial(
+                        privateWorld
+                                ? XMaterial.PLAYER_HEAD
+                                : plugin.getCustomizableIcons().getIcon(worldType))
+                .withPermission(permission)
+                .withDifficulty(defaults.difficulty())
+                .withBlockBreaking(defaults.blockBreaking())
+                .withBlockInteractions(defaults.blockInteractions())
+                .withBlockPlacement(defaults.blockPlacement())
+                .withExplosions(defaults.explosions())
+                .withMobAi(defaults.mobAi())
+                .withPhysics(defaults.physics())
+                .withBuildersEnabled(buildersEnabled)
+                .withPermissionOverrideEnabled(
+                        () -> plugin.getConfigService().current().folder().overridePermissions())
+                .withProjectOverrideEnabled(
+                        () -> plugin.getConfigService().current().folder().overrideProjects())
+                .build();
     }
 
     public BuildWorldImpl(
