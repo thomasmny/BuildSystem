@@ -29,18 +29,14 @@ import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 import org.jspecify.annotations.NullMarked;
@@ -55,20 +51,12 @@ public class PlayerChangedWorldListener implements Listener {
     private final SettingsService settingsManager;
     private final WorldStorageImpl worldStorage;
 
-    private final Map<UUID, GameMode> playerGamemode;
-    private final Map<UUID, ItemStack[]> playerInventory;
-    private final Map<UUID, ItemStack[]> playerArmor;
-
     public PlayerChangedWorldListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.navigatorService = plugin.getNavigatorService();
         this.playerManager = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsService();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
-
-        this.playerGamemode = new HashMap<>();
-        this.playerInventory = new HashMap<>();
-        this.playerArmor = new HashMap<>();
     }
 
     @EventHandler
@@ -143,33 +131,16 @@ public class PlayerChangedWorldListener implements Listener {
             return;
         }
 
-        UUID playerUUID = player.getUniqueId();
-        PlayerInventory playerInventory = player.getInventory();
-
-        if (this.playerGamemode.containsKey(playerUUID)) {
-            player.setGameMode(this.playerGamemode.get(playerUUID));
-            this.playerGamemode.remove(playerUUID);
-        }
-
-        if (this.playerInventory.containsKey(playerUUID)) {
-            playerInventory.clear();
-            playerInventory.setContents(this.playerInventory.get(playerUUID));
-            this.playerInventory.remove(playerUUID);
-        }
-
-        if (this.playerArmor.containsKey(playerUUID)) {
-            removeArmorContent(player);
-            playerInventory.setArmorContents(this.playerArmor.get(playerUUID));
-            this.playerArmor.remove(playerUUID);
-        }
+        CachedValues cachedValues = BuildPlayerImpl.of(
+                        playerManager.getPlayerStorage().getBuildPlayer(player))
+                .getCachedValues();
+        cachedValues.resetArchiveStateIfPresent(player);
 
         if (buildWorld.getData().status().get() == BuildWorldStatus.ARCHIVE) {
-            this.playerGamemode.put(playerUUID, player.getGameMode());
-            this.playerInventory.put(playerUUID, playerInventory.getContents());
-            this.playerArmor.put(playerUUID, playerInventory.getArmorContents());
+            cachedValues.saveArchiveState(player);
 
             removeArmorContent(player);
-            playerInventory.clear();
+            player.getInventory().clear();
             setSpectatorMode(player);
 
             if (plugin.getConfigService().current().settings().archive().vanish()) {

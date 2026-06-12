@@ -26,8 +26,11 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Snapshots a player's gameplay state (gamemode, inventory, walk/fly speed) before build mode mutates it, so it can be
- * restored when build mode ends. Internal to BuildSystem; not part of the public API.
+ * Snapshots a player's gameplay state before BuildSystem mutates it, so it can be restored afterwards. Two independent
+ * snapshot groups exist: one for build mode (gamemode, inventory, walk/fly speed) and one for archive worlds
+ * (gamemode, inventory, armor). They are deliberately separate — a player can toggle build mode while inside an
+ * archive world, and the two restores must not overwrite each other. Internal to BuildSystem; not part of the public
+ * API.
  */
 @NullMarked
 public class CachedValues {
@@ -36,6 +39,10 @@ public class CachedValues {
     private @Nullable List<ItemStack> inventory;
     private @Nullable Float walkSpeed;
     private @Nullable Float flySpeed;
+
+    private @Nullable GameMode archiveGameMode;
+    private @Nullable ItemStack @Nullable [] archiveInventory;
+    private @Nullable ItemStack @Nullable [] archiveArmor;
 
     public void saveGameMode(GameMode gameMode) {
         this.gameMode = gameMode;
@@ -86,10 +93,41 @@ public class CachedValues {
         this.flySpeed = null;
     }
 
+    /**
+     * Snapshots gamemode, inventory and armor before an archive world clears them.
+     */
+    public void saveArchiveState(Player player) {
+        this.archiveGameMode = player.getGameMode();
+        this.archiveInventory = player.getInventory().getContents();
+        this.archiveArmor = player.getInventory().getArmorContents();
+    }
+
+    /**
+     * Restores the state captured by {@link #saveArchiveState(Player)}, if any, and clears the snapshot.
+     */
+    public void resetArchiveStateIfPresent(Player player) {
+        if (this.archiveGameMode != null) {
+            player.setGameMode(archiveGameMode);
+            this.archiveGameMode = null;
+        }
+
+        if (this.archiveInventory != null) {
+            player.getInventory().clear();
+            player.getInventory().setContents(archiveInventory);
+            this.archiveInventory = null;
+        }
+
+        if (this.archiveArmor != null) {
+            player.getInventory().setArmorContents(archiveArmor);
+            this.archiveArmor = null;
+        }
+    }
+
     public void resetCachedValues(Player player) {
         resetGameModeIfPresent(player);
         resetInventoryIfPresent(player);
         resetWalkSpeedIfPresent(player);
         resetFlySpeedIfPresent(player);
+        resetArchiveStateIfPresent(player);
     }
 }

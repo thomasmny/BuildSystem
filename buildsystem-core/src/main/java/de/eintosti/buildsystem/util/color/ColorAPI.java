@@ -113,7 +113,10 @@ public final class ColorAPI {
                     }
                     i++;
                 } else {
-                    stringBuilder.append(colors[outIndex++]).append(specialColors).append(current);
+                    stringBuilder
+                            .append(colors[outIndex++])
+                            .append(specialColors)
+                            .append(current);
                 }
             } else {
                 stringBuilder.append(colors[outIndex++]).append(specialColors).append(current);

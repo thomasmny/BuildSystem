@@ -117,10 +117,7 @@ public class BackupsMenu extends Menu {
                 }))
                 .exceptionally(throwable -> {
                     plugin.getLogger()
-                            .log(
-                                    Level.SEVERE,
-                                    "Failed to list backups for world: " + buildWorld.getName(),
-                                    throwable);
+                            .log(Level.SEVERE, "Failed to list backups for world: " + buildWorld.getName(), throwable);
                     return null;
                 });
     }
