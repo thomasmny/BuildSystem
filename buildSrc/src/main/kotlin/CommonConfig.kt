@@ -9,6 +9,7 @@ import org.gradle.kotlin.dsl.withType
 fun Project.applyCommonConfiguration() {
     group = rootProject.group
     version = rootProject.version
+    val javaVersion = providers.gradleProperty("javaVersion").orElse("25").get().toInt()
 
     repositories {
         mavenCentral()
@@ -30,12 +31,13 @@ fun Project.applyCommonConfiguration() {
     plugins.withId("java") {
         the<JavaPluginExtension>().apply {
             toolchain {
-                languageVersion.set(JavaLanguageVersion.of(21))
+                languageVersion.set(JavaLanguageVersion.of(javaVersion))
             }
         }
     }
 
     tasks.withType<JavaCompile> {
         options.encoding = Charsets.UTF_8.name()
+        options.release.set(javaVersion)
     }
 }

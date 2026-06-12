@@ -30,8 +30,8 @@ repositories {
     }
     modrinthMavenWorkaround(
         "axiom-paper-plugin",
-        "5.0.2+1.21.10",
-        "AxiomPaper-5.0.2-for-MC1.21.10.jar"
+        "5.0.4+26.1",
+        "AxiomPaperPlugin-5.0.4-for-MC26.1.jar"
     )
 }
 
