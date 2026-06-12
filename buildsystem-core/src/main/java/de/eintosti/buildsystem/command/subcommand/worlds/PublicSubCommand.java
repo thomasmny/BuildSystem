@@ -20,7 +20,7 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.world.menu.PublicWorldsInventory;
+import de.eintosti.buildsystem.world.menu.PublicWorldsMenu;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -40,7 +40,7 @@ public class PublicSubCommand implements SubCommand {
             return;
         }
 
-        new PublicWorldsInventory(plugin, player).open(player);
+        new PublicWorldsMenu(plugin, player).open(player);
     }
 
     @Override

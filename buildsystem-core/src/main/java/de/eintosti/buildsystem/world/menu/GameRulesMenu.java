@@ -41,7 +41,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class GameRulesInventory extends PaginatedMenu {
+public class GameRulesMenu extends PaginatedMenu {
 
     private static final int[] SLOTS = {11, 12, 13, 14, 15, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33};
     private static final int ITEMS_PER_PAGE = SLOTS.length;
@@ -49,7 +49,7 @@ public class GameRulesInventory extends PaginatedMenu {
     private final BuildSystemPlugin plugin;
     private final BuildWorld buildWorld;
 
-    public GameRulesInventory(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
+    public GameRulesMenu(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
         super(plugin.getMessages(), 45, plugin.getMessages().getString("worldeditor_gamerules_title", player));
         this.plugin = plugin;
         this.buildWorld = buildWorld;
@@ -165,7 +165,7 @@ public class GameRulesInventory extends PaginatedMenu {
 
             default:
                 XSound.BLOCK_CHEST_OPEN.play(player);
-                new EditInventory(plugin, buildWorld, player).open(player);
+                new EditMenu(plugin, buildWorld, player).open(player);
         }
     }
 

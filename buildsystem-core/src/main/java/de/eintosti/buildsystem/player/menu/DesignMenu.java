@@ -32,11 +32,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class DesignInventory extends Menu {
+public class DesignMenu extends Menu {
 
     private final BuildSystemPlugin plugin;
 
-    public DesignInventory(BuildSystemPlugin plugin, Player player) {
+    public DesignMenu(BuildSystemPlugin plugin, Player player) {
         super(plugin.getMessages(), 36, plugin.getMessages().getString("design_title", player));
         this.plugin = plugin;
     }
@@ -102,7 +102,7 @@ public class DesignInventory extends Menu {
         Player player = (Player) event.getWhoClicked();
 
         if (itemStack.getType().toString().contains("STAINED_GLASS_PANE")) {
-            new SettingsInventory(plugin, player).open(player);
+            new SettingsMenu(plugin, player).open(player);
             return;
         }
 
@@ -159,6 +159,6 @@ public class DesignInventory extends Menu {
                 break;
         }
 
-        new DesignInventory(plugin, player).open(player);
+        new DesignMenu(plugin, player).open(player);
     }
 }

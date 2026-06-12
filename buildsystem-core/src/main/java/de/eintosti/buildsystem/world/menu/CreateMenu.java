@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.world.creation;
+package de.eintosti.buildsystem.world.menu;
 
 import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
@@ -41,7 +41,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class CreateInventory extends PaginatedMenu {
+public class CreateMenu extends PaginatedMenu {
 
     private static final int MAX_TEMPLATES = 5;
 
@@ -55,7 +55,7 @@ public class CreateInventory extends PaginatedMenu {
 
     private int numTemplates = 0;
 
-    public CreateInventory(BuildSystemPlugin plugin, Page initialPage, Visibility visibility, @Nullable Folder folder, Player player) {
+    public CreateMenu(BuildSystemPlugin plugin, Page initialPage, Visibility visibility, @Nullable Folder folder, Player player) {
         super(plugin.getMessages(), 45, plugin.getMessages().getString("create_title", player));
         this.plugin = plugin;
         this.worldService = plugin.getWorldService();
@@ -168,7 +168,7 @@ public class CreateInventory extends PaginatedMenu {
         Page newPage = Page.of(slot);
         if (newPage != null) {
             Visibility vis = createPrivateWorld ? Visibility.PRIVATE : Visibility.PUBLIC;
-            new CreateInventory(plugin, newPage, vis, folder, player).open(player);
+            new CreateMenu(plugin, newPage, vis, folder, player).open(player);
             XSound.ENTITY_CHICKEN_EGG.play(player);
             return;
         }

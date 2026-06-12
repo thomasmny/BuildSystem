@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.util;
+package de.eintosti.buildsystem.i18n;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

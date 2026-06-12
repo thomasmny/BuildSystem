@@ -22,7 +22,7 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.world.data.StatusInventory;
+import de.eintosti.buildsystem.world.menu.StatusMenu;
 import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -44,7 +44,7 @@ public class SetStatusSubCommand implements SubCommand {
             return;
         }
 
-        new StatusInventory(plugin, buildWorld, player).open(player);
+        new StatusMenu(plugin, buildWorld, player).open(player);
     }
 
     @Override

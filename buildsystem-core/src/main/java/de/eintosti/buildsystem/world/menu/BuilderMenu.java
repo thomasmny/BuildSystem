@@ -28,7 +28,7 @@ import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.InventoryUtils;
-import de.eintosti.buildsystem.world.menu.EditInventory;
+import de.eintosti.buildsystem.world.menu.EditMenu;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -46,7 +46,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class BuilderInventory extends PaginatedMenu {
+public class BuilderMenu extends PaginatedMenu {
 
     private static final int MAX_BUILDERS_PER_PAGE = 9;
 
@@ -54,7 +54,7 @@ public class BuilderInventory extends PaginatedMenu {
     private final BuildWorld buildWorld;
     private final NamespacedKey builderNameKey;
 
-    public BuilderInventory(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
+    public BuilderMenu(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
         super(plugin.getMessages(), 27, plugin.getMessages().getString("worldeditor_builders_title", player));
         this.plugin = plugin;
         this.buildWorld = buildWorld;
@@ -151,7 +151,7 @@ public class BuilderInventory extends PaginatedMenu {
         if (itemStack.getType() != XMaterial.PLAYER_HEAD.get()) {
             if (buildWorld.getPermissions().canPerformCommand(player, WorldsArgument.EDIT.getPermission())) {
                 XSound.BLOCK_CHEST_OPEN.play(player);
-                new EditInventory(plugin, buildWorld, player).open(player);
+                new EditMenu(plugin, buildWorld, player).open(player);
             }
             return;
         }

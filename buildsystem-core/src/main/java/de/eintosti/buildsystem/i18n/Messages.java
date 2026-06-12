@@ -21,7 +21,6 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigService;
-import de.eintosti.buildsystem.util.Placeholders;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.io.File;
 import java.io.InputStreamReader;

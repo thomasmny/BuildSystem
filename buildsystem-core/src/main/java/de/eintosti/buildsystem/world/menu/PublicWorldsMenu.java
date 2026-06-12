@@ -25,25 +25,25 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * An inventory class specifically for displaying and managing private {@link BuildWorld}s.
+ * An inventory class specifically for displaying and managing public {@link BuildWorld}s.
  */
 @NullMarked
-public class PrivateWorldsInventory extends CreatableWorldsInventory {
+public class PublicWorldsMenu extends CreatableWorldsMenu {
 
     /**
-     * Constructs a new {@link PrivateWorldsInventory} instance.
+     * Constructs a new {@link PublicWorldsMenu} instance.
      *
      * @param plugin The plugin instance
      * @param player The player for whom this inventory is created
      */
-    public PrivateWorldsInventory(BuildSystemPlugin plugin, Player player) {
+    public PublicWorldsMenu(BuildSystemPlugin plugin, Player player) {
         super(
                 plugin,
                 player,
-                NavigatorCategory.PRIVATE,
-                plugin.getMessages().getString("private_title", player),
-                plugin.getMessages().getString("private_no_worlds", player),
-                Visibility.PRIVATE
+                NavigatorCategory.PUBLIC,
+                plugin.getMessages().getString("world_navigator_title", player),
+                plugin.getMessages().getString("world_navigator_no_worlds", player),
+                Visibility.PUBLIC
         );
     }
 
@@ -54,16 +54,16 @@ public class PrivateWorldsInventory extends CreatableWorldsInventory {
      */
     @Override
     protected String getWorldCreationPermission() {
-        return "buildsystem.create.private";
+        return "buildsystem.create.public";
     }
 
     /**
-     * Returns the message key for the title of the "create private world" item.
+     * Returns the message key for the title of the "create public world" item.
      *
-     * @return The message key: "private_create_world".
+     * @return The message key: "world_navigator_create_world".
      */
     @Override
     protected String getWorldCreationItemTitleKey() {
-        return "private_create_world";
+        return "world_navigator_create_world";
     }
 }

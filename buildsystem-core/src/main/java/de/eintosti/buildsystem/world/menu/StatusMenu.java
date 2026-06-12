@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.world.data;
+package de.eintosti.buildsystem.world.menu;
 
 import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
@@ -26,7 +26,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.world.menu.EditInventory;
+import de.eintosti.buildsystem.world.menu.EditMenu;
 import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -38,13 +38,13 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class StatusInventory extends Menu {
+public class StatusMenu extends Menu {
 
     private final BuildSystemPlugin plugin;
     private final PlayerServiceImpl playerService;
     private final BuildWorld buildWorld;
 
-    public StatusInventory(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
+    public StatusMenu(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
         super(plugin.getMessages(), 27, plugin.getMessages().getString("status_title", player,
                 Map.entry("%world%", formatWorldName(buildWorld))));
         this.plugin = plugin;
@@ -119,7 +119,7 @@ public class StatusInventory extends Menu {
         int slot = event.getSlot();
         if (slot < 10 || slot > 14 && slot != 16) {
             XSound.BLOCK_CHEST_OPEN.play(player);
-            new EditInventory(plugin, buildWorld, player).open(player);
+            new EditMenu(plugin, buildWorld, player).open(player);
             return;
         }
 

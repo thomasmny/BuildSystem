@@ -38,7 +38,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class SetupInventory extends Menu {
+public class SetupMenu extends Menu {
 
     private static final Map<BuildWorldType, Integer> CREATE_ITEM_SLOTS = Map.of(
             BuildWorldType.NORMAL, 11,
@@ -61,7 +61,7 @@ public class SetupInventory extends Menu {
     private final BuildSystemPlugin plugin;
     private final CustomizableIcons icons;
 
-    public SetupInventory(BuildSystemPlugin plugin, Player player) {
+    public SetupMenu(BuildSystemPlugin plugin, Player player) {
         super(plugin.getMessages(), 36, plugin.getMessages().getString("setup_title", player));
         this.plugin = plugin;
         this.icons = plugin.getCustomizableIcons();

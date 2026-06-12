@@ -21,18 +21,18 @@ import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.menu.Menu;
-import de.eintosti.buildsystem.player.menu.SettingsInventory;
+import de.eintosti.buildsystem.player.menu.SettingsMenu;
 import de.eintosti.buildsystem.menu.InventoryUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class NavigatorInventory extends Menu {
+public class NavigatorMenu extends Menu {
 
     private final BuildSystemPlugin plugin;
 
-    public NavigatorInventory(BuildSystemPlugin plugin, Player player) {
+    public NavigatorMenu(BuildSystemPlugin plugin, Player player) {
         super(plugin.getMessages(), 27, plugin.getMessages().getString("old_navigator_title", player));
         this.plugin = plugin;
     }
@@ -56,20 +56,20 @@ public class NavigatorInventory extends Menu {
 
         switch (event.getSlot()) {
             case 11:
-                new PublicWorldsInventory(plugin, player).open(player);
+                new PublicWorldsMenu(plugin, player).open(player);
                 break;
             case 12:
-                new ArchivedWorldsInventory(plugin, player).open(player);
+                new ArchivedWorldsMenu(plugin, player).open(player);
                 break;
             case 13:
-                new PrivateWorldsInventory(plugin, player).open(player);
+                new PrivateWorldsMenu(plugin, player).open(player);
                 break;
             case 15:
                 if (!player.hasPermission("buildsystem.settings")) {
                     XSound.ENTITY_ITEM_BREAK.play(player);
                     return;
                 }
-                new SettingsInventory(plugin, player).open(player);
+                new SettingsMenu(plugin, player).open(player);
                 break;
             default:
                 return;

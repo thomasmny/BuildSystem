@@ -30,12 +30,12 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class DeleteInventory extends Menu {
+public class DeleteMenu extends Menu {
 
     private final BuildSystemPlugin plugin;
     private final BuildWorld buildWorld;
 
-    public DeleteInventory(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
+    public DeleteMenu(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
         super(plugin.getMessages(), 27, plugin.getMessages().getString("delete_title", player));
         this.plugin = plugin;
         this.buildWorld = buildWorld;

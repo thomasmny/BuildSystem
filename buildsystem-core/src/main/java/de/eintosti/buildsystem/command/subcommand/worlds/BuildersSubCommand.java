@@ -22,7 +22,7 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.world.menu.BuilderInventory;
+import de.eintosti.buildsystem.world.menu.BuilderMenu;
 import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -44,7 +44,7 @@ public class BuildersSubCommand implements SubCommand {
             return;
         }
 
-        new BuilderInventory(plugin, buildWorld, player).open(player);
+        new BuilderMenu(plugin, buildWorld, player).open(player);
     }
 
     @Override

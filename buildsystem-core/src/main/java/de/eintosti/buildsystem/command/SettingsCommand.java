@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.player.menu.SettingsInventory;
+import de.eintosti.buildsystem.player.menu.SettingsMenu;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -35,6 +35,6 @@ public class SettingsCommand extends CommandBase {
             return;
         }
 
-        new SettingsInventory(plugin, player).open(player);
+        new SettingsMenu(plugin, player).open(player);
     }
 }

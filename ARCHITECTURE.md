@@ -22,7 +22,8 @@ de.eintosti.buildsystem
 │   └── migration/           ConfigMigrationManager + versioned steps
 ├── i18n/
 │   ├── Messages             instance service: catalog + send/get methods
-│   └── (MessageFile/Placeholders inlined into Messages + config layer)
+│   ├── Placeholders         literal (non-regex) placeholder substitution
+│   └── TextResolver         seam for external placeholder expansion (PAPI lives in integration/)
 ├── command/
 │   ├── CommandBase          abstract: player check, permission, usage
 │   ├── CommandRegistrar     registers all executors + completers
@@ -34,24 +35,26 @@ de.eintosti.buildsystem
 │   ├── PaginatedMenu        per-instance page state
 │   ├── MenuListener         the ONLY inventory listener; routes via holder
 │   ├── ItemBuilder          fluent ItemStack construction
-│   ├── InventoryUtils       shared inventory helpers
-│   ├── MaterialUtils        material lookup/conversion helpers
+│   ├── InventoryUtils       stateless ItemStack factory (createItem/createSkull)
+│   ├── MenuItems            injected item builders needing config/settings state
 │   └── PlayerChatInput      chat-prompt UI helper; lives in menu/ (UI mechanism)
 ├── world/
 │   ├── WorldServiceImpl     registry facade + orchestration
 │   ├── BuildWorldImpl       domain object (world + data + builders)
 │   ├── lifecycle/           WorldLoaderImpl, WorldTeleporterImpl, WorldUnloaderImpl,
 │   │                        WorldPermissionsImpl
-│   ├── creation/            orchestrator + strategies; generator/
+│   ├── creation/            BuildWorldCreatorImpl + strategies; generator/
 │   ├── folder/              FolderImpl
 │   ├── builder/             BuildersImpl (domain), package-info
 │   ├── backup/              BackupService, BackupImpl; storage/ (local/sftp/s3)
 │   ├── spawn/               SpawnService
 │   ├── display/             CustomizableIcons (configurable navigator icons)
-│   ├── menu/                all world-related menus (navigator, edit, create,
-│   │                        delete, setup, game-rules, builder, folder menus)
+│   ├── menu/                ALL world-related menus, every one named *Menu
+│   │                        (NavigatorMenu, EditMenu, CreateMenu, DeleteMenu,
+│   │                        SetupMenu, GameRulesMenu, BuilderMenu, StatusMenu,
+│   │                        BackupsMenu, folder/world list menus)
 │   ├── data/                WorldDataImpl + type/ (ConfigurableType)
-│   └── navigator/           NavigatorService; settings/ (WorldDisplay, WorldFilter)
+│   └── navigator/           settings/ (WorldDisplayImpl, WorldFilterImpl)
 ├── player/
 │   ├── PlayerServiceImpl    BuildPlayer registry + session state
 │   ├── BuildPlayerImpl      per-player domain object
@@ -59,8 +62,8 @@ de.eintosti.buildsystem
 │   ├── LogoutLocationImpl   serializable logout position
 │   ├── settings/            SettingsService, SettingsImpl
 │   ├── noclip/              NoClipService (synchronous proximity check)
-│   ├── customblock/         CustomBlockManager (secret-blocks menu + placement)
-│   └── menu/                DesignInventory, SettingsInventory, SpeedInventory
+│   ├── customblock/         CustomBlockManager + CustomBlockMenu (secret blocks)
+│   └── menu/                DesignMenu, SettingsMenu, SpeedMenu
 ├── protection/
 │   └── WorldProtectionPolicy  single source for "may player modify world?"
 ├── listener/                thin event adapters grouped by Bukkit concern
@@ -75,16 +78,23 @@ de.eintosti.buildsystem
 ├── event/                   custom Bukkit events (BuildWorldManipulationEvent, …)
 └── util/                    small, stateless helpers (DirectionUtil, NumberUtils,
                              ServerModeChecker, ArgumentParser, StringCleaner,
-                             UpdateChecker, color/)
+                             MaterialUtils, UpdateChecker, color/)
 ```
 
 **Divergences from the original target spec (plans/000-target-architecture.md §4)**:
 - `world/builder/` kept as a package (clean domain grouping; not inlined into `world/`).
 - `world/data/` and `world/data/type/` kept (clean data-layer grouping).
-- `world/navigator/` kept for `NavigatorService` and its `settings/` sub-package.
+- `world/navigator/` kept for its `settings/` sub-package (`WorldDisplayImpl`,
+  `WorldFilterImpl`). The armor-stand `NavigatorService` lives at top-level `navigator/`.
 - `world/display/` kept for `CustomizableIcons` (icon customization; separate from folder logic).
 - `event/` kept as a top-level package (custom events and `EventDispatcher`).
-- `api/` top-level package kept for `BuildSystemApi` adapter.
+- `api/` core package kept for the `BuildSystemApi` adapter — it sits in a split
+  package with `buildsystem-api` so it can call `BuildSystemProvider`'s package-private
+  registration. Relocating it to the root needs an API-module change and is deferred to
+  the API v2 pass.
+
+**Naming convention**: every class extending `menu/Menu` is named `*Menu`. `*Inventory`
+is reserved for Bukkit's own `Inventory` type, never our menu classes.
 
 ## Composition root construction order
 
@@ -127,9 +137,9 @@ de.eintosti.buildsystem
    permission/usage/existence by hand.
 
 ### Add a menu
-1. Extend `Menu` (or `PaginatedMenu`) in the appropriate `*/menu/` package.
+1. Extend `Menu` (or `PaginatedMenu`) in the appropriate `*/menu/` package, named `*Menu`.
 2. Open it from a listener or command; `MenuListener` routes clicks via `InventoryHolder`.
-3. No UUID maps — each `new Menu(...)` call is a per-open instance.
+3. No UUID maps — each `new ...Menu(...)` call is a per-open instance.
 
 ### Add an optional-plugin integration
 1. Create `integration/<name>/` package with your integration class(es).

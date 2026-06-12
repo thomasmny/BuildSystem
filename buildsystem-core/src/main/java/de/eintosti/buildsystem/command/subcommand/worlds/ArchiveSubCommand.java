@@ -20,7 +20,7 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.world.menu.ArchivedWorldsInventory;
+import de.eintosti.buildsystem.world.menu.ArchivedWorldsMenu;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -40,7 +40,7 @@ public class ArchiveSubCommand implements SubCommand {
             return;
         }
 
-        new ArchivedWorldsInventory(plugin, player).open(player);
+        new ArchivedWorldsMenu(plugin, player).open(player);
     }
 
     @Override

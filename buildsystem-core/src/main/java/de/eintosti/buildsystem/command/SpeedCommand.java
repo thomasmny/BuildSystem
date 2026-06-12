@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.player.menu.SpeedInventory;
+import de.eintosti.buildsystem.player.menu.SpeedMenu;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +42,7 @@ public class SpeedCommand extends CommandBase {
 
         switch (args.length) {
             case 0:
-                new SpeedInventory(plugin, player).open(player);
+                new SpeedMenu(plugin, player).open(player);
                 break;
             case 1:
                 String speedString = args[0];

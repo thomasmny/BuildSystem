@@ -34,11 +34,11 @@ import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.menu.InventoryUtils;
 
-import de.eintosti.buildsystem.world.menu.ArchivedWorldsInventory;
-import de.eintosti.buildsystem.world.menu.DisplayablesInventory;
-import de.eintosti.buildsystem.world.menu.NavigatorInventory;
-import de.eintosti.buildsystem.world.menu.PrivateWorldsInventory;
-import de.eintosti.buildsystem.world.menu.PublicWorldsInventory;
+import de.eintosti.buildsystem.world.menu.ArchivedWorldsMenu;
+import de.eintosti.buildsystem.world.menu.DisplayablesMenu;
+import de.eintosti.buildsystem.world.menu.NavigatorMenu;
+import de.eintosti.buildsystem.world.menu.PrivateWorldsMenu;
+import de.eintosti.buildsystem.world.menu.PublicWorldsMenu;
 import java.util.Objects;
 import java.util.UUID;
 import org.bukkit.Material;
@@ -115,7 +115,7 @@ public class NavigatorListener implements Listener {
         Settings settings = settingsManager.getSettings(player);
         switch (settings.getNavigatorType()) {
             case OLD -> {
-                new NavigatorInventory(plugin, player).open(player);
+                new NavigatorMenu(plugin, player).open(player);
                 XSound.BLOCK_CHEST_OPEN.play(player);
             }
             case NEW -> {
@@ -185,10 +185,10 @@ public class NavigatorListener implements Listener {
                 return;
             }
 
-            DisplayablesInventory inventory = switch (category) {
-                case PUBLIC -> new PublicWorldsInventory(plugin, player);
-                case ARCHIVE -> new ArchivedWorldsInventory(plugin, player);
-                case PRIVATE -> new PrivateWorldsInventory(plugin, player);
+            DisplayablesMenu inventory = switch (category) {
+                case PUBLIC -> new PublicWorldsMenu(plugin, player);
+                case ARCHIVE -> new ArchivedWorldsMenu(plugin, player);
+                case PRIVATE -> new PrivateWorldsMenu(plugin, player);
             };
 
             XSound.BLOCK_CHEST_OPEN.play(player);

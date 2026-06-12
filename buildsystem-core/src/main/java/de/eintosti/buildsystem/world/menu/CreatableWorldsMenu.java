@@ -32,7 +32,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public abstract class CreatableWorldsInventory extends DisplayablesInventory {
+public abstract class CreatableWorldsMenu extends DisplayablesMenu {
 
     private static final Set<BuildWorldStatus> VALID_STATUSES = Sets.newHashSet(
             BuildWorldStatus.NOT_STARTED,
@@ -46,7 +46,7 @@ public abstract class CreatableWorldsInventory extends DisplayablesInventory {
 
     private final PlayerServiceImpl playerService;
 
-    protected CreatableWorldsInventory(
+    protected CreatableWorldsMenu(
             BuildSystemPlugin plugin,
             Player player,
             NavigatorCategory category,

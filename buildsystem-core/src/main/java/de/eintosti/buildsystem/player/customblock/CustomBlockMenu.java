@@ -30,11 +30,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class CustomBlockInventory extends Menu {
+public class CustomBlockMenu extends Menu {
 
     private final BuildSystemPlugin plugin;
 
-    public CustomBlockInventory(BuildSystemPlugin plugin, Player player) {
+    public CustomBlockMenu(BuildSystemPlugin plugin, Player player) {
         super(plugin.getMessages(), 45, plugin.getMessages().getString("blocks_title", player));
         this.plugin = plugin;
     }

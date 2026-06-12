@@ -21,7 +21,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.world.menu.DeleteInventory;
+import de.eintosti.buildsystem.world.menu.DeleteMenu;
 import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -48,7 +48,7 @@ public class DeleteSubCommand implements SubCommand {
             return;
         }
 
-        new DeleteInventory(plugin, buildWorld, player).open(player);
+        new DeleteMenu(plugin, buildWorld, player).open(player);
     }
 
     @Override

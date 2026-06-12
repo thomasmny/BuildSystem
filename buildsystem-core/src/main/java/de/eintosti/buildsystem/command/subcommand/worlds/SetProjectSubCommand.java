@@ -24,7 +24,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
-import de.eintosti.buildsystem.world.menu.EditInventory;
+import de.eintosti.buildsystem.world.menu.EditMenu;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.entity.Player;
@@ -63,7 +63,7 @@ public class SetProjectSubCommand implements SubCommand {
             if (closeInventory) {
                 player.closeInventory();
             } else {
-                new EditInventory(plugin, buildWorld, player).open(player);
+                new EditMenu(plugin, buildWorld, player).open(player);
             }
         });
     }

@@ -32,8 +32,8 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.menu.InventoryUtils;
-import de.eintosti.buildsystem.world.menu.BuilderInventory;
-import de.eintosti.buildsystem.world.data.StatusInventory;
+import de.eintosti.buildsystem.world.menu.BuilderMenu;
+import de.eintosti.buildsystem.world.menu.StatusMenu;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +54,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class EditInventory extends Menu {
+public class EditMenu extends Menu {
 
     /**
      * A set of entities which are ignored when the butcher item is used.
@@ -71,7 +71,7 @@ public class EditInventory extends Menu {
     private final PlayerServiceImpl playerManager;
     private final BuildWorld buildWorld;
 
-    public EditInventory(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
+    public EditMenu(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
         super(plugin.getMessages(), 54, plugin.getMessages().getString("worldeditor_title", player));
         this.plugin = plugin;
         this.playerManager = plugin.getPlayerService();
@@ -310,7 +310,7 @@ public class EditInventory extends Menu {
                 }
                 if (event.isRightClick()) {
                     XSound.BLOCK_CHEST_OPEN.play(player);
-                    new BuilderInventory(plugin, buildWorld, player).open(player);
+                    new BuilderMenu(plugin, buildWorld, player).open(player);
                     return;
                 }
                 worldData.buildersEnabled().set(!worldData.buildersEnabled().get());
@@ -337,7 +337,7 @@ public class EditInventory extends Menu {
             case 38 -> {
                 if (hasPermission(player, "buildsystem.edit.gamerules")) {
                     XSound.BLOCK_CHEST_OPEN.play(player);
-                    new GameRulesInventory(plugin, buildWorld, player).open(player);
+                    new GameRulesMenu(plugin, buildWorld, player).open(player);
                 }
                 return;
             }
@@ -350,7 +350,7 @@ public class EditInventory extends Menu {
             case 40 -> {
                 if (hasPermission(player, "buildsystem.edit.status")) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
-                    new StatusInventory(plugin, buildWorld, player).open(player);
+                    new StatusMenu(plugin, buildWorld, player).open(player);
                 }
                 return;
             }
@@ -374,7 +374,7 @@ public class EditInventory extends Menu {
         }
 
         XSound.ENTITY_CHICKEN_EGG.play(player);
-        new EditInventory(plugin, buildWorld, player).open(player);
+        new EditMenu(plugin, buildWorld, player).open(player);
     }
 
     private boolean hasPermission(Player player, String permission) {
@@ -394,7 +394,7 @@ public class EditInventory extends Menu {
             case NIGHT -> plugin.getConfigService().current().world().defaults().time().sunrise();
         };
         buildWorld.getWorld().setTime(time);
-        new EditInventory(plugin, buildWorld, player).open(player);
+        new EditMenu(plugin, buildWorld, player).open(player);
     }
 
     private void removeEntities(Player player) {

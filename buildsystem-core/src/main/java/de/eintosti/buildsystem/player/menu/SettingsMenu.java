@@ -40,12 +40,12 @@ import org.bukkit.potion.PotionEffect;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class SettingsInventory extends Menu {
+public class SettingsMenu extends Menu {
 
     private final BuildSystemPlugin plugin;
     private final SettingsService settingsManager;
 
-    public SettingsInventory(BuildSystemPlugin plugin, Player player) {
+    public SettingsMenu(BuildSystemPlugin plugin, Player player) {
         super(plugin.getMessages(), 45, plugin.getMessages().getString("settings_title", player));
         this.plugin = plugin;
         this.settingsManager = plugin.getSettingsService();
@@ -124,7 +124,7 @@ public class SettingsInventory extends Menu {
 
         switch (event.getSlot()) {
             case 11:
-                new DesignInventory(plugin, player).open(player);
+                new DesignMenu(plugin, player).open(player);
                 XSound.ENTITY_ITEM_PICKUP.play(player);
                 return;
             case 12:
@@ -204,7 +204,7 @@ public class SettingsInventory extends Menu {
         }
 
         XSound.ENTITY_ITEM_PICKUP.play(player);
-        new SettingsInventory(plugin, player).open(player);
+        new SettingsMenu(plugin, player).open(player);
     }
 
     @SuppressWarnings("deprecation")

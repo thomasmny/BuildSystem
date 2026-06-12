@@ -30,11 +30,11 @@ import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class SpeedInventory extends Menu {
+public class SpeedMenu extends Menu {
 
     private final SettingsService settingsService;
 
-    public SpeedInventory(BuildSystemPlugin plugin, Player player) {
+    public SpeedMenu(BuildSystemPlugin plugin, Player player) {
         super(plugin.getMessages(), 27, plugin.getMessages().getString("speed_title", player));
         this.settingsService = plugin.getSettingsService();
     }

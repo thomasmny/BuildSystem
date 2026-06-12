@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.player.customblock.CustomBlockInventory;
+import de.eintosti.buildsystem.player.customblock.CustomBlockMenu;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -37,6 +37,6 @@ public class BlocksCommand extends CommandBase {
         }
 
         XSound.BLOCK_CHEST_OPEN.play(player);
-        new CustomBlockInventory(plugin, player).open(player);
+        new CustomBlockMenu(plugin, player).open(player);
     }
 }

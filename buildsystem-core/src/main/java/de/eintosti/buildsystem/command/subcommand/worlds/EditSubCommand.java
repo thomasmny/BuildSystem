@@ -23,7 +23,7 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.world.menu.EditInventory;
+import de.eintosti.buildsystem.world.menu.EditMenu;
 import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -47,7 +47,7 @@ public class EditSubCommand implements SubCommand {
 
         if (buildWorld.isLoaded()) {
             XSound.BLOCK_CHEST_OPEN.play(player);
-            new EditInventory(plugin, buildWorld, player).open(player);
+            new EditMenu(plugin, buildWorld, player).open(player);
         } else {
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
             player.sendTitle(" ", plugin.getMessages().getString("world_not_loaded", player), 5, 70, 20);

@@ -28,7 +28,7 @@ import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.DirectionUtil;
-import de.eintosti.buildsystem.menu.MaterialUtils;
+import de.eintosti.buildsystem.util.MaterialUtils;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;

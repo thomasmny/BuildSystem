@@ -45,9 +45,9 @@ import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
-import de.eintosti.buildsystem.world.creation.CreateInventory;
-import de.eintosti.buildsystem.world.creation.CreateInventory.Page;
-import de.eintosti.buildsystem.world.menu.EditInventory;
+import de.eintosti.buildsystem.world.menu.CreateMenu;
+import de.eintosti.buildsystem.world.menu.CreateMenu.Page;
+import de.eintosti.buildsystem.world.menu.EditMenu;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -67,7 +67,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public abstract class DisplayablesInventory extends PaginatedMenu {
+public abstract class DisplayablesMenu extends PaginatedMenu {
 
     private static final int MAX_WORLDS_PER_PAGE = 36;
     private static final int FIRST_WORD_SLOT = 9;
@@ -93,7 +93,7 @@ public abstract class DisplayablesInventory extends PaginatedMenu {
     @Nullable
     private List<Displayable> cachedDisplayables;
 
-    protected DisplayablesInventory(
+    protected DisplayablesMenu(
             BuildSystemPlugin plugin,
             Player player,
             NavigatorCategory category,
@@ -308,7 +308,7 @@ public abstract class DisplayablesInventory extends PaginatedMenu {
     }
 
     protected void beginWorldCreation() {
-        new CreateInventory(plugin, Page.PREDEFINED, this.requiredVisibility, null, this.player).open(this.player);
+        new CreateMenu(plugin, Page.PREDEFINED, this.requiredVisibility, null, this.player).open(this.player);
     }
 
     private void beginFolderCreation(Player player) {
@@ -340,7 +340,7 @@ public abstract class DisplayablesInventory extends PaginatedMenu {
     }
 
     protected void returnToPreviousInventory() {
-        new NavigatorInventory(plugin, this.player).open(this.player);
+        new NavigatorMenu(plugin, this.player).open(this.player);
     }
 
     private void handleFilterClick(InventoryClickEvent event, WorldDisplay worldDisplay) {
@@ -395,7 +395,7 @@ public abstract class DisplayablesInventory extends PaginatedMenu {
                     plugin.getLogger().warning("Unable to find folder with name: " + displayableName);
                     return;
                 }
-                new FolderContentInventory(plugin, player, category, folder, this, requiredVisibility, validStatuses).open(player);
+                new FolderContentMenu(plugin, player, category, folder, this, requiredVisibility, validStatuses).open(player);
             }
         }
     }
@@ -410,7 +410,7 @@ public abstract class DisplayablesInventory extends PaginatedMenu {
 
         if (buildWorld.isLoaded()) {
             XSound.BLOCK_CHEST_OPEN.play(player);
-            new EditInventory(plugin, buildWorld, player).open(player);
+            new EditMenu(plugin, buildWorld, player).open(player);
         } else {
             player.closeInventory();
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);

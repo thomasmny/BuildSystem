@@ -26,7 +26,7 @@ import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.navigator.settings.WorldDisplay;
-import de.eintosti.buildsystem.world.creation.CreateInventory;
+import de.eintosti.buildsystem.world.menu.CreateMenu;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,17 +39,17 @@ import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class FolderContentInventory extends DisplayablesInventory {
+public class FolderContentMenu extends DisplayablesMenu {
 
     private final Folder folder;
-    private final DisplayablesInventory parentInventory;
+    private final DisplayablesMenu parentInventory;
 
-    public FolderContentInventory(
+    public FolderContentMenu(
             BuildSystemPlugin plugin,
             Player player,
             NavigatorCategory category,
             Folder folder,
-            DisplayablesInventory parentInventory,
+            DisplayablesMenu parentInventory,
             Visibility requiredVisibility,
             Set<BuildWorldStatus> validStatuses
     ) {
@@ -104,7 +104,7 @@ public class FolderContentInventory extends DisplayablesInventory {
 
     @Override
     protected void beginWorldCreation() {
-        new CreateInventory(plugin, CreateInventory.Page.PREDEFINED, this.requiredVisibility, this.folder, this.player).open(this.player);
+        new CreateMenu(plugin, CreateMenu.Page.PREDEFINED, this.requiredVisibility, this.folder, this.player).open(this.player);
     }
 
     @Override
