@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -53,7 +54,7 @@ class WorldStorageImplTest {
 
             @Override
             public CompletableFuture<Collection<BuildWorld>> load() {
-                return CompletableFuture.completedFuture(java.util.List.of());
+                return CompletableFuture.completedFuture(List.of());
             }
 
             @Override
@@ -170,5 +171,17 @@ class WorldStorageImplTest {
 
             done.await();
         }
+    }
+
+    @Test
+    void rename_remapsNameLookup() {
+        BuildWorld buildWorld = world("oldName");
+        storage.addBuildWorld(buildWorld);
+
+        storage.rename(buildWorld, "oldName", "newName");
+
+        assertNull(storage.getBuildWorld("oldName"));
+        assertSame(buildWorld, storage.getBuildWorld("newName"));
+        assertSame(buildWorld, storage.getBuildWorld(buildWorld.getUniqueId()));
     }
 }
