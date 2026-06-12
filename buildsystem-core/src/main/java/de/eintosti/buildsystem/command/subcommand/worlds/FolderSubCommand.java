@@ -17,6 +17,8 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
+import static java.util.Map.entry;
+
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
@@ -253,13 +255,13 @@ public class FolderSubCommand implements SubCommand {
             return result;
         }
         if (args.length == 3) {
-            Map<String, String> subCmds = Map.of(
-                    "add", "buildsystem.folder.add",
-                    "remove", "buildsystem.folder.remove",
-                    "delete", "buildsystem.folder.delete",
-                    "setPermission", "buildsystem.folder.setpermission",
-                    "setProject", "buildsystem.folder.setproject",
-                    "setItem", "buildsystem.folder.setitem");
+            Map<String, String> subCmds = Map.ofEntries(
+                    entry("add", "buildsystem.folder.add"),
+                    entry("remove", "buildsystem.folder.remove"),
+                    entry("delete", "buildsystem.folder.delete"),
+                    entry("setPermission", "buildsystem.folder.setpermission"),
+                    entry("setProject", "buildsystem.folder.setproject"),
+                    entry("setItem", "buildsystem.folder.setitem"));
             subCmds.entrySet().stream()
                     .filter(e -> player.hasPermission(e.getValue()))
                     .forEach(e -> WorldsCompletions.addIfStartsWith(args[2], e.getKey(), result));

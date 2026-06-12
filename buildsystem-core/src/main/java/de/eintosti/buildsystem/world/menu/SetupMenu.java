@@ -17,6 +17,8 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
+import static java.util.Map.entry;
+
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
@@ -40,21 +42,21 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class SetupMenu extends Menu {
 
-    private static final Map<BuildWorldType, Integer> CREATE_ITEM_SLOTS = Map.of(
-            BuildWorldType.NORMAL, 11,
-            BuildWorldType.FLAT, 12,
-            BuildWorldType.NETHER, 13,
-            BuildWorldType.END, 14,
-            BuildWorldType.VOID, 15,
-            BuildWorldType.IMPORTED, 16);
+    private static final Map<BuildWorldType, Integer> CREATE_ITEM_SLOTS = Map.ofEntries(
+            entry(BuildWorldType.NORMAL, 11),
+            entry(BuildWorldType.FLAT, 12),
+            entry(BuildWorldType.NETHER, 13),
+            entry(BuildWorldType.END, 14),
+            entry(BuildWorldType.VOID, 15),
+            entry(BuildWorldType.IMPORTED, 16));
 
-    private static final Map<BuildWorldStatus, Integer> STATUS_ITEM_SLOTS = Map.of(
-            BuildWorldStatus.NOT_STARTED, 20,
-            BuildWorldStatus.IN_PROGRESS, 21,
-            BuildWorldStatus.ALMOST_FINISHED, 22,
-            BuildWorldStatus.FINISHED, 23,
-            BuildWorldStatus.ARCHIVE, 24,
-            BuildWorldStatus.HIDDEN, 25);
+    private static final Map<BuildWorldStatus, Integer> STATUS_ITEM_SLOTS = Map.ofEntries(
+            entry(BuildWorldStatus.NOT_STARTED, 20),
+            entry(BuildWorldStatus.IN_PROGRESS, 21),
+            entry(BuildWorldStatus.ALMOST_FINISHED, 22),
+            entry(BuildWorldStatus.FINISHED, 23),
+            entry(BuildWorldStatus.ARCHIVE, 24),
+            entry(BuildWorldStatus.HIDDEN, 25));
 
     private final BuildSystemPlugin plugin;
     private final CustomizableIcons icons;

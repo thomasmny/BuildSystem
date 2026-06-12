@@ -17,6 +17,8 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
+import static java.util.Map.entry;
+
 import com.cryptomorin.xseries.XEntityType;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
@@ -314,13 +316,13 @@ public class EditMenu extends Menu {
     /**
      * Slots whose only action is "check permission, flip a boolean world setting, re-open". Heterogeneous slots (sub-menus, time, butcher, difficulty) stay in the switch below.
      */
-    private static final Map<Integer, Toggle> TOGGLES = Map.of(
-            20, new Toggle("buildsystem.edit.breaking", WorldData::blockBreaking),
-            21, new Toggle("buildsystem.edit.placement", WorldData::blockPlacement),
-            22, new Toggle("buildsystem.edit.physics", WorldData::physics),
-            24, new Toggle("buildsystem.edit.explosions", WorldData::explosions),
-            31, new Toggle("buildsystem.edit.mobai", WorldData::mobAi),
-            33, new Toggle("buildsystem.edit.interactions", WorldData::blockInteractions));
+    private static final Map<Integer, Toggle> TOGGLES = Map.ofEntries(
+            entry(20, new Toggle("buildsystem.edit.breaking", WorldData::blockBreaking)),
+            entry(21, new Toggle("buildsystem.edit.placement", WorldData::blockPlacement)),
+            entry(22, new Toggle("buildsystem.edit.physics", WorldData::physics)),
+            entry(24, new Toggle("buildsystem.edit.explosions", WorldData::explosions)),
+            entry(31, new Toggle("buildsystem.edit.mobai", WorldData::mobAi)),
+            entry(33, new Toggle("buildsystem.edit.interactions", WorldData::blockInteractions)));
 
     private record Toggle(String permission, Function<WorldData, Type<Boolean>> data) {}
 

@@ -17,6 +17,8 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
+import static java.util.Map.entry;
+
 import com.google.common.collect.Lists;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.builder.Builder;
@@ -190,17 +192,19 @@ public class ImportSubCommand implements SubCommand {
             return result;
         }
 
-        Map<String, List<String>> flags = Map.of(
-                "-g",
+        Map<String, List<String>> flags = Map.ofEntries(
+                entry(
+                        "-g",
                         Arrays.stream(Generator.values())
                                 .filter(g -> g != Generator.CUSTOM)
                                 .map(Enum::name)
-                                .toList(),
-                "-c", List.of(),
-                "-t",
+                                .toList()),
+                entry("-c", List.of()),
+                entry(
+                        "-t",
                         Arrays.stream(de.eintosti.buildsystem.api.world.data.BuildWorldType.values())
                                 .map(Enum::name)
-                                .toList());
+                                .toList()));
 
         if (args.length % 2 == 1) {
             flags.keySet().stream()
