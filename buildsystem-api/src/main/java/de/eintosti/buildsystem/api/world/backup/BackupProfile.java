@@ -18,13 +18,15 @@
 package de.eintosti.buildsystem.api.world.backup;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 /**
- * Represents a profile for managing backups of a specific {@link BuildWorld}. This interface defines operations related to listing, creating, restoring, and destroying backups.
+ * Represents a profile for managing backups of a specific {@link BuildWorld}. This interface defines operations related
+ * to listing, creating, restoring, and destroying backups.
  */
 @NullMarked
 public interface BackupProfile {
@@ -37,15 +39,17 @@ public interface BackupProfile {
     CompletableFuture<List<Backup>> listBackups();
 
     /**
-     * Creates a backup of the {@link BuildWorld}. If the profile is at the maximum backup capacity, the oldest backup will be deleted.
+     * Creates a backup of the {@link BuildWorld}. If the profile is at the maximum backup capacity, the oldest backup
+     * will be deleted.
      *
      * @return Future that completes with the created backup.
      */
     CompletableFuture<Backup> createBackup();
 
     /**
-     * Restores a {@link Backup}, replacing the world's current state. World and file operations run on the server main thread, so the returned future completes there; it completes
-     * exceptionally if the backup cannot be downloaded or extracted.
+     * Restores a {@link Backup}, replacing the world's current state. World and file operations run on the server main
+     * thread, so the returned future completes there; it completes exceptionally if the backup cannot be downloaded or
+     * extracted.
      *
      * @param backup Backup to restore
      * @param player The player restoring the backup

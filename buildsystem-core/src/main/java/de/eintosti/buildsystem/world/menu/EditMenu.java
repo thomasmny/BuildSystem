@@ -17,8 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import static java.util.Map.entry;
-
 import com.cryptomorin.xseries.XEntityType;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
@@ -34,12 +32,6 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -47,12 +39,19 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+
+import static java.util.Map.entry;
+
 @NullMarked
 public class EditMenu extends Menu {
 
-    /**
-     * A set of entities which are ignored when the butcher item is used.
-     */
+    /** A set of entities which are ignored when the butcher item is used. */
     private static final Set<XEntityType> IGNORED_ENTITIES = Sets.newHashSet(
             XEntityType.ARMOR_STAND,
             XEntityType.END_CRYSTAL,
@@ -314,7 +313,8 @@ public class EditMenu extends Menu {
     }
 
     /**
-     * Slots whose only action is "check permission, flip a boolean world setting, re-open". Heterogeneous slots (sub-menus, time, butcher, difficulty) stay in the switch below.
+     * Slots whose only action is "check permission, flip a boolean world setting, re-open". Heterogeneous slots
+     * (sub-menus, time, butcher, difficulty) stay in the switch below.
      */
     private static final Map<Integer, Toggle> TOGGLES = Map.ofEntries(
             entry(20, new Toggle("buildsystem.edit.breaking", WorldData::blockBreaking)),
@@ -491,7 +491,7 @@ public class EditMenu extends Menu {
          * Buckets a raw world tick into a {@link TimeOfDay}.
          *
          * @param worldTicks The world time in ticks (0–24000)
-         * @param noonStart  The configured tick at which noon begins
+         * @param noonStart The configured tick at which noon begins
          * @return The matching time-of-day bucket
          */
         static TimeOfDay fromTicks(int worldTicks, int noonStart) {

@@ -25,14 +25,11 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.world.creation.GenerationDataStore.WorldGenerationData;
 import de.eintosti.buildsystem.world.creation.generator.VoidGenerator;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
-import java.util.Locale;
-import org.bukkit.Bukkit;
-import org.bukkit.Difficulty;
-import org.bukkit.World;
-import org.bukkit.WorldCreator;
-import org.bukkit.WorldType;
+import org.bukkit.*;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.Locale;
 
 @NullMarked
 public class BukkitWorldFactory {
@@ -57,9 +54,7 @@ public class BukkitWorldFactory {
     private final WorldDataVersionGuard versionGuard;
     private final GenerationDataStore generationDataStore;
 
-    /**
-     * Used when loading or regenerating an existing world (no default settings to apply).
-     */
+    /** Used when loading or regenerating an existing world (no default settings to apply). */
     public BukkitWorldFactory(BuildSystemPlugin plugin, BuildWorld buildWorld) {
         this.plugin = plugin;
         this.worldName = buildWorld.getName();
@@ -72,9 +67,7 @@ public class BukkitWorldFactory {
         this.generationDataStore = new GenerationDataStore(plugin.getLogger(), Bukkit.getWorldContainer());
     }
 
-    /**
-     * Used when creating a new world with defaults from plugin config.
-     */
+    /** Used when creating a new world with defaults from plugin config. */
     BukkitWorldFactory(
             BuildSystemPlugin plugin,
             String worldName,

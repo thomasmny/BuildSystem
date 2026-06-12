@@ -28,23 +28,15 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public enum Generator {
 
-    /**
-     * A normal world
-     */
+    /** A normal world */
     NORMAL,
 
-    /**
-     * A flat world
-     */
+    /** A flat world */
     FLAT,
 
-    /**
-     * A void world
-     */
+    /** A void world */
     VOID,
 
-    /**
-     * A custom world
-     */
+    /** A custom world */
     CUSTOM
 }

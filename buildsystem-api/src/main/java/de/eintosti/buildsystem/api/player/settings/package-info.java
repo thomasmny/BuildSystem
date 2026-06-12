@@ -17,7 +17,7 @@
  */
 
 /**
- * Provides interfaces and enumerations for player-specific settings within the BuildSystem API. This includes customizable options like design colors and various gameplay
- * preferences.
+ * Provides interfaces and enumerations for player-specific settings within the BuildSystem API. This includes
+ * customizable options like design colors and various gameplay preferences.
  */
 package de.eintosti.buildsystem.api.player.settings;

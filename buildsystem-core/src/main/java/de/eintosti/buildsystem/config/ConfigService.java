@@ -20,10 +20,6 @@ package de.eintosti.buildsystem.config;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
-import java.io.File;
-import java.util.*;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
 import org.bukkit.GameRule;
@@ -31,6 +27,11 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.io.File;
+import java.util.*;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @NullMarked
 public class ConfigService {
@@ -53,9 +54,7 @@ public class ConfigService {
         return current;
     }
 
-    /**
-     * Reloads the configuration from disk and re-parses it into a new {@link PluginConfig}.
-     */
+    /** Reloads the configuration from disk and re-parses it into a new {@link PluginConfig}. */
     public void load() {
         this.current = parse(plugin.getConfig(), plugin.getLogger());
     }
@@ -89,9 +88,7 @@ public class ConfigService {
         return plugin.getConfig();
     }
 
-    /**
-     * Saves the plugin config to disk.
-     */
+    /** Saves the plugin config to disk. */
     public void saveConfig() {
         plugin.saveConfig();
     }
@@ -108,7 +105,8 @@ public class ConfigService {
     }
 
     /**
-     * Parses a config for testing purposes (WorldEdit wand detection skipped — returns default {@link XMaterial#WOODEN_AXE}).
+     * Parses a config for testing purposes (WorldEdit wand detection skipped — returns default
+     * {@link XMaterial#WOODEN_AXE}).
      *
      * @param config The file configuration to parse
      * @param logger The logger to use for warnings

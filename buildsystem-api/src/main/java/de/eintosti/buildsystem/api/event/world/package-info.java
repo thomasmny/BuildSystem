@@ -16,7 +16,5 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/**
- * Events relating to a {@link de.eintosti.buildsystem.api.world.BuildWorld}.
- */
+/** Events relating to a {@link de.eintosti.buildsystem.api.world.BuildWorld}. */
 package de.eintosti.buildsystem.api.event.world;

@@ -24,8 +24,8 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Represents the different categories used to organize and display {@link BuildWorld}s in the navigator menus. Each category corresponds to a distinct filter or access level for
- * worlds.
+ * Represents the different categories used to organize and display {@link BuildWorld}s in the navigator menus. Each
+ * category corresponds to a distinct filter or access level for worlds.
  *
  * @since 3.0.0
  */
@@ -33,21 +33,23 @@ import org.jspecify.annotations.NullMarked;
 public enum NavigatorCategory {
 
     /**
-     * Represents the category for public worlds. This navigator inventory contains all {@link BuildWorld}s that are still being built or are generally accessible.
+     * Represents the category for public worlds. This navigator inventory contains all {@link BuildWorld}s that are
+     * still being built or are generally accessible.
      */
     PUBLIC,
 
     /**
-     * Represents the category for archived worlds. This navigator inventory contains {@link BuildWorld}s that have been marked with {@link BuildWorldStatus#ARCHIVE}. These worlds
-     * are typically read-only and no longer actively built upon.
+     * Represents the category for archived worlds. This navigator inventory contains {@link BuildWorld}s that have been
+     * marked with {@link BuildWorldStatus#ARCHIVE}. These worlds are typically read-only and no longer actively built
+     * upon.
      *
      * @see BuildWorldStatus#ARCHIVE
      */
     ARCHIVE,
 
     /**
-     * Represents the category for private worlds. This navigator inventory contains {@link BuildWorld}s that are set as private. These worlds can typically only be modified by
-     * their creator and explicitly added {@link Builder}s.
+     * Represents the category for private worlds. This navigator inventory contains {@link BuildWorld}s that are set as
+     * private. These worlds can typically only be modified by their creator and explicitly added {@link Builder}s.
      *
      * @see WorldData#privateWorld()
      */
@@ -55,8 +57,9 @@ public enum NavigatorCategory {
 
     /**
      * Determines the appropriate {@link NavigatorCategory} for a given {@link BuildWorld} based on its properties.
-     * <p>
-     * First checks if the world is private ({@link #PRIVATE}), then if it's archived ({@link #ARCHIVE}), otherwise it defaults to {@link #PUBLIC}.
+     *
+     * <p>First checks if the world is private ({@link #PRIVATE}), then if it's archived ({@link #ARCHIVE}), otherwise
+     * it defaults to {@link #PUBLIC}.
      *
      * @param buildWorld The {@link BuildWorld} for which to determine the category
      * @return The corresponding category

@@ -17,17 +17,19 @@
  */
 package de.eintosti.buildsystem.player;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
- * Pins the offline-safe behavior of {@link PlayerLookupService}: cached lookups resolve without scheduling, names are case-insensitive, and the undashed/dashed UUID conversion
- * round-trips. The network paths are intentionally untested (no live Mojang calls in CI) and covered by the compile gate.
+ * Pins the offline-safe behavior of {@link PlayerLookupService}: cached lookups resolve without scheduling, names are
+ * case-insensitive, and the undashed/dashed UUID conversion round-trips. The network paths are intentionally untested
+ * (no live Mojang calls in CI) and covered by the compile gate.
  */
 @NullMarked
 class PlayerLookupServiceTest {

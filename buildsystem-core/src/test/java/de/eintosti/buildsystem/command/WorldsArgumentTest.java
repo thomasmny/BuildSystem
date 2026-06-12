@@ -17,16 +17,17 @@
  */
 package de.eintosti.buildsystem.command;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
- * Pins {@link WorldsArgument} as the single source of truth for {@code /worlds} subcommand permissions and names. Subcommand executors and tab completions both derive their
- * permission from {@code getArgument().getPermission()}; this guards against a literal drifting from the enum (the historic TeleportSubCommand bug).
+ * Pins {@link WorldsArgument} as the single source of truth for {@code /worlds} subcommand permissions and names.
+ * Subcommand executors and tab completions both derive their permission from {@code getArgument().getPermission()};
+ * this guards against a literal drifting from the enum (the historic TeleportSubCommand bug).
  */
 @NullMarked
 class WorldsArgumentTest {

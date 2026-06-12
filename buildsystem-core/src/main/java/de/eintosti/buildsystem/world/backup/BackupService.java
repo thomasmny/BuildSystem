@@ -19,6 +19,12 @@ import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.world.backup.storage.LocalBackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.S3BackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.SftpBackupStorage;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,11 +34,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class BackupService {
@@ -84,8 +85,9 @@ public class BackupService {
     }
 
     /**
-     * Reloads the auto-backup scheduler based on the current {@link PluginConfig.World.Backup.AutoBackup} configuration. If auto-backup was previously running and is now disabled, the task is cancelled. If
-     * auto-backup was not running and is now enabled, a new task is started.
+     * Reloads the auto-backup scheduler based on the current {@link PluginConfig.World.Backup.AutoBackup}
+     * configuration. If auto-backup was previously running and is now disabled, the task is cancelled. If auto-backup
+     * was not running and is now enabled, a new task is started.
      */
     public void reload() {
         if (autoBackupTask != null) {
@@ -112,8 +114,8 @@ public class BackupService {
     }
 
     /**
-     * Increments the time since a {@link BuildWorld} was backed-up by {@link #UPDATE_PERIOD} seconds. If the time has surpassed {@link AutoBackup#interval}, a backup will
-     * automatically be created.
+     * Increments the time since a {@link BuildWorld} was backed-up by {@link #UPDATE_PERIOD} seconds. If the time has
+     * surpassed {@link AutoBackup#interval}, a backup will automatically be created.
      */
     private void incrementTimeSinceBackup() {
         Set<BuildWorld> worlds = new HashSet<>();
@@ -146,8 +148,8 @@ public class BackupService {
      * Performs a backup of the {@link BuildWorld}.
      *
      * @param buildWorld The world to create a backup of
-     * @param onSuccess  Action to run if backup was successful
-     * @param onFailure  Action to run if backup failed
+     * @param onSuccess Action to run if backup was successful
+     * @param onFailure Action to run if backup failed
      */
     public void backup(BuildWorld buildWorld, Runnable onSuccess, Runnable onFailure) {
         getProfile(buildWorld).createBackup().whenComplete((backup, throwable) -> {

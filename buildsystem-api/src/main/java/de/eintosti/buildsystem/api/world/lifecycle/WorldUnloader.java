@@ -21,7 +21,8 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Provides utilities for managing the unloading process of a {@link BuildWorld}. This interface handles tasks such as initiating and cancelling unload procedures.
+ * Provides utilities for managing the unloading process of a {@link BuildWorld}. This interface handles tasks such as
+ * initiating and cancelling unload procedures.
  *
  * @since 3.0.0
  */
@@ -30,25 +31,22 @@ public interface WorldUnloader {
 
     /**
      * Manages the {@link BuildWorld}'s unload state.
-     * <p>
-     * If world unloading is enabled in the config, the unload task is started.
+     *
+     * <p>If world unloading is enabled in the config, the unload task is started.
      */
     void manageUnload();
 
-    /**
-     * Starts a delayed task to unload the world, if world unloading is enabled in the config.
-     */
+    /** Starts a delayed task to unload the world, if world unloading is enabled in the config. */
     void startUnloadTask();
 
-    /**
-     * Resets the world unload task.
-     */
+    /** Resets the world unload task. */
     void resetUnloadTask();
 
     /**
      * Attempt to unload the world.
-     * <p>
-     * If the world contains any players, is blacklisted for unloading or is the spawn world, the unload will be canceled.
+     *
+     * <p>If the world contains any players, is blacklisted for unloading or is the spawn world, the unload will be
+     * canceled.
      */
     void unload();
 

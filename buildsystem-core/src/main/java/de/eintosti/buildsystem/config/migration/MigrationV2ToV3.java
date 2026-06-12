@@ -23,17 +23,18 @@ import org.jspecify.annotations.NullMarked;
 
 /**
  * Migrates config from v2 to v3: restructures the layout for logical grouping.
+ *
  * <ul>
- *   <li>{@code messages.*} → {@code settings.*} (display prefs are settings, not messages)</li>
- *   <li>{@code settings.disabled-physics.*} → {@code world.disabled-physics.*} (physics is world behavior)</li>
- *   <li>{@code world.default.*} → {@code world.defaults.*} (plural)</li>
- *   <li>{@code world.default.settings.*} → {@code world.defaults.*} (flatten sub-nesting)</li>
- *   <li>{@code world.default.settings.builders-enabled.*} → {@code world.defaults.builders-enabled.*}</li>
- *   <li>{@code world.default.settings.public-worlds/private-worlds} → {@code world.limits.public/private}</li>
- *   <li>{@code world.default.worldborder.size} → {@code world.defaults.worldborder-size}</li>
- *   <li>{@code world.import-all.delay} → {@code world.import-all-delay}</li>
- *   <li>Dead: {@code world.disabled-physics.*} (old, never read) deleted</li>
- *   <li>Dead: {@code world.max-amount.*} (wrong path) deleted</li>
+ *   <li>{@code messages.*} → {@code settings.*} (display prefs are settings, not messages)
+ *   <li>{@code settings.disabled-physics.*} → {@code world.disabled-physics.*} (physics is world behavior)
+ *   <li>{@code world.default.*} → {@code world.defaults.*} (plural)
+ *   <li>{@code world.default.settings.*} → {@code world.defaults.*} (flatten sub-nesting)
+ *   <li>{@code world.default.settings.builders-enabled.*} → {@code world.defaults.builders-enabled.*}
+ *   <li>{@code world.default.settings.public-worlds/private-worlds} → {@code world.limits.public/private}
+ *   <li>{@code world.default.worldborder.size} → {@code world.defaults.worldborder-size}
+ *   <li>{@code world.import-all.delay} → {@code world.import-all-delay}
+ *   <li>Dead: {@code world.disabled-physics.*} (old, never read) deleted
+ *   <li>Dead: {@code world.max-amount.*} (wrong path) deleted
  * </ul>
  */
 @NullMarked

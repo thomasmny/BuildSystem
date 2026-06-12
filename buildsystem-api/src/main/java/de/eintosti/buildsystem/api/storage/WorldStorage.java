@@ -19,14 +19,15 @@ package de.eintosti.buildsystem.api.storage;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Interface for managing the storage of {@link BuildWorld} objects.
@@ -80,7 +81,7 @@ public interface WorldStorage extends Storage<BuildWorld> {
     /**
      * Gets a list of {@link BuildWorld}s created by the given player with the given visibility.
      *
-     * @param player     The player who created the worlds
+     * @param player The player who created the worlds
      * @param visibility The visibility of the worlds
      * @return A list of worlds created by the player with the given visibility
      */

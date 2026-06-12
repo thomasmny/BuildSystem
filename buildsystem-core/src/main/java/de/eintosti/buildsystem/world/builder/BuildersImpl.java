@@ -20,18 +20,14 @@ package de.eintosti.buildsystem.world.builder;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.i18n.Messages;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @NullMarked
 public class BuildersImpl implements Builders {
@@ -129,7 +125,7 @@ public class BuildersImpl implements Builders {
     /**
      * Formats the builders for the lore of the world item.
      *
-     * @param player          The player to display the lore to
+     * @param player The player to display the lore to
      * @param buildersPerLine The number of builders to display per line
      * @return A list of formatted builder lines, each containing up to 3 builders
      */

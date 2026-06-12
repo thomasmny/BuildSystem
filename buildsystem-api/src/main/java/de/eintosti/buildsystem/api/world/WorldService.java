@@ -21,11 +21,13 @@ import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.creation.BuildWorldCreator;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import java.util.concurrent.CompletableFuture;
 import org.jspecify.annotations.NullMarked;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
- * Provides a service for managing world-related operations and data. This interface offers methods to access and interact with world storage and folder management.
+ * Provides a service for managing world-related operations and data. This interface offers methods to access and
+ * interact with world storage and folder management.
  *
  * @since 3.0.0
  */
@@ -55,16 +57,18 @@ public interface WorldService {
     BuildWorldCreator createWorld(String name);
 
     /**
-     * Unimport an existing {@link BuildWorld}. In comparison to {@link #deleteWorld(BuildWorld)}, unimporting a world does not delete the world's directory.
+     * Unimport an existing {@link BuildWorld}. In comparison to {@link #deleteWorld(BuildWorld)}, unimporting a world
+     * does not delete the world's directory.
      *
      * @param buildWorld The world to unimport
-     * @param save       Whether to save the world before unloading
+     * @param save Whether to save the world before unloading
      * @return A future that completes when the unimport operation is finished
      */
     CompletableFuture<Void> unimportWorld(BuildWorld buildWorld, boolean save);
 
     /**
-     * Delete an existing {@link BuildWorld}. In comparison to {@link #unimportWorld(BuildWorld, boolean)}, deleting a world deletes the world's directory.
+     * Delete an existing {@link BuildWorld}. In comparison to {@link #unimportWorld(BuildWorld, boolean)}, deleting a
+     * world deletes the world's directory.
      *
      * @param buildWorld The world to be deleted
      * @return A future that completes when the delete operation is finished

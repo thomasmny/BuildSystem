@@ -24,16 +24,17 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlPlayerStorage;
+import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachmentInfo;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bukkit.entity.Player;
-import org.bukkit.permissions.PermissionAttachmentInfo;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class PlayerServiceImpl implements PlayerService {
@@ -52,9 +53,7 @@ public class PlayerServiceImpl implements PlayerService {
         this.buildModePlayers = new HashSet<>();
     }
 
-    /**
-     * Package-private for unit tests — only getMaxWorlds logic is available.
-     */
+    /** Package-private for unit tests — only getMaxWorlds logic is available. */
     PlayerServiceImpl(Logger logger) {
         this.plugin = null;
         this.logger = logger;

@@ -41,6 +41,15 @@ import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import de.eintosti.buildsystem.world.lifecycle.WorldRenamer;
 import de.eintosti.buildsystem.world.lifecycle.WorldUnloaderImpl;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,14 +59,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.jetbrains.annotations.Contract;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class WorldServiceImpl implements WorldService {
@@ -305,9 +306,9 @@ public class WorldServiceImpl implements WorldService {
     /**
      * Change the name of a {@link BuildWorld} to a given name.
      *
-     * @param player     The player who issued the world renaming
+     * @param player The player who issued the world renaming
      * @param buildWorld The build world object
-     * @param newName    The name the world should be renamed to
+     * @param newName The name the world should be renamed to
      */
     public void renameWorld(Player player, BuildWorld buildWorld, String newName) {
         new WorldRenamer(plugin, this, worldStorage).rename(player, buildWorld, newName);

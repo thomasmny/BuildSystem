@@ -23,61 +23,41 @@ import org.bukkit.generator.ChunkGenerator;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Represents the different types of {@link BuildWorld}s that can be created or managed by the BuildSystem plugin. Each type specifies unique characteristics for world generation
- * and behavior.
+ * Represents the different types of {@link BuildWorld}s that can be created or managed by the BuildSystem plugin. Each
+ * type specifies unique characteristics for world generation and behavior.
  *
  * @since 3.0.0
  */
 @NullMarked
 public enum BuildWorldType {
 
-    /**
-     * A standard world type, equivalent to a default Minecraft overworld with {@link Environment#NORMAL}.
-     */
+    /** A standard world type, equivalent to a default Minecraft overworld with {@link Environment#NORMAL}. */
     NORMAL,
 
-    /**
-     * A super-flat world, ideal for creative building without terrain obstacles.
-     */
+    /** A super-flat world, ideal for creative building without terrain obstacles. */
     FLAT,
 
-    /**
-     * A world type representing the Nether dimension, with {@link Environment#NETHER}.
-     */
+    /** A world type representing the Nether dimension, with {@link Environment#NETHER}. */
     NETHER,
 
-    /**
-     * A world type representing the End dimension, with {@link Environment#THE_END}.
-     */
+    /** A world type representing the End dimension, with {@link Environment#THE_END}. */
     END,
 
-    /**
-     * An empty world, containing no blocks except for a single platform at spawn.
-     */
+    /** An empty world, containing no blocks except for a single platform at spawn. */
     VOID,
 
-    /**
-     * A world created as an identical copy of an existing template world.
-     */
+    /** A world created as an identical copy of an existing template world. */
     TEMPLATE,
 
-    /**
-     * A world that, by default, can only be modified by its creator.
-     */
+    /** A world that, by default, can only be modified by its creator. */
     PRIVATE,
 
-    /**
-     * A world that was not originally created by the BuildSystem plugin but has been imported for management.
-     */
+    /** A world that was not originally created by the BuildSystem plugin but has been imported for management. */
     IMPORTED,
 
-    /**
-     * A world generated using a custom {@link ChunkGenerator}.
-     */
+    /** A world generated using a custom {@link ChunkGenerator}. */
     CUSTOM,
 
-    /**
-     * A world whose type could not be determined or is not recognized by the BuildSystem.
-     */
+    /** A world whose type could not be determined or is not recognized by the BuildSystem. */
     UNKNOWN
 }

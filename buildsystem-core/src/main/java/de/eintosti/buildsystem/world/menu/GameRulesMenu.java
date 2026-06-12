@@ -24,9 +24,6 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
 import org.bukkit.ChatColor;
 import org.bukkit.GameRule;
 import org.bukkit.Material;
@@ -39,6 +36,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 @NullMarked
 public class GameRulesMenu extends PaginatedMenu {
@@ -234,11 +235,12 @@ public class GameRulesMenu extends PaginatedMenu {
      *
      * @param rule The game rule to cast
      * @param type The type to cast the game rule to
-     * @param <T>  The type to cast the game rule to
+     * @param <T> The type to cast the game rule to
      * @return The casted game rule if it matches the type, or {@code null} if it does not match
      */
     @SuppressWarnings("unchecked")
-    @Nullable @Contract("_, _ -> _")
+    @Nullable
+    @Contract("_, _ -> _")
     private static <T> GameRule<T> castRule(GameRule<?> rule, Class<T> type) {
         return type.equals(rule.getType()) ? (GameRule<T>) rule : null;
     }
@@ -247,8 +249,8 @@ public class GameRulesMenu extends PaginatedMenu {
      * Gets whether the given {@link GameRule} is of the given type.
      *
      * @param gameRule The game rule to check
-     * @param type     The type to check against
-     * @param <T>      The type to check against
+     * @param type The type to check against
+     * @param <T> The type to check against
      * @return {@code true} if the game rule is of the given type, {@code false} otherwise
      */
     private static <T> boolean isOfType(@Nullable GameRule<?> gameRule, Class<T> type) {
@@ -257,10 +259,10 @@ public class GameRulesMenu extends PaginatedMenu {
 
     /**
      * Checks if the {@link GameRule} is enabled in the given {@link World}.
-     * <p>
-     * If a game rule is not a boolean type, it is considered enabled by default.
      *
-     * @param world    The world to check the game rule in
+     * <p>If a game rule is not a boolean type, it is considered enabled by default.
+     *
+     * @param world The world to check the game rule in
      * @param gameRule The game rule to check
      * @return {@code true} if the game rule is enabled, {@code false} otherwise
      */

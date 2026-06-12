@@ -26,8 +26,8 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Owns lifecycle (activate/deactivate) for all optional-plugin integrations. New integrations: add a new subpackage under {@code integration/}, expose
- * {@code register}/{@code unregister}, and wire it in here.
+ * Owns lifecycle (activate/deactivate) for all optional-plugin integrations. New integrations: add a new subpackage
+ * under {@code integration/}, expose {@code register}/{@code unregister}, and wire it in here.
  */
 @NullMarked
 public final class Integrations {

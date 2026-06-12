@@ -17,11 +17,12 @@
  */
 package de.eintosti.buildsystem.util;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class StringCleaner {
@@ -53,7 +54,7 @@ public final class StringCleaner {
     /**
      * Checks whether a resolved file escapes a given base directory.
      *
-     * @param base     the expected parent directory
+     * @param base the expected parent directory
      * @param resolved the file to check (must already be constructed from base + user input)
      * @return {@code true} if the resolved file is NOT under base (i.e., an escape attempt)
      */

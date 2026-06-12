@@ -41,8 +41,9 @@ public interface Settings {
 
     /**
      * Sets the navigator type.
-     * <p>
-     * The {@link NavigatorType#OLD} is the classic chest menu, whereas {@link NavigatorType#NEW} is a new 3D selector.
+     *
+     * <p>The {@link NavigatorType#OLD} is the classic chest menu, whereas {@link NavigatorType#NEW} is a new 3D
+     * selector.
      *
      * @param navigatorType The navigator type
      */

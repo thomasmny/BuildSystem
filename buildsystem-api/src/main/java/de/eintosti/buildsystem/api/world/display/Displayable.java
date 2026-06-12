@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.api.world.display;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import java.util.List;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -30,6 +29,8 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.List;
 
 /**
  * Represents an object that can be displayed in an inventory.
@@ -57,7 +58,8 @@ public interface Displayable {
     /**
      * Gets the creation timestamp of the displayable.
      *
-     * @return The number of milliseconds that have passed since {@code January 1, 1970 UTC}, until the displayable was created.
+     * @return The number of milliseconds that have passed since {@code January 1, 1970 UTC}, until the displayable was
+     *     created.
      */
     long getCreation();
 
@@ -127,26 +129,20 @@ public interface Displayable {
      * Adds this displayable to an {@link Inventory} at the given slot.
      *
      * @param inventory The inventory to add the item to
-     * @param slot      The slot in the inventory to add the item
-     * @param player    The player viewing the inventory
+     * @param slot The slot in the inventory to add the item
+     * @param player The player viewing the inventory
      */
     default void addToInventory(Inventory inventory, int slot, Player player) {
         inventory.setItem(slot, asItemStack(player));
     }
 
-    /**
-     * Represents the distinct types of items that can be displayed in an inventory within the BuildSystem.
-     */
+    /** Represents the distinct types of items that can be displayed in an inventory within the BuildSystem. */
     enum DisplayableType {
 
-        /**
-         * Indicates that the displayable item is a {@link BuildWorld}.
-         */
+        /** Indicates that the displayable item is a {@link BuildWorld}. */
         BUILD_WORLD,
 
-        /**
-         * Indicates that the displayable item is a {@link Folder}.
-         */
+        /** Indicates that the displayable item is a {@link Folder}. */
         FOLDER
     }
 }

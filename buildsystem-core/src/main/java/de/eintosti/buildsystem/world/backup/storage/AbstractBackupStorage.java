@@ -21,6 +21,9 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.backup.BackupStorage;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Comparator;
@@ -28,8 +31,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.logging.Logger;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public abstract class AbstractBackupStorage implements BackupStorage {
@@ -60,9 +61,7 @@ public abstract class AbstractBackupStorage implements BackupStorage {
                 .formatted(buildWorld.getName(), System.currentTimeMillis() - startTimestamp));
     }
 
-    /**
-     * Runs {@code supplier} on the backup executor; wraps IOException in RuntimeException.
-     */
+    /** Runs {@code supplier} on the backup executor; wraps IOException in RuntimeException. */
     protected <T> CompletableFuture<T> supply(String operation, IoSupplier<T> supplier) {
         return CompletableFuture.supplyAsync(
                 () -> {
@@ -76,9 +75,7 @@ public abstract class AbstractBackupStorage implements BackupStorage {
                 executor);
     }
 
-    /**
-     * Runs {@code task} on the backup executor; wraps IOException in RuntimeException.
-     */
+    /** Runs {@code task} on the backup executor; wraps IOException in RuntimeException. */
     protected CompletableFuture<Void> run(String operation, IoRunnable task) {
         return CompletableFuture.runAsync(
                 () -> {
@@ -93,7 +90,8 @@ public abstract class AbstractBackupStorage implements BackupStorage {
     }
 
     /**
-     * Called on any IOException caught by the template scaffolding. Override to perform cleanup (e.g. SFTP subclass calls {@code disconnectAll()}).
+     * Called on any IOException caught by the template scaffolding. Override to perform cleanup (e.g. SFTP subclass
+     * calls {@code disconnectAll()}).
      */
     protected void onIoFailure() {}
 
@@ -111,9 +109,7 @@ public abstract class AbstractBackupStorage implements BackupStorage {
         return run("delete backup " + backup.key(), () -> doDeleteBackup(backup));
     }
 
-    /**
-     * Returns a mutable list of backups; ordering not required (base class sorts).
-     */
+    /** Returns a mutable list of backups; ordering not required (base class sorts). */
     protected abstract List<Backup> doListBackups(BuildWorld buildWorld) throws IOException;
 
     @Override

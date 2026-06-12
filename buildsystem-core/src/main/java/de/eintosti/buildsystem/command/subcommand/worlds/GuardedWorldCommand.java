@@ -25,27 +25,28 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Shared preamble for the {@code /worlds} subcommands that act on a named world.
- */
+/** Shared preamble for the {@code /worlds} subcommands that act on a named world. */
 @NullMarked
 final class GuardedWorldCommand {
 
     private GuardedWorldCommand() {}
 
     /**
-     * Runs the shared preamble: permission (checked before existence so unpermitted players cannot probe which world names exist), argument count, then existence.
+     * Runs the shared preamble: permission (checked before existence so unpermitted players cannot probe which world
+     * names exist), argument count, then existence.
      *
-     * @param plugin           The plugin
-     * @param player           The command sender
-     * @param worldName        The world name argument
-     * @param args             The raw command arguments
-     * @param maxArgs          The maximum permitted argument count (inclusive)
-     * @param argument         The argument supplying the permission node
-     * @param messageKeyPrefix The message key prefix, e.g. {@code "worlds_edit"}; {@code _usage}/{@code _unknown_world} are appended
+     * @param plugin The plugin
+     * @param player The command sender
+     * @param worldName The world name argument
+     * @param args The raw command arguments
+     * @param maxArgs The maximum permitted argument count (inclusive)
+     * @param argument The argument supplying the permission node
+     * @param messageKeyPrefix The message key prefix, e.g. {@code "worlds_edit"}; {@code _usage}/{@code _unknown_world}
+     *     are appended
      * @return The world if all checks pass, otherwise {@code null} (an error message has already been sent)
      */
-    @Nullable static BuildWorld requireWorld(
+    @Nullable
+    static BuildWorld requireWorld(
             BuildSystemPlugin plugin,
             Player player,
             String worldName,

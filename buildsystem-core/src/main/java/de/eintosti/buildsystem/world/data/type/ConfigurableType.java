@@ -20,11 +20,12 @@ package de.eintosti.buildsystem.world.data.type;
 import de.eintosti.buildsystem.api.data.Capability;
 import de.eintosti.buildsystem.api.data.Overridable;
 import de.eintosti.buildsystem.api.data.Type;
+import org.jspecify.annotations.NullMarked;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import org.jspecify.annotations.NullMarked;
 
 /**
  * A single, concrete implementation of {@link Type} that uses a composition-based {@link Capability} model.
@@ -39,9 +40,7 @@ public class ConfigurableType<T> implements Type<T> {
 
     private final Map<Class<? extends Capability>, Capability> capabilities = new HashMap<>();
 
-    /**
-     * Creates a simple type.
-     */
+    /** Creates a simple type. */
     public ConfigurableType(T defaultValue) {
         this.value = defaultValue;
     }
@@ -60,7 +59,7 @@ public class ConfigurableType<T> implements Type<T> {
     /**
      * Attaches a new capability to this type.
      *
-     * @param capabilityType     The class of the capability
+     * @param capabilityType The class of the capability
      * @param capabilityInstance The instance of the capability
      * @return This object, for fluent chaining
      */
@@ -106,8 +105,9 @@ public class ConfigurableType<T> implements Type<T> {
 
     /**
      * Sets the base value for this type.
-     * <p>
-     * Note: This sets the underlying value. If an {@link Overridable} capability is active, {@link #get()} will still return the overridden value.
+     *
+     * <p>Note: This sets the underlying value. If an {@link Overridable} capability is active, {@link #get()} will
+     * still return the overridden value.
      *
      * @param value The new base value
      */

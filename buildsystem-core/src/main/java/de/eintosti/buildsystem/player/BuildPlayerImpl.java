@@ -20,17 +20,20 @@ package de.eintosti.buildsystem.player;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import java.util.UUID;
 import org.bukkit.Location;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.util.UUID;
+
 /**
- * BuildSystem's only {@link BuildPlayer} implementation. Beyond the public API ({@code getUniqueId()}, {@code getSettings()}) it carries the runtime state core needs but does not
- * expose: cached gameplay values for build mode, the logout location, the previous teleport location, and the navigator category last opened.
+ * BuildSystem's only {@link BuildPlayer} implementation. Beyond the public API ({@code getUniqueId()},
+ * {@code getSettings()}) it carries the runtime state core needs but does not expose: cached gameplay values for build
+ * mode, the logout location, the previous teleport location, and the navigator category last opened.
  *
- * <p>Since every {@link BuildPlayer} returned by the registry is a {@code BuildPlayerImpl} at runtime, core code that needs the runtime state casts via {@link #of(BuildPlayer)} or
- * declares the local as {@code BuildPlayerImpl}. The cast is type-safe: nothing else implements {@link BuildPlayer}.</p>
+ * <p>Since every {@link BuildPlayer} returned by the registry is a {@code BuildPlayerImpl} at runtime, core code that
+ * needs the runtime state casts via {@link #of(BuildPlayer)} or declares the local as {@code BuildPlayerImpl}. The cast
+ * is type-safe: nothing else implements {@link BuildPlayer}.
  */
 @NullMarked
 public final class BuildPlayerImpl implements BuildPlayer {
@@ -52,7 +55,8 @@ public final class BuildPlayerImpl implements BuildPlayer {
     }
 
     /**
-     * Widens an API-typed reference to its impl. The cast is safe: {@code BuildPlayerImpl} is the only implementation of {@link BuildPlayer}.
+     * Widens an API-typed reference to its impl. The cast is safe: {@code BuildPlayerImpl} is the only implementation
+     * of {@link BuildPlayer}.
      *
      * @param buildPlayer The API view
      * @return The same instance, typed as the impl

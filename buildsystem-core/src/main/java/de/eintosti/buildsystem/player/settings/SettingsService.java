@@ -25,16 +25,17 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import fr.mrmicky.fastboard.FastBoard;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @NullMarked
 public class SettingsService {
@@ -85,9 +86,7 @@ public class SettingsService {
         this.scoreboardTasks.put(player.getUniqueId(), scoreboardTask);
     }
 
-    /**
-     * Displays scoreboards for all online players who have it enabled and if enabled in the config.
-     */
+    /** Displays scoreboards for all online players who have it enabled and if enabled in the config. */
     public void displayScoreboard() {
         if (!plugin.getConfigService().current().settings().scoreboard()) {
             return;

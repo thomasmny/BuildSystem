@@ -19,11 +19,12 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import org.bukkit.entity.Player;
-import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 final class WorldsCompletions {
@@ -31,7 +32,8 @@ final class WorldsCompletions {
     private WorldsCompletions() {}
 
     /**
-     * Returns world names the player may act on, filtered by world-level permission and a command-specific permission (e.g. "buildsystem.edit").
+     * Returns world names the player may act on, filtered by world-level permission and a command-specific permission
+     * (e.g. "buildsystem.edit").
      */
     static List<String> permittedWorldNames(
             Player player, WorldStorage worldStorage, String commandPermission, String input) {
@@ -47,7 +49,8 @@ final class WorldsCompletions {
     }
 
     /**
-     * Returns world names the player can delete (no world-level access check, only command permission), matching the original delete completion branch.
+     * Returns world names the player can delete (no world-level access check, only command permission), matching the
+     * original delete completion branch.
      */
     static List<String> deletableWorldNames(Player player, WorldStorage worldStorage, String input) {
         List<String> result = new ArrayList<>();

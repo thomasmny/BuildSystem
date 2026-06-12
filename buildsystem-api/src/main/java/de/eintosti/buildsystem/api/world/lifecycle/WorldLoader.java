@@ -18,12 +18,14 @@
 package de.eintosti.buildsystem.api.world.lifecycle;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import java.util.concurrent.CompletableFuture;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
- * Provides utilities for loading and managing {@link BuildWorld}s. This interface handles the process of making a world accessible on the server.
+ * Provides utilities for loading and managing {@link BuildWorld}s. This interface handles the process of making a world
+ * accessible on the server.
  *
  * @since 3.0.0
  */
@@ -31,8 +33,8 @@ import org.jspecify.annotations.NullMarked;
 public interface WorldLoader {
 
     /**
-     * Loads the world associated with this loader, announcing progress to the given player. World generation runs on the server main thread, so the returned future completes there
-     * — do not block on it from the main thread.
+     * Loads the world associated with this loader, announcing progress to the given player. World generation runs on
+     * the server main thread, so the returned future completes there — do not block on it from the main thread.
      *
      * @param player The {@link Player} the loading notification is shown to
      * @return A future that completes once the world has finished loading
@@ -40,8 +42,8 @@ public interface WorldLoader {
     CompletableFuture<Void> loadForPlayer(Player player);
 
     /**
-     * Loads the world associated with this loader without notifying any specific player. World generation runs on the server main thread, so the returned future completes there —
-     * do not block on it from the main thread.
+     * Loads the world associated with this loader without notifying any specific player. World generation runs on the
+     * server main thread, so the returned future completes there — do not block on it from the main thread.
      *
      * @return A future that completes once the world has finished loading
      */

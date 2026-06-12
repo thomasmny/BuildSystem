@@ -27,11 +27,6 @@ import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import io.papermc.lib.PaperLib;
-import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -40,8 +35,15 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.io.File;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+
 /**
- * Orchestrates renaming a {@link BuildWorld}: validates the new name, evicts players, copies the directory asynchronously, then reconstructs the world under the new name.
+ * Orchestrates renaming a {@link BuildWorld}: validates the new name, evicts players, copies the directory
+ * asynchronously, then reconstructs the world under the new name.
  */
 @NullMarked
 public class WorldRenamer {

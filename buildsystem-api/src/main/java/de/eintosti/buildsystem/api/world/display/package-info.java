@@ -16,7 +16,5 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/**
- * Provides interfaces and classes for managing world display and rendering.
- */
+/** Provides interfaces and classes for managing world display and rendering. */
 package de.eintosti.buildsystem.api.world.display;

@@ -24,7 +24,8 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The world and coordinates a player was at when they last logged out. Persisted between sessions so the player can resume where they left off; internal to BuildSystem.
+ * The world and coordinates a player was at when they last logged out. Persisted between sessions so the player can
+ * resume where they left off; internal to BuildSystem.
  */
 @NullMarked
 public class LogoutLocation {

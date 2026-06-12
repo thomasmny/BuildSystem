@@ -58,9 +58,10 @@ public abstract class Menu implements InventoryHolder {
     }
 
     /**
-     * Shared click-time permission guard: if the player lacks the permission, closes the menu, sends the permission error and plays the deny sound.
+     * Shared click-time permission guard: if the player lacks the permission, closes the menu, sends the permission
+     * error and plays the deny sound.
      *
-     * @param player     The clicking player
+     * @param player The clicking player
      * @param permission The required permission
      * @return {@code true} if the player may proceed, {@code false} if denied (UX already handled)
      */

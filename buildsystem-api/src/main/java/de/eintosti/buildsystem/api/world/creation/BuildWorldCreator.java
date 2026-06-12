@@ -55,8 +55,8 @@ public interface BuildWorldCreator {
 
     /**
      * Sets the template which the world should be copied from.
-     * <p>
-     * Only used if the world type is {@link BuildWorldType#TEMPLATE}
+     *
+     * <p>Only used if the world type is {@link BuildWorldType#TEMPLATE}
      *
      * @param template The template name, may be {@code null} if no template is used
      * @return The creator object
@@ -113,8 +113,9 @@ public interface BuildWorldCreator {
 
     /**
      * Creates and generates a new {@link BuildWorld} using the settings configured in this builder.
-     * <p>
-     * This process includes creating the world files, registering the world with the plugin, and notifying the player of the progress.
+     *
+     * <p>This process includes creating the world files, registering the world with the plugin, and notifying the
+     * player of the progress.
      *
      * @param player The player who is creating the world
      */
@@ -123,30 +124,32 @@ public interface BuildWorldCreator {
     /**
      * Imports an existing world directory as a new {@link BuildWorld}.
      *
-     * @param player   The player who is importing the world
+     * @param player The player who is importing the world
      * @param teleport If true, the player will be teleported to the world after the import is finished
      */
     void importWorld(Player player, boolean teleport);
 
     /**
-     * Generates the underlying Bukkit {@link World} and applies post-generation settings. Only generates the world if the world was not created in a newer Minecraft version that
-     * the server is running.
-     * <p>
-     * Important: This method should only be called after the world has been created and registered with the plugin.
+     * Generates the underlying Bukkit {@link World} and applies post-generation settings. Only generates the world if
+     * the world was not created in a newer Minecraft version that the server is running.
+     *
+     * <p>Important: This method should only be called after the world has been created and registered with the plugin.
      *
      * @return The generated {@link World}, or {@code null} if generation failed
      */
-    @Nullable default World generateBukkitWorld() {
+    @Nullable
+    default World generateBukkitWorld() {
         return generateBukkitWorld(true);
     }
 
     /**
      * Generates the underlying Bukkit {@link World} and applies post-generation settings.
-     * <p>
-     * Important: This method should only be called after the world has been created and registered with the plugin.
+     *
+     * <p>Important: This method should only be called after the world has been created and registered with the plugin.
      *
      * @param checkVersion If true, verify that the world's data version is compatible
      * @return The generated {@link World}, or {@code null} if generation failed
      */
-    @Nullable World generateBukkitWorld(boolean checkVersion);
+    @Nullable
+    World generateBukkitWorld(boolean checkVersion);
 }

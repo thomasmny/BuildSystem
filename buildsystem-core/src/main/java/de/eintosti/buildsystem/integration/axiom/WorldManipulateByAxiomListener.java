@@ -24,9 +24,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.jspecify.annotations.NullMarked;
 
-/**
- * Only register if axiom is available
- */
+/** Only register if axiom is available */
 @NullMarked
 public class WorldManipulateByAxiomListener implements Listener {
 

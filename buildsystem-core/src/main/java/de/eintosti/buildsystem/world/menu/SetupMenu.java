@@ -17,8 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import static java.util.Map.entry;
-
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
@@ -27,9 +25,6 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.BiConsumer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -38,6 +33,12 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+
+import static java.util.Map.entry;
 
 @NullMarked
 public class SetupMenu extends Menu {
@@ -180,11 +181,12 @@ public class SetupMenu extends Menu {
     }
 
     /**
-     * A generic helper method that iterates over a map of Enum-to-Slot, extracts the {@link ItemStack}, and sets the corresponding icon.
+     * A generic helper method that iterates over a map of Enum-to-Slot, extracts the {@link ItemStack}, and sets the
+     * corresponding icon.
      *
-     * @param inventory   The inventory to get items from
+     * @param inventory The inventory to get items from
      * @param slotMapping A map from an Enum constant to its inventory slot index
-     * @param <T>         The type of the Enum (e.g., {@link BuildWorldType}, {@link BuildWorldStatus})
+     * @param <T> The type of the Enum (e.g., {@link BuildWorldType}, {@link BuildWorldStatus})
      */
     private <T extends Enum<T>> void processIconMapping(
             Inventory inventory, Map<T, Integer> slotMapping, BiConsumer<T, XMaterial> setter) {

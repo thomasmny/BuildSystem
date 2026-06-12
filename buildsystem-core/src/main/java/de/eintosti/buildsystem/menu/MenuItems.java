@@ -28,9 +28,6 @@ import de.eintosti.buildsystem.api.world.display.Displayable.DisplayableType;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.settings.SettingsService;
-import java.util.List;
-import java.util.OptionalInt;
-import java.util.stream.IntStream;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -47,9 +44,13 @@ import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.util.List;
+import java.util.OptionalInt;
+import java.util.stream.IntStream;
+
 /**
- * Builds and inspects stateful menu items. Holds the dependencies the item builders need (config, messages, settings) so menus do not reach for the plugin singleton. Pure,
- * stateless item construction lives in {@link InventoryUtils}.
+ * Builds and inspects stateful menu items. Holds the dependencies the item builders need (config, messages, settings)
+ * so menus do not reach for the plugin singleton. Pure, stateless item construction lives in {@link InventoryUtils}.
  */
 @NullMarked
 public final class MenuItems {
@@ -77,9 +78,9 @@ public final class MenuItems {
     /**
      * Adds a glass pane to the given inventory at the specified position.
      *
-     * @param player    The player viewing the inventory
+     * @param player The player viewing the inventory
      * @param inventory The inventory to add the glass pane to
-     * @param position  The position to add the glass pane at
+     * @param position The position to add the glass pane at
      */
     public void addGlassPane(Player player, Inventory inventory, int position) {
         inventory.setItem(position, InventoryUtils.createItem(getColoredGlassPane(player), " "));
@@ -101,11 +102,11 @@ public final class MenuItems {
     /**
      * Adds a world item to the given inventory at the specified slot.
      *
-     * @param inventory   The inventory to add the item to
-     * @param slot        The slot to add the item at
-     * @param buildWorld  The world to create the item for
+     * @param inventory The inventory to add the item to
+     * @param slot The slot to add the item at
+     * @param buildWorld The world to create the item for
      * @param displayName The display name of the item
-     * @param lore        The lore of the item
+     * @param lore The lore of the item
      */
     public void addWorldItem(
             Inventory inventory, int slot, BuildWorld buildWorld, String displayName, List<String> lore) {
@@ -216,10 +217,10 @@ public final class MenuItems {
     /**
      * Replaces an {@link ItemStack} in a player's inventory with another {@link ItemStack}.
      *
-     * @param player       The player whose inventory to modify
+     * @param player The player whose inventory to modify
      * @param findItemName The name of the item to find
      * @param findItemType The type of the item to find
-     * @param replaceItem  The item to replace with
+     * @param replaceItem The item to replace with
      */
     public void replaceItem(Player player, String findItemName, XMaterial findItemType, ItemStack replaceItem) {
         PlayerInventory inventory = player.getInventory();
@@ -251,15 +252,16 @@ public final class MenuItems {
     }
 
     /**
-     * Adds a toggle item: a named item that glows (an unbreaking enchant) when enabled. Used by the editor and player-settings menus for their on/off entries.
+     * Adds a toggle item: a named item that glows (an unbreaking enchant) when enabled. Used by the editor and
+     * player-settings menus for their on/off entries.
      *
-     * @param player         The player viewing the inventory
-     * @param inventory      The inventory to add the item to
-     * @param slot           The slot to place the item at
-     * @param material       The item material
-     * @param enabled        Whether the toggle is currently on (adds the glow)
+     * @param player The player viewing the inventory
+     * @param inventory The inventory to add the item to
+     * @param slot The slot to place the item at
+     * @param material The item material
+     * @param enabled Whether the toggle is currently on (adds the glow)
      * @param displayNameKey The message key for the display name
-     * @param loreKey        The message key for the lore
+     * @param loreKey The message key for the lore
      */
     public void addToggleItem(
             Player player,
@@ -288,7 +290,7 @@ public final class MenuItems {
      * Fills the top and bottom rows of an {@link Inventory} with glass panes.
      *
      * @param inventory The inventory to fill
-     * @param player    The player viewing the inventory
+     * @param player The player viewing the inventory
      */
     public void fillWithGlass(Inventory inventory, Player player) {
         IntStream.rangeClosed(0, 8).forEach(i -> addGlassPane(player, inventory, i));
@@ -298,10 +300,10 @@ public final class MenuItems {
     /**
      * Fills every slot in the given range with glass panes.
      *
-     * @param player        The player viewing the inventory
-     * @param inventory     The inventory to fill
+     * @param player The player viewing the inventory
+     * @param inventory The inventory to fill
      * @param fromInclusive The first slot to fill (inclusive)
-     * @param toExclusive   The slot to stop before (exclusive)
+     * @param toExclusive The slot to stop before (exclusive)
      */
     public void fillRange(Player player, Inventory inventory, int fromInclusive, int toExclusive) {
         IntStream.range(fromInclusive, toExclusive).forEach(i -> addGlassPane(player, inventory, i));
@@ -310,7 +312,7 @@ public final class MenuItems {
     /**
      * Fills the whole inventory with glass panes.
      *
-     * @param player    The player viewing the inventory
+     * @param player The player viewing the inventory
      * @param inventory The inventory to fill
      */
     public void fillAll(Player player, Inventory inventory) {

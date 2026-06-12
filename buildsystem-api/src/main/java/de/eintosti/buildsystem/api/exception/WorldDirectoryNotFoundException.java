@@ -28,7 +28,7 @@ public class WorldDirectoryNotFoundException extends WorldException {
      * Constructs a new {@link WorldDirectoryNotFoundException} with the specified world name and path.
      *
      * @param worldName The name of the world
-     * @param path      The path to the expected world directory
+     * @param path The path to the expected world directory
      */
     public WorldDirectoryNotFoundException(String worldName, String path) {
         super("World directory for '" + worldName + "' not found at: " + path);

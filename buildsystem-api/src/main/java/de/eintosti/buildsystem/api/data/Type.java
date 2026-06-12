@@ -29,9 +29,10 @@ import org.jspecify.annotations.NullMarked;
 public interface Type<T> {
 
     /**
-     * An immutable implementation of the {@link Type} interface using a Java Record. This class holds a final, read-only value.
+     * An immutable implementation of the {@link Type} interface using a Java Record. This class holds a final,
+     * read-only value.
      *
-     * @param <T>   The type of the value held
+     * @param <T> The type of the value held
      * @param value The immutable value
      */
     record ImmutableType<T>(T value) implements Type<T> {
@@ -69,9 +70,7 @@ public interface Type<T> {
         }
     }
 
-    /**
-     * An immutable {@link Type} representing the boolean value {@code true}.
-     */
+    /** An immutable {@link Type} representing the boolean value {@code true}. */
     Type<Boolean> TRUE = new ImmutableType<>(true);
 
     /**
@@ -89,8 +88,8 @@ public interface Type<T> {
     void set(T value);
 
     /**
-     * Gets the value of this data point formatted for storage in a configuration file.
-     * This might involve converting complex objects into simpler types (e.g., enums to strings).
+     * Gets the value of this data point formatted for storage in a configuration file. This might involve converting
+     * complex objects into simpler types (e.g., enums to strings).
      *
      * @return The value formatted for a config file
      */

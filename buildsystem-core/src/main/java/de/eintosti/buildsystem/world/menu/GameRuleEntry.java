@@ -22,8 +22,8 @@ import org.bukkit.GameRule;
 /**
  * Represents a game rule entry consisting of a {@link GameRule} and its value.
  *
- * @param rule  The game rule
+ * @param rule The game rule
  * @param value The value of the game rule
- * @param <T>   The type of the game rule value; must be either {@link Boolean} or {@link Integer}
+ * @param <T> The type of the game rule value; must be either {@link Boolean} or {@link Integer}
  */
 public record GameRuleEntry<T>(GameRule<T> rule, T value) {}

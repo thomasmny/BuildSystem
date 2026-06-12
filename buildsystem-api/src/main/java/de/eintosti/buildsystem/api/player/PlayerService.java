@@ -20,10 +20,11 @@ package de.eintosti.buildsystem.api.player;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
-import java.util.Set;
-import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Service for managing {@link BuildPlayer}.
@@ -57,13 +58,16 @@ public interface PlayerService {
     boolean isInBuildMode(Player player);
 
     /**
-     * Gets whether the given player is allowed to create a new {@link BuildWorld}.<br> This depends on the following factors:
+     * Gets whether the given player is allowed to create a new {@link BuildWorld}.<br>
+     * This depends on the following factors:
+     *
      * <ul>
-     *  <li>Is the maximum number of worlds set by the config lower than the number of existing worlds?</li>
-     *  <li>Is the maximum number of worlds created by the player less than the number of worlds said player is allowed to create?</li>
+     *   <li>Is the maximum number of worlds set by the config lower than the number of existing worlds?
+     *   <li>Is the maximum number of worlds created by the player less than the number of worlds said player is allowed
+     *       to create?
      * </ul>
      *
-     * @param player     The player trying to create a world
+     * @param player The player trying to create a world
      * @param visibility The visibility of the world trying to be created
      * @return {@code true} if the player is allowed to create a world, otherwise {@code false}
      */
@@ -71,17 +75,20 @@ public interface PlayerService {
 
     /**
      * Returns the maximum amount of {@link BuildWorld}s a player can create.
-     * <p>
-     * If the player has the permission {@code buildsystem.admin}, unlimited worlds can be created. Otherwise, there are two different permissions to set said amount:
-     * <p>
-     * To set the maximum of...
+     *
+     * <p>If the player has the permission {@code buildsystem.admin}, unlimited worlds can be created. Otherwise, there
+     * are two different permissions to set said amount:
+     *
+     * <p>To set the maximum of...
+     *
      * <ul>
-     *  <li>...public worlds, use {@code buildsystem.create.public.%amount%}.
-     *  <li>...private worlds, use {@code buildsystem.create.private.%amount%}.
+     *   <li>...public worlds, use {@code buildsystem.create.public.%amount%}.
+     *   <li>...private worlds, use {@code buildsystem.create.private.%amount%}.
      * </ul>
      *
-     * @param player     The player object
-     * @param visibility The visibility of the worlds to check the maximum of. Possible values: {@link Visibility#PUBLIC} or {@link Visibility#PRIVATE}
+     * @param player The player object
+     * @param visibility The visibility of the worlds to check the maximum of. Possible values:
+     *     {@link Visibility#PUBLIC} or {@link Visibility#PRIVATE}
      * @return If set, the maximum number of worlds a player can create, otherwise -1
      */
     int getMaxWorlds(Player player, Visibility visibility);

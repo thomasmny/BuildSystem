@@ -17,15 +17,15 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import de.eintosti.buildsystem.world.menu.EditMenu.TimeOfDay;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
- * Pins the tick → {@link TimeOfDay} bucketing used by the editor's time button. The boundaries are inclusive-low/exclusive-high: {@code [0, noon)} sunrise, {@code [noon, 13000)}
- * noon, {@code [13000, ..)} night.
+ * Pins the tick → {@link TimeOfDay} bucketing used by the editor's time button. The boundaries are
+ * inclusive-low/exclusive-high: {@code [0, noon)} sunrise, {@code [noon, 13000)} noon, {@code [13000, ..)} night.
  */
 @NullMarked
 class TimeOfDayTest {

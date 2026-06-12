@@ -17,7 +17,8 @@
  */
 
 /**
- * Access control for {@link de.eintosti.buildsystem.api.world.BuildWorld}s: who may view, edit or run commands on a world.
+ * Access control for {@link de.eintosti.buildsystem.api.world.BuildWorld}s: who may view, edit or run commands on a
+ * world.
  *
  * @since 3.0.0
  */

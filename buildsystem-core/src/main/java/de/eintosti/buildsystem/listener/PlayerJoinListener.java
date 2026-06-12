@@ -33,7 +33,6 @@ import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import io.papermc.lib.PaperLib;
-import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -43,6 +42,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.potion.PotionEffect;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.Map;
 
 @NullMarked
 public class PlayerJoinListener implements Listener {
@@ -110,13 +111,15 @@ public class PlayerJoinListener implements Listener {
 
     /**
      * Teleports the player to the correct location.
+     *
      * <ul>
-     *   <li>If the spawn exists and {@link SettingsImpl#isSpawnTeleport()} is enabled for the player, the player will be teleported to the spawn</li>
-     *   <li>If the player has a {@link LogoutLocation}, teleport to that location</li>
-     *   <li>Otherwise, do nothing</li>
+     *   <li>If the spawn exists and {@link SettingsImpl#isSpawnTeleport()} is enabled for the player, the player will
+     *       be teleported to the spawn
+     *   <li>If the player has a {@link LogoutLocation}, teleport to that location
+     *   <li>Otherwise, do nothing
      * </ul>
      *
-     * @param player      The player to teleport
+     * @param player The player to teleport
      * @param buildPlayer The build-player for the given player
      */
     private void teleportToCorrectLocation(Player player, BuildPlayerImpl buildPlayer) {
@@ -167,7 +170,7 @@ public class PlayerJoinListener implements Listener {
     /**
      * Activates features for the player according to their {@link SettingsImpl}.
      *
-     * @param player   The player to activate the features for
+     * @param player The player to activate the features for
      * @param settings The player's settings
      */
     private void manageSettings(Player player, Settings settings) {

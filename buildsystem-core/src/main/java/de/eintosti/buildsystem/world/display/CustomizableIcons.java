@@ -22,14 +22,13 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.storage.yaml.YamlSetupStorage;
+import org.jspecify.annotations.NullMarked;
+
 import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
-import org.jspecify.annotations.NullMarked;
 
-/**
- * User-customizable icons for different areas of the plugin.
- */
+/** User-customizable icons for different areas of the plugin. */
 @NullMarked
 public class CustomizableIcons {
 
@@ -108,7 +107,7 @@ public class CustomizableIcons {
     /**
      * Sets a custom icon for a {@link BuildWorldType}.
      *
-     * @param type     The world type
+     * @param type The world type
      * @param material The material to use as an icon
      */
     public void setIcon(BuildWorldType type, XMaterial material) {
@@ -119,7 +118,7 @@ public class CustomizableIcons {
     /**
      * Sets a custom icon for a {@link BuildWorldStatus}.
      *
-     * @param status   The world status
+     * @param status The world status
      * @param material The material to use as an icon
      */
     public void setIcon(BuildWorldStatus status, XMaterial material) {

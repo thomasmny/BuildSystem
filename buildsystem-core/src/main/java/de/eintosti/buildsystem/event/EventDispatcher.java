@@ -25,9 +25,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.jspecify.annotations.NullMarked;
 
-/**
- * Manages the dispatching of custom events related to build world manipulations.
- */
+/** Manages the dispatching of custom events related to build world manipulations. */
 @NullMarked
 public class EventDispatcher {
 
@@ -43,19 +41,20 @@ public class EventDispatcher {
     }
 
     /**
-     * <p>Dispatches a build world manipulation event if the player is in a {@link BuildWorld}
-     * and the parent event has not been canceled.</p>
+     * Dispatches a build world manipulation event if the player is in a {@link BuildWorld} and the parent event has not
+     * been canceled.
      *
-     * <p>This method checks if:</p>
+     * <p>This method checks if:
+     *
      * <ol>
-     *   <li>The parent event is not yet canceled</li>
-     *   <li>The player is in a valid build world</li>
+     *   <li>The parent event is not yet canceled
+     *   <li>The player is in a valid build world
      * </ol>
-     * <p>
-     * If both conditions are met, it triggers a {@link BuildWorldManipulationEvent}
-     * to allow further processing of the player's action.
      *
-     * @param player      The player who performed the manipulation
+     * <p>If both conditions are met, it triggers a {@link BuildWorldManipulationEvent} to allow further processing of
+     * the player's action.
+     *
+     * @param player The player who performed the manipulation
      * @param parentEvent The original event that triggered this potential manipulation
      */
     public void tryDispatchManipulationEvent(Player player, Cancellable parentEvent) {

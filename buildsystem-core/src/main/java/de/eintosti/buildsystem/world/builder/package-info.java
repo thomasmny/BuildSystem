@@ -16,7 +16,5 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/**
- * Provides classes for managing world builders and their associated functionality.
- */
+/** Provides classes for managing world builders and their associated functionality. */
 package de.eintosti.buildsystem.world.builder;

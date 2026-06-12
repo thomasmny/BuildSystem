@@ -18,14 +18,16 @@
 package de.eintosti.buildsystem.config.migration;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import org.jspecify.annotations.NullMarked;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.jspecify.annotations.NullMarked;
 
 /**
- * Manages the migration of configurations. It holds a registry of available migration steps and applies them sequentially.
+ * Manages the migration of configurations. It holds a registry of available migration steps and applies them
+ * sequentially.
  */
 @NullMarked
 public class ConfigMigrationManager {
@@ -51,8 +53,9 @@ public class ConfigMigrationManager {
     /**
      * Registers a {@link Migration} step.
      *
-     * @param fromVersion The version from which this migration applies. For example, {@link MigrationV1ToV2} is registered with {@code fromVersion = 1}
-     * @param migration   The migration instance
+     * @param fromVersion The version from which this migration applies. For example, {@link MigrationV1ToV2} is
+     *     registered with {@code fromVersion = 1}
+     * @param migration The migration instance
      */
     public void registerMigration(int fromVersion, Migration migration) {
         this.migrations.put(fromVersion, migration);

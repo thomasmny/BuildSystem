@@ -26,24 +26,28 @@ import org.jspecify.annotations.NullMarked;
 /**
  * Root entry point of the BuildSystem API.
  *
- * <p>Through this interface you access the two primary services BuildSystem exposes:</p>
+ * <p>Through this interface you access the two primary services BuildSystem exposes:
+ *
  * <ul>
- *   <li>{@link WorldService} — enumerate, create, load, unload and query worlds.</li>
- *   <li>{@link PlayerService} — look up per-player settings and identity.</li>
+ *   <li>{@link WorldService} — enumerate, create, load, unload and query worlds.
+ *   <li>{@link PlayerService} — look up per-player settings and identity.
  * </ul>
  *
  * <h2>Obtaining an instance</h2>
- * <p>The canonical way is via Bukkit's {@link org.bukkit.plugin.ServicesManager}:</p>
+ *
+ * <p>The canonical way is via Bukkit's {@link org.bukkit.plugin.ServicesManager}:
+ *
  * <pre>{@code
  * BuildSystem api = getServer().getServicesManager()
  *         .getRegistration(BuildSystem.class)
  *         .getProvider();
  * }</pre>
- * <p>Or use the convenience shorthand {@link BuildSystemProvider#get()}.</p>
  *
- * <p>The instance is registered during the BuildSystem plugin's {@code onEnable} and
- * unregistered during {@code onDisable}. Calling the provider before enable (e.g. during
- * your plugin's {@code onLoad}) will throw {@link IllegalStateException}.</p>
+ * <p>Or use the convenience shorthand {@link BuildSystemProvider#get()}.
+ *
+ * <p>The instance is registered during the BuildSystem plugin's {@code onEnable} and unregistered during
+ * {@code onDisable}. Calling the provider before enable (e.g. during your plugin's {@code onLoad}) will throw
+ * {@link IllegalStateException}.
  *
  * @since 3.0.0
  */
@@ -51,16 +55,16 @@ import org.jspecify.annotations.NullMarked;
 public interface BuildSystem {
 
     /**
-     * Returns the service managing all {@link BuildWorld} instances — world creation,
-     * lookup by name, folder organisation and access to per-world storage.
+     * Returns the service managing all {@link BuildWorld} instances — world creation, lookup by name, folder
+     * organisation and access to per-world storage.
      *
      * @return The world service, never {@code null}
      */
     WorldService getWorldService();
 
     /**
-     * Returns the service managing all {@link BuildPlayer} instances — player lookup,
-     * settings access and session-state tracking.
+     * Returns the service managing all {@link BuildPlayer} instances — player lookup, settings access and session-state
+     * tracking.
      *
      * @return The player service, never {@code null}
      */

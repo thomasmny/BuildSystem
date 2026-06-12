@@ -17,7 +17,8 @@
  */
 
 /**
- * World lifecycle operations: loading, unloading and teleporting into {@link de.eintosti.buildsystem.api.world.BuildWorld}s.
+ * World lifecycle operations: loading, unloading and teleporting into
+ * {@link de.eintosti.buildsystem.api.world.BuildWorld}s.
  *
  * @since 3.0.0
  */

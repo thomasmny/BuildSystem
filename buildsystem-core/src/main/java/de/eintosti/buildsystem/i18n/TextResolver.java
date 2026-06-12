@@ -21,8 +21,9 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Applies external placeholder expansion to a message after BuildSystem's own substitution. Implementations live in {@code integration/} so that {@link Messages} never imports a
- * soft-dependency type; one is registered while the providing plugin is present and cleared when it is not.
+ * Applies external placeholder expansion to a message after BuildSystem's own substitution. Implementations live in
+ * {@code integration/} so that {@link Messages} never imports a soft-dependency type; one is registered while the
+ * providing plugin is present and cleared when it is not.
  */
 @NullMarked
 @FunctionalInterface
@@ -32,7 +33,7 @@ public interface TextResolver {
      * Expands placeholders in the given text for the given player.
      *
      * @param player The player the text is rendered for
-     * @param text   The text to expand
+     * @param text The text to expand
      * @return The expanded text
      */
     String resolve(Player player, String text);

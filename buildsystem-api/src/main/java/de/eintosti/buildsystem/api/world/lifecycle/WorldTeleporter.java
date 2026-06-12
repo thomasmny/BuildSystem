@@ -22,7 +22,8 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Provides utilities for teleporting {@link Player}s to specific locations within a {@link BuildWorld}. This interface ensures safe and controlled player movement.
+ * Provides utilities for teleporting {@link Player}s to specific locations within a {@link BuildWorld}. This interface
+ * ensures safe and controlled player movement.
  *
  * @since 3.0.0
  */
@@ -30,8 +31,8 @@ import org.jspecify.annotations.NullMarked;
 public interface WorldTeleporter {
 
     /**
-     * Teleports the given {@link Player} to the designated spawn location of the world associated with this teleporter. If a custom spawn is not set, the player will be teleported
-     * to the world's default spawn.
+     * Teleports the given {@link Player} to the designated spawn location of the world associated with this teleporter.
+     * If a custom spawn is not set, the player will be teleported to the world's default spawn.
      *
      * @param player The {@link Player} to teleport
      */

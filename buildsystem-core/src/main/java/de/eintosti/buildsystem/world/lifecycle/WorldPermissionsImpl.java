@@ -105,7 +105,7 @@ public class WorldPermissionsImpl implements WorldPermissions {
      * Checks if the player has the bypass permission for the given check.
      *
      * @param player The player to check
-     * @param check  The specific data type representing the modification to be checked
+     * @param check The specific data type representing the modification to be checked
      * @return {@code true} if the player can bypass the modification, otherwise {@code false}
      */
     private boolean canBypassModification(Player player, Type<Boolean> check) {

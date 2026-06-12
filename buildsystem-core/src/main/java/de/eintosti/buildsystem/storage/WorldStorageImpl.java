@@ -24,11 +24,6 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
-import java.io.File;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -36,6 +31,12 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.io.File;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @NullMarked
 public abstract class WorldStorageImpl implements WorldStorage {
@@ -156,7 +157,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
      * Gets if a {@link BuildWorld}'s visibility is equal to the given visibility.
      *
      * @param privateWorld Whether the world is private
-     * @param visibility   The visibility the world should have
+     * @param visibility The visibility the world should have
      * @return {@code true} if the world's visibility is equal to the given visibility, otherwise {@code false}
      */
     public boolean isCorrectVisibility(boolean privateWorld, Visibility visibility) {
@@ -200,8 +201,8 @@ public abstract class WorldStorageImpl implements WorldStorage {
 
     /**
      * Assigns all {@link BuildWorld}s to their respective {@link Folder}s.
-     * <p>
-     * Must be called after all folders and worlds have been loaded.
+     *
+     * <p>Must be called after all folders and worlds have been loaded.
      */
     private void assignWorldsToFolders() {
         worldService.getFolderStorage().getFolders().forEach(folder -> {
@@ -254,21 +255,18 @@ public abstract class WorldStorageImpl implements WorldStorage {
 
     private enum LoadResult {
 
-        /**
-         * The {@link BuildWorld} was successfully loaded.
-         */
+        /** The {@link BuildWorld} was successfully loaded. */
         LOADED,
 
-        /**
-         * The {@link BuildWorld} was attempted to be loaded, but failed.
-         */
+        /** The {@link BuildWorld} was attempted to be loaded, but failed. */
         FAILED,
 
         /**
          * The {@link BuildWorld} was not attempted to be loaded because:
+         *
          * <ul>
-         *   <li>{@link Unload#enabled} is set to {@code true}, and</li>
-         *   <li>{@link Unload#blacklistedWorlds} does not contain the world's name (therefore, it can remain unloaded)</li>
+         *   <li>{@link Unload#enabled} is set to {@code true}, and
+         *   <li>{@link Unload#blacklistedWorlds} does not contain the world's name (therefore, it can remain unloaded)
          * </ul>
          */
         NOT_LOADED

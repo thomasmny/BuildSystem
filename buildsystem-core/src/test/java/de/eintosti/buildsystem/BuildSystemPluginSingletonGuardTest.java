@@ -17,8 +17,9 @@
  */
 package de.eintosti.buildsystem;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.DataInputStream;
 import java.io.InputStream;
@@ -26,14 +27,14 @@ import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import org.jspecify.annotations.NullMarked;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
- * Compile-guard: ensures BuildSystemPlugin has no static self-referencing singleton.
- * Fails if someone re-adds a static BuildSystemPlugin instance field or get() method.
- * Parses class file structure without loading the class (avoids full plugin classpath).
+ * Compile-guard: ensures BuildSystemPlugin has no static self-referencing singleton. Fails if someone re-adds a static
+ * BuildSystemPlugin instance field or get() method. Parses class file structure without loading the class (avoids full
+ * plugin classpath).
  */
 @NullMarked
 class BuildSystemPluginSingletonGuardTest {

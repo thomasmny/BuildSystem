@@ -18,14 +18,13 @@
 package de.eintosti.buildsystem.api.world.backup;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import org.jspecify.annotations.NullMarked;
+
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import org.jspecify.annotations.NullMarked;
 
-/**
- * Represents a storage mechanism for managing world backups.
- */
+/** Represents a storage mechanism for managing world backups. */
 @NullMarked
 public interface BackupStorage {
 
@@ -38,13 +37,16 @@ public interface BackupStorage {
     CompletableFuture<List<Backup>> listBackups(BuildWorld buildWorld);
 
     /**
-     * Creates and stores a new {@link Backup} for a given {@link BuildWorld}. The result of the operation is communicated via the provided {@link CompletableFuture}.
-     * <p>
-     * In comparison to {@link BackupProfile#createBackup()}, a backup will always be created and no older backups will be deleted. This method is intended for immediate backup
-     * creation and storage, rather than profile management.
+     * Creates and stores a new {@link Backup} for a given {@link BuildWorld}. The result of the operation is
+     * communicated via the provided {@link CompletableFuture}.
+     *
+     * <p>In comparison to {@link BackupProfile#createBackup()}, a backup will always be created and no older backups
+     * will be deleted. This method is intended for immediate backup creation and storage, rather than profile
+     * management.
      *
      * @param buildWorld The world to be backed up
-     * @return A future that will be completed with the backup object upon successful storage, or exceptionally if an error occurs
+     * @return A future that will be completed with the backup object upon successful storage, or exceptionally if an
+     *     error occurs
      */
     CompletableFuture<Backup> storeBackup(BuildWorld buildWorld);
 
@@ -52,7 +54,8 @@ public interface BackupStorage {
      * Downloads a specific {@link Backup} file asynchronously.
      *
      * @param backup The backup object representing the backup to be downloaded
-     * @return A future that will complete with a {@link File} object pointing to the downloaded backup once the download operation is finished
+     * @return A future that will complete with a {@link File} object pointing to the downloaded backup once the
+     *     download operation is finished
      */
     CompletableFuture<File> downloadBackup(Backup backup);
 
@@ -64,8 +67,6 @@ public interface BackupStorage {
      */
     CompletableFuture<Void> deleteBackup(Backup backup);
 
-    /**
-     * Closes the backup storage, releasing any resources.
-     */
+    /** Closes the backup storage, releasing any resources. */
     void close();
 }

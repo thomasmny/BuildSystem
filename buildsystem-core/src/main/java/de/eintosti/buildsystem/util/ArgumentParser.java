@@ -17,9 +17,10 @@
  */
 package de.eintosti.buildsystem.util;
 
-import java.util.*;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.*;
 
 @NullMarked
 public class ArgumentParser {
@@ -36,7 +37,8 @@ public class ArgumentParser {
     }
 
     /**
-     * Gets whether the provided string is used as an argument.<br> Useful for figuring out if an argument has a value.
+     * Gets whether the provided string is used as an argument.<br>
+     * Useful for figuring out if an argument has a value.
      *
      * @param name The name of the argument
      * @return {@code true} if the argument is present, otherwise {@code false}
@@ -47,8 +49,8 @@ public class ArgumentParser {
 
     /**
      * Gets whether the flag is present in the array of arguments. A flag is a true or false argument with no value.
-     * <p>
-     * For example: {@code -nogui}
+     *
+     * <p>For example: {@code -nogui}
      *
      * @param name The name of the flag
      * @return {@code true} if the flag is present, otherwise {@code false}
@@ -59,13 +61,14 @@ public class ArgumentParser {
 
     /**
      * Gets the value of an argument.
-     * <p>
-     * For example: {@code -name XYZ}
+     *
+     * <p>For example: {@code -name XYZ}
      *
      * @param name The name of the argument
      * @return The argument value if present, otherwise {@code null}.
      */
-    @Nullable public String getValue(String name) {
+    @Nullable
+    public String getValue(String name) {
         List<String> value = map.get(name);
         if (value != null) {
             return String.join(" ", value);
@@ -74,8 +77,9 @@ public class ArgumentParser {
     }
 
     /**
-     * Maps the arguments passed to the ArgumentParser. Arguments starting with "-" are considered flags, and their presence is added to the 'flags' set. Arguments without "-" are
-     * considered argument names, and their values are stored in the 'map' HashMap.
+     * Maps the arguments passed to the ArgumentParser. Arguments starting with "-" are considered flags, and their
+     * presence is added to the 'flags' set. Arguments without "-" are considered argument names, and their values are
+     * stored in the 'map' HashMap.
      */
     public void map() {
         for (int index = 0; index < args.size(); index++) {
@@ -92,10 +96,10 @@ public class ArgumentParser {
     }
 
     /**
-     * Determines whether the provided argument is a flag argument. A flag argument is an argument that is either the last argument in the list or is followed by another argument
-     * that starts with a dash (-).
+     * Determines whether the provided argument is a flag argument. A flag argument is an argument that is either the
+     * last argument in the list or is followed by another argument that starts with a dash (-).
      *
-     * @param arg   The argument to check
+     * @param arg The argument to check
      * @param index The index of the argument in the argument list
      * @return {@code true} if the argument is a flag argument, otherwise {@code false}
      */
@@ -106,7 +110,7 @@ public class ArgumentParser {
     /**
      * Stores the argument values for a given argument name.
      *
-     * @param arg   The argument name
+     * @param arg The argument name
      * @param index The index of the argument in the list of arguments
      * @return The argument values as a list, or an empty list if no values are found
      */

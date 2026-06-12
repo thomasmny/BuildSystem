@@ -17,16 +17,18 @@
  */
 package de.eintosti.buildsystem.util;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import org.bukkit.Bukkit;
 import org.jspecify.annotations.NullMarked;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
 /**
  * Utility class to determine the mode in which the server is running. The server can be in one of the following modes:
+ *
  * <ul>
- *     <li>{@link ServerMode#ONLINE} - The server is running in online mode</li>
- *     <li>{@link ServerMode#OFFLINE} - The server is running in offline mode</li>
+ *   <li>{@link ServerMode#ONLINE} - The server is running in online mode
+ *   <li>{@link ServerMode#OFFLINE} - The server is running in offline mode
  * </ul>
  */
 @NullMarked
@@ -74,19 +76,13 @@ public final class ServerModeChecker {
         return SERVER_MODE;
     }
 
-    /**
-     * Enum representing the possible server modes.
-     */
+    /** Enum representing the possible server modes. */
     public enum ServerMode {
 
-        /**
-         * The server is online.
-         */
+        /** The server is online. */
         ONLINE,
 
-        /**
-         * The server is offline.
-         */
+        /** The server is offline. */
         OFFLINE
     }
 }

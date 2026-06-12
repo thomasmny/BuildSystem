@@ -19,15 +19,17 @@ package de.eintosti.buildsystem.api.world.display;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
-import java.util.List;
-import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.util.List;
+import java.util.UUID;
+
 /**
- * Represents a folder within the BuildSystem's world navigation structure. Folders can contain {@link BuildWorld}s and other nested folders, organizing them for easier access.
+ * Represents a folder within the BuildSystem's world navigation structure. Folders can contain {@link BuildWorld}s and
+ * other nested folders, organizing them for easier access.
  *
  * @since 3.0.0
  */
@@ -57,8 +59,9 @@ public interface Folder extends Displayable {
 
     /**
      * Sets the parent {@link Folder} for this folder. Setting it to {@code null} will make this a top-level folder.
-     * <p>
-     * The parent folder must belong to the same {@link NavigatorCategory} as this folder. If the categories differ, an {@link IllegalArgumentException} is thrown.
+     *
+     * <p>The parent folder must belong to the same {@link NavigatorCategory} as this folder. If the categories differ,
+     * an {@link IllegalArgumentException} is thrown.
      *
      * @param parent The new parent {@link Folder}, or {@code null} to remove the current parent
      * @throws IllegalArgumentException if the parent has a different {@link NavigatorCategory}
@@ -119,9 +122,9 @@ public interface Folder extends Displayable {
 
     /**
      * Returns an unmodifiable list of all immediate subfolders contained within this folder.
-     * <p>
-     * This includes only direct children—folders whose {@link #getParent()} is exactly this folder. Nested subfolders (i.e., deeper levels of the folder hierarchy) are not
-     * included.
+     *
+     * <p>This includes only direct children—folders whose {@link #getParent()} is exactly this folder. Nested
+     * subfolders (i.e., deeper levels of the folder hierarchy) are not included.
      *
      * @return A list of immediate subfolders
      */
@@ -130,29 +133,32 @@ public interface Folder extends Displayable {
 
     /**
      * Gets the total number of {@link BuildWorld}s contained in this folder and all of its subfolders.
-     * <p>
-     * This includes both the worlds directly assigned to this folder and those assigned to any nested subfolders.
+     *
+     * <p>This includes both the worlds directly assigned to this folder and those assigned to any nested subfolders.
      *
      * @return The total number of worlds in this folder and its subfolders
      */
     int getWorldCount();
 
     /**
-     * Gets the permission string required for players to access or view this folder. Returns "-" if no specific permission is required.
+     * Gets the permission string required for players to access or view this folder. Returns "-" if no specific
+     * permission is required.
      *
      * @return The permission string, or "-" if none is set
      */
     String getPermission();
 
     /**
-     * Sets the permission string required for players to access or view this folder. Setting to "-" will remove any permission requirement.
+     * Sets the permission string required for players to access or view this folder. Setting to "-" will remove any
+     * permission requirement.
      *
      * @param permission The permission string to set, or "-" to remove
      */
     void setPermission(String permission);
 
     /**
-     * Gets the project name associated with this {@link Folder}. This can be used for categorization or informational purposes.
+     * Gets the project name associated with this {@link Folder}. This can be used for categorization or informational
+     * purposes.
      *
      * @return The project name as a string
      */

@@ -38,7 +38,6 @@ import de.eintosti.buildsystem.world.lifecycle.WorldLoaderImpl;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import de.eintosti.buildsystem.world.lifecycle.WorldTeleporterImpl;
 import de.eintosti.buildsystem.world.lifecycle.WorldUnloaderImpl;
-import java.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.World;
@@ -46,6 +45,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.*;
 
 @NullMarked
 public final class BuildWorldImpl implements BuildWorld {
@@ -91,9 +92,9 @@ public final class BuildWorldImpl implements BuildWorld {
     }
 
     /**
-     * Builds the {@link WorldDataImpl} for a freshly created world, seeded from the configured world
-     * defaults. Extracted from the constructor so the repeated {@code config.world().defaults()}
-     * lookup can be bound to a single local instead of being re-walked for every field.
+     * Builds the {@link WorldDataImpl} for a freshly created world, seeded from the configured world defaults.
+     * Extracted from the constructor so the repeated {@code config.world().defaults()} lookup can be bound to a single
+     * local instead of being re-walked for every field.
      */
     private static WorldDataImpl defaultWorldData(
             BuildSystemPlugin plugin, String name, BuildWorldType worldType, boolean privateWorld) {

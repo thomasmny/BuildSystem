@@ -21,12 +21,13 @@ import de.eintosti.buildsystem.util.color.patterns.GradientPattern;
 import de.eintosti.buildsystem.util.color.patterns.HexPattern;
 import de.eintosti.buildsystem.util.color.patterns.RainbowPattern;
 import de.eintosti.buildsystem.util.color.patterns.SolidPattern;
-import java.awt.*;
-import java.util.Collection;
-import java.util.List;
 import net.md_5.bungee.api.ChatColor;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
+
+import java.awt.*;
+import java.util.Collection;
+import java.util.List;
 
 @NullMarked
 public final class ColorAPI {
@@ -65,8 +66,8 @@ public final class ColorAPI {
      * Colors a String with a gradiant.
      *
      * @param string The string we want to color
-     * @param start  The starting gradiant
-     * @param end    The ending gradiant
+     * @param start The starting gradiant
+     * @param end The ending gradiant
      */
     public static String color(String string, Color start, Color end) {
         ChatColor[] colors =
@@ -77,7 +78,7 @@ public final class ColorAPI {
     /**
      * Colors a String with rainbow colors.
      *
-     * @param string     The string which should have rainbow colors
+     * @param string The string which should have rainbow colors
      * @param saturation The saturation of the rainbow colors
      */
     public static String rainbow(String string, float saturation) {
@@ -138,7 +139,7 @@ public final class ColorAPI {
     /**
      * Returns a rainbow array of chat colors.
      *
-     * @param step       How many colors we return
+     * @param step How many colors we return
      * @param saturation The saturation of the rainbow
      * @return The array of colors
      */
@@ -158,8 +159,8 @@ public final class ColorAPI {
      * Returns a gradient array of chat colors.
      *
      * @param start The starting color.
-     * @param end   The ending color.
-     * @param step  How many colors we return.
+     * @param end The ending color.
+     * @param step How many colors we return.
      * @author TheViperShow
      */
     private static ChatColor[] createGradient(Color start, Color end, int step) {

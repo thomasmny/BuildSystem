@@ -34,8 +34,6 @@ import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.world.menu.*;
-import java.util.Objects;
-import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -54,6 +52,9 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.Objects;
+import java.util.UUID;
 
 @NullMarked
 public class NavigatorListener implements Listener {
@@ -208,7 +209,7 @@ public class NavigatorListener implements Listener {
     /**
      * Cancels an event if the player is in an archived world.
      *
-     * @param player      The player object
+     * @param player The player object
      * @param cancellable The event to cancel
      */
     private void disableArchivedWorlds(Player player, Cancellable cancellable) {
@@ -258,7 +259,7 @@ public class NavigatorListener implements Listener {
     /**
      * Checks if the given item is the item that is used to close the {@link NavigatorType#NEW} navigator.
      *
-     * @param player    The player used to get the item name
+     * @param player The player used to get the item name
      * @param itemStack The item stack to check
      * @return {@code true} if the item is the navigator close item, {@code false} otherwise
      */

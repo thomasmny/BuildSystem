@@ -17,14 +17,15 @@
  */
 package de.eintosti.buildsystem.i18n;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
- * Pins the external-placeholder seam: a resolver is applied only when both a resolver is registered and the audience is a player. The player-present application path is covered by
- * {@code PlaceholderApiExpansionTest} plus the compile gate; here we guard the pass-through (cleared / non-player) branches that the refactor introduced.
+ * Pins the external-placeholder seam: a resolver is applied only when both a resolver is registered and the audience is
+ * a player. The player-present application path is covered by {@code PlaceholderApiExpansionTest} plus the compile
+ * gate; here we guard the pass-through (cleared / non-player) branches that the refactor introduced.
  */
 @NullMarked
 class MessagesResolverTest {

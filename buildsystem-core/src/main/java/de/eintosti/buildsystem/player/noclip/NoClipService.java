@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.player.noclip;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import java.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -28,6 +27,8 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.*;
 
 @NullMarked
 public class NoClipService {
@@ -115,7 +116,7 @@ public class NoClipService {
     /**
      * Only add a player to the list of No-Clip players if {@link Settings#isNoClip} is equal to {@code true}.
      *
-     * @param player   The player to add
+     * @param player The player to add
      * @param settings The player's settings
      */
     public void startNoClip(Player player, Settings settings) {
@@ -137,9 +138,10 @@ public class NoClipService {
     }
 
     /**
-     * Only remove a player from the list of No-Clip players if said player has No-Clip enabled, i.e. {@link NoClipManager#isNoClip} is equal to {@code true}.
-     * <p>
-     * Will also set the player to their previous {@link GameMode}.
+     * Only remove a player from the list of No-Clip players if said player has No-Clip enabled, i.e.
+     * {@link NoClipManager#isNoClip} is equal to {@code true}.
+     *
+     * <p>Will also set the player to their previous {@link GameMode}.
      *
      * @param uuid The uuid of the player to remove
      */
