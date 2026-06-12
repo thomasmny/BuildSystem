@@ -27,7 +27,7 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.util.FileUtils;
-import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
 import java.util.Arrays;

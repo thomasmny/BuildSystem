@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.world.display;
+package de.eintosti.buildsystem.world.folder;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
@@ -24,7 +24,7 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.util.WorldPermissions;
-import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
+import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

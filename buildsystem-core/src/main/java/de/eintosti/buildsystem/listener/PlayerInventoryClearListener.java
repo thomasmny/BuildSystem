@@ -21,7 +21,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
 import de.eintosti.buildsystem.player.settings.SettingsService;
-import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import de.eintosti.buildsystem.menu.InventoryUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

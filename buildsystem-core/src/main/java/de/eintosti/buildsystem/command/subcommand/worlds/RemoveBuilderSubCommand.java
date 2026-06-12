@@ -25,7 +25,7 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.util.UUIDFetcher;
-import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
+import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

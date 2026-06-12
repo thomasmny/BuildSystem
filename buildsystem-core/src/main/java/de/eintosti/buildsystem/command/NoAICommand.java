@@ -21,7 +21,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
+import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

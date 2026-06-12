@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.player.settings.SpeedInventory;
+import de.eintosti.buildsystem.player.menu.SpeedInventory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

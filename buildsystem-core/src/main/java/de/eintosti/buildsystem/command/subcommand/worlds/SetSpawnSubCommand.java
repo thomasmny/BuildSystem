@@ -21,7 +21,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
+import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.Map;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;

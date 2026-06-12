@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.world.util.WorldTeleporterImpl;
+import de.eintosti.buildsystem.world.lifecycle.WorldTeleporterImpl;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;

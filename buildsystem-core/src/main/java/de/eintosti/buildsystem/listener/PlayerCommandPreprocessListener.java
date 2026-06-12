@@ -25,7 +25,7 @@ import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import de.eintosti.buildsystem.menu.InventoryUtils;
 import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;

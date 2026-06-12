@@ -22,7 +22,7 @@ import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.display.Displayable.DisplayableType;
-import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import de.eintosti.buildsystem.menu.InventoryUtils;
 import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;

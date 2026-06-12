@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import de.eintosti.buildsystem.menu.InventoryUtils;
 import java.util.Map;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;

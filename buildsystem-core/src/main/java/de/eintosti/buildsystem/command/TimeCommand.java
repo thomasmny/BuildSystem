@@ -20,7 +20,7 @@ package de.eintosti.buildsystem.command;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.util.WorldPermissions;
-import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
+import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;

@@ -44,7 +44,7 @@ import de.eintosti.buildsystem.command.subcommand.worlds.SetSpawnSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.SetStatusSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.TeleportSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.UnimportSubCommand;
-import de.eintosti.buildsystem.world.navigator.inventory.NavigatorInventory;
+import de.eintosti.buildsystem.world.menu.NavigatorInventory;
 import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;

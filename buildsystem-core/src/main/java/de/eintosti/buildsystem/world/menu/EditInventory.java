@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.world.modification;
+package de.eintosti.buildsystem.world.menu;
 
 import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XEntityType;
@@ -31,8 +31,8 @@ import de.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.util.inventory.InventoryUtils;
-import de.eintosti.buildsystem.world.builder.BuilderInventory;
+import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.world.menu.BuilderInventory;
 import de.eintosti.buildsystem.world.data.StatusInventory;
 import java.util.ArrayList;
 import java.util.List;

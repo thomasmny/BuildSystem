@@ -32,13 +32,13 @@ import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
 
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
-import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import de.eintosti.buildsystem.menu.InventoryUtils;
 
-import de.eintosti.buildsystem.world.navigator.inventory.ArchivedWorldsInventory;
-import de.eintosti.buildsystem.world.navigator.inventory.DisplayablesInventory;
-import de.eintosti.buildsystem.world.navigator.inventory.NavigatorInventory;
-import de.eintosti.buildsystem.world.navigator.inventory.PrivateWorldsInventory;
-import de.eintosti.buildsystem.world.navigator.inventory.PublicWorldsInventory;
+import de.eintosti.buildsystem.world.menu.ArchivedWorldsInventory;
+import de.eintosti.buildsystem.world.menu.DisplayablesInventory;
+import de.eintosti.buildsystem.world.menu.NavigatorInventory;
+import de.eintosti.buildsystem.world.menu.PrivateWorldsInventory;
+import de.eintosti.buildsystem.world.menu.PublicWorldsInventory;
 import java.util.Objects;
 import java.util.UUID;
 import org.bukkit.Material;

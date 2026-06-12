@@ -15,12 +15,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.player.settings;
+package de.eintosti.buildsystem.player.menu;
 
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.menu.ItemBuilder;
+import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.menu.Menu;
 import java.util.Map;
 import org.bukkit.entity.Player;

@@ -26,7 +26,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.CachedValues;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import de.eintosti.buildsystem.menu.InventoryUtils;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;

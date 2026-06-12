@@ -24,7 +24,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.world.display.FolderImpl;
+import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;

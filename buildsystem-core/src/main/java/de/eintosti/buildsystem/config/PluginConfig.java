@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.config;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.world.modification.GameRuleEntry;
+import de.eintosti.buildsystem.world.menu.GameRuleEntry;
 import java.util.List;
 import java.util.Set;
 import org.bukkit.Difficulty;

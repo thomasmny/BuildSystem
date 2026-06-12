@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.world.navigator.inventory;
+package de.eintosti.buildsystem.world.menu;
 
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import com.google.common.collect.Sets;
@@ -24,7 +24,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import de.eintosti.buildsystem.menu.InventoryUtils;
 import java.util.Set;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;

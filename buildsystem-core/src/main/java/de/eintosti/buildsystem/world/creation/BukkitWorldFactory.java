@@ -24,7 +24,7 @@ import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.world.creation.GenerationDataStore.WorldGenerationData;
 import de.eintosti.buildsystem.world.creation.generator.VoidGenerator;
-import de.eintosti.buildsystem.world.modification.GameRuleEntry;
+import de.eintosti.buildsystem.world.menu.GameRuleEntry;
 import java.util.Locale;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;

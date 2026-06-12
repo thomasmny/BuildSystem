@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.world.builder;
+package de.eintosti.buildsystem.world.menu;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
@@ -28,8 +28,8 @@ import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.util.UUIDFetcher;
-import de.eintosti.buildsystem.util.inventory.InventoryUtils;
-import de.eintosti.buildsystem.world.modification.EditInventory;
+import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.world.menu.EditInventory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

@@ -23,7 +23,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.util.StringUtils;
-import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import de.eintosti.buildsystem.menu.InventoryUtils;
 import java.util.Map;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;

@@ -40,7 +40,7 @@ import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
-import de.eintosti.buildsystem.world.util.WorldUnloaderImpl;
+import de.eintosti.buildsystem.world.lifecycle.WorldUnloaderImpl;
 import io.papermc.lib.PaperLib;
 import java.io.File;
 import java.io.IOException;

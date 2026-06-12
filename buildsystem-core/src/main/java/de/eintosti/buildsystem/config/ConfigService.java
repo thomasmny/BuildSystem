@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.config;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.world.modification.GameRuleEntry;
+import de.eintosti.buildsystem.world.menu.GameRuleEntry;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;

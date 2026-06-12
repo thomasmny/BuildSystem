@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.world.modification.SetupInventory;
+import de.eintosti.buildsystem.world.menu.SetupInventory;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 

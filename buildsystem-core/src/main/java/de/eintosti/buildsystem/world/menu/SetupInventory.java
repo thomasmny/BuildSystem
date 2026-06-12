@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.world.modification;
+package de.eintosti.buildsystem.world.menu;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
@@ -23,7 +23,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.menu.Menu;
-import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import java.util.Map;
 import java.util.Optional;

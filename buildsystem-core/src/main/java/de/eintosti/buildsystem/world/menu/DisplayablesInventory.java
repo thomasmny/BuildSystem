@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.world.navigator.inventory;
+package de.eintosti.buildsystem.world.menu;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
@@ -43,11 +43,11 @@ import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.util.StringCleaner;
-import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.CreateInventory;
 import de.eintosti.buildsystem.world.creation.CreateInventory.Page;
-import de.eintosti.buildsystem.world.modification.EditInventory;
+import de.eintosti.buildsystem.world.menu.EditInventory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
