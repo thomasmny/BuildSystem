@@ -125,82 +125,79 @@ public class ConfigService {
     }
 
     private static PluginConfig parse(FileConfiguration config, Logger logger, @Nullable File pluginParentDir) {
-        // Messages
-        PluginConfig.Messages messages = new PluginConfig.Messages(
+        return new PluginConfig(
+                parseMessages(config),
+                parseSettings(config, pluginParentDir),
+                parseWorld(config, logger),
+                parseFolder(config)
+        );
+    }
+
+    private static PluginConfig.Messages parseMessages(FileConfiguration config) {
+        return new PluginConfig.Messages(
                 config.getBoolean("messages.spawn-teleport-message", false),
                 config.getBoolean("messages.join-quit-messages", true),
                 Objects.requireNonNullElse(config.getString("messages.date-format"), "dd/MM/yyyy")
         );
+    }
 
-        // Settings - Archive
+    private static PluginConfig.Settings parseSettings(FileConfiguration config, @Nullable File pluginParentDir) {
         PluginConfig.Settings.Archive archive = new PluginConfig.Settings.Archive(
                 config.getBoolean("settings.archive.vanish", true),
                 config.getBoolean("settings.archive.change-gamemode", true),
                 parseGameMode(config.getString("settings.archive.world-gamemode"))
         );
 
-        // Settings - DisabledPhysics
         PluginConfig.Settings.DisabledPhysics disabledPhysics = new PluginConfig.Settings.DisabledPhysics(
                 config.getBoolean("settings.disabled-physics.prevent-connections", true),
                 config.getBoolean("settings.disabled-physics.prevent-fluid-flow", true),
                 config.getBoolean("settings.disabled-physics.prevent-falling-blocks", true)
         );
 
-        // Settings - SaveFromDeath
         PluginConfig.Settings.SaveFromDeath saveFromDeath = new PluginConfig.Settings.SaveFromDeath(
                 config.getBoolean("settings.save-from-death.enabled", true),
                 config.getBoolean("settings.save-from-death.teleport-to-map-spawn", true)
         );
 
-        // Settings - BuildMode
         PluginConfig.Settings.BuildMode buildMode = new PluginConfig.Settings.BuildMode(
                 config.getBoolean("settings.build-mode.drop-items", true),
                 config.getBoolean("settings.build-mode.move-items", true)
         );
 
-        // Settings - Builder
         PluginConfig.Settings.Builder builder = new PluginConfig.Settings.Builder(
                 config.getBoolean("settings.builder.block-worldedit-non-builder", true),
                 parseWorldEditWand(pluginParentDir)
         );
 
-        // Settings - Navigator
         PluginConfig.Settings.Navigator navigator = new PluginConfig.Settings.Navigator(
                 XMaterial.valueOf(Objects.requireNonNullElse(config.getString("settings.navigator.item"), "CLOCK")),
                 config.getBoolean("settings.navigator.give-item-on-join", true)
         );
 
-        PluginConfig.Settings settings = new PluginConfig.Settings(
+        return new PluginConfig.Settings(
                 config.getBoolean("settings.update-checker", true),
                 config.getBoolean("settings.scoreboard", true),
-                archive,
-                disabledPhysics,
-                saveFromDeath,
-                buildMode,
-                builder,
-                navigator
+                archive, disabledPhysics, saveFromDeath, buildMode, builder, navigator
         );
+    }
 
-        // World - Default - Permission
+    private static PluginConfig.World parseWorld(FileConfiguration config, Logger logger) {
         PluginConfig.World.Default.Permission permission = new PluginConfig.World.Default.Permission(
                 Objects.requireNonNullElse(config.getString("world.default.permission.public"), "-"),
                 Objects.requireNonNullElse(config.getString("world.default.permission.private"), "worlds.%world%")
         );
 
-        // World - Default - Time
         PluginConfig.World.Default.Time time = new PluginConfig.World.Default.Time(
                 config.getInt("world.default.time.sunrise", 0),
                 config.getInt("world.default.time.noon", 6000),
                 config.getInt("world.default.time.night", 18000)
         );
 
-        // World - Default - Settings - BuildersEnabled
         PluginConfig.World.Default.DefaultSettings.BuildersEnabled buildersEnabled = new PluginConfig.World.Default.DefaultSettings.BuildersEnabled(
                 config.getBoolean("world.default.settings.builders-enabled.public", false),
                 config.getBoolean("world.default.settings.builders-enabled.private", true)
         );
 
-        // World - Default - Settings
         PluginConfig.World.Default.DefaultSettings defaultSettings = new PluginConfig.World.Default.DefaultSettings(
                 config.getBoolean("world.default.settings.physics", true),
                 config.getBoolean("world.default.settings.explosions", true),
@@ -211,10 +208,53 @@ public class ConfigService {
                 buildersEnabled
         );
 
-        // World - Default - GameRules
+        List<GameRuleEntry<?>> gameRules = parseGameRules(config, logger);
+
+        PluginConfig.World.Default defaults = new PluginConfig.World.Default(
+                config.getInt("world.default.worldborder.size", 6000000),
+                Difficulty.valueOf(Objects.requireNonNullElse(config.getString("world.default.difficulty"), "PEACEFUL").toUpperCase(Locale.ROOT)),
+                gameRules, permission, time, defaultSettings
+        );
+
+        PluginConfig.World.Limits limits = new PluginConfig.World.Limits(
+                config.getInt("world.default.settings.public-worlds", -1),
+                config.getInt("world.default.settings.private-worlds", -1)
+        );
+
+        PluginConfig.World.Unload unload = new PluginConfig.World.Unload(
+                config.getBoolean("world.unload.enabled", false),
+                Objects.requireNonNullElse(config.getString("world.unload.time-until-unload"), "01:00:00"),
+                new HashSet<>(config.getStringList("world.unload.blacklisted-worlds"))
+        );
+
+        PluginConfig.World.Backup.AutoBackup autoBackup = new PluginConfig.World.Backup.AutoBackup(
+                config.getBoolean("world.backup.auto-backup.enabled", true),
+                config.getBoolean("world.backup.auto-backup.only-active-worlds", true),
+                config.getInt("world.backup.auto-backup.interval", 900)
+        );
+
+        PluginConfig.World.Backup backup = new PluginConfig.World.Backup(
+                Math.min(config.getInt("world.backup.max-backups-per-world", 5), 18),
+                parseStorageSettings(config, logger),
+                autoBackup
+        );
+
+        Set<String> deletionBlacklist = config.getStringList("world.deletion-blacklist").stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+
+        return new PluginConfig.World(
+                config.getBoolean("world.lock-weather", true),
+                Objects.requireNonNullElse(config.getString("world.invalid-characters"), "^\b$"),
+                config.getInt("world.import-all.delay", 30),
+                deletionBlacklist, defaults, limits, unload, backup
+        );
+    }
+
+    private static List<GameRuleEntry<?>> parseGameRules(FileConfiguration config, Logger logger) {
         var gameRulesSection = config.getConfigurationSection("world.default.gamerules");
         Map<String, Object> gameRulesMap = gameRulesSection == null ? Map.of() : gameRulesSection.getValues(true);
-        List<GameRuleEntry<?>> gameRules = gameRulesMap.entrySet()
+        return gameRulesMap.entrySet()
                 .stream()
                 .map(entry -> {
                     String key = entry.getKey();
@@ -248,69 +288,13 @@ public class ConfigService {
                 })
                 .filter(Objects::nonNull)
                 .toList();
+    }
 
-        // World - Default
-        PluginConfig.World.Default defaults = new PluginConfig.World.Default(
-                config.getInt("world.default.worldborder.size", 6000000),
-                Difficulty.valueOf(Objects.requireNonNullElse(config.getString("world.default.difficulty"), "PEACEFUL").toUpperCase(Locale.ROOT)),
-                gameRules,
-                permission,
-                time,
-                defaultSettings
-        );
-
-        // World - Limits
-        PluginConfig.World.Limits limits = new PluginConfig.World.Limits(
-                config.getInt("world.default.settings.public-worlds", -1),
-                config.getInt("world.default.settings.private-worlds", -1)
-        );
-
-        // World - Unload
-        PluginConfig.World.Unload unload = new PluginConfig.World.Unload(
-                config.getBoolean("world.unload.enabled", false),
-                Objects.requireNonNullElse(config.getString("world.unload.time-until-unload"), "01:00:00"),
-                new HashSet<>(config.getStringList("world.unload.blacklisted-worlds"))
-        );
-
-        // World - Backup - StorageSettings
-        PluginConfig.World.Backup.StorageSettings storageSettings = parseStorageSettings(config, logger);
-
-        // World - Backup - AutoBackup
-        PluginConfig.World.Backup.AutoBackup autoBackup = new PluginConfig.World.Backup.AutoBackup(
-                config.getBoolean("world.backup.auto-backup.enabled", true),
-                config.getBoolean("world.backup.auto-backup.only-active-worlds", true),
-                config.getInt("world.backup.auto-backup.interval", 900)
-        );
-
-        // World - Backup
-        PluginConfig.World.Backup backup = new PluginConfig.World.Backup(
-                Math.min(config.getInt("world.backup.max-backups-per-world", 5), 18),
-                storageSettings,
-                autoBackup
-        );
-
-        // World
-        Set<String> deletionBlacklist = config.getStringList("world.deletion-blacklist").stream()
-                .map(String::toLowerCase)
-                .collect(Collectors.toSet());
-        PluginConfig.World world = new PluginConfig.World(
-                config.getBoolean("world.lock-weather", true),
-                Objects.requireNonNullElse(config.getString("world.invalid-characters"), "^\b$"),
-                config.getInt("world.import-all.delay", 30),
-                deletionBlacklist,
-                defaults,
-                limits,
-                unload,
-                backup
-        );
-
-        // Folder
-        PluginConfig.Folder folder = new PluginConfig.Folder(
+    private static PluginConfig.Folder parseFolder(FileConfiguration config) {
+        return new PluginConfig.Folder(
                 config.getBoolean("folder.override-permissions", true),
                 config.getBoolean("folder.override-projects", false)
         );
-
-        return new PluginConfig(messages, settings, world, folder);
     }
 
     private static PluginConfig.World.Backup.StorageSettings parseStorageSettings(FileConfiguration config, Logger logger) {

@@ -158,7 +158,7 @@ public class ImportSubCommand implements SubCommand {
         List<String> result = new ArrayList<>();
         if (args.length == 2) {
             String[] directories = Bukkit.getWorldContainer().list((dir, name) -> {
-                if (de.eintosti.buildsystem.util.StringCleaner.hasInvalidNameCharacters(name, plugin.getConfigService().current().world().invalidCharacters())) {
+                if (StringCleaner.hasInvalidNameCharacters(name, plugin.getConfigService().current().world().invalidCharacters())) {
                     return false;
                 }
                 File worldFolder = new File(dir, name);
@@ -179,8 +179,8 @@ public class ImportSubCommand implements SubCommand {
         }
 
         Map<String, List<String>> flags = Map.of(
-                "-g", Arrays.stream(de.eintosti.buildsystem.api.world.creation.generator.Generator.values())
-                        .filter(g -> g != de.eintosti.buildsystem.api.world.creation.generator.Generator.CUSTOM)
+                "-g", Arrays.stream(Generator.values())
+                        .filter(g -> g != Generator.CUSTOM)
                         .map(Enum::name).toList(),
                 "-c", List.of(),
                 "-t", Arrays.stream(de.eintosti.buildsystem.api.world.data.BuildWorldType.values()).map(Enum::name).toList()

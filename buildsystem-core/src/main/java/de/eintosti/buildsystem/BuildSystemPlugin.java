@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
 import de.eintosti.buildsystem.command.CommandRegistrar;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.migration.ConfigMigrationManager;
 import de.eintosti.buildsystem.integration.Integrations;
@@ -62,7 +63,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     public static final String ADMIN_PERMISSION = "buildsystem.admin";
 
     private ConfigService configService;
-    private de.eintosti.buildsystem.i18n.Messages messages;
+    private Messages messages;
 
     private NavigatorService navigatorService;
     private CustomBlockManager customBlockManager;
@@ -92,7 +93,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         this.saveConfig();
         this.configService.load();
 
-        this.messages = new de.eintosti.buildsystem.i18n.Messages(this, configService);
+        this.messages = new Messages(this, configService);
         this.messages.load();
         createTemplateFolder();
     }
@@ -315,7 +316,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         return configService;
     }
 
-    public de.eintosti.buildsystem.i18n.Messages getMessages() {
+    public Messages getMessages() {
         return messages;
     }
 

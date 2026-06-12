@@ -22,6 +22,7 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.command.subcommand.Argument;
@@ -239,7 +240,7 @@ public class FolderSubCommand implements SubCommand {
         List<String> result = new ArrayList<>();
         if (args.length == 2) {
             folderStorage.getFolders().stream()
-                    .map(de.eintosti.buildsystem.api.world.display.Displayable::getName)
+                    .map(Displayable::getName)
                     .forEach(name -> WorldsCompletions.addIfStartsWith(args[1], name, result));
             return result;
         }

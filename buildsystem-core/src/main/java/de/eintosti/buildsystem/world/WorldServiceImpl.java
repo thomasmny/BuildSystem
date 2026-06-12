@@ -40,6 +40,7 @@ import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
+import de.eintosti.buildsystem.world.lifecycle.WorldRenamer;
 import de.eintosti.buildsystem.world.lifecycle.WorldUnloaderImpl;
 import io.papermc.lib.PaperLib;
 import java.io.File;
@@ -287,85 +288,7 @@ public class WorldServiceImpl implements WorldService {
      * @param newName    The name the world should be renamed to
      */
     public void renameWorld(Player player, BuildWorld buildWorld, String newName) {
-        player.closeInventory();
-        if (worldStorage.worldAndFolderExist(newName)) {
-            plugin.getMessages().sendMessage(player, "worlds_world_exists");
-            XSound.ENTITY_ITEM_BREAK.play(player);
-            return;
-        }
-
-        String oldName = buildWorld.getName();
-        if (oldName.equalsIgnoreCase(newName)) {
-            plugin.getMessages().sendMessage(player, "worlds_rename_same_name");
-            return;
-        }
-
-        if (StringCleaner.hasInvalidNameCharacters(newName, plugin.getConfigService().current().world().invalidCharacters())) {
-            plugin.getMessages().sendMessage(player, "worlds_world_creation_invalid_characters");
-        }
-        String sanitizedNewName = StringCleaner.sanitize(newName, plugin.getConfigService().current().world().invalidCharacters());
-        if (sanitizedNewName.isEmpty()) {
-            plugin.getMessages().sendMessage(player, "worlds_world_creation_name_bank");
-            return;
-        }
-
-        if (Bukkit.getWorld(oldName) == null && !buildWorld.isLoaded()) {
-            buildWorld.getLoader().load();
-        }
-
-        World oldWorld = Bukkit.getWorld(oldName);
-        if (oldWorld == null) {
-            plugin.getMessages().sendMessage(player, "worlds_rename_unknown_world");
-            return;
-        }
-
-        List<@Nullable Player> removedPlayers = removePlayersFromWorld(oldName, "worlds_rename_players_world");
-        for (Chunk chunk : oldWorld.getLoadedChunks()) {
-            chunk.unload(true);
-        }
-        Location oldSpawnLocation = oldWorld.getSpawnLocation();
-        Bukkit.unloadWorld(oldWorld, true);
-
-        File oldWorldFile = new File(Bukkit.getWorldContainer(), oldName);
-        File newWorldFile = new File(Bukkit.getWorldContainer(), sanitizedNewName);
-        CompletableFuture.runAsync(() -> {
-            try {
-                FileUtils.copy(oldWorldFile, newWorldFile);
-                FileUtils.deleteDirectory(oldWorldFile);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to rename world directory", e);
-            }
-        }).thenRun(() -> Bukkit.getScheduler().runTask(plugin, () -> {
-            worldStorage.rename(buildWorld, oldName, sanitizedNewName);
-            buildWorld.setName(sanitizedNewName);
-            worldStorage.save(buildWorld);
-            World newWorld = new BukkitWorldFactory(plugin, buildWorld).generate(BukkitWorldFactory.VersionCheck.SKIP);
-            Location spawnLocation = oldSpawnLocation;
-            spawnLocation.setWorld(newWorld);
-
-            removedPlayers.stream()
-                    .filter(Objects::nonNull)
-                    .forEach(pl -> PaperLib.teleportAsync(pl, spawnLocation.clone().add(0.5, 0, 0.5)));
-
-            SpawnService spawnService = plugin.getSpawnService();
-            Location oldSpawn = spawnService.getSpawn();
-            if (oldSpawn != null && Objects.equals(spawnService.getSpawnWorld(), oldWorld)) {
-                Location newSpawn = new Location(
-                        newWorld,
-                        oldSpawn.getX(),
-                        oldSpawn.getY(),
-                        oldSpawn.getZ(),
-                        oldSpawn.getYaw(),
-                        oldSpawn.getPitch()
-                );
-                spawnService.set(newSpawn, sanitizedNewName);
-            }
-
-            plugin.getMessages().sendMessage(player, "worlds_rename_set",
-                    Map.entry("%oldName%", oldName),
-                    Map.entry("%newName%", sanitizedNewName)
-            );
-        }));
+        new WorldRenamer(plugin, this, worldStorage).rename(player, buildWorld, newName);
     }
 
     public List<Player> removePlayersFromWorld(String worldName, String messageKey) {

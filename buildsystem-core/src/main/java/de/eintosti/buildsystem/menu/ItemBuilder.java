@@ -21,7 +21,9 @@ import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
+import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
+import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,7 +65,7 @@ public final class ItemBuilder {
         return new ItemBuilder(skull);
     }
 
-    public static ItemBuilder glassPane(Player player, de.eintosti.buildsystem.player.settings.SettingsService settingsService) {
+    public static ItemBuilder glassPane(Player player, SettingsService settingsService) {
         Settings settings = settingsService.getSettings(player);
         DesignColor color = settings.getDesignColor();
         XMaterial material = XMaterial.matchXMaterial(color.name() + "_STAINED_GLASS_PANE")
