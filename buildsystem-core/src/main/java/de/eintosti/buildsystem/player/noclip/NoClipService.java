@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.player.noclip;
 
-import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import java.util.*;
@@ -25,7 +24,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -86,26 +85,32 @@ public class NoClipService {
     }
 
     private boolean checkNoClip(Player player) {
-        Location playerLocation = player.getLocation();
+        Location loc = player.getLocation();
+        World world = loc.getWorld();
+        double x = loc.getX();
+        double y = loc.getY();
+        double z = loc.getZ();
 
-        Set<Location> locations = Sets.newHashSet(
-                playerLocation.clone().add(0.4, 0, 0),
-                playerLocation.clone().add(-0.4, 0, 0),
-                playerLocation.clone().add(0.4, 1, 0),
-                playerLocation.clone().add(-0.4, 1, 0),
-                playerLocation.clone().add(0, 0, 0.4),
-                playerLocation.clone().add(0, 0, -0.4),
-                playerLocation.clone().add(0, 1, 0.4),
-                playerLocation.clone().add(0, 1, -0.4),
-                playerLocation.clone().add(0, 1.9, 0));
+        // Check the positions around the player hitbox (feet, body, head)
+        if (isSolid(world, x + 0.4, y, z)
+                || isSolid(world, x - 0.4, y, z)
+                || isSolid(world, x + 0.4, y + 1, z)
+                || isSolid(world, x - 0.4, y + 1, z)
+                || isSolid(world, x, y, z + 0.4)
+                || isSolid(world, x, y, z - 0.4)
+                || isSolid(world, x, y + 1, z + 0.4)
+                || isSolid(world, x, y + 1, z - 0.4)
+                || isSolid(world, x, y + 1.9, z)) {
+            return true;
+        }
 
-        return locations.stream().anyMatch(location -> isSolidBlock(location.getBlock()))
-                || (player.isSneaking()
-                        && isSolidBlock(playerLocation.clone().add(0, -0.1, 0).getBlock()));
+        return player.isSneaking() && isSolid(world, x, y - 0.1, z);
     }
 
-    private boolean isSolidBlock(Block block) {
-        return block.getType() != Material.AIR;
+    private boolean isSolid(World world, double x, double y, double z) {
+        return world.getBlockAt((int) Math.floor(x), (int) Math.floor(y), (int) Math.floor(z))
+                        .getType()
+                != Material.AIR;
     }
 
     public boolean isNoClip(UUID uuid) {
