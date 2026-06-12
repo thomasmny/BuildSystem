@@ -30,17 +30,16 @@ import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import java.io.File;
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Map;
 
 @NullMarked
 public class CreateMenu extends PaginatedMenu {

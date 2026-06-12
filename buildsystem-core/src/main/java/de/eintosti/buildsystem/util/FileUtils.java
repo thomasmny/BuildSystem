@@ -19,13 +19,6 @@ package de.eintosti.buildsystem.util;
 
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.model.ExcludeFileFilter;
-import net.lingala.zip4j.model.ZipParameters;
-import org.bukkit.Bukkit;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,6 +31,12 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.model.ExcludeFileFilter;
+import net.lingala.zip4j.model.ZipParameters;
+import org.bukkit.Bukkit;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class FileUtils {
@@ -96,9 +95,8 @@ public final class FileUtils {
      *
      * @param source The source directory to be copied
      * @param target The target directory where the source directory will be copied to
-     * @throws IOException If an I/O error occurs while copying the directory
      */
-    private static void copyDirectory(File source, File target) throws IOException {
+    private static void copyDirectory(File source, File target) {
         if (!target.exists() && !target.mkdirs()) {
             LOGGER.log(Level.SEVERE, "Failed to create target directory: " + target.getAbsolutePath());
             return;

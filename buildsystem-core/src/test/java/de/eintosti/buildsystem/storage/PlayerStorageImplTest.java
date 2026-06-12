@@ -111,7 +111,7 @@ class PlayerStorageImplTest {
         }
 
         executor.shutdown();
-        BuildPlayer first = futures.get(0).get();
+        BuildPlayer first = futures.getFirst().get();
         for (Future<BuildPlayer> future : futures) {
             assertSame(first, future.get(), "All concurrent createBuildPlayer calls must return the same instance");
         }

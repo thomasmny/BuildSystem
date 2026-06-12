@@ -20,11 +20,10 @@ package de.eintosti.buildsystem.player;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import java.util.UUID;
 import org.bukkit.Location;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.UUID;
 
 /**
  * BuildSystem's only {@link BuildPlayer} implementation. Beyond the public API ({@code getUniqueId()},

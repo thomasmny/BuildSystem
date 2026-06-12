@@ -26,6 +26,12 @@ import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import net.lingala.zip4j.ZipFile;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -33,13 +39,6 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
 
 @NullMarked
 public class BackupProfileImpl implements BackupProfile {

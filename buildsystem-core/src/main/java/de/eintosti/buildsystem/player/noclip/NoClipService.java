@@ -19,11 +19,10 @@ package de.eintosti.buildsystem.player.noclip;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.Settings;
+import java.util.*;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-
-import java.util.*;
 
 @NullMarked
 public class NoClipService {

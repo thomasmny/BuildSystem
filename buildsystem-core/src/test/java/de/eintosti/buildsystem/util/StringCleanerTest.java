@@ -17,12 +17,11 @@
  */
 package de.eintosti.buildsystem.util;
 
-import org.jspecify.annotations.NullMarked;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.Test;
 
 @NullMarked
 class StringCleanerTest {

@@ -19,12 +19,6 @@ import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.world.backup.storage.LocalBackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.S3BackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.SftpBackupStorage;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
-
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
@@ -34,6 +28,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class BackupService {
@@ -140,7 +139,7 @@ public class BackupService {
 
     /**
      * Increments the time since a {@link BuildWorld} was backed-up by {@link #UPDATE_PERIOD} seconds. If the time has
-     * surpassed {@link AutoBackup#interval}, a backup will automatically be created.
+     * surpassed {@link PluginConfig.World.Backup.AutoBackup#interval()}, a backup will automatically be created.
      */
     private void incrementTimeSinceBackup() {
         Set<BuildWorld> worlds = new HashSet<>();

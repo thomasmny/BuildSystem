@@ -100,7 +100,7 @@ public class BuilderMenu extends PaginatedMenu {
         ItemStack creatorInfoItem;
         Builder creator = builders.getCreator();
 
-        if (!builders.hasCreator()) {
+        if (creator == null) {
             creatorInfoItem = InventoryUtils.createItem(
                     XMaterial.BARRIER, messages.getString("worldeditor_builders_no_creator_item", player));
         } else {
@@ -108,9 +108,7 @@ public class BuilderMenu extends PaginatedMenu {
                     messages.getString("worldeditor_builders_creator_item", player),
                     Profileable.of(creator.getUniqueId()),
                     messages.getString(
-                            "worldeditor_builders_creator_lore",
-                            player,
-                            Map.entry("%creator%", builders.getCreator().getName())));
+                            "worldeditor_builders_creator_lore", player, Map.entry("%creator%", creator.getName())));
         }
         inventory.setItem(4, creatorInfoItem);
     }

@@ -17,10 +17,10 @@
  */
 package de.eintosti.buildsystem.config.migration;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class MigrationV1ToV2Test {
 

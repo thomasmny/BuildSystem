@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 final class WorldsCompletions {
@@ -35,7 +36,7 @@ final class WorldsCompletions {
      * (e.g. "buildsystem.edit").
      */
     static List<String> permittedWorldNames(
-            Player player, WorldStorage worldStorage, String commandPermission, String input) {
+            Player player, WorldStorage worldStorage, @Nullable String commandPermission, String input) {
         List<String> result = new ArrayList<>();
         for (BuildWorld world : worldStorage.getBuildWorlds()) {
             String worldPerm = world.getData().permission().get();
