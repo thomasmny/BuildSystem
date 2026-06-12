@@ -36,11 +36,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * A utility class to assist in checking for updates for plugins uploaded to
- * <a href="https://spigotmc.org/resources/">SpigotMC</a>. Before any members of this
- * class are accessed, {@link #init(JavaPlugin, int)} must be invoked by the plugin, preferably in its {@link JavaPlugin#onEnable()} method, though that is not a requirement.
- * <p>
- * This class performs asynchronous queries to Spigot's API. If the results of {@link #requestUpdateCheck()} are inconsistent with what is published on SpigotMC, it may be due to
- * the REST API cache. Results will be updated in due time.
+ * <a href="https://spigotmc.org/resources/">SpigotMC</a>.
  *
  * @author Parker Hawke - Choco
  */
@@ -74,9 +70,6 @@ public final class UpdateChecker {
         return (secondSplit.length > firstSplit.length) ? second : first;
     };
 
-    @Nullable
-    private static UpdateChecker instance;
-
     private final JavaPlugin plugin;
     private final int pluginID;
     private final VersionScheme versionScheme;
@@ -84,7 +77,12 @@ public final class UpdateChecker {
     @Nullable
     private UpdateResult lastResult = null;
 
-    private UpdateChecker(JavaPlugin plugin, int pluginID, VersionScheme versionScheme) {
+    public UpdateChecker(JavaPlugin plugin, int pluginID) {
+        this(plugin, pluginID, VERSION_SCHEME_DECIMAL);
+    }
+
+    public UpdateChecker(JavaPlugin plugin, int pluginID, VersionScheme versionScheme) {
+        Preconditions.checkArgument(pluginID > 0, "Plugin ID must be greater than 0");
         this.plugin = plugin;
         this.pluginID = pluginID;
         this.versionScheme = versionScheme;
@@ -93,54 +91,6 @@ public final class UpdateChecker {
     private static String @Nullable [] splitVersionInfo(String version) {
         Matcher matcher = DECIMAL_SCHEME_PATTERN.matcher(version);
         return matcher.find() ? matcher.group().split("\\.") : null;
-    }
-
-    /**
-     * Initialize this update checker with the specified values and return its instance. If an instance of UpdateChecker has already been initialized, this method will act
-     * similarly to {@link #get()} (which is recommended after initialization).
-     *
-     * @param plugin        the plugin for which to check updates. Cannot be {@code null}
-     * @param pluginID      the ID of the plugin as identified in the SpigotMC resource link. For example, "https://www.spigotmc.org/resources/veinminer.<b>12038</b>/" would expect
-     *                      "12038" as a value. The value must be greater than 0
-     * @param versionScheme a custom version scheme parser. Cannot be {@code null}
-     * @return the UpdateChecker instance
-     */
-    public static UpdateChecker init(JavaPlugin plugin, int pluginID, VersionScheme versionScheme) {
-        Preconditions.checkArgument(pluginID > 0, "Plugin ID must be greater than 0");
-
-        return (instance == null) ? instance = new UpdateChecker(plugin, pluginID, versionScheme) : instance;
-    }
-
-    /**
-     * Initialize this update checker with the specified values and return its instance. If an instance of UpdateChecker has already been initialized, this method will act
-     * similarly to {@link #get()} (which is recommended after initialization).
-     *
-     * @param plugin   the plugin for which to check updates. Cannot be {@code null}
-     * @param pluginID the ID of the plugin as identified in the SpigotMC resource link. For example, "https://www.spigotmc.org/resources/veinminer.<b>12038</b>/" would expect
-     *                 "12038" as a value. The value must be greater than 0
-     * @return the UpdateChecker instance
-     */
-    public static UpdateChecker init(JavaPlugin plugin, int pluginID) {
-        return init(plugin, pluginID, VERSION_SCHEME_DECIMAL);
-    }
-
-    /**
-     * Get the initialized instance of UpdateChecker. If {@link #init(JavaPlugin, int)} has not yet been invoked, this method will throw an exception.
-     *
-     * @return the UpdateChecker instance
-     */
-    public static UpdateChecker get() {
-        Preconditions.checkState(instance != null, "Instance has not yet been initialized. Be sure #init() has been invoked");
-        return instance;
-    }
-
-    /**
-     * Check whether the UpdateChecker has been initialized or not (if {@link #init(JavaPlugin, int)} has been invoked) and {@link #get()} is safe to use.
-     *
-     * @return {@code true} if initialized, {@code false} otherwise
-     */
-    public static boolean isInitialized() {
-        return instance != null;
     }
 
     /**
@@ -271,7 +221,7 @@ public final class UpdateChecker {
         private final UpdateReason reason;
         private final String newestVersion;
 
-        { // An actual use for initializer blocks. This is madness!
+        {
             UpdateChecker.this.lastResult = this;
         }
 

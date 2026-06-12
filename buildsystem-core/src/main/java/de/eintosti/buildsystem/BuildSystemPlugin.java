@@ -61,8 +61,6 @@ public class BuildSystemPlugin extends JavaPlugin {
     public static final int METRICS_ID = 7427;
     public static final String ADMIN_PERMISSION = "buildsystem.admin";
 
-    private static BuildSystemPlugin instance;
-
     private ConfigService configService;
     private de.eintosti.buildsystem.i18n.Messages messages;
 
@@ -76,6 +74,8 @@ public class BuildSystemPlugin extends JavaPlugin {
     private BackupService backupService;
     private CustomizableIcons customizableIcons;
 
+    private UpdateChecker updateChecker;
+
     private LuckPermsExpansion luckPermsExpansion;
     private PlaceholderApiExpansion placeholderApiExpansion;
 
@@ -85,8 +85,6 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        instance = this;
-
         this.configService = new ConfigService(this);
         new ConfigMigrationManager(this).migrate();
         this.getConfig().options().copyDefaults(true);
@@ -162,14 +160,6 @@ public class BuildSystemPlugin extends JavaPlugin {
                 "%sBuildSystem » Plugin %sdisabled%s!".formatted(ChatColor.RESET, ChatColor.RED, ChatColor.RESET)
         );
 
-        instance = null;
-    }
-
-    public static BuildSystemPlugin get() {
-        if (instance == null) {
-            throw new IllegalStateException("BuildSystemPlugin instance is not initialized. Make sure the plugin is enabled.");
-        }
-        return instance;
     }
 
     private void initClasses() {
@@ -233,12 +223,17 @@ public class BuildSystemPlugin extends JavaPlugin {
         }
     }
 
+    public UpdateChecker getUpdateChecker() {
+        return updateChecker;
+    }
+
     private void performUpdateCheck() {
+        this.updateChecker = new UpdateChecker(this, SPIGOT_ID);
         if (!configService.current().settings().updateChecker()) {
             return;
         }
 
-        UpdateChecker.init(this, SPIGOT_ID).requestUpdateCheck().whenComplete((result, e) -> {
+        updateChecker.requestUpdateCheck().whenComplete((result, e) -> {
                     if (result.requiresUpdate()) {
                         Bukkit.getConsoleSender().sendMessage(
                                 ChatColor.YELLOW + "[BuildSystem] Great! a new update is available: "

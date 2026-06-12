@@ -54,6 +54,7 @@ public final class SubCommandDispatcher {
             messages.sendMessage(player, "worlds_unknown_command");
             return false;
         }
+
         // Convention: /worlds <sub> <world> — args[1] is the world name when present
         String worldName = args.length >= 2 ? args[1] : player.getWorld().getName();
         subCommand.execute(player, worldName, args);
@@ -72,7 +73,7 @@ public final class SubCommandDispatcher {
             List<String> result = new ArrayList<>();
             for (SubCommand cmd : byName.values()) {
                 String permission = cmd.getArgument().getPermission();
-                if (player.hasPermission(permission)) {
+                if (permission == null || player.hasPermission(permission)) {
                     String name = cmd.getArgument().getName();
                     if (args[0].isEmpty() || name.toLowerCase(Locale.ROOT).startsWith(args[0].toLowerCase(Locale.ROOT))) {
                         result.add(name);
@@ -81,10 +82,12 @@ public final class SubCommandDispatcher {
             }
             return result;
         }
+
         SubCommand subCommand = byName.get(args[0].toLowerCase(Locale.ROOT));
         if (subCommand != null) {
             return subCommand.complete(player, args);
         }
+
         return List.of();
     }
 }

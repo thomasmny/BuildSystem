@@ -178,7 +178,7 @@ public class NavigatorService {
             return;
         }
 
-        BuildPlayer buildPlayer = plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player); // TODO(plan-014): inject storage
+        BuildPlayer buildPlayer = plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player);
         buildPlayer.setLastLookedAt(null);
         removeArmorStands(player);
 
@@ -207,7 +207,7 @@ public class NavigatorService {
                 continue;
             }
 
-            BuildPlayer buildPlayer = plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player); // TODO(plan-014): inject storage
+            BuildPlayer buildPlayer = plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player);
             if (isLookingAtArmorStandHead(player, armorStand)) {
                 NavigatorCategory category = matchNavigatorCategory(armorStand);
                 sendTypeInfo(player, category);
@@ -277,7 +277,7 @@ public class NavigatorService {
     }
 
     private void sendTypeInfo(Player player, @Nullable NavigatorCategory category) {
-        BuildPlayer buildPlayer = plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player); // TODO(plan-014): inject storage
+        BuildPlayer buildPlayer = plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player);
         if (category == null) {
             buildPlayer.setLastLookedAt(null);
             displayActionBarMessage(player, "§0");

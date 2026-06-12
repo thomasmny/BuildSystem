@@ -44,28 +44,28 @@ public class SetItemSubCommand implements SubCommand {
     public void execute(Player player, String worldName, String[] args) {
         BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
         if (!WorldPermissionsImpl.of(plugin, buildWorld).canPerformCommand(player, getArgument().getPermission())) {
-            BuildSystemPlugin.get().getMessages().sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return;
         }
 
         if (args.length > 2) {
-            BuildSystemPlugin.get().getMessages().sendMessage(player, "worlds_setitem_usage");
+            plugin.getMessages().sendMessage(player, "worlds_setitem_usage");
             return;
         }
 
         if (buildWorld == null) {
-            BuildSystemPlugin.get().getMessages().sendMessage(player, "worlds_setitem_unknown_world");
+            plugin.getMessages().sendMessage(player, "worlds_setitem_unknown_world");
             return;
         }
 
         ItemStack itemStack = player.getInventory().getItemInMainHand();
         if (itemStack.getType() == Material.AIR) {
-            BuildSystemPlugin.get().getMessages().sendMessage(player, "worlds_setitem_hand_empty");
+            plugin.getMessages().sendMessage(player, "worlds_setitem_hand_empty");
             return;
         }
 
         buildWorld.getData().material().set(XMaterial.matchXMaterial(itemStack));
-        BuildSystemPlugin.get().getMessages().sendMessage(player, "worlds_setitem_set",
+        plugin.getMessages().sendMessage(player, "worlds_setitem_set",
                 Map.entry("%world%", buildWorld.getName())
         );
     }

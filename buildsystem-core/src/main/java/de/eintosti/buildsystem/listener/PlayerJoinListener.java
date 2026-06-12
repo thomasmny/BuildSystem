@@ -32,7 +32,6 @@ import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.UUIDFetcher;
-import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import io.papermc.lib.PaperLib;
 import java.util.Map;
@@ -183,7 +182,7 @@ public class PlayerJoinListener implements Listener {
             return;
         }
 
-        UpdateChecker.init(plugin, BuildSystemPlugin.SPIGOT_ID)
+        plugin.getUpdateChecker()
                 .requestUpdateCheck()
                 .whenComplete((result, e) -> {
                     if (result.requiresUpdate()) {
