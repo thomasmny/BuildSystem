@@ -55,7 +55,7 @@ public class BackupService {
 
         PluginConfig.World.Backup backupConfig =
                 plugin.getConfigService().current().world().backup();
-        this.backupStorage = createStorage(plugin, executor, backupConfig.storage());
+        this.backupStorage = createStorageOrFallback(backupConfig.storage());
         this.worldStorage = plugin.getWorldService().getWorldStorage();
 
         if (backupConfig.autoBackup().enabled()) {
@@ -68,10 +68,18 @@ public class BackupService {
             BuildSystemPlugin plugin, ExecutorService executor, PluginConfig.World.Backup.StorageSettings settings) {
         return switch (settings) {
             case PluginConfig.World.Backup.Local l -> new LocalBackupStorage(plugin, executor);
-            case PluginConfig.World.Backup.Sftp s ->
-                new SftpBackupStorage(plugin, executor, s.host(), s.port(), s.username(), s.password(), s.path());
-            case PluginConfig.World.Backup.S3 s3 ->
-                new S3BackupStorage(
+            case PluginConfig.World.Backup.Sftp s -> {
+                requireNonBlank(s.host(), "backup.sftp.host");
+                requireNonBlank(s.username(), "backup.sftp.username");
+                requireNonBlank(s.password(), "backup.sftp.password");
+                yield new SftpBackupStorage(plugin, executor, s.host(), s.port(), s.username(), s.password(), s.path());
+            }
+            case PluginConfig.World.Backup.S3 s3 -> {
+                requireNonBlank(s3.accessKey(), "backup.s3.access-key");
+                requireNonBlank(s3.secretKey(), "backup.s3.secret-key");
+                requireNonBlank(s3.region(), "backup.s3.region");
+                requireNonBlank(s3.bucket(), "backup.s3.bucket");
+                yield new S3BackupStorage(
                         plugin,
                         executor,
                         s3.url(),
@@ -80,7 +88,24 @@ public class BackupService {
                         s3.region(),
                         s3.bucket(),
                         s3.path());
+            }
         };
+    }
+
+    private static void requireNonBlank(@Nullable String value, String configKey) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Backup storage configuration is incomplete: '" + configKey + "' must be set in config.yml");
+        }
+    }
+
+    private BackupStorage createStorageOrFallback(PluginConfig.World.Backup.StorageSettings settings) {
+        try {
+            return createStorage(plugin, executor, settings);
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger().severe("Backup storage disabled, falling back to local storage: " + e.getMessage());
+            return new LocalBackupStorage(plugin, executor);
+        }
     }
 
     /**
@@ -96,7 +121,7 @@ public class BackupService {
         this.backupStorage.close();
         PluginConfig.World.Backup backupConfig =
                 plugin.getConfigService().current().world().backup();
-        this.backupStorage = createStorage(plugin, executor, backupConfig.storage());
+        this.backupStorage = createStorageOrFallback(backupConfig.storage());
         if (backupConfig.autoBackup().enabled() && plugin.isEnabled()) {
             this.autoBackupTask = Bukkit.getScheduler()
                     .runTaskTimer(plugin, this::incrementTimeSinceBackup, UPDATE_PERIOD * 20, UPDATE_PERIOD * 20);
