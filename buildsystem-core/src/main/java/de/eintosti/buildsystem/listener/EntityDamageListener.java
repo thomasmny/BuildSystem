@@ -44,7 +44,6 @@ public class EntityDamageListener implements Listener {
             return;
         }
 
-        // Teleport player up if void damage is taken
         if (event.getCause() != EntityDamageEvent.DamageCause.VOID
                 || !plugin.getConfigService()
                         .current()

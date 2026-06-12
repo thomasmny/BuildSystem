@@ -107,7 +107,6 @@ public abstract class WorldStorageImpl implements WorldStorage {
         this.buildWorldsByUuid.remove(worldId);
         this.uuidByName.remove(buildWorld.getName().toLowerCase());
 
-        // Also remove world from any folder it may be in
         Folder assignedFolder = buildWorld.getFolder();
         if (assignedFolder != null) {
             assignedFolder.removeWorld(buildWorld);

@@ -143,7 +143,6 @@ public class NavigatorListener implements Listener {
         cachedValues.saveWalkSpeed(player.getWalkSpeed());
         cachedValues.saveFlySpeed(player.getFlySpeed());
 
-        // Cancel movement and disable flying
         player.setSprinting(false);
         player.setWalkSpeed(0.0f);
         player.setFlySpeed(0.0f);
@@ -168,7 +167,6 @@ public class NavigatorListener implements Listener {
         Player player = event.getPlayer();
         Entity entity = event.getRightClicked();
 
-        // Disable interaction entities in archived worlds
         disableArchivedWorlds(player, event);
 
         if (!navigatorService.getOpenNavigator().contains(player) || !(entity instanceof ArmorStand armorStand)) {

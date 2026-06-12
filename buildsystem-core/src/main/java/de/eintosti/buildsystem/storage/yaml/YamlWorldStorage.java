@@ -149,7 +149,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
     private BuildWorldImpl loadWorld(String worldName) {
         UUID uuid = config.isString("worlds." + worldName + ".uuid")
                 ? UUID.fromString(config.getString("worlds." + worldName + ".uuid"))
-                : UUID.randomUUID(); // Generate a new UUID if not present
+                : UUID.randomUUID();
         Builder creator = parseCreator(worldName);
         BuildWorldType worldType = config.isString("worlds." + worldName + ".type")
                 ? BuildWorldType.valueOf(config.getString("worlds." + worldName + ".type"))

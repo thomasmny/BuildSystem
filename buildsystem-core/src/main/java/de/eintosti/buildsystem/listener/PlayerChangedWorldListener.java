@@ -187,7 +187,6 @@ public class PlayerChangedWorldListener implements Listener {
     }
 
     private void setSpectatorMode(Player player) {
-        // Checking if the game mode should be set to adventure mode on archive worlds
         if (plugin.getConfigService().current().settings().archive().changeGamemode()) {
             player.setGameMode(
                     plugin.getConfigService().current().settings().archive().worldGameMode());

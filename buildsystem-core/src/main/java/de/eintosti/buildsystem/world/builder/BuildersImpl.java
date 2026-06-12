@@ -159,7 +159,7 @@ public class BuildersImpl implements Builders {
 
             if (isLastBuilderInLine || isLastOverallBuilder) {
                 loreLines.add(String.join("", currentLineBuilders).trim());
-                currentLineBuilders.clear(); // Clear for the next line
+                currentLineBuilders.clear();
             }
         }
 

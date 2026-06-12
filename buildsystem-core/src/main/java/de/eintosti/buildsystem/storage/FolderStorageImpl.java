@@ -112,12 +112,10 @@ public abstract class FolderStorageImpl implements FolderStorage {
             return;
         }
 
-        // Remove all subfolders
         getFolders().stream()
                 .filter(folder -> Objects.equals(folder.getParent(), removed))
                 .forEach(this::removeFolder);
 
-        // Remove world <> folder assignments
         removed.getWorldUUIDs().stream()
                 .map(worldStorage::getBuildWorld)
                 .filter(Objects::nonNull)

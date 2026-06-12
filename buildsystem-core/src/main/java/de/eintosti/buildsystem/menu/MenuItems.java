@@ -115,12 +115,10 @@ public final class MenuItems {
             return;
         }
 
-        // Initially set a default head
         ItemStack defaultHead = InventoryUtils.createItem(XMaterial.PLAYER_HEAD, displayName, lore);
         storeWorldInformation(defaultHead, buildWorld);
         inventory.setItem(slot, defaultHead);
 
-        // Then try to set texture asynchronously
         XSkull.createItem()
                 .profile(
                         buildWorld.getData().privateWorld().get()
@@ -241,7 +239,6 @@ public final class MenuItems {
             return;
         }
 
-        // If item not found, try to put in slot 8 or add to inventory
         ItemStack slot8 = inventory.getItem(8);
         if (slot8 == null || slot8.getType() == XMaterial.AIR.get()) {
             inventory.setItem(8, replaceItem);
