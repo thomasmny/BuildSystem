@@ -15,25 +15,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.api.world.util;
-
-import de.eintosti.buildsystem.api.world.BuildWorld;
-import org.bukkit.entity.Player;
-import org.jspecify.annotations.NullMarked;
 
 /**
- * Provides utilities for teleporting {@link Player}s to specific locations within a {@link BuildWorld}. This interface ensures safe and controlled player movement.
+ * Access control for {@link de.eintosti.buildsystem.api.world.BuildWorld}s: who may view, edit or run commands on a world.
  *
  * @since 3.0.0
  */
 @NullMarked
-public interface WorldTeleporter {
+package de.eintosti.buildsystem.api.world.access;
 
-    /**
-     * Teleports the given {@link Player} to the designated spawn location of the world associated with this teleporter. If a custom spawn is not set, the player will be teleported
-     * to the world's default spawn.
-     *
-     * @param player The {@link Player} to teleport
-     */
-    void teleport(Player player);
-}
+import org.jspecify.annotations.NullMarked;

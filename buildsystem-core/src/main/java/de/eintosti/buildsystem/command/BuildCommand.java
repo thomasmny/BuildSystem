@@ -21,7 +21,8 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.event.world.PlayerBuildModeToggleEvent;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
-import de.eintosti.buildsystem.api.player.CachedValues;
+import de.eintosti.buildsystem.player.BuildPlayerImpl;
+import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.api.player.PlayerService;
 import java.util.ArrayList;
 import java.util.List;
@@ -93,7 +94,7 @@ public class BuildCommand extends CommandBase {
             return;
         }
 
-        BuildPlayer buildPlayer = playerService.getPlayerStorage().getBuildPlayer(target);
+        BuildPlayerImpl buildPlayer = BuildPlayerImpl.of(playerService.getPlayerStorage().getBuildPlayer(target));
         CachedValues cachedValues = buildPlayer.getCachedValues();
 
         if (isEnteringBuildMode) {

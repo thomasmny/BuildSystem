@@ -15,9 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.api.world.util;
+package de.eintosti.buildsystem.api.world.lifecycle;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import java.util.concurrent.CompletableFuture;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -30,14 +31,19 @@ import org.jspecify.annotations.NullMarked;
 public interface WorldLoader {
 
     /**
-     * Loads the world associated with this loader for a specific player. This typically involves teleporting the player to the world after it's loaded.
+     * Loads the world associated with this loader, announcing progress to the given player. World generation runs on the server main thread, so the returned future completes there
+     * — do not block on it from the main thread.
      *
-     * @param player The {@link Player} for whom the world should be loaded and who will be teleported into it
+     * @param player The {@link Player} the loading notification is shown to
+     * @return A future that completes once the world has finished loading
      */
-    void loadForPlayer(Player player);
+    CompletableFuture<Void> loadForPlayer(Player player);
 
     /**
-     * Loads the world associated with this loader without teleporting any specific player. This is useful for background world loading or server-side operations.
+     * Loads the world associated with this loader without notifying any specific player. World generation runs on the server main thread, so the returned future completes there —
+     * do not block on it from the main thread.
+     *
+     * @return A future that completes once the world has finished loading
      */
-    void load();
+    CompletableFuture<Void> load();
 } 

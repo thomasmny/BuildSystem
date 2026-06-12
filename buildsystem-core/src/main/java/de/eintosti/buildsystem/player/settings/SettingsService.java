@@ -43,12 +43,14 @@ public class SettingsService {
     private final WorldServiceImpl worldService;
 
     private final Map<UUID, FastBoard> boards;
+    private final Map<UUID, BukkitTask> scoreboardTasks;
 
     public SettingsService(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.worldService = plugin.getWorldService();
 
         this.boards = new HashMap<>();
+        this.scoreboardTasks = new HashMap<>();
     }
 
     public Settings getSettings(Player player) {
@@ -76,7 +78,7 @@ public class SettingsService {
 
         board.updateTitle(plugin.getMessages().getString("title", player));
         BukkitTask scoreboardTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> updateScoreboard(player, board), 0L, 20L);
-        settings.setScoreboardTask(scoreboardTask);
+        this.scoreboardTasks.put(player.getUniqueId(), scoreboardTask);
     }
 
     /**
@@ -150,11 +152,9 @@ public class SettingsService {
     }
 
     public void hideScoreboard(Player player) {
-        Settings settings = getSettings(player);
-        BukkitTask scoreboardTask = settings.getScoreboardTask();
+        BukkitTask scoreboardTask = this.scoreboardTasks.remove(player.getUniqueId());
         if (scoreboardTask != null) {
             scoreboardTask.cancel();
-            settings.setScoreboardTask(null);
         }
 
         FastBoard board = this.boards.remove(player.getUniqueId());

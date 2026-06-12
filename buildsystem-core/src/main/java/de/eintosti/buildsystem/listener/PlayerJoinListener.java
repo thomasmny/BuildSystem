@@ -20,13 +20,14 @@ package de.eintosti.buildsystem.listener;
 import com.cryptomorin.xseries.XPotion;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
-import de.eintosti.buildsystem.api.player.LogoutLocation;
+import de.eintosti.buildsystem.player.BuildPlayerImpl;
+import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.navigator.NavigatorService;
-import de.eintosti.buildsystem.player.LogoutLocationImpl;
+import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
@@ -78,7 +79,7 @@ public class PlayerJoinListener implements Listener {
         Player player = event.getPlayer();
         plugin.getPlayerLookupService().cacheUser(player.getUniqueId(), player.getName());
 
-        BuildPlayer buildPlayer = playerManager.getPlayerStorage().createBuildPlayer(player);
+        BuildPlayerImpl buildPlayer = BuildPlayerImpl.of(playerManager.getPlayerStorage().createBuildPlayer(player));
         manageHidePlayer(player, buildPlayer);
         manageSettings(player, buildPlayer.getSettings());
         teleportToCorrectLocation(player, buildPlayer);
@@ -107,14 +108,14 @@ public class PlayerJoinListener implements Listener {
      * Teleports the player to the correct location.
      * <ul>
      *   <li>If the spawn exists and {@link SettingsImpl#isSpawnTeleport()} is enabled for the player, the player will be teleported to the spawn</li>
-     *   <li>If the player has a {@link LogoutLocationImpl}, teleport to that location</li>
+     *   <li>If the player has a {@link LogoutLocation}, teleport to that location</li>
      *   <li>Otherwise, do nothing</li>
      * </ul>
      *
      * @param player      The player to teleport
      * @param buildPlayer The build-player for the given player
      */
-    private void teleportToCorrectLocation(Player player, BuildPlayer buildPlayer) {
+    private void teleportToCorrectLocation(Player player, BuildPlayerImpl buildPlayer) {
         if (buildPlayer.getSettings().isSpawnTeleport() && spawnService.spawnExists()) {
             spawnService.teleport(player);
             return;

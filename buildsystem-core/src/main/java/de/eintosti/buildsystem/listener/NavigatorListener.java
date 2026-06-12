@@ -22,7 +22,6 @@ import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.inventory.XInventoryView;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.api.player.CachedValues;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -31,6 +30,8 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
 
 import de.eintosti.buildsystem.navigator.NavigatorService;
+import de.eintosti.buildsystem.player.BuildPlayerImpl;
+import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.menu.InventoryUtils;
 
@@ -133,7 +134,7 @@ public class NavigatorListener implements Listener {
     }
 
     private void summonNewNavigator(Player player) {
-        CachedValues cachedValues = plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player).getCachedValues();
+        CachedValues cachedValues = BuildPlayerImpl.of(plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player)).getCachedValues();
         cachedValues.saveWalkSpeed(player.getWalkSpeed());
         cachedValues.saveFlySpeed(player.getFlySpeed());
 

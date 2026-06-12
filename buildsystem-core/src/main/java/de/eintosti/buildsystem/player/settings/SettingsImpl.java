@@ -22,7 +22,6 @@ import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
 import de.eintosti.buildsystem.api.world.navigator.settings.WorldDisplay;
 import de.eintosti.buildsystem.world.navigator.settings.WorldDisplayImpl;
-import org.bukkit.scheduler.BukkitTask;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -44,9 +43,6 @@ public class SettingsImpl implements Settings {
     private boolean slabBreaking;
     private boolean spawnTeleport;
     private boolean openTrapDoors;
-
-    @Nullable
-    private BukkitTask scoreboardTask;
 
     public SettingsImpl() {
         this.navigatorType = NavigatorType.OLD;
@@ -245,14 +241,4 @@ public class SettingsImpl implements Settings {
         this.openTrapDoors = trapDoor;
     }
 
-    @Nullable
-    @Override
-    public BukkitTask getScoreboardTask() {
-        return scoreboardTask;
-    }
-
-    @Override
-    public void setScoreboardTask(@Nullable BukkitTask scoreboardTask) {
-        this.scoreboardTask = scoreboardTask;
-    }
 }

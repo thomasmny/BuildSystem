@@ -18,8 +18,6 @@
 package de.eintosti.buildsystem.player;
 
 import de.eintosti.buildsystem.api.player.BuildPlayer;
-import de.eintosti.buildsystem.api.player.CachedValues;
-import de.eintosti.buildsystem.api.player.LogoutLocation;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import java.util.UUID;
@@ -27,8 +25,15 @@ import org.bukkit.Location;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * BuildSystem's only {@link BuildPlayer} implementation. Beyond the public API ({@code getUniqueId()}, {@code getSettings()}) it carries the runtime state core needs but does not
+ * expose: cached gameplay values for build mode, the logout location, the previous teleport location, and the navigator category last opened.
+ *
+ * <p>Since every {@link BuildPlayer} returned by the registry is a {@code BuildPlayerImpl} at runtime, core code that needs the runtime state casts via {@link #of(BuildPlayer)} or
+ * declares the local as {@code BuildPlayerImpl}. The cast is type-safe: nothing else implements {@link BuildPlayer}.</p>
+ */
 @NullMarked
-public class BuildPlayerImpl implements BuildPlayer {
+public final class BuildPlayerImpl implements BuildPlayer {
 
     private final UUID uuid;
     private final Settings settings;
@@ -44,7 +49,17 @@ public class BuildPlayerImpl implements BuildPlayer {
     public BuildPlayerImpl(UUID uuid, Settings settings) {
         this.uuid = uuid;
         this.settings = settings;
-        this.cachedValues = new CachedValuesImpl();
+        this.cachedValues = new CachedValues();
+    }
+
+    /**
+     * Widens an API-typed reference to its impl. The cast is safe: {@code BuildPlayerImpl} is the only implementation of {@link BuildPlayer}.
+     *
+     * @param buildPlayer The API view
+     * @return The same instance, typed as the impl
+     */
+    public static BuildPlayerImpl of(BuildPlayer buildPlayer) {
+        return (BuildPlayerImpl) buildPlayer;
     }
 
     @Override
@@ -57,40 +72,33 @@ public class BuildPlayerImpl implements BuildPlayer {
         return settings;
     }
 
-    @Override
     public CachedValues getCachedValues() {
         return cachedValues;
     }
 
-    @Override
     @Nullable
     public LogoutLocation getLogoutLocation() {
         return logoutLocation;
     }
 
-    @Override
     public void setLogoutLocation(@Nullable LogoutLocation logoutLocation) {
         this.logoutLocation = logoutLocation;
     }
 
-    @Override
     @Nullable
     public Location getPreviousLocation() {
         return previousLocation;
     }
 
-    @Override
     public void setPreviousLocation(@Nullable Location location) {
         this.previousLocation = location;
     }
 
-    @Override
     @Nullable
     public NavigatorCategory getLastLookedAt() {
         return lastLookedAt;
     }
 
-    @Override
     public void setLastLookedAt(@Nullable NavigatorCategory type) {
         this.lastLookedAt = type;
     }

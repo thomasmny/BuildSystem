@@ -21,9 +21,10 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.event.world.BuildWorldLoadEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostLoadEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.util.WorldLoader;
+import de.eintosti.buildsystem.api.world.lifecycle.WorldLoader;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -47,34 +48,34 @@ public class WorldLoaderImpl implements WorldLoader {
     }
 
     @Override
-    public void loadForPlayer(Player player) {
+    public CompletableFuture<Void> loadForPlayer(Player player) {
         if (this.buildWorld.isLoaded()) {
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         player.closeInventory();
         player.sendTitle(" ", plugin.getMessages().getString("loading_world", player, Map.entry("%world%", this.buildWorld.getName())), 5, 70, 20);
 
-        load();
+        return load();
     }
 
     @Override
-    public void load() {
+    public CompletableFuture<Void> load() {
         if (this.buildWorld.isLoaded()) {
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         BuildWorldLoadEvent loadEvent = new BuildWorldLoadEvent(this.buildWorld);
         Bukkit.getServer().getPluginManager().callEvent(loadEvent);
         if (loadEvent.isCancelled()) {
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         String worldName = this.buildWorld.getName();
         this.plugin.getLogger().info("*** Loading world \"" + worldName + "\" ***");
         World world = new BukkitWorldFactory(this.plugin, this.buildWorld).generate(BukkitWorldFactory.VersionCheck.REQUIRED);
         if (world == null) {
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         this.buildWorld.getData().lastLoaded().set(System.currentTimeMillis());
@@ -82,5 +83,6 @@ public class WorldLoaderImpl implements WorldLoader {
 
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostLoadEvent(this.buildWorld));
         this.buildWorld.getUnloader().resetUnloadTask();
+        return CompletableFuture.completedFuture(null);
     }
 } 

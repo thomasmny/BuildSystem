@@ -15,9 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.api;
+package de.eintosti.buildsystem;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.BuildSystem;
+import de.eintosti.buildsystem.api.BuildSystemProvider;
 import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.world.WorldService;
 import org.jspecify.annotations.NullMarked;

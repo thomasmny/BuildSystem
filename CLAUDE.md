@@ -18,9 +18,11 @@ and threading rules.
 
 ## Three iron rules
 
-1. **API frozen**: `buildsystem-api` signatures never removed. Deprecate first
-   (`@Deprecated(forRemoval=true, since="<version>")` + `@deprecated` Javadoc).
-   Breaking changes allowed only when external consumer count = 0.
+1. **API freeze is two-phase**: `buildsystem-api` is pre-1.0 with **0 external
+   consumers**, so signatures may currently be changed, renamed, or removed freely.
+   Once the first external release ships, the freeze applies: signatures never removed,
+   deprecate first (`@Deprecated(forRemoval=true, since="<version>")` + `@deprecated`
+   Javadoc). New API members always carry useful Javadoc and `@since`.
 
 2. **Bukkit main-thread**: all Bukkit API calls (worlds, players, inventories,
    blocks, scoreboards) must run on the server main thread. File IO and network

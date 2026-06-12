@@ -15,34 +15,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.api.player;
+package de.eintosti.buildsystem.api.world.lifecycle;
 
-import org.bukkit.Location;
-import org.jetbrains.annotations.ApiStatus.Internal;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
- * Represents a player's logout location, which includes the world name and the location coordinates.
+ * Provides utilities for teleporting {@link Player}s to specific locations within a {@link BuildWorld}. This interface ensures safe and controlled player movement.
  *
  * @since 3.0.0
  */
-@Internal
 @NullMarked
-public interface LogoutLocation {
+public interface WorldTeleporter {
 
     /**
-     * Gets the name of the world the player logged out from.
+     * Teleports the given {@link Player} to the designated spawn location of the world associated with this teleporter. If a custom spawn is not set, the player will be teleported
+     * to the world's default spawn.
      *
-     * @return The world name
+     * @param player The {@link Player} to teleport
      */
-    String worldName();
-
-    /**
-     * Gets the exact {@link Location} the player logged out from.
-     *
-     * @return The logout location
-     */
-    @Nullable
-    Location location();
+    void teleport(Player player);
 }

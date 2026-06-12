@@ -23,5 +23,4 @@ import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public record BackupImpl(BackupProfile owner, long creationTime, String key) implements Backup {
-
 }

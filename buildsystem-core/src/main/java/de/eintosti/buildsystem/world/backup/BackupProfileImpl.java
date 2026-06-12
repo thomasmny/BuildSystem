@@ -1,9 +1,19 @@
 /*
- * Copyright (c) 2023-2025, Thomas Meaney
- * All rights reserved.
+ * Copyright (c) 2018-2026, Thomas Meaney
+ * Copyright (c) contributors
  *
- * Unauthorized copying of this file, via any medium is strictly prohibited
- * Proprietary and confidential
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package de.eintosti.buildsystem.world.backup;
 
@@ -12,7 +22,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
 import de.eintosti.buildsystem.api.world.backup.BackupStorage;
-import de.eintosti.buildsystem.api.world.util.WorldTeleporter;
+import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
@@ -97,12 +107,12 @@ public class BackupProfileImpl implements BackupProfile {
     }
 
     @Override
-    public void restoreBackup(Backup backup, Player player) {
+    public CompletableFuture<Void> restoreBackup(Backup backup, Player player) {
         String worldName = this.buildWorld.getName();
         World world = this.buildWorld.getWorld();
         if (world == null) {
             plugin.getMessages().sendMessage(player, "worlds_backup_unknown_world");
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         List<@Nullable Player> removedPlayers = plugin.getWorldService().removePlayersFromWorld(worldName, "worlds_backup_restoration_in_progress");
@@ -112,7 +122,7 @@ public class BackupProfileImpl implements BackupProfile {
             backupFile = this.storage.downloadBackup(backup).get();
         } catch (InterruptedException | ExecutionException e) {
             plugin.getLogger().log(Level.SEVERE, "Error while downloading backup", e);
-            return;
+            return CompletableFuture.failedFuture(e);
         }
 
         SpawnService spawnService = plugin.getSpawnService();
@@ -130,7 +140,7 @@ public class BackupProfileImpl implements BackupProfile {
             zip.extractAll(FileUtils.resolve(Bukkit.getWorldContainer(), this.buildWorld.getName()).toString());
         } catch (IOException e) {
             plugin.getLogger().warning("Failed to restore backup at: " + backupFile.getAbsolutePath());
-            return;
+            return CompletableFuture.failedFuture(e);
         }
 
         this.buildWorld.getLoader().load();
@@ -145,5 +155,6 @@ public class BackupProfileImpl implements BackupProfile {
         plugin.getMessages().sendMessage(player, "worlds_backup_restoration_successful",
                 Map.entry("%timestamp%", StringUtils.formatTime(backup.creationTime(), plugin.getConfigService().current().messages().dateFormat()))
         );
+        return CompletableFuture.completedFuture(null);
     }
 }

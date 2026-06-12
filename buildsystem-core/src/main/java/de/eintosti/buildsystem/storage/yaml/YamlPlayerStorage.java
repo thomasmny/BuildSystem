@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.storage.yaml;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
-import de.eintosti.buildsystem.api.player.LogoutLocation;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
@@ -27,7 +26,7 @@ import de.eintosti.buildsystem.api.world.navigator.settings.WorldDisplay;
 import de.eintosti.buildsystem.api.world.navigator.settings.WorldFilter;
 import de.eintosti.buildsystem.api.world.navigator.settings.WorldSort;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
-import de.eintosti.buildsystem.player.LogoutLocationImpl;
+import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.world.navigator.settings.WorldDisplayImpl;
@@ -68,7 +67,7 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
     @Override
     public CompletableFuture<Void> save(BuildPlayer buildPlayer) {
         return CompletableFuture.runAsync(() -> {
-            config.set(PLAYERS_KEY + "." + buildPlayer.getUniqueId(), serializePlayer(buildPlayer));
+            config.set(PLAYERS_KEY + "." + buildPlayer.getUniqueId(), serializePlayer(BuildPlayerImpl.of(buildPlayer)));
             saveFile();
         });
     }
@@ -76,7 +75,7 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
     @Override
     public CompletableFuture<Void> save(Collection<BuildPlayer> players) {
         return CompletableFuture.runAsync(() -> {
-            players.forEach(player -> config.set(PLAYERS_KEY + "." + player.getUniqueId(), serializePlayer(player)));
+            players.forEach(player -> config.set(PLAYERS_KEY + "." + player.getUniqueId(), serializePlayer(BuildPlayerImpl.of(player))));
             saveFile();
         });
     }
@@ -89,7 +88,7 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
         }
     }
 
-    public Map<String, Object> serializePlayer(BuildPlayer player) {
+    public Map<String, Object> serializePlayer(BuildPlayerImpl player) {
         Map<String, Object> serialized = new HashMap<>();
 
         serialized.put("settings", serializeSettings(player.getSettings()));
@@ -166,13 +165,13 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
         return section.getKeys(false);
     }
 
-    private BuildPlayer loadPlayer(String playerUuid) {
+    private BuildPlayerImpl loadPlayer(String playerUuid) {
         final String path = PLAYERS_KEY + "." + playerUuid;
 
         UUID uuid = UUID.fromString(playerUuid);
         Settings settings = loadSettings(config, path + ".settings");
 
-        BuildPlayer buildPlayer = new BuildPlayerImpl(uuid, settings);
+        BuildPlayerImpl buildPlayer = new BuildPlayerImpl(uuid, settings);
         buildPlayer.setLogoutLocation(loadLogoutLocation(config, "players." + playerUuid + ".logout-location"));
         return buildPlayer;
     }
@@ -196,7 +195,7 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
         float yaw = Float.parseFloat(parts[4]);
         float pitch = Float.parseFloat(parts[5]);
 
-        return new LogoutLocationImpl(worldName, x, y, z, yaw, pitch);
+        return new LogoutLocation(worldName, x, y, z, yaw, pitch);
     }
 
     @Contract("_, _ -> new")

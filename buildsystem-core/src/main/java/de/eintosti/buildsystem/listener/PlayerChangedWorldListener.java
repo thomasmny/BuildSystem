@@ -20,11 +20,12 @@ package de.eintosti.buildsystem.listener;
 import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.api.player.CachedValues;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.navigator.NavigatorService;
+import de.eintosti.buildsystem.player.BuildPlayerImpl;
+import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -108,7 +109,7 @@ public class PlayerChangedWorldListener implements Listener {
             return;
         }
 
-        CachedValues cachedValues = playerManager.getPlayerStorage().getBuildPlayer(player).getCachedValues();
+        CachedValues cachedValues = BuildPlayerImpl.of(playerManager.getPlayerStorage().getBuildPlayer(player)).getCachedValues();
         cachedValues.resetGameModeIfPresent(player);
         cachedValues.resetInventoryIfPresent(player);
         XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);

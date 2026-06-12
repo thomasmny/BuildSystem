@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -49,7 +50,7 @@ public class PlayerTeleportListener implements Listener {
         Player player = event.getPlayer();
 
         if (event.getCause() != PlayerTeleportEvent.TeleportCause.UNKNOWN) {
-            playerStorage.getBuildPlayer(player).setPreviousLocation(event.getFrom());
+            BuildPlayerImpl.of(playerStorage.getBuildPlayer(player)).setPreviousLocation(event.getFrom());
         }
 
         Location to = event.getTo();

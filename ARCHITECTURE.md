@@ -88,10 +88,9 @@ de.eintosti.buildsystem
   `WorldFilterImpl`). The armor-stand `NavigatorService` lives at top-level `navigator/`.
 - `world/display/` kept for `CustomizableIcons` (icon customization; separate from folder logic).
 - `event/` kept as a top-level package (custom events and `EventDispatcher`).
-- `api/` core package kept for the `BuildSystemApi` adapter — it sits in a split
-  package with `buildsystem-api` so it can call `BuildSystemProvider`'s package-private
-  registration. Relocating it to the root needs an API-module change and is deferred to
-  the API v2 pass.
+- The `BuildSystemApi` adapter lives at the root package (next to `BuildSystemPlugin`),
+  per the target spec; `BuildSystemProvider.register`/`unregister` are public binding
+  points only the providing plugin calls.
 
 **Naming convention**: every class extending `menu/Menu` is named `*Menu`. `*Inventory`
 is reserved for Bukkit's own `Inventory` type, never our menu classes.
@@ -154,9 +153,13 @@ never duplicate the guard.
 
 ## API compatibility policy
 
-`buildsystem-api` coordinates are frozen. Changes:
-- Adding new methods/types: allowed.
-- Changing signatures or removing: **never**. Deprecate first with
-  `@Deprecated(forRemoval = true, since = "<version>")` + `@deprecated` Javadoc.
-- Breaking changes without deprecation: only permitted when external consumer count = 0
-  (verified by Maven Central search before acting).
+The policy is **two-phase**:
+
+- **Now (pre-1.0, 0 external consumers)**: `buildsystem-api` signatures may be changed,
+  renamed, or removed freely. New members carry useful Javadoc and `@since`.
+- **After the first external release ships**: the freeze applies — adding new
+  methods/types is allowed; changing signatures or removing is **never** done without
+  deprecating first (`@Deprecated(forRemoval = true, since = "<version>")` +
+  `@deprecated` Javadoc), kept until a major version designated for removal.
+
+Consumer count is verified by Maven Central search before treating the API as frozen.

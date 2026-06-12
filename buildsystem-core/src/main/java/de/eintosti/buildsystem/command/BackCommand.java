@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.command;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
+import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
@@ -50,7 +51,7 @@ public class BackCommand extends CommandBase {
     }
 
     private void teleportBack(Player player) {
-        BuildPlayer buildPlayer = playerStorage.getBuildPlayer(player);
+        BuildPlayerImpl buildPlayer = BuildPlayerImpl.of(playerStorage.getBuildPlayer(player));
         Location previousLocation = buildPlayer.getPreviousLocation();
         if (previousLocation == null) {
             messages.sendMessage(player, "back_failed");

@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.player;
 
-import de.eintosti.buildsystem.api.player.CachedValues;
 import java.util.Arrays;
 import java.util.List;
 import org.bukkit.GameMode;
@@ -26,8 +25,12 @@ import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Snapshots a player's gameplay state (gamemode, inventory, walk/fly speed) before build mode mutates it, so it can be restored when build mode ends. Internal to BuildSystem; not
+ * part of the public API.
+ */
 @NullMarked
-public class CachedValuesImpl implements CachedValues {
+public class CachedValues {
 
     @Nullable
     private GameMode gameMode;
@@ -38,12 +41,10 @@ public class CachedValuesImpl implements CachedValues {
     @Nullable
     private Float flySpeed;
 
-    @Override
     public void saveGameMode(GameMode gameMode) {
         this.gameMode = gameMode;
     }
 
-    @Override
     public void resetGameModeIfPresent(Player player) {
         if (this.gameMode == null) {
             return;
@@ -52,12 +53,10 @@ public class CachedValuesImpl implements CachedValues {
         this.gameMode = null;
     }
 
-    @Override
     public void saveInventory(ItemStack[] inventory) {
         this.inventory = Arrays.asList(inventory);
     }
 
-    @Override
     public void resetInventoryIfPresent(Player player) {
         if (this.inventory == null) {
             return;
@@ -67,12 +66,10 @@ public class CachedValuesImpl implements CachedValues {
         this.inventory = null;
     }
 
-    @Override
     public void saveWalkSpeed(float walkSpeed) {
         this.walkSpeed = walkSpeed;
     }
 
-    @Override
     public void resetWalkSpeedIfPresent(Player player) {
         if (this.walkSpeed == null) {
             return;
@@ -81,12 +78,10 @@ public class CachedValuesImpl implements CachedValues {
         this.walkSpeed = null;
     }
 
-    @Override
     public void saveFlySpeed(float flySpeed) {
         this.flySpeed = flySpeed;
     }
 
-    @Override
     public void resetFlySpeedIfPresent(Player player) {
         if (this.flySpeed == null) {
             return;
@@ -95,7 +90,6 @@ public class CachedValuesImpl implements CachedValues {
         this.flySpeed = null;
     }
 
-    @Override
     public void resetCachedValues(Player player) {
         resetGameModeIfPresent(player);
         resetInventoryIfPresent(player);

@@ -18,8 +18,8 @@
 package de.eintosti.buildsystem;
 
 import de.eintosti.buildsystem.api.BuildSystem;
-import de.eintosti.buildsystem.api.BuildSystemApi;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
+import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
 import de.eintosti.buildsystem.command.CommandRegistrar;
@@ -29,7 +29,7 @@ import de.eintosti.buildsystem.integration.Integrations;
 import de.eintosti.buildsystem.listener.ListenerRegistrar;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.navigator.NavigatorService;
-import de.eintosti.buildsystem.player.LogoutLocationImpl;
+import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
@@ -130,9 +130,9 @@ public class BuildSystemPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         Bukkit.getOnlinePlayers().forEach(pl -> {
-            BuildPlayer buildPlayer = playerService.getPlayerStorage().getBuildPlayer(pl);
+            BuildPlayerImpl buildPlayer = BuildPlayerImpl.of(playerService.getPlayerStorage().getBuildPlayer(pl));
             buildPlayer.getCachedValues().resetCachedValues(pl);
-            buildPlayer.setLogoutLocation(new LogoutLocationImpl(pl.getWorld().getName(), pl.getLocation()));
+            buildPlayer.setLogoutLocation(new LogoutLocation(pl.getWorld().getName(), pl.getLocation()));
 
             settingsService.hideScoreboard(pl);
             noClipService.stopNoClip(pl.getUniqueId());

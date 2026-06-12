@@ -21,7 +21,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostUnloadEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldUnloadEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.util.WorldUnloader;
+import de.eintosti.buildsystem.api.world.lifecycle.WorldUnloader;
 import java.util.Arrays;
 import java.util.Objects;
 import org.bukkit.Bukkit;

@@ -24,7 +24,8 @@ import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
-import de.eintosti.buildsystem.api.player.CachedValues;
+import de.eintosti.buildsystem.player.BuildPlayerImpl;
+import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -177,7 +178,7 @@ public class NavigatorService {
             return;
         }
 
-        BuildPlayer buildPlayer = plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player);
+        BuildPlayerImpl buildPlayer = BuildPlayerImpl.of(plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player));
         buildPlayer.setLastLookedAt(null);
         removeArmorStands(player);
 
@@ -206,7 +207,7 @@ public class NavigatorService {
                 continue;
             }
 
-            BuildPlayer buildPlayer = plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player);
+            BuildPlayerImpl buildPlayer = BuildPlayerImpl.of(plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player));
             if (isLookingAtArmorStandHead(player, armorStand)) {
                 NavigatorCategory category = matchNavigatorCategory(armorStand);
                 sendTypeInfo(player, category);
@@ -276,7 +277,7 @@ public class NavigatorService {
     }
 
     private void sendTypeInfo(Player player, @Nullable NavigatorCategory category) {
-        BuildPlayer buildPlayer = plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player);
+        BuildPlayerImpl buildPlayer = BuildPlayerImpl.of(plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player));
         if (category == null) {
             buildPlayer.setLastLookedAt(null);
             displayActionBarMessage(player, "§0");

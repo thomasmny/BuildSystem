@@ -37,8 +37,8 @@ import org.jspecify.annotations.Nullable;
 public class BuildersImpl implements Builders {
 
     private final Messages messages;
-    @Nullable
-    private Builder creator;
+    
+    private @Nullable Builder creator;
     private final Map<UUID, Builder> buildersByUuid;
 
     public BuildersImpl(Messages messages, @Nullable Builder creator, List<Builder> builders) {

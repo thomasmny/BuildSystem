@@ -17,21 +17,23 @@
  */
 package de.eintosti.buildsystem.player;
 
-import de.eintosti.buildsystem.api.player.LogoutLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * The world and coordinates a player was at when they last logged out. Persisted between sessions so the player can resume where they left off; internal to BuildSystem.
+ */
 @NullMarked
-public class LogoutLocationImpl implements LogoutLocation {
+public class LogoutLocation {
 
     private final String worldName;
     private final double x, y, z;
     private final float yaw, pitch;
 
-    public LogoutLocationImpl(String worldName, Location location) {
+    public LogoutLocation(String worldName, Location location) {
         this.worldName = worldName;
         this.x = location.getX();
         this.y = location.getY();
@@ -40,7 +42,7 @@ public class LogoutLocationImpl implements LogoutLocation {
         this.pitch = location.getPitch();
     }
 
-    public LogoutLocationImpl(String worldName, double x, double y, double z, float yaw, float pitch) {
+    public LogoutLocation(String worldName, double x, double y, double z, float yaw, float pitch) {
         this.worldName = worldName;
         this.x = x;
         this.y = y;
@@ -49,13 +51,11 @@ public class LogoutLocationImpl implements LogoutLocation {
         this.pitch = pitch;
     }
 
-    @Override
     public String worldName() {
         return worldName;
     }
 
     @Nullable
-    @Override
     public Location location() {
         World world = Bukkit.getWorld(worldName);
         if (world == null) {

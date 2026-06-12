@@ -17,6 +17,11 @@
  */
 
 /**
- * Provides utility classes and interfaces for managing world-related operations.
+ * World lifecycle operations: loading, unloading and teleporting into {@link de.eintosti.buildsystem.api.world.BuildWorld}s.
+ *
+ * @since 3.0.0
  */
-package de.eintosti.buildsystem.api.world.util;
+@NullMarked
+package de.eintosti.buildsystem.api.world.lifecycle;
+
+import org.jspecify.annotations.NullMarked;
