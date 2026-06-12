@@ -30,21 +30,35 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class PlayerServiceImpl implements PlayerService {
 
+    @Nullable
     private final BuildSystemPlugin plugin;
+    @Nullable
     private final PlayerStorageImpl playerStorage;
 
     private final Set<UUID> buildModePlayers;
+    private final Logger logger;
 
     public PlayerServiceImpl(BuildSystemPlugin plugin) {
         this.plugin = plugin;
+        this.logger = plugin.getLogger();
         this.playerStorage = new PlayerStorageFactory(plugin).createStorage();
+        this.buildModePlayers = new HashSet<>();
+    }
+
+    /** Package-private for unit tests — only getMaxWorlds logic is available. */
+    PlayerServiceImpl(Logger logger) {
+        this.plugin = null;
+        this.logger = logger;
+        this.playerStorage = null;
         this.buildModePlayers = new HashSet<>();
     }
 
@@ -117,7 +131,7 @@ public class PlayerServiceImpl implements PlayerService {
                     max = amount;
                 }
             } catch (NumberFormatException e) {
-                plugin.getLogger().log(Level.WARNING, "Invalid max. world amount (must be int)", e);
+                logger.log(Level.WARNING, "Invalid max. world amount (must be int)", e);
             }
         }
 
