@@ -26,9 +26,11 @@ import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.WorldsCommand.WorldsArgument;
+import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -52,7 +54,7 @@ public class FolderSubCommand implements SubCommand {
     }
 
     @Override
-    public void execute(Player player, String[] args) {
+    public void execute(Player player, String worldName, String[] args) {
         if (args.length < 2) {
             plugin.getMessages().sendMessage(player, "worlds_folder_usage");
             return;
@@ -231,6 +233,43 @@ public class FolderSubCommand implements SubCommand {
                 Map.entry("%folder%", folder.getName())
         );
         XSound.ENTITY_PLAYER_LEVELUP.play(player);
+    }
+
+    @Override
+    public List<String> complete(Player player, String[] args) {
+        List<String> result = new ArrayList<>();
+        if (args.length == 2) {
+            folderStorage.getFolders().stream()
+                    .map(de.eintosti.buildsystem.api.world.display.Displayable::getName)
+                    .forEach(name -> WorldsCompletions.addIfStartsWith(args[1], name, result));
+            return result;
+        }
+        if (args.length == 3) {
+            Map<String, String> subCmds = Map.of(
+                    "add", "buildsystem.folder.add",
+                    "remove", "buildsystem.folder.remove",
+                    "delete", "buildsystem.folder.delete",
+                    "setPermission", "buildsystem.folder.setpermission",
+                    "setProject", "buildsystem.folder.setproject",
+                    "setItem", "buildsystem.folder.setitem"
+            );
+            subCmds.entrySet().stream()
+                    .filter(e -> player.hasPermission(e.getValue()))
+                    .forEach(e -> WorldsCompletions.addIfStartsWith(args[2], e.getKey(), result));
+            return result;
+        }
+        if (args.length == 4) {
+            String op = args[2].toLowerCase(Locale.ROOT);
+            if (!op.equals("add") && !op.equals("remove")) return result;
+            Folder folder = folderStorage.getFolder(args[1]);
+            if (folder == null) return result;
+            worldService.getWorldStorage().getBuildWorlds().stream()
+                    .filter(bw -> NavigatorCategory.of(bw) == folder.getCategory())
+                    .filter(bw -> op.equals("add") ? !bw.isAssignedToFolder() : folder.containsWorld(bw))
+                    .forEach(bw -> WorldsCompletions.addIfStartsWith(args[3], bw.getName(), result));
+            return result;
+        }
+        return result;
     }
 
     @Override

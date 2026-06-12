@@ -25,7 +25,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
-import de.eintosti.buildsystem.command.WorldsCommand.WorldsArgument;
+import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
 import de.eintosti.buildsystem.util.inventory.InventoryManager;
@@ -191,7 +191,7 @@ public class BuilderInventory extends PaginatedInventory {
                 break;
             case 22:
                 XSound.ENTITY_CHICKEN_EGG.play(player);
-                new AddBuilderSubCommand(plugin, buildWorld.getName()).getAddBuilderInput(player, buildWorld, false);
+                new AddBuilderSubCommand(plugin).getAddBuilderInput(player, buildWorld, false);
                 return;
             case 26:
                 if (incrementInv(player, numBuilders, MAX_BUILDERS_PER_PAGE)) {

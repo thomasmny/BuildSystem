@@ -21,28 +21,27 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.WorldsCommand.WorldsArgument;
+import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.Map;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
+import java.util.List;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 
 @NullMarked
 public class UnimportSubCommand implements SubCommand {
 
     private final BuildSystemPlugin plugin;
 
-    @Nullable
-    private final BuildWorld buildWorld;
 
-    public UnimportSubCommand(BuildSystemPlugin plugin, String worldName) {
+    public UnimportSubCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
     }
 
     @Override
-    public void execute(Player player, String[] args) {
+    public void execute(Player player, String worldName, String[] args) {
+        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
         if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
             plugin.getMessages().sendPermissionError(player);
             return;
@@ -61,6 +60,13 @@ public class UnimportSubCommand implements SubCommand {
         plugin.getWorldService()
                 .unimportWorld(buildWorld, true)
                 .thenRun(() -> plugin.getMessages().sendMessage(player, "worlds_unimport_finished", Map.entry("%world%", buildWorld.getName())));
+    }
+
+    @Override
+    public List<String> complete(Player player, String[] args) {
+        if (args.length != 2) return List.of();
+        WorldStorage ws = plugin.getWorldService().getWorldStorage();
+        return WorldsCompletions.permittedWorldNames(player, ws, "buildsystem.unimport", args[1]);
     }
 
     @Override

@@ -22,7 +22,7 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.WorldsCommand.WorldsArgument;
+import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -43,7 +43,7 @@ public class ImportAllSubCommand implements SubCommand {
     }
 
     @Override
-    public void execute(Player player, String[] args) {
+    public void execute(Player player, String worldName, String[] args) {
         if (!hasPermission(player)) {
             plugin.getMessages().sendPermissionError(player);
             return;

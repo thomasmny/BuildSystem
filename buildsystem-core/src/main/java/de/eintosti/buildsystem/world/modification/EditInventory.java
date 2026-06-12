@@ -378,14 +378,14 @@ public class EditInventory implements InventoryHandler {
             case 41 -> {
                 if (hasPermission(player, "buildsystem.edit.project")) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
-                    new SetProjectSubCommand(plugin, buildWorld.getName()).getProjectInput(player, buildWorld, false);
+                    new SetProjectSubCommand(plugin).getProjectInput(player, buildWorld, false);
                 }
                 return;
             }
             case 42 -> {
                 if (hasPermission(player, "buildsystem.edit.permission")) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
-                    new SetPermissionSubCommand(plugin, buildWorld.getName()).getPermissionInput(player, buildWorld, false);
+                    new SetPermissionSubCommand(plugin).getPermissionInput(player, buildWorld, false);
                 }
                 return;
             }

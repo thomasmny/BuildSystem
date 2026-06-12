@@ -23,12 +23,16 @@ import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.WorldsCommand.WorldsArgument;
+import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import com.google.common.collect.Lists;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
@@ -40,15 +44,13 @@ import org.jspecify.annotations.NullMarked;
 public class ImportSubCommand implements SubCommand {
 
     private final BuildSystemPlugin plugin;
-    private final String worldName;
 
-    public ImportSubCommand(BuildSystemPlugin plugin, String worldName) {
+    public ImportSubCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.worldName = worldName;
     }
 
     @Override
-    public void execute(Player player, String[] args) {
+    public void execute(Player player, String worldName, String[] args) {
         if (!hasPermission(player)) {
             plugin.getMessages().sendPermissionError(player);
             return;
@@ -137,6 +139,48 @@ public class ImportSubCommand implements SubCommand {
         if (worldService.importWorld(player, worldName, creator, worldType, generator, generatorName, true)) {
             plugin.getMessages().sendMessage(player, "worlds_import_finished");
         }
+    }
+
+    @Override
+    public List<String> complete(Player player, String[] args) {
+        List<String> result = new ArrayList<>();
+        if (args.length == 2) {
+            String[] directories = Bukkit.getWorldContainer().list((dir, name) -> {
+                if (de.eintosti.buildsystem.util.StringCleaner.hasInvalidNameCharacters(name)) return false;
+                File worldFolder = new File(dir, name);
+                if (!worldFolder.isDirectory()) return false;
+                if (!new File(worldFolder, "level.dat").exists()) return false;
+                return !plugin.getWorldService().getWorldStorage().worldExists(name);
+            });
+            if (directories != null) {
+                for (String dir : directories) {
+                    WorldsCompletions.addIfStartsWith(args[1], dir, result);
+                }
+            }
+            return result;
+        }
+
+        Map<String, List<String>> flags = Map.of(
+                "-g", Arrays.stream(de.eintosti.buildsystem.api.world.creation.generator.Generator.values())
+                        .filter(g -> g != de.eintosti.buildsystem.api.world.creation.generator.Generator.CUSTOM)
+                        .map(Enum::name).toList(),
+                "-c", List.of(),
+                "-t", Arrays.stream(de.eintosti.buildsystem.api.world.data.BuildWorldType.values()).map(Enum::name).toList()
+        );
+
+        if (args.length % 2 == 1) {
+            flags.keySet().stream()
+                    .filter(key -> !Lists.newArrayList(args).contains(key))
+                    .forEach(key -> WorldsCompletions.addIfStartsWith(args[args.length - 1], key, result));
+        } else {
+            List<String> values = flags.get(args[args.length - 2]);
+            if (values != null) {
+                for (String v : values) {
+                    WorldsCompletions.addIfStartsWith(args[args.length - 1], v, result);
+                }
+            }
+        }
+        return result;
     }
 
     @Override

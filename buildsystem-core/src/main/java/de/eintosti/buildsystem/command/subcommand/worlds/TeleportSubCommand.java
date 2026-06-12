@@ -21,11 +21,13 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.WorldsCommand.WorldsArgument;
+import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+import java.util.List;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 
 @NullMarked
 public class TeleportSubCommand implements SubCommand {
@@ -37,7 +39,7 @@ public class TeleportSubCommand implements SubCommand {
     }
 
     @Override
-    public void execute(Player player, String[] args) {
+    public void execute(Player player, String worldName, String[] args) {
         if (!hasPermission(player)) {
             plugin.getMessages().sendPermissionError(player);
             return;
@@ -66,6 +68,13 @@ public class TeleportSubCommand implements SubCommand {
         }
 
         buildWorld.getTeleporter().teleport(player);
+    }
+
+    @Override
+    public List<String> complete(Player player, String[] args) {
+        if (args.length != 2) return List.of();
+        WorldStorage ws = plugin.getWorldService().getWorldStorage();
+        return WorldsCompletions.permittedWorldNames(player, ws, "buildsystem.tp", args[1]);
     }
 
     @Override

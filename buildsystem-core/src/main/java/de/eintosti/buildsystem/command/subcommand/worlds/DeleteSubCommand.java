@@ -21,28 +21,26 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.WorldsCommand.WorldsArgument;
+import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.world.modification.DeleteInventory;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
+import java.util.List;
 
 @NullMarked
 public class DeleteSubCommand implements SubCommand {
 
     private final BuildSystemPlugin plugin;
 
-    @Nullable
-    private final BuildWorld buildWorld;
 
-    public DeleteSubCommand(BuildSystemPlugin plugin, String worldName) {
+    public DeleteSubCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
     }
 
     @Override
-    public void execute(Player player, String[] args) {
+    public void execute(Player player, String worldName, String[] args) {
+        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
         if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
             plugin.getMessages().sendPermissionError(player);
             return;
@@ -66,6 +64,11 @@ public class DeleteSubCommand implements SubCommand {
         new DeleteInventory(plugin).openInventory(player, buildWorld);
     }
 
+    @Override
+    public List<String> complete(Player player, String[] args) {
+        if (args.length != 2) return List.of();
+        return WorldsCompletions.deletableWorldNames(player, plugin.getWorldService().getWorldStorage(), args[1]);
+    }
     @Override
     public Argument getArgument() {
         return WorldsArgument.DELETE;

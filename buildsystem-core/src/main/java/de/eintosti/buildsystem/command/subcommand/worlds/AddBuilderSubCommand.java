@@ -22,10 +22,9 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
-import de.eintosti.buildsystem.api.world.util.WorldPermissions;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.WorldsCommand.WorldsArgument;
+import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.builder.BuilderInventory;
@@ -35,25 +34,22 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
+import java.util.List;
+import java.util.ArrayList;
 
 @NullMarked
 public class AddBuilderSubCommand implements SubCommand {
 
     private final BuildSystemPlugin plugin;
 
-    @Nullable
-    private final BuildWorld buildWorld;
-    private final WorldPermissions permissions;
-
-    public AddBuilderSubCommand(BuildSystemPlugin plugin, String worldName) {
+    public AddBuilderSubCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
-        this.permissions = WorldPermissionsImpl.of(buildWorld);
     }
 
     @Override
-    public void execute(Player player, String[] args) {
+    public void execute(Player player, String worldName, String[] args) {
+        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld().getName());
+        var permissions = WorldPermissionsImpl.of(buildWorld);
         if (!permissions.canPerformCommand(player, getArgument().getPermission())) {
             plugin.getMessages().sendPermissionError(player);
             return;
@@ -120,6 +116,19 @@ public class AddBuilderSubCommand implements SubCommand {
             String builderName = input.trim();
             addBuilder(player, buildWorld, builderName, closeInventory);
         });
+    }
+
+    @Override
+    public List<String> complete(Player player, String[] args) {
+        if (args.length != 2) return List.of();
+        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld().getName());
+        if (buildWorld == null) return List.of();
+        List<String> result = new ArrayList<>();
+        Builders builders = buildWorld.getBuilders();
+        Bukkit.getOnlinePlayers().stream()
+                .filter(pl -> !builders.isBuilder(pl) && !builders.isCreator(pl))
+                .forEach(pl -> WorldsCompletions.addIfStartsWith(args[1], pl.getName(), result));
+        return result;
     }
 
     @Override

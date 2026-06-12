@@ -24,27 +24,28 @@ import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.WorldsCommand.WorldsArgument;
+import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
 import java.util.Map;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 import de.eintosti.buildsystem.i18n.Messages;
+import java.util.List;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 
 @NullMarked
 public class InfoSubCommand implements SubCommand {
 
-    @Nullable
-    private final BuildWorld buildWorld;
+    private final BuildSystemPlugin plugin;
 
-    public InfoSubCommand(BuildSystemPlugin plugin, String worldName) {
-        this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
+    public InfoSubCommand(BuildSystemPlugin plugin) {
+        this.plugin = plugin;
     }
 
     @Override
-    public void execute(Player player, String[] args) {
+    public void execute(Player player, String worldName, String[] args) {
+        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
         if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
             BuildSystemPlugin.get().getMessages().sendPermissionError(player);
             return;
@@ -109,6 +110,13 @@ public class InfoSubCommand implements SubCommand {
     private double round(double value) {
         int scale = (int) Math.pow(10, 2);
         return (double) Math.round(value * scale) / scale;
+    }
+
+    @Override
+    public List<String> complete(Player player, String[] args) {
+        if (args.length != 2) return List.of();
+        WorldStorage ws = plugin.getWorldService().getWorldStorage();
+        return WorldsCompletions.permittedWorldNames(player, ws, "buildsystem.info", args[1]);
     }
 
     @Override

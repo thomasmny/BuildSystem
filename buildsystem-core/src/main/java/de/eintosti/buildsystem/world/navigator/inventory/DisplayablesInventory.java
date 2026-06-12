@@ -35,7 +35,7 @@ import de.eintosti.buildsystem.api.world.navigator.settings.WorldDisplay;
 import de.eintosti.buildsystem.api.world.navigator.settings.WorldFilter;
 import de.eintosti.buildsystem.api.world.navigator.settings.WorldFilter.Mode;
 import de.eintosti.buildsystem.api.world.navigator.settings.WorldSort;
-import de.eintosti.buildsystem.command.WorldsCommand.WorldsArgument;
+import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
