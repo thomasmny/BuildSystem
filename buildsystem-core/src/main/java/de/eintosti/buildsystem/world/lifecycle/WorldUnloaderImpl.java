@@ -51,12 +51,33 @@ public class WorldUnloaderImpl implements WorldUnloader {
                 plugin.getConfigService().current().world().unload().timeUntilUnload());
     }
 
+    private static final long DEFAULT_SECONDS_UNTIL_UNLOAD = 3600;
+
+    /**
+     * Parses the configured {@code HH:mm:ss} unload delay. A malformed value falls back to one hour instead of
+     * throwing, because this runs during world construction — an exception here would abort loading every world.
+     */
     private long calculateSecondsUntilUnload(String timeString) {
         String[] timeArray = timeString.split(":");
-        int hours = Integer.parseInt(timeArray[0]);
-        int minutes = Integer.parseInt(timeArray[1]);
-        int seconds = Integer.parseInt(timeArray[2]);
-        return hours * 3600L + minutes * 60L + seconds;
+        if (timeArray.length != 3) {
+            return warnAndFallBack(timeString);
+        }
+
+        try {
+            int hours = Integer.parseInt(timeArray[0]);
+            int minutes = Integer.parseInt(timeArray[1]);
+            int seconds = Integer.parseInt(timeArray[2]);
+            return hours * 3600L + minutes * 60L + seconds;
+        } catch (NumberFormatException e) {
+            return warnAndFallBack(timeString);
+        }
+    }
+
+    private long warnAndFallBack(String timeString) {
+        plugin.getLogger()
+                .warning("Invalid world.unload.time-until-unload value \"" + timeString
+                        + "\" (expected HH:mm:ss). Falling back to 01:00:00.");
+        return DEFAULT_SECONDS_UNTIL_UNLOAD;
     }
 
     @Contract("_, _ -> new")

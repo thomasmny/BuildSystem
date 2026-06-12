@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -139,7 +140,15 @@ public class WorldRenamer {
             List<@Nullable Player> removedPlayers) {
         worldStorage.rename(buildWorld, oldName, sanitizedNewName);
         buildWorld.setName(sanitizedNewName);
-        worldStorage.save(buildWorld);
+        worldStorage.save(buildWorld).whenComplete((result, throwable) -> {
+            if (throwable != null) {
+                plugin.getLogger()
+                        .log(
+                                Level.SEVERE,
+                                "Failed to persist rename of world \"" + oldName + "\" to \"" + sanitizedNewName + "\"",
+                                throwable);
+            }
+        });
         World newWorld = new BukkitWorldFactory(plugin, buildWorld).generate(BukkitWorldFactory.VersionCheck.SKIP);
         Location spawnLocation = oldSpawnLocation;
         spawnLocation.setWorld(newWorld);

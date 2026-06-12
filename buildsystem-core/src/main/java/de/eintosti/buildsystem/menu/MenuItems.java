@@ -30,6 +30,7 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import java.util.List;
 import java.util.OptionalInt;
+import java.util.logging.Level;
 import java.util.stream.IntStream;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -129,16 +130,30 @@ public final class MenuItems {
                 .applyAsync()
                 .thenAcceptAsync(itemStack -> {
                     ItemMeta itemMeta = itemStack.getItemMeta();
+                    if (itemMeta == null) {
+                        return;
+                    }
                     itemMeta.setDisplayName(displayName);
                     itemMeta.setLore(lore);
                     itemStack.setItemMeta(itemMeta);
                     storeWorldInformation(itemStack, buildWorld);
                     Bukkit.getScheduler().runTask(plugin, () -> inventory.setItem(slot, itemStack));
+                })
+                .exceptionally(throwable -> {
+                    plugin.getLogger()
+                            .log(
+                                    Level.WARNING,
+                                    "Failed to load skull texture for world: " + buildWorld.getName(),
+                                    throwable);
+                    return null;
                 });
     }
 
     private void storeWorldInformation(ItemStack itemStack, BuildWorld buildWorld) {
         ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta == null) {
+            return;
+        }
         PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
         pdc.set(displayableTypeKey, PersistentDataType.STRING, DisplayableType.BUILD_WORLD.name());
         pdc.set(displayableNameKey, PersistentDataType.STRING, buildWorld.getName());
@@ -163,8 +178,7 @@ public final class MenuItems {
             return false;
         }
 
-        return Boolean.TRUE.equals(
-                itemStack.getItemMeta().getPersistentDataContainer().get(navigatorKey, PersistentDataType.BOOLEAN));
+        return Boolean.TRUE.equals(itemMeta.getPersistentDataContainer().get(navigatorKey, PersistentDataType.BOOLEAN));
     }
 
     @Contract("_ -> new")

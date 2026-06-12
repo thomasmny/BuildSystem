@@ -25,12 +25,11 @@ import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.world.backup.BackupService;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -88,29 +87,42 @@ public class BackupsMenu extends Menu {
      * @param player The player to display the backups to
      */
     private void loadBackups(Player player) {
-        backupService.getProfile(buildWorld).listBackups().thenAcceptAsync(loaded -> {
-            backups.clear();
-            backups.addAll(loaded);
+        // Inventory and the backing list may only be touched on the main thread; the click handler reads both.
+        backupService
+                .getProfile(buildWorld)
+                .listBackups()
+                .thenAccept(loaded -> Bukkit.getScheduler().runTask(plugin, () -> {
+                    backups.clear();
+                    backups.addAll(loaded);
 
-            for (int i = 0; i < loaded.size(); i++) {
-                getInventory()
-                        .setItem(
-                                FIRST_BACKUP_SLOT + i,
-                                InventoryUtils.createItem(
-                                        XMaterial.GRASS_BLOCK,
-                                        messages.getString(
-                                                "backups_backup_name",
-                                                player,
-                                                Map.entry(
-                                                        "%timestamp%",
-                                                        StringUtils.formatTime(
-                                                                loaded.get(i).creationTime(),
-                                                                plugin.getConfigService()
-                                                                        .current()
-                                                                        .settings()
-                                                                        .dateFormat())))));
-            }
-        });
+                    for (int i = 0; i < loaded.size(); i++) {
+                        getInventory()
+                                .setItem(
+                                        FIRST_BACKUP_SLOT + i,
+                                        InventoryUtils.createItem(
+                                                XMaterial.GRASS_BLOCK,
+                                                messages.getString(
+                                                        "backups_backup_name",
+                                                        player,
+                                                        Map.entry(
+                                                                "%timestamp%",
+                                                                StringUtils.formatTime(
+                                                                        loaded.get(i)
+                                                                                .creationTime(),
+                                                                        plugin.getConfigService()
+                                                                                .current()
+                                                                                .settings()
+                                                                                .dateFormat())))));
+                    }
+                }))
+                .exceptionally(throwable -> {
+                    plugin.getLogger()
+                            .log(
+                                    Level.SEVERE,
+                                    "Failed to list backups for world: " + buildWorld.getName(),
+                                    throwable);
+                    return null;
+                });
     }
 
     private String getDurationUntilBackup() {
@@ -122,9 +134,8 @@ public class BackupsMenu extends Menu {
                 .interval();
         int timeSinceBackup = buildWorld.getData().timeSinceBackup().get();
 
-        Date date = new Date((timeUntilBackup - timeSinceBackup) * 1000L);
-        DateFormat formatter = new SimpleDateFormat("mm:ss");
-        return formatter.format(date);
+        int secondsRemaining = Math.max(0, timeUntilBackup - timeSinceBackup);
+        return "%02d:%02d".formatted(secondsRemaining / 60, secondsRemaining % 60);
     }
 
     @Override
@@ -138,10 +149,12 @@ public class BackupsMenu extends Menu {
         Player player = (Player) event.getWhoClicked();
 
         int slot = event.getSlot();
+        int backupIndex = slot - FIRST_BACKUP_SLOT;
         if (slot >= FIRST_BACKUP_SLOT
                 && slot < FIRST_BACKUP_SLOT + 18
+                && backupIndex < backups.size()
                 && itemStack.getType() == XMaterial.GRASS_BLOCK.get()) {
-            Backup backup = backups.get(slot - FIRST_BACKUP_SLOT);
+            Backup backup = backups.get(backupIndex);
             player.closeInventory();
             new BackupsConfirmationMenu(plugin, backup, player).open(player);
         }
