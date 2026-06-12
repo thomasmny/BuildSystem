@@ -39,7 +39,6 @@ public class PlayerTeleportListener implements Listener {
     public PlayerTeleportListener(BuildSystemPlugin plugin) {
         this.playerStorage = plugin.getPlayerService().getPlayerStorage();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler

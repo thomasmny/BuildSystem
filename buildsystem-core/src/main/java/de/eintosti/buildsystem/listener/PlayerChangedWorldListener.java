@@ -69,7 +69,6 @@ public class PlayerChangedWorldListener implements Listener {
         this.playerInventory = new HashMap<>();
         this.playerArmor = new HashMap<>();
 
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler

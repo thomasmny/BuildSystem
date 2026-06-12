@@ -44,7 +44,6 @@ public class PlayerQuitListener implements Listener {
         this.plugin = plugin;
         this.playerManager = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsManager();
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

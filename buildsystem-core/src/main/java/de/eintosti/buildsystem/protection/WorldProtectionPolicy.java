@@ -20,7 +20,7 @@ package de.eintosti.buildsystem.protection;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
-import de.eintosti.buildsystem.config.PluginConfig.Type;
+import de.eintosti.buildsystem.api.data.Type;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 

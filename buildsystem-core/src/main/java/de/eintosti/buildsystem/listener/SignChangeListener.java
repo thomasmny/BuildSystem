@@ -30,7 +30,6 @@ import org.jspecify.annotations.NullMarked;
 public class SignChangeListener implements Listener {
 
     public SignChangeListener(BuildSystemPlugin plugin) {
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler

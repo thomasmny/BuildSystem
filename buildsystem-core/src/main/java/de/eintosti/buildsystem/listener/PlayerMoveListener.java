@@ -41,7 +41,6 @@ public class PlayerMoveListener implements Listener {
         this.plugin = plugin;
         this.playerManager = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsManager();
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler

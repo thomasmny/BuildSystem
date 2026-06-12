@@ -34,7 +34,6 @@ public class EntitySpawnListener implements Listener {
 
     public EntitySpawnListener(BuildSystemPlugin plugin) {
         this.worldStorage = plugin.getWorldService().getWorldStorage();
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler

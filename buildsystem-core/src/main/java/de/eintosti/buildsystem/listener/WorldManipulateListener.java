@@ -54,7 +54,6 @@ public class WorldManipulateListener implements Listener {
         this.worldStorage = plugin.getWorldService().getWorldStorage();
         this.dispatcher = new EventDispatcher(worldStorage);
 
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

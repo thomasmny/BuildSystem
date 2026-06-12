@@ -60,7 +60,6 @@ public class PlayerJoinListener implements Listener {
         this.settingsManager = plugin.getSettingsManager();
         this.spawnManager = plugin.getSpawnManager();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

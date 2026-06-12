@@ -45,7 +45,6 @@ public class AsyncPlayerPreLoginListener implements Listener {
         this.playerStorage = plugin.getPlayerService().getPlayerStorage();
         this.spawnManager = plugin.getSpawnManager();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler

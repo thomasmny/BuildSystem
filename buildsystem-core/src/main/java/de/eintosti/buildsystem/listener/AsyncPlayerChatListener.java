@@ -30,7 +30,6 @@ import org.jspecify.annotations.NullMarked;
 public class AsyncPlayerChatListener implements Listener {
 
     public AsyncPlayerChatListener(BuildSystemPlugin plugin) {
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler

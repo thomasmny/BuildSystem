@@ -37,7 +37,6 @@ public class BuildModePreventationListener implements Listener {
     public BuildModePreventationListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.playerManager = plugin.getPlayerService();
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     /**

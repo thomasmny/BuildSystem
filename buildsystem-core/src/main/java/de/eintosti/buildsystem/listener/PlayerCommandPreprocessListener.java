@@ -17,18 +17,16 @@
  */
 package de.eintosti.buildsystem.listener;
 
-import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.builder.Builders;
-import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
-
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
+import de.eintosti.buildsystem.integration.worldedit.WorldEditCommands;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
+import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
+import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import java.util.List;
-import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -41,192 +39,16 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class PlayerCommandPreprocessListener implements Listener {
 
-    private static final Set<String> DISABLED_COMMANDS = Sets.newHashSet(
-            "/worldedit",
-            "/we",
-
-            // History Control
-            "//undo",
-            "//redo",
-            "/clearhistory",
-
-            // Region Selection
-            "//wand",
-            "/toggleeditwand",
-            "//sel",
-            "//desel",
-            "//pos1",
-            "//pos2",
-            "//0",
-            "//1",
-            "//2",
-            "//hpos1",
-            "//hpos2",
-            "//chunk",
-            "//expand",
-            "//contract",
-            "//outset",
-            "//inset",
-            "//count",
-            "//distr",
-
-            // Region Operation
-            "//set",
-            "//replace",
-            "//repl",
-            "//overlay",
-            "//walls",
-            "//outline",
-            "//center",
-            "//smooth",
-            "//deform",
-            "//regen",
-            "//hollow",
-            "//move",
-            "//stack",
-            "//naturalize",
-            "//line",
-            "//curve",
-            "//forest",
-            "//flora",
-            "//air",
-
-            // Clipboards and Schematics
-            "//copy",
-            "//cut",
-            "//paste",
-            "//rotate",
-            "//flip",
-            "//schematic",
-            "//schem",
-            "/clearclipboard",
-
-            // Generation
-            "//generate",
-            "//generatebiome",
-            "//hcyl",
-            "//cyl",
-            "//sphere",
-            "//hsphere",
-            "//pyramid",
-            "/forestgen",
-            "/pumpkins",
-
-            // Utilities
-            "/toggleplace",
-            "//fill",
-            "//fillr",
-            "//drain",
-            "//fixwater",
-            "//fixlava",
-            "/removeabove",
-            "/removebelow",
-            "/replacenear",
-            "/removenear",
-            "/snow",
-            "/thaw",
-            "/ex",
-            "/butcher",
-            "/remove",
-            "/green",
-            "//calc",
-
-            // Chunk Tools
-            "/chunkinfo",
-            "/listchunks",
-            "/delchunks",
-
-            // Superpickaxe Tools
-            "//",
-            "/sp single",
-            "/sp area",
-            "/sp recur",
-
-            // General Tools
-            "/tool",
-            "/none",
-            "/farwand",
-            "/lrbuild",
-            "/tree",
-            "/deltree",
-            "/repl",
-            "/cycler",
-            "/flood",
-
-            // Brushes
-            "//brush",
-            "//br",
-            "/brush",
-            "/br",
-            "/size",
-            "/mat",
-            "/range",
-            "/mask",
-            "//gmask",
-
-            // Quick-Travel
-            "/unstuck",
-            "/ascend",
-            "/asc",
-            "/descend",
-            "/desc",
-            "/thru",
-            "/jumpto",
-            "/up",
-
-            // Snapshots
-            "//restore",
-            "/snapshot",
-
-            // Java Scriptings
-            "//cs",
-            "/.s",
-
-            // Biomes
-            "/biomelist",
-            "/biomels",
-            "/biomeinfo",
-            "//setbiome",
-
-            // Voxel Sniper
-            "/vs",
-            "/voxel",
-            "/voxel_chunk",
-            "/voxel_height",
-            "/voxel_ink",
-            "/voxel_ink_replace",
-            "/voxel_list",
-            "/voxel_replace",
-            "/voxel_sniper",
-            "/b",
-            "/brush",
-            "/brush_toolkit",
-            "/d",
-            "/default",
-            "/goto",
-            "/p",
-            "/paint",
-            "/perf",
-            "/performer",
-            "/v",
-            "/vc",
-            "/vchunk",
-            "/vh",
-            "/vi",
-            "/vir",
-            "/vl",
-            "/vr--"
-    );
-
     private final BuildSystemPlugin plugin;
     private final SettingsManager settingsManager;
     private final WorldStorageImpl worldStorage;
+    private final WorldProtectionPolicy policy;
 
     public PlayerCommandPreprocessListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.settingsManager = plugin.getSettingsManager();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        this.policy = new WorldProtectionPolicy();
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -255,7 +77,7 @@ public class PlayerCommandPreprocessListener implements Listener {
         }
 
         if (plugin.getConfigService().current().settings().builder().blockWorldEditNonBuilder()) {
-            if (!DISABLED_COMMANDS.contains(command)) {
+            if (!WorldEditCommands.RESTRICTED.contains(command)) {
                 return;
             }
 
@@ -263,40 +85,17 @@ public class PlayerCommandPreprocessListener implements Listener {
             if (buildWorld == null) {
                 return;
             }
-            if (disableArchivedWorlds(buildWorld, player, event)) {
+
+            if (policy.checkArchive(player, buildWorld) == Denial.ARCHIVED) {
+                event.setCancelled(true);
+                plugin.getMessages().sendMessage(player, "command_archive_world");
                 return;
             }
 
-            checkBuilders(buildWorld, player, event);
-        }
-    }
-
-    private boolean disableArchivedWorlds(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
-        if (buildWorld.getPermissions().canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.archive")) {
-            return false;
-        }
-
-        if (buildWorld.getData().status().get() == BuildWorldStatus.ARCHIVE) {
-            event.setCancelled(true);
-            plugin.getMessages().sendMessage(player, "command_archive_world");
-            return true;
-        }
-        return false;
-    }
-
-    private void checkBuilders(BuildWorld buildWorld, Player player, PlayerCommandPreprocessEvent event) {
-        if (buildWorld.getPermissions().canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.builders")) {
-            return;
-        }
-
-        Builders builders = buildWorld.getBuilders();
-        if (builders.isCreator(player)) {
-            return;
-        }
-
-        if (buildWorld.getData().buildersEnabled().get() && !builders.isBuilder(player)) {
-            event.setCancelled(true);
-            plugin.getMessages().sendMessage(player, "command_not_builder");
+            if (policy.checkBuilders(player, buildWorld) == Denial.NOT_A_BUILDER) {
+                event.setCancelled(true);
+                plugin.getMessages().sendMessage(player, "command_not_builder");
+            }
         }
     }
 }

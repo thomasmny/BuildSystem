@@ -32,7 +32,6 @@ public class WeatherChangeListener implements Listener {
 
     public WeatherChangeListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

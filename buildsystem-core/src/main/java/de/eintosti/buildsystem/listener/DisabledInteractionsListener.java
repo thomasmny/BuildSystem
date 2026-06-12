@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.listener;
 
+import com.cryptomorin.xseries.XBlock;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XTag;
 import de.eintosti.buildsystem.BuildSystemPlugin;

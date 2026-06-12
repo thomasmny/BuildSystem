@@ -28,31 +28,7 @@ import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.config.migration.ConfigMigrationManager;
 import de.eintosti.buildsystem.expansion.luckperms.LuckPermsExpansion;
 import de.eintosti.buildsystem.expansion.placeholderapi.PlaceholderApiExpansion;
-import de.eintosti.buildsystem.listener.AsyncPlayerChatListener;
-import de.eintosti.buildsystem.listener.AsyncPlayerPreLoginListener;
-import de.eintosti.buildsystem.listener.BlockPhysicsListener;
-import de.eintosti.buildsystem.listener.BuildModePreventationListener;
-import de.eintosti.buildsystem.listener.BuildWorldResetUnloadListener;
-import de.eintosti.buildsystem.listener.EditSessionListener;
-import de.eintosti.buildsystem.listener.EntityDamageListener;
-import de.eintosti.buildsystem.listener.EntitySpawnListener;
-import de.eintosti.buildsystem.listener.FoodLevelChangeListener;
-import de.eintosti.buildsystem.listener.InventoryCreativeListener;
-import de.eintosti.buildsystem.menu.MenuListener;
-import de.eintosti.buildsystem.listener.NavigatorListener;
-import de.eintosti.buildsystem.listener.PlayerChangedWorldListener;
-import de.eintosti.buildsystem.listener.PlayerCommandPreprocessListener;
-import de.eintosti.buildsystem.listener.PlayerInventoryClearListener;
-import de.eintosti.buildsystem.listener.PlayerJoinListener;
-import de.eintosti.buildsystem.listener.PlayerMoveListener;
-import de.eintosti.buildsystem.listener.PlayerQuitListener;
-import de.eintosti.buildsystem.listener.PlayerRespawnListener;
-import de.eintosti.buildsystem.listener.PlayerTeleportListener;
-import de.eintosti.buildsystem.listener.SettingsInteractListener;
-import de.eintosti.buildsystem.listener.SignChangeListener;
-import de.eintosti.buildsystem.listener.WeatherChangeListener;
-import de.eintosti.buildsystem.listener.WorldManipulateByAxiomListener;
-import de.eintosti.buildsystem.listener.WorldManipulateListener;
+import de.eintosti.buildsystem.listener.ListenerRegistrar;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
@@ -128,7 +104,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         initClasses();
 
         new CommandRegistrar(this).registerAll();
-        registerListeners();
+        new ListenerRegistrar(this).registerAll();
         registerExpansions();
 
         performUpdateCheck();
@@ -209,32 +185,6 @@ public class BuildSystemPlugin extends JavaPlugin {
         this.spawnManager = new SpawnManager(this);
     }
 
-    private void registerListeners() {
-        new AsyncPlayerChatListener(this);
-        new AsyncPlayerPreLoginListener(this);
-        new BlockPhysicsListener(this);
-        new BuildModePreventationListener(this);
-        new BuildWorldResetUnloadListener(this);
-        new EntitySpawnListener(this);
-        new FoodLevelChangeListener(this);
-        new InventoryCreativeListener(this);
-        getServer().getPluginManager().registerEvents(new MenuListener(), this);
-        new NavigatorListener(this);
-        new PlayerChangedWorldListener(this);
-        new EntityDamageListener(this);
-        new PlayerCommandPreprocessListener(this);
-        new PlayerInventoryClearListener(this);
-        new PlayerJoinListener(this);
-        new PlayerMoveListener(this);
-        new PlayerQuitListener(this);
-        new PlayerRespawnListener(this);
-        new PlayerTeleportListener(this);
-        new SettingsInteractListener(this);
-        new SignChangeListener(this);
-        new WeatherChangeListener(this);
-        new WorldManipulateListener(this);
-    }
-
     private void registerStats() {
         Metrics metrics = new Metrics(this, METRICS_ID);
         metrics.addCustomChart(new SimplePie("archive_vanish", () -> String.valueOf(configService.current().settings().archive().vanish())));
@@ -271,15 +221,6 @@ public class BuildSystemPlugin extends JavaPlugin {
             this.luckPermsExpansion.registerAll();
         }
 
-        if (pluginManager.getPlugin("AxiomPaper") != null) {
-            new WorldManipulateByAxiomListener(this);
-        }
-
-        boolean isWorldEdit = pluginManager.getPlugin("WorldEdit") != null
-                || pluginManager.getPlugin("FastAsyncWorldEdit") != null;
-        if (isWorldEdit && configService.current().settings().builder().blockWorldEditNonBuilder()) {
-            new EditSessionListener(this);
-        }
     }
 
     private void unregisterExpansions() {

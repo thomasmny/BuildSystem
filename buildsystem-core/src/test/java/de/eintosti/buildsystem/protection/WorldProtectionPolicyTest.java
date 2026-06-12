@@ -60,7 +60,7 @@ class WorldProtectionPolicyTest {
         when(permissions.canBypassBuildRestriction(player)).thenReturn(false);
         when(player.hasPermission("buildsystem.bypass.archive")).thenReturn(false);
         when(player.hasPermission("buildsystem.bypass.builders")).thenReturn(false);
-        Type<BuildWorldStatus> status = mockType(BuildWorldStatus.CITY);
+        Type<BuildWorldStatus> status = mockType(BuildWorldStatus.NOT_STARTED);
         when(data.status()).thenReturn(status);
         Type<Boolean> buildersEnabled = mockType(false);
         when(data.buildersEnabled()).thenReturn(buildersEnabled);

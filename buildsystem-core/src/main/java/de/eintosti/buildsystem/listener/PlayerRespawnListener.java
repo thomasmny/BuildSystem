@@ -36,7 +36,6 @@ public class PlayerRespawnListener implements Listener {
     public PlayerRespawnListener(BuildSystemPlugin plugin) {
         this.settingsManager = plugin.getSettingsManager();
         this.spawnManager = plugin.getSpawnManager();
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler

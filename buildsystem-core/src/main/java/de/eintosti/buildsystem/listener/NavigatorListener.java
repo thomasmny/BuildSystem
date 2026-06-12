@@ -79,7 +79,6 @@ public class NavigatorListener implements Listener {
         this.settingsManager = plugin.getSettingsManager();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
 
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     /**

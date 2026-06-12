@@ -36,7 +36,6 @@ public class PlayerInventoryClearListener implements Listener {
 
     public PlayerInventoryClearListener(BuildSystemPlugin plugin) {
         this.settingsManager = plugin.getSettingsManager();
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler
