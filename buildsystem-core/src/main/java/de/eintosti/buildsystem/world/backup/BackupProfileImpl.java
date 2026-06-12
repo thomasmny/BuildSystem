@@ -77,7 +77,11 @@ public class BackupProfileImpl implements BackupProfile {
         this.listBackups()
                 .thenComposeAsync(backups -> {
                     synchronized (this.backupLock) {
-                        int maxBackups = plugin.getConfigService().current().world().backup().maxBackupsPerWorld();
+                        int maxBackups = plugin.getConfigService()
+                                .current()
+                                .world()
+                                .backup()
+                                .maxBackupsPerWorld();
                         int excess = backups.size() - maxBackups + 1;
 
                         List<CompletableFuture<Void>> deleteFutures = Collections.emptyList();
@@ -90,8 +94,7 @@ public class BackupProfileImpl implements BackupProfile {
                                     .toList();
                         }
 
-                        return CompletableFuture
-                                .allOf(deleteFutures.toArray(new CompletableFuture[0]))
+                        return CompletableFuture.allOf(deleteFutures.toArray(new CompletableFuture[0]))
                                 .thenCompose(v -> storage.storeBackup(this.buildWorld));
                     }
                 })
@@ -115,7 +118,8 @@ public class BackupProfileImpl implements BackupProfile {
             return CompletableFuture.completedFuture(null);
         }
 
-        List<@Nullable Player> removedPlayers = plugin.getWorldService().removePlayersFromWorld(worldName, "worlds_backup_restoration_in_progress");
+        List<@Nullable Player> removedPlayers =
+                plugin.getWorldService().removePlayersFromWorld(worldName, "worlds_backup_restoration_in_progress");
 
         File backupFile;
         try {
@@ -127,7 +131,8 @@ public class BackupProfileImpl implements BackupProfile {
 
         SpawnService spawnService = plugin.getSpawnService();
         Location spawn = spawnService.getSpawn();
-        boolean isSpawn = spawnService.spawnExists() && spawnService.getSpawnWorld().equals(world);
+        boolean isSpawn =
+                spawnService.spawnExists() && spawnService.getSpawnWorld().equals(world);
 
         this.buildWorld.getUnloader().forceUnload(false);
         try {
@@ -137,7 +142,8 @@ public class BackupProfileImpl implements BackupProfile {
         }
 
         try (ZipFile zip = new ZipFile(backupFile)) {
-            zip.extractAll(FileUtils.resolve(Bukkit.getWorldContainer(), this.buildWorld.getName()).toString());
+            zip.extractAll(FileUtils.resolve(Bukkit.getWorldContainer(), this.buildWorld.getName())
+                    .toString());
         } catch (IOException e) {
             plugin.getLogger().warning("Failed to restore backup at: " + backupFile.getAbsolutePath());
             return CompletableFuture.failedFuture(e);
@@ -152,9 +158,18 @@ public class BackupProfileImpl implements BackupProfile {
             spawnService.set(spawn, worldName);
         }
 
-        plugin.getMessages().sendMessage(player, "worlds_backup_restoration_successful",
-                Map.entry("%timestamp%", StringUtils.formatTime(backup.creationTime(), plugin.getConfigService().current().settings().dateFormat()))
-        );
+        plugin.getMessages()
+                .sendMessage(
+                        player,
+                        "worlds_backup_restoration_successful",
+                        Map.entry(
+                                "%timestamp%",
+                                StringUtils.formatTime(
+                                        backup.creationTime(),
+                                        plugin.getConfigService()
+                                                .current()
+                                                .settings()
+                                                .dateFormat())));
         return CompletableFuture.completedFuture(null);
     }
 }

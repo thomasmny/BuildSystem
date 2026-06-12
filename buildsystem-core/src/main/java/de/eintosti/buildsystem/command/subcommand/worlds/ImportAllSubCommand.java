@@ -24,11 +24,12 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
-import java.io.File;
-import java.util.Locale;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+
+import java.io.File;
+import java.util.Locale;
 
 @NullMarked
 public class ImportAllSubCommand implements SubCommand {
@@ -107,13 +108,15 @@ public class ImportAllSubCommand implements SubCommand {
 
         String creatorName = creatorArg;
         Generator resolvedGenerator = generator;
-        plugin.getPlayerLookupService().lookupUniqueId(creatorName)
+        plugin.getPlayerLookupService()
+                .lookupUniqueId(creatorName)
                 .thenAccept(creatorId -> Bukkit.getScheduler().runTask(plugin, () -> {
                     if (creatorId == null) {
                         plugin.getMessages().sendMessage(player, "worlds_importall_player_not_found");
                         return;
                     }
-                    worldService.importWorlds(player, directories, resolvedGenerator, Builder.of(creatorId, creatorName));
+                    worldService.importWorlds(
+                            player, directories, resolvedGenerator, Builder.of(creatorId, creatorName));
                 }));
     }
 

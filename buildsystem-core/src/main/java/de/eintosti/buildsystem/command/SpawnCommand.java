@@ -21,14 +21,15 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 @NullMarked
 public class SpawnCommand extends CommandBase {
@@ -75,12 +76,13 @@ public class SpawnCommand extends CommandBase {
                         }
 
                         spawnService.set(playerLocation, buildWorld.getName());
-                        messages.sendMessage(player, "spawn_set",
+                        messages.sendMessage(
+                                player,
+                                "spawn_set",
                                 Map.entry("%x%", round(playerLocation.getX())),
                                 Map.entry("%y%", round(playerLocation.getY())),
                                 Map.entry("%z%", round(playerLocation.getZ())),
-                                Map.entry("%world%", playerLocation.getWorld().getName())
-                        );
+                                Map.entry("%world%", playerLocation.getWorld().getName()));
                     }
                     case "remove" -> {
                         spawnService.remove();

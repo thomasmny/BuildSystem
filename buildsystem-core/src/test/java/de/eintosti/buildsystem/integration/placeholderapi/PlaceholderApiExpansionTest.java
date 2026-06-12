@@ -137,7 +137,8 @@ class PlaceholderApiExpansionTest {
     void world_notPresent_returnsDash() {
         WorldStorageImpl emptyStorage = mock(WorldStorageImpl.class);
         when(emptyStorage.getBuildWorld(WORLD_NAME)).thenReturn(null);
-        PlaceholderApiExpansion noWorld = new PlaceholderApiExpansion("a", "1", mock(SettingsService.class), emptyStorage, mock(Messages.class));
+        PlaceholderApiExpansion noWorld =
+                new PlaceholderApiExpansion("a", "1", mock(SettingsService.class), emptyStorage, mock(Messages.class));
         assertEquals("-", noWorld.onPlaceholderRequest(player, "loaded"));
     }
 

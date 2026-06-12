@@ -88,7 +88,8 @@ public class InstantSignPlacementListener implements Listener {
         }
 
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld().getName());
-        if (buildWorld != null && policy.mayModify(player, buildWorld, buildWorld.getData().blockPlacement()) != Denial.NONE) {
+        if (buildWorld != null
+                && policy.mayModify(player, buildWorld, buildWorld.getData().blockPlacement()) != Denial.NONE) {
             return;
         }
 
@@ -103,7 +104,8 @@ public class InstantSignPlacementListener implements Listener {
                     return;
                 }
                 adjacent.setType(material);
-                customBlockManager.rotateBlock(adjacent, DirectionUtil.getPlayerDirection(player).getOppositeFace());
+                customBlockManager.rotateBlock(
+                        adjacent, DirectionUtil.getPlayerDirection(player).getOppositeFace());
             }
             case DOWN -> {
                 if (!isHangingSign) {
@@ -113,9 +115,7 @@ public class InstantSignPlacementListener implements Listener {
                 customBlockManager.rotateBlock(adjacent, getHangingSignDirection(event));
             }
             case NORTH, EAST, SOUTH, WEST -> {
-                String woodType = xMaterial.name()
-                        .replace("_HANGING", "")
-                        .replace("_SIGN", "");
+                String woodType = xMaterial.name().replace("_HANGING", "").replace("_SIGN", "");
                 String block = isHangingSign ? "_WALL_HANGING_SIGN" : "_WALL_SIGN";
                 BlockFace facing = isHangingSign ? getHangingSignDirection(event) : blockFace;
                 XMaterial.matchXMaterial(woodType + block).ifPresent(value -> adjacent.setType(value.get()));
@@ -126,7 +126,8 @@ public class InstantSignPlacementListener implements Listener {
 
     private BlockFace getHangingSignDirection(PlayerInteractEvent event) {
         BlockFace clickedFace = event.getBlockFace();
-        BlockFace playerFacing = DirectionUtil.getCardinalDirection(event.getPlayer()).getOppositeFace();
+        BlockFace playerFacing =
+                DirectionUtil.getCardinalDirection(event.getPlayer()).getOppositeFace();
         if (clickedFace != playerFacing && clickedFace != playerFacing.getOppositeFace()) {
             return playerFacing;
         }

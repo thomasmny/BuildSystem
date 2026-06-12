@@ -21,10 +21,11 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import java.util.Comparator;
-import java.util.Locale;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.Comparator;
+import java.util.Locale;
 
 /**
  * Represents the sorting options for worlds in the navigator.

@@ -18,11 +18,12 @@
 package de.eintosti.buildsystem.config.migration;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import org.jspecify.annotations.NullMarked;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.jspecify.annotations.NullMarked;
 
 /**
  * Manages the migration of configurations. It holds a registry of available migration steps and applies them sequentially.
@@ -70,7 +71,8 @@ public class ConfigMigrationManager {
             int currentVersion = plugin.getConfig().getInt("version", 1);
             Migration migration = migrations.get(currentVersion);
             if (migration == null) {
-                throw new IllegalStateException("Missing migration from version " + currentVersion + " to " + (currentVersion + 1));
+                throw new IllegalStateException(
+                        "Missing migration from version " + currentVersion + " to " + (currentVersion + 1));
             }
 
             logger.info("Migrating from version " + currentVersion + " to " + (currentVersion + 1) + "...");

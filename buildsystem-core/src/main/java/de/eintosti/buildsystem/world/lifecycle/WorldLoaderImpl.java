@@ -23,13 +23,14 @@ import de.eintosti.buildsystem.api.event.world.BuildWorldPostLoadEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldLoader;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @NullMarked
 public class WorldLoaderImpl implements WorldLoader {
@@ -54,7 +55,13 @@ public class WorldLoaderImpl implements WorldLoader {
         }
 
         player.closeInventory();
-        player.sendTitle(" ", plugin.getMessages().getString("loading_world", player, Map.entry("%world%", this.buildWorld.getName())), 5, 70, 20);
+        player.sendTitle(
+                " ",
+                plugin.getMessages()
+                        .getString("loading_world", player, Map.entry("%world%", this.buildWorld.getName())),
+                5,
+                70,
+                20);
 
         return load();
     }
@@ -73,7 +80,8 @@ public class WorldLoaderImpl implements WorldLoader {
 
         String worldName = this.buildWorld.getName();
         this.plugin.getLogger().info("*** Loading world \"" + worldName + "\" ***");
-        World world = new BukkitWorldFactory(this.plugin, this.buildWorld).generate(BukkitWorldFactory.VersionCheck.REQUIRED);
+        World world =
+                new BukkitWorldFactory(this.plugin, this.buildWorld).generate(BukkitWorldFactory.VersionCheck.REQUIRED);
         if (world == null) {
             return CompletableFuture.completedFuture(null);
         }
@@ -85,4 +93,4 @@ public class WorldLoaderImpl implements WorldLoader {
         this.buildWorld.getUnloader().resetUnloadTask();
         return CompletableFuture.completedFuture(null);
     }
-} 
+}

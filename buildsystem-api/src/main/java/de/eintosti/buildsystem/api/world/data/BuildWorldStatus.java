@@ -18,8 +18,9 @@
 package de.eintosti.buildsystem.api.world.data;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import java.util.Locale;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.Locale;
 
 /**
  * Represents the various building statuses a {@link BuildWorld} can have. These statuses indicate the progression and accessibility of a world.

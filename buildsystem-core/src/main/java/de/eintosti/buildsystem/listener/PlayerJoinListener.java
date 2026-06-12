@@ -20,13 +20,12 @@ package de.eintosti.buildsystem.listener;
 import com.cryptomorin.xseries.XPotion;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
-import de.eintosti.buildsystem.player.BuildPlayerImpl;
-import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.navigator.NavigatorService;
+import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
@@ -34,7 +33,6 @@ import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import io.papermc.lib.PaperLib;
-import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -44,6 +42,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.potion.PotionEffect;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.Map;
 
 @NullMarked
 public class PlayerJoinListener implements Listener {
@@ -79,7 +79,8 @@ public class PlayerJoinListener implements Listener {
         Player player = event.getPlayer();
         plugin.getPlayerLookupService().cacheUser(player.getUniqueId(), player.getName());
 
-        BuildPlayerImpl buildPlayer = BuildPlayerImpl.of(playerManager.getPlayerStorage().createBuildPlayer(player));
+        BuildPlayerImpl buildPlayer =
+                BuildPlayerImpl.of(playerManager.getPlayerStorage().createBuildPlayer(player));
         manageHidePlayer(player, buildPlayer);
         manageSettings(player, buildPlayer.getSettings());
         teleportToCorrectLocation(player, buildPlayer);
@@ -90,11 +91,15 @@ public class PlayerJoinListener implements Listener {
         if (buildWorld != null) {
             WorldData worldData = buildWorld.getData();
             if (!worldData.physics().get() && player.hasPermission("buildsystem.physics.message")) {
-                plugin.getMessages().sendMessage(player, "physics_deactivated_in_world", Map.entry("%world%", worldName));
+                plugin.getMessages()
+                        .sendMessage(player, "physics_deactivated_in_world", Map.entry("%world%", worldName));
             }
 
-            if (plugin.getConfigService().current().settings().archive().vanish() && worldData.status().get() == BuildWorldStatus.ARCHIVE) {
-                player.addPotionEffect(new PotionEffect(XPotion.INVISIBILITY.get(), PotionEffect.INFINITE_DURATION, 0, false, false), false);
+            if (plugin.getConfigService().current().settings().archive().vanish()
+                    && worldData.status().get() == BuildWorldStatus.ARCHIVE) {
+                player.addPotionEffect(
+                        new PotionEffect(XPotion.INVISIBILITY.get(), PotionEffect.INFINITE_DURATION, 0, false, false),
+                        false);
                 Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
             }
         }
@@ -132,12 +137,16 @@ public class PlayerJoinListener implements Listener {
         }
 
         int delay = buildWorld.isLoaded() ? 0 : 20;
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            Location location = logoutLocation.location();
-            if (location != null) {
-                PaperLib.teleportAsync(player, location);
-            }
-        }, delay);
+        Bukkit.getScheduler()
+                .runTaskLater(
+                        plugin,
+                        () -> {
+                            Location location = logoutLocation.location();
+                            if (location != null) {
+                                PaperLib.teleportAsync(player, location);
+                            }
+                        },
+                        delay);
     }
 
     @SuppressWarnings("deprecation")
@@ -182,18 +191,19 @@ public class PlayerJoinListener implements Listener {
             return;
         }
 
-        plugin.getUpdateChecker()
-                .requestUpdateCheck()
-                .whenComplete((result, e) -> {
-                    if (result.requiresUpdate()) {
-                        StringBuilder stringBuilder = new StringBuilder();
-                        plugin.getMessages().getStringList("update_available", player).forEach(line ->
-                                stringBuilder.append(line
-                                                .replace("%new_version%", result.getNewestVersion())
-                                                .replace("%current_version%", plugin.getDescription().getVersion()))
-                                        .append("\n"));
-                        player.sendMessage(stringBuilder.toString());
-                    }
-                });
+        plugin.getUpdateChecker().requestUpdateCheck().whenComplete((result, e) -> {
+            if (result.requiresUpdate()) {
+                StringBuilder stringBuilder = new StringBuilder();
+                plugin.getMessages()
+                        .getStringList("update_available", player)
+                        .forEach(line -> stringBuilder
+                                .append(line.replace("%new_version%", result.getNewestVersion())
+                                        .replace(
+                                                "%current_version%",
+                                                plugin.getDescription().getVersion()))
+                                .append("\n"));
+                player.sendMessage(stringBuilder.toString());
+            }
+        });
     }
 }

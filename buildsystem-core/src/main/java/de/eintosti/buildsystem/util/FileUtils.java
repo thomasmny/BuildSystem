@@ -19,11 +19,14 @@ package de.eintosti.buildsystem.util;
 
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.model.ExcludeFileFilter;
+import net.lingala.zip4j.model.ZipParameters;
+import org.bukkit.Bukkit;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -35,12 +38,6 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.model.ExcludeFileFilter;
-import net.lingala.zip4j.model.ZipParameters;
-import org.bukkit.Bukkit;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class FileUtils {
@@ -48,8 +45,7 @@ public final class FileUtils {
     private static final Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
     private static final Set<String> IGNORE_FILES = Sets.newHashSet("uid.dat", "session.lock");
 
-    private FileUtils() {
-    }
+    private FileUtils() {}
 
     public static Path resolve(File file, final String child) {
         return resolve(file.toPath(), child);
@@ -90,7 +86,8 @@ public final class FileUtils {
                 copyFile(source, target);
             }
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to copy " + source.getAbsolutePath() + " to " + target.getAbsolutePath(), e);
+            LOGGER.log(
+                    Level.SEVERE, "Failed to copy " + source.getAbsolutePath() + " to " + target.getAbsolutePath(), e);
         }
     }
 
@@ -126,10 +123,8 @@ public final class FileUtils {
      * @throws IOException If an I/O error occurs while copying the file
      */
     private static void copyFile(File source, File target) throws IOException {
-        try (
-                InputStream inputStream = Files.newInputStream(source.toPath());
-                OutputStream outputStream = Files.newOutputStream(target.toPath())
-        ) {
+        try (InputStream inputStream = Files.newInputStream(source.toPath());
+                OutputStream outputStream = Files.newOutputStream(target.toPath())) {
             byte[] buffer = new byte[1024];
             int length;
             while ((length = inputStream.read(buffer)) > 0) {
@@ -156,9 +151,7 @@ public final class FileUtils {
      */
     public static void deleteDirectory(Path directoryPath) throws IOException {
         try (Stream<Path> walk = Files.walk(directoryPath)) {
-            walk.sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
+            walk.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
         }
     }
 
@@ -180,15 +173,12 @@ public final class FileUtils {
         return creation;
     }
 
-    @Nullable
-    public static File zipWorld(File storage, BuildWorld buildWorld) {
+    @Nullable public static File zipWorld(File storage, BuildWorld buildWorld) {
         try (ZipFile zipFile = new ZipFile(storage.getAbsolutePath())) {
             File worldContainer = new File(Bukkit.getWorldContainer(), buildWorld.getName());
 
             ExcludeFileFilter excludeFileFilter = Sets.newHashSet(
-                    new File(worldContainer, "uid.dat"),
-                    new File(worldContainer, "session.lock")
-            )::contains;
+                    new File(worldContainer, "uid.dat"), new File(worldContainer, "session.lock"))::contains;
             ZipParameters zipParameters = new ZipParameters();
             zipParameters.setExcludeFileFilter(excludeFileFilter);
 
@@ -204,10 +194,8 @@ public final class FileUtils {
         Path worldPath = Path.of(new File(Bukkit.getWorldContainer(), buildWorld.getName()).getPath());
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 
-        try (
-                ZipOutputStream zipOut = new ZipOutputStream(byteOut);
-                Stream<Path> walk = Files.walk(worldPath)
-        ) {
+        try (ZipOutputStream zipOut = new ZipOutputStream(byteOut);
+                Stream<Path> walk = Files.walk(worldPath)) {
             walk.filter(Files::isRegularFile).forEach(file -> {
                 try {
                     Path relativePath = worldPath.relativize(file);

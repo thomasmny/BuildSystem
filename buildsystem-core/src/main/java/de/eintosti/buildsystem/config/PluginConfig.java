@@ -19,19 +19,16 @@ package de.eintosti.buildsystem.config;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
-import java.util.List;
-import java.util.Set;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.util.List;
+import java.util.Set;
+
 @NullMarked
-public record PluginConfig(
-        Settings settings,
-        World world,
-        Folder folder
-) {
+public record PluginConfig(Settings settings, World world, Folder folder) {
 
     public record Settings(
             boolean updateChecker,
@@ -43,23 +40,17 @@ public record PluginConfig(
             SaveFromDeath saveFromDeath,
             BuildMode buildMode,
             Builder builder,
-            Navigator navigator
-    ) {
+            Navigator navigator) {
 
-        public record Archive(boolean vanish, boolean changeGamemode, GameMode worldGameMode) {
-        }
+        public record Archive(boolean vanish, boolean changeGamemode, GameMode worldGameMode) {}
 
-        public record SaveFromDeath(boolean enabled, boolean teleportToMapSpawn) {
-        }
+        public record SaveFromDeath(boolean enabled, boolean teleportToMapSpawn) {}
 
-        public record BuildMode(boolean dropItems, boolean moveItems) {
-        }
+        public record BuildMode(boolean dropItems, boolean moveItems) {}
 
-        public record Builder(boolean blockWorldEditNonBuilder, XMaterial worldEditWand) {
-        }
+        public record Builder(boolean blockWorldEditNonBuilder, XMaterial worldEditWand) {}
 
-        public record Navigator(XMaterial item, boolean giveItemOnJoin) {
-        }
+        public record Navigator(XMaterial item, boolean giveItemOnJoin) {}
     }
 
     public record World(
@@ -71,18 +62,16 @@ public record PluginConfig(
             Limits limits,
             Defaults defaults,
             Unload unload,
-            Backup backup
-    ) {
+            Backup backup) {
 
         public World {
             deletionBlacklist = Set.copyOf(deletionBlacklist);
         }
 
-        public record DisabledPhysics(boolean preventConnections, boolean preventFluidFlow, boolean preventFallingBlocks) {
-        }
+        public record DisabledPhysics(
+                boolean preventConnections, boolean preventFluidFlow, boolean preventFallingBlocks) {}
 
-        public record Limits(int publicWorlds, int privateWorlds) {
-        }
+        public record Limits(int publicWorlds, int privateWorlds) {}
 
         public record Defaults(
                 int worldBorderSize,
@@ -96,17 +85,13 @@ public record PluginConfig(
                 boolean blockBreaking,
                 boolean blockPlacement,
                 boolean blockInteractions,
-                BuildersEnabled buildersEnabled
-        ) {
+                BuildersEnabled buildersEnabled) {
 
-            public record Permission(String publicPermission, String privatePermission) {
-            }
+            public record Permission(String publicPermission, String privatePermission) {}
 
-            public record Time(int sunrise, int noon, int night) {
-            }
+            public record Time(int sunrise, int noon, int night) {}
 
-            public record BuildersEnabled(boolean publicBuilders, boolean privateBuilders) {
-            }
+            public record BuildersEnabled(boolean publicBuilders, boolean privateBuilders) {}
         }
 
         public record Unload(boolean enabled, String timeUntilUnload, Set<String> blacklistedWorlds) {
@@ -116,30 +101,32 @@ public record PluginConfig(
             }
         }
 
-        public record Backup(
-                int maxBackupsPerWorld,
-                StorageSettings storage,
-                AutoBackup autoBackup
-        ) {
+        public record Backup(int maxBackupsPerWorld, StorageSettings storage, AutoBackup autoBackup) {
 
-            public sealed interface StorageSettings permits Local, Sftp, S3 {
-            }
+            public sealed interface StorageSettings permits Local, Sftp, S3 {}
 
-            public record Local() implements StorageSettings {
-            }
+            public record Local() implements StorageSettings {}
 
-            public record Sftp(@Nullable String host, int port, @Nullable String username, @Nullable String password, @Nullable String path) implements StorageSettings {
-            }
+            public record Sftp(
+                    @Nullable String host,
+                    int port,
+                    @Nullable String username,
+                    @Nullable String password,
+                    @Nullable String path)
+                    implements StorageSettings {}
 
-            public record S3(@Nullable String url, @Nullable String accessKey, @Nullable String secretKey, @Nullable String region, @Nullable String bucket,
-                             @Nullable String path) implements StorageSettings {
-            }
+            public record S3(
+                    @Nullable String url,
+                    @Nullable String accessKey,
+                    @Nullable String secretKey,
+                    @Nullable String region,
+                    @Nullable String bucket,
+                    @Nullable String path)
+                    implements StorageSettings {}
 
-            public record AutoBackup(boolean enabled, boolean onlyActiveWorlds, int interval) {
-            }
+            public record AutoBackup(boolean enabled, boolean onlyActiveWorlds, int interval) {}
         }
     }
 
-    public record Folder(boolean overridePermissions, boolean overrideProjects) {
-    }
+    public record Folder(boolean overridePermissions, boolean overrideProjects) {}
 }

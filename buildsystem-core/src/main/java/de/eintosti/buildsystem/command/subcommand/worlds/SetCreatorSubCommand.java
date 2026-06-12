@@ -25,18 +25,18 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
-import java.util.List;
-import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.util.List;
+import java.util.Map;
+
 @NullMarked
 public class SetCreatorSubCommand implements SubCommand {
 
     private final BuildSystemPlugin plugin;
-
 
     public SetCreatorSubCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
@@ -44,7 +44,8 @@ public class SetCreatorSubCommand implements SubCommand {
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = GuardedWorldCommand.requireWorld(plugin, player, worldName, args, 2, getArgument(), "worlds_setcreator");
+        BuildWorld buildWorld = GuardedWorldCommand.requireWorld(
+                plugin, player, worldName, args, 2, getArgument(), "worlds_setcreator");
         if (buildWorld == null) {
             return;
         }
@@ -56,7 +57,8 @@ public class SetCreatorSubCommand implements SubCommand {
                 return;
             }
 
-            plugin.getPlayerLookupService().lookupUniqueId(creatorName)
+            plugin.getPlayerLookupService()
+                    .lookupUniqueId(creatorName)
                     .thenAccept(creatorId -> Bukkit.getScheduler().runTask(plugin, () -> {
                         if (creatorId == null) {
                             plugin.getMessages().sendMessage(player, "worlds_setcreator_player_not_found");
@@ -73,9 +75,7 @@ public class SetCreatorSubCommand implements SubCommand {
 
         plugin.getSettingsService().forceUpdateSidebar(buildWorld);
         XSound.ENTITY_PLAYER_LEVELUP.play(player);
-        plugin.getMessages().sendMessage(player, "worlds_setcreator_set",
-                Map.entry("%world%", buildWorld.getName())
-        );
+        plugin.getMessages().sendMessage(player, "worlds_setcreator_set", Map.entry("%world%", buildWorld.getName()));
         player.closeInventory();
     }
 

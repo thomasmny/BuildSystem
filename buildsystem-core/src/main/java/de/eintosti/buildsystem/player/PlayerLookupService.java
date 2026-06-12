@@ -22,6 +22,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import de.eintosti.buildsystem.util.ServerModeChecker;
 import de.eintosti.buildsystem.util.ServerModeChecker.ServerMode;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -34,10 +39,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Resolves player names to UUIDs and back. Lookups are cached and never block the main thread: the async variants schedule the network call on Bukkit's async pool, while the
@@ -161,7 +162,10 @@ public final class PlayerLookupService {
 
     private @Nullable JsonObject requestJson(String url) {
         try {
-            HttpRequest request = HttpRequest.newBuilder(URI.create(url)).timeout(TIMEOUT).GET().build();
+            HttpRequest request = HttpRequest.newBuilder(URI.create(url))
+                    .timeout(TIMEOUT)
+                    .GET()
+                    .build();
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != 200 || response.body().isEmpty()) {
                 return null;

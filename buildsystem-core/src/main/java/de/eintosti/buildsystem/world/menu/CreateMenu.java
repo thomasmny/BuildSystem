@@ -25,20 +25,21 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.util.FileUtils;
-import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
-import java.io.File;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.Map;
 
 @NullMarked
 public class CreateMenu extends PaginatedMenu {
@@ -55,7 +56,8 @@ public class CreateMenu extends PaginatedMenu {
 
     private int numTemplates = 0;
 
-    public CreateMenu(BuildSystemPlugin plugin, Page initialPage, Visibility visibility, @Nullable Folder folder, Player player) {
+    public CreateMenu(
+            BuildSystemPlugin plugin, Page initialPage, Visibility visibility, @Nullable Folder folder, Player player) {
         super(plugin.getMessages(), 45, plugin.getMessages().getString("create_title", player));
         this.plugin = plugin;
         this.worldService = plugin.getWorldService();
@@ -74,9 +76,21 @@ public class CreateMenu extends PaginatedMenu {
         plugin.getMenuItems().fillRange(player, getInventory(), 0, 29);
         plugin.getMenuItems().fillRange(player, getInventory(), 34, 45);
 
-        addPageItem(Page.PREDEFINED, InventoryUtils.createSkull(messages.getString("create_predefined_worlds", player), Profileable.detect("2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78")));
-        addPageItem(Page.GENERATOR, InventoryUtils.createSkull(messages.getString("create_generators", player), Profileable.detect("b2f79016cad84d1ae21609c4813782598e387961be13c15682752f126dce7a")));
-        addPageItem(Page.TEMPLATES, InventoryUtils.createSkull(messages.getString("create_templates", player), Profileable.detect("d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c")));
+        addPageItem(
+                Page.PREDEFINED,
+                InventoryUtils.createSkull(
+                        messages.getString("create_predefined_worlds", player),
+                        Profileable.detect("2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78")));
+        addPageItem(
+                Page.GENERATOR,
+                InventoryUtils.createSkull(
+                        messages.getString("create_generators", player),
+                        Profileable.detect("b2f79016cad84d1ae21609c4813782598e387961be13c15682752f126dce7a")));
+        addPageItem(
+                Page.TEMPLATES,
+                InventoryUtils.createSkull(
+                        messages.getString("create_templates", player),
+                        Profileable.detect("d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c")));
 
         switch (currentPage) {
             case PREDEFINED -> populatePredefined(player);
@@ -116,12 +130,29 @@ public class CreateMenu extends PaginatedMenu {
         plugin.getMenuItems().addGlassPane(player, getInventory(), 30);
         plugin.getMenuItems().addGlassPane(player, getInventory(), 32);
         plugin.getMenuItems().addGlassPane(player, getInventory(), 33);
-        getInventory().setItem(31, InventoryUtils.createSkull(messages.getString("create_generators_create_world", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716")));
+        getInventory()
+                .setItem(
+                        31,
+                        InventoryUtils.createSkull(
+                                messages.getString("create_generators_create_world", player),
+                                Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716")));
     }
 
     private void populateTemplates(Player player) {
-        getInventory().setItem(28, InventoryUtils.createSkull(messages.getString("gui_previous_page", player), Profileable.detect("f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2")));
-        getInventory().setItem(34, InventoryUtils.createSkull(messages.getString("gui_next_page", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158")));
+        getInventory()
+                .setItem(
+                        28,
+                        InventoryUtils.createSkull(
+                                messages.getString("gui_previous_page", player),
+                                Profileable.detect(
+                                        "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2")));
+        getInventory()
+                .setItem(
+                        34,
+                        InventoryUtils.createSkull(
+                                messages.getString("gui_next_page", player),
+                                Profileable.detect(
+                                        "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158")));
 
         File[] templateFiles = FileUtils.resolve(plugin.getDataFolder(), "templates")
                 .toFile()
@@ -132,7 +163,8 @@ public class CreateMenu extends PaginatedMenu {
         plugin.getMenuItems().fillRange(player, getInventory(), 29, 34);
 
         if (numTemplates == 0) {
-            ItemStack barrier = InventoryUtils.createItem(XMaterial.BARRIER, messages.getString("create_no_templates", player));
+            ItemStack barrier =
+                    InventoryUtils.createItem(XMaterial.BARRIER, messages.getString("create_no_templates", player));
             for (int i = 29; i <= 33; i++) {
                 getInventory().setItem(i, barrier);
             }
@@ -145,11 +177,15 @@ public class CreateMenu extends PaginatedMenu {
 
         int startIndex = page() * MAX_TEMPLATES;
         for (int i = 0; i < MAX_TEMPLATES && startIndex + i < templateFiles.length; i++) {
-            getInventory().setItem(29 + i, InventoryUtils.createItem(XMaterial.FILLED_MAP,
-                    messages.getString("create_template", player,
-                            Map.entry("%template%", templateFiles[startIndex + i].getName())
-                    )
-            ));
+            getInventory()
+                    .setItem(
+                            29 + i,
+                            InventoryUtils.createItem(
+                                    XMaterial.FILLED_MAP,
+                                    messages.getString(
+                                            "create_template",
+                                            player,
+                                            Map.entry("%template%", templateFiles[startIndex + i].getName()))));
         }
     }
 
@@ -169,16 +205,19 @@ public class CreateMenu extends PaginatedMenu {
 
         switch (currentPage) {
             case PREDEFINED: {
-                BuildWorldType worldType = switch (slot) {
-                    case 29 -> BuildWorldType.NORMAL;
-                    case 30 -> BuildWorldType.FLAT;
-                    case 31 -> BuildWorldType.NETHER;
-                    case 32 -> BuildWorldType.END;
-                    case 33 -> BuildWorldType.VOID;
-                    default -> null;
-                };
+                BuildWorldType worldType =
+                        switch (slot) {
+                            case 29 -> BuildWorldType.NORMAL;
+                            case 30 -> BuildWorldType.FLAT;
+                            case 31 -> BuildWorldType.NETHER;
+                            case 32 -> BuildWorldType.END;
+                            case 33 -> BuildWorldType.VOID;
+                            default -> null;
+                        };
 
-                if (worldType == null || !player.hasPermission("buildsystem.create.type." + worldType.name().toLowerCase(Locale.ROOT))) {
+                if (worldType == null
+                        || !player.hasPermission(
+                                "buildsystem.create.type." + worldType.name().toLowerCase(Locale.ROOT))) {
                     XSound.ENTITY_ITEM_BREAK.play(player);
                     return;
                 }
@@ -190,7 +229,8 @@ public class CreateMenu extends PaginatedMenu {
 
             case GENERATOR: {
                 if (slot == 31) {
-                    worldService.startWorldNameInput(player, BuildWorldType.CUSTOM, null, this.createPrivateWorld, this.folder);
+                    worldService.startWorldNameInput(
+                            player, BuildWorldType.CUSTOM, null, this.createPrivateWorld, this.folder);
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                 }
                 break;
@@ -205,7 +245,12 @@ public class CreateMenu extends PaginatedMenu {
                 XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
                 switch (xMaterial) {
                     case FILLED_MAP:
-                        this.worldService.startWorldNameInput(player, BuildWorldType.TEMPLATE, itemStack.getItemMeta().getDisplayName(), this.createPrivateWorld, this.folder);
+                        this.worldService.startWorldNameInput(
+                                player,
+                                BuildWorldType.TEMPLATE,
+                                itemStack.getItemMeta().getDisplayName(),
+                                this.createPrivateWorld,
+                                this.folder);
                         break;
                     case PLAYER_HEAD:
                         if (slot == 28) {

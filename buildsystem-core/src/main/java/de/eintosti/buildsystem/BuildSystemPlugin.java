@@ -19,17 +19,17 @@ package de.eintosti.buildsystem;
 
 import de.eintosti.buildsystem.api.BuildSystem;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
-import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
 import de.eintosti.buildsystem.command.CommandRegistrar;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.migration.ConfigMigrationManager;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.integration.Integrations;
 import de.eintosti.buildsystem.listener.ListenerRegistrar;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.navigator.NavigatorService;
+import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
@@ -41,11 +41,6 @@ import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.backup.BackupService;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
-import java.io.File;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.stream.Collectors;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.AdvancedPie;
 import org.bstats.charts.SimplePie;
@@ -55,6 +50,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
+
+import java.io.File;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.stream.Collectors;
 
 public class BuildSystemPlugin extends JavaPlugin {
 
@@ -121,17 +122,19 @@ public class BuildSystemPlugin extends JavaPlugin {
 
         registerStats();
 
-        this.configSaveTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this, this::saveBuildConfig, 6000L, 6000L); // Every 5 minutes
+        this.configSaveTask = Bukkit.getScheduler()
+                .runTaskTimerAsynchronously(this, this::saveBuildConfig, 6000L, 6000L); // Every 5 minutes
 
-        Bukkit.getConsoleSender().sendMessage(
-                "%sBuildSystem » Plugin %senabled%s!".formatted(ChatColor.RESET, ChatColor.GREEN, ChatColor.RESET)
-        );
+        Bukkit.getConsoleSender()
+                .sendMessage("%sBuildSystem » Plugin %senabled%s!"
+                        .formatted(ChatColor.RESET, ChatColor.GREEN, ChatColor.RESET));
     }
 
     @Override
     public void onDisable() {
         Bukkit.getOnlinePlayers().forEach(pl -> {
-            BuildPlayerImpl buildPlayer = BuildPlayerImpl.of(playerService.getPlayerStorage().getBuildPlayer(pl));
+            BuildPlayerImpl buildPlayer =
+                    BuildPlayerImpl.of(playerService.getPlayerStorage().getBuildPlayer(pl));
             buildPlayer.getCachedValues().resetCachedValues(pl);
             buildPlayer.setLogoutLocation(new LogoutLocation(pl.getWorld().getName(), pl.getLocation()));
 
@@ -158,10 +161,9 @@ public class BuildSystemPlugin extends JavaPlugin {
         this.integrations.deactivate();
         this.api.unregister();
 
-        Bukkit.getConsoleSender().sendMessage(
-                "%sBuildSystem » Plugin %sdisabled%s!".formatted(ChatColor.RESET, ChatColor.RED, ChatColor.RESET)
-        );
-
+        Bukkit.getConsoleSender()
+                .sendMessage("%sBuildSystem » Plugin %sdisabled%s!"
+                        .formatted(ChatColor.RESET, ChatColor.RED, ChatColor.RESET));
     }
 
     private void initClasses() {
@@ -181,25 +183,43 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     private void registerStats() {
         Metrics metrics = new Metrics(this, METRICS_ID);
-        metrics.addCustomChart(new SimplePie("archive_vanish", () -> String.valueOf(configService.current().settings().archive().vanish())));
-        metrics.addCustomChart(new SimplePie("block_world_edit", () -> String.valueOf(configService.current().settings().builder().blockWorldEditNonBuilder())));
-        metrics.addCustomChart(new SimplePie("join_quit_messages", () -> String.valueOf(configService.current().settings().joinQuitMessages())));
-        metrics.addCustomChart(new SimplePie("lock_weather", () -> String.valueOf(configService.current().world().lockWeather())));
-        metrics.addCustomChart(new SimplePie("scoreboard", () -> String.valueOf(configService.current().settings().scoreboard())));
-        metrics.addCustomChart(new SimplePie("update_checker", () -> String.valueOf(configService.current().settings().updateChecker())));
-        metrics.addCustomChart(new SimplePie("unload_worlds", () -> String.valueOf(configService.current().world().unload().enabled())));
+        metrics.addCustomChart(new SimplePie(
+                "archive_vanish",
+                () -> String.valueOf(
+                        configService.current().settings().archive().vanish())));
+        metrics.addCustomChart(new SimplePie(
+                "block_world_edit",
+                () -> String.valueOf(
+                        configService.current().settings().builder().blockWorldEditNonBuilder())));
+        metrics.addCustomChart(new SimplePie(
+                "join_quit_messages",
+                () -> String.valueOf(configService.current().settings().joinQuitMessages())));
+        metrics.addCustomChart(new SimplePie(
+                "lock_weather",
+                () -> String.valueOf(configService.current().world().lockWeather())));
+        metrics.addCustomChart(new SimplePie(
+                "scoreboard",
+                () -> String.valueOf(configService.current().settings().scoreboard())));
+        metrics.addCustomChart(new SimplePie(
+                "update_checker",
+                () -> String.valueOf(configService.current().settings().updateChecker())));
+        metrics.addCustomChart(new SimplePie(
+                "unload_worlds",
+                () -> String.valueOf(configService.current().world().unload().enabled())));
         metrics.addCustomChart(new AdvancedPie("navigator_type", () -> {
             Map<NavigatorType, Long> countsByType = playerService.getPlayerStorage().getBuildPlayers().stream()
                     .collect(Collectors.groupingBy(
-                            buildPlayer -> buildPlayer.getSettings().getNavigatorType(),
-                            Collectors.counting()
-                    ));
+                            buildPlayer -> buildPlayer.getSettings().getNavigatorType(), Collectors.counting()));
             int oldCount = countsByType.getOrDefault(NavigatorType.OLD, 0L).intValue();
             int newCount = countsByType.getOrDefault(NavigatorType.NEW, 0L).intValue();
             return Map.of("Old", oldCount, "New", newCount);
         }));
-        metrics.addCustomChart(new SimplePie("folder_override_permissions", () -> String.valueOf(configService.current().folder().overridePermissions())));
-        metrics.addCustomChart(new SimplePie("folder_override_projects", () -> String.valueOf(configService.current().folder().overrideProjects())));
+        metrics.addCustomChart(new SimplePie(
+                "folder_override_permissions",
+                () -> String.valueOf(configService.current().folder().overridePermissions())));
+        metrics.addCustomChart(new SimplePie(
+                "folder_override_projects",
+                () -> String.valueOf(configService.current().folder().overrideProjects())));
     }
 
     public UpdateChecker getUpdateChecker() {
@@ -213,26 +233,25 @@ public class BuildSystemPlugin extends JavaPlugin {
         }
 
         updateChecker.requestUpdateCheck().whenComplete((result, e) -> {
-                    if (result.requiresUpdate()) {
-                        Bukkit.getConsoleSender().sendMessage(
-                                ChatColor.YELLOW + "[BuildSystem] Great! a new update is available: "
-                                        + ChatColor.GREEN + "v" + result.getNewestVersion()
-                        );
-                        Bukkit.getConsoleSender().sendMessage(
-                                ChatColor.YELLOW + " ➥ Your current version: " +
-                                        ChatColor.RED + this.getDescription().getVersion()
-                        );
-                        return;
-                    }
+            if (result.requiresUpdate()) {
+                Bukkit.getConsoleSender()
+                        .sendMessage(ChatColor.YELLOW + "[BuildSystem] Great! a new update is available: "
+                                + ChatColor.GREEN + "v" + result.getNewestVersion());
+                Bukkit.getConsoleSender()
+                        .sendMessage(ChatColor.YELLOW + " ➥ Your current version: " + ChatColor.RED
+                                + this.getDescription().getVersion());
+                return;
+            }
 
-                    UpdateChecker.UpdateReason reason = result.getReason();
-                    switch (reason) {
-                        case COULD_NOT_CONNECT, INVALID_JSON, UNAUTHORIZED_QUERY, UNKNOWN_ERROR, UNSUPPORTED_VERSION_SCHEME -> Bukkit.getConsoleSender().sendMessage(
-                                ChatColor.RED + "[BuildSystem] Could not check for a new version of BuildSystem. Reason: " + reason
-                        );
-                    }
-                }
-        );
+            UpdateChecker.UpdateReason reason = result.getReason();
+            switch (reason) {
+                case COULD_NOT_CONNECT, INVALID_JSON, UNAUTHORIZED_QUERY, UNKNOWN_ERROR, UNSUPPORTED_VERSION_SCHEME ->
+                    Bukkit.getConsoleSender()
+                            .sendMessage(ChatColor.RED
+                                    + "[BuildSystem] Could not check for a new version of BuildSystem. Reason: "
+                                    + reason);
+            }
+        });
     }
 
     private void createTemplateFolder() {

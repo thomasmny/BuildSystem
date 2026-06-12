@@ -19,8 +19,8 @@ package de.eintosti.buildsystem.menu;
 
 import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.profiles.objects.Profileable;
 import com.cryptomorin.xseries.profiles.builder.XSkull;
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -28,9 +28,6 @@ import de.eintosti.buildsystem.api.world.display.Displayable.DisplayableType;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.settings.SettingsService;
-import java.util.List;
-import java.util.OptionalInt;
-import java.util.stream.IntStream;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -46,6 +43,10 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.List;
+import java.util.OptionalInt;
+import java.util.stream.IntStream;
 
 /**
  * Builds and inspects stateful menu items. Holds the dependencies the item builders need (config, messages, settings) so menus do not reach for the plugin singleton. Pure,
@@ -63,7 +64,8 @@ public final class MenuItems {
     public final NamespacedKey displayableTypeKey;
     public final NamespacedKey navigatorKey;
 
-    public MenuItems(JavaPlugin plugin, ConfigService configService, Messages messages, SettingsService settingsService) {
+    public MenuItems(
+            JavaPlugin plugin, ConfigService configService, Messages messages, SettingsService settingsService) {
         this.plugin = plugin;
         this.configService = configService;
         this.messages = messages;
@@ -106,7 +108,8 @@ public final class MenuItems {
      * @param displayName The display name of the item
      * @param lore        The lore of the item
      */
-    public void addWorldItem(Inventory inventory, int slot, BuildWorld buildWorld, String displayName, List<String> lore) {
+    public void addWorldItem(
+            Inventory inventory, int slot, BuildWorld buildWorld, String displayName, List<String> lore) {
         XMaterial material = buildWorld.getData().material().get();
         if (material != XMaterial.PLAYER_HEAD) {
             inventory.setItem(slot, InventoryUtils.createItem(material, displayName, lore));
@@ -120,10 +123,10 @@ public final class MenuItems {
 
         // Then try to set texture asynchronously
         XSkull.createItem()
-                .profile(buildWorld.getData().privateWorld().get()
-                        ? buildWorld.asProfilable()
-                        : Profileable.username(buildWorld.getName())
-                )
+                .profile(
+                        buildWorld.getData().privateWorld().get()
+                                ? buildWorld.asProfilable()
+                                : Profileable.username(buildWorld.getName()))
                 .fallback(buildWorld.asProfilable())
                 .lenient()
                 .applyAsync()
@@ -152,7 +155,9 @@ public final class MenuItems {
      * @return true if the item is a navigator, false otherwise
      */
     public boolean isNavigator(@Nullable ItemStack itemStack) {
-        if (itemStack == null || itemStack.getType() != configService.current().settings().navigator().item().get()) {
+        if (itemStack == null
+                || itemStack.getType()
+                        != configService.current().settings().navigator().item().get()) {
             return false;
         }
 
@@ -161,12 +166,14 @@ public final class MenuItems {
             return false;
         }
 
-        return Boolean.TRUE.equals(itemStack.getItemMeta().getPersistentDataContainer().get(navigatorKey, PersistentDataType.BOOLEAN));
+        return Boolean.TRUE.equals(
+                itemStack.getItemMeta().getPersistentDataContainer().get(navigatorKey, PersistentDataType.BOOLEAN));
     }
 
     @Contract("_ -> new")
     public ItemStack createNavigatorItem(Player player) {
-        ItemStack itemStack = InventoryUtils.createItem(configService.current().settings().navigator().item(), messages.getString("navigator_item", player));
+        ItemStack itemStack = InventoryUtils.createItem(
+                configService.current().settings().navigator().item(), messages.getString("navigator_item", player));
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta == null) {
             return itemStack;
@@ -255,7 +262,14 @@ public final class MenuItems {
      * @param displayNameKey The message key for the display name
      * @param loreKey        The message key for the lore
      */
-    public void addToggleItem(Player player, Inventory inventory, int slot, XMaterial material, boolean enabled, String displayNameKey, String loreKey) {
+    public void addToggleItem(
+            Player player,
+            Inventory inventory,
+            int slot,
+            XMaterial material,
+            boolean enabled,
+            String displayNameKey,
+            String loreKey) {
         ItemStack itemStack = material.parseItem();
         ItemMeta itemMeta = itemStack.getItemMeta();
 

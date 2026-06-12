@@ -17,21 +17,21 @@
  */
 package de.eintosti.buildsystem.protection;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import de.eintosti.buildsystem.api.data.Type;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
-import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @NullMarked
 class WorldProtectionPolicyTest {

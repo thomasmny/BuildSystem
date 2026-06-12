@@ -24,8 +24,8 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public final class DirectionUtil {
 
-    public static final BlockFace[] BLOCK_SIDES = new BlockFace[]{
-            BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN
+    public static final BlockFace[] BLOCK_SIDES = new BlockFace[] {
+        BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN
     };
 
     public static BlockFace getPlayerDirection(Player player) {
@@ -92,6 +92,5 @@ public final class DirectionUtil {
             case 11, 12, 13, 14 -> BlockFace.WEST;
             default -> BlockFace.NORTH;
         };
-
     }
 }

@@ -20,15 +20,16 @@ package de.eintosti.buildsystem.storage.yaml;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.world.display.CustomizableIcons.IconType;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class YamlSetupStorage extends AbstractYamlStorage {
@@ -38,7 +39,8 @@ public class YamlSetupStorage extends AbstractYamlStorage {
     }
 
     public <T extends Enum<?>> void saveIcons(IconType iconType, Map<T, XMaterial> typeIcons) {
-        typeIcons.forEach((type, material) -> getFile().set("setup." + iconType.getKey() + "." + type.name().toLowerCase(Locale.ROOT), material.name()));
+        typeIcons.forEach((type, material) -> getFile()
+                .set("setup." + iconType.getKey() + "." + type.name().toLowerCase(Locale.ROOT), material.name()));
         saveFile();
     }
 
@@ -47,8 +49,7 @@ public class YamlSetupStorage extends AbstractYamlStorage {
         saveFile();
     }
 
-    @Nullable
-    public <T> Map<T, XMaterial> loadIcons(IconType iconType, Function<String, T> mapper) {
+    @Nullable public <T> Map<T, XMaterial> loadIcons(IconType iconType, Function<String, T> mapper) {
         FileConfiguration configuration = getFile();
         if (configuration == null) {
             return null;

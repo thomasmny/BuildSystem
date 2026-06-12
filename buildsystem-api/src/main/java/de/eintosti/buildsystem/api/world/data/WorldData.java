@@ -21,11 +21,12 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.data.Type;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
-import java.util.Map;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.Map;
 
 /**
  * Manages and provides access to various data points and settings for a {@link BuildWorld}. This interface allows for reading and modifying world-specific configurations.
@@ -48,8 +49,7 @@ public interface WorldData {
      *
      * @return The custom spawn as a location, or {@code null} if not set or invalid
      */
-    @Nullable
-    Location getCustomSpawnLocation();
+    @Nullable Location getCustomSpawnLocation();
 
     /**
      * Retrieves a {@link Type} object representing the permission required to enter the {@link BuildWorld}. Returns "-" if no specific permission is required.

@@ -36,6 +36,7 @@ public abstract class AbstractBackupStorage implements BackupStorage {
 
     @Nullable
     protected final BuildSystemPlugin plugin;
+
     protected final Logger logger;
     private final Executor executor;
 
@@ -56,44 +57,46 @@ public abstract class AbstractBackupStorage implements BackupStorage {
     }
 
     protected void logDuration(BuildWorld buildWorld, long startTimestamp) {
-        logger.info("Backed up world '%s'. Took %sms".formatted(
-                buildWorld.getName(), System.currentTimeMillis() - startTimestamp
-        ));
+        logger.info("Backed up world '%s'. Took %sms"
+                .formatted(buildWorld.getName(), System.currentTimeMillis() - startTimestamp));
     }
 
     /**
      * Runs {@code supplier} on the backup executor; wraps IOException in RuntimeException.
      */
     protected <T> CompletableFuture<T> supply(String operation, IoSupplier<T> supplier) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                return supplier.get();
-            } catch (IOException e) {
-                onIoFailure();
-                throw new RuntimeException("Failed to " + operation, e);
-            }
-        }, executor);
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        return supplier.get();
+                    } catch (IOException e) {
+                        onIoFailure();
+                        throw new RuntimeException("Failed to " + operation, e);
+                    }
+                },
+                executor);
     }
 
     /**
      * Runs {@code task} on the backup executor; wraps IOException in RuntimeException.
      */
     protected CompletableFuture<Void> run(String operation, IoRunnable task) {
-        return CompletableFuture.runAsync(() -> {
-            try {
-                task.run();
-            } catch (IOException e) {
-                onIoFailure();
-                throw new RuntimeException("Failed to " + operation, e);
-            }
-        }, executor);
+        return CompletableFuture.runAsync(
+                () -> {
+                    try {
+                        task.run();
+                    } catch (IOException e) {
+                        onIoFailure();
+                        throw new RuntimeException("Failed to " + operation, e);
+                    }
+                },
+                executor);
     }
 
     /**
      * Called on any IOException caught by the template scaffolding. Override to perform cleanup (e.g. SFTP subclass calls {@code disconnectAll()}).
      */
-    protected void onIoFailure() {
-    }
+    protected void onIoFailure() {}
 
     @Override
     public final CompletableFuture<List<Backup>> listBackups(BuildWorld buildWorld) {

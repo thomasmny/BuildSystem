@@ -17,9 +17,10 @@
  */
 package de.eintosti.buildsystem.util;
 
-import java.util.Arrays;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.Arrays;
 
 @NullMarked
 public final class StringCleaner {
@@ -27,11 +28,11 @@ public final class StringCleaner {
     public static final String INVALID_NAME_CHARACTERS = "[^A-Za-z\\d/_-]";
     public static final String DEFAULT_INVALID_CHARACTERS = "^\b$";
 
-    private StringCleaner() {
-    }
+    private StringCleaner() {}
 
     public static boolean hasInvalidNameCharacters(String input, String configuredPattern) {
-        return Arrays.stream(input.split("")).anyMatch(c -> c.matches(INVALID_NAME_CHARACTERS) || c.matches(configuredPattern));
+        return Arrays.stream(input.split(""))
+                .anyMatch(c -> c.matches(INVALID_NAME_CHARACTERS) || c.matches(configuredPattern));
     }
 
     @Nullable
@@ -43,8 +44,7 @@ public final class StringCleaner {
     }
 
     public static String sanitize(String input, String configuredPattern) {
-        return input
-                .replaceAll(INVALID_NAME_CHARACTERS, "")
+        return input.replaceAll(INVALID_NAME_CHARACTERS, "")
                 .replaceAll(configuredPattern, "")
                 .replace(" ", "_")
                 .trim();

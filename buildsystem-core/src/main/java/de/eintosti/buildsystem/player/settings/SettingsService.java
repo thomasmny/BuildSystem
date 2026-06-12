@@ -25,16 +25,17 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import fr.mrmicky.fastboard.FastBoard;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @NullMarked
 public class SettingsService {
@@ -54,7 +55,10 @@ public class SettingsService {
     }
 
     public Settings getSettings(Player player) {
-        return plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player).getSettings();
+        return plugin.getPlayerService()
+                .getPlayerStorage()
+                .getBuildPlayer(player)
+                .getSettings();
     }
 
     /**
@@ -77,7 +81,8 @@ public class SettingsService {
         }
 
         board.updateTitle(plugin.getMessages().getString("title", player));
-        BukkitTask scoreboardTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> updateScoreboard(player, board), 0L, 20L);
+        BukkitTask scoreboardTask = Bukkit.getScheduler()
+                .runTaskTimerAsynchronously(plugin, () -> updateScoreboard(player, board), 0L, 20L);
         this.scoreboardTasks.put(player.getUniqueId(), scoreboardTask);
     }
 
@@ -128,26 +133,28 @@ public class SettingsService {
             WorldData worldData = buildWorld.getData();
             Builders builders = buildWorld.getBuilders();
 
-            status = plugin.getMessages().getString(Messages.getMessageKey(worldData.status().get()), player);
+            status = plugin.getMessages()
+                    .getString(Messages.getMessageKey(worldData.status().get()), player);
             permission = worldData.permission().get();
             project = worldData.project().get();
             creator = builders.hasCreator() ? builders.getCreator().getName() : "-";
             creation = plugin.getMessages().formatDate(buildWorld.getCreation());
             lastEdited = plugin.getMessages().formatDate(worldData.lastEdited().get());
             lastLoaded = plugin.getMessages().formatDate(worldData.lastLoaded().get());
-            lastUnloaded = plugin.getMessages().formatDate(worldData.lastUnloaded().get());
+            lastUnloaded =
+                    plugin.getMessages().formatDate(worldData.lastUnloaded().get());
         }
 
-        return new Map.Entry[]{
-                Map.entry("%world%", worldName),
-                Map.entry("%status%", status),
-                Map.entry("%permission%", permission),
-                Map.entry("%project%", project),
-                Map.entry("%creator%", creator),
-                Map.entry("%creation%", creation),
-                Map.entry("%lastedited%", lastEdited),
-                Map.entry("%lastloaded%", lastLoaded),
-                Map.entry("%lastunloaded%", lastUnloaded)
+        return new Map.Entry[] {
+            Map.entry("%world%", worldName),
+            Map.entry("%status%", status),
+            Map.entry("%permission%", permission),
+            Map.entry("%project%", project),
+            Map.entry("%creator%", creator),
+            Map.entry("%creation%", creation),
+            Map.entry("%lastedited%", lastEdited),
+            Map.entry("%lastloaded%", lastLoaded),
+            Map.entry("%lastunloaded%", lastUnloaded)
         };
     }
 
@@ -179,7 +186,8 @@ public class SettingsService {
     }
 
     public void forceUpdateSidebar(Player player) {
-        if (!plugin.getConfigService().current().settings().scoreboard() || !getSettings(player).isScoreboard()) {
+        if (!plugin.getConfigService().current().settings().scoreboard()
+                || !getSettings(player).isScoreboard()) {
             return;
         }
         updateScoreboard(player);

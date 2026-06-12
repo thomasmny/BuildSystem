@@ -63,7 +63,8 @@ public class SlabListener implements Listener {
         }
 
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld().getName());
-        if (buildWorld != null && policy.mayModify(player, buildWorld, buildWorld.getData().blockPlacement()) != Denial.NONE) {
+        if (buildWorld != null
+                && policy.mayModify(player, buildWorld, buildWorld.getData().blockPlacement()) != Denial.NONE) {
             return;
         }
 

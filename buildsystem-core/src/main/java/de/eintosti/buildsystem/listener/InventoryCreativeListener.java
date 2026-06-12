@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
-import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -29,6 +28,8 @@ import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.List;
 
 @NullMarked
 public class InventoryCreativeListener implements Listener {
@@ -43,17 +44,21 @@ public class InventoryCreativeListener implements Listener {
     public void onClearInventory(InventoryCreativeEvent event) {
         if (event.getClick() != ClickType.CREATIVE
                 || event.getSlotType() != InventoryType.SlotType.QUICKBAR
-                || event.getAction() != InventoryAction.PLACE_ALL
-        ) {
+                || event.getAction() != InventoryAction.PLACE_ALL) {
             return;
         }
 
         Player player = (Player) event.getWhoClicked();
         List<Integer> navigatorSlots = plugin.getMenuItems().getNavigatorSlots(player);
 
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            PlayerInventoryClearEvent playerInventoryClearEvent = new PlayerInventoryClearEvent(player, navigatorSlots);
-            Bukkit.getServer().getPluginManager().callEvent(playerInventoryClearEvent);
-        }, 2L);
+        Bukkit.getScheduler()
+                .runTaskLater(
+                        plugin,
+                        () -> {
+                            PlayerInventoryClearEvent playerInventoryClearEvent =
+                                    new PlayerInventoryClearEvent(player, navigatorSlots);
+                            Bukkit.getServer().getPluginManager().callEvent(playerInventoryClearEvent);
+                        },
+                        2L);
     }
 }

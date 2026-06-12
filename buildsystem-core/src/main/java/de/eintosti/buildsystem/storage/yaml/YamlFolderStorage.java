@@ -25,20 +25,6 @@ import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -46,6 +32,14 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 @NullMarked
 public class YamlFolderStorage extends FolderStorageImpl {
@@ -95,7 +89,8 @@ public class YamlFolderStorage extends FolderStorageImpl {
         serializedFolder.put("material", folder.getIcon().name());
         serializedFolder.put("permission", folder.getPermission());
         serializedFolder.put("project", folder.getProject());
-        serializedFolder.put("worlds", folder.getWorldUUIDs().stream().map(UUID::toString).toList());
+        serializedFolder.put(
+                "worlds", folder.getWorldUUIDs().stream().map(UUID::toString).toList());
 
         return serializedFolder;
     }
@@ -152,14 +147,19 @@ public class YamlFolderStorage extends FolderStorageImpl {
     private Folder loadFolder(String folderName) {
         final String path = FOLDERS_KEY + "." + folderName;
 
-        Builder creator = Objects.requireNonNull(Builder.deserialize(config.getString(path + ".creator")), "Creator cannot be null for folder: " + folderName);
+        Builder creator = Objects.requireNonNull(
+                Builder.deserialize(config.getString(path + ".creator")),
+                "Creator cannot be null for folder: " + folderName);
         long creation = config.getLong(path + ".creation", System.currentTimeMillis());
         NavigatorCategory category = NavigatorCategory.valueOf(config.getString(path + ".category"));
         XMaterial defaultMaterial = XMaterial.CHEST;
-        XMaterial material = XMaterial.matchXMaterial(config.getString(path + ".material", defaultMaterial.name())).orElse(defaultMaterial);
+        XMaterial material = XMaterial.matchXMaterial(config.getString(path + ".material", defaultMaterial.name()))
+                .orElse(defaultMaterial);
         String permission = config.getString(path + ".permission", "-");
         String project = config.getString(path + ".project", "-");
-        List<UUID> worlds = config.getStringList(path + ".worlds").stream().map(UUID::fromString).toList();
+        List<UUID> worlds = config.getStringList(path + ".worlds").stream()
+                .map(UUID::fromString)
+                .toList();
 
         return new FolderImpl(
                 plugin,
@@ -172,8 +172,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
                 permission,
                 project,
                 worlds,
-                new ArrayList<>()
-        );
+                new ArrayList<>());
     }
 
     @Override

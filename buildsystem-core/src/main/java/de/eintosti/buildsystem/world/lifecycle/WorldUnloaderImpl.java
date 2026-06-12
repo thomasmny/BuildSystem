@@ -22,8 +22,6 @@ import de.eintosti.buildsystem.api.event.world.BuildWorldPostUnloadEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldUnloadEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldUnloader;
-import java.util.Arrays;
-import java.util.Objects;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -33,6 +31,9 @@ import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 @NullMarked
 public class WorldUnloaderImpl implements WorldUnloader {
 
@@ -40,6 +41,7 @@ public class WorldUnloaderImpl implements WorldUnloader {
     private final BuildWorld buildWorld;
 
     private final long secondsUntilUnload;
+
     @Nullable
     private BukkitTask unloadTask;
 
@@ -47,7 +49,8 @@ public class WorldUnloaderImpl implements WorldUnloader {
         this.plugin = plugin;
         this.buildWorld = buildWorld;
 
-        this.secondsUntilUnload = calculateSecondsUntilUnload(plugin.getConfigService().current().world().unload().timeUntilUnload());
+        this.secondsUntilUnload = calculateSecondsUntilUnload(
+                plugin.getConfigService().current().world().unload().timeUntilUnload());
     }
 
     private long calculateSecondsUntilUnload(String timeString) {
@@ -108,7 +111,13 @@ public class WorldUnloaderImpl implements WorldUnloader {
             return;
         }
 
-        if (plugin.getConfigService().current().world().unload().blacklistedWorlds().contains(buildWorld.getName()) || isSpawnWorld(bukkitWorld)) {
+        if (plugin.getConfigService()
+                        .current()
+                        .world()
+                        .unload()
+                        .blacklistedWorlds()
+                        .contains(buildWorld.getName())
+                || isSpawnWorld(bukkitWorld)) {
             return;
         }
 
@@ -138,7 +147,9 @@ public class WorldUnloaderImpl implements WorldUnloader {
         }
 
         if (!Bukkit.unloadWorld(bukkitWorld, save)) {
-            plugin.getLogger().warning("Failed to unload world \"" + this.buildWorld.getName() + "\". It may still be loaded in memory.");
+            plugin.getLogger()
+                    .warning("Failed to unload world \"" + this.buildWorld.getName()
+                            + "\". It may still be loaded in memory.");
             return;
         }
 
@@ -155,4 +166,4 @@ public class WorldUnloaderImpl implements WorldUnloader {
         }
         return Objects.equals(spawn.getWorld(), bukkitWorld);
     }
-} 
+}

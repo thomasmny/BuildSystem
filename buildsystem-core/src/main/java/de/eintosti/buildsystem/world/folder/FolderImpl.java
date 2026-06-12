@@ -20,21 +20,18 @@ package de.eintosti.buildsystem.world.folder;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.*;
 
 @NullMarked
 public class FolderImpl implements Folder {
@@ -47,14 +44,30 @@ public class FolderImpl implements Folder {
     private final List<UUID> worlds;
     private final List<Folder> subfolders;
 
-    @Nullable
-    private Folder parent;
+    @Nullable private Folder parent;
+
     private XMaterial material;
     private String permission;
     private String project;
 
-    public FolderImpl(BuildSystemPlugin plugin, String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
-        this(plugin, name, System.currentTimeMillis(), category, parent, creator, XMaterial.CHEST, "-", "-", new ArrayList<>(), new ArrayList<>());
+    public FolderImpl(
+            BuildSystemPlugin plugin,
+            String name,
+            NavigatorCategory category,
+            @Nullable Folder parent,
+            Builder creator) {
+        this(
+                plugin,
+                name,
+                System.currentTimeMillis(),
+                category,
+                parent,
+                creator,
+                XMaterial.CHEST,
+                "-",
+                "-",
+                new ArrayList<>(),
+                new ArrayList<>());
     }
 
     public FolderImpl(
@@ -68,8 +81,7 @@ public class FolderImpl implements Folder {
             String permission,
             String project,
             List<UUID> worlds,
-            List<Folder> subfolders
-    ) {
+            List<Folder> subfolders) {
         this.plugin = plugin;
         this.name = name;
         this.creation = creation;
@@ -93,9 +105,7 @@ public class FolderImpl implements Folder {
 
     @Override
     public String getDisplayName(Player player) {
-        return plugin.getMessages().getString("folder_item_title", player,
-                Map.entry("%folder%", name)
-        );
+        return plugin.getMessages().getString("folder_item_title", player, Map.entry("%folder%", name));
     }
 
     @Override
@@ -121,11 +131,13 @@ public class FolderImpl implements Folder {
     @Override
     @Contract("_ -> new")
     public List<String> getLore(Player player) {
-        return new ArrayList<>(plugin.getMessages().getStringList("folder_item_lore", player,
-                Map.entry("%permission%", this.permission),
-                Map.entry("%project%", this.project),
-                Map.entry("%worlds%", String.valueOf(getWorldCount())))
-        );
+        return new ArrayList<>(plugin.getMessages()
+                .getStringList(
+                        "folder_item_lore",
+                        player,
+                        Map.entry("%permission%", this.permission),
+                        Map.entry("%project%", this.project),
+                        Map.entry("%worlds%", String.valueOf(getWorldCount()))));
     }
 
     @Override
@@ -134,15 +146,15 @@ public class FolderImpl implements Folder {
     }
 
     @Override
-    @Nullable
-    public Folder getParent() {
+    @Nullable public Folder getParent() {
         return this.parent;
     }
 
     @Override
     public void setParent(@Nullable Folder parent) {
         if (parent != null && this.category != parent.getCategory()) {
-            throw new IllegalArgumentException("Cannot set parent folder: category mismatch (expected: %s, found: %s)".formatted(this.category, parent.getCategory()));
+            throw new IllegalArgumentException("Cannot set parent folder: category mismatch (expected: %s, found: %s)"
+                    .formatted(this.category, parent.getCategory()));
         }
 
         if (parent != null && !parent.getSubFolders().contains(this)) {

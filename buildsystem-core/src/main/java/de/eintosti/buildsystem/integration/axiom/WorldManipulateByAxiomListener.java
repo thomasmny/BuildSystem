@@ -47,7 +47,8 @@ public class WorldManipulateByAxiomListener implements Listener {
         // I don't know if it is possible. Just to be safe.
         if (!event.getPlayer().getWorld().equals(event.getWorld())) {
             event.setCancelled(true);
-            throw new IllegalStateException("Player modifies a world in which he is not present! The event got cancelled for safety reasons.");
+            throw new IllegalStateException(
+                    "Player modifies a world in which he is not present! The event got cancelled for safety reasons.");
         }
         dispatcher.tryDispatchManipulationEvent(event.getPlayer(), event);
     }

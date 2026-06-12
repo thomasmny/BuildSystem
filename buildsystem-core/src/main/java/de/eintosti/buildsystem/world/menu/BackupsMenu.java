@@ -21,20 +21,21 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
-import de.eintosti.buildsystem.world.backup.BackupService;
+import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.util.StringUtils;
-import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.world.backup.BackupService;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.jspecify.annotations.NullMarked;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import org.bukkit.Material;
-import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class BackupsMenu extends Menu {
@@ -57,13 +58,25 @@ public class BackupsMenu extends Menu {
     protected void populate(Player player) {
         plugin.getMenuItems().fillRange(player, getInventory(), 0, 9);
 
-        getInventory().setItem(4, InventoryUtils.createItem(XMaterial.OAK_HANGING_SIGN,
-                messages.getString("backups_information_name", player),
-                messages.getStringList("backups_information_lore", player,
-                        Map.entry("%interval%", plugin.getConfigService().current().world().backup().autoBackup().interval() / 60),
-                        Map.entry("%remaining%", getDurationUntilBackup())
-                )
-        ));
+        getInventory()
+                .setItem(
+                        4,
+                        InventoryUtils.createItem(
+                                XMaterial.OAK_HANGING_SIGN,
+                                messages.getString("backups_information_name", player),
+                                messages.getStringList(
+                                        "backups_information_lore",
+                                        player,
+                                        Map.entry(
+                                                "%interval%",
+                                                plugin.getConfigService()
+                                                                .current()
+                                                                .world()
+                                                                .backup()
+                                                                .autoBackup()
+                                                                .interval()
+                                                        / 60),
+                                        Map.entry("%remaining%", getDurationUntilBackup()))));
 
         plugin.getMenuItems().fillRange(player, getInventory(), 27, 36);
 
@@ -81,17 +94,33 @@ public class BackupsMenu extends Menu {
             backups.addAll(loaded);
 
             for (int i = 0; i < loaded.size(); i++) {
-                getInventory().setItem(FIRST_BACKUP_SLOT + i, InventoryUtils.createItem(XMaterial.GRASS_BLOCK,
-                        messages.getString("backups_backup_name", player,
-                                Map.entry("%timestamp%", StringUtils.formatTime(loaded.get(i).creationTime(), plugin.getConfigService().current().settings().dateFormat()))
-                        )
-                ));
+                getInventory()
+                        .setItem(
+                                FIRST_BACKUP_SLOT + i,
+                                InventoryUtils.createItem(
+                                        XMaterial.GRASS_BLOCK,
+                                        messages.getString(
+                                                "backups_backup_name",
+                                                player,
+                                                Map.entry(
+                                                        "%timestamp%",
+                                                        StringUtils.formatTime(
+                                                                loaded.get(i).creationTime(),
+                                                                plugin.getConfigService()
+                                                                        .current()
+                                                                        .settings()
+                                                                        .dateFormat())))));
             }
         });
     }
 
     private String getDurationUntilBackup() {
-        int timeUntilBackup = plugin.getConfigService().current().world().backup().autoBackup().interval();
+        int timeUntilBackup = plugin.getConfigService()
+                .current()
+                .world()
+                .backup()
+                .autoBackup()
+                .interval();
         int timeSinceBackup = buildWorld.getData().timeSinceBackup().get();
 
         Date date = new Date((timeUntilBackup - timeSinceBackup) * 1000L);
@@ -110,7 +139,9 @@ public class BackupsMenu extends Menu {
         Player player = (Player) event.getWhoClicked();
 
         int slot = event.getSlot();
-        if (slot >= FIRST_BACKUP_SLOT && slot < FIRST_BACKUP_SLOT + 18 && itemStack.getType() == XMaterial.GRASS_BLOCK.get()) {
+        if (slot >= FIRST_BACKUP_SLOT
+                && slot < FIRST_BACKUP_SLOT + 18
+                && itemStack.getType() == XMaterial.GRASS_BLOCK.get()) {
             Backup backup = backups.get(slot - FIRST_BACKUP_SLOT);
             player.closeInventory();
             new BackupsConfirmationMenu(plugin, backup, player).open(player);

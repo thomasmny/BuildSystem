@@ -28,11 +28,7 @@ import de.eintosti.buildsystem.event.world.BuildWorldManipulationEvent;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
+import org.bukkit.event.*;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -53,7 +49,6 @@ public class WorldManipulateListener implements Listener {
         this.plugin = plugin;
         this.worldStorage = plugin.getWorldService().getWorldStorage();
         this.dispatcher = new EventDispatcher(worldStorage);
-
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -83,7 +78,14 @@ public class WorldManipulateListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(PlayerInteractEvent event) {
         ItemStack itemStack = event.getItem();
-        if (itemStack != null && itemStack.getType() == plugin.getConfigService().current().settings().builder().worldEditWand().get()) {
+        if (itemStack != null
+                && itemStack.getType()
+                        == plugin.getConfigService()
+                                .current()
+                                .settings()
+                                .builder()
+                                .worldEditWand()
+                                .get()) {
             return;
         }
 

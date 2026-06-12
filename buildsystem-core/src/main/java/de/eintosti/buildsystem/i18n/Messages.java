@@ -22,17 +22,6 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.util.color.ColorAPI;
-import java.io.File;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.function.Function;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -42,6 +31,14 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.io.File;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.function.Function;
 
 @NullMarked
 public final class Messages {
@@ -76,8 +73,8 @@ public final class Messages {
         YamlConfiguration userConfig = YamlConfiguration.loadConfiguration(file);
         java.io.InputStream defaultStream = plugin.getResource("messages.yml");
         if (defaultStream != null) {
-            YamlConfiguration defaults = YamlConfiguration.loadConfiguration(
-                    new InputStreamReader(defaultStream, StandardCharsets.UTF_8));
+            YamlConfiguration defaults =
+                    YamlConfiguration.loadConfiguration(new InputStreamReader(defaultStream, StandardCharsets.UTF_8));
             // 3. Copy missing keys from bundled defaults to user file
             boolean changed = false;
             for (String key : defaults.getKeys(false)) {
@@ -101,15 +98,17 @@ public final class Messages {
         if (section != null) {
             section.getKeys(false).forEach(key -> {
                 if (!userConfig.contains(key)) {
-                    Bukkit.getConsoleSender().sendMessage(
-                            ChatColor.RED + "[BuildSystem] Could not find message with key: " + key);
+                    Bukkit.getConsoleSender()
+                            .sendMessage(ChatColor.RED + "[BuildSystem] Could not find message with key: " + key);
                     return;
                 }
                 if (userConfig.isList(key)) {
                     map.put(key, String.join("\n", userConfig.getStringList(key)));
                 } else {
-                    map.put(key, Objects.requireNonNull(userConfig.getString(key),
-                            "Message key '%s' is null".formatted(key)));
+                    map.put(
+                            key,
+                            Objects.requireNonNull(
+                                    userConfig.getString(key), "Message key '%s' is null".formatted(key)));
                 }
             });
         }
@@ -168,12 +167,14 @@ public final class Messages {
     }
 
     @SafeVarargs
-    public final List<String> getStringList(String key, @Nullable Player player, Entry<String, Object>... placeholders) {
+    public final List<String> getStringList(
+            String key, @Nullable Player player, Entry<String, Object>... placeholders) {
         return getStringList(key, player, (line) -> placeholders);
     }
 
     @Unmodifiable
-    public List<String> getStringList(String key, @Nullable Player player, Function<String, Entry<String, Object>[]> placeholders) {
+    public List<String> getStringList(
+            String key, @Nullable Player player, Function<String, Entry<String, Object>[]> placeholders) {
         String message = messages.getOrDefault(key, "").replace("%prefix%", getPrefix());
         TextResolver resolver = this.placeholderResolver;
         return Arrays.stream(message.split("\n"))

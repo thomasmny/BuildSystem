@@ -27,16 +27,13 @@ import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.io.File;
+import java.util.*;
 
 @NullMarked
 public class ImportSubCommand implements SubCommand {
@@ -72,12 +69,15 @@ public class ImportSubCommand implements SubCommand {
             return;
         }
 
-        String invalidChar = StringCleaner.firstInvalidChar(worldName, plugin.getConfigService().current().world().invalidCharacters());
+        String invalidChar = StringCleaner.firstInvalidChar(
+                worldName, plugin.getConfigService().current().world().invalidCharacters());
         if (invalidChar != null) {
-            plugin.getMessages().sendMessage(player, "worlds_import_invalid_character",
-                    Map.entry("%world%", worldName),
-                    Map.entry("%char%", invalidChar)
-            );
+            plugin.getMessages()
+                    .sendMessage(
+                            player,
+                            "worlds_import_invalid_character",
+                            Map.entry("%world%", worldName),
+                            Map.entry("%char%", invalidChar));
             return;
         }
 
@@ -134,21 +134,33 @@ public class ImportSubCommand implements SubCommand {
         Generator resolvedGenerator = generator;
         String resolvedGeneratorName = generatorName;
         BuildWorldType resolvedWorldType = worldType;
-        plugin.getPlayerLookupService().lookupUniqueId(creatorName)
+        plugin.getPlayerLookupService()
+                .lookupUniqueId(creatorName)
                 .thenAccept(creatorId -> Bukkit.getScheduler().runTask(plugin, () -> {
                     if (creatorId == null) {
                         plugin.getMessages().sendMessage(player, "worlds_import_player_not_found");
                         return;
                     }
-                    startImport(player, worldName, Builder.of(creatorId, creatorName), resolvedWorldType, resolvedGenerator, resolvedGeneratorName);
+                    startImport(
+                            player,
+                            worldName,
+                            Builder.of(creatorId, creatorName),
+                            resolvedWorldType,
+                            resolvedGenerator,
+                            resolvedGeneratorName);
                 }));
     }
 
-    private void startImport(Player player, String worldName, @Nullable Builder creator, BuildWorldType worldType, Generator generator, String generatorName) {
-        plugin.getMessages().sendMessage(player, "worlds_import_started",
-                Map.entry("%world%", worldName)
-        );
-        if (plugin.getWorldService().importWorld(player, worldName, creator, worldType, generator, generatorName, true)) {
+    private void startImport(
+            Player player,
+            String worldName,
+            @Nullable Builder creator,
+            BuildWorldType worldType,
+            Generator generator,
+            String generatorName) {
+        plugin.getMessages().sendMessage(player, "worlds_import_started", Map.entry("%world%", worldName));
+        if (plugin.getWorldService()
+                .importWorld(player, worldName, creator, worldType, generator, generatorName, true)) {
             plugin.getMessages().sendMessage(player, "worlds_import_finished");
         }
     }
@@ -158,7 +170,8 @@ public class ImportSubCommand implements SubCommand {
         List<String> result = new ArrayList<>();
         if (args.length == 2) {
             String[] directories = Bukkit.getWorldContainer().list((dir, name) -> {
-                if (StringCleaner.hasInvalidNameCharacters(name, plugin.getConfigService().current().world().invalidCharacters())) {
+                if (StringCleaner.hasInvalidNameCharacters(
+                        name, plugin.getConfigService().current().world().invalidCharacters())) {
                     return false;
                 }
                 File worldFolder = new File(dir, name);
@@ -179,12 +192,16 @@ public class ImportSubCommand implements SubCommand {
         }
 
         Map<String, List<String>> flags = Map.of(
-                "-g", Arrays.stream(Generator.values())
-                        .filter(g -> g != Generator.CUSTOM)
-                        .map(Enum::name).toList(),
+                "-g",
+                        Arrays.stream(Generator.values())
+                                .filter(g -> g != Generator.CUSTOM)
+                                .map(Enum::name)
+                                .toList(),
                 "-c", List.of(),
-                "-t", Arrays.stream(de.eintosti.buildsystem.api.world.data.BuildWorldType.values()).map(Enum::name).toList()
-        );
+                "-t",
+                        Arrays.stream(de.eintosti.buildsystem.api.world.data.BuildWorldType.values())
+                                .map(Enum::name)
+                                .toList());
 
         if (args.length % 2 == 1) {
             flags.keySet().stream()

@@ -136,8 +136,7 @@ public interface BuildWorldCreator {
      *
      * @return The generated {@link World}, or {@code null} if generation failed
      */
-    @Nullable
-    default World generateBukkitWorld() {
+    @Nullable default World generateBukkitWorld() {
         return generateBukkitWorld(true);
     }
 
@@ -149,6 +148,5 @@ public interface BuildWorldCreator {
      * @param checkVersion If true, verify that the world's data version is compatible
      * @return The generated {@link World}, or {@code null} if generation failed
      */
-    @Nullable
-    World generateBukkitWorld(boolean checkVersion);
+    @Nullable World generateBukkitWorld(boolean checkVersion);
 }

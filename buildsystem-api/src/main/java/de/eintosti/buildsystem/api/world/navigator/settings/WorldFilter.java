@@ -18,8 +18,9 @@
 package de.eintosti.buildsystem.api.world.navigator.settings;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import java.util.function.Predicate;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.function.Predicate;
 
 /**
  * Interface for a world filter that restricts which {@link BuildWorld}s are shown to a user in the navigator.

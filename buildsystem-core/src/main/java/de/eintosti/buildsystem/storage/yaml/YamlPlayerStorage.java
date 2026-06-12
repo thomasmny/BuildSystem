@@ -31,17 +31,6 @@ import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.world.navigator.settings.WorldDisplayImpl;
 import de.eintosti.buildsystem.world.navigator.settings.WorldFilterImpl;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -49,6 +38,13 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 @NullMarked
 public class YamlPlayerStorage extends PlayerStorageImpl {
@@ -75,7 +71,8 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
     @Override
     public CompletableFuture<Void> save(Collection<BuildPlayer> players) {
         return CompletableFuture.runAsync(() -> {
-            players.forEach(player -> config.set(PLAYERS_KEY + "." + player.getUniqueId(), serializePlayer(BuildPlayerImpl.of(player))));
+            players.forEach(player ->
+                    config.set(PLAYERS_KEY + "." + player.getUniqueId(), serializePlayer(BuildPlayerImpl.of(player))));
             saveFile();
         });
     }
@@ -137,11 +134,8 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
 
     @Override
     public CompletableFuture<Collection<BuildPlayer>> load() {
-        return CompletableFuture.supplyAsync(() ->
-                loadPlayerKeys().stream()
-                        .map(this::loadPlayer)
-                        .collect(Collectors.toCollection(ArrayList::new))
-        );
+        return CompletableFuture.supplyAsync(
+                () -> loadPlayerKeys().stream().map(this::loadPlayer).collect(Collectors.toCollection(ArrayList::new)));
     }
 
     private Set<String> loadPlayerKeys() {
@@ -176,8 +170,7 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
         return buildPlayer;
     }
 
-    @Nullable
-    private LogoutLocation loadLogoutLocation(FileConfiguration configuration, String pathPrefix) {
+    @Nullable private LogoutLocation loadLogoutLocation(FileConfiguration configuration, String pathPrefix) {
         String location = configuration.getString(pathPrefix);
         if (location == null || location.trim().isEmpty()) {
             return null;
@@ -217,15 +210,29 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
         boolean trapDoor = configuration.getBoolean(pathPrefix + ".trapdoor", false);
 
         return new SettingsImpl(
-                navigatorType, glassColor, worldDisplay, clearInventory, disableInteract, hidePlayers, instantPlaceSigns,
-                keepNavigator, nightVision, noClip, placePlants, scoreboard, slabBreaking, spawnTeleport, trapDoor
-        );
+                navigatorType,
+                glassColor,
+                worldDisplay,
+                clearInventory,
+                disableInteract,
+                hidePlayers,
+                instantPlaceSigns,
+                keepNavigator,
+                nightVision,
+                noClip,
+                placePlants,
+                scoreboard,
+                slabBreaking,
+                spawnTeleport,
+                trapDoor);
     }
 
     @Contract("_, _ -> new")
     private WorldDisplay loadWorldDisplay(FileConfiguration configuration, String pathPrefix) {
-        WorldSort worldSort = WorldSort.matchWorldSort(configuration.getString(pathPrefix + ".sort", WorldSort.NEWEST_FIRST.name()));
-        WorldFilter.Mode filterMode = WorldFilterImpl.Mode.valueOf(configuration.getString(pathPrefix + ".filter.mode", WorldFilter.Mode.NONE.name()));
+        WorldSort worldSort =
+                WorldSort.matchWorldSort(configuration.getString(pathPrefix + ".sort", WorldSort.NEWEST_FIRST.name()));
+        WorldFilter.Mode filterMode = WorldFilterImpl.Mode.valueOf(
+                configuration.getString(pathPrefix + ".filter.mode", WorldFilter.Mode.NONE.name()));
         String filterText = configuration.getString(pathPrefix + ".filter.text", "");
         return new WorldDisplayImpl(worldSort, new WorldFilterImpl(filterMode, filterText));
     }

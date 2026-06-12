@@ -34,13 +34,15 @@ public class YamlSpawnStorage extends AbstractYamlStorage {
             return;
         }
 
-        getFile().set("spawn", location.getWorld().getName() + ":"
-                + location.getX() + ":"
-                + location.getY() + ":"
-                + location.getZ() + ":"
-                + location.getYaw() + ":"
-                + location.getPitch()
-        );
+        getFile()
+                .set(
+                        "spawn",
+                        location.getWorld().getName() + ":"
+                                + location.getX() + ":"
+                                + location.getY() + ":"
+                                + location.getZ() + ":"
+                                + location.getYaw() + ":"
+                                + location.getPitch());
         saveFile();
     }
 }

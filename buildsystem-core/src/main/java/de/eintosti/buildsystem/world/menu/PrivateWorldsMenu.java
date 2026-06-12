@@ -43,8 +43,7 @@ public class PrivateWorldsMenu extends CreatableWorldsMenu {
                 NavigatorCategory.PRIVATE,
                 plugin.getMessages().getString("private_title", player),
                 plugin.getMessages().getString("private_no_worlds", player),
-                Visibility.PRIVATE
-        );
+                Visibility.PRIVATE);
     }
 
     /**

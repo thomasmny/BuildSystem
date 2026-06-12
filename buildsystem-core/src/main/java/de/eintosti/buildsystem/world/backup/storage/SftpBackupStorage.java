@@ -68,12 +68,21 @@ public class SftpBackupStorage extends AbstractBackupStorage {
 
     @Nullable
     private volatile SshClient sshClient;
+
     @Nullable
     private volatile ClientSession clientSession;
+
     @Nullable
     private volatile SftpClient sftpClient;
 
-    public SftpBackupStorage(BuildSystemPlugin plugin, Executor executor, String host, int port, String username, String password, String remoteBasePath) {
+    public SftpBackupStorage(
+            BuildSystemPlugin plugin,
+            Executor executor,
+            String host,
+            int port,
+            String username,
+            String password,
+            String remoteBasePath) {
         super(plugin, executor);
 
         this.host = host;
@@ -113,7 +122,8 @@ public class SftpBackupStorage extends AbstractBackupStorage {
         }
 
         try {
-            clientSession = sshClient.connect(username, host, port)
+            clientSession = sshClient
+                    .connect(username, host, port)
                     .verify(CONNECTION_TIMEOUT.toMillis())
                     .getSession();
 
@@ -158,7 +168,8 @@ public class SftpBackupStorage extends AbstractBackupStorage {
 
     @Override
     protected synchronized List<Backup> doListBackups(BuildWorld buildWorld) throws IOException {
-        List<Backup> backups = new ArrayList<>(plugin.getConfigService().current().world().backup().maxBackupsPerWorld());
+        List<Backup> backups = new ArrayList<>(
+                plugin.getConfigService().current().world().backup().maxBackupsPerWorld());
         String backupDirectory = getBackupDirectory(buildWorld);
 
         SftpClient sftp = getSftpClient();
@@ -173,10 +184,7 @@ public class SftpBackupStorage extends AbstractBackupStorage {
                     .orElse(attributes.getModifyTime())
                     .toMillis();
             backups.add(new BackupImpl(
-                    plugin.getBackupService().getProfile(buildWorld),
-                    timestamp,
-                    backupDirectory + file.getFilename()
-            ));
+                    plugin.getBackupService().getProfile(buildWorld), timestamp, backupDirectory + file.getFilename()));
         }
 
         return backups;
@@ -194,10 +202,8 @@ public class SftpBackupStorage extends AbstractBackupStorage {
             SftpClient sftp = getSftpClient();
             createDirectoryIfNotExists(sftp, backupDirectory);
 
-            try (
-                    OutputStream out = sftp.write(remotePath);
-                    BufferedOutputStream bufferedOut = new BufferedOutputStream(out, BUFFER_SIZE)
-            ) {
+            try (OutputStream out = sftp.write(remotePath);
+                    BufferedOutputStream bufferedOut = new BufferedOutputStream(out, BUFFER_SIZE)) {
                 bufferedOut.write(zipBytes);
                 bufferedOut.flush();
             }
@@ -213,12 +219,10 @@ public class SftpBackupStorage extends AbstractBackupStorage {
             SftpClient sftp = getSftpClient();
             Path target = tmpDownloadPath.resolve(UUID.randomUUID() + ".zip");
 
-            try (
-                    InputStream in = sftp.read(backup.key());
+            try (InputStream in = sftp.read(backup.key());
                     BufferedInputStream bufferedIn = new BufferedInputStream(in, BUFFER_SIZE);
                     OutputStream out = Files.newOutputStream(target);
-                    BufferedOutputStream bufferedOut = new BufferedOutputStream(out, BUFFER_SIZE)
-            ) {
+                    BufferedOutputStream bufferedOut = new BufferedOutputStream(out, BUFFER_SIZE)) {
                 bufferedIn.transferTo(bufferedOut);
             }
 

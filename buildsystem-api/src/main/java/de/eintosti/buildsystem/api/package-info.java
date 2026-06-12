@@ -17,8 +17,7 @@
  */
 
 /**
- * The BuildSystem API — a programmatic interface for Minecraft (Spigot/Paper) plugins to
- * interact with BuildSystem's world management, player preferences and backup capabilities.
+ * The BuildSystem API — a programmatic interface for Minecraft (Spigot/Paper) plugins to interact with BuildSystem's world management, player preferences and backup capabilities.
  *
  * <h2>Getting started</h2>
  * <p>Obtain the API instance through Bukkit's {@link org.bukkit.plugin.ServicesManager}:</p>
@@ -52,11 +51,6 @@
  * <p>All packages are annotated {@code @NullMarked}. Return values that may be absent are
  * annotated {@code @Nullable}; parameters accept {@code null} only when annotated.
  * IDE null-analysis will surface misuse at compile time.</p>
- *
- * <h2>Stability</h2>
- * <p>This API is pre-1.0 — signatures may still change before the first stable release.
- * After that release, the deprecation protocol applies: members are never removed without
- * a {@code @Deprecated(forRemoval = true)} cycle spanning at least one major version.</p>
  *
  * @since 3.0.0
  */

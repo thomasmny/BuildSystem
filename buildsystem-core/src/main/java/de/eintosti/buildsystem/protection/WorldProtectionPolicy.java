@@ -27,10 +27,16 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public final class WorldProtectionPolicy {
 
-    public enum Denial {NONE, ARCHIVED, NOT_A_BUILDER, SETTING_DISABLED}
+    public enum Denial {
+        NONE,
+        ARCHIVED,
+        NOT_A_BUILDER,
+        SETTING_DISABLED
+    }
 
     public Denial checkArchive(Player player, BuildWorld world) {
-        if (world.getPermissions().canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.archive")) {
+        if (world.getPermissions().canBypassBuildRestriction(player)
+                || player.hasPermission("buildsystem.bypass.archive")) {
             return Denial.NONE;
         }
         if (world.getData().status().get() == BuildWorldStatus.ARCHIVE) {
@@ -40,7 +46,8 @@ public final class WorldProtectionPolicy {
     }
 
     public Denial checkBuilders(Player player, BuildWorld world) {
-        if (world.getPermissions().canBypassBuildRestriction(player) || player.hasPermission("buildsystem.bypass.builders")) {
+        if (world.getPermissions().canBypassBuildRestriction(player)
+                || player.hasPermission("buildsystem.bypass.builders")) {
             return Denial.NONE;
         }
         Builders builders = world.getBuilders();

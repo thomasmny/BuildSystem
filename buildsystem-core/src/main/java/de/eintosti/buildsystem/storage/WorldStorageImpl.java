@@ -24,16 +24,6 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -42,12 +32,20 @@ import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.io.File;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 @NullMarked
 public abstract class WorldStorageImpl implements WorldStorage {
 
     protected final Logger logger;
+
     @Nullable
     protected final BuildSystemPlugin plugin;
+
     @Nullable
     protected final WorldServiceImpl worldService;
 
@@ -155,7 +153,8 @@ public abstract class WorldStorageImpl implements WorldStorage {
     @Unmodifiable
     public List<BuildWorld> getBuildWorldsCreatedByPlayer(Player player, Visibility visibility) {
         return getBuildWorldsCreatedByPlayer(player).stream()
-                .filter(buildWorld -> isCorrectVisibility(buildWorld.getData().privateWorld().get(), visibility))
+                .filter(buildWorld ->
+                        isCorrectVisibility(buildWorld.getData().privateWorld().get(), visibility))
                 .toList();
     }
 
@@ -176,28 +175,33 @@ public abstract class WorldStorageImpl implements WorldStorage {
 
     public void loadWorlds() {
         load().thenAccept(worlds -> Bukkit.getScheduler().runTask(plugin, () -> {
-            worlds.forEach(this::addBuildWorld);
-            assignWorldsToFolders();
+                    worlds.forEach(this::addBuildWorld);
+                    assignWorldsToFolders();
 
-            boolean loadAllWorlds = !plugin.getConfigService().current().world().unload().enabled();
-            if (loadAllWorlds) {
-                logger.info("*** All worlds will be loaded now ***");
-            }
+                    boolean loadAllWorlds = !plugin.getConfigService()
+                            .current()
+                            .world()
+                            .unload()
+                            .enabled();
+                    if (loadAllWorlds) {
+                        logger.info("*** All worlds will be loaded now ***");
+                    }
 
-            List<BuildWorld> notLoaded = new ArrayList<>();
-            getBuildWorlds().forEach(buildWorld -> {
-                LoadResult loadResult = loadWorld(buildWorld, loadAllWorlds);
-                if (loadResult == LoadResult.FAILED) {
-                    notLoaded.add(buildWorld);
-                }
-            });
-            notLoaded.forEach(this::removeBuildWorld);
+                    List<BuildWorld> notLoaded = new ArrayList<>();
+                    getBuildWorlds().forEach(buildWorld -> {
+                        LoadResult loadResult = loadWorld(buildWorld, loadAllWorlds);
+                        if (loadResult == LoadResult.FAILED) {
+                            notLoaded.add(buildWorld);
+                        }
+                    });
+                    notLoaded.forEach(this::removeBuildWorld);
 
-            logger.info("Loaded " + worlds.size() + " worlds from storage");
-        })).exceptionally(throwable -> {
-            logger.log(Level.SEVERE, "Failed to load worlds from storage", throwable);
-            return null;
-        });
+                    logger.info("Loaded " + worlds.size() + " worlds from storage");
+                }))
+                .exceptionally(throwable -> {
+                    logger.log(Level.SEVERE, "Failed to load worlds from storage", throwable);
+                    return null;
+                });
     }
 
     /**
@@ -207,21 +211,21 @@ public abstract class WorldStorageImpl implements WorldStorage {
      */
     private void assignWorldsToFolders() {
         worldService.getFolderStorage().getFolders().forEach(folder -> {
-                    List<UUID> invalidWorlds = new ArrayList<>();
-                    folder.getWorldUUIDs().stream()
-                            .map(worldUUID -> {
-                                BuildWorld buildWorld = getBuildWorld(worldUUID);
-                                if (buildWorld == null) {
-                                    invalidWorlds.add(worldUUID);
-                                    logger.warning("World with UUID " + worldUUID + " does not exist. Removing from folder: " + folder.getName());
-                                }
-                                return buildWorld;
-                            })
-                            .filter(Objects::nonNull)
-                            .forEach(buildWorld -> buildWorld.setFolder(folder));
-                    invalidWorlds.forEach(folder::removeWorld);
-                }
-        );
+            List<UUID> invalidWorlds = new ArrayList<>();
+            folder.getWorldUUIDs().stream()
+                    .map(worldUUID -> {
+                        BuildWorld buildWorld = getBuildWorld(worldUUID);
+                        if (buildWorld == null) {
+                            invalidWorlds.add(worldUUID);
+                            logger.warning("World with UUID " + worldUUID + " does not exist. Removing from folder: "
+                                    + folder.getName());
+                        }
+                        return buildWorld;
+                    })
+                    .filter(Objects::nonNull)
+                    .forEach(buildWorld -> buildWorld.setFolder(folder));
+            invalidWorlds.forEach(folder::removeWorld);
+        });
     }
 
     /**
@@ -233,7 +237,13 @@ public abstract class WorldStorageImpl implements WorldStorage {
      */
     private LoadResult loadWorld(BuildWorld buildWorld, boolean alwaysLoad) {
         String worldName = buildWorld.getName();
-        boolean shouldPreLoad = alwaysLoad || plugin.getConfigService().current().world().unload().blacklistedWorlds().contains(worldName);
+        boolean shouldPreLoad = alwaysLoad
+                || plugin.getConfigService()
+                        .current()
+                        .world()
+                        .unload()
+                        .blacklistedWorlds()
+                        .contains(worldName);
         if (!shouldPreLoad) {
             return LoadResult.NOT_LOADED;
         }

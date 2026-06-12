@@ -18,20 +18,20 @@
 package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.api.player.BuildPlayer;
-import de.eintosti.buildsystem.player.BuildPlayerImpl;
-import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.player.BuildPlayerImpl;
+import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
-import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.UUID;
 
 @NullMarked
 public class AsyncPlayerPreLoginListener implements Listener {

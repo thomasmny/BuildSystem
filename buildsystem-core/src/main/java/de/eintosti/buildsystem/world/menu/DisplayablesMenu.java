@@ -36,24 +36,16 @@ import de.eintosti.buildsystem.api.world.navigator.settings.WorldFilter;
 import de.eintosti.buildsystem.api.world.navigator.settings.WorldFilter.Mode;
 import de.eintosti.buildsystem.api.world.navigator.settings.WorldSort;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
+import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
+import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.util.StringCleaner;
-import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
-import de.eintosti.buildsystem.world.menu.CreateMenu;
 import de.eintosti.buildsystem.world.menu.CreateMenu.Page;
-import de.eintosti.buildsystem.world.menu.EditMenu;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -66,6 +58,9 @@ import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.util.*;
+import java.util.function.Function;
+
 @NullMarked
 public abstract class DisplayablesMenu extends PaginatedMenu {
 
@@ -73,9 +68,12 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     private static final int FIRST_WORD_SLOT = 9;
     private static final int LAST_WORLD_SLOT = 44;
 
-    private static final String PREVIOUS_PAGE_SKULL_PROFILE = "86971dd881dbaf4fd6bcaa93614493c612f869641ed59d1c9363a3666a5fa6";
-    private static final String NEXT_PAGE_SKULL_PROFILE = "f32ca66056b72863e98f7f32bd7d94c7a0d796af691c9ac3a9136331352288f9";
-    private static final String NO_WORLDS_SKULL_PROFILE = "2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6";
+    private static final String PREVIOUS_PAGE_SKULL_PROFILE =
+            "86971dd881dbaf4fd6bcaa93614493c612f869641ed59d1c9363a3666a5fa6";
+    private static final String NEXT_PAGE_SKULL_PROFILE =
+            "f32ca66056b72863e98f7f32bd7d94c7a0d796af691c9ac3a9136331352288f9";
+    private static final String NO_WORLDS_SKULL_PROFILE =
+            "2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6";
 
     protected final BuildSystemPlugin plugin;
     protected final PlayerServiceImpl playerService;
@@ -87,6 +85,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     protected final NavigatorCategory category;
     protected final Visibility requiredVisibility;
     protected final Set<BuildWorldStatus> validStatuses;
+
     @Nullable
     private final String noWorldsMessage;
 
@@ -100,8 +99,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
             String inventoryTitle,
             @Nullable String noWorldsMessage,
             Visibility requiredVisibility,
-            Set<BuildWorldStatus> validStatuses
-    ) {
+            Set<BuildWorldStatus> validStatuses) {
         super(plugin.getMessages(), 54, inventoryTitle);
         this.plugin = plugin;
         this.playerService = plugin.getPlayerService();
@@ -130,8 +128,16 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         addWorldSortItem(inv);
         addWorldFilterItem(inv);
         addExtraItems(inv, player);
-        inv.setItem(52, InventoryUtils.createSkull(plugin.getMessages().getString("gui_previous_page", player), Profileable.detect(PREVIOUS_PAGE_SKULL_PROFILE)));
-        inv.setItem(53, InventoryUtils.createSkull(plugin.getMessages().getString("gui_next_page", player), Profileable.detect(NEXT_PAGE_SKULL_PROFILE)));
+        inv.setItem(
+                52,
+                InventoryUtils.createSkull(
+                        plugin.getMessages().getString("gui_previous_page", player),
+                        Profileable.detect(PREVIOUS_PAGE_SKULL_PROFILE)));
+        inv.setItem(
+                53,
+                InventoryUtils.createSkull(
+                        plugin.getMessages().getString("gui_next_page", player),
+                        Profileable.detect(NEXT_PAGE_SKULL_PROFILE)));
 
         for (int i = FIRST_WORD_SLOT; i <= LAST_WORLD_SLOT; i++) {
             inv.setItem(i, null);
@@ -153,8 +159,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         }
     }
 
-    protected void addExtraItems(Inventory inventory, Player player) {
-    }
+    protected void addExtraItems(Inventory inventory, Player player) {}
 
     protected List<Displayable> collectDisplayables() {
         WorldDisplay worldDisplay = settingsManager.getSettings(player).getWorldDisplay();
@@ -210,37 +215,46 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         Settings settings = settingsManager.getSettings(player);
         WorldSort worldSort = settings.getWorldDisplay().getWorldSort();
 
-        String messageKey = switch (worldSort) {
-            case NAME_A_TO_Z -> "world_sort_name_az";
-            case NAME_Z_TO_A -> "world_sort_name_za";
-            case PROJECT_A_TO_Z -> "world_sort_project_az";
-            case PROJECT_Z_TO_A -> "world_sort_project_za";
-            case STATUS_NOT_STARTED -> "world_sort_status_not_started";
-            case STATUS_FINISHED -> "world_sort_status_finished";
-            case NEWEST_FIRST -> "world_sort_date_newest";
-            case OLDEST_FIRST -> "world_sort_date_oldest";
-        };
+        String messageKey =
+                switch (worldSort) {
+                    case NAME_A_TO_Z -> "world_sort_name_az";
+                    case NAME_Z_TO_A -> "world_sort_name_za";
+                    case PROJECT_A_TO_Z -> "world_sort_project_az";
+                    case PROJECT_Z_TO_A -> "world_sort_project_za";
+                    case STATUS_NOT_STARTED -> "world_sort_status_not_started";
+                    case STATUS_FINISHED -> "world_sort_status_finished";
+                    case NEWEST_FIRST -> "world_sort_date_newest";
+                    case OLDEST_FIRST -> "world_sort_date_oldest";
+                };
 
-        inventory.setItem(45, InventoryUtils.createItem(XMaterial.BOOK, plugin.getMessages().getString("world_sort_title", player), plugin.getMessages()
-                .getString(messageKey, player)));
+        inventory.setItem(
+                45,
+                InventoryUtils.createItem(
+                        XMaterial.BOOK,
+                        plugin.getMessages().getString("world_sort_title", player),
+                        plugin.getMessages().getString(messageKey, player)));
     }
 
     private void addWorldFilterItem(Inventory inventory) {
         Settings settings = settingsManager.getSettings(player);
         WorldFilter worldFilter = settings.getWorldDisplay().getWorldFilter();
 
-        String loreKey = switch (worldFilter.getMode()) {
-            case NONE -> "world_filter_mode_none";
-            case STARTS_WITH -> "world_filter_mode_starts_with";
-            case CONTAINS -> "world_filter_mode_contains";
-            case MATCHES -> "world_filter_mode_matches";
-        };
+        String loreKey =
+                switch (worldFilter.getMode()) {
+                    case NONE -> "world_filter_mode_none";
+                    case STARTS_WITH -> "world_filter_mode_starts_with";
+                    case CONTAINS -> "world_filter_mode_contains";
+                    case MATCHES -> "world_filter_mode_matches";
+                };
 
         List<String> lore = new ArrayList<>();
         lore.add(plugin.getMessages().getString(loreKey, player, Map.entry("%text%", worldFilter.getText())));
         lore.addAll(plugin.getMessages().getStringList("world_filter_lore", player));
 
-        inventory.setItem(46, InventoryUtils.createItem(XMaterial.HOPPER, plugin.getMessages().getString("world_filter_title", player), lore));
+        inventory.setItem(
+                46,
+                InventoryUtils.createItem(
+                        XMaterial.HOPPER, plugin.getMessages().getString("world_filter_title", player), lore));
     }
 
     @Override
@@ -257,7 +271,8 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
 
         switch (event.getSlot()) {
             case 45 -> {
-                Function<WorldSort, WorldSort> newSortFunction = event.isLeftClick() ? this::getNextSort : this::getPreviousSort;
+                Function<WorldSort, WorldSort> newSortFunction =
+                        event.isLeftClick() ? this::getNextSort : this::getPreviousSort;
                 worldDisplay.setWorldSort(newSortFunction.apply(worldDisplay.getWorldSort()));
                 resetPage();
                 open(player);
@@ -314,11 +329,13 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     private void beginFolderCreation(Player player) {
         player.closeInventory();
         new PlayerChatInput(plugin, player, "enter_folder_name", input -> {
-            if (StringCleaner.hasInvalidNameCharacters(input, plugin.getConfigService().current().world().invalidCharacters())) {
+            if (StringCleaner.hasInvalidNameCharacters(
+                    input, plugin.getConfigService().current().world().invalidCharacters())) {
                 plugin.getMessages().sendMessage(player, "worlds_folder_creation_invalid_characters");
             }
 
-            String sanitizedName = StringCleaner.sanitize(input, plugin.getConfigService().current().world().invalidCharacters());
+            String sanitizedName = StringCleaner.sanitize(
+                    input, plugin.getConfigService().current().world().invalidCharacters());
             if (sanitizedName.isEmpty()) {
                 plugin.getMessages().sendMessage(player, "worlds_folder_creation_name_bank");
                 return;
@@ -395,14 +412,16 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                     plugin.getLogger().warning("Unable to find folder with name: " + displayableName);
                     return;
                 }
-                new FolderContentMenu(plugin, player, category, folder, this, requiredVisibility, validStatuses).open(player);
+                new FolderContentMenu(plugin, player, category, folder, this, requiredVisibility, validStatuses)
+                        .open(player);
             }
         }
     }
 
     private void manageWorldItemClick(InventoryClickEvent event, BuildWorld buildWorld) {
         Player player = (Player) event.getWhoClicked();
-        if (event.isLeftClick() || !buildWorld.getPermissions().canPerformCommand(player, WorldsArgument.EDIT.getPermission())) {
+        if (event.isLeftClick()
+                || !buildWorld.getPermissions().canPerformCommand(player, WorldsArgument.EDIT.getPermission())) {
             plugin.getNavigatorService().closeNewNavigator(player);
             buildWorld.getTeleporter().teleport(player);
             return;

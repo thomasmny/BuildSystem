@@ -17,16 +17,16 @@
  */
 package de.eintosti.buildsystem.util;
 
+import org.jspecify.annotations.NullMarked;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public final class StringUtils {
 
-    private StringUtils() {
-    }
+    private StringUtils() {}
 
     /**
      * Formats a given time in milliseconds to a human-readable string.

@@ -70,8 +70,10 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
 
         this.worldName = name;
         this.difficulty = plugin.getConfigService().current().world().defaults().difficulty();
-        this.time = plugin.getConfigService().current().world().defaults().time().noon();
-        this.worldBorderSize = plugin.getConfigService().current().world().defaults().worldBorderSize();
+        this.time =
+                plugin.getConfigService().current().world().defaults().time().noon();
+        this.worldBorderSize =
+                plugin.getConfigService().current().world().defaults().worldBorderSize();
         this.versionGuard = new WorldDataVersionGuard(plugin.getLogger(), name);
     }
 
@@ -176,10 +178,12 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
     }
 
     private boolean createWorldFromGenerator(Player player) {
-        plugin.getMessages().sendMessage(player, "worlds_world_creation_started",
-                Map.entry("%world%", worldName),
-                Map.entry("%type%", plugin.getMessages().getString(Messages.getMessageKey(worldType), player))
-        );
+        plugin.getMessages()
+                .sendMessage(
+                        player,
+                        "worlds_world_creation_started",
+                        Map.entry("%world%", worldName),
+                        Map.entry("%type%", plugin.getMessages().getString(Messages.getMessageKey(worldType), player)));
         buildWorld = createAndRegisterBuildWorld(player);
         generateBukkitWorld(false);
         return true;
@@ -196,10 +200,12 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
             return false;
         }
 
-        plugin.getMessages().sendMessage(player, "worlds_template_creation_started",
-                Map.entry("%world%", worldName),
-                Map.entry("%template%", template)
-        );
+        plugin.getMessages()
+                .sendMessage(
+                        player,
+                        "worlds_template_creation_started",
+                        Map.entry("%world%", worldName),
+                        Map.entry("%template%", template));
 
         File worldFile = new File(Bukkit.getWorldContainer(), worldName);
         FileUtils.copy(templateFile, worldFile);
@@ -218,8 +224,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
                 creationDate,
                 isPrivate,
                 customGenerator,
-                folder
-        );
+                folder);
 
         if (folder != null) {
             folder.addWorld(bw);
@@ -237,7 +242,8 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
             throw new IllegalStateException("BuildWorld must be set before generating the Bukkit world.");
         }
         return new BukkitWorldFactory(plugin, worldName, worldType, customGenerator, difficulty, time, worldBorderSize)
-                .generate(checkVersion ? BukkitWorldFactory.VersionCheck.REQUIRED : BukkitWorldFactory.VersionCheck.SKIP);
+                .generate(
+                        checkVersion ? BukkitWorldFactory.VersionCheck.REQUIRED : BukkitWorldFactory.VersionCheck.SKIP);
     }
 
     public boolean isDataVersionTooHigh() {

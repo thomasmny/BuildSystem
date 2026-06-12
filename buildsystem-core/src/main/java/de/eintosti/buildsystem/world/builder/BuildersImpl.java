@@ -37,7 +37,7 @@ import org.jspecify.annotations.Nullable;
 public class BuildersImpl implements Builders {
 
     private final Messages messages;
-    
+
     private @Nullable Builder creator;
     private final Map<UUID, Builder> buildersByUuid;
 
@@ -48,8 +48,7 @@ public class BuildersImpl implements Builders {
     }
 
     @Override
-    @Nullable
-    public Builder getCreator() {
+    @Nullable public Builder getCreator() {
         return creator;
     }
 
@@ -74,17 +73,14 @@ public class BuildersImpl implements Builders {
     }
 
     @Override
-    @Nullable
-    public Builder getBuilder(UUID uuid) {
+    @Nullable public Builder getBuilder(UUID uuid) {
         return buildersByUuid.get(uuid);
     }
 
     @Override
     @Unmodifiable
     public List<String> getBuilderNames() {
-        return getAllBuilders().stream()
-                .map(Builder::getName)
-                .toList();
+        return getAllBuilders().stream().map(Builder::getName).toList();
     }
 
     @Override

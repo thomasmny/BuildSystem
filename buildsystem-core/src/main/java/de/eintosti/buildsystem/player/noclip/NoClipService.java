@@ -20,13 +20,6 @@ package de.eintosti.buildsystem.player.noclip;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -34,6 +27,8 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.*;
 
 @NullMarked
 public class NoClipService {
@@ -103,11 +98,11 @@ public class NoClipService {
                 playerLocation.clone().add(0, 0, -0.4),
                 playerLocation.clone().add(0, 1, 0.4),
                 playerLocation.clone().add(0, 1, -0.4),
-                playerLocation.clone().add(0, 1.9, 0)
-        );
+                playerLocation.clone().add(0, 1.9, 0));
 
         return locations.stream().anyMatch(location -> isSolidBlock(location.getBlock()))
-                || (player.isSneaking() && isSolidBlock(playerLocation.clone().add(0, -0.1, 0).getBlock()));
+                || (player.isSneaking()
+                        && isSolidBlock(playerLocation.clone().add(0, -0.1, 0).getBlock()));
     }
 
     private boolean isSolidBlock(Block block) {

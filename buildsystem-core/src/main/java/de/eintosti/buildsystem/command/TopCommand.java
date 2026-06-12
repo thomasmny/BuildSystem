@@ -52,19 +52,19 @@ public class TopCommand extends CommandBase {
                 .getHighestBlockAt(playerLocation.getBlockX(), playerLocation.getBlockZ())
                 .getLocation();
 
-        boolean failed = !WorldTeleporterImpl.isSafeLocation(blockLocation) || blockLocation.getBlock().getY() < playerLocation.getBlock().getY();
+        boolean failed = !WorldTeleporterImpl.isSafeLocation(blockLocation)
+                || blockLocation.getBlock().getY() < playerLocation.getBlock().getY();
         if (failed) {
             messages.sendMessage(player, "top_failed");
             return;
         }
 
-        PaperLib.teleportAsync(player, blockLocation.add(0.5, 1, 0.5))
-                .whenComplete((completed, throwable) -> {
-                    if (!completed) {
-                        return;
-                    }
-                    XSound.ENTITY_ZOMBIE_INFECT.play(player);
-                    messages.sendMessage(player, "top_teleported");
-                });
+        PaperLib.teleportAsync(player, blockLocation.add(0.5, 1, 0.5)).whenComplete((completed, throwable) -> {
+            if (!completed) {
+                return;
+            }
+            XSound.ENTITY_ZOMBIE_INFECT.play(player);
+            messages.sendMessage(player, "top_teleported");
+        });
     }
 }

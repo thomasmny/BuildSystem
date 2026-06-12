@@ -18,10 +18,6 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.IntStream;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -29,6 +25,11 @@ import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.IntStream;
 
 @NullMarked
 public abstract class PagedCommand extends CommandBase {
@@ -49,11 +50,12 @@ public abstract class PagedCommand extends CommandBase {
 
         List<TextComponent> page = createPage(commands, numPages, pageNum);
         page.add(0, new TextComponent("§7§m----------------------------------------------------"));
-        page.add(1, new TextComponent(messages.getString(this.title, player)
-                .replace("%page%", String.valueOf(pageNum))
-                .replace("%max%", String.valueOf(numPages))
-                .concat("\n"))
-        );
+        page.add(
+                1,
+                new TextComponent(messages.getString(this.title, player)
+                        .replace("%page%", String.valueOf(pageNum))
+                        .replace("%max%", String.valueOf(numPages))
+                        .concat("\n")));
         page.add(new TextComponent("§7§m----------------------------------------------------"));
         page.forEach(line -> player.spigot().sendMessage(line));
     }
@@ -80,7 +82,8 @@ public abstract class PagedCommand extends CommandBase {
     protected abstract List<TextComponent> getCommands(Player player);
 
     @Contract("_, _, _, _, _-> new")
-    protected TextComponent createComponent(Player player, String command, String commandDescriptionKey, String suggest, String permission) {
+    protected TextComponent createComponent(
+            Player player, String command, String commandDescriptionKey, String suggest, String permission) {
         if (command.isEmpty()) {
             return new TextComponent();
         }
@@ -89,9 +92,9 @@ public abstract class PagedCommand extends CommandBase {
         TextComponent textComponent = new TextComponent(" §8» " + messages.getString(commandDescriptionKey, player));
 
         commandComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, suggest));
-        commandComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new Text(messages.getString(this.permissionTemplate, player, Map.entry("%permission%", permission)))
-        ));
+        commandComponent.setHoverEvent(new HoverEvent(
+                HoverEvent.Action.SHOW_TEXT,
+                new Text(messages.getString(this.permissionTemplate, player, Map.entry("%permission%", permission)))));
         commandComponent.addExtra(textComponent);
         return commandComponent;
     }

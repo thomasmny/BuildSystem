@@ -23,12 +23,13 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import java.util.List;
-import java.util.Map;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.List;
+import java.util.Map;
 
 @NullMarked
 public class SetItemSubCommand implements SubCommand {
@@ -41,7 +42,8 @@ public class SetItemSubCommand implements SubCommand {
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = GuardedWorldCommand.requireWorld(plugin, player, worldName, args, 2, getArgument(), "worlds_setitem");
+        BuildWorld buildWorld =
+                GuardedWorldCommand.requireWorld(plugin, player, worldName, args, 2, getArgument(), "worlds_setitem");
         if (buildWorld == null) {
             return;
         }
@@ -53,9 +55,7 @@ public class SetItemSubCommand implements SubCommand {
         }
 
         buildWorld.getData().material().set(XMaterial.matchXMaterial(itemStack));
-        plugin.getMessages().sendMessage(player, "worlds_setitem_set",
-                Map.entry("%world%", buildWorld.getName())
-        );
+        plugin.getMessages().sendMessage(player, "worlds_setitem_set", Map.entry("%world%", buildWorld.getName()));
     }
 
     @Override

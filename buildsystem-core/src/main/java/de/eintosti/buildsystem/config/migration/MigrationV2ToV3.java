@@ -48,9 +48,14 @@ public class MigrationV2ToV3 implements Migration {
         config.set("messages", null);
 
         // 2. settings.disabled-physics → world.disabled-physics
-        moveIfPresent(config, "settings.disabled-physics.prevent-connections", "world.disabled-physics.prevent-connections");
-        moveIfPresent(config, "settings.disabled-physics.prevent-fluid-flow", "world.disabled-physics.prevent-fluid-flow");
-        moveIfPresent(config, "settings.disabled-physics.prevent-falling-blocks", "world.disabled-physics.prevent-falling-blocks");
+        moveIfPresent(
+                config, "settings.disabled-physics.prevent-connections", "world.disabled-physics.prevent-connections");
+        moveIfPresent(
+                config, "settings.disabled-physics.prevent-fluid-flow", "world.disabled-physics.prevent-fluid-flow");
+        moveIfPresent(
+                config,
+                "settings.disabled-physics.prevent-falling-blocks",
+                "world.disabled-physics.prevent-falling-blocks");
         config.set("settings.disabled-physics", null);
 
         // 3. world.default.settings.public-worlds/private-worlds → world.limits.*
@@ -89,8 +94,10 @@ public class MigrationV2ToV3 implements Migration {
         moveIfPresent(config, "world.default.settings.block-breaking", "world.defaults.block-breaking");
         moveIfPresent(config, "world.default.settings.block-placement", "world.defaults.block-placement");
         moveIfPresent(config, "world.default.settings.block-interactions", "world.defaults.block-interactions");
-        moveIfPresent(config, "world.default.settings.builders-enabled.public", "world.defaults.builders-enabled.public");
-        moveIfPresent(config, "world.default.settings.builders-enabled.private", "world.defaults.builders-enabled.private");
+        moveIfPresent(
+                config, "world.default.settings.builders-enabled.public", "world.defaults.builders-enabled.public");
+        moveIfPresent(
+                config, "world.default.settings.builders-enabled.private", "world.defaults.builders-enabled.private");
 
         // Delete old world.default entirely
         config.set("world.default", null);
@@ -100,9 +107,14 @@ public class MigrationV2ToV3 implements Migration {
         config.set("world.import-all", null);
 
         // 6. Delete dead sections
-        config.set("world.disabled-physics", config.contains("world.disabled-physics.prevent-connections") ? null : config.get("world.disabled-physics"));
+        config.set(
+                "world.disabled-physics",
+                config.contains("world.disabled-physics.prevent-connections")
+                        ? null
+                        : config.get("world.disabled-physics"));
         // The dead "world.disabled-physics" from V2 (lines 72-75 in old config) - ensure removal if leftover
-        // (already handled above by moving settings.disabled-physics → world.disabled-physics - the old dead one at world.disabled-physics was overwritten)
+        // (already handled above by moving settings.disabled-physics → world.disabled-physics - the old dead one at
+        // world.disabled-physics was overwritten)
     }
 
     private static void moveIfPresent(FileConfiguration config, String from, String to) {

@@ -22,9 +22,10 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
-import java.util.Map;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.Map;
 
 @NullMarked
 public class RemoveSpawnSubCommand implements SubCommand {
@@ -38,7 +39,8 @@ public class RemoveSpawnSubCommand implements SubCommand {
     @Override
     public void execute(Player player, String worldName, String[] args) {
         BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld());
-        if (!WorldPermissionsImpl.of(plugin, buildWorld).canPerformCommand(player, getArgument().getPermission())) {
+        if (!WorldPermissionsImpl.of(plugin, buildWorld)
+                .canPerformCommand(player, getArgument().getPermission())) {
             plugin.getMessages().sendPermissionError(player);
             return;
         }
@@ -49,9 +51,9 @@ public class RemoveSpawnSubCommand implements SubCommand {
         }
 
         buildWorld.getData().customSpawn().set("");
-        plugin.getMessages().sendMessage(player, "worlds_removespawn_world_spawn_removed",
-                Map.entry("%world%", buildWorld.getName())
-        );
+        plugin.getMessages()
+                .sendMessage(
+                        player, "worlds_removespawn_world_spawn_removed", Map.entry("%world%", buildWorld.getName()));
     }
 
     @Override

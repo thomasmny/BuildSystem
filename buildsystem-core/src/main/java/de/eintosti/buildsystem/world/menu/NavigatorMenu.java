@@ -20,9 +20,9 @@ package de.eintosti.buildsystem.world.menu;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.player.menu.SettingsMenu;
-import de.eintosti.buildsystem.menu.InventoryUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
@@ -41,10 +41,29 @@ public class NavigatorMenu extends Menu {
     protected void populate(Player player) {
         plugin.getMenuItems().fillRange(player, getInventory(), 0, 27);
 
-        getInventory().setItem(11, InventoryUtils.createSkull(messages.getString("old_navigator_world_navigator", player), Profileable.detect("d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622")));
-        getInventory().setItem(12, InventoryUtils.createSkull(messages.getString("old_navigator_world_archive", player), Profileable.detect("7f6bf958abd78295eed6ffc293b1aa59526e80f54976829ea068337c2f5e8")));
-        getInventory().setItem(13, InventoryUtils.createSkull(messages.getString("old_navigator_private_worlds", player), Profileable.of(player)));
-        getInventory().setItem(15, InventoryUtils.createSkull(messages.getString("old_navigator_settings", player), Profileable.detect("1cba7277fc895bf3b673694159864b83351a4d14717e476ebda1c3bf38fcf37")));
+        getInventory()
+                .setItem(
+                        11,
+                        InventoryUtils.createSkull(
+                                messages.getString("old_navigator_world_navigator", player),
+                                Profileable.detect("d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622")));
+        getInventory()
+                .setItem(
+                        12,
+                        InventoryUtils.createSkull(
+                                messages.getString("old_navigator_world_archive", player),
+                                Profileable.detect("7f6bf958abd78295eed6ffc293b1aa59526e80f54976829ea068337c2f5e8")));
+        getInventory()
+                .setItem(
+                        13,
+                        InventoryUtils.createSkull(
+                                messages.getString("old_navigator_private_worlds", player), Profileable.of(player)));
+        getInventory()
+                .setItem(
+                        15,
+                        InventoryUtils.createSkull(
+                                messages.getString("old_navigator_settings", player),
+                                Profileable.detect("1cba7277fc895bf3b673694159864b83351a4d14717e476ebda1c3bf38fcf37")));
     }
 
     @Override

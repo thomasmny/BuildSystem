@@ -21,13 +21,14 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.backup.Backup;
+import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.util.StringUtils;
-import de.eintosti.buildsystem.menu.InventoryUtils;
-import java.util.Map;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.Map;
 
 @NullMarked
 public class BackupsConfirmationMenu extends Menu {
@@ -43,25 +44,33 @@ public class BackupsConfirmationMenu extends Menu {
 
     @Override
     protected void populate(Player player) {
-        for (int slot : new int[]{0, 1, 2, 3, 9, 10, 12, 18, 19, 20, 21}) {
+        for (int slot : new int[] {0, 1, 2, 3, 9, 10, 12, 18, 19, 20, 21}) {
             getInventory().setItem(slot, InventoryUtils.createItem(XMaterial.LIME_STAINED_GLASS_PANE, "§a"));
         }
-        for (int slot : new int[]{4, 13, 22}) {
+        for (int slot : new int[] {4, 13, 22}) {
             getInventory().setItem(slot, InventoryUtils.createItem(XMaterial.BLACK_STAINED_GLASS_PANE, "§0"));
         }
-        for (int slot : new int[]{5, 6, 7, 8, 14, 16, 17, 23, 24, 25, 26}) {
+        for (int slot : new int[] {5, 6, 7, 8, 14, 16, 17, 23, 24, 25, 26}) {
             getInventory().setItem(slot, InventoryUtils.createItem(XMaterial.RED_STAINED_GLASS_PANE, "§c"));
         }
 
-        getInventory().setItem(11, InventoryUtils.createItem(XMaterial.LIME_DYE,
-                messages.getString("restore_backup_confirm_name", player),
-                messages.getStringList("restore_backup_confirm_lore", player,
-                        Map.entry("%timestamp%", StringUtils.formatTime(backup.creationTime(), dateFormat))
-                )
-        ));
-        getInventory().setItem(15, InventoryUtils.createItem(XMaterial.RED_DYE,
-                messages.getString("restore_backup_cancel_name", player)
-        ));
+        getInventory()
+                .setItem(
+                        11,
+                        InventoryUtils.createItem(
+                                XMaterial.LIME_DYE,
+                                messages.getString("restore_backup_confirm_name", player),
+                                messages.getStringList(
+                                        "restore_backup_confirm_lore",
+                                        player,
+                                        Map.entry(
+                                                "%timestamp%",
+                                                StringUtils.formatTime(backup.creationTime(), dateFormat)))));
+        getInventory()
+                .setItem(
+                        15,
+                        InventoryUtils.createItem(
+                                XMaterial.RED_DYE, messages.getString("restore_backup_cancel_name", player)));
     }
 
     @Override

@@ -17,24 +17,23 @@
  */
 package de.eintosti.buildsystem.world.backup.storage;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
-import org.jspecify.annotations.NullMarked;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @NullMarked
 class LocalBackupStorageTest {
@@ -100,7 +99,8 @@ class LocalBackupStorageTest {
 
         List<Backup> backups = storage.listBackups(world).get();
         assertEquals(2, backups.size());
-        assertTrue(backups.get(0).creationTime() >= backups.get(1).creationTime(),
+        assertTrue(
+                backups.get(0).creationTime() >= backups.get(1).creationTime(),
                 "First element should have a creation time >= second");
     }
 
@@ -126,7 +126,9 @@ class LocalBackupStorageTest {
     @Test
     void deleteIsNoOpForMissingFile() throws Exception {
         Backup backup = mock(Backup.class);
-        when(backup.key()).thenReturn(backupRoot.resolve("nonexistent.zip").toAbsolutePath().toString());
+        when(backup.key())
+                .thenReturn(
+                        backupRoot.resolve("nonexistent.zip").toAbsolutePath().toString());
         // Should complete without throwing
         storage.deleteBackup(backup).get();
     }

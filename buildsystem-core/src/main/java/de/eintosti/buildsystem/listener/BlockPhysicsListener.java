@@ -22,32 +22,21 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.DirectionUtil;
-import java.util.List;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.type.Fence;
-import org.bukkit.block.data.type.Gate;
-import org.bukkit.block.data.type.GlassPane;
-import org.bukkit.block.data.type.Stairs;
-import org.bukkit.block.data.type.Wall;
+import org.bukkit.block.data.type.*;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockExplodeEvent;
-import org.bukkit.event.block.BlockFadeEvent;
-import org.bukkit.event.block.BlockFormEvent;
-import org.bukkit.event.block.BlockFromToEvent;
-import org.bukkit.event.block.BlockGrowEvent;
-import org.bukkit.event.block.BlockPhysicsEvent;
-import org.bukkit.event.block.BlockRedstoneEvent;
-import org.bukkit.event.block.BlockSpreadEvent;
-import org.bukkit.event.block.LeavesDecayEvent;
+import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.metadata.MetadataValue;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.List;
 
 @NullMarked
 public class BlockPhysicsListener implements Listener {
@@ -73,14 +62,15 @@ public class BlockPhysicsListener implements Listener {
         }
 
         if (!plugin.getConfigService().current().world().disabledPhysics().preventConnections()) {
-            boolean canConnect = switch (block.getBlockData()) {
-                case Fence fence -> true;
-                case Gate gate -> true;
-                case GlassPane glassPane -> true;
-                case Stairs stairs -> true;
-                case Wall wall -> true;
-                default -> false;
-            };
+            boolean canConnect =
+                    switch (block.getBlockData()) {
+                        case Fence fence -> true;
+                        case Gate gate -> true;
+                        case GlassPane glassPane -> true;
+                        case Stairs stairs -> true;
+                        case Wall wall -> true;
+                        default -> false;
+                    };
             if (canConnect) {
                 event.setCancelled(false);
                 return;
@@ -139,7 +129,12 @@ public class BlockPhysicsListener implements Listener {
             return;
         }
 
-        if (event.getBlock().isLiquid() && !plugin.getConfigService().current().world().disabledPhysics().preventFluidFlow()) {
+        if (event.getBlock().isLiquid()
+                && !plugin.getConfigService()
+                        .current()
+                        .world()
+                        .disabledPhysics()
+                        .preventFluidFlow()) {
             event.setCancelled(false);
             return;
         }
@@ -169,7 +164,8 @@ public class BlockPhysicsListener implements Listener {
             return;
         }
 
-        if (event.getEntityType() == EntityType.FALLING_BLOCK && plugin.getConfigService().current().world().disabledPhysics().preventFallingBlocks()) {
+        if (event.getEntityType() == EntityType.FALLING_BLOCK
+                && plugin.getConfigService().current().world().disabledPhysics().preventFallingBlocks()) {
             event.setCancelled(true);
             event.getBlock().getState().update(false, false);
         }

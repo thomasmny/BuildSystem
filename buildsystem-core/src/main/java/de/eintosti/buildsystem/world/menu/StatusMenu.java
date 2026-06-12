@@ -26,8 +26,6 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.world.menu.EditMenu;
-import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -37,6 +35,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jspecify.annotations.NullMarked;
 
+import java.util.Map;
+
 @NullMarked
 public class StatusMenu extends Menu {
 
@@ -45,8 +45,11 @@ public class StatusMenu extends Menu {
     private final BuildWorld buildWorld;
 
     public StatusMenu(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
-        super(plugin.getMessages(), 27, plugin.getMessages().getString("status_title", player,
-                Map.entry("%world%", formatWorldName(buildWorld))));
+        super(
+                plugin.getMessages(),
+                27,
+                plugin.getMessages()
+                        .getString("status_title", player, Map.entry("%world%", formatWorldName(buildWorld))));
         this.plugin = plugin;
         this.playerService = plugin.getPlayerService();
         this.buildWorld = buildWorld;
@@ -130,10 +133,11 @@ public class StatusMenu extends Menu {
         plugin.getSettingsService().forceUpdateSidebar(buildWorld);
 
         XSound.ENTITY_CHICKEN_EGG.play(player);
-        messages.sendMessage(player, "worlds_setstatus_set",
+        messages.sendMessage(
+                player,
+                "worlds_setstatus_set",
                 Map.entry("%world%", buildWorld.getName()),
-                Map.entry("%status%", messages.getString(Messages.getMessageKey(status), player))
-        );
+                Map.entry("%status%", messages.getString(Messages.getMessageKey(status), player)));
     }
 
     private BuildWorldStatus getStatusFromSlot(int slot) {

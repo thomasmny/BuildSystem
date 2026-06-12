@@ -20,30 +20,31 @@ package de.eintosti.buildsystem.storage;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
-import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NullMarked;
+
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Unmodifiable;
-import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public abstract class FolderStorageImpl implements FolderStorage {
 
     protected final Logger logger;
+
     @org.jspecify.annotations.Nullable
     protected final BuildSystemPlugin plugin;
+
     protected final WorldStorage worldStorage;
 
     private final ConcurrentHashMap<String, Folder> foldersByName;
@@ -67,9 +68,8 @@ public abstract class FolderStorageImpl implements FolderStorage {
 
     public void loadFolders() {
         try {
-            this.foldersByName.putAll(
-                    load().get().stream().collect(Collectors.toMap(folder -> folder.getName().toLowerCase(), Function.identity()))
-            );
+            this.foldersByName.putAll(load().get().stream()
+                    .collect(Collectors.toMap(folder -> folder.getName().toLowerCase(), Function.identity())));
         } catch (InterruptedException | ExecutionException e) {
             logger.severe("Failed to load folders from storage: " + e.getMessage());
         }
@@ -121,8 +121,7 @@ public abstract class FolderStorageImpl implements FolderStorage {
                 .forEach(this::removeFolder);
 
         // Remove world <> folder assignments
-        removed.getWorldUUIDs()
-                .stream()
+        removed.getWorldUUIDs().stream()
                 .map(worldStorage::getBuildWorld)
                 .filter(Objects::nonNull)
                 .forEach(buildWorld -> buildWorld.setFolder(null));

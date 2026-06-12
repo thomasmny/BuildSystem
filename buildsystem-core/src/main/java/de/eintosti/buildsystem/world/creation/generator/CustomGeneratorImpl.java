@@ -36,7 +36,10 @@ import org.jspecify.annotations.Nullable;
  * @param chunkGenerator     An optional reference to the actual Bukkit {@link ChunkGenerator} instance, or {@code null} if it could not be retrieved or is not needed
  */
 @NullMarked
-public record CustomGeneratorImpl(String pluginName, String chunkGeneratorName, @Nullable ChunkGenerator chunkGenerator) implements CustomGenerator {
+public record CustomGeneratorImpl(
+        String pluginName,
+        String chunkGeneratorName,
+        @Nullable ChunkGenerator chunkGenerator) implements CustomGenerator {
 
     /**
      * Attempts to create a {@link CustomGeneratorImpl} instance by parsing an identifier string and loading the corresponding {@link ChunkGenerator}.
@@ -53,11 +56,10 @@ public record CustomGeneratorImpl(String pluginName, String chunkGeneratorName, 
      * @return A {@link CustomGeneratorImpl} instance if the plugin is found and the generator information is parsed; {@code null} if the plugin specified in the identifier does
      * not exist or if the identifier format is unexpectedly empty
      */
-    @Nullable
-    public static CustomGeneratorImpl of(String identifier, String worldName) {
+    @Nullable public static CustomGeneratorImpl of(String identifier, String worldName) {
         String[] generatorInfo = identifier.split(":");
         if (generatorInfo.length == 1) {
-            generatorInfo = new String[]{generatorInfo[0], generatorInfo[0]};
+            generatorInfo = new String[] {generatorInfo[0], generatorInfo[0]};
         }
 
         String pluginName = generatorInfo[0];
@@ -68,7 +70,8 @@ public record CustomGeneratorImpl(String pluginName, String chunkGeneratorName, 
             return null;
         }
 
-        return new CustomGeneratorImpl(pluginName, chunkGeneratorName, plugin.getDefaultWorldGenerator(worldName, chunkGeneratorName));
+        return new CustomGeneratorImpl(
+                pluginName, chunkGeneratorName, plugin.getDefaultWorldGenerator(worldName, chunkGeneratorName));
     }
 
     @Override

@@ -17,15 +17,10 @@
  */
 package de.eintosti.buildsystem.util;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.*;
 
 @NullMarked
 public class ArgumentParser {
@@ -48,9 +43,7 @@ public class ArgumentParser {
      * @return {@code true} if the argument is present, otherwise {@code false}
      */
     public boolean isArgument(String name) {
-        return args.stream()
-                .map(arg -> arg.replace("-", ""))
-                .anyMatch(name::equalsIgnoreCase);
+        return args.stream().map(arg -> arg.replace("-", "")).anyMatch(name::equalsIgnoreCase);
     }
 
     /**
@@ -73,8 +66,7 @@ public class ArgumentParser {
      * @param name The name of the argument
      * @return The argument value if present, otherwise {@code null}.
      */
-    @Nullable
-    public String getValue(String name) {
+    @Nullable public String getValue(String name) {
         List<String> value = map.get(name);
         if (value != null) {
             return String.join(" ", value);

@@ -62,7 +62,9 @@ public class PlayerMoveListener implements Listener {
 
         Location from = event.getFrom();
         if (from.getBlockX() != to.getBlockX() || from.getBlockZ() != to.getBlockZ()) {
-            Bukkit.getServer().getScheduler().runTaskLater(plugin, () -> navigatorService.closeNewNavigator(player), 5L);
+            Bukkit.getServer()
+                    .getScheduler()
+                    .runTaskLater(plugin, () -> navigatorService.closeNewNavigator(player), 5L);
         }
     }
 }

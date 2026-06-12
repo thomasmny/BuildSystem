@@ -29,32 +29,19 @@ import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlFolderStorage;
 import de.eintosti.buildsystem.storage.yaml.YamlWorldStorage;
 import de.eintosti.buildsystem.util.FileUtils;
-import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl;
-import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
-import de.eintosti.buildsystem.world.spawn.SpawnService;
 import de.eintosti.buildsystem.world.lifecycle.WorldRenamer;
 import de.eintosti.buildsystem.world.lifecycle.WorldUnloaderImpl;
-import io.papermc.lib.PaperLib;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
+import de.eintosti.buildsystem.world.spawn.SpawnService;
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -62,6 +49,16 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 
 @NullMarked
 public class WorldServiceImpl implements WorldService {
@@ -99,14 +96,21 @@ public class WorldServiceImpl implements WorldService {
         return new BuildWorldCreatorImpl(plugin, name);
     }
 
-    public void startWorldNameInput(Player player, BuildWorldType worldType, @Nullable String template, boolean privateWorld, @Nullable Folder folder) {
+    public void startWorldNameInput(
+            Player player,
+            BuildWorldType worldType,
+            @Nullable String template,
+            boolean privateWorld,
+            @Nullable Folder folder) {
         player.closeInventory();
         new PlayerChatInput(plugin, player, "enter_world_name", input -> {
-            if (StringCleaner.hasInvalidNameCharacters(input, plugin.getConfigService().current().world().invalidCharacters())) {
+            if (StringCleaner.hasInvalidNameCharacters(
+                    input, plugin.getConfigService().current().world().invalidCharacters())) {
                 plugin.getMessages().sendMessage(player, "worlds_world_creation_invalid_characters");
             }
 
-            String worldName = StringCleaner.sanitize(input, plugin.getConfigService().current().world().invalidCharacters());
+            String worldName = StringCleaner.sanitize(
+                    input, plugin.getConfigService().current().world().invalidCharacters());
             if (worldName.isEmpty()) {
                 plugin.getMessages().sendMessage(player, "worlds_world_creation_name_bank");
                 return;
@@ -125,7 +129,8 @@ public class WorldServiceImpl implements WorldService {
         });
     }
 
-    private void startCustomGeneratorInput(Player player, String worldName, @Nullable String template, boolean privateWorld, @Nullable Folder folder) {
+    private void startCustomGeneratorInput(
+            Player player, String worldName, @Nullable String template, boolean privateWorld, @Nullable Folder folder) {
         new PlayerChatInput(plugin, player, "enter_generator_name", input -> {
             CustomGenerator customGenerator = CustomGeneratorImpl.of(input, worldName);
             if (customGenerator == null) {
@@ -144,7 +149,14 @@ public class WorldServiceImpl implements WorldService {
         });
     }
 
-    public boolean importWorld(Player player, String worldName, @Nullable Builder creator, BuildWorldType worldType, Generator generator, String generatorData, boolean single) {
+    public boolean importWorld(
+            Player player,
+            String worldName,
+            @Nullable Builder creator,
+            BuildWorldType worldType,
+            Generator generator,
+            String generatorData,
+            boolean single) {
         CustomGenerator customGenerator = null;
         if (generator == Generator.CUSTOM) {
             customGenerator = CustomGeneratorImpl.of(generatorData, worldName);
@@ -157,15 +169,17 @@ public class WorldServiceImpl implements WorldService {
         BuildWorldCreatorImpl worldCreator = createWorld(worldName)
                 .setType(worldType)
                 .setCreator(creator)
-                .setCustomGenerator(customGenerator != null ? customGenerator : new CustomGeneratorImpl("BuildSystem", generatorData, null))
+                .setCustomGenerator(
+                        customGenerator != null
+                                ? customGenerator
+                                : new CustomGeneratorImpl("BuildSystem", generatorData, null))
                 .setPrivate(false)
                 .setCreationDate(FileUtils.getDirectoryCreation(new File(Bukkit.getWorldContainer(), worldName)));
 
         if (worldCreator.isDataVersionTooHigh()) {
             String key = single ? "import" : "importall";
-            plugin.getMessages().sendMessage(player, "worlds_" + key + "_newer_version",
-                    Map.entry("%world%", worldName)
-            );
+            plugin.getMessages()
+                    .sendMessage(player, "worlds_" + key + "_newer_version", Map.entry("%world%", worldName));
             return false;
         }
 
@@ -177,12 +191,9 @@ public class WorldServiceImpl implements WorldService {
         int worlds = worldList.length;
         int delay = plugin.getConfigService().current().world().importAllDelay();
 
-        plugin.getMessages().sendMessage(player, "worlds_importall_started",
-                Map.entry("%amount%", String.valueOf(worlds))
-        );
-        plugin.getMessages().sendMessage(player, "worlds_importall_delay",
-                Map.entry("%delay%", String.valueOf(delay))
-        );
+        plugin.getMessages()
+                .sendMessage(player, "worlds_importall_started", Map.entry("%amount%", String.valueOf(worlds)));
+        plugin.getMessages().sendMessage(player, "worlds_importall_delay", Map.entry("%delay%", String.valueOf(delay)));
         importingAllWorlds = true;
 
         AtomicInteger worldsImported = new AtomicInteger(0);
@@ -199,23 +210,27 @@ public class WorldServiceImpl implements WorldService {
 
                 String worldName = worldList[i];
                 if (worldStorage.worldExists(worldName)) {
-                    plugin.getMessages().sendMessage(player, "worlds_importall_world_already_imported",
-                            Map.entry("%world%", worldName)
-                    );
+                    plugin.getMessages()
+                            .sendMessage(
+                                    player, "worlds_importall_world_already_imported", Map.entry("%world%", worldName));
                     return;
                 }
 
-                String invalidChar = StringCleaner.firstInvalidChar(worldName, plugin.getConfigService().current().world().invalidCharacters());
+                String invalidChar = StringCleaner.firstInvalidChar(
+                        worldName, plugin.getConfigService().current().world().invalidCharacters());
                 if (invalidChar != null) {
-                    plugin.getMessages().sendMessage(player, "worlds_importall_invalid_character",
-                            Map.entry("%world%", worldName),
-                            Map.entry("%char%", invalidChar)
-                    );
+                    plugin.getMessages()
+                            .sendMessage(
+                                    player,
+                                    "worlds_importall_invalid_character",
+                                    Map.entry("%world%", worldName),
+                                    Map.entry("%char%", invalidChar));
                     return;
                 }
 
                 if (importWorld(player, worldName, creator, BuildWorldType.IMPORTED, generator, "void", false)) {
-                    plugin.getMessages().sendMessage(player, "worlds_importall_world_imported", Map.entry("%world%", worldName));
+                    plugin.getMessages()
+                            .sendMessage(player, "worlds_importall_world_imported", Map.entry("%world%", worldName));
                 }
             }
         }.runTaskTimer(plugin, 0, 20L * delay);
@@ -241,11 +256,18 @@ public class WorldServiceImpl implements WorldService {
                 .exceptionally(e -> {
                     Throwable cause = e.getCause() != null ? e.getCause() : e;
                     switch (cause) {
-                        case WorldNotFoundException ignored -> plugin.getMessages().sendMessage(player, "worlds_delete_unknown_world");
-                        case WorldDirectoryNotFoundException ignored -> plugin.getMessages().sendMessage(player, "worlds_delete_unknown_directory");
+                        case WorldNotFoundException ignored ->
+                            plugin.getMessages().sendMessage(player, "worlds_delete_unknown_world");
+                        case WorldDirectoryNotFoundException ignored ->
+                            plugin.getMessages().sendMessage(player, "worlds_delete_unknown_directory");
                         default -> {
-                            plugin.getMessages().sendMessage(player, "worlds_delete_error", Map.entry("%world%", worldName));
-                            plugin.getLogger().log(Level.SEVERE, "An unexpected error occurred while deleting the world: " + worldName, cause);
+                            plugin.getMessages()
+                                    .sendMessage(player, "worlds_delete_error", Map.entry("%world%", worldName));
+                            plugin.getLogger()
+                                    .log(
+                                            Level.SEVERE,
+                                            "An unexpected error occurred while deleting the world: " + worldName,
+                                            cause);
                         }
                     }
                     return null;
@@ -261,7 +283,8 @@ public class WorldServiceImpl implements WorldService {
 
         File deleteFolder = new File(Bukkit.getWorldContainer(), worldName);
         if (!deleteFolder.exists()) {
-            return CompletableFuture.failedFuture(new WorldDirectoryNotFoundException(worldName, deleteFolder.getAbsolutePath()));
+            return CompletableFuture.failedFuture(
+                    new WorldDirectoryNotFoundException(worldName, deleteFolder.getAbsolutePath()));
         }
 
         buildWorld.setFolder(null);
@@ -270,14 +293,14 @@ public class WorldServiceImpl implements WorldService {
         // Registry removal and metadata persistence are awaited before folder deletion
         // so a crash mid-delete leaves an orphaned folder (re-importable) rather than
         // an orphaned registry entry pointing at a deleted folder.
-        return unimportWorld(buildWorld, false)
-                .thenRunAsync(() -> {
-                    try {
-                        FileUtils.deleteDirectory(deleteFolder);
-                    } catch (IOException e) {
-                        throw new CompletionException(new WorldDeletionException("An unexpected error occurred during directory deletion for world: " + worldName, e));
-                    }
-                });
+        return unimportWorld(buildWorld, false).thenRunAsync(() -> {
+            try {
+                FileUtils.deleteDirectory(deleteFolder);
+            } catch (IOException e) {
+                throw new CompletionException(new WorldDeletionException(
+                        "An unexpected error occurred during directory deletion for world: " + worldName, e));
+            }
+        });
     }
 
     /**
@@ -302,7 +325,10 @@ public class WorldServiceImpl implements WorldService {
             return List.of();
         }
         World fallbackWorld = serverWorlds.getFirst();
-        Location fallbackSpawn = fallbackWorld.getHighestBlockAt(fallbackWorld.getSpawnLocation()).getLocation().add(0.5, 1, 0.5);
+        Location fallbackSpawn = fallbackWorld
+                .getHighestBlockAt(fallbackWorld.getSpawnLocation())
+                .getLocation()
+                .add(0.5, 1, 0.5);
 
         SpawnService spawnService = plugin.getSpawnService();
         List<Player> affectedPlayers = new ArrayList<>();

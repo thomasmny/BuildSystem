@@ -17,25 +17,19 @@
  */
 package de.eintosti.buildsystem.command;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.i18n.Messages;
-import java.util.List;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @NullMarked
 class SubCommandDispatcherTest {
@@ -62,7 +56,7 @@ class SubCommandDispatcherTest {
     void dispatch_unknownSubCommand_sendsErrorAndReturnsFalse() {
         SubCommandDispatcher dispatcher = new SubCommandDispatcher(messages, List.of(fooCmd));
 
-        boolean result = dispatcher.dispatch(player, new String[]{"unknown"});
+        boolean result = dispatcher.dispatch(player, new String[] {"unknown"});
 
         assertFalse(result);
         verify(messages).sendMessage(player, "worlds_unknown_command");
@@ -73,10 +67,10 @@ class SubCommandDispatcherTest {
     void dispatch_knownSubCommand_callsExecuteWithWorldNameFromArgs() {
         SubCommandDispatcher dispatcher = new SubCommandDispatcher(messages, List.of(fooCmd));
 
-        boolean result = dispatcher.dispatch(player, new String[]{"foo", "myWorld"});
+        boolean result = dispatcher.dispatch(player, new String[] {"foo", "myWorld"});
 
         assertTrue(result);
-        verify(fooCmd).execute(player, "myWorld", new String[]{"foo", "myWorld"});
+        verify(fooCmd).execute(player, "myWorld", new String[] {"foo", "myWorld"});
         verify(messages, never()).sendMessage(any(Player.class), anyString());
     }
 
@@ -84,9 +78,9 @@ class SubCommandDispatcherTest {
     void dispatch_noWorldArg_usesPlayerCurrentWorld() {
         SubCommandDispatcher dispatcher = new SubCommandDispatcher(messages, List.of(fooCmd));
 
-        dispatcher.dispatch(player, new String[]{"foo"});
+        dispatcher.dispatch(player, new String[] {"foo"});
 
-        verify(fooCmd).execute(player, "currentWorld", new String[]{"foo"});
+        verify(fooCmd).execute(player, "currentWorld", new String[] {"foo"});
     }
 
     @Test
@@ -100,7 +94,7 @@ class SubCommandDispatcherTest {
 
         SubCommandDispatcher dispatcher = new SubCommandDispatcher(messages, List.of(fooCmd, barCmd));
 
-        List<String> result = dispatcher.complete(player, new String[]{""});
+        List<String> result = dispatcher.complete(player, new String[] {""});
 
         assertTrue(result.contains("foo"));
         assertFalse(result.contains("bar"));
@@ -111,10 +105,10 @@ class SubCommandDispatcherTest {
         when(player.hasPermission(anyString())).thenReturn(true);
         SubCommandDispatcher dispatcher = new SubCommandDispatcher(messages, List.of(fooCmd));
 
-        List<String> result = dispatcher.complete(player, new String[]{"foo", "partial"});
+        List<String> result = dispatcher.complete(player, new String[] {"foo", "partial"});
 
         assertEquals(List.of("hint"), result);
-        verify(fooCmd).complete(player, new String[]{"foo", "partial"});
+        verify(fooCmd).complete(player, new String[] {"foo", "partial"});
     }
 
     private static Argument stubArg(String name, String permission) {

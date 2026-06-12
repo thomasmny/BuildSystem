@@ -22,10 +22,11 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.storage.yaml.YamlSetupStorage;
+import org.jspecify.annotations.NullMarked;
+
 import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
-import org.jspecify.annotations.NullMarked;
 
 /**
  * User-customizable icons for different areas of the plugin.
@@ -54,10 +55,10 @@ public class CustomizableIcons {
                 Map.entry(BuildWorldType.VOID, XMaterial.GLASS),
                 Map.entry(BuildWorldType.CUSTOM, XMaterial.FILLED_MAP),
                 Map.entry(BuildWorldType.TEMPLATE, XMaterial.FILLED_MAP),
-                Map.entry(BuildWorldType.IMPORTED, XMaterial.FURNACE)
-        ));
+                Map.entry(BuildWorldType.IMPORTED, XMaterial.FURNACE)));
 
-        Map<BuildWorldType, XMaterial> loadedIcons = this.setupStorage.loadIcons(IconType.TYPE, type -> BuildWorldType.valueOf(type.toUpperCase(Locale.ROOT)));
+        Map<BuildWorldType, XMaterial> loadedIcons = this.setupStorage.loadIcons(
+                IconType.TYPE, type -> BuildWorldType.valueOf(type.toUpperCase(Locale.ROOT)));
         if (loadedIcons != null) {
             typeIcons.putAll(loadedIcons);
         }
@@ -73,10 +74,10 @@ public class CustomizableIcons {
                 Map.entry(BuildWorldStatus.ALMOST_FINISHED, XMaterial.LIME_DYE),
                 Map.entry(BuildWorldStatus.FINISHED, XMaterial.GREEN_DYE),
                 Map.entry(BuildWorldStatus.ARCHIVE, XMaterial.CYAN_DYE),
-                Map.entry(BuildWorldStatus.HIDDEN, XMaterial.BONE_MEAL)
-        ));
+                Map.entry(BuildWorldStatus.HIDDEN, XMaterial.BONE_MEAL)));
 
-        Map<BuildWorldStatus, XMaterial> loadedIcons = this.setupStorage.loadIcons(IconType.STATUS, type -> BuildWorldStatus.valueOf(type.toUpperCase(Locale.ROOT)));
+        Map<BuildWorldStatus, XMaterial> loadedIcons = this.setupStorage.loadIcons(
+                IconType.STATUS, type -> BuildWorldStatus.valueOf(type.toUpperCase(Locale.ROOT)));
         if (loadedIcons != null) {
             statusIcon.putAll(loadedIcons);
         }

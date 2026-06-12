@@ -18,8 +18,9 @@
 package de.eintosti.buildsystem.integration.worldedit;
 
 import com.google.common.collect.Sets;
-import java.util.Set;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.Set;
 
 @NullMarked
 public final class WorldEditCommands {
@@ -198,8 +199,7 @@ public final class WorldEditCommands {
             "/vi",
             "/vir",
             "/vl",
-            "/vr--"
-    );
+            "/vr--");
 
     private WorldEditCommands() {
         throw new UnsupportedOperationException();

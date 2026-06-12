@@ -18,11 +18,12 @@
 package de.eintosti.buildsystem.api.world.builder;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.UUID;
 
 /**
  * A {@link Builder} represents a player allowed to build in a {@link BuildWorld}.
@@ -63,8 +64,7 @@ public sealed interface Builder permits BuilderImpl {
      * @param serialized The serialized builder
      * @return The builder if all the input is valid, otherwise {@code null}
      */
-    @Nullable
-    static Builder deserialize(@Nullable String serialized) {
+    @Nullable static Builder deserialize(@Nullable String serialized) {
         if (serialized == null || serialized.equals("-")) {
             return null;
         }

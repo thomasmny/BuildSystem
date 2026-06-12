@@ -17,8 +17,9 @@
  */
 package de.eintosti.buildsystem.api.world.builder;
 
-import java.util.UUID;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.UUID;
 
 /**
  * Concrete implementation of the {@link Builder} interface.

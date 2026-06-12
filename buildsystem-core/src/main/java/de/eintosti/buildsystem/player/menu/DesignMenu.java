@@ -22,8 +22,8 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.menu.Menu;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemFlag;
@@ -69,11 +69,8 @@ public class DesignMenu extends Menu {
         Settings settings = plugin.getSettingsService().getSettings(player);
 
         String displayName = messages.getString(key, player);
-        ItemStack itemStack = InventoryUtils.createItem(material,
-                settings.getDesignColor() == color
-                        ? "§a" + displayName
-                        : "§7" + displayName
-        );
+        ItemStack itemStack = InventoryUtils.createItem(
+                material, settings.getDesignColor() == color ? "§a" + displayName : "§7" + displayName);
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta != null) {
             itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);

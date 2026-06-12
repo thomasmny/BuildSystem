@@ -17,10 +17,11 @@
  */
 package de.eintosti.buildsystem.player;
 
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
+
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

@@ -60,7 +60,8 @@ public class LocalBackupStorage extends AbstractBackupStorage {
     /**
      * Package-private constructor for unit tests (no BuildSystemPlugin required).
      */
-    LocalBackupStorage(Logger logger, Executor executor, Path backupRoot, Function<BuildWorld, BackupProfile> profileProvider) {
+    LocalBackupStorage(
+            Logger logger, Executor executor, Path backupRoot, Function<BuildWorld, BackupProfile> profileProvider) {
         super(logger, executor);
         this.profileProvider = profileProvider;
         this.backupPath = backupRoot;
@@ -76,7 +77,10 @@ public class LocalBackupStorage extends AbstractBackupStorage {
         try (Stream<Path> walk = Files.walk(dir)) {
             walk.filter(LocalBackupStorage::isZip).forEach(path -> {
                 long creationTime = creationTimeOf(path);
-                backups.add(new BackupImpl(profileProvider.apply(buildWorld), creationTime, path.toAbsolutePath().toString()));
+                backups.add(new BackupImpl(
+                        profileProvider.apply(buildWorld),
+                        creationTime,
+                        path.toAbsolutePath().toString()));
             });
         }
         return backups;
@@ -84,7 +88,9 @@ public class LocalBackupStorage extends AbstractBackupStorage {
 
     private long creationTimeOf(Path path) {
         try {
-            return Files.readAttributes(path, BasicFileAttributes.class).creationTime().toMillis();
+            return Files.readAttributes(path, BasicFileAttributes.class)
+                    .creationTime()
+                    .toMillis();
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to read attributes from " + path, e);
             return System.currentTimeMillis();

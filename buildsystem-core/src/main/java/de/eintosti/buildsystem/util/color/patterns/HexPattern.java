@@ -18,9 +18,10 @@
 package de.eintosti.buildsystem.util.color.patterns;
 
 import de.eintosti.buildsystem.util.color.ColorPattern;
+import org.jspecify.annotations.NullMarked;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class HexPattern implements ColorPattern {
@@ -50,12 +51,12 @@ public class HexPattern implements ColorPattern {
         return text;
     }
 
-    //&#RRGGBB
+    // &#RRGGBB
     private String parseDefaultFormat(String input) {
         return input.replace("&#", "#");
     }
 
-    //{#RRGGBB}
+    // {#RRGGBB}
     private String parseBracketFormat(String input) {
         String text = input;
         Matcher matcher = BRACKET_HEX.matcher(text);
@@ -69,7 +70,7 @@ public class HexPattern implements ColorPattern {
         return text;
     }
 
-    //&x&R&R&G&G&B&B
+    // &x&R&R&G&G&B&B
     private String parseSpigotFormat(String input) {
         String text = input.replace('§', '&');
 

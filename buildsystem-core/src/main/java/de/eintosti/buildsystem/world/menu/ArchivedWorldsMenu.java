@@ -17,8 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import static de.eintosti.buildsystem.world.menu.CreatableWorldsMenu.CREATE_FOLDER_PROFILE;
-
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
@@ -29,6 +27,8 @@ import de.eintosti.buildsystem.menu.InventoryUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
+
+import static de.eintosti.buildsystem.world.menu.CreatableWorldsMenu.CREATE_FOLDER_PROFILE;
 
 @NullMarked
 public class ArchivedWorldsMenu extends DisplayablesMenu {
@@ -41,14 +41,17 @@ public class ArchivedWorldsMenu extends DisplayablesMenu {
                 plugin.getMessages().getString("archive_title", player),
                 plugin.getMessages().getString("archive_no_worlds", player),
                 Visibility.IGNORE,
-                Sets.newHashSet(BuildWorldStatus.ARCHIVE)
-        );
+                Sets.newHashSet(BuildWorldStatus.ARCHIVE));
     }
 
     @Override
     protected void addExtraItems(Inventory inventory, Player player) {
         if (player.hasPermission("buildsystem.create.folder")) {
-            inventory.setItem(49, InventoryUtils.createSkull(plugin.getMessages().getString("world_navigator_create_folder", player), Profileable.detect(CREATE_FOLDER_PROFILE)));
+            inventory.setItem(
+                    49,
+                    InventoryUtils.createSkull(
+                            plugin.getMessages().getString("world_navigator_create_folder", player),
+                            Profileable.detect(CREATE_FOLDER_PROFILE)));
         }
     }
 }

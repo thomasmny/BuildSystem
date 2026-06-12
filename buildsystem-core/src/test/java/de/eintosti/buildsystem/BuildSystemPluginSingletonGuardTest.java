@@ -17,15 +17,16 @@
  */
 package de.eintosti.buildsystem;
 
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 import java.io.DataInputStream;
 import java.io.InputStream;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import org.jspecify.annotations.NullMarked;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -49,7 +50,8 @@ class BuildSystemPluginSingletonGuardTest {
 
     @BeforeAll
     static void loadClassFile() throws Exception {
-        InputStream is = BuildSystemPluginSingletonGuardTest.class.getClassLoader().getResourceAsStream(CLASS_RESOURCE);
+        InputStream is =
+                BuildSystemPluginSingletonGuardTest.class.getClassLoader().getResourceAsStream(CLASS_RESOURCE);
         assumeTrue(is != null, "BuildSystemPlugin.class not found on classpath — skipping guard");
 
         try (DataInputStream dis = new DataInputStream(is)) {
@@ -70,10 +72,16 @@ class BuildSystemPluginSingletonGuardTest {
                         pool[i] = new String(bytes, StandardCharsets.UTF_8);
                     }
                     case 3, 4 -> dis.readInt();
-                    case 5, 6 -> { dis.readLong(); i++; } // long/double occupy two slots
+                    case 5, 6 -> {
+                        dis.readLong();
+                        i++;
+                    } // long/double occupy two slots
                     case 7, 8, 16, 19, 20 -> dis.readUnsignedShort();
                     case 9, 10, 11, 12 -> dis.readInt();
-                    case 15 -> { dis.readUnsignedByte(); dis.readUnsignedShort(); }
+                    case 15 -> {
+                        dis.readUnsignedByte();
+                        dis.readUnsignedShort();
+                    }
                     case 17, 18 -> dis.readInt();
                     default -> throw new IllegalStateException("Unknown constant pool tag: " + tag + " at index " + i);
                 }
@@ -98,7 +106,7 @@ class BuildSystemPluginSingletonGuardTest {
             int accessFlags = dis.readUnsignedShort();
             int nameIndex = dis.readUnsignedShort();
             int descriptorIndex = dis.readUnsignedShort();
-            members.add(new int[]{accessFlags, nameIndex, descriptorIndex});
+            members.add(new int[] {accessFlags, nameIndex, descriptorIndex});
             int attrCount = dis.readUnsignedShort();
             for (int j = 0; j < attrCount; j++) {
                 dis.readUnsignedShort(); // attribute name index
@@ -118,8 +126,7 @@ class BuildSystemPluginSingletonGuardTest {
             assertFalse(
                     SELF_DESCRIPTOR.equals(descriptor),
                     "BuildSystemPlugin has a static field of type BuildSystemPlugin — singleton was re-added (field name: "
-                            + constantPool[field[1]] + ")"
-            );
+                            + constantPool[field[1]] + ")");
         }
     }
 
@@ -132,8 +139,7 @@ class BuildSystemPluginSingletonGuardTest {
             String descriptor = constantPool[method[2]];
             assertFalse(
                     "get".equals(name) && GET_METHOD_DESCRIPTOR.equals(descriptor),
-                    "BuildSystemPlugin has a static get() method returning itself — singleton was re-added"
-            );
+                    "BuildSystemPlugin has a static get() method returning itself — singleton was re-added");
         }
     }
 }

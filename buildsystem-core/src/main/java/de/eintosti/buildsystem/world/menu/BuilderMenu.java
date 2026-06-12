@@ -26,14 +26,8 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
-import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.InventoryUtils;
-import de.eintosti.buildsystem.world.menu.EditMenu;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import de.eintosti.buildsystem.menu.PaginatedMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -44,6 +38,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 @NullMarked
 public class BuilderMenu extends PaginatedMenu {
@@ -76,8 +75,16 @@ public class BuilderMenu extends PaginatedMenu {
         addCreatorInfoItem(inv, buildWorld.getBuilders(), player);
         addBuilderAddItem(inv, player);
 
-        inv.setItem(18, InventoryUtils.createSkull(messages.getString("gui_previous_page", player), Profileable.detect("f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2")));
-        inv.setItem(26, InventoryUtils.createSkull(messages.getString("gui_next_page", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158")));
+        inv.setItem(
+                18,
+                InventoryUtils.createSkull(
+                        messages.getString("gui_previous_page", player),
+                        Profileable.detect("f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2")));
+        inv.setItem(
+                26,
+                InventoryUtils.createSkull(
+                        messages.getString("gui_next_page", player),
+                        Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158")));
 
         // Clear builder slots from previous state
         plugin.getMenuItems().fillRange(player, inv, 9, 18);
@@ -95,15 +102,16 @@ public class BuilderMenu extends PaginatedMenu {
         Builder creator = builders.getCreator();
 
         if (!builders.hasCreator()) {
-            creatorInfoItem = InventoryUtils.createItem(XMaterial.BARRIER,
-                    messages.getString("worldeditor_builders_no_creator_item", player)
-            );
+            creatorInfoItem = InventoryUtils.createItem(
+                    XMaterial.BARRIER, messages.getString("worldeditor_builders_no_creator_item", player));
         } else {
-            creatorInfoItem = InventoryUtils.createSkull(messages.getString("worldeditor_builders_creator_item", player), Profileable.of(creator.getUniqueId()),
-                    messages.getString("worldeditor_builders_creator_lore", player,
-                            Map.entry("%creator%", builders.getCreator().getName())
-                    )
-            );
+            creatorInfoItem = InventoryUtils.createSkull(
+                    messages.getString("worldeditor_builders_creator_item", player),
+                    Profileable.of(creator.getUniqueId()),
+                    messages.getString(
+                            "worldeditor_builders_creator_lore",
+                            player,
+                            Map.entry("%creator%", builders.getCreator().getName())));
         }
         inventory.setItem(4, creatorInfoItem);
     }
@@ -111,7 +119,9 @@ public class BuilderMenu extends PaginatedMenu {
     private void addBuilderAddItem(Inventory inventory, Player player) {
         ItemStack builderAddItem;
         if (buildWorld.getBuilders().isCreator(player) || player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)) {
-            builderAddItem = InventoryUtils.createSkull(messages.getString("worldeditor_builders_add_builder_item", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716"));
+            builderAddItem = InventoryUtils.createSkull(
+                    messages.getString("worldeditor_builders_add_builder_item", player),
+                    Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716"));
         } else {
             builderAddItem = plugin.getMenuItems().getColoredGlassPane(player).parseItem();
         }
@@ -120,12 +130,10 @@ public class BuilderMenu extends PaginatedMenu {
 
     private ItemStack createBuilderItem(Builder builder, Player player) {
         ItemStack itemStack = InventoryUtils.createSkull(
-                messages.getString("worldeditor_builders_builder_item", player,
-                        Map.entry("%builder%", builder.getName())
-                ),
+                messages.getString(
+                        "worldeditor_builders_builder_item", player, Map.entry("%builder%", builder.getName())),
                 Profileable.username(builder.getName()),
-                messages.getStringList("worldeditor_builders_builder_lore", player)
-        );
+                messages.getStringList("worldeditor_builders_builder_lore", player));
         ItemMeta itemMeta = itemStack.getItemMeta();
         itemMeta.getPersistentDataContainer().set(this.builderNameKey, PersistentDataType.STRING, builder.getName());
         itemStack.setItemMeta(itemMeta);
@@ -177,7 +185,10 @@ public class BuilderMenu extends PaginatedMenu {
     }
 
     private void removeBuilderByItem(Player player, ItemStack itemStack) {
-        String builderName = itemStack.getItemMeta().getPersistentDataContainer().get(this.builderNameKey, PersistentDataType.STRING);
+        String builderName = itemStack
+                .getItemMeta()
+                .getPersistentDataContainer()
+                .get(this.builderNameKey, PersistentDataType.STRING);
         if (builderName == null) {
             player.closeInventory();
             messages.sendMessage(player, "worlds_removebuilder_error");
@@ -185,7 +196,8 @@ public class BuilderMenu extends PaginatedMenu {
             return;
         }
 
-        plugin.getPlayerLookupService().lookupUniqueId(builderName)
+        plugin.getPlayerLookupService()
+                .lookupUniqueId(builderName)
                 .thenAccept(builderId -> Bukkit.getScheduler().runTask(plugin, () -> {
                     if (builderId == null) {
                         player.closeInventory();

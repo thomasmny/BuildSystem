@@ -18,9 +18,10 @@
 package de.eintosti.buildsystem.api.player;
 
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.UUID;
 
 /**
  * A player managed by BuildSystem.

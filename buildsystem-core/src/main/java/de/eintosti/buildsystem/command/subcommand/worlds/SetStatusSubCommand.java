@@ -23,15 +23,15 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.world.menu.StatusMenu;
-import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.List;
 
 @NullMarked
 public class SetStatusSubCommand implements SubCommand {
 
     private final BuildSystemPlugin plugin;
-
 
     public SetStatusSubCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
@@ -39,7 +39,8 @@ public class SetStatusSubCommand implements SubCommand {
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = GuardedWorldCommand.requireWorld(plugin, player, worldName, args, 2, getArgument(), "worlds_setstatus");
+        BuildWorld buildWorld =
+                GuardedWorldCommand.requireWorld(plugin, player, worldName, args, 2, getArgument(), "worlds_setstatus");
         if (buildWorld == null) {
             return;
         }

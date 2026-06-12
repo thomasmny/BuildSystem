@@ -29,8 +29,7 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class SignChangeListener implements Listener {
 
-    public SignChangeListener(BuildSystemPlugin plugin) {
-    }
+    public SignChangeListener(BuildSystemPlugin plugin) {}
 
     @EventHandler
     public void onSignChange(SignChangeEvent event) {

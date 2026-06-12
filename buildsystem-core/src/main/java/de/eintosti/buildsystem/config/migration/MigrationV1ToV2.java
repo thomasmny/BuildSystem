@@ -17,9 +17,10 @@
  */
 package de.eintosti.buildsystem.config.migration;
 
-import java.util.List;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.List;
 
 @NullMarked
 public class MigrationV1ToV2 implements Migration {
@@ -32,13 +33,15 @@ public class MigrationV1ToV2 implements Migration {
         }
 
         if (config.contains("settings.archive-should-change-gamemode")) {
-            config.set("settings.archive.change-gamemode", config.getBoolean("settings.archive-should-change-gamemode"));
+            config.set(
+                    "settings.archive.change-gamemode", config.getBoolean("settings.archive-should-change-gamemode"));
             config.set("settings.archive-should-change-gamemode", null);
         }
 
         if (config.contains("settings.archive-world-game-mode")) {
             config.set("settings.archive.world-gamemode", config.getString("settings.archive-world-game-mode"));
-            config.setComments("settings.archive.world-gamemode", List.of("Options: SURVIVAL, CREATIVE, ADVENTURE, SPECTATOR"));
+            config.setComments(
+                    "settings.archive.world-gamemode", List.of("Options: SURVIVAL, CREATIVE, ADVENTURE, SPECTATOR"));
             config.set("settings.archive-world-game-mode", null);
         }
 

@@ -45,7 +45,12 @@ public class EntityDamageListener implements Listener {
         }
 
         // Teleport player up if void damage is taken
-        if (event.getCause() != EntityDamageEvent.DamageCause.VOID || !plugin.getConfigService().current().settings().saveFromDeath().enabled()) {
+        if (event.getCause() != EntityDamageEvent.DamageCause.VOID
+                || !plugin.getConfigService()
+                        .current()
+                        .settings()
+                        .saveFromDeath()
+                        .enabled()) {
             return;
         }
 
@@ -64,12 +69,11 @@ public class EntityDamageListener implements Listener {
 
         event.setCancelled(true);
         player.setFallDistance(0);
-        PaperLib.teleportAsync(player, teleportLoc)
-                .whenComplete((completed, throwable) -> {
-                    if (!completed) {
-                        return;
-                    }
-                    XSound.ENTITY_ZOMBIE_INFECT.play(player);
-                });
+        PaperLib.teleportAsync(player, teleportLoc).whenComplete((completed, throwable) -> {
+            if (!completed) {
+                return;
+            }
+            XSound.ENTITY_ZOMBIE_INFECT.play(player);
+        });
     }
 }

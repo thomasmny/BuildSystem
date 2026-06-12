@@ -29,8 +29,7 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class AsyncPlayerChatListener implements Listener {
 
-    public AsyncPlayerChatListener(BuildSystemPlugin plugin) {
-    }
+    public AsyncPlayerChatListener(BuildSystemPlugin plugin) {}
 
     @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent event) {

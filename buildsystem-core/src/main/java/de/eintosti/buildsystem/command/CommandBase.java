@@ -19,8 +19,6 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.i18n.Messages;
-import java.util.List;
-import java.util.logging.Logger;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -28,6 +26,9 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.List;
+import java.util.logging.Logger;
 
 @NullMarked
 public abstract class CommandBase implements CommandExecutor, TabCompleter {
@@ -65,11 +66,9 @@ public abstract class CommandBase implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    protected void run(Player player, String label, String[] args) {
-    }
+    protected void run(Player player, String label, String[] args) {}
 
-    protected void run(CommandSender sender, String label, String[] args) {
-    }
+    protected void run(CommandSender sender, String label, String[] args) {}
 
     @Override
     public final List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {

@@ -19,10 +19,11 @@ package de.eintosti.buildsystem.command;
 
 import com.google.common.collect.Lists;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import java.util.List;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.List;
 
 @NullMarked
 public class BuildSystemCommand extends PagedCommand {
@@ -59,8 +60,14 @@ public class BuildSystemCommand extends PagedCommand {
                 createComponent(player, "/build [player]", "buildsystem_build", "/build", "buildsystem.build"),
                 createComponent(player, "/config reload", "buildsystem_config", "/config reload", "buildsystem.config"),
                 createComponent(player, "/day [world]", "buildsystem_day", "/day", "buildsystem.day"),
-                createComponent(player, "/explosions [world]", "buildsystem_explosions", "/explosions", "buildsystem.explosions"),
-                createComponent(player, "/gm <gamemode> [player]", "buildsystem_gamemode", "/gm ", "buildsystem.gamemode"),
+                createComponent(
+                        player,
+                        "/explosions [world]",
+                        "buildsystem_explosions",
+                        "/explosions",
+                        "buildsystem.explosions"),
+                createComponent(
+                        player, "/gm <gamemode> [player]", "buildsystem_gamemode", "/gm ", "buildsystem.gamemode"),
                 createComponent(player, "/night [world]", "buildsystem_night", "/night", "buildsystem.night"),
                 createComponent(player, "/noai [world]", "buildsystem_noai", "/noai", "buildsystem.noai"),
                 createComponent(player, "/physics [world]", "buildsystem_physics", "/physics", "buildsystem.physics"),
@@ -70,8 +77,7 @@ public class BuildSystemCommand extends PagedCommand {
                 createComponent(player, "/spawn", "buildsystem_spawn", "/spawn", "-"),
                 createComponent(player, "/speed <1-5>", "buildsystem_speed", "/speed ", "buildsystem.speed"),
                 createComponent(player, "/top", "buildsystem_top", "/top", "buildsystem.top"),
-                createComponent(player, "/worlds help", "buildsystem_worlds", "/worlds help", "-")
-        );
+                createComponent(player, "/worlds help", "buildsystem_worlds", "/worlds help", "-"));
         commands.removeIf(textComponent -> textComponent.getText().isEmpty());
         return commands;
     }

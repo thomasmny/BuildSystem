@@ -17,14 +17,14 @@
  */
 package de.eintosti.buildsystem.i18n;
 
-import java.util.Map.Entry;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.Map.Entry;
 
 @NullMarked
 public final class Placeholders {
 
-    private Placeholders() {
-    }
+    private Placeholders() {}
 
     @SafeVarargs
     public static String apply(String query, Entry<String, Object>... placeholders) {

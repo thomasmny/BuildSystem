@@ -19,13 +19,10 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.i18n.Messages;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.*;
 
 /**
  * Generic dispatcher for slash-command subcommands. The command name is matched case-insensitively; worldName is resolved as {@code args[1]} when present, otherwise the player's
@@ -75,7 +72,8 @@ public final class SubCommandDispatcher {
                 String permission = cmd.getArgument().getPermission();
                 if (permission == null || player.hasPermission(permission)) {
                     String name = cmd.getArgument().getName();
-                    if (args[0].isEmpty() || name.toLowerCase(Locale.ROOT).startsWith(args[0].toLowerCase(Locale.ROOT))) {
+                    if (args[0].isEmpty()
+                            || name.toLowerCase(Locale.ROOT).startsWith(args[0].toLowerCase(Locale.ROOT))) {
                         result.add(name);
                     }
                 }

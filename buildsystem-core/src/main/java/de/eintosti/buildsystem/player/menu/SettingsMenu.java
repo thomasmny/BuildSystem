@@ -25,10 +25,10 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
+import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
-import de.eintosti.buildsystem.menu.InventoryUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -59,35 +59,144 @@ public class SettingsMenu extends Menu {
         Settings settings = settingsManager.getSettings(player);
         addDesignItem(inv, player);
         addClearInventoryItem(inv, player);
-        plugin.getMenuItems().addToggleItem(player, inv, 13, XMaterial.DIAMOND_AXE, settings.isDisableInteract(), "settings_disableinteract_item", "settings_disableinteract_lore");
-        plugin.getMenuItems().addToggleItem(player, inv, 14, XMaterial.ENDER_EYE, settings.isHidePlayers(), "settings_hideplayers_item", "settings_hideplayers_lore");
-        plugin.getMenuItems().addToggleItem(player, inv, 15, XMaterial.OAK_SIGN, settings.isInstantPlaceSigns(), "settings_instantplacesigns_item", "settings_instantplacesigns_lore");
-        plugin.getMenuItems().addToggleItem(player, inv, 20, XMaterial.SLIME_BLOCK, settings.isKeepNavigator(), "settings_keep_navigator_item", "settings_keep_navigator_lore");
-        plugin.getMenuItems().addToggleItem(player, inv, 21, plugin.getConfigService().current().settings().navigator().item(),
-                settings.getNavigatorType() == NavigatorType.NEW, "settings_new_navigator_item", "settings_new_navigator_lore");
-        plugin.getMenuItems().addToggleItem(player, inv, 22, XMaterial.GOLDEN_CARROT, settings.isNightVision(), "settings_nightvision_item", "settings_nightvision_lore");
-        plugin.getMenuItems().addToggleItem(player, inv, 23, XMaterial.BRICKS, settings.isNoClip(), "settings_no_clip_item", "settings_no_clip_lore");
-        plugin.getMenuItems().addToggleItem(player, inv, 24, XMaterial.IRON_TRAPDOOR, settings.isOpenTrapDoors(), "settings_open_trapdoors_item", "settings_open_trapdoors_lore");
-        plugin.getMenuItems().addToggleItem(player, inv, 29, XMaterial.FERN, settings.isPlacePlants(), "settings_placeplants_item", "settings_placeplants_lore");
-        plugin.getMenuItems().addToggleItem(player, inv, 30, XMaterial.PAPER, settings.isScoreboard(),
-                plugin.getConfigService().current().settings().scoreboard() ? "settings_scoreboard_item" : "settings_scoreboard_disabled_item",
-                plugin.getConfigService().current().settings().scoreboard() ? "settings_scoreboard_lore" : "settings_scoreboard_disabled_lore");
-        plugin.getMenuItems().addToggleItem(player, inv, 31, XMaterial.SMOOTH_STONE_SLAB, settings.isSlabBreaking(), "settings_slab_breaking_item", "settings_slab_breaking_lore");
-        plugin.getMenuItems().addToggleItem(player, inv, 32, XMaterial.MAGMA_CREAM, settings.isSpawnTeleport(), "settings_spawnteleport_item", "settings_spawnteleport_lore");
+        plugin.getMenuItems()
+                .addToggleItem(
+                        player,
+                        inv,
+                        13,
+                        XMaterial.DIAMOND_AXE,
+                        settings.isDisableInteract(),
+                        "settings_disableinteract_item",
+                        "settings_disableinteract_lore");
+        plugin.getMenuItems()
+                .addToggleItem(
+                        player,
+                        inv,
+                        14,
+                        XMaterial.ENDER_EYE,
+                        settings.isHidePlayers(),
+                        "settings_hideplayers_item",
+                        "settings_hideplayers_lore");
+        plugin.getMenuItems()
+                .addToggleItem(
+                        player,
+                        inv,
+                        15,
+                        XMaterial.OAK_SIGN,
+                        settings.isInstantPlaceSigns(),
+                        "settings_instantplacesigns_item",
+                        "settings_instantplacesigns_lore");
+        plugin.getMenuItems()
+                .addToggleItem(
+                        player,
+                        inv,
+                        20,
+                        XMaterial.SLIME_BLOCK,
+                        settings.isKeepNavigator(),
+                        "settings_keep_navigator_item",
+                        "settings_keep_navigator_lore");
+        plugin.getMenuItems()
+                .addToggleItem(
+                        player,
+                        inv,
+                        21,
+                        plugin.getConfigService()
+                                .current()
+                                .settings()
+                                .navigator()
+                                .item(),
+                        settings.getNavigatorType() == NavigatorType.NEW,
+                        "settings_new_navigator_item",
+                        "settings_new_navigator_lore");
+        plugin.getMenuItems()
+                .addToggleItem(
+                        player,
+                        inv,
+                        22,
+                        XMaterial.GOLDEN_CARROT,
+                        settings.isNightVision(),
+                        "settings_nightvision_item",
+                        "settings_nightvision_lore");
+        plugin.getMenuItems()
+                .addToggleItem(
+                        player,
+                        inv,
+                        23,
+                        XMaterial.BRICKS,
+                        settings.isNoClip(),
+                        "settings_no_clip_item",
+                        "settings_no_clip_lore");
+        plugin.getMenuItems()
+                .addToggleItem(
+                        player,
+                        inv,
+                        24,
+                        XMaterial.IRON_TRAPDOOR,
+                        settings.isOpenTrapDoors(),
+                        "settings_open_trapdoors_item",
+                        "settings_open_trapdoors_lore");
+        plugin.getMenuItems()
+                .addToggleItem(
+                        player,
+                        inv,
+                        29,
+                        XMaterial.FERN,
+                        settings.isPlacePlants(),
+                        "settings_placeplants_item",
+                        "settings_placeplants_lore");
+        plugin.getMenuItems()
+                .addToggleItem(
+                        player,
+                        inv,
+                        30,
+                        XMaterial.PAPER,
+                        settings.isScoreboard(),
+                        plugin.getConfigService().current().settings().scoreboard()
+                                ? "settings_scoreboard_item"
+                                : "settings_scoreboard_disabled_item",
+                        plugin.getConfigService().current().settings().scoreboard()
+                                ? "settings_scoreboard_lore"
+                                : "settings_scoreboard_disabled_lore");
+        plugin.getMenuItems()
+                .addToggleItem(
+                        player,
+                        inv,
+                        31,
+                        XMaterial.SMOOTH_STONE_SLAB,
+                        settings.isSlabBreaking(),
+                        "settings_slab_breaking_item",
+                        "settings_slab_breaking_lore");
+        plugin.getMenuItems()
+                .addToggleItem(
+                        player,
+                        inv,
+                        32,
+                        XMaterial.MAGMA_CREAM,
+                        settings.isSpawnTeleport(),
+                        "settings_spawnteleport_item",
+                        "settings_spawnteleport_lore");
     }
 
     private void addClearInventoryItem(Inventory inventory, Player player) {
         Settings settings = settingsManager.getSettings(player);
         XMaterial xMaterial = settings.isClearInventory() ? XMaterial.MINECART : XMaterial.CHEST_MINECART;
-        plugin.getMenuItems().addToggleItem(player, inventory, 12, xMaterial, settings.isClearInventory(),
-                "settings_clear_inventory_item", "settings_clear_inventory_lore"
-        );
+        plugin.getMenuItems()
+                .addToggleItem(
+                        player,
+                        inventory,
+                        12,
+                        xMaterial,
+                        settings.isClearInventory(),
+                        "settings_clear_inventory_item",
+                        "settings_clear_inventory_lore");
     }
 
     private void addDesignItem(Inventory inventory, Player player) {
         DesignColor color = settingsManager.getSettings(player).getDesignColor();
-        XMaterial material = XMaterial.matchXMaterial(color.name() + "_STAINED_GLASS").orElse(XMaterial.BLACK_STAINED_GLASS);
-        ItemStack itemStack = InventoryUtils.createItem(material, messages.getString("settings_change_design_item", player));
+        XMaterial material =
+                XMaterial.matchXMaterial(color.name() + "_STAINED_GLASS").orElse(XMaterial.BLACK_STAINED_GLASS);
+        ItemStack itemStack =
+                InventoryUtils.createItem(material, messages.getString("settings_change_design_item", player));
         ItemMeta itemMeta = itemStack.getItemMeta();
 
         itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
@@ -138,7 +247,8 @@ public class SettingsMenu extends Menu {
             case 22:
                 if (!settings.isNightVision()) {
                     settings.setNightVision(true);
-                    player.addPotionEffect(new PotionEffect(XPotion.NIGHT_VISION.get(), PotionEffect.INFINITE_DURATION, 0, false, false));
+                    player.addPotionEffect(new PotionEffect(
+                            XPotion.NIGHT_VISION.get(), PotionEffect.INFINITE_DURATION, 0, false, false));
                 } else {
                     settings.setNightVision(false);
                     player.removePotionEffect(XPotion.NIGHT_VISION.get());

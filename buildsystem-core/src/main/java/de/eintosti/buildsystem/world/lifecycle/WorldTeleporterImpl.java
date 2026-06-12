@@ -83,8 +83,7 @@ public class WorldTeleporterImpl implements WorldTeleporter {
                                 bukkitWorld,
                                 blockLocation.getBlockX() + 0.5,
                                 blockLocation.getBlockY() + 1,
-                                blockLocation.getBlockZ() + 0.5
-                        );
+                                blockLocation.getBlockZ() + 0.5);
                     }
                     break;
                 default:
@@ -93,26 +92,33 @@ public class WorldTeleporterImpl implements WorldTeleporter {
         }
 
         Location finalLocation = location;
-        Bukkit.getScheduler().runTaskLater(plugin, () ->
-                PaperLib.teleportAsync(player, finalLocation)
-                        .whenComplete((completed, throwable) -> {
-                                    if (!completed) {
-                                        return;
-                                    }
+        Bukkit.getScheduler()
+                .runTaskLater(
+                        plugin,
+                        () -> PaperLib.teleportAsync(player, finalLocation).whenComplete((completed, throwable) -> {
+                            if (!completed) {
+                                return;
+                            }
 
-                                    player.resetTitle();
-                                    XSound.ENTITY_ENDERMAN_TELEPORT.play(player);
+                            player.resetTitle();
+                            XSound.ENTITY_ENDERMAN_TELEPORT.play(player);
 
-                                    if (!finalLocation.clone().add(0, -1, 0).getBlock().getType().isSolid()) {
-                                        player.setFlying(player.getAllowFlight());
-                                    }
-                                }
-                        ), hadToLoad ? 20L : 0L);
+                            if (!finalLocation
+                                    .clone()
+                                    .add(0, -1, 0)
+                                    .getBlock()
+                                    .getType()
+                                    .isSolid()) {
+                                player.setFlying(player.getAllowFlight());
+                            }
+                        }),
+                        hadToLoad ? 20L : 0L);
     }
 
     public static boolean isSafeLocation(Location location) {
         Block feet = location.getBlock();
-        if (feet.getType() != Material.AIR && feet.getLocation().add(0, 1, 0).getBlock().getType() != Material.AIR) {
+        if (feet.getType() != Material.AIR
+                && feet.getLocation().add(0, 1, 0).getBlock().getType() != Material.AIR) {
             return false;
         }
 

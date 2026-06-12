@@ -24,22 +24,24 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlPlayerStorage;
+import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachmentInfo;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bukkit.entity.Player;
-import org.bukkit.permissions.PermissionAttachmentInfo;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class PlayerServiceImpl implements PlayerService {
 
     @Nullable
     private final BuildSystemPlugin plugin;
+
     @Nullable
     private final PlayerStorageImpl playerStorage;
 
@@ -95,7 +97,11 @@ public class PlayerServiceImpl implements PlayerService {
         }
 
         int maxWorldAmountPlayer = getMaxWorlds(player, showPrivateWorlds ? Visibility.PRIVATE : Visibility.PUBLIC);
-        return maxWorldAmountPlayer < 0 || worldStorage.getBuildWorldsCreatedByPlayer(player, visibility).size() < maxWorldAmountPlayer;
+        return maxWorldAmountPlayer < 0
+                || worldStorage
+                                .getBuildWorldsCreatedByPlayer(player, visibility)
+                                .size()
+                        < maxWorldAmountPlayer;
     }
 
     @Override
@@ -140,12 +146,10 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     public CompletableFuture<Void> save() {
-        return this.playerStorage
-                .save(this.playerStorage.getBuildPlayers())
-                .whenComplete((r, e) -> {
-                    if (e != null) {
-                        plugin.getLogger().log(Level.SEVERE, "Failed to save player data", e);
-                    }
-                });
+        return this.playerStorage.save(this.playerStorage.getBuildPlayers()).whenComplete((r, e) -> {
+            if (e != null) {
+                plugin.getLogger().log(Level.SEVERE, "Failed to save player data", e);
+            }
+        });
     }
 }

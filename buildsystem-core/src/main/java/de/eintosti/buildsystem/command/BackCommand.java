@@ -19,9 +19,8 @@ package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.api.player.BuildPlayer;
-import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
+import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -58,14 +57,13 @@ public class BackCommand extends CommandBase {
             return;
         }
 
-        PaperLib.teleportAsync(player, previousLocation)
-                .whenComplete((completed, throwable) -> {
-                    if (!completed) {
-                        return;
-                    }
-                    XSound.ENTITY_ZOMBIE_INFECT.play(player);
-                    messages.sendMessage(player, "back_teleported");
-                    buildPlayer.setPreviousLocation(null);
-                });
+        PaperLib.teleportAsync(player, previousLocation).whenComplete((completed, throwable) -> {
+            if (!completed) {
+                return;
+            }
+            XSound.ENTITY_ZOMBIE_INFECT.play(player);
+            messages.sendMessage(player, "back_teleported");
+            buildPlayer.setPreviousLocation(null);
+        });
     }
 }

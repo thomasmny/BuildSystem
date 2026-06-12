@@ -25,13 +25,14 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class RemoveBuilderSubCommand implements SubCommand {
@@ -44,7 +45,9 @@ public class RemoveBuilderSubCommand implements SubCommand {
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld().getName());
+        BuildWorld buildWorld = plugin.getWorldService()
+                .getWorldStorage()
+                .getBuildWorld(player.getWorld().getName());
         var permissions = WorldPermissionsImpl.of(plugin, buildWorld);
         if (!permissions.canPerformCommand(player, getArgument().getPermission())) {
             plugin.getMessages().sendPermissionError(player);
@@ -70,7 +73,8 @@ public class RemoveBuilderSubCommand implements SubCommand {
             return;
         }
 
-        plugin.getPlayerLookupService().lookupUniqueId(builderName)
+        plugin.getPlayerLookupService()
+                .lookupUniqueId(builderName)
                 .thenAccept(builderId -> Bukkit.getScheduler().runTask(plugin, () -> {
                     if (builderId == null) {
                         plugin.getMessages().sendMessage(player, "worlds_removebuilder_player_not_found");
@@ -114,7 +118,9 @@ public class RemoveBuilderSubCommand implements SubCommand {
         if (args.length != 2) {
             return List.of();
         }
-        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld().getName());
+        BuildWorld buildWorld = plugin.getWorldService()
+                .getWorldStorage()
+                .getBuildWorld(player.getWorld().getName());
         if (buildWorld == null) {
             return List.of();
         }

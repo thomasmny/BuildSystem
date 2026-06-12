@@ -21,13 +21,14 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.menu.InventoryUtils;
-import java.util.Map;
-import java.util.stream.IntStream;
+import de.eintosti.buildsystem.menu.Menu;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.Map;
+import java.util.stream.IntStream;
 
 @NullMarked
 public class DeleteMenu extends Menu {
@@ -47,20 +48,34 @@ public class DeleteMenu extends Menu {
         final int[] blackSlots = {4, 22};
         final int[] redSlots = {5, 6, 7, 8, 14, 16, 17, 23, 24, 25, 26};
 
-        IntStream.of(greenSlots).forEach(slot -> getInventory().setItem(slot, InventoryUtils.createItem(XMaterial.LIME_STAINED_GLASS_PANE, "§f")));
-        IntStream.of(blackSlots).forEach(slot -> getInventory().setItem(slot, InventoryUtils.createItem(XMaterial.BLACK_STAINED_GLASS_PANE, "§f")));
-        IntStream.of(redSlots).forEach(slot -> getInventory().setItem(slot, InventoryUtils.createItem(XMaterial.RED_STAINED_GLASS_PANE, "§f")));
+        IntStream.of(greenSlots)
+                .forEach(slot -> getInventory()
+                        .setItem(slot, InventoryUtils.createItem(XMaterial.LIME_STAINED_GLASS_PANE, "§f")));
+        IntStream.of(blackSlots)
+                .forEach(slot -> getInventory()
+                        .setItem(slot, InventoryUtils.createItem(XMaterial.BLACK_STAINED_GLASS_PANE, "§f")));
+        IntStream.of(redSlots)
+                .forEach(slot -> getInventory()
+                        .setItem(slot, InventoryUtils.createItem(XMaterial.RED_STAINED_GLASS_PANE, "§f")));
 
-        getInventory().setItem(11, InventoryUtils.createItem(XMaterial.LIME_DYE,
-                messages.getString("delete_world_confirm", player))
-        );
-        getInventory().setItem(13, InventoryUtils.createItem(XMaterial.FILLED_MAP,
-                messages.getString("delete_world_name", player, Map.entry("%world%", buildWorld.getName())),
-                messages.getStringList("delete_world_name_lore", player)
-        ));
-        getInventory().setItem(15, InventoryUtils.createItem(XMaterial.RED_DYE,
-                messages.getString("delete_world_cancel", player))
-        );
+        getInventory()
+                .setItem(
+                        11,
+                        InventoryUtils.createItem(
+                                XMaterial.LIME_DYE, messages.getString("delete_world_confirm", player)));
+        getInventory()
+                .setItem(
+                        13,
+                        InventoryUtils.createItem(
+                                XMaterial.FILLED_MAP,
+                                messages.getString(
+                                        "delete_world_name", player, Map.entry("%world%", buildWorld.getName())),
+                                messages.getStringList("delete_world_name_lore", player)));
+        getInventory()
+                .setItem(
+                        15,
+                        InventoryUtils.createItem(
+                                XMaterial.RED_DYE, messages.getString("delete_world_cancel", player)));
     }
 
     @Override

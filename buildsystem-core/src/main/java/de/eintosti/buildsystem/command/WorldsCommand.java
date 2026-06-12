@@ -19,35 +19,12 @@ package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.ArchiveSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.BackupsSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.BuildersSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.DeleteSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.EditSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.FolderSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.HelpSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.ImportAllSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.ImportSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.InfoSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.ItemSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.PrivateSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.PublicSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.RemoveBuilderSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.RemoveSpawnSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.RenameSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.SetCreatorSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.SetItemSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.SetPermissionSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.SetSpawnSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.SetStatusSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.TeleportSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.UnimportSubCommand;
+import de.eintosti.buildsystem.command.subcommand.worlds.*;
 import de.eintosti.buildsystem.world.menu.NavigatorMenu;
-import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.List;
 
 @NullMarked
 public class WorldsCommand extends CommandBase {
@@ -56,33 +33,34 @@ public class WorldsCommand extends CommandBase {
 
     public WorldsCommand(BuildSystemPlugin plugin) {
         super(plugin, true);
-        this.dispatcher = new SubCommandDispatcher(plugin.getMessages(), List.of(
-                new ArchiveSubCommand(plugin),
-                new AddBuilderSubCommand(plugin),
-                new BackupsSubCommand(plugin),
-                new BuildersSubCommand(plugin),
-                new DeleteSubCommand(plugin),
-                new EditSubCommand(plugin),
-                new FolderSubCommand(plugin),
-                new HelpSubCommand(plugin),
-                new ImportAllSubCommand(plugin),
-                new ImportSubCommand(plugin),
-                new InfoSubCommand(plugin),
-                new ItemSubCommand(plugin),
-                new PrivateSubCommand(plugin),
-                new PublicSubCommand(plugin),
-                new RemoveBuilderSubCommand(plugin),
-                new RemoveSpawnSubCommand(plugin),
-                new RenameSubCommand(plugin),
-                new SetCreatorSubCommand(plugin),
-                new SetItemSubCommand(plugin),
-                new SetPermissionSubCommand(plugin),
-                new SetProjectSubCommand(plugin),
-                new SetSpawnSubCommand(plugin),
-                new SetStatusSubCommand(plugin),
-                new TeleportSubCommand(plugin),
-                new UnimportSubCommand(plugin)
-        ));
+        this.dispatcher = new SubCommandDispatcher(
+                plugin.getMessages(),
+                List.of(
+                        new ArchiveSubCommand(plugin),
+                        new AddBuilderSubCommand(plugin),
+                        new BackupsSubCommand(plugin),
+                        new BuildersSubCommand(plugin),
+                        new DeleteSubCommand(plugin),
+                        new EditSubCommand(plugin),
+                        new FolderSubCommand(plugin),
+                        new HelpSubCommand(plugin),
+                        new ImportAllSubCommand(plugin),
+                        new ImportSubCommand(plugin),
+                        new InfoSubCommand(plugin),
+                        new ItemSubCommand(plugin),
+                        new PrivateSubCommand(plugin),
+                        new PublicSubCommand(plugin),
+                        new RemoveBuilderSubCommand(plugin),
+                        new RemoveSpawnSubCommand(plugin),
+                        new RenameSubCommand(plugin),
+                        new SetCreatorSubCommand(plugin),
+                        new SetItemSubCommand(plugin),
+                        new SetPermissionSubCommand(plugin),
+                        new SetProjectSubCommand(plugin),
+                        new SetSpawnSubCommand(plugin),
+                        new SetStatusSubCommand(plugin),
+                        new TeleportSubCommand(plugin),
+                        new UnimportSubCommand(plugin)));
     }
 
     @Override

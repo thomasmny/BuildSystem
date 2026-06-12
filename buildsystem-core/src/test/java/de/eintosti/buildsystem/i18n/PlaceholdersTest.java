@@ -17,11 +17,12 @@
  */
 package de.eintosti.buildsystem.i18n;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.Map;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
+
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @NullMarked
 class PlaceholdersTest {
@@ -49,10 +50,7 @@ class PlaceholdersTest {
     @Test
     void apply_multiplePlaceholders_allSubstituted() {
         String result = Placeholders.apply(
-                "%player% joined %world%",
-                Map.entry("%player%", "Alice"),
-                Map.entry("%world%", "Lobby")
-        );
+                "%player% joined %world%", Map.entry("%player%", "Alice"), Map.entry("%world%", "Lobby"));
         assertEquals("Alice joined Lobby", result);
     }
 

@@ -31,8 +31,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 final class GuardedWorldCommand {
 
-    private GuardedWorldCommand() {
-    }
+    private GuardedWorldCommand() {}
 
     /**
      * Runs the shared preamble: permission (checked before existence so unpermitted players cannot probe which world names exist), argument count, then existence.
@@ -47,7 +46,14 @@ final class GuardedWorldCommand {
      * @return The world if all checks pass, otherwise {@code null} (an error message has already been sent)
      */
     @Nullable
-    static BuildWorld requireWorld(BuildSystemPlugin plugin, Player player, String worldName, String[] args, int maxArgs, Argument argument, String messageKeyPrefix) {
+    static BuildWorld requireWorld(
+            BuildSystemPlugin plugin,
+            Player player,
+            String worldName,
+            String[] args,
+            int maxArgs,
+            Argument argument,
+            String messageKeyPrefix) {
         BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
         if (!WorldPermissionsImpl.of(plugin, buildWorld).canPerformCommand(player, argument.getPermission())) {
             plugin.getMessages().sendPermissionError(player);

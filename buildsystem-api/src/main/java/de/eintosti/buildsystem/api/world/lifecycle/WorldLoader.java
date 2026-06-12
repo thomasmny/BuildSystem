@@ -18,9 +18,10 @@
 package de.eintosti.buildsystem.api.world.lifecycle;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import java.util.concurrent.CompletableFuture;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Provides utilities for loading and managing {@link BuildWorld}s. This interface handles the process of making a world accessible on the server.
@@ -46,4 +47,4 @@ public interface WorldLoader {
      * @return A future that completes once the world has finished loading
      */
     CompletableFuture<Void> load();
-} 
+}

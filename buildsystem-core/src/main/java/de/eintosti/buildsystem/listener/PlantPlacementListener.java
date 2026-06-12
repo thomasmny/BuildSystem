@@ -27,8 +27,6 @@ import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.DirectionUtil;
-import java.util.Arrays;
-import java.util.EnumSet;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.MultipleFacing;
@@ -40,16 +38,37 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
+import java.util.Arrays;
+import java.util.EnumSet;
+
 @NullMarked
 public class PlantPlacementListener implements Listener {
 
-    private static final EnumSet<XMaterial> OTHER_PLANTS = Sets.newEnumSet(Sets.newHashSet(
-            XMaterial.TORCHFLOWER, XMaterial.PITCHER_PLANT, XMaterial.LILY_PAD, XMaterial.PINK_PETALS,
-            XMaterial.BROWN_MUSHROOM, XMaterial.RED_MUSHROOM, XMaterial.CRIMSON_FUNGUS, XMaterial.WARPED_FUNGUS,
-            XMaterial.SHORT_GRASS, XMaterial.FERN, XMaterial.DEAD_BUSH, XMaterial.LARGE_FERN, XMaterial.TALL_GRASS,
-            XMaterial.NETHER_SPROUTS, XMaterial.WARPED_ROOTS, XMaterial.CRIMSON_ROOTS, XMaterial.SUGAR_CANE, XMaterial.BAMBOO,
-            XMaterial.BIG_DRIPLEAF, XMaterial.SMALL_DRIPLEAF, XMaterial.SEAGRASS, XMaterial.SWEET_BERRIES
-    ), XMaterial.class);
+    private static final EnumSet<XMaterial> OTHER_PLANTS = Sets.newEnumSet(
+            Sets.newHashSet(
+                    XMaterial.TORCHFLOWER,
+                    XMaterial.PITCHER_PLANT,
+                    XMaterial.LILY_PAD,
+                    XMaterial.PINK_PETALS,
+                    XMaterial.BROWN_MUSHROOM,
+                    XMaterial.RED_MUSHROOM,
+                    XMaterial.CRIMSON_FUNGUS,
+                    XMaterial.WARPED_FUNGUS,
+                    XMaterial.SHORT_GRASS,
+                    XMaterial.FERN,
+                    XMaterial.DEAD_BUSH,
+                    XMaterial.LARGE_FERN,
+                    XMaterial.TALL_GRASS,
+                    XMaterial.NETHER_SPROUTS,
+                    XMaterial.WARPED_ROOTS,
+                    XMaterial.CRIMSON_ROOTS,
+                    XMaterial.SUGAR_CANE,
+                    XMaterial.BAMBOO,
+                    XMaterial.BIG_DRIPLEAF,
+                    XMaterial.SMALL_DRIPLEAF,
+                    XMaterial.SEAGRASS,
+                    XMaterial.SWEET_BERRIES),
+            XMaterial.class);
 
     private final SettingsService settingsManager;
     private final WorldStorageImpl worldStorage;
@@ -88,13 +107,13 @@ public class PlantPlacementListener implements Listener {
                 && !XTag.ALIVE_CORAL_PLANTS.isTagged(xMaterial)
                 && !XTag.DEAD_CORAL_PLANTS.isTagged(xMaterial)
                 && !XTag.SAPLINGS.isTagged(xMaterial)
-                && !OTHER_PLANTS.contains(xMaterial)
-        ) {
+                && !OTHER_PLANTS.contains(xMaterial)) {
             return;
         }
 
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld().getName());
-        if (buildWorld != null && policy.mayModify(player, buildWorld, buildWorld.getData().blockPlacement()) != Denial.NONE) {
+        if (buildWorld != null
+                && policy.mayModify(player, buildWorld, buildWorld.getData().blockPlacement()) != Denial.NONE) {
             return;
         }
 
@@ -112,7 +131,8 @@ public class PlantPlacementListener implements Listener {
                 }
                 adjacent.setType(xMaterial.get());
                 MultipleFacing multipleFacing = (MultipleFacing) adjacent.getBlockData();
-                Arrays.stream(DirectionUtil.BLOCK_SIDES).forEach(blockFace -> multipleFacing.setFace(blockFace, blockFace == toPlace));
+                Arrays.stream(DirectionUtil.BLOCK_SIDES)
+                        .forEach(blockFace -> multipleFacing.setFace(blockFace, blockFace == toPlace));
                 adjacent.setBlockData(multipleFacing);
                 break;
             default:

@@ -21,10 +21,10 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.data.Bypassable;
 import de.eintosti.buildsystem.api.data.Type;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
-import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.world.data.type.ConfigurableType;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
@@ -35,8 +35,8 @@ import org.jspecify.annotations.Nullable;
 public class WorldPermissionsImpl implements WorldPermissions {
 
     private final BuildSystemPlugin plugin;
-    @Nullable
-    private final BuildWorld buildWorld;
+
+    @Nullable private final BuildWorld buildWorld;
 
     private WorldPermissionsImpl(BuildSystemPlugin plugin, @Nullable BuildWorld buildWorld) {
         this.plugin = plugin;
@@ -81,7 +81,8 @@ public class WorldPermissionsImpl implements WorldPermissions {
             return true;
         }
 
-        if (buildWorld.getData().status().get() == BuildWorldStatus.ARCHIVE && !player.hasPermission("buildsystem.bypass.archive")) {
+        if (buildWorld.getData().status().get() == BuildWorldStatus.ARCHIVE
+                && !player.hasPermission("buildsystem.bypass.archive")) {
             return false;
         }
 
@@ -112,7 +113,8 @@ public class WorldPermissionsImpl implements WorldPermissions {
             return false;
         }
 
-        return configurableType.getCapability(Bypassable.class)
+        return configurableType
+                .getCapability(Bypassable.class)
                 .map(bypassable -> player.hasPermission(bypassable.permission()))
                 .orElse(false);
     }

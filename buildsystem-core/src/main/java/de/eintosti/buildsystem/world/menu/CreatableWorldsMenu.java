@@ -23,13 +23,14 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.menu.InventoryUtils;
-import java.util.Set;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.Set;
 
 @NullMarked
 public abstract class CreatableWorldsMenu extends DisplayablesMenu {
@@ -38,8 +39,7 @@ public abstract class CreatableWorldsMenu extends DisplayablesMenu {
             BuildWorldStatus.NOT_STARTED,
             BuildWorldStatus.IN_PROGRESS,
             BuildWorldStatus.ALMOST_FINISHED,
-            BuildWorldStatus.FINISHED
-    );
+            BuildWorldStatus.FINISHED);
 
     static final String CREATE_WORLD_PROFILE = "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716";
     static final String CREATE_FOLDER_PROFILE = "69b861aabb316c4ed73b4e5428305782e735565ba2a053912e1efd834fa5a6f";
@@ -52,19 +52,27 @@ public abstract class CreatableWorldsMenu extends DisplayablesMenu {
             NavigatorCategory category,
             String inventoryTitle,
             @Nullable String noWorldsMessage,
-            Visibility requiredVisibility
-    ) {
+            Visibility requiredVisibility) {
         super(plugin, player, category, inventoryTitle, noWorldsMessage, requiredVisibility, VALID_STATUSES);
         this.playerService = plugin.getPlayerService();
     }
 
     @Override
     protected void addExtraItems(Inventory inventory, Player player) {
-        if (playerService.canCreateWorld(player, requiredVisibility) && player.hasPermission(getWorldCreationPermission())) {
-            inventory.setItem(48, InventoryUtils.createSkull(plugin.getMessages().getString(getWorldCreationItemTitleKey(), player), Profileable.detect(CREATE_WORLD_PROFILE)));
+        if (playerService.canCreateWorld(player, requiredVisibility)
+                && player.hasPermission(getWorldCreationPermission())) {
+            inventory.setItem(
+                    48,
+                    InventoryUtils.createSkull(
+                            plugin.getMessages().getString(getWorldCreationItemTitleKey(), player),
+                            Profileable.detect(CREATE_WORLD_PROFILE)));
         }
         if (player.hasPermission("buildsystem.create.folder")) {
-            inventory.setItem(50, InventoryUtils.createSkull(plugin.getMessages().getString("world_navigator_create_folder", player), Profileable.detect(CREATE_FOLDER_PROFILE)));
+            inventory.setItem(
+                    50,
+                    InventoryUtils.createSkull(
+                            plugin.getMessages().getString("world_navigator_create_folder", player),
+                            Profileable.detect(CREATE_FOLDER_PROFILE)));
         }
     }
 

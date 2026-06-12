@@ -28,8 +28,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class NumberUtils {
 
-    private NumberUtils() {
-    }
+    private NumberUtils() {}
 
     /**
      * <p>Convert a {@code String} to an {@code int}, returning

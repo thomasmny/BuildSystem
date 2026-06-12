@@ -27,11 +27,6 @@ import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import io.papermc.lib.PaperLib;
-import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -39,6 +34,12 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.io.File;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Orchestrates renaming a {@link BuildWorld}: validates the new name, evicts players, copies the directory asynchronously, then reconstructs the world under the new name.
@@ -71,10 +72,12 @@ public class WorldRenamer {
             return;
         }
 
-        if (StringCleaner.hasInvalidNameCharacters(newName, plugin.getConfigService().current().world().invalidCharacters())) {
+        if (StringCleaner.hasInvalidNameCharacters(
+                newName, plugin.getConfigService().current().world().invalidCharacters())) {
             plugin.getMessages().sendMessage(player, "worlds_world_creation_invalid_characters");
         }
-        String sanitizedNewName = StringCleaner.sanitize(newName, plugin.getConfigService().current().world().invalidCharacters());
+        String sanitizedNewName = StringCleaner.sanitize(
+                newName, plugin.getConfigService().current().world().invalidCharacters());
         if (sanitizedNewName.isEmpty()) {
             plugin.getMessages().sendMessage(player, "worlds_world_creation_name_bank");
             return;
@@ -93,8 +96,10 @@ public class WorldRenamer {
         prepareAndMove(player, buildWorld, oldName, sanitizedNewName, oldWorld);
     }
 
-    private void prepareAndMove(Player player, BuildWorld buildWorld, String oldName, String sanitizedNewName, World oldWorld) {
-        List<@Nullable Player> removedPlayers = worldService.removePlayersFromWorld(oldName, "worlds_rename_players_world");
+    private void prepareAndMove(
+            Player player, BuildWorld buildWorld, String oldName, String sanitizedNewName, World oldWorld) {
+        List<@Nullable Player> removedPlayers =
+                worldService.removePlayersFromWorld(oldName, "worlds_rename_players_world");
         for (Chunk chunk : oldWorld.getLoadedChunks()) {
             chunk.unload(true);
         }
@@ -104,19 +109,34 @@ public class WorldRenamer {
         File oldWorldFile = new File(Bukkit.getWorldContainer(), oldName);
         File newWorldFile = new File(Bukkit.getWorldContainer(), sanitizedNewName);
         CompletableFuture.runAsync(() -> {
-            try {
-                FileUtils.copy(oldWorldFile, newWorldFile);
-                FileUtils.deleteDirectory(oldWorldFile);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to rename world directory", e);
-            }
-        }).thenRun(() -> Bukkit.getScheduler().runTask(plugin, () ->
-                reconstruct(player, buildWorld, oldName, sanitizedNewName, oldWorld, oldSpawnLocation, removedPlayers)
-        ));
+                    try {
+                        FileUtils.copy(oldWorldFile, newWorldFile);
+                        FileUtils.deleteDirectory(oldWorldFile);
+                    } catch (Exception e) {
+                        throw new RuntimeException("Failed to rename world directory", e);
+                    }
+                })
+                .thenRun(() -> Bukkit.getScheduler()
+                        .runTask(
+                                plugin,
+                                () -> reconstruct(
+                                        player,
+                                        buildWorld,
+                                        oldName,
+                                        sanitizedNewName,
+                                        oldWorld,
+                                        oldSpawnLocation,
+                                        removedPlayers)));
     }
 
-    private void reconstruct(Player player, BuildWorld buildWorld, String oldName, String sanitizedNewName,
-            World oldWorld, Location oldSpawnLocation, List<@Nullable Player> removedPlayers) {
+    private void reconstruct(
+            Player player,
+            BuildWorld buildWorld,
+            String oldName,
+            String sanitizedNewName,
+            World oldWorld,
+            Location oldSpawnLocation,
+            List<@Nullable Player> removedPlayers) {
         worldStorage.rename(buildWorld, oldName, sanitizedNewName);
         buildWorld.setName(sanitizedNewName);
         worldStorage.save(buildWorld);
@@ -137,14 +157,15 @@ public class WorldRenamer {
                     oldSpawn.getY(),
                     oldSpawn.getZ(),
                     oldSpawn.getYaw(),
-                    oldSpawn.getPitch()
-            );
+                    oldSpawn.getPitch());
             spawnService.set(newSpawn, sanitizedNewName);
         }
 
-        plugin.getMessages().sendMessage(player, "worlds_rename_set",
-                Map.entry("%oldName%", oldName),
-                Map.entry("%newName%", sanitizedNewName)
-        );
+        plugin.getMessages()
+                .sendMessage(
+                        player,
+                        "worlds_rename_set",
+                        Map.entry("%oldName%", oldName),
+                        Map.entry("%newName%", sanitizedNewName));
     }
 }

@@ -20,16 +20,6 @@ package de.eintosti.buildsystem.config;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
-import java.io.File;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
 import org.bukkit.GameRule;
@@ -37,6 +27,11 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.io.File;
+import java.util.*;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @NullMarked
 public class ConfigService {
@@ -126,38 +121,30 @@ public class ConfigService {
 
     private static PluginConfig parse(FileConfiguration config, Logger logger, @Nullable File pluginParentDir) {
         return new PluginConfig(
-                parseSettings(config, pluginParentDir),
-                parseWorld(config, logger),
-                parseFolder(config)
-        );
+                parseSettings(config, pluginParentDir), parseWorld(config, logger), parseFolder(config));
     }
 
     private static PluginConfig.Settings parseSettings(FileConfiguration config, @Nullable File pluginParentDir) {
         PluginConfig.Settings.Archive archive = new PluginConfig.Settings.Archive(
                 config.getBoolean("settings.archive.vanish", true),
                 config.getBoolean("settings.archive.change-gamemode", true),
-                parseGameMode(config.getString("settings.archive.world-gamemode"))
-        );
+                parseGameMode(config.getString("settings.archive.world-gamemode")));
 
         PluginConfig.Settings.SaveFromDeath saveFromDeath = new PluginConfig.Settings.SaveFromDeath(
                 config.getBoolean("settings.save-from-death.enabled", true),
-                config.getBoolean("settings.save-from-death.teleport-to-map-spawn", true)
-        );
+                config.getBoolean("settings.save-from-death.teleport-to-map-spawn", true));
 
         PluginConfig.Settings.BuildMode buildMode = new PluginConfig.Settings.BuildMode(
                 config.getBoolean("settings.build-mode.drop-items", true),
-                config.getBoolean("settings.build-mode.move-items", true)
-        );
+                config.getBoolean("settings.build-mode.move-items", true));
 
         PluginConfig.Settings.Builder builder = new PluginConfig.Settings.Builder(
                 config.getBoolean("settings.builder.block-worldedit-non-builder", true),
-                parseWorldEditWand(pluginParentDir)
-        );
+                parseWorldEditWand(pluginParentDir));
 
         PluginConfig.Settings.Navigator navigator = new PluginConfig.Settings.Navigator(
                 XMaterial.valueOf(Objects.requireNonNullElse(config.getString("settings.navigator.item"), "CLOCK")),
-                config.getBoolean("settings.navigator.give-item-on-join", true)
-        );
+                config.getBoolean("settings.navigator.give-item-on-join", true));
 
         return new PluginConfig.Settings(
                 config.getBoolean("settings.update-checker", true),
@@ -165,70 +152,66 @@ public class ConfigService {
                 config.getBoolean("settings.spawn-teleport-message", false),
                 config.getBoolean("settings.join-quit-messages", true),
                 Objects.requireNonNullElse(config.getString("settings.date-format"), "dd/MM/yyyy"),
-                archive, saveFromDeath, buildMode, builder, navigator
-        );
+                archive,
+                saveFromDeath,
+                buildMode,
+                builder,
+                navigator);
     }
 
     private static PluginConfig.World parseWorld(FileConfiguration config, Logger logger) {
         PluginConfig.World.DisabledPhysics disabledPhysics = new PluginConfig.World.DisabledPhysics(
                 config.getBoolean("world.disabled-physics.prevent-connections", true),
                 config.getBoolean("world.disabled-physics.prevent-fluid-flow", true),
-                config.getBoolean("world.disabled-physics.prevent-falling-blocks", true)
-        );
+                config.getBoolean("world.disabled-physics.prevent-falling-blocks", true));
 
         PluginConfig.World.Limits limits = new PluginConfig.World.Limits(
-                config.getInt("world.limits.public", -1),
-                config.getInt("world.limits.private", -1)
-        );
+                config.getInt("world.limits.public", -1), config.getInt("world.limits.private", -1));
 
         PluginConfig.World.Defaults.Permission permission = new PluginConfig.World.Defaults.Permission(
                 Objects.requireNonNullElse(config.getString("world.defaults.permission.public"), "-"),
-                Objects.requireNonNullElse(config.getString("world.defaults.permission.private"), "worlds.%world%")
-        );
+                Objects.requireNonNullElse(config.getString("world.defaults.permission.private"), "worlds.%world%"));
 
         PluginConfig.World.Defaults.Time time = new PluginConfig.World.Defaults.Time(
                 config.getInt("world.defaults.time.sunrise", 0),
                 config.getInt("world.defaults.time.noon", 6000),
-                config.getInt("world.defaults.time.night", 18000)
-        );
+                config.getInt("world.defaults.time.night", 18000));
 
         PluginConfig.World.Defaults.BuildersEnabled buildersEnabled = new PluginConfig.World.Defaults.BuildersEnabled(
                 config.getBoolean("world.defaults.builders-enabled.public", false),
-                config.getBoolean("world.defaults.builders-enabled.private", true)
-        );
+                config.getBoolean("world.defaults.builders-enabled.private", true));
 
         List<GameRuleEntry<?>> gameRules = parseGameRules(config, logger);
 
         PluginConfig.World.Defaults defaults = new PluginConfig.World.Defaults(
                 config.getInt("world.defaults.worldborder-size", 6000000),
-                Difficulty.valueOf(Objects.requireNonNullElse(config.getString("world.defaults.difficulty"), "PEACEFUL").toUpperCase(Locale.ROOT)),
-                gameRules, permission, time,
+                Difficulty.valueOf(Objects.requireNonNullElse(config.getString("world.defaults.difficulty"), "PEACEFUL")
+                        .toUpperCase(Locale.ROOT)),
+                gameRules,
+                permission,
+                time,
                 config.getBoolean("world.defaults.physics", true),
                 config.getBoolean("world.defaults.explosions", true),
                 config.getBoolean("world.defaults.mob-ai", true),
                 config.getBoolean("world.defaults.block-breaking", true),
                 config.getBoolean("world.defaults.block-placement", true),
                 config.getBoolean("world.defaults.block-interactions", true),
-                buildersEnabled
-        );
+                buildersEnabled);
 
         PluginConfig.World.Unload unload = new PluginConfig.World.Unload(
                 config.getBoolean("world.unload.enabled", false),
                 Objects.requireNonNullElse(config.getString("world.unload.time-until-unload"), "01:00:00"),
-                new HashSet<>(config.getStringList("world.unload.blacklisted-worlds"))
-        );
+                new HashSet<>(config.getStringList("world.unload.blacklisted-worlds")));
 
         PluginConfig.World.Backup.AutoBackup autoBackup = new PluginConfig.World.Backup.AutoBackup(
                 config.getBoolean("world.backup.auto-backup.enabled", true),
                 config.getBoolean("world.backup.auto-backup.only-active-worlds", true),
-                config.getInt("world.backup.auto-backup.interval", 900)
-        );
+                config.getInt("world.backup.auto-backup.interval", 900));
 
         PluginConfig.World.Backup backup = new PluginConfig.World.Backup(
                 Math.min(config.getInt("world.backup.max-backups-per-world", 5), 18),
                 parseStorageSettings(config, logger),
-                autoBackup
-        );
+                autoBackup);
 
         Set<String> deletionBlacklist = config.getStringList("world.deletion-blacklist").stream()
                 .map(String::toLowerCase)
@@ -238,15 +221,18 @@ public class ConfigService {
                 config.getBoolean("world.lock-weather", true),
                 Objects.requireNonNullElse(config.getString("world.invalid-characters"), "^\b$"),
                 config.getInt("world.import-all-delay", 30),
-                deletionBlacklist, disabledPhysics, limits, defaults, unload, backup
-        );
+                deletionBlacklist,
+                disabledPhysics,
+                limits,
+                defaults,
+                unload,
+                backup);
     }
 
     private static List<GameRuleEntry<?>> parseGameRules(FileConfiguration config, Logger logger) {
         var gameRulesSection = config.getConfigurationSection("world.defaults.gamerules");
         Map<String, Object> gameRulesMap = gameRulesSection == null ? Map.of() : gameRulesSection.getValues(true);
-        return gameRulesMap.entrySet()
-                .stream()
+        return gameRulesMap.entrySet().stream()
                 .map(entry -> {
                     String key = entry.getKey();
                     Object value = entry.getValue();
@@ -259,20 +245,24 @@ public class ConfigService {
                     return switch (value) {
                         case Boolean booleanValue -> {
                             if (rule.getType() != Boolean.class) {
-                                logger.warning("Game rule '%s' is not a boolean type, but a boolean value was provided".formatted(key));
+                                logger.warning("Game rule '%s' is not a boolean type, but a boolean value was provided"
+                                        .formatted(key));
                                 yield null;
                             }
                             yield (GameRuleEntry<?>) new GameRuleEntry<>((GameRule<Boolean>) rule, booleanValue);
                         }
                         case Integer integerValue -> {
                             if (rule.getType() != Integer.class) {
-                                logger.warning("Game rule '%s' is not an integer type, but an integer value was provided".formatted(key));
+                                logger.warning(
+                                        "Game rule '%s' is not an integer type, but an integer value was provided"
+                                                .formatted(key));
                                 yield null;
                             }
                             yield (GameRuleEntry<?>) new GameRuleEntry<>((GameRule<Integer>) rule, integerValue);
                         }
                         default -> {
-                            logger.warning("Invalid game rule value type. Must be of type Boolean or Integer. Found %s".formatted(value.getClass().getName()));
+                            logger.warning("Invalid game rule value type. Must be of type Boolean or Integer. Found %s"
+                                    .formatted(value.getClass().getName()));
                             yield null;
                         }
                     };
@@ -284,29 +274,30 @@ public class ConfigService {
     private static PluginConfig.Folder parseFolder(FileConfiguration config) {
         return new PluginConfig.Folder(
                 config.getBoolean("folder.override-permissions", true),
-                config.getBoolean("folder.override-projects", false)
-        );
+                config.getBoolean("folder.override-projects", false));
     }
 
-    private static PluginConfig.World.Backup.StorageSettings parseStorageSettings(FileConfiguration config, Logger logger) {
-        String type = Objects.requireNonNullElse(config.getString("world.backup.storage.type"), "local").toLowerCase();
+    private static PluginConfig.World.Backup.StorageSettings parseStorageSettings(
+            FileConfiguration config, Logger logger) {
+        String type = Objects.requireNonNullElse(config.getString("world.backup.storage.type"), "local")
+                .toLowerCase();
 
         return switch (type) {
-            case "s3" -> new PluginConfig.World.Backup.S3(
-                    config.getString("world.backup.storage.s3.url"),
-                    config.getString("world.backup.storage.s3.access-key"),
-                    config.getString("world.backup.storage.s3.secret-key"),
-                    config.getString("world.backup.storage.s3.region"),
-                    config.getString("world.backup.storage.s3.bucket"),
-                    config.getString("world.backup.storage.s3.path")
-            );
-            case "sftp" -> new PluginConfig.World.Backup.Sftp(
-                    config.getString("world.backup.storage.sftp.host"),
-                    config.getInt("world.backup.storage.sftp.port", 22),
-                    config.getString("world.backup.storage.sftp.username"),
-                    config.getString("world.backup.storage.sftp.password"),
-                    config.getString("world.backup.storage.sftp.path")
-            );
+            case "s3" ->
+                new PluginConfig.World.Backup.S3(
+                        config.getString("world.backup.storage.s3.url"),
+                        config.getString("world.backup.storage.s3.access-key"),
+                        config.getString("world.backup.storage.s3.secret-key"),
+                        config.getString("world.backup.storage.s3.region"),
+                        config.getString("world.backup.storage.s3.bucket"),
+                        config.getString("world.backup.storage.s3.path"));
+            case "sftp" ->
+                new PluginConfig.World.Backup.Sftp(
+                        config.getString("world.backup.storage.sftp.host"),
+                        config.getInt("world.backup.storage.sftp.port", 22),
+                        config.getString("world.backup.storage.sftp.username"),
+                        config.getString("world.backup.storage.sftp.password"),
+                        config.getString("world.backup.storage.sftp.path"));
             default -> {
                 if (!type.equals("local")) {
                     logger.warning("Unknown backup storage type '" + type + "', defaulting to local storage.");

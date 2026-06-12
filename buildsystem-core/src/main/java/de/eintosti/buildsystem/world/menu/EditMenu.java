@@ -29,27 +29,22 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.command.subcommand.worlds.SetPermissionSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.menu.InventoryUtils;
-import de.eintosti.buildsystem.world.menu.BuilderMenu;
-import de.eintosti.buildsystem.world.menu.StatusMenu;
+import org.bukkit.*;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.jspecify.annotations.NullMarked;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Difficulty;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class EditMenu extends Menu {
@@ -58,12 +53,18 @@ public class EditMenu extends Menu {
      * A set of entities which are ignored when the butcher item is used.
      */
     private static final Set<XEntityType> IGNORED_ENTITIES = Sets.newHashSet(
-            XEntityType.ARMOR_STAND, XEntityType.END_CRYSTAL, XEntityType.ITEM_FRAME,
-            XEntityType.FALLING_BLOCK, XEntityType.MINECART, XEntityType.CHEST_MINECART,
-            XEntityType.COMMAND_BLOCK_MINECART, XEntityType.FURNACE_MINECART,
-            XEntityType.HOPPER_MINECART, XEntityType.SPAWNER_MINECART, XEntityType.TNT_MINECART,
-            XEntityType.PLAYER
-    );
+            XEntityType.ARMOR_STAND,
+            XEntityType.END_CRYSTAL,
+            XEntityType.ITEM_FRAME,
+            XEntityType.FALLING_BLOCK,
+            XEntityType.MINECART,
+            XEntityType.CHEST_MINECART,
+            XEntityType.COMMAND_BLOCK_MINECART,
+            XEntityType.FURNACE_MINECART,
+            XEntityType.HOPPER_MINECART,
+            XEntityType.SPAWNER_MINECART,
+            XEntityType.TNT_MINECART,
+            XEntityType.PLAYER);
 
     private final BuildSystemPlugin plugin;
     private final PlayerServiceImpl playerManager;
@@ -84,49 +85,114 @@ public class EditMenu extends Menu {
         plugin.getMenuItems().fillAll(player, inv);
         addBuildWorldInfoItem(player, inv);
 
-        plugin.getMenuItems().addToggleItem(player, inv, 20, XMaterial.OAK_PLANKS,
-                worldData.blockBreaking().get(), "worldeditor_blockbreaking_item", "worldeditor_blockbreaking_lore"
-        );
-        plugin.getMenuItems().addToggleItem(player, inv, 21, XMaterial.POLISHED_ANDESITE,
-                worldData.blockPlacement().get(), "worldeditor_blockplacement_item", "worldeditor_blockplacement_lore"
-        );
-        plugin.getMenuItems().addToggleItem(player, inv, 22, XMaterial.SAND,
-                worldData.physics().get(), "worldeditor_physics_item", "worldeditor_physics_lore"
-        );
+        plugin.getMenuItems()
+                .addToggleItem(
+                        player,
+                        inv,
+                        20,
+                        XMaterial.OAK_PLANKS,
+                        worldData.blockBreaking().get(),
+                        "worldeditor_blockbreaking_item",
+                        "worldeditor_blockbreaking_lore");
+        plugin.getMenuItems()
+                .addToggleItem(
+                        player,
+                        inv,
+                        21,
+                        XMaterial.POLISHED_ANDESITE,
+                        worldData.blockPlacement().get(),
+                        "worldeditor_blockplacement_item",
+                        "worldeditor_blockplacement_lore");
+        plugin.getMenuItems()
+                .addToggleItem(
+                        player,
+                        inv,
+                        22,
+                        XMaterial.SAND,
+                        worldData.physics().get(),
+                        "worldeditor_physics_item",
+                        "worldeditor_physics_lore");
         addTimeItem(player, inv);
-        plugin.getMenuItems().addToggleItem(player, inv, 24, XMaterial.TNT,
-                worldData.explosions().get(), "worldeditor_explosions_item", "worldeditor_explosions_lore"
-        );
-        inv.setItem(29, InventoryUtils.createItem(XMaterial.DIAMOND_SWORD,
-                messages.getString("worldeditor_butcher_item", player), messages.getStringList("worldeditor_butcher_lore", player)
-        ));
+        plugin.getMenuItems()
+                .addToggleItem(
+                        player,
+                        inv,
+                        24,
+                        XMaterial.TNT,
+                        worldData.explosions().get(),
+                        "worldeditor_explosions_item",
+                        "worldeditor_explosions_lore");
+        inv.setItem(
+                29,
+                InventoryUtils.createItem(
+                        XMaterial.DIAMOND_SWORD,
+                        messages.getString("worldeditor_butcher_item", player),
+                        messages.getStringList("worldeditor_butcher_lore", player)));
         addBuildersItem(player, inv);
-        plugin.getMenuItems().addToggleItem(player, inv, 31, XMaterial.ARMOR_STAND,
-                worldData.mobAi().get(), "worldeditor_mobai_item", "worldeditor_mobai_lore"
-        );
+        plugin.getMenuItems()
+                .addToggleItem(
+                        player,
+                        inv,
+                        31,
+                        XMaterial.ARMOR_STAND,
+                        worldData.mobAi().get(),
+                        "worldeditor_mobai_item",
+                        "worldeditor_mobai_lore");
         addVisibilityItem(player, inv);
-        plugin.getMenuItems().addToggleItem(player, inv, 33, XMaterial.TRIPWIRE_HOOK,
-                worldData.blockInteractions().get(), "worldeditor_blockinteractions_item", "worldeditor_blockinteractions_lore"
-        );
-        inv.setItem(38, InventoryUtils.createItem(XMaterial.FILLED_MAP,
-                messages.getString("worldeditor_gamerules_item", player), messages.getStringList("worldeditor_gamerules_lore", player)
-        ));
+        plugin.getMenuItems()
+                .addToggleItem(
+                        player,
+                        inv,
+                        33,
+                        XMaterial.TRIPWIRE_HOOK,
+                        worldData.blockInteractions().get(),
+                        "worldeditor_blockinteractions_item",
+                        "worldeditor_blockinteractions_lore");
+        inv.setItem(
+                38,
+                InventoryUtils.createItem(
+                        XMaterial.FILLED_MAP,
+                        messages.getString("worldeditor_gamerules_item", player),
+                        messages.getStringList("worldeditor_gamerules_lore", player)));
         addDifficultyItem(player, inv);
-        inv.setItem(40, InventoryUtils.createItem(plugin.getCustomizableIcons().getIcon(worldData.status().get()), messages.getString("worldeditor_status_item", player),
-                messages.getStringList("worldeditor_status_lore", player,
-                        Map.entry("%status%", messages.getString(Messages.getMessageKey(buildWorld.getData().status().get()), player))
-                )
-        ));
-        inv.setItem(41, InventoryUtils.createItem(XMaterial.ANVIL, messages.getString("worldeditor_project_item", player),
-                messages.getStringList("worldeditor_project_lore", player,
-                        Map.entry("%project%", buildWorld.getData().project().get())
-                )
-        ));
-        inv.setItem(42, InventoryUtils.createItem(XMaterial.PAPER, messages.getString("worldeditor_permission_item", player),
-                messages.getStringList("worldeditor_permission_lore", player,
-                        Map.entry("%permission%", buildWorld.getData().permission().get())
-                )
-        ));
+        inv.setItem(
+                40,
+                InventoryUtils.createItem(
+                        plugin.getCustomizableIcons().getIcon(worldData.status().get()),
+                        messages.getString("worldeditor_status_item", player),
+                        messages.getStringList(
+                                "worldeditor_status_lore",
+                                player,
+                                Map.entry(
+                                        "%status%",
+                                        messages.getString(
+                                                Messages.getMessageKey(buildWorld
+                                                        .getData()
+                                                        .status()
+                                                        .get()),
+                                                player)))));
+        inv.setItem(
+                41,
+                InventoryUtils.createItem(
+                        XMaterial.ANVIL,
+                        messages.getString("worldeditor_project_item", player),
+                        messages.getStringList(
+                                "worldeditor_project_lore",
+                                player,
+                                Map.entry(
+                                        "%project%",
+                                        buildWorld.getData().project().get()))));
+        inv.setItem(
+                42,
+                InventoryUtils.createItem(
+                        XMaterial.PAPER,
+                        messages.getString("worldeditor_permission_item", player),
+                        messages.getStringList(
+                                "worldeditor_permission_lore",
+                                player,
+                                Map.entry(
+                                        "%permission%",
+                                        buildWorld.getData().permission().get()))));
     }
 
     private void addBuildWorldInfoItem(Player player, Inventory inventory) {
@@ -159,27 +225,39 @@ public class EditMenu extends Menu {
             }
         }
 
-        inventory.setItem(23, InventoryUtils.createItem(xMaterial, messages.getString("worldeditor_time_item", player),
-                messages.getStringList("worldeditor_time_lore", player, Map.entry("%time%", value))
-        ));
+        inventory.setItem(
+                23,
+                InventoryUtils.createItem(
+                        xMaterial,
+                        messages.getString("worldeditor_time_item", player),
+                        messages.getStringList("worldeditor_time_lore", player, Map.entry("%time%", value))));
     }
 
     private TimeOfDay getWorldTime() {
         int worldTime = (int) buildWorld.getWorld().getTime();
-        int noonTime = plugin.getConfigService().current().world().defaults().time().noon();
+        int noonTime =
+                plugin.getConfigService().current().world().defaults().time().noon();
         return TimeOfDay.fromTicks(worldTime, noonTime);
     }
 
     private void addBuildersItem(Player player, Inventory inventory) {
         if (buildWorld.getBuilders().isCreator(player) || player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)) {
-            plugin.getMenuItems().addToggleItem(player, inventory, 30, XMaterial.IRON_PICKAXE, buildWorld.getData().buildersEnabled().get(),
-                    "worldeditor_builders_item", "worldeditor_builders_lore"
-            );
+            plugin.getMenuItems()
+                    .addToggleItem(
+                            player,
+                            inventory,
+                            30,
+                            XMaterial.IRON_PICKAXE,
+                            buildWorld.getData().buildersEnabled().get(),
+                            "worldeditor_builders_item",
+                            "worldeditor_builders_lore");
         } else {
-            inventory.setItem(30, InventoryUtils.createItem(XMaterial.BARRIER,
-                    messages.getString("worldeditor_builders_not_creator_item", player),
-                    messages.getStringList("worldeditor_builders_not_creator_lore", player)
-            ));
+            inventory.setItem(
+                    30,
+                    InventoryUtils.createItem(
+                            XMaterial.BARRIER,
+                            messages.getString("worldeditor_builders_not_creator_item", player),
+                            messages.getStringList("worldeditor_builders_not_creator_lore", player)));
         }
     }
 
@@ -189,7 +267,8 @@ public class EditMenu extends Menu {
         boolean isPrivate = buildWorld.getData().privateWorld().get();
 
         if (!playerManager.canCreateWorld(player, Visibility.matchVisibility(isPrivate))) {
-            inventory.setItem(slot, InventoryUtils.createItem(XMaterial.BARRIER, "§c§m" + ChatColor.stripColor(displayName)));
+            inventory.setItem(
+                    slot, InventoryUtils.createItem(XMaterial.BARRIER, "§c§m" + ChatColor.stripColor(displayName)));
             return;
         }
 
@@ -205,19 +284,23 @@ public class EditMenu extends Menu {
     }
 
     private void addDifficultyItem(Player player, Inventory inventory) {
-        XMaterial material = switch (buildWorld.getData().difficulty().get()) {
-            case EASY -> XMaterial.GOLDEN_HELMET;
-            case NORMAL -> XMaterial.IRON_HELMET;
-            case HARD -> XMaterial.DIAMOND_HELMET;
-            default -> XMaterial.LEATHER_HELMET;
-        };
+        XMaterial material =
+                switch (buildWorld.getData().difficulty().get()) {
+                    case EASY -> XMaterial.GOLDEN_HELMET;
+                    case NORMAL -> XMaterial.IRON_HELMET;
+                    case HARD -> XMaterial.DIAMOND_HELMET;
+                    default -> XMaterial.LEATHER_HELMET;
+                };
 
-        inventory.setItem(39, InventoryUtils.createItem(material,
-                messages.getString("worldeditor_difficulty_item", player),
-                messages.getStringList("worldeditor_difficulty_lore", player,
-                        Map.entry("%difficulty%", getDifficultyName(buildWorld, player))
-                )
-        ));
+        inventory.setItem(
+                39,
+                InventoryUtils.createItem(
+                        material,
+                        messages.getString("worldeditor_difficulty_item", player),
+                        messages.getStringList(
+                                "worldeditor_difficulty_lore",
+                                player,
+                                Map.entry("%difficulty%", getDifficultyName(buildWorld, player)))));
     }
 
     private String getDifficultyName(BuildWorld buildWorld, Player player) {
@@ -238,11 +321,9 @@ public class EditMenu extends Menu {
             22, new Toggle("buildsystem.edit.physics", WorldData::physics),
             24, new Toggle("buildsystem.edit.explosions", WorldData::explosions),
             31, new Toggle("buildsystem.edit.mobai", WorldData::mobAi),
-            33, new Toggle("buildsystem.edit.interactions", WorldData::blockInteractions)
-    );
+            33, new Toggle("buildsystem.edit.interactions", WorldData::blockInteractions));
 
-    private record Toggle(String permission, Function<WorldData, Type<Boolean>> data) {
-    }
+    private record Toggle(String permission, Function<WorldData, Type<Boolean>> data) {}
 
     @Override
     public void handleClick(InventoryClickEvent event) {
@@ -348,11 +429,30 @@ public class EditMenu extends Menu {
     }
 
     private void changeTime(Player player) {
-        int time = switch (getWorldTime()) {
-            case SUNRISE -> plugin.getConfigService().current().world().defaults().time().noon();
-            case NOON -> plugin.getConfigService().current().world().defaults().time().night();
-            case NIGHT -> plugin.getConfigService().current().world().defaults().time().sunrise();
-        };
+        int time =
+                switch (getWorldTime()) {
+                    case SUNRISE ->
+                        plugin.getConfigService()
+                                .current()
+                                .world()
+                                .defaults()
+                                .time()
+                                .noon();
+                    case NOON ->
+                        plugin.getConfigService()
+                                .current()
+                                .world()
+                                .defaults()
+                                .time()
+                                .night();
+                    case NIGHT ->
+                        plugin.getConfigService()
+                                .current()
+                                .world()
+                                .defaults()
+                                .time()
+                                .sunrise();
+                };
         buildWorld.getWorld().setTime(time);
         new EditMenu(plugin, buildWorld, player).open(player);
     }
@@ -379,7 +479,9 @@ public class EditMenu extends Menu {
      * Which third of the Minecraft day the world clock currently sits in. Used only to drive the editor's time button.
      */
     public enum TimeOfDay {
-        SUNRISE, NOON, NIGHT;
+        SUNRISE,
+        NOON,
+        NIGHT;
 
         /** Minecraft tick at which night begins (the day is 24000 ticks). */
         static final int NIGHT_START_TICKS = 13000;

@@ -117,16 +117,18 @@ public final class UpdateChecker {
                     return new UpdateResult(UpdateReason.INVALID_JSON);
                 }
 
-                String currentVersion = json.getAsJsonObject().get("current_version").getAsString();
+                String currentVersion =
+                        json.getAsJsonObject().get("current_version").getAsString();
                 String pluginVersion = plugin.getDescription().getVersion();
                 String latest = versionScheme.compareVersions(pluginVersion, currentVersion);
 
                 if (latest == null) {
                     return new UpdateResult(UpdateReason.UNSUPPORTED_VERSION_SCHEME);
                 } else if (latest.equals(pluginVersion)) {
-                    return new UpdateResult(pluginVersion.equals(currentVersion)
-                            ? UpdateReason.UP_TO_DATE
-                            : UpdateReason.UNRELEASED_VERSION);
+                    return new UpdateResult(
+                            pluginVersion.equals(currentVersion)
+                                    ? UpdateReason.UP_TO_DATE
+                                    : UpdateReason.UNRELEASED_VERSION);
                 } else if (latest.equals(currentVersion)) {
                     return new UpdateResult(UpdateReason.NEW_UPDATE, latest);
                 }
@@ -231,7 +233,9 @@ public final class UpdateChecker {
         }
 
         private UpdateResult(UpdateReason reason) {
-            Preconditions.checkArgument(reason != UpdateReason.NEW_UPDATE, "Reasons that require updates must also provide the latest version String");
+            Preconditions.checkArgument(
+                    reason != UpdateReason.NEW_UPDATE,
+                    "Reasons that require updates must also provide the latest version String");
 
             this.reason = reason;
             this.newestVersion = plugin.getDescription().getVersion();

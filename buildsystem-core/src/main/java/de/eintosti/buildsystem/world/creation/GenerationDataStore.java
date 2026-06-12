@@ -20,6 +20,11 @@ package de.eintosti.buildsystem.world.creation;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
+import org.bukkit.World;
+import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -27,10 +32,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bukkit.World;
-import org.jetbrains.annotations.Contract;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class GenerationDataStore {
@@ -60,7 +61,9 @@ public class GenerationDataStore {
         String contentToSave;
         if (worldType == BuildWorldType.CUSTOM) {
             if (customGenerator == null) {
-                logger.warning("Attempted to save CUSTOM world type for world %s without a custom generator. Defaulting to NORMAL type.".formatted(world.getName()));
+                logger.warning(
+                        "Attempted to save CUSTOM world type for world %s without a custom generator. Defaulting to NORMAL type."
+                                .formatted(world.getName()));
                 contentToSave = BuildWorldType.NORMAL.name();
             } else {
                 contentToSave = CUSTOM_GENERATOR_PREFIX + customGenerator;
@@ -74,9 +77,9 @@ public class GenerationDataStore {
         } catch (IOException e) {
             logger.log(
                     Level.WARNING,
-                    "Failed to save world generation setting for world %s (type: %s, generator: %s)".formatted(world.getName(), worldType.name(), customGenerator),
-                    e
-            );
+                    "Failed to save world generation setting for world %s (type: %s, generator: %s)"
+                            .formatted(world.getName(), worldType.name(), customGenerator),
+                    e);
         }
     }
 
@@ -93,14 +96,20 @@ public class GenerationDataStore {
         try {
             content = Files.readString(filePath).trim();
         } catch (IOException e) {
-            logger.log(Level.WARNING, "Failed to load world generation setting for world %s. Defaulting to %s.".formatted(worldName, defaultType), e);
+            logger.log(
+                    Level.WARNING,
+                    "Failed to load world generation setting for world %s. Defaulting to %s."
+                            .formatted(worldName, defaultType),
+                    e);
             return new WorldGenerationData.PredefinedGeneratorData(defaultType);
         }
 
         if (content.startsWith(CUSTOM_GENERATOR_PREFIX)) {
-            String[] generatorData = content.substring(CUSTOM_GENERATOR_PREFIX.length()).trim().split(":");
+            String[] generatorData =
+                    content.substring(CUSTOM_GENERATOR_PREFIX.length()).trim().split(":");
             if (generatorData.length != 2) {
-                logger.warning("Invalid custom generator name in file for world %s. Content: '%s'. Defaulting to %s.".formatted(worldName, content, defaultType));
+                logger.warning("Invalid custom generator name in file for world %s. Content: '%s'. Defaulting to %s."
+                        .formatted(worldName, content, defaultType));
                 return new WorldGenerationData.PredefinedGeneratorData(defaultType);
             }
             return new WorldGenerationData.CustomGeneratorData(generatorData[0], generatorData[1]);
@@ -109,7 +118,8 @@ public class GenerationDataStore {
                 BuildWorldType type = BuildWorldType.valueOf(content.toUpperCase());
                 return new WorldGenerationData.PredefinedGeneratorData(type);
             } catch (IllegalArgumentException e) {
-                logger.warning("Invalid BuildWorldType in file for world %s. Content: '%s'. Defaulting to %s.".formatted(worldName, content, defaultType));
+                logger.warning("Invalid BuildWorldType in file for world %s. Content: '%s'. Defaulting to %s."
+                        .formatted(worldName, content, defaultType));
                 return new WorldGenerationData.PredefinedGeneratorData(defaultType);
             }
         }
@@ -130,11 +140,10 @@ public class GenerationDataStore {
         }
     }
 
-    public sealed interface WorldGenerationData permits WorldGenerationData.PredefinedGeneratorData, WorldGenerationData.CustomGeneratorData {
+    public sealed interface WorldGenerationData
+            permits WorldGenerationData.PredefinedGeneratorData, WorldGenerationData.CustomGeneratorData {
 
-        record PredefinedGeneratorData(BuildWorldType type) implements WorldGenerationData {
-
-        }
+        record PredefinedGeneratorData(BuildWorldType type) implements WorldGenerationData {}
 
         record CustomGeneratorData(String pluginName, String chunkGeneratorName) implements WorldGenerationData {
 

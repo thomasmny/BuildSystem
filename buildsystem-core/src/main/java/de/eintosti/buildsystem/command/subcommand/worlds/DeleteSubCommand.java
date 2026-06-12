@@ -22,15 +22,15 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.world.menu.DeleteMenu;
-import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.List;
 
 @NullMarked
 public class DeleteSubCommand implements SubCommand {
 
     private final BuildSystemPlugin plugin;
-
 
     public DeleteSubCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
@@ -38,12 +38,17 @@ public class DeleteSubCommand implements SubCommand {
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = GuardedWorldCommand.requireWorld(plugin, player, worldName, args, 2, getArgument(), "worlds_delete");
+        BuildWorld buildWorld =
+                GuardedWorldCommand.requireWorld(plugin, player, worldName, args, 2, getArgument(), "worlds_delete");
         if (buildWorld == null) {
             return;
         }
 
-        if (plugin.getConfigService().current().world().deletionBlacklist().contains(buildWorld.getName().toLowerCase())) {
+        if (plugin.getConfigService()
+                .current()
+                .world()
+                .deletionBlacklist()
+                .contains(buildWorld.getName().toLowerCase())) {
             plugin.getMessages().sendMessage(player, "worlds_delete_forbidden");
             return;
         }
@@ -56,7 +61,8 @@ public class DeleteSubCommand implements SubCommand {
         if (args.length != 2) {
             return List.of();
         }
-        return WorldsCompletions.deletableWorldNames(player, plugin.getWorldService().getWorldStorage(), args[1]);
+        return WorldsCompletions.deletableWorldNames(
+                player, plugin.getWorldService().getWorldStorage(), args[1]);
     }
 
     @Override

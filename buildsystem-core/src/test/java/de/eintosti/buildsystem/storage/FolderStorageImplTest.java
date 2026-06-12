@@ -21,23 +21,19 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.logging.Logger;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.logging.Logger;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @NullMarked
 class FolderStorageImplTest {
@@ -78,7 +74,8 @@ class FolderStorageImplTest {
             }
 
             @Override
-            protected Folder newFolder(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
+            protected Folder newFolder(
+                    String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
                 return new SimpleTestFolder(name, category, creator);
             }
         };
@@ -130,6 +127,7 @@ class FolderStorageImplTest {
         private final String name;
         private final NavigatorCategory category;
         private final Builder creator;
+
         @Nullable private Folder parent;
 
         SimpleTestFolder(String name, NavigatorCategory category, Builder creator) {
@@ -138,29 +136,112 @@ class FolderStorageImplTest {
             this.creator = creator;
         }
 
-        @Override public String getName() { return name; }
-        @Override public NavigatorCategory getCategory() { return category; }
-        @Override public Builder getCreator() { return creator; }
-        @Override public long getCreation() { return 0; }
-        @Override @Nullable public Folder getParent() { return parent; }
-        @Override public void setParent(@Nullable Folder parent) { this.parent = parent; }
-        @Override public boolean hasParent() { return parent != null; }
-        @Override public List<UUID> getWorldUUIDs() { return List.of(); }
-        @Override public List<Folder> getSubFolders() { return List.of(); }
-        @Override public int getWorldCount() { return 0; }
-        @Override public boolean containsWorld(de.eintosti.buildsystem.api.world.BuildWorld w) { return false; }
-        @Override public boolean containsWorld(UUID uuid) { return false; }
-        @Override public void addWorld(de.eintosti.buildsystem.api.world.BuildWorld w) {}
-        @Override public void removeWorld(de.eintosti.buildsystem.api.world.BuildWorld w) {}
-        @Override public void removeWorld(UUID uuid) {}
-        @Override public boolean canView(org.bukkit.entity.Player player) { return true; }
-        @Override public String getPermission() { return "-"; }
-        @Override public void setPermission(String p) {}
-        @Override public String getProject() { return "-"; }
-        @Override public void setProject(String p) {}
-        @Override public com.cryptomorin.xseries.XMaterial getIcon() { return com.cryptomorin.xseries.XMaterial.CHEST; }
-        @Override public void setIcon(com.cryptomorin.xseries.XMaterial m) {}
-        @Override public String getDisplayName(org.bukkit.entity.Player player) { return name; }
-        @Override public List<String> getLore(org.bukkit.entity.Player player) { return List.of(); }
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public NavigatorCategory getCategory() {
+            return category;
+        }
+
+        @Override
+        public Builder getCreator() {
+            return creator;
+        }
+
+        @Override
+        public long getCreation() {
+            return 0;
+        }
+
+        @Override
+        @Nullable public Folder getParent() {
+            return parent;
+        }
+
+        @Override
+        public void setParent(@Nullable Folder parent) {
+            this.parent = parent;
+        }
+
+        @Override
+        public boolean hasParent() {
+            return parent != null;
+        }
+
+        @Override
+        public List<UUID> getWorldUUIDs() {
+            return List.of();
+        }
+
+        @Override
+        public List<Folder> getSubFolders() {
+            return List.of();
+        }
+
+        @Override
+        public int getWorldCount() {
+            return 0;
+        }
+
+        @Override
+        public boolean containsWorld(de.eintosti.buildsystem.api.world.BuildWorld w) {
+            return false;
+        }
+
+        @Override
+        public boolean containsWorld(UUID uuid) {
+            return false;
+        }
+
+        @Override
+        public void addWorld(de.eintosti.buildsystem.api.world.BuildWorld w) {}
+
+        @Override
+        public void removeWorld(de.eintosti.buildsystem.api.world.BuildWorld w) {}
+
+        @Override
+        public void removeWorld(UUID uuid) {}
+
+        @Override
+        public boolean canView(org.bukkit.entity.Player player) {
+            return true;
+        }
+
+        @Override
+        public String getPermission() {
+            return "-";
+        }
+
+        @Override
+        public void setPermission(String p) {}
+
+        @Override
+        public String getProject() {
+            return "-";
+        }
+
+        @Override
+        public void setProject(String p) {}
+
+        @Override
+        public com.cryptomorin.xseries.XMaterial getIcon() {
+            return com.cryptomorin.xseries.XMaterial.CHEST;
+        }
+
+        @Override
+        public void setIcon(com.cryptomorin.xseries.XMaterial m) {}
+
+        @Override
+        public String getDisplayName(org.bukkit.entity.Player player) {
+            return name;
+        }
+
+        @Override
+        public List<String> getLore(org.bukkit.entity.Player player) {
+            return List.of();
+        }
     }
 }

@@ -22,13 +22,14 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.world.menu.BackupsMenu;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
+import de.eintosti.buildsystem.world.menu.BackupsMenu;
+import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.bukkit.entity.Player;
-import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class BackupsSubCommand implements SubCommand {
@@ -41,8 +42,11 @@ public class BackupsSubCommand implements SubCommand {
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld().getName());
-        if (!WorldPermissionsImpl.of(plugin, buildWorld).canPerformCommand(player, getArgument().getPermission())) {
+        BuildWorld buildWorld = plugin.getWorldService()
+                .getWorldStorage()
+                .getBuildWorld(player.getWorld().getName());
+        if (!WorldPermissionsImpl.of(plugin, buildWorld)
+                .canPerformCommand(player, getArgument().getPermission())) {
             plugin.getMessages().sendPermissionError(player);
             return;
         }
@@ -65,10 +69,13 @@ public class BackupsSubCommand implements SubCommand {
                     }
 
                     Entry<String, Object> worldNamePlaceholder = Map.entry("%world%", buildWorld.getName());
-                    plugin.getBackupService().backup(buildWorld,
-                            () -> plugin.getMessages().sendMessage(player, "worlds_backup_created", worldNamePlaceholder),
-                            () -> plugin.getMessages().sendMessage(player, "worlds_backup_failed", worldNamePlaceholder)
-                    );
+                    plugin.getBackupService()
+                            .backup(
+                                    buildWorld,
+                                    () -> plugin.getMessages()
+                                            .sendMessage(player, "worlds_backup_created", worldNamePlaceholder),
+                                    () -> plugin.getMessages()
+                                            .sendMessage(player, "worlds_backup_failed", worldNamePlaceholder));
                 } else {
                     plugin.getMessages().sendMessage(player, "worlds_backup_usage");
                 }

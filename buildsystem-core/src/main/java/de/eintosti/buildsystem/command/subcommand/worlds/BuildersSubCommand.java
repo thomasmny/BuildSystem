@@ -23,15 +23,15 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.world.menu.BuilderMenu;
-import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.List;
 
 @NullMarked
 public class BuildersSubCommand implements SubCommand {
 
     private final BuildSystemPlugin plugin;
-
 
     public BuildersSubCommand(BuildSystemPlugin plugin) {
         this.plugin = plugin;
@@ -39,7 +39,8 @@ public class BuildersSubCommand implements SubCommand {
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = GuardedWorldCommand.requireWorld(plugin, player, worldName, args, 2, getArgument(), "worlds_builders");
+        BuildWorld buildWorld =
+                GuardedWorldCommand.requireWorld(plugin, player, worldName, args, 2, getArgument(), "worlds_builders");
         if (buildWorld == null) {
             return;
         }

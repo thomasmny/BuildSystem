@@ -21,14 +21,9 @@ import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
-import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Logger;
+import de.eintosti.buildsystem.player.settings.SettingsService;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -37,6 +32,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Logger;
 
 @NullMarked
 public final class ItemBuilder {

@@ -20,18 +20,18 @@ package de.eintosti.buildsystem.command;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.event.world.PlayerBuildModeToggleEvent;
-import de.eintosti.buildsystem.api.player.BuildPlayer;
+import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
-import de.eintosti.buildsystem.api.player.PlayerService;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @NullMarked
 public class BuildCommand extends CommandBase {
@@ -94,7 +94,8 @@ public class BuildCommand extends CommandBase {
             return;
         }
 
-        BuildPlayerImpl buildPlayer = BuildPlayerImpl.of(playerService.getPlayerStorage().getBuildPlayer(target));
+        BuildPlayerImpl buildPlayer =
+                BuildPlayerImpl.of(playerService.getPlayerStorage().getBuildPlayer(target));
         CachedValues cachedValues = buildPlayer.getCachedValues();
 
         if (isEnteringBuildMode) {

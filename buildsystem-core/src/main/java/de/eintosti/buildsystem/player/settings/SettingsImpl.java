@@ -77,8 +77,7 @@ public class SettingsImpl implements Settings {
             boolean scoreboard,
             boolean slabBreaking,
             boolean spawnTeleport,
-            boolean openTrapDoors
-    ) {
+            boolean openTrapDoors) {
         this.navigatorType = navigatorType == null ? NavigatorType.OLD : navigatorType;
         this.designColor = designColor == null ? DesignColor.BLACK : designColor;
         this.worldDisplay = worldDisplay;
@@ -240,5 +239,4 @@ public class SettingsImpl implements Settings {
     public void setOpenTrapDoors(boolean trapDoor) {
         this.openTrapDoors = trapDoor;
     }
-
 }

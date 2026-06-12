@@ -21,8 +21,8 @@ import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.menu.Menu;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
@@ -79,10 +79,12 @@ public class CustomBlockMenu extends Menu {
     }
 
     private void setCustomBlock(Player player, int position, CustomBlock customBlock) {
-        getInventory().setItem(position, InventoryUtils.createSkull(
-                messages.getString(customBlock.getMessageKey(), player),
-                Profileable.detect(customBlock.getSkullUrl())
-        ));
+        getInventory()
+                .setItem(
+                        position,
+                        InventoryUtils.createSkull(
+                                messages.getString(customBlock.getMessageKey(), player),
+                                Profileable.detect(customBlock.getSkullUrl())));
     }
 
     @Override
@@ -131,7 +133,9 @@ public class CustomBlockMenu extends Menu {
     private void giveCustomBlock(Player player, CustomBlock customBlock, XMaterial material) {
         ItemStack itemStack;
         if (material == XMaterial.PLAYER_HEAD) {
-            itemStack = InventoryUtils.createSkull(messages.getString(customBlock.getMessageKey(), player), Profileable.detect(customBlock.getSkullUrl()));
+            itemStack = InventoryUtils.createSkull(
+                    messages.getString(customBlock.getMessageKey(), player),
+                    Profileable.detect(customBlock.getSkullUrl()));
         } else {
             itemStack = InventoryUtils.createItem(material, messages.getString(customBlock.getMessageKey(), player));
             ItemMeta itemMeta = itemStack.getItemMeta();

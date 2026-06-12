@@ -43,8 +43,7 @@ public class PublicWorldsMenu extends CreatableWorldsMenu {
                 NavigatorCategory.PUBLIC,
                 plugin.getMessages().getString("world_navigator_title", player),
                 plugin.getMessages().getString("world_navigator_no_worlds", player),
-                Visibility.PUBLIC
-        );
+                Visibility.PUBLIC);
     }
 
     /**

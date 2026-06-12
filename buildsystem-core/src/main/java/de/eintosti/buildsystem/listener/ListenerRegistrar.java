@@ -68,8 +68,10 @@ public final class ListenerRegistrar {
             pluginManager.registerEvents(new WorldManipulateByAxiomListener(plugin), plugin);
         }
 
-        boolean isWorldEdit = pluginManager.getPlugin("WorldEdit") != null || pluginManager.getPlugin("FastAsyncWorldEdit") != null;
-        if (isWorldEdit && plugin.getConfigService().current().settings().builder().blockWorldEditNonBuilder()) {
+        boolean isWorldEdit =
+                pluginManager.getPlugin("WorldEdit") != null || pluginManager.getPlugin("FastAsyncWorldEdit") != null;
+        if (isWorldEdit
+                && plugin.getConfigService().current().settings().builder().blockWorldEditNonBuilder()) {
             new EditSessionListener(plugin);
         }
     }

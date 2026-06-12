@@ -26,7 +26,4 @@ import org.bukkit.GameRule;
  * @param value The value of the game rule
  * @param <T>   The type of the game rule value; must be either {@link Boolean} or {@link Integer}
  */
-public record GameRuleEntry<T>(GameRule<T> rule, T value) {
-
-}
-
+public record GameRuleEntry<T>(GameRule<T> rule, T value) {}

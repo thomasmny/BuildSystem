@@ -18,15 +18,12 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.*;
 
 @NullMarked
 public class GamemodeCommand extends CommandBase {
@@ -79,13 +76,14 @@ public class GamemodeCommand extends CommandBase {
                     .filter(gameModeName -> player.hasPermission("buildsystem.gamemode.%s".formatted(gameModeName)))
                     .forEach(gameModeName -> addArgument(args[0], gameModeName, list));
         } else if (args.length == 2) {
-            String gameModeName = switch (args[0].toLowerCase(Locale.ROOT)) {
-                case "survival", "s", "0" -> GameMode.SURVIVAL.name().toLowerCase(Locale.ROOT);
-                case "creative", "c", "1" -> GameMode.CREATIVE.name().toLowerCase(Locale.ROOT);
-                case "adventure", "a", "2" -> GameMode.ADVENTURE.name().toLowerCase(Locale.ROOT);
-                case "spectator", "sp", "3" -> GameMode.SPECTATOR.name().toLowerCase(Locale.ROOT);
-                default -> null;
-            };
+            String gameModeName =
+                    switch (args[0].toLowerCase(Locale.ROOT)) {
+                        case "survival", "s", "0" -> GameMode.SURVIVAL.name().toLowerCase(Locale.ROOT);
+                        case "creative", "c", "1" -> GameMode.CREATIVE.name().toLowerCase(Locale.ROOT);
+                        case "adventure", "a", "2" -> GameMode.ADVENTURE.name().toLowerCase(Locale.ROOT);
+                        case "spectator", "sp", "3" -> GameMode.SPECTATOR.name().toLowerCase(Locale.ROOT);
+                        default -> null;
+                    };
 
             if (gameModeName != null && player.hasPermission("buildsystem.gamemode.%s.other".formatted(gameModeName))) {
                 Bukkit.getOnlinePlayers().forEach(pl -> addArgument(args[1], pl.getName(), list));
@@ -104,7 +102,8 @@ public class GamemodeCommand extends CommandBase {
     }
 
     private void setPlayerGamemode(Player player, GameMode gameMode, String gameModeName) {
-        if (!requirePermission(player, "buildsystem.gamemode.%s".formatted(gameMode.name().toLowerCase(Locale.ROOT)))) {
+        if (!requirePermission(
+                player, "buildsystem.gamemode.%s".formatted(gameMode.name().toLowerCase(Locale.ROOT)))) {
             return;
         }
 
@@ -113,7 +112,9 @@ public class GamemodeCommand extends CommandBase {
     }
 
     private void setTargetGamemode(Player player, String[] args, GameMode gameMode, String gameModeName) {
-        if (!requirePermission(player, "buildsystem.gamemode.%s.other".formatted(gameMode.name().toLowerCase(Locale.ROOT)))) {
+        if (!requirePermission(
+                player,
+                "buildsystem.gamemode.%s.other".formatted(gameMode.name().toLowerCase(Locale.ROOT)))) {
             return;
         }
 
@@ -125,9 +126,10 @@ public class GamemodeCommand extends CommandBase {
 
         target.setGameMode(gameMode);
         messages.sendMessage(target, "gamemode_set_self", Map.entry("%gamemode%", gameModeName));
-        messages.sendMessage(player, "gamemode_set_other",
+        messages.sendMessage(
+                player,
+                "gamemode_set_other",
                 Map.entry("%target%", target.getName()),
-                Map.entry("%gamemode%", gameModeName)
-        );
+                Map.entry("%gamemode%", gameModeName));
     }
 }

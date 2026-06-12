@@ -58,4 +58,4 @@ public interface WorldUnloader {
      * @param save Whether the world should be saved before unloading
      */
     void forceUnload(boolean save);
-} 
+}

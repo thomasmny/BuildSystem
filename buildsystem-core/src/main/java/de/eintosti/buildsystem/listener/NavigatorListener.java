@@ -28,20 +28,12 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
-
+import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.settings.SettingsService;
-import de.eintosti.buildsystem.menu.InventoryUtils;
-
-import de.eintosti.buildsystem.world.menu.ArchivedWorldsMenu;
-import de.eintosti.buildsystem.world.menu.DisplayablesMenu;
-import de.eintosti.buildsystem.world.menu.NavigatorMenu;
-import de.eintosti.buildsystem.world.menu.PrivateWorldsMenu;
-import de.eintosti.buildsystem.world.menu.PublicWorldsMenu;
-import java.util.Objects;
-import java.util.UUID;
+import de.eintosti.buildsystem.world.menu.*;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -61,6 +53,9 @@ import org.bukkit.util.Vector;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Objects;
+import java.util.UUID;
+
 @NullMarked
 public class NavigatorListener implements Listener {
 
@@ -79,7 +74,6 @@ public class NavigatorListener implements Listener {
         this.navigatorService = plugin.getNavigatorService();
         this.settingsManager = plugin.getSettingsService();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
-
     }
 
     /**
@@ -127,14 +121,26 @@ public class NavigatorListener implements Listener {
 
                 summonNewNavigator(player);
                 String findItemName = plugin.getMessages().getString("navigator_item", player);
-                ItemStack replaceItem = InventoryUtils.createItem(XMaterial.BARRIER, plugin.getMessages().getString("barrier_item", player));
-                plugin.getMenuItems().replaceItem(player, findItemName, plugin.getConfigService().current().settings().navigator().item(), replaceItem);
+                ItemStack replaceItem = InventoryUtils.createItem(
+                        XMaterial.BARRIER, plugin.getMessages().getString("barrier_item", player));
+                plugin.getMenuItems()
+                        .replaceItem(
+                                player,
+                                findItemName,
+                                plugin.getConfigService()
+                                        .current()
+                                        .settings()
+                                        .navigator()
+                                        .item(),
+                                replaceItem);
             }
         }
     }
 
     private void summonNewNavigator(Player player) {
-        CachedValues cachedValues = BuildPlayerImpl.of(plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player)).getCachedValues();
+        CachedValues cachedValues = BuildPlayerImpl.of(
+                        plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player))
+                .getCachedValues();
         cachedValues.saveWalkSpeed(player.getWalkSpeed());
         cachedValues.saveFlySpeed(player.getFlySpeed());
 
@@ -144,8 +150,10 @@ public class NavigatorListener implements Listener {
         player.setFlySpeed(0.0f);
         player.setVelocity(new Vector(0, 0, 0));
         player.teleport(player.getLocation());
-        player.addPotionEffect(new PotionEffect(XPotion.BLINDNESS.get(), PotionEffect.INFINITE_DURATION, 0, false, false));
-        player.addPotionEffect(new PotionEffect(XPotion.JUMP_BOOST.get(), PotionEffect.INFINITE_DURATION, 250, false, false));
+        player.addPotionEffect(
+                new PotionEffect(XPotion.BLINDNESS.get(), PotionEffect.INFINITE_DURATION, 0, false, false));
+        player.addPotionEffect(
+                new PotionEffect(XPotion.JUMP_BOOST.get(), PotionEffect.INFINITE_DURATION, 250, false, false));
 
         navigatorService.spawnArmorStands(player);
         navigatorService.getOpenNavigator().add(player);
@@ -186,11 +194,12 @@ public class NavigatorListener implements Listener {
                 return;
             }
 
-            DisplayablesMenu inventory = switch (category) {
-                case PUBLIC -> new PublicWorldsMenu(plugin, player);
-                case ARCHIVE -> new ArchivedWorldsMenu(plugin, player);
-                case PRIVATE -> new PrivateWorldsMenu(plugin, player);
-            };
+            DisplayablesMenu inventory =
+                    switch (category) {
+                        case PUBLIC -> new PublicWorldsMenu(plugin, player);
+                        case ARCHIVE -> new ArchivedWorldsMenu(plugin, player);
+                        case PRIVATE -> new PrivateWorldsMenu(plugin, player);
+                    };
 
             XSound.BLOCK_CHEST_OPEN.play(player);
             inventory.open(player);
@@ -222,7 +231,8 @@ public class NavigatorListener implements Listener {
     @EventHandler
     public void preventNewNavigatorManipulation(PlayerArmorStandManipulateEvent event) {
         ArmorStand armorStand = event.getRightClicked();
-        if (navigatorService.matchNavigatorCategory(armorStand) == null || navigatorService.getOwner(armorStand) == null) {
+        if (navigatorService.matchNavigatorCategory(armorStand) == null
+                || navigatorService.getOwner(armorStand) == null) {
             return;
         }
 

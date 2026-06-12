@@ -19,11 +19,12 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.player.menu.SpeedMenu;
+import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.bukkit.entity.Player;
-import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class SpeedCommand extends CommandBase {
@@ -46,14 +47,15 @@ public class SpeedCommand extends CommandBase {
                 break;
             case 1:
                 String speedString = args[0];
-                float speed = switch (speedString) {
-                    case "1" -> 0.2f;
-                    case "2" -> 0.4f;
-                    case "3" -> 0.6f;
-                    case "4" -> 0.8f;
-                    case "5" -> 1.0f;
-                    default -> INVALID_SPEED;
-                };
+                float speed =
+                        switch (speedString) {
+                            case "1" -> 0.2f;
+                            case "2" -> 0.4f;
+                            case "3" -> 0.6f;
+                            case "4" -> 0.8f;
+                            case "5" -> 1.0f;
+                            default -> INVALID_SPEED;
+                        };
 
                 if (speed == INVALID_SPEED) {
                     messages.sendMessage(player, "speed_usage");

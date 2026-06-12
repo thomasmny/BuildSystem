@@ -21,27 +21,22 @@ import de.eintosti.buildsystem.util.color.patterns.GradientPattern;
 import de.eintosti.buildsystem.util.color.patterns.HexPattern;
 import de.eintosti.buildsystem.util.color.patterns.RainbowPattern;
 import de.eintosti.buildsystem.util.color.patterns.SolidPattern;
-import java.awt.Color;
-import java.util.Collection;
-import java.util.List;
 import net.md_5.bungee.api.ChatColor;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 
+import java.awt.*;
+import java.util.Collection;
+import java.util.List;
+
 @NullMarked
 public final class ColorAPI {
 
-    private static final List<String> SPECIAL_COLORS = List.of(
-            "&l", "&n", "&o", "&k", "&m",
-            "§l", "§n", "§o", "§k", "§m"
-    );
+    private static final List<String> SPECIAL_COLORS =
+            List.of("&l", "&n", "&o", "&k", "&m", "§l", "§n", "§o", "§k", "§m");
 
-    private static final List<ColorPattern> PATTERNS = List.of(
-            new GradientPattern(),
-            new HexPattern(),
-            new SolidPattern(),
-            new RainbowPattern()
-    );
+    private static final List<ColorPattern> PATTERNS =
+            List.of(new GradientPattern(), new HexPattern(), new SolidPattern(), new RainbowPattern());
 
     /**
      * Processes a string to add color to it. Thanks to Distressing for helping with the regex <3
@@ -75,7 +70,8 @@ public final class ColorAPI {
      * @param end    The ending gradiant
      */
     public static String color(String string, Color start, Color end) {
-        ChatColor[] colors = createGradient(start, end, withoutSpecialChar(string).length());
+        ChatColor[] colors =
+                createGradient(start, end, withoutSpecialChar(string).length());
         return apply(string, colors);
     }
 
@@ -117,7 +113,10 @@ public final class ColorAPI {
                     }
                     i++;
                 } else {
-                    stringBuilder.append(colors[outIndex++]).append(specialColors).append(characters[i]);
+                    stringBuilder
+                            .append(colors[outIndex++])
+                            .append(specialColors)
+                            .append(characters[i]);
                 }
             } else {
                 stringBuilder.append(colors[outIndex++]).append(specialColors).append(characters[i]);
@@ -169,22 +168,20 @@ public final class ColorAPI {
         int stepR = Math.abs(start.getRed() - end.getRed()) / (step - 1);
         int stepG = Math.abs(start.getGreen() - end.getGreen()) / (step - 1);
         int stepB = Math.abs(start.getBlue() - end.getBlue()) / (step - 1);
-        int[] direction = new int[]{
-                start.getRed() < end.getRed() ? +1 : -1,
-                start.getGreen() < end.getGreen() ? +1 : -1,
-                start.getBlue() < end.getBlue() ? +1 : -1
+        int[] direction = new int[] {
+            start.getRed() < end.getRed() ? +1 : -1,
+            start.getGreen() < end.getGreen() ? +1 : -1,
+            start.getBlue() < end.getBlue() ? +1 : -1
         };
 
         for (int i = 0; i < step; i++) {
             Color color = new Color(
                     start.getRed() + ((stepR * i) * direction[0]),
                     start.getGreen() + ((stepG * i) * direction[1]),
-                    start.getBlue() + ((stepB * i) * direction[2])
-            );
+                    start.getBlue() + ((stepB * i) * direction[2]));
             colors[i] = ChatColor.of(color);
         }
 
         return colors;
     }
-
 }

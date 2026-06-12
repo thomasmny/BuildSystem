@@ -29,9 +29,6 @@ import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -45,6 +42,10 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 @NullMarked
 public class PlayerChangedWorldListener implements Listener {
@@ -69,7 +70,6 @@ public class PlayerChangedWorldListener implements Listener {
         this.playerGamemode = new HashMap<>();
         this.playerInventory = new HashMap<>();
         this.playerArmor = new HashMap<>();
-
     }
 
     @EventHandler
@@ -80,13 +80,17 @@ public class PlayerChangedWorldListener implements Listener {
         event.getPlayer().setAllowFlight(true);
 
         BuildWorld oldWorld = worldStorage.getBuildWorld(event.getFrom());
-        if (oldWorld != null && plugin.getConfigService().current().world().unload().enabled()) {
+        if (oldWorld != null
+                && plugin.getConfigService().current().world().unload().enabled()) {
             oldWorld.getUnloader().resetUnloadTask();
         }
 
         BuildWorld newWorld = worldStorage.getBuildWorld(worldName);
-        if (newWorld != null && !newWorld.getData().physics().get() && player.hasPermission("buildsystem.physics.message")) {
-            plugin.getMessages().sendMessage(player, "physics_deactivated_in_world", Map.entry("%world%", newWorld.getName()));
+        if (newWorld != null
+                && !newWorld.getData().physics().get()
+                && player.hasPermission("buildsystem.physics.message")) {
+            plugin.getMessages()
+                    .sendMessage(player, "physics_deactivated_in_world", Map.entry("%world%", newWorld.getName()));
         }
 
         removeOldNavigator(player);
@@ -109,7 +113,9 @@ public class PlayerChangedWorldListener implements Listener {
             return;
         }
 
-        CachedValues cachedValues = BuildPlayerImpl.of(playerManager.getPlayerStorage().getBuildPlayer(player)).getCachedValues();
+        CachedValues cachedValues = BuildPlayerImpl.of(
+                        playerManager.getPlayerStorage().getBuildPlayer(player))
+                .getCachedValues();
         cachedValues.resetGameModeIfPresent(player);
         cachedValues.resetInventoryIfPresent(player);
         XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
@@ -117,7 +123,8 @@ public class PlayerChangedWorldListener implements Listener {
     }
 
     private void setGoldBlock(@Nullable BuildWorld buildWorld) {
-        if (buildWorld == null || buildWorld.getType() != BuildWorldType.VOID
+        if (buildWorld == null
+                || buildWorld.getType() != BuildWorldType.VOID
                 || buildWorld.getData().status().get() != BuildWorldStatus.NOT_STARTED) {
             return;
         }
@@ -167,7 +174,9 @@ public class PlayerChangedWorldListener implements Listener {
             setSpectatorMode(player);
 
             if (plugin.getConfigService().current().settings().archive().vanish()) {
-                player.addPotionEffect(new PotionEffect(XPotion.INVISIBILITY.get(), PotionEffect.INFINITE_DURATION, 0, false, false), false);
+                player.addPotionEffect(
+                        new PotionEffect(XPotion.INVISIBILITY.get(), PotionEffect.INFINITE_DURATION, 0, false, false),
+                        false);
                 Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
             }
         } else {
@@ -181,7 +190,8 @@ public class PlayerChangedWorldListener implements Listener {
     private void setSpectatorMode(Player player) {
         // Checking if the game mode should be set to adventure mode on archive worlds
         if (plugin.getConfigService().current().settings().archive().changeGamemode()) {
-            player.setGameMode(plugin.getConfigService().current().settings().archive().worldGameMode());
+            player.setGameMode(
+                    plugin.getConfigService().current().settings().archive().worldGameMode());
         }
         player.setSaturation(20);
         player.setHealth(20);

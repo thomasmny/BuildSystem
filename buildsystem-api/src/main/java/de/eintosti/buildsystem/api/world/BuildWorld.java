@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.api.world;
 
 import com.cryptomorin.xseries.profiles.objects.Profileable;
+import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
@@ -25,15 +26,15 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldLoader;
-import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldUnloader;
-import java.util.UUID;
 import org.bukkit.Difficulty;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.UUID;
 
 /**
  * Represents a world managed by the BuildSystem plugin, extending the {@link Displayable} interface. This interface provides comprehensive access to world-specific properties,
@@ -49,8 +50,7 @@ public interface BuildWorld extends Displayable {
      *
      * @return The Bukkit world, or {@code null} if not loaded
      */
-    @Nullable
-    World getWorld();
+    @Nullable World getWorld();
 
     /**
      * Gets the unique identifier of this world.
@@ -96,8 +96,7 @@ public interface BuildWorld extends Displayable {
      *
      * @return The custom chunk generator used to generate this world, or {@code null} if not set
      */
-    @Nullable
-    CustomGenerator getCustomGenerator();
+    @Nullable CustomGenerator getCustomGenerator();
 
     /**
      * Cycles to the next {@link Difficulty} for this world.
@@ -169,8 +168,7 @@ public interface BuildWorld extends Displayable {
      *
      * @return The folder this world is assigned to, or {@code null} if not assigned
      */
-    @Nullable
-    Folder getFolder();
+    @Nullable Folder getFolder();
 
     /**
      * Checks whether this world is assigned to a {@link Folder}.

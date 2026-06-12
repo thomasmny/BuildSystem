@@ -20,13 +20,14 @@ package de.eintosti.buildsystem.menu;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Logger;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Stateless factory for the {@link ItemStack}s used by menus. Item builders that need plugin state (config, settings, scheduler) live on {@link MenuItems}.
@@ -89,10 +90,7 @@ public final class InventoryUtils {
      * @return The created skull ItemStack
      */
     public static ItemStack createSkull(String displayName, Profileable profileable, List<String> lore) {
-        ItemStack skull = XSkull.createItem()
-                .profile(profileable)
-                .lenient()
-                .apply();
+        ItemStack skull = XSkull.createItem().profile(profileable).lenient().apply();
 
         ItemMeta itemMeta = skull.getItemMeta();
         if (itemMeta == null) {

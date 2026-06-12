@@ -21,14 +21,15 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 @NullMarked
 public class TimeCommand extends CommandBase {
@@ -58,7 +59,12 @@ public class TimeCommand extends CommandBase {
 
                 switch (args.length) {
                     case 0, 1 -> {
-                        world.setTime(plugin.getConfigService().current().world().defaults().time().noon());
+                        world.setTime(plugin.getConfigService()
+                                .current()
+                                .world()
+                                .defaults()
+                                .time()
+                                .noon());
                         messages.sendMessage(player, "day_set", Map.entry("%world%", world.getName()));
                     }
                     default -> messages.sendMessage(player, "day_usage");
@@ -73,7 +79,12 @@ public class TimeCommand extends CommandBase {
 
                 switch (args.length) {
                     case 0, 1 -> {
-                        world.setTime(plugin.getConfigService().current().world().defaults().time().night());
+                        world.setTime(plugin.getConfigService()
+                                .current()
+                                .world()
+                                .defaults()
+                                .time()
+                                .night());
                         messages.sendMessage(player, "night_set", Map.entry("%world%", world.getName()));
                     }
                     default -> messages.sendMessage(player, "night_usage");

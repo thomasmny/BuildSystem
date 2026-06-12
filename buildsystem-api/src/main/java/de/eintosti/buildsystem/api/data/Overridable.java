@@ -17,10 +17,11 @@
  */
 package de.eintosti.buildsystem.api.data;
 
-import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 
 /**
  * A {@link Capability} that marks a {@link Type} as being overridable by an external source.
@@ -31,9 +32,4 @@ import org.jspecify.annotations.Nullable;
  * @since 3.0.1
  */
 @NullMarked
-public record Overridable<T>(
-        BooleanSupplier isEnabled,
-        Supplier<@Nullable T> provider
-) implements Capability {
-
-}
+public record Overridable<T>(BooleanSupplier isEnabled, Supplier<@Nullable T> provider) implements Capability {}

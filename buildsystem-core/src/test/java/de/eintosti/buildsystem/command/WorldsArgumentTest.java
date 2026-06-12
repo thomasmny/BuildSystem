@@ -19,13 +19,10 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import org.jspecify.annotations.NullMarked;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pins {@link WorldsArgument} as the single source of truth for {@code /worlds} subcommand permissions and names. Subcommand executors and tab completions both derive their
@@ -37,7 +34,8 @@ class WorldsArgumentTest {
     @ParameterizedTest
     @EnumSource(WorldsArgument.class)
     void permissionIsNamespaced(WorldsArgument argument) {
-        assertTrue(argument.getPermission().startsWith("buildsystem."),
+        assertTrue(
+                argument.getPermission().startsWith("buildsystem."),
                 argument + " permission should be namespaced: " + argument.getPermission());
     }
 

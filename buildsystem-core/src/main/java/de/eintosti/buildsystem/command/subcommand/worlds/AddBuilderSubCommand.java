@@ -25,15 +25,16 @@ import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
-import de.eintosti.buildsystem.world.menu.BuilderMenu;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
+import de.eintosti.buildsystem.world.menu.BuilderMenu;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class AddBuilderSubCommand implements SubCommand {
@@ -46,7 +47,9 @@ public class AddBuilderSubCommand implements SubCommand {
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld().getName());
+        BuildWorld buildWorld = plugin.getWorldService()
+                .getWorldStorage()
+                .getBuildWorld(player.getWorld().getName());
         var permissions = WorldPermissionsImpl.of(plugin, buildWorld);
         if (!permissions.canPerformCommand(player, getArgument().getPermission())) {
             plugin.getMessages().sendPermissionError(player);
@@ -68,22 +71,41 @@ public class AddBuilderSubCommand implements SubCommand {
     private void addBuilder(Player player, BuildWorld buildWorld, String builderName, boolean closeInventory) {
         Player builderPlayer = Bukkit.getPlayerExact(builderName);
         if (builderPlayer != null) {
-            applyBuilder(player, buildWorld, Builder.of(builderPlayer), builderPlayer.getUniqueId(), builderName, closeInventory);
+            applyBuilder(
+                    player,
+                    buildWorld,
+                    Builder.of(builderPlayer),
+                    builderPlayer.getUniqueId(),
+                    builderName,
+                    closeInventory);
             return;
         }
 
-        plugin.getPlayerLookupService().lookupUniqueId(builderName)
+        plugin.getPlayerLookupService()
+                .lookupUniqueId(builderName)
                 .thenAccept(builderId -> Bukkit.getScheduler().runTask(plugin, () -> {
                     if (builderId == null) {
                         plugin.getMessages().sendMessage(player, "worlds_addbuilder_player_not_found");
                         player.closeInventory();
                         return;
                     }
-                    applyBuilder(player, buildWorld, Builder.of(builderId, builderName), builderId, builderName, closeInventory);
+                    applyBuilder(
+                            player,
+                            buildWorld,
+                            Builder.of(builderId, builderName),
+                            builderId,
+                            builderName,
+                            closeInventory);
                 }));
     }
 
-    private void applyBuilder(Player player, BuildWorld buildWorld, Builder builder, UUID builderId, String builderName, boolean closeInventory) {
+    private void applyBuilder(
+            Player player,
+            BuildWorld buildWorld,
+            Builder builder,
+            UUID builderId,
+            String builderName,
+            boolean closeInventory) {
         Builders builders = buildWorld.getBuilders();
         if (builderId.equals(player.getUniqueId()) && builders.isCreator(player)) {
             plugin.getMessages().sendMessage(player, "worlds_addbuilder_already_creator");
@@ -99,9 +121,7 @@ public class AddBuilderSubCommand implements SubCommand {
 
         builders.addBuilder(builder);
         XSound.ENTITY_PLAYER_LEVELUP.play(player);
-        plugin.getMessages().sendMessage(player, "worlds_addbuilder_added",
-                Map.entry("%builder%", builderName)
-        );
+        plugin.getMessages().sendMessage(player, "worlds_addbuilder_added", Map.entry("%builder%", builderName));
 
         if (closeInventory) {
             player.closeInventory();
@@ -122,7 +142,9 @@ public class AddBuilderSubCommand implements SubCommand {
         if (args.length != 2) {
             return List.of();
         }
-        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld().getName());
+        BuildWorld buildWorld = plugin.getWorldService()
+                .getWorldStorage()
+                .getBuildWorld(player.getWorld().getName());
         if (buildWorld == null) {
             return List.of();
         }

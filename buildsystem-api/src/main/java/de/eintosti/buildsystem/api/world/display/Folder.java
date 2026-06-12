@@ -19,12 +19,13 @@ package de.eintosti.buildsystem.api.world.display;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
-import java.util.List;
-import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Represents a folder within the BuildSystem's world navigation structure. Folders can contain {@link BuildWorld}s and other nested folders, organizing them for easier access.
@@ -53,8 +54,7 @@ public interface Folder extends Displayable {
      *
      * @return The parent {@link Folder}, or {@code null} if this is a top-level folder
      */
-    @Nullable
-    Folder getParent();
+    @Nullable Folder getParent();
 
     /**
      * Sets the parent {@link Folder} for this folder. Setting it to {@code null} will make this a top-level folder.

@@ -18,9 +18,10 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import java.util.Objects;
 import org.bukkit.command.PluginCommand;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.Objects;
 
 @NullMarked
 public final class CommandRegistrar {
@@ -54,7 +55,8 @@ public final class CommandRegistrar {
     }
 
     private void register(String name, CommandBase command) {
-        PluginCommand cmd = Objects.requireNonNull(plugin.getCommand(name), "Missing plugin.yml entry for command: " + name);
+        PluginCommand cmd =
+                Objects.requireNonNull(plugin.getCommand(name), "Missing plugin.yml entry for command: " + name);
         cmd.setExecutor(command);
         cmd.setTabCompleter(command);
     }

@@ -17,17 +17,13 @@
  */
 package de.eintosti.buildsystem.config;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.cryptomorin.xseries.XMaterial;
-import java.util.logging.Logger;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
+
+import java.util.logging.Logger;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class PluginConfigTest {
 
@@ -74,7 +70,8 @@ class PluginConfigTest {
         assertEquals("01:00:00", cfg.world().unload().timeUntilUnload());
         // World - Backup
         assertEquals(5, cfg.world().backup().maxBackupsPerWorld());
-        assertInstanceOf(PluginConfig.World.Backup.Local.class, cfg.world().backup().storage());
+        assertInstanceOf(
+                PluginConfig.World.Backup.Local.class, cfg.world().backup().storage());
         assertTrue(cfg.world().backup().autoBackup().enabled());
         assertEquals(900, cfg.world().backup().autoBackup().interval());
         assertTrue(cfg.world().backup().autoBackup().onlyActiveWorlds());
@@ -230,8 +227,10 @@ class PluginConfigTest {
                         path: "backups/"
                 """);
 
-        assertInstanceOf(PluginConfig.World.Backup.S3.class, cfg.world().backup().storage());
-        PluginConfig.World.Backup.S3 s3 = (PluginConfig.World.Backup.S3) cfg.world().backup().storage();
+        assertInstanceOf(
+                PluginConfig.World.Backup.S3.class, cfg.world().backup().storage());
+        PluginConfig.World.Backup.S3 s3 =
+                (PluginConfig.World.Backup.S3) cfg.world().backup().storage();
         assertEquals("https://example.com", s3.url());
         assertEquals("MYACCESSKEY", s3.accessKey());
         assertEquals("MYSECRETKEY", s3.secretKey());
@@ -266,8 +265,10 @@ class PluginConfigTest {
                         path: "/backups/"
                 """);
 
-        assertInstanceOf(PluginConfig.World.Backup.Sftp.class, cfg.world().backup().storage());
-        PluginConfig.World.Backup.Sftp sftp = (PluginConfig.World.Backup.Sftp) cfg.world().backup().storage();
+        assertInstanceOf(
+                PluginConfig.World.Backup.Sftp.class, cfg.world().backup().storage());
+        PluginConfig.World.Backup.Sftp sftp =
+                (PluginConfig.World.Backup.Sftp) cfg.world().backup().storage();
         assertEquals("sftp.example.com", sftp.host());
         assertEquals(22, sftp.port());
         assertEquals("user", sftp.username());
@@ -295,7 +296,8 @@ class PluginConfigTest {
                       type: unknown_type
                 """);
 
-        assertInstanceOf(PluginConfig.World.Backup.Local.class, cfg.world().backup().storage());
+        assertInstanceOf(
+                PluginConfig.World.Backup.Local.class, cfg.world().backup().storage());
     }
 
     // -----------------------------------------------------------------------

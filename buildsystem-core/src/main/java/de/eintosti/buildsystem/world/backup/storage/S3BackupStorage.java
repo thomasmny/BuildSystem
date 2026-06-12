@@ -56,7 +56,15 @@ public class S3BackupStorage extends AbstractBackupStorage {
     private final String pathPrefix;
     private final Path tmpDownloadDirectory;
 
-    public S3BackupStorage(BuildSystemPlugin plugin, Executor executor, @Nullable String url, String accessKey, String secretKey, String region, String bucket, String pathPrefix) {
+    public S3BackupStorage(
+            BuildSystemPlugin plugin,
+            Executor executor,
+            @Nullable String url,
+            String accessKey,
+            String secretKey,
+            String region,
+            String bucket,
+            String pathPrefix) {
         super(plugin, executor);
 
         this.bucket = bucket;
@@ -80,7 +88,8 @@ public class S3BackupStorage extends AbstractBackupStorage {
 
     @Override
     protected List<Backup> doListBackups(BuildWorld buildWorld) {
-        List<Backup> backups = new ArrayList<>(plugin.getConfigService().current().world().backup().maxBackupsPerWorld());
+        List<Backup> backups = new ArrayList<>(
+                plugin.getConfigService().current().world().backup().maxBackupsPerWorld());
         try {
             ListObjectsV2Response response = s3Client.listObjectsV2(ListObjectsV2Request.builder()
                     .bucket(bucket)
@@ -92,8 +101,7 @@ public class S3BackupStorage extends AbstractBackupStorage {
                     .map(object -> new BackupImpl(
                             plugin.getBackupService().getProfile(buildWorld),
                             object.lastModified().toEpochMilli(),
-                            object.key()
-                    ))
+                            object.key()))
                     .toList());
         } catch (S3Exception | SdkClientException e) {
             throw new RuntimeException("Error while listing S3 backups", e);
@@ -111,9 +119,7 @@ public class S3BackupStorage extends AbstractBackupStorage {
 
             try {
                 s3Client.putObject(
-                        PutObjectRequest.builder().bucket(bucket).key(key).build(),
-                        RequestBody.fromBytes(zipBytes)
-                );
+                        PutObjectRequest.builder().bucket(bucket).key(key).build(), RequestBody.fromBytes(zipBytes));
             } catch (S3Exception | SdkClientException e) {
                 throw new IOException("Failed to upload S3 backup for " + buildWorld.getName(), e);
             }
@@ -129,9 +135,11 @@ public class S3BackupStorage extends AbstractBackupStorage {
             try {
                 Path target = tmpDownloadDirectory.resolve(UUID.randomUUID() + ".zip");
                 s3Client.getObject(
-                        GetObjectRequest.builder().bucket(bucket).key(backup.key()).build(),
-                        target
-                );
+                        GetObjectRequest.builder()
+                                .bucket(bucket)
+                                .key(backup.key())
+                                .build(),
+                        target);
                 return target.toFile();
             } catch (S3Exception | SdkClientException e) {
                 throw new IOException("Failed to download S3 backup: " + backup.key(), e);
@@ -142,7 +150,10 @@ public class S3BackupStorage extends AbstractBackupStorage {
     @Override
     protected void doDeleteBackup(Backup backup) {
         try {
-            s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(backup.key()).build());
+            s3Client.deleteObject(DeleteObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(backup.key())
+                    .build());
         } catch (S3Exception | SdkClientException e) {
             throw new RuntimeException("Unable to delete S3 backup " + backup.key(), e);
         }

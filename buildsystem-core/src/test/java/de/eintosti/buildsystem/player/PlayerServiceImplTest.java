@@ -17,21 +17,22 @@
  */
 package de.eintosti.buildsystem.player;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.Visibility;
-import java.util.Arrays;
-import java.util.Set;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.Set;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @NullMarked
 class PlayerServiceImplTest {
@@ -89,10 +90,8 @@ class PlayerServiceImplTest {
 
     @Test
     void highestNumericPermissionWins() {
-        Player player = playerWith(false,
-                "buildsystem.create.public.3",
-                "buildsystem.create.public.7",
-                "buildsystem.create.public.5");
+        Player player = playerWith(
+                false, "buildsystem.create.public.3", "buildsystem.create.public.7", "buildsystem.create.public.5");
         assertEquals(7, service.getMaxWorlds(player, Visibility.PUBLIC));
     }
 }

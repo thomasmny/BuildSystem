@@ -23,15 +23,9 @@ import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.api.player.BuildPlayer;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
-import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -48,6 +42,8 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.*;
 
 @NullMarked
 public class NavigatorService {
@@ -89,7 +85,7 @@ public class NavigatorService {
         ArmorStand worldNavigator = spawnWorldNavigator(player);
         ArmorStand worldArchive = spawnWorldArchive(player);
         ArmorStand privateWorlds = spawnPrivateWorlds(player);
-        this.armorStands.put(player.getUniqueId(), new ArmorStand[]{worldNavigator, worldArchive, privateWorlds});
+        this.armorStands.put(player.getUniqueId(), new ArmorStand[] {worldNavigator, worldArchive, privateWorlds});
     }
 
     public void removeArmorStands(Player player) {
@@ -104,12 +100,22 @@ public class NavigatorService {
 
     private ArmorStand spawnWorldNavigator(Player player) {
         Location navigatorLocation = calculatePosition(player, SPREAD / 2 * -1);
-        return spawnArmorStand(player, navigatorLocation, NavigatorCategory.PUBLIC, true, "d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622");
+        return spawnArmorStand(
+                player,
+                navigatorLocation,
+                NavigatorCategory.PUBLIC,
+                true,
+                "d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622");
     }
 
     private ArmorStand spawnWorldArchive(Player player) {
         Location archiveLocation = calculatePosition(player, 0);
-        return spawnArmorStand(player, archiveLocation, NavigatorCategory.ARCHIVE, true, "7f6bf958abd78295eed6ffc293b1aa59526e80f54976829ea068337c2f5e8");
+        return spawnArmorStand(
+                player,
+                archiveLocation,
+                NavigatorCategory.ARCHIVE,
+                true,
+                "7f6bf958abd78295eed6ffc293b1aa59526e80f54976829ea068337c2f5e8");
     }
 
     private ArmorStand spawnPrivateWorlds(Player player) {
@@ -131,16 +137,17 @@ public class NavigatorService {
         return location;
     }
 
-    private ArmorStand spawnArmorStand(Player player, Location location, NavigatorCategory category, boolean customSkull, String skullUrl) {
+    private ArmorStand spawnArmorStand(
+            Player player, Location location, NavigatorCategory category, boolean customSkull, String skullUrl) {
         ArmorStand armorStand = location.getWorld().spawn(location, ArmorStand.class);
         armorStand.setVisible(false);
         armorStand.setGravity(false);
         armorStand.setCanPickupItems(false);
-        armorStand.getEquipment().setHelmet(
-                XSkull.createItem()
+        armorStand
+                .getEquipment()
+                .setHelmet(XSkull.createItem()
                         .profile(Profileable.detect(customSkull ? skullUrl : player.getName()))
-                        .apply()
-        );
+                        .apply());
 
         PersistentDataContainer pdc = armorStand.getPersistentDataContainer();
         pdc.set(ownerKey, PersistentDataType.STRING, player.getUniqueId().toString());
@@ -178,13 +185,19 @@ public class NavigatorService {
             return;
         }
 
-        BuildPlayerImpl buildPlayer = BuildPlayerImpl.of(plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player));
+        BuildPlayerImpl buildPlayer =
+                BuildPlayerImpl.of(plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player));
         buildPlayer.setLastLookedAt(null);
         removeArmorStands(player);
 
         XSound.ENTITY_ITEM_BREAK.play(player);
         displayActionBarMessage(player, "");
-        plugin.getMenuItems().replaceItem(player, plugin.getMessages().getString("barrier_item", player), XMaterial.BARRIER, plugin.getMenuItems().createNavigatorItem(player));
+        plugin.getMenuItems()
+                .replaceItem(
+                        player,
+                        plugin.getMessages().getString("barrier_item", player),
+                        XMaterial.BARRIER,
+                        plugin.getMenuItems().createNavigatorItem(player));
 
         CachedValues cachedValues = buildPlayer.getCachedValues();
         cachedValues.resetWalkSpeedIfPresent(player);
@@ -207,7 +220,8 @@ public class NavigatorService {
                 continue;
             }
 
-            BuildPlayerImpl buildPlayer = BuildPlayerImpl.of(plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player));
+            BuildPlayerImpl buildPlayer = BuildPlayerImpl.of(
+                    plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player));
             if (isLookingAtArmorStandHead(player, armorStand)) {
                 NavigatorCategory category = matchNavigatorCategory(armorStand);
                 sendTypeInfo(player, category);
@@ -234,9 +248,12 @@ public class NavigatorService {
         for (double distance = 0; distance <= 3; distance += 0.05) {
             Vector point = eyeLocation.toVector().add(direction.clone().multiply(distance));
 
-            if (point.getX() >= minX && point.getX() <= maxX
-                    && point.getY() >= minY && point.getY() <= maxY
-                    && point.getZ() >= minZ && point.getZ() <= maxZ) {
+            if (point.getX() >= minX
+                    && point.getX() <= maxX
+                    && point.getY() >= minY
+                    && point.getY() <= maxY
+                    && point.getZ() >= minZ
+                    && point.getZ() <= maxZ) {
                 return true;
             }
         }
@@ -267,7 +284,8 @@ public class NavigatorService {
             if (entityLocation.getDirection().normalize().crossProduct(vector).lengthSquared() < threshold
                     && vector.normalize().dot(entityLocation.getDirection().normalize()) >= 0) {
                 if (target == null
-                        || target.getLocation().distanceSquared(entityLocation) > otherLocation.distanceSquared(entityLocation)) {
+                        || target.getLocation().distanceSquared(entityLocation)
+                                > otherLocation.distanceSquared(entityLocation)) {
                     target = other;
                 }
             }
@@ -277,7 +295,8 @@ public class NavigatorService {
     }
 
     private void sendTypeInfo(Player player, @Nullable NavigatorCategory category) {
-        BuildPlayerImpl buildPlayer = BuildPlayerImpl.of(plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player));
+        BuildPlayerImpl buildPlayer =
+                BuildPlayerImpl.of(plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player));
         if (category == null) {
             buildPlayer.setLastLookedAt(null);
             displayActionBarMessage(player, "§0");
@@ -290,11 +309,12 @@ public class NavigatorService {
             XSound.ENTITY_CHICKEN_EGG.play(player);
         }
 
-        String message = switch (category) {
-            case PUBLIC -> "new_navigator_world_navigator";
-            case ARCHIVE -> "new_navigator_world_archive";
-            case PRIVATE -> "new_navigator_private_worlds";
-        };
+        String message =
+                switch (category) {
+                    case PUBLIC -> "new_navigator_world_navigator";
+                    case ARCHIVE -> "new_navigator_world_archive";
+                    case PRIVATE -> "new_navigator_private_worlds";
+                };
         displayActionBarMessage(player, plugin.getMessages().getString(message, player));
     }
 

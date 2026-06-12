@@ -25,11 +25,12 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import java.util.Locale;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.Locale;
 
 @NullMarked
 public class PlaceholderApiExpansion extends PlaceholderExpansion {
@@ -51,7 +52,12 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
         plugin.getLogger().info("PlaceholderAPI expansion initialized");
     }
 
-    PlaceholderApiExpansion(String author, String version, SettingsService settingsService, WorldStorageImpl worldStorage, Messages messages) {
+    PlaceholderApiExpansion(
+            String author,
+            String version,
+            SettingsService settingsService,
+            WorldStorageImpl worldStorage,
+            Messages messages) {
         this.author = author;
         this.version = version;
         this.settingsService = settingsService;
@@ -146,7 +152,8 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "buildersenabled" -> String.valueOf(worldData.buildersEnabled().get());
             case "creation" -> messages.formatDate(buildWorld.getCreation());
             case "creator" -> builders.hasCreator() ? builders.getCreator().getName() : "-";
-            case "creatorid" -> builders.hasCreator() ? String.valueOf(builders.getCreator().getUniqueId()) : "-";
+            case "creatorid" ->
+                builders.hasCreator() ? String.valueOf(builders.getCreator().getUniqueId()) : "-";
             case "explosions" -> String.valueOf(worldData.explosions().get());
             case "lastedited" -> messages.formatDate(worldData.lastEdited().get());
             case "lastloaded" -> messages.formatDate(worldData.lastLoaded().get());
@@ -159,7 +166,8 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "project" -> worldData.project().get();
             case "physics" -> String.valueOf(worldData.physics().get());
             case "spawn" -> worldData.customSpawn().get();
-            case "status" -> messages.getString(Messages.getMessageKey(worldData.status().get()), player);
+            case "status" ->
+                messages.getString(Messages.getMessageKey(worldData.status().get()), player);
             case "time" -> buildWorld.getWorldTime();
             case "type" -> messages.getString(Messages.getMessageKey(buildWorld.getType()), player);
             case "world" -> buildWorld.getName();

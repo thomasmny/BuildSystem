@@ -25,24 +25,25 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.world.data.type.ConfigurableType;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
+
 @NullMarked
 public class WorldDataImpl implements WorldData {
 
     private final Map<String, Type<?>> data = new HashMap<>();
     private String worldName;
-    @Nullable
-    private Supplier<@Nullable Folder> folderResolver;
+
+    @Nullable private Supplier<@Nullable Folder> folderResolver;
 
     private final Type<String> customSpawn;
     private final Type<String> permission;
@@ -70,46 +71,44 @@ public class WorldDataImpl implements WorldData {
         this.worldName = builder.worldName;
 
         this.customSpawn = register("spawn", new ConfigurableType<>(builder.customSpawn));
-        this.permission = register("permission", new ConfigurableType<>(builder.permission)
-                .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.permission"))
-                .withCapability(Overridable.class, new Overridable<>(
-                        builder.permissionOverrideEnabled,
-                        () -> {
+        this.permission = register(
+                "permission",
+                new ConfigurableType<>(builder.permission)
+                        .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.permission"))
+                        .withCapability(Overridable.class, new Overridable<>(builder.permissionOverrideEnabled, () -> {
                             Folder folder = getAssignedFolder();
                             return (folder != null) ? folder.getPermission() : null;
-                        }
-                ))
-        );
-        this.project = register("project", new ConfigurableType<>(builder.project)
-                .withCapability(Overridable.class, new Overridable<>(
-                        builder.projectOverrideEnabled,
-                        () -> {
+                        })));
+        this.project = register(
+                "project",
+                new ConfigurableType<>(builder.project)
+                        .withCapability(Overridable.class, new Overridable<>(builder.projectOverrideEnabled, () -> {
                             Folder folder = getAssignedFolder();
                             return (folder != null) ? folder.getProject() : null;
-                        }
-                ))
-        );
+                        })));
 
-        this.difficulty = register("difficulty", new ConfigurableType<>(builder.difficulty)
-                .withConfigFormatter(Difficulty::name)
-        );
-        this.material = register("material", new ConfigurableType<>(builder.material)
-                .withConfigFormatter(XMaterial::name)
-        );
-        this.status = register("status", new ConfigurableType<>(builder.status)
-                .withConfigFormatter(BuildWorldStatus::name)
-                .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.archive"))
-        );
+        this.difficulty = register(
+                "difficulty", new ConfigurableType<>(builder.difficulty).withConfigFormatter(Difficulty::name));
+        this.material =
+                register("material", new ConfigurableType<>(builder.material).withConfigFormatter(XMaterial::name));
+        this.status = register(
+                "status",
+                new ConfigurableType<>(builder.status)
+                        .withConfigFormatter(BuildWorldStatus::name)
+                        .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.archive")));
 
-        this.blockBreaking = register("block-breaking", new ConfigurableType<>(builder.blockBreaking)
-                .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.settings"))
-        );
-        this.blockInteractions = register("block-interactions", new ConfigurableType<>(builder.blockInteractions)
-                .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.settings"))
-        );
-        this.blockPlacement = register("block-placement", new ConfigurableType<>(builder.blockPlacement)
-                .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.settings"))
-        );
+        this.blockBreaking = register(
+                "block-breaking",
+                new ConfigurableType<>(builder.blockBreaking)
+                        .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.settings")));
+        this.blockInteractions = register(
+                "block-interactions",
+                new ConfigurableType<>(builder.blockInteractions)
+                        .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.settings")));
+        this.blockPlacement = register(
+                "block-placement",
+                new ConfigurableType<>(builder.blockPlacement)
+                        .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.settings")));
         this.buildersEnabled = register("builders-enabled", new ConfigurableType<>(builder.buildersEnabled));
         this.explosions = register("explosions", new ConfigurableType<>(builder.explosions));
         this.mobAi = register("mob-ai", new ConfigurableType<>(builder.mobAi));
@@ -126,8 +125,7 @@ public class WorldDataImpl implements WorldData {
         this.folderResolver = resolver;
     }
 
-    @Nullable
-    private Folder getAssignedFolder() {
+    @Nullable private Folder getAssignedFolder() {
         Supplier<@Nullable Folder> resolver = this.folderResolver;
         return resolver != null ? resolver.get() : null;
     }
@@ -143,8 +141,7 @@ public class WorldDataImpl implements WorldData {
     }
 
     @Override
-    @Nullable
-    public Location getCustomSpawnLocation() {
+    @Nullable public Location getCustomSpawnLocation() {
         String customSpawn = customSpawn().get();
         if (customSpawn.isBlank()) {
             return null;
@@ -157,8 +154,7 @@ public class WorldDataImpl implements WorldData {
                 Double.parseDouble(spawnString[1]),
                 Double.parseDouble(spawnString[2]),
                 Float.parseFloat(spawnString[3]),
-                Float.parseFloat(spawnString[4])
-        );
+                Float.parseFloat(spawnString[4]));
     }
 
     @Override

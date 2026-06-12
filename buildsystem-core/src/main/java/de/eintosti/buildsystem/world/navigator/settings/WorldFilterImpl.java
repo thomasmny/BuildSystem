@@ -19,8 +19,9 @@ package de.eintosti.buildsystem.world.navigator.settings;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.navigator.settings.WorldFilter;
-import java.util.function.Predicate;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.function.Predicate;
 
 @NullMarked
 public class WorldFilterImpl implements WorldFilter {

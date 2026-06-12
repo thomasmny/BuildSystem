@@ -26,17 +26,13 @@ import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.navigator.settings.WorldDisplay;
-import de.eintosti.buildsystem.world.menu.CreateMenu;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.AbstractMap.SimpleEntry;
+import java.util.*;
 
 @NullMarked
 public class FolderContentMenu extends DisplayablesMenu {
@@ -51,8 +47,7 @@ public class FolderContentMenu extends DisplayablesMenu {
             Folder folder,
             DisplayablesMenu parentInventory,
             Visibility requiredVisibility,
-            Set<BuildWorldStatus> validStatuses
-    ) {
+            Set<BuildWorldStatus> validStatuses) {
         super(
                 plugin,
                 player,
@@ -60,8 +55,7 @@ public class FolderContentMenu extends DisplayablesMenu {
                 plugin.getMessages().getString("folder_title", player, new SimpleEntry<>("%folder%", folder.getName())),
                 null,
                 requiredVisibility,
-                validStatuses
-        );
+                validStatuses);
         this.folder = folder;
         this.parentInventory = parentInventory;
     }
@@ -73,7 +67,8 @@ public class FolderContentMenu extends DisplayablesMenu {
 
     @Override
     protected List<Displayable> collectDisplayables() {
-        WorldDisplay worldDisplay = this.settingsManager.getSettings(this.player).getWorldDisplay();
+        WorldDisplay worldDisplay =
+                this.settingsManager.getSettings(this.player).getWorldDisplay();
 
         Collection<Folder> folders = collectFolders();
         Collection<BuildWorld> buildWorlds = filterWorlds(collectWorlds(), worldDisplay);
@@ -104,7 +99,8 @@ public class FolderContentMenu extends DisplayablesMenu {
 
     @Override
     protected void beginWorldCreation() {
-        new CreateMenu(plugin, CreateMenu.Page.PREDEFINED, this.requiredVisibility, this.folder, this.player).open(this.player);
+        new CreateMenu(plugin, CreateMenu.Page.PREDEFINED, this.requiredVisibility, this.folder, this.player)
+                .open(this.player);
     }
 
     @Override

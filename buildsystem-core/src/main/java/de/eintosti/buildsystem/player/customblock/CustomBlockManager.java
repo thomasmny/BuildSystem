@@ -235,11 +235,12 @@ public class CustomBlockManager implements Listener {
                 block.setBlockData(directional);
             }
             case Orientable orientable -> {
-                Axis axis = switch (direction) {
-                    case UP, DOWN -> Axis.Y;
-                    case EAST, WEST -> Axis.X;
-                    default -> Axis.Z;
-                };
+                Axis axis =
+                        switch (direction) {
+                            case UP, DOWN -> Axis.Y;
+                            case EAST, WEST -> Axis.X;
+                            default -> Axis.Z;
+                        };
                 orientable.setAxis(axis);
                 block.setBlockData(orientable);
             }
@@ -251,8 +252,7 @@ public class CustomBlockManager implements Listener {
                 hangingSign.setRotation(direction);
                 block.setBlockData(hangingSign);
             }
-            default -> {
-            }
+            default -> {}
         }
     }
 }
