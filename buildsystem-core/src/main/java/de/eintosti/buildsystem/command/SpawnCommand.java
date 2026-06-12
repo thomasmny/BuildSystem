@@ -48,7 +48,7 @@ public class SpawnCommand extends CommandBase {
             case 0 -> {
                 if (!spawnService.teleport(player)) {
                     messages.sendMessage(player, "spawn_unavailable");
-                } else if (plugin.getConfigService().current().messages().spawnTeleportMessage()) {
+                } else if (plugin.getConfigService().current().settings().spawnTeleportMessage()) {
                     messages.sendMessage(player, "spawn_teleported");
                 }
             }

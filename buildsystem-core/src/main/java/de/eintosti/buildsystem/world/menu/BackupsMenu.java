@@ -83,7 +83,7 @@ public class BackupsMenu extends Menu {
             for (int i = 0; i < loaded.size(); i++) {
                 getInventory().setItem(FIRST_BACKUP_SLOT + i, InventoryUtils.createItem(XMaterial.GRASS_BLOCK,
                         messages.getString("backups_backup_name", player,
-                                Map.entry("%timestamp%", StringUtils.formatTime(loaded.get(i).creationTime(), plugin.getConfigService().current().messages().dateFormat()))
+                                Map.entry("%timestamp%", StringUtils.formatTime(loaded.get(i).creationTime(), plugin.getConfigService().current().settings().dateFormat()))
                         )
                 ));
             }

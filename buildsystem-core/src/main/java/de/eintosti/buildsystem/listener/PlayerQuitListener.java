@@ -53,7 +53,7 @@ public class PlayerQuitListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void sendPlayerQuitMessage(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        String message = plugin.getConfigService().current().messages().joinQuitMessages()
+        String message = plugin.getConfigService().current().settings().joinQuitMessages()
                 ? plugin.getMessages().getString("player_quit", player, Map.entry("%player%", player.getName()))
                 : null;
         event.setQuitMessage(message);

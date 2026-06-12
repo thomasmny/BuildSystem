@@ -185,7 +185,7 @@ public final class Messages {
 
     public String formatDate(long millis) {
         return millis > 0
-                ? new SimpleDateFormat(configService.current().messages().dateFormat()).format(millis)
+                ? new SimpleDateFormat(configService.current().settings().dateFormat()).format(millis)
                 : "-";
     }
 

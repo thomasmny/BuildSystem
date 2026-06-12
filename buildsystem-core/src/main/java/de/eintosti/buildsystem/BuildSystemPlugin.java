@@ -183,7 +183,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         Metrics metrics = new Metrics(this, METRICS_ID);
         metrics.addCustomChart(new SimplePie("archive_vanish", () -> String.valueOf(configService.current().settings().archive().vanish())));
         metrics.addCustomChart(new SimplePie("block_world_edit", () -> String.valueOf(configService.current().settings().builder().blockWorldEditNonBuilder())));
-        metrics.addCustomChart(new SimplePie("join_quit_messages", () -> String.valueOf(configService.current().messages().joinQuitMessages())));
+        metrics.addCustomChart(new SimplePie("join_quit_messages", () -> String.valueOf(configService.current().settings().joinQuitMessages())));
         metrics.addCustomChart(new SimplePie("lock_weather", () -> String.valueOf(configService.current().world().lockWeather())));
         metrics.addCustomChart(new SimplePie("scoreboard", () -> String.valueOf(configService.current().settings().scoreboard())));
         metrics.addCustomChart(new SimplePie("update_checker", () -> String.valueOf(configService.current().settings().updateChecker())));

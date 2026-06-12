@@ -38,7 +38,7 @@ public class BackupsConfirmationMenu extends Menu {
     public BackupsConfirmationMenu(BuildSystemPlugin plugin, Backup backup, Player player) {
         super(plugin.getMessages(), 27, plugin.getMessages().getString("restore_backup_title", player));
         this.backup = backup;
-        this.dateFormat = plugin.getConfigService().current().messages().dateFormat();
+        this.dateFormat = plugin.getConfigService().current().settings().dateFormat();
     }
 
     @Override

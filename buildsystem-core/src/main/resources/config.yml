@@ -1,19 +1,17 @@
-messages:
-  spawn-teleport-message: false
-  join-quit-messages: true
-  date-format: "dd/MM/yyyy"
+# BuildSystem configuration
+# Documentation: https://buildsystem.eintosti.de/getting-started/config
+
 settings:
   update-checker: true
   scoreboard: true
+  spawn-teleport-message: false
+  join-quit-messages: true
+  date-format: "dd/MM/yyyy"
   archive:
     vanish: true
     change-gamemode: true
-    # Options: "SURVIVAL", "CREATIVE", "ADVENTURE", "SPECTATOR"
+    # Options: SURVIVAL, CREATIVE, ADVENTURE, SPECTATOR
     world-gamemode: "ADVENTURE"
-  disabled-physics:
-    prevent-connections: true
-    prevent-fluid-flow: true
-    prevent-falling-blocks: true
   save-from-death:
     enabled: true
     teleport-to-map-spawn: true
@@ -25,46 +23,11 @@ settings:
   navigator:
     item: "CLOCK"
     give-item-on-join: true
+
 world:
-  default:
-    permission:
-      public: "-"
-      private: "worlds.%world%"
-    time:
-      sunrise: 0
-      noon: 6000
-      night: 18000
-    worldborder:
-      size: 6000000
-    difficulty: "PEACEFUL"
-    gamerules:
-      advance_time: false
-      spawn_mobs: false
-      fire_damage: false
-    settings:
-      physics: true
-      explosions: true
-      mob-ai: true
-      block-breaking: true
-      block-placement: true
-      block-interactions: true
-      builders-enabled:
-        public: false
-        private: true
   lock-weather: true
-  invalid-characters: ^\b$
-  import-all:
-    delay: 30 # In seconds
-  max-amount:
-    public: -1
-    private: -1
-  unload:
-    enabled: true
-    time-until-unload: "01:00:00"
-    blacklisted-worlds:
-      - world
-      - world_nether
-      - world_the_end
+  invalid-characters: "^\\b$"
+  import-all-delay: 30
   deletion-blacklist:
     - world
     - world_nether
@@ -73,17 +36,51 @@ world:
     prevent-connections: true
     prevent-fluid-flow: true
     prevent-falling-blocks: true
+  limits:
+    public: -1
+    private: -1
+  defaults:
+    permission:
+      public: "-"
+      private: "worlds.%world%"
+    time:
+      sunrise: 0
+      noon: 6000
+      night: 18000
+    worldborder-size: 6000000
+    difficulty: "PEACEFUL"
+    gamerules:
+      advance_time: false
+      spawn_mobs: false
+      fire_damage: false
+    builders-enabled:
+      public: false
+      private: true
+    physics: true
+    explosions: true
+    mob-ai: true
+    block-breaking: true
+    block-placement: true
+    block-interactions: true
+  unload:
+    enabled: true
+    time-until-unload: "01:00:00"
+    blacklisted-worlds:
+      - world
+      - world_nether
+      - world_the_end
   backup:
-    max-backups-per-world: 5 # Maximum: 18
+    max-backups-per-world: 5
     auto-backup:
       enabled: true
-      interval: 900 # In seconds
+      # In seconds
+      interval: 900
       only-active-worlds: true
     storage:
       # Options: local, s3, sftp
       type: local
       s3:
-        url: null # Only required when not using AWS S3
+        url: null
         access-key: YOUR_ACCESS_KEY
         secret-key: YOUR_SECRET_KEY
         region: eu-central-1
@@ -95,6 +92,7 @@ world:
         username: YOUR_SFTP_USERNAME
         password: YOUR_SFTP_PASSWORD
         path: backups/worlds/
+
 folder:
   override-permissions: true
   override-projects: false

@@ -30,7 +30,7 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class ConfigMigrationManager {
 
-    public static final int LATEST_VERSION = 2;
+    public static final int LATEST_VERSION = 3;
 
     private final BuildSystemPlugin plugin;
     private final Map<Integer, Migration> migrations;
@@ -45,6 +45,7 @@ public class ConfigMigrationManager {
         this.migrations = new HashMap<>();
 
         registerMigration(1, new MigrationV1ToV2());
+        registerMigration(2, new MigrationV2ToV3());
     }
 
     /**

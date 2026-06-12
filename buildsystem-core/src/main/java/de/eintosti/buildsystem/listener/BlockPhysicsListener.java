@@ -72,7 +72,7 @@ public class BlockPhysicsListener implements Listener {
             return;
         }
 
-        if (!plugin.getConfigService().current().settings().disabledPhysics().preventConnections()) {
+        if (!plugin.getConfigService().current().world().disabledPhysics().preventConnections()) {
             boolean canConnect = switch (block.getBlockData()) {
                 case Fence fence -> true;
                 case Gate gate -> true;
@@ -139,7 +139,7 @@ public class BlockPhysicsListener implements Listener {
             return;
         }
 
-        if (event.getBlock().isLiquid() && !plugin.getConfigService().current().settings().disabledPhysics().preventFluidFlow()) {
+        if (event.getBlock().isLiquid() && !plugin.getConfigService().current().world().disabledPhysics().preventFluidFlow()) {
             event.setCancelled(false);
             return;
         }
@@ -169,7 +169,7 @@ public class BlockPhysicsListener implements Listener {
             return;
         }
 
-        if (event.getEntityType() == EntityType.FALLING_BLOCK && plugin.getConfigService().current().settings().disabledPhysics().preventFallingBlocks()) {
+        if (event.getEntityType() == EntityType.FALLING_BLOCK && plugin.getConfigService().current().world().disabledPhysics().preventFallingBlocks()) {
             event.setCancelled(true);
             event.getBlock().getState().update(false, false);
         }

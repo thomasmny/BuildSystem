@@ -51,9 +51,9 @@ class PluginConfigTest {
     void defaults_emptyConfig_producesDocumentedDefaults() {
         PluginConfig cfg = parse("");
         // Messages
-        assertFalse(cfg.messages().spawnTeleportMessage());
-        assertTrue(cfg.messages().joinQuitMessages());
-        assertEquals("dd/MM/yyyy", cfg.messages().dateFormat());
+        assertFalse(cfg.settings().spawnTeleportMessage());
+        assertTrue(cfg.settings().joinQuitMessages());
+        assertEquals("dd/MM/yyyy", cfg.settings().dateFormat());
         // Settings
         assertTrue(cfg.settings().updateChecker());
         assertTrue(cfg.settings().scoreboard());
@@ -90,13 +90,12 @@ class PluginConfigTest {
     @Test
     void fullParse_representativeSnippet_producesExpectedValues() {
         PluginConfig cfg = parse("""
-                messages:
-                  spawn-teleport-message: true
-                  join-quit-messages: false
-                  date-format: "MM/dd/yyyy"
                 settings:
                   update-checker: false
                   scoreboard: false
+                  spawn-teleport-message: true
+                  join-quit-messages: false
+                  date-format: "MM/dd/yyyy"
                   archive:
                     vanish: false
                     change-gamemode: false
@@ -115,34 +114,38 @@ class PluginConfigTest {
                 world:
                   lock-weather: false
                   invalid-characters: "[!]"
-                  import-all:
-                    delay: 60
+                  import-all-delay: 60
                   deletion-blacklist:
                     - world
-                  unload:
-                    enabled: true
-                    time-until-unload: "00:30:00"
-                    blacklisted-worlds:
-                      - world
-                  default:
-                    worldborder:
-                      size: 1000
+                  disabled-physics:
+                    prevent-connections: false
+                    prevent-fluid-flow: false
+                    prevent-falling-blocks: false
+                  limits:
+                    public: 5
+                    private: 3
+                  defaults:
+                    worldborder-size: 1000
                     difficulty: "HARD"
                     time:
                       sunrise: 100
                       noon: 6100
                       night: 18100
                     gamerules: {}
-                    settings:
-                      physics: false
-                      explosions: false
-                      mob-ai: false
-                      block-breaking: false
-                      block-placement: false
-                      block-interactions: false
-                      builders-enabled:
-                        public: true
-                        private: false
+                    physics: false
+                    explosions: false
+                    mob-ai: false
+                    block-breaking: false
+                    block-placement: false
+                    block-interactions: false
+                    builders-enabled:
+                      public: true
+                      private: false
+                  unload:
+                    enabled: true
+                    time-until-unload: "00:30:00"
+                    blacklisted-worlds:
+                      - world
                   backup:
                     max-backups-per-world: 10
                     auto-backup:
@@ -156,9 +159,9 @@ class PluginConfigTest {
                   override-projects: true
                 """);
 
-        assertTrue(cfg.messages().spawnTeleportMessage());
-        assertFalse(cfg.messages().joinQuitMessages());
-        assertEquals("MM/dd/yyyy", cfg.messages().dateFormat());
+        assertTrue(cfg.settings().spawnTeleportMessage());
+        assertFalse(cfg.settings().joinQuitMessages());
+        assertEquals("MM/dd/yyyy", cfg.settings().dateFormat());
         assertFalse(cfg.settings().updateChecker());
         assertFalse(cfg.settings().scoreboard());
         assertFalse(cfg.settings().archive().vanish());
@@ -183,14 +186,14 @@ class PluginConfigTest {
         assertEquals(100, cfg.world().defaults().time().sunrise());
         assertEquals(6100, cfg.world().defaults().time().noon());
         assertEquals(18100, cfg.world().defaults().time().night());
-        assertFalse(cfg.world().defaults().settings().physics());
-        assertFalse(cfg.world().defaults().settings().explosions());
-        assertFalse(cfg.world().defaults().settings().mobAi());
-        assertFalse(cfg.world().defaults().settings().blockBreaking());
-        assertFalse(cfg.world().defaults().settings().blockPlacement());
-        assertFalse(cfg.world().defaults().settings().blockInteractions());
-        assertTrue(cfg.world().defaults().settings().buildersEnabled().publicBuilders());
-        assertFalse(cfg.world().defaults().settings().buildersEnabled().privateBuilders());
+        assertFalse(cfg.world().defaults().physics());
+        assertFalse(cfg.world().defaults().explosions());
+        assertFalse(cfg.world().defaults().mobAi());
+        assertFalse(cfg.world().defaults().blockBreaking());
+        assertFalse(cfg.world().defaults().blockPlacement());
+        assertFalse(cfg.world().defaults().blockInteractions());
+        assertTrue(cfg.world().defaults().buildersEnabled().publicBuilders());
+        assertFalse(cfg.world().defaults().buildersEnabled().privateBuilders());
         // backup is capped at 18
         assertEquals(10, cfg.world().backup().maxBackupsPerWorld());
         assertFalse(cfg.world().backup().autoBackup().enabled());

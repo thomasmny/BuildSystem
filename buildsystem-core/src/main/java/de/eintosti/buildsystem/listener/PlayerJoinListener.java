@@ -67,7 +67,7 @@ public class PlayerJoinListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void sendPlayerJoinMessage(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        String message = plugin.getConfigService().current().messages().joinQuitMessages()
+        String message = plugin.getConfigService().current().settings().joinQuitMessages()
                 ? plugin.getMessages().getString("player_join", player, Map.entry("%player%", player.getName()))
                 : null;
         event.setJoinMessage(message);

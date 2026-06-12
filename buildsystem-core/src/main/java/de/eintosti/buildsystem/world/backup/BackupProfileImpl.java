@@ -153,7 +153,7 @@ public class BackupProfileImpl implements BackupProfile {
         }
 
         plugin.getMessages().sendMessage(player, "worlds_backup_restoration_successful",
-                Map.entry("%timestamp%", StringUtils.formatTime(backup.creationTime(), plugin.getConfigService().current().messages().dateFormat()))
+                Map.entry("%timestamp%", StringUtils.formatTime(backup.creationTime(), plugin.getConfigService().current().settings().dateFormat()))
         );
         return CompletableFuture.completedFuture(null);
     }
