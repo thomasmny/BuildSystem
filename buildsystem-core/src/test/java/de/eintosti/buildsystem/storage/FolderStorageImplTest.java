@@ -19,15 +19,19 @@ package de.eintosti.buildsystem.storage;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import de.eintosti.buildsystem.api.event.folder.FolderCreatedEvent;
+import de.eintosti.buildsystem.api.event.folder.FolderDeletedEvent;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
+import org.bukkit.event.Event;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,6 +42,7 @@ import org.mockito.Mockito;
 class FolderStorageImplTest {
 
     private FolderStorageImpl storage;
+    private final List<Event> firedEvents = new ArrayList<>();
     private Builder creator;
 
     @BeforeEach
@@ -76,6 +81,11 @@ class FolderStorageImplTest {
             protected Folder newFolder(
                     String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
                 return new SimpleTestFolder(name, category, creator);
+            }
+
+            @Override
+            protected void fireEvent(Event event) {
+                firedEvents.add(event);
             }
         };
     }
@@ -277,5 +287,26 @@ class FolderStorageImplTest {
         public List<String> getLore(org.bukkit.entity.Player player) {
             return List.of();
         }
+    }
+
+    @Test
+    void createFolder_firesFolderCreatedEvent() {
+        Folder folder = storage.createFolder("Evented", NavigatorCategory.PUBLIC, creator);
+
+        assertEquals(1, firedEvents.size());
+        assertInstanceOf(FolderCreatedEvent.class, firedEvents.getFirst());
+        assertSame(folder, ((FolderCreatedEvent) firedEvents.getFirst()).getFolder());
+    }
+
+    @Test
+    void removeFolder_firesFolderDeletedEvent() {
+        Folder folder = storage.createFolder("Evented", NavigatorCategory.PUBLIC, creator);
+        firedEvents.clear();
+
+        storage.removeFolder("Evented");
+
+        assertEquals(1, firedEvents.size());
+        assertInstanceOf(FolderDeletedEvent.class, firedEvents.getFirst());
+        assertSame(folder, ((FolderDeletedEvent) firedEvents.getFirst()).getFolder());
     }
 }

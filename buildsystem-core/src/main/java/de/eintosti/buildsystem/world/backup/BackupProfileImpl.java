@@ -18,6 +18,9 @@
 package de.eintosti.buildsystem.world.backup;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.event.backup.BackupCreatedEvent;
+import de.eintosti.buildsystem.api.event.backup.BackupDeletedEvent;
+import de.eintosti.buildsystem.api.event.backup.BackupRestoredEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
@@ -37,6 +40,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -86,7 +90,8 @@ public class BackupProfileImpl implements BackupProfile {
                             deleteFutures = backups.stream()
                                     .sorted(Comparator.comparingLong(Backup::creationTime))
                                     .limit(excess)
-                                    .map(storage::deleteBackup)
+                                    .map(b -> storage.deleteBackup(b)
+                                            .thenRun(() -> fireEventSync(new BackupDeletedEvent(buildWorld, b))))
                                     .toList();
                         }
 
@@ -98,11 +103,19 @@ public class BackupProfileImpl implements BackupProfile {
                     if (throwable != null) {
                         resultFuture.completeExceptionally(throwable);
                     } else {
+                        fireEventSync(new BackupCreatedEvent(buildWorld, backup));
                         resultFuture.complete(backup);
                     }
                 });
 
         return resultFuture;
+    }
+
+    /**
+     * Backup futures complete on async threads, but Bukkit events must be fired on the main thread.
+     */
+    private void fireEventSync(Event event) {
+        Bukkit.getScheduler().runTask(plugin, () -> Bukkit.getPluginManager().callEvent(event));
     }
 
     @Override
@@ -152,6 +165,8 @@ public class BackupProfileImpl implements BackupProfile {
             spawn.setWorld(Bukkit.getWorld(worldName));
             spawnService.set(spawn, worldName);
         }
+
+        Bukkit.getPluginManager().callEvent(new BackupRestoredEvent(this.buildWorld, backup));
 
         plugin.getMessages()
                 .sendMessage(

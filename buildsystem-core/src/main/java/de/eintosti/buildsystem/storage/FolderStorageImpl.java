@@ -17,6 +17,8 @@
  */
 package de.eintosti.buildsystem.storage;
 
+import de.eintosti.buildsystem.api.event.folder.FolderCreatedEvent;
+import de.eintosti.buildsystem.api.event.folder.FolderDeletedEvent;
 import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
@@ -30,6 +32,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import org.bukkit.Bukkit;
+import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
@@ -82,6 +86,7 @@ public abstract class FolderStorageImpl implements FolderStorage {
     public Folder createFolder(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
         Folder folder = newFolder(name, category, parent, creator);
         foldersByName.put(name.toLowerCase(), folder);
+        fireEvent(new FolderCreatedEvent(folder));
         return folder;
     }
 
@@ -106,6 +111,15 @@ public abstract class FolderStorageImpl implements FolderStorage {
                 .map(worldStorage::getBuildWorld)
                 .filter(Objects::nonNull)
                 .forEach(buildWorld -> buildWorld.setFolder(null));
+
+        fireEvent(new FolderDeletedEvent(removed));
+    }
+
+    /**
+     * Fires a Bukkit event for a folder lifecycle change. Overridable so unit tests can run without a Bukkit server.
+     */
+    protected void fireEvent(Event event) {
+        Bukkit.getPluginManager().callEvent(event);
     }
 
     @Override
