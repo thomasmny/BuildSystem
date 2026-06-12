@@ -106,15 +106,12 @@ public class MigrationV2ToV3 implements Migration {
         moveIfPresent(config, "world.import-all.delay", "world.import-all-delay");
         config.set("world.import-all", null);
 
-        // 6. Delete dead sections
-        config.set(
-                "world.disabled-physics",
-                config.contains("world.disabled-physics.prevent-connections")
-                        ? null
-                        : config.get("world.disabled-physics"));
-        // The dead "world.disabled-physics" from V2 (lines 72-75 in old config) - ensure removal if leftover
-        // (already handled above by moving settings.disabled-physics → world.disabled-physics - the old dead one at
-        // world.disabled-physics was overwritten)
+        // 6. Delete the dead "world.disabled-physics" section left over from V2 (never read there).
+        // Only delete it when the live values were NOT migrated into it from settings.disabled-physics;
+        // otherwise we would drop the settings we just moved in step 2.
+        if (!config.contains("world.disabled-physics.prevent-connections")) {
+            config.set("world.disabled-physics", null);
+        }
     }
 
     private static void moveIfPresent(FileConfiguration config, String from, String to) {

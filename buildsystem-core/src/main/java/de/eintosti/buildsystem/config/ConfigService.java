@@ -20,10 +20,6 @@ package de.eintosti.buildsystem.config;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
-import java.io.File;
-import java.util.*;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
 import org.bukkit.GameRule;
@@ -31,6 +27,11 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.io.File;
+import java.util.*;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @NullMarked
 public class ConfigService {
@@ -236,7 +237,7 @@ public class ConfigService {
                     String key = entry.getKey();
                     Object value = entry.getValue();
                     GameRule<?> rule = GameRule.getByName(key);
-                    if (rule == null || value == null) {
+                    if (rule == null) {
                         logger.warning("Could not parse game rule '%s' with value '%s'".formatted(key, value));
                         return null;
                     }
@@ -248,6 +249,7 @@ public class ConfigService {
                                         .formatted(key));
                                 yield null;
                             }
+                            //noinspection unchecked - Type is checked above with rule.getType()
                             yield (GameRuleEntry<?>) new GameRuleEntry<>((GameRule<Boolean>) rule, booleanValue);
                         }
                         case Integer integerValue -> {
@@ -257,6 +259,7 @@ public class ConfigService {
                                                 .formatted(key));
                                 yield null;
                             }
+                            //noinspection unchecked - Type is checked above with rule.getType()
                             yield (GameRuleEntry<?>) new GameRuleEntry<>((GameRule<Integer>) rule, integerValue);
                         }
                         default -> {
