@@ -70,9 +70,7 @@ public class SetupMenu extends Menu {
     @Override
     protected void populate(Player player) {
         Inventory inv = getInventory();
-        for (int i = 0; i < inv.getSize(); i++) {
-            plugin.getMenuItems().addGlassPane(player, inv, i);
-        }
+        plugin.getMenuItems().fillAll(player, inv);
 
         inv.setItem(10, InventoryUtils.createSkull(messages.getString("setup_default_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), messages.getStringList("setup_default_item_lore", player)));
         inv.setItem(19, InventoryUtils.createSkull(messages.getString("setup_status_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), messages.getStringList("setup_status_item_name_lore", player)));

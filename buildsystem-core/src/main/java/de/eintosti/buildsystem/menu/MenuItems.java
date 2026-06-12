@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.menu;
 
+import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import com.cryptomorin.xseries.profiles.builder.XSkull;
@@ -34,6 +35,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -240,6 +242,33 @@ public final class MenuItems {
         } else {
             inventory.addItem(replaceItem);
         }
+    }
+
+    /**
+     * Adds a toggle item: a named item that glows (an unbreaking enchant) when enabled. Used by the editor and player-settings menus for their on/off entries.
+     *
+     * @param player         The player viewing the inventory
+     * @param inventory      The inventory to add the item to
+     * @param slot           The slot to place the item at
+     * @param material       The item material
+     * @param enabled        Whether the toggle is currently on (adds the glow)
+     * @param displayNameKey The message key for the display name
+     * @param loreKey        The message key for the lore
+     */
+    public void addToggleItem(Player player, Inventory inventory, int slot, XMaterial material, boolean enabled, String displayNameKey, String loreKey) {
+        ItemStack itemStack = material.parseItem();
+        ItemMeta itemMeta = itemStack.getItemMeta();
+
+        itemMeta.setDisplayName(messages.getString(displayNameKey, player));
+        itemMeta.setLore(messages.getStringList(loreKey, player));
+        itemMeta.addItemFlags(ItemFlag.values());
+        itemStack.setItemMeta(itemMeta);
+
+        if (enabled) {
+            itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.get(), 1);
+        }
+
+        inventory.setItem(slot, itemStack);
     }
 
     /**

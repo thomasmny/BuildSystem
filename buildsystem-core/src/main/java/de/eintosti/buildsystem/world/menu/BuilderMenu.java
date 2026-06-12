@@ -70,12 +70,8 @@ public class BuilderMenu extends PaginatedMenu {
     protected void populate(Player player) {
         Inventory inv = getInventory();
 
-        for (int i = 0; i <= 8; i++) {
-            plugin.getMenuItems().addGlassPane(player, inv, i);
-        }
-        for (int i = 18; i <= 26; i++) {
-            plugin.getMenuItems().addGlassPane(player, inv, i);
-        }
+        plugin.getMenuItems().fillRange(player, inv, 0, 9);
+        plugin.getMenuItems().fillRange(player, inv, 18, 27);
 
         addCreatorInfoItem(inv, buildWorld.getBuilders(), player);
         addBuilderAddItem(inv, player);
@@ -84,9 +80,7 @@ public class BuilderMenu extends PaginatedMenu {
         inv.setItem(26, InventoryUtils.createSkull(messages.getString("gui_next_page", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158")));
 
         // Clear builder slots from previous state
-        for (int i = 9; i <= 17; i++) {
-            plugin.getMenuItems().addGlassPane(player, inv, i);
-        }
+        plugin.getMenuItems().fillRange(player, inv, 9, 18);
 
         Collection<Builder> allBuilders = buildWorld.getBuilders().getAllBuilders();
         List<Builder> builderList = new ArrayList<>(allBuilders);

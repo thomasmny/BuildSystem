@@ -62,12 +62,8 @@ public class StatusMenu extends Menu {
 
     @Override
     protected void populate(Player player) {
-        for (int i = 0; i <= 9; i++) {
-            plugin.getMenuItems().addGlassPane(player, getInventory(), i);
-        }
-        for (int i = 17; i <= 26; i++) {
-            plugin.getMenuItems().addGlassPane(player, getInventory(), i);
-        }
+        plugin.getMenuItems().fillRange(player, getInventory(), 0, 10);
+        plugin.getMenuItems().fillRange(player, getInventory(), 17, 27);
 
         addStatusItem(player, 10, BuildWorldStatus.NOT_STARTED);
         addStatusItem(player, 11, BuildWorldStatus.IN_PROGRESS);

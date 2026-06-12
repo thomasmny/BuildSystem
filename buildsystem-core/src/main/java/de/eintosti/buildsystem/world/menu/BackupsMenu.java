@@ -55,9 +55,7 @@ public class BackupsMenu extends Menu {
 
     @Override
     protected void populate(Player player) {
-        for (int i = 0; i <= 8; i++) {
-            plugin.getMenuItems().addGlassPane(player, getInventory(), i);
-        }
+        plugin.getMenuItems().fillRange(player, getInventory(), 0, 9);
 
         getInventory().setItem(4, InventoryUtils.createItem(XMaterial.OAK_HANGING_SIGN,
                 messages.getString("backups_information_name", player),
@@ -67,9 +65,7 @@ public class BackupsMenu extends Menu {
                 )
         ));
 
-        for (int i = 27; i <= 35; i++) {
-            plugin.getMenuItems().addGlassPane(player, getInventory(), i);
-        }
+        plugin.getMenuItems().fillRange(player, getInventory(), 27, 36);
 
         loadBackups(player);
     }

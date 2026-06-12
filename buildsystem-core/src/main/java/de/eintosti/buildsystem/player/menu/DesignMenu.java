@@ -43,12 +43,8 @@ public class DesignMenu extends Menu {
 
     @Override
     protected void populate(Player player) {
-        for (int i = 0; i <= 8; i++) {
-            plugin.getMenuItems().addGlassPane(player, getInventory(), i);
-        }
-        for (int i = 27; i <= 35; i++) {
-            plugin.getMenuItems().addGlassPane(player, getInventory(), i);
-        }
+        plugin.getMenuItems().fillRange(player, getInventory(), 0, 9);
+        plugin.getMenuItems().fillRange(player, getInventory(), 27, 36);
 
         setItem(player, 10, XMaterial.RED_STAINED_GLASS, "design_red", DesignColor.RED);
         setItem(player, 11, XMaterial.ORANGE_STAINED_GLASS, "design_orange", DesignColor.ORANGE);

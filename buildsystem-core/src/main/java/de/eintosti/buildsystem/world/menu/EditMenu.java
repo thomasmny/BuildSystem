@@ -17,12 +17,12 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XEntityType;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.data.Type;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.IntStream;
+import java.util.function.Function;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Difficulty;
@@ -48,9 +48,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -83,31 +81,31 @@ public class EditMenu extends Menu {
         Inventory inv = getInventory();
         WorldData worldData = buildWorld.getData();
 
-        fillGuiWithGlass(player, inv);
+        plugin.getMenuItems().fillAll(player, inv);
         addBuildWorldInfoItem(player, inv);
 
-        addSettingsItem(player, inv, 20, XMaterial.OAK_PLANKS,
+        plugin.getMenuItems().addToggleItem(player, inv, 20, XMaterial.OAK_PLANKS,
                 worldData.blockBreaking().get(), "worldeditor_blockbreaking_item", "worldeditor_blockbreaking_lore"
         );
-        addSettingsItem(player, inv, 21, XMaterial.POLISHED_ANDESITE,
+        plugin.getMenuItems().addToggleItem(player, inv, 21, XMaterial.POLISHED_ANDESITE,
                 worldData.blockPlacement().get(), "worldeditor_blockplacement_item", "worldeditor_blockplacement_lore"
         );
-        addSettingsItem(player, inv, 22, XMaterial.SAND,
+        plugin.getMenuItems().addToggleItem(player, inv, 22, XMaterial.SAND,
                 worldData.physics().get(), "worldeditor_physics_item", "worldeditor_physics_lore"
         );
         addTimeItem(player, inv);
-        addSettingsItem(player, inv, 24, XMaterial.TNT,
+        plugin.getMenuItems().addToggleItem(player, inv, 24, XMaterial.TNT,
                 worldData.explosions().get(), "worldeditor_explosions_item", "worldeditor_explosions_lore"
         );
         inv.setItem(29, InventoryUtils.createItem(XMaterial.DIAMOND_SWORD,
                 messages.getString("worldeditor_butcher_item", player), messages.getStringList("worldeditor_butcher_lore", player)
         ));
         addBuildersItem(player, inv);
-        addSettingsItem(player, inv, 31, XMaterial.ARMOR_STAND,
+        plugin.getMenuItems().addToggleItem(player, inv, 31, XMaterial.ARMOR_STAND,
                 worldData.mobAi().get(), "worldeditor_mobai_item", "worldeditor_mobai_lore"
         );
         addVisibilityItem(player, inv);
-        addSettingsItem(player, inv, 33, XMaterial.TRIPWIRE_HOOK,
+        plugin.getMenuItems().addToggleItem(player, inv, 33, XMaterial.TRIPWIRE_HOOK,
                 worldData.blockInteractions().get(), "worldeditor_blockinteractions_item", "worldeditor_blockinteractions_lore"
         );
         inv.setItem(38, InventoryUtils.createItem(XMaterial.FILLED_MAP,
@@ -131,10 +129,6 @@ public class EditMenu extends Menu {
         ));
     }
 
-    private void fillGuiWithGlass(Player player, Inventory inventory) {
-        IntStream.range(0, inventory.getSize()).forEach(i -> plugin.getMenuItems().addGlassPane(player, inventory, i));
-    }
-
     private void addBuildWorldInfoItem(Player player, Inventory inventory) {
         String worldName = buildWorld.getName();
         String displayName = messages.getString("worldeditor_world_item", player, Map.entry("%world%", worldName));
@@ -145,22 +139,6 @@ public class EditMenu extends Menu {
         } else {
             inventory.setItem(4, InventoryUtils.createItem(material, displayName));
         }
-    }
-
-    private void addSettingsItem(Player player, Inventory inventory, int position, XMaterial material, boolean isEnabled, String displayNameKey, String loreKey) {
-        ItemStack itemStack = material.parseItem();
-        ItemMeta itemMeta = itemStack.getItemMeta();
-
-        itemMeta.setDisplayName(messages.getString(displayNameKey, player));
-        itemMeta.setLore(messages.getStringList(loreKey, player));
-        itemMeta.addItemFlags(ItemFlag.values());
-
-        itemStack.setItemMeta(itemMeta);
-        if (isEnabled) {
-            itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.get(), 1);
-        }
-
-        inventory.setItem(position, itemStack);
     }
 
     private void addTimeItem(Player player, Inventory inventory) {
@@ -186,22 +164,15 @@ public class EditMenu extends Menu {
         ));
     }
 
-    private Time getWorldTime() {
+    private TimeOfDay getWorldTime() {
         int worldTime = (int) buildWorld.getWorld().getTime();
         int noonTime = plugin.getConfigService().current().world().defaults().time().noon();
-
-        if (worldTime >= 0 && worldTime < noonTime) {
-            return Time.SUNRISE;
-        } else if (worldTime >= noonTime && worldTime < 13000) {
-            return Time.NOON;
-        } else {
-            return Time.NIGHT;
-        }
+        return TimeOfDay.fromTicks(worldTime, noonTime);
     }
 
     private void addBuildersItem(Player player, Inventory inventory) {
         if (buildWorld.getBuilders().isCreator(player) || player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)) {
-            addSettingsItem(player, inventory, 30, XMaterial.IRON_PICKAXE, buildWorld.getData().buildersEnabled().get(),
+            plugin.getMenuItems().addToggleItem(player, inventory, 30, XMaterial.IRON_PICKAXE, buildWorld.getData().buildersEnabled().get(),
                     "worldeditor_builders_item", "worldeditor_builders_lore"
             );
         } else {
@@ -258,6 +229,21 @@ public class EditMenu extends Menu {
         };
     }
 
+    /**
+     * Slots whose only action is "check permission, flip a boolean world setting, re-open". Heterogeneous slots (sub-menus, time, butcher, difficulty) stay in the switch below.
+     */
+    private static final Map<Integer, Toggle> TOGGLES = Map.of(
+            20, new Toggle("buildsystem.edit.breaking", WorldData::blockBreaking),
+            21, new Toggle("buildsystem.edit.placement", WorldData::blockPlacement),
+            22, new Toggle("buildsystem.edit.physics", WorldData::physics),
+            24, new Toggle("buildsystem.edit.explosions", WorldData::explosions),
+            31, new Toggle("buildsystem.edit.mobai", WorldData::mobAi),
+            33, new Toggle("buildsystem.edit.interactions", WorldData::blockInteractions)
+    );
+
+    private record Toggle(String permission, Function<WorldData, Type<Boolean>> data) {
+    }
+
     @Override
     public void handleClick(InventoryClickEvent event) {
         ItemStack itemStack = event.getCurrentItem();
@@ -267,36 +253,26 @@ public class EditMenu extends Menu {
 
         event.setCancelled(true);
         Player player = (Player) event.getWhoClicked();
-
         WorldData worldData = buildWorld.getData();
+
+        Toggle toggle = TOGGLES.get(event.getSlot());
+        if (toggle != null) {
+            if (requirePermission(player, toggle.permission())) {
+                Type<Boolean> data = toggle.data().apply(worldData);
+                data.set(!data.get());
+                reopen(player);
+            }
+            return;
+        }
+
         switch (event.getSlot()) {
-            case 20 -> {
-                if (hasPermission(player, "buildsystem.edit.breaking")) {
-                    worldData.blockBreaking().set(!worldData.blockBreaking().get());
-                }
-            }
-            case 21 -> {
-                if (hasPermission(player, "buildsystem.edit.placement")) {
-                    worldData.blockPlacement().set(!worldData.blockPlacement().get());
-                }
-            }
-            case 22 -> {
-                if (hasPermission(player, "buildsystem.edit.physics")) {
-                    worldData.physics().set(!worldData.physics().get());
-                }
-            }
             case 23 -> {
-                if (hasPermission(player, "buildsystem.edit.time")) {
+                if (requirePermission(player, "buildsystem.edit.time")) {
                     changeTime(player);
                 }
             }
-            case 24 -> {
-                if (hasPermission(player, "buildsystem.edit.explosions")) {
-                    worldData.explosions().set(!worldData.explosions().get());
-                }
-            }
             case 29 -> {
-                if (hasPermission(player, "buildsystem.edit.entities")) {
+                if (requirePermission(player, "buildsystem.edit.entities")) {
                     removeEntities(player);
                 }
             }
@@ -305,7 +281,7 @@ public class EditMenu extends Menu {
                     XSound.ENTITY_ITEM_BREAK.play(player);
                     return;
                 }
-                if (!hasPermission(player, "buildsystem.edit.builders")) {
+                if (!requirePermission(player, "buildsystem.edit.builders")) {
                     return;
                 }
                 if (event.isRightClick()) {
@@ -315,54 +291,44 @@ public class EditMenu extends Menu {
                 }
                 worldData.buildersEnabled().set(!worldData.buildersEnabled().get());
             }
-            case 31 -> {
-                if (hasPermission(player, "buildsystem.edit.mobai")) {
-                    worldData.mobAi().set(!worldData.mobAi().get());
-                }
-            }
             case 32 -> {
                 if (itemStack.getType() == XMaterial.BARRIER.get()) {
                     XSound.ENTITY_ITEM_BREAK.play(player);
                     return;
                 }
-                if (hasPermission(player, "buildsystem.edit.visibility")) {
+                if (requirePermission(player, "buildsystem.edit.visibility")) {
                     worldData.privateWorld().set(!worldData.privateWorld().get());
                 }
             }
-            case 33 -> {
-                if (hasPermission(player, "buildsystem.edit.interactions")) {
-                    worldData.blockInteractions().set(!worldData.blockInteractions().get());
-                }
-            }
             case 38 -> {
-                if (hasPermission(player, "buildsystem.edit.gamerules")) {
+                if (requirePermission(player, "buildsystem.edit.gamerules")) {
                     XSound.BLOCK_CHEST_OPEN.play(player);
                     new GameRulesMenu(plugin, buildWorld, player).open(player);
                 }
                 return;
             }
             case 39 -> {
-                if (hasPermission(player, "buildsystem.edit.difficulty")) {
+                if (requirePermission(player, "buildsystem.edit.difficulty")) {
                     Difficulty newDifficulty = buildWorld.cycleDifficulty();
                     buildWorld.getWorld().setDifficulty(newDifficulty);
                 }
             }
             case 40 -> {
-                if (hasPermission(player, "buildsystem.edit.status")) {
+                if (requirePermission(player, "buildsystem.edit.status")) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     new StatusMenu(plugin, buildWorld, player).open(player);
                 }
                 return;
             }
             case 41 -> {
-                if (hasPermission(player, "buildsystem.edit.project")) {
+                if (requirePermission(player, "buildsystem.edit.project")) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     new SetProjectSubCommand(plugin).getProjectInput(player, buildWorld, false);
                 }
                 return;
             }
             case 42 -> {
-                if (hasPermission(player, "buildsystem.edit.permission")) {
+                if (requirePermission(player, "buildsystem.edit.permission")) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     new SetPermissionSubCommand(plugin).getPermissionInput(player, buildWorld, false);
                 }
@@ -373,18 +339,12 @@ public class EditMenu extends Menu {
             }
         }
 
-        XSound.ENTITY_CHICKEN_EGG.play(player);
-        new EditMenu(plugin, buildWorld, player).open(player);
+        reopen(player);
     }
 
-    private boolean hasPermission(Player player, String permission) {
-        if (player.hasPermission(permission)) {
-            return true;
-        }
-        player.closeInventory();
-        messages.sendPermissionError(player);
-        XSound.ENTITY_ITEM_BREAK.play(player);
-        return false;
+    private void reopen(Player player) {
+        XSound.ENTITY_CHICKEN_EGG.play(player);
+        new EditMenu(plugin, buildWorld, player).open(player);
     }
 
     private void changeTime(Player player) {
@@ -415,7 +375,30 @@ public class EditMenu extends Menu {
         messages.sendMessage(player, "worldeditor_butcher_removed", Map.entry("%amount%", entitiesRemoved.get()));
     }
 
-    public enum Time {
-        SUNRISE, NOON, NIGHT
+    /**
+     * Which third of the Minecraft day the world clock currently sits in. Used only to drive the editor's time button.
+     */
+    public enum TimeOfDay {
+        SUNRISE, NOON, NIGHT;
+
+        /** Minecraft tick at which night begins (the day is 24000 ticks). */
+        static final int NIGHT_START_TICKS = 13000;
+
+        /**
+         * Buckets a raw world tick into a {@link TimeOfDay}.
+         *
+         * @param worldTicks The world time in ticks (0–24000)
+         * @param noonStart  The configured tick at which noon begins
+         * @return The matching time-of-day bucket
+         */
+        static TimeOfDay fromTicks(int worldTicks, int noonStart) {
+            if (worldTicks >= 0 && worldTicks < noonStart) {
+                return SUNRISE;
+            } else if (worldTicks >= noonStart && worldTicks < NIGHT_START_TICKS) {
+                return NOON;
+            } else {
+                return NIGHT;
+            }
+        }
     }
 }

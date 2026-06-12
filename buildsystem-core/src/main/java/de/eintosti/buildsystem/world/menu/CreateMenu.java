@@ -71,12 +71,8 @@ public class CreateMenu extends PaginatedMenu {
 
     @Override
     protected void populate(Player player) {
-        for (int i = 0; i <= 28; i++) {
-            plugin.getMenuItems().addGlassPane(player, getInventory(), i);
-        }
-        for (int i = 34; i <= 44; i++) {
-            plugin.getMenuItems().addGlassPane(player, getInventory(), i);
-        }
+        plugin.getMenuItems().fillRange(player, getInventory(), 0, 29);
+        plugin.getMenuItems().fillRange(player, getInventory(), 34, 45);
 
         addPageItem(Page.PREDEFINED, InventoryUtils.createSkull(messages.getString("create_predefined_worlds", player), Profileable.detect("2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78")));
         addPageItem(Page.GENERATOR, InventoryUtils.createSkull(messages.getString("create_generators", player), Profileable.detect("b2f79016cad84d1ae21609c4813782598e387961be13c15682752f126dce7a")));
@@ -133,9 +129,7 @@ public class CreateMenu extends PaginatedMenu {
 
         this.numTemplates = templateFiles != null ? templateFiles.length : 0;
 
-        for (int i = 29; i <= 33; i++) {
-            plugin.getMenuItems().addGlassPane(player, getInventory(), i);
-        }
+        plugin.getMenuItems().fillRange(player, getInventory(), 29, 34);
 
         if (numTemplates == 0) {
             ItemStack barrier = InventoryUtils.createItem(XMaterial.BARRIER, messages.getString("create_no_templates", player));

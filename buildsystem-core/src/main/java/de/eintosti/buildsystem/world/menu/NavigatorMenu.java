@@ -39,9 +39,7 @@ public class NavigatorMenu extends Menu {
 
     @Override
     protected void populate(Player player) {
-        for (int i = 0; i <= 26; i++) {
-            plugin.getMenuItems().addGlassPane(player, getInventory(), i);
-        }
+        plugin.getMenuItems().fillRange(player, getInventory(), 0, 27);
 
         getInventory().setItem(11, InventoryUtils.createSkull(messages.getString("old_navigator_world_navigator", player), Profileable.detect("d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622")));
         getInventory().setItem(12, InventoryUtils.createSkull(messages.getString("old_navigator_world_archive", player), Profileable.detect("7f6bf958abd78295eed6ffc293b1aa59526e80f54976829ea068337c2f5e8")));
