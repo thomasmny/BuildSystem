@@ -16,5 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/** Classes relevant to world generation. */
+/**
+ * Classes relevant to world generation.
+ */
 package de.eintosti.buildsystem.api.world.creation.generator;

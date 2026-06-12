@@ -42,10 +42,14 @@ public enum BuildWorldStatus {
      */
     IN_PROGRESS(2),
 
-    /** Represents a {@link BuildWorld} that is nearing completion. */
+    /**
+     * Represents a {@link BuildWorld} that is nearing completion.
+     */
     ALMOST_FINISHED(3),
 
-    /** Represents a {@link BuildWorld} whose building phase has been completed. */
+    /**
+     * Represents a {@link BuildWorld} whose building phase has been completed.
+     */
     FINISHED(4),
 
     /**
@@ -54,7 +58,9 @@ public enum BuildWorldStatus {
      */
     ARCHIVE(5),
 
-    /** Represents a {@link BuildWorld} that is hidden from public view in the navigator. */
+    /**
+     * Represents a {@link BuildWorld} that is hidden from public view in the navigator.
+     */
     HIDDEN(6);
 
     private final int stage;

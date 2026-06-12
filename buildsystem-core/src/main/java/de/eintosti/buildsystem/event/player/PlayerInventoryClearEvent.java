@@ -23,7 +23,9 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerEvent;
 import org.jspecify.annotations.NullMarked;
 
-/** Called when a player's inventory is cleared. */
+/**
+ * Called when a player's inventory is cleared.
+ */
 @NullMarked
 public class PlayerInventoryClearEvent extends PlayerEvent {
 

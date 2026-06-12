@@ -64,11 +64,15 @@ public interface WorldFilter {
      */
     Predicate<BuildWorld> apply();
 
-    /** Represents the different modes of filtering worlds in the navigator. */
+    /**
+     * Represents the different modes of filtering worlds in the navigator.
+     */
     @NullMarked
     enum Mode {
 
-        /** No filtering is applied. */
+        /**
+         * No filtering is applied.
+         */
         NONE,
 
         /**

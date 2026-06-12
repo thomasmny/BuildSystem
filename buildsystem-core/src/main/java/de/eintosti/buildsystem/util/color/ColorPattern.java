@@ -19,7 +19,9 @@ package de.eintosti.buildsystem.util.color;
 
 import org.jspecify.annotations.NullMarked;
 
-/** Represents a color pattern which can be applied to a String. */
+/**
+ * Represents a color pattern which can be applied to a String.
+ */
 @NullMarked
 public interface ColorPattern {
 

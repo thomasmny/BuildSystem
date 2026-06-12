@@ -23,7 +23,9 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.jspecify.annotations.NullMarked;
 
-/** Represents a storage mechanism for managing world backups. */
+/**
+ * Represents a storage mechanism for managing world backups.
+ */
 @NullMarked
 public interface BackupStorage {
 
@@ -66,6 +68,8 @@ public interface BackupStorage {
      */
     CompletableFuture<Void> deleteBackup(Backup backup);
 
-    /** Closes the backup storage, releasing any resources. */
+    /**
+     * Closes the backup storage, releasing any resources.
+     */
     void close();
 }

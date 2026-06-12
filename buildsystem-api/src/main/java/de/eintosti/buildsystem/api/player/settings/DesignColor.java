@@ -27,52 +27,84 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public enum DesignColor {
 
-    /** The color red. */
+    /**
+     * The color red.
+     */
     RED,
 
-    /** The color orange. */
+    /**
+     * The color orange.
+     */
     ORANGE,
 
-    /** The color yellow. */
+    /**
+     * The color yellow.
+     */
     YELLOW,
 
-    /** The color pink. */
+    /**
+     * The color pink.
+     */
     PINK,
 
-    /** The color magenta. */
+    /**
+     * The color magenta.
+     */
     MAGENTA,
 
-    /** The color purple. */
+    /**
+     * The color purple.
+     */
     PURPLE,
 
-    /** The color brown. */
+    /**
+     * The color brown.
+     */
     BROWN,
 
-    /** The color lime. */
+    /**
+     * The color lime.
+     */
     LIME,
 
-    /** The color green. */
+    /**
+     * The color green.
+     */
     GREEN,
 
-    /** The color blue. */
+    /**
+     * The color blue.
+     */
     BLUE,
 
-    /** The color cyan. */
+    /**
+     * The color cyan.
+     */
     CYAN,
 
-    /** The color light blue. */
+    /**
+     * The color light blue.
+     */
     LIGHT_BLUE,
 
-    /** The color white. */
+    /**
+     * The color white.
+     */
     WHITE,
 
-    /** The color gray. */
+    /**
+     * The color gray.
+     */
     GRAY,
 
-    /** The color light gray. */
+    /**
+     * The color light gray.
+     */
     LIGHT_GRAY,
 
-    /** The color black. */
+    /**
+     * The color black.
+     */
     BLACK;
 
     /**

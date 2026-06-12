@@ -29,7 +29,9 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public enum Visibility {
 
-    /** Indicates that a world is publicly accessible and displayed in the main world navigator. */
+    /**
+     * Indicates that a world is publicly accessible and displayed in the main world navigator.
+     */
     PUBLIC,
 
     /**

@@ -50,7 +50,9 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class EditMenu extends Menu {
 
-    /** A set of entities which are ignored when the butcher item is used. */
+    /**
+     * A set of entities which are ignored when the butcher item is used.
+     */
     private static final Set<XEntityType> IGNORED_ENTITIES = Sets.newHashSet(
             XEntityType.ARMOR_STAND,
             XEntityType.END_CRYSTAL,
@@ -487,7 +489,9 @@ public class EditMenu extends Menu {
         NOON,
         NIGHT;
 
-        /** Minecraft tick at which night begins (the day is 24000 ticks). */
+        /**
+         * Minecraft tick at which night begins (the day is 24000 ticks).
+         */
         static final int NIGHT_START_TICKS = 13000;
 
         /**

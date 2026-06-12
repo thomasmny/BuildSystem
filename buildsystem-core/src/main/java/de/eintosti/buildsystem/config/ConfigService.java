@@ -53,7 +53,9 @@ public class ConfigService {
         return current;
     }
 
-    /** Reloads the configuration from disk and re-parses it into a new {@link PluginConfig}. */
+    /**
+     * Reloads the configuration from disk and re-parses it into a new {@link PluginConfig}.
+     */
     public void load() {
         this.current = parse(plugin.getConfig(), plugin.getLogger());
     }
@@ -87,7 +89,9 @@ public class ConfigService {
         return plugin.getConfig();
     }
 
-    /** Saves the plugin config to disk. */
+    /**
+     * Saves the plugin config to disk.
+     */
     public void saveConfig() {
         plugin.saveConfig();
     }

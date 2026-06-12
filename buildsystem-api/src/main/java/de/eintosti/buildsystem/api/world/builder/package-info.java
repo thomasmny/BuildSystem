@@ -16,5 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/** Provides interfaces and classes for managing world builders and their associated permissions. */
+/**
+ * Provides interfaces and classes for managing world builders and their associated permissions.
+ */
 package de.eintosti.buildsystem.api.world.builder;

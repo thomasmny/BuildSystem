@@ -59,7 +59,9 @@ public class RoleCalculator implements ContextCalculator<Player> {
     @NullMarked
     private enum Role {
 
-        /** The creator of a {@link BuildWorld}. */
+        /**
+         * The creator of a {@link BuildWorld}.
+         */
         CREATOR,
 
         /**
@@ -68,7 +70,9 @@ public class RoleCalculator implements ContextCalculator<Player> {
          */
         BUILDER,
 
-        /** A player which is neither the {@link #CREATOR} nor a {@link #BUILDER} in a {@link BuildWorld}. */
+        /**
+         * A player which is neither the {@link #CREATOR} nor a {@link #BUILDER} in a {@link BuildWorld}.
+         */
         GUEST;
 
         public static Role matchRole(Player player, @Nullable BuildWorld buildWorld) {

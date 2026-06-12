@@ -85,7 +85,9 @@ public abstract class FolderStorageImpl implements FolderStorage {
         return folder;
     }
 
-    /** Creates the folder instance to register; implementations decide the concrete type and its dependencies. */
+    /**
+     * Creates the folder instance to register; implementations decide the concrete type and its dependencies.
+     */
     protected abstract Folder newFolder(
             String name, NavigatorCategory category, @Nullable Folder parent, Builder creator);
 

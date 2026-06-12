@@ -39,7 +39,9 @@ public class ConfigurableType<T> implements Type<T> {
 
     private final Map<Class<? extends Capability>, Capability> capabilities = new HashMap<>();
 
-    /** Creates a simple type. */
+    /**
+     * Creates a simple type.
+     */
     public ConfigurableType(T defaultValue) {
         this.value = defaultValue;
     }

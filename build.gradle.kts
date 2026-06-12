@@ -17,7 +17,7 @@ subprojects {
         pluginManager.apply("com.diffplug.spotless")
         configure<com.diffplug.gradle.spotless.SpotlessExtension> {
             java {
-                palantirJavaFormat("2.92.0").formatJavadoc(true)
+                palantirJavaFormat("2.92.0")
                 removeUnusedImports()
                 formatAnnotations()
             }

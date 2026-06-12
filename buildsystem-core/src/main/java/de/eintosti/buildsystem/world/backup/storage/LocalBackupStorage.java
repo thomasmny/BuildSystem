@@ -57,7 +57,9 @@ public class LocalBackupStorage extends AbstractBackupStorage {
         }
     }
 
-    /** Package-private constructor for unit tests (no BuildSystemPlugin required). */
+    /**
+     * Package-private constructor for unit tests (no BuildSystemPlugin required).
+     */
     LocalBackupStorage(
             Logger logger, Executor executor, Path backupRoot, Function<BuildWorld, BackupProfile> profileProvider) {
         super(logger, executor);

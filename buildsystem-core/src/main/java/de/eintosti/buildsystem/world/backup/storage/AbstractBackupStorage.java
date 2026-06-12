@@ -60,7 +60,9 @@ public abstract class AbstractBackupStorage implements BackupStorage {
                 .formatted(buildWorld.getName(), System.currentTimeMillis() - startTimestamp));
     }
 
-    /** Runs {@code supplier} on the backup executor; wraps IOException in RuntimeException. */
+    /**
+     * Runs {@code supplier} on the backup executor; wraps IOException in RuntimeException.
+     */
     protected <T> CompletableFuture<T> supply(String operation, IoSupplier<T> supplier) {
         return CompletableFuture.supplyAsync(
                 () -> {
@@ -74,7 +76,9 @@ public abstract class AbstractBackupStorage implements BackupStorage {
                 executor);
     }
 
-    /** Runs {@code task} on the backup executor; wraps IOException in RuntimeException. */
+    /**
+     * Runs {@code task} on the backup executor; wraps IOException in RuntimeException.
+     */
     protected CompletableFuture<Void> run(String operation, IoRunnable task) {
         return CompletableFuture.runAsync(
                 () -> {
@@ -108,7 +112,9 @@ public abstract class AbstractBackupStorage implements BackupStorage {
         return run("delete backup " + backup.key(), () -> doDeleteBackup(backup));
     }
 
-    /** Returns a mutable list of backups; ordering not required (base class sorts). */
+    /**
+     * Returns a mutable list of backups; ordering not required (base class sorts).
+     */
     protected abstract List<Backup> doListBackups(BuildWorld buildWorld) throws IOException;
 
     @Override

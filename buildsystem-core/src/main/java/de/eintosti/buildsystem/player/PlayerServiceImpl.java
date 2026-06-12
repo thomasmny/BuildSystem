@@ -52,7 +52,9 @@ public class PlayerServiceImpl implements PlayerService {
         this.buildModePlayers = new HashSet<>();
     }
 
-    /** Package-private for unit tests — only getMaxWorlds logic is available. */
+    /**
+     * Package-private for unit tests — only getMaxWorlds logic is available.
+     */
     PlayerServiceImpl(Logger logger) {
         this.plugin = null;
         this.logger = logger;

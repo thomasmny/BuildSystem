@@ -67,7 +67,9 @@ public class BuildWorldManipulationEvent extends BuildWorldEvent implements Canc
         parentEvent.setCancelled(cancelled);
     }
 
-    /** @return the event which has caused the manipulation event to fire. */
+    /**
+     * @return the event which has caused the manipulation event to fire.
+     */
     public Cancellable getParentEvent() {
         return parentEvent;
     }

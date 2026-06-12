@@ -34,28 +34,44 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public enum WorldSort {
 
-    /** Sort worlds by name in ascending order. */
+    /**
+     * Sort worlds by name in ascending order.
+     */
     NAME_A_TO_Z(Comparator.comparing(WorldSort::getNameSortKey)),
 
-    /** Sort worlds by name in descending order. */
+    /**
+     * Sort worlds by name in descending order.
+     */
     NAME_Z_TO_A(NAME_A_TO_Z.getComparator().reversed()),
 
-    /** Sort worlds by project in ascending order. */
+    /**
+     * Sort worlds by project in ascending order.
+     */
     PROJECT_A_TO_Z(Comparator.comparing(WorldSort::getProjectSortKey)),
 
-    /** Sort worlds by project in descending order. */
+    /**
+     * Sort worlds by project in descending order.
+     */
     PROJECT_Z_TO_A(PROJECT_A_TO_Z.getComparator().reversed()),
 
-    /** Sort worlds by status ({@link BuildWorldStatus#NOT_STARTED} -> {@link BuildWorldStatus#FINISHED}). */
+    /**
+     * Sort worlds by status ({@link BuildWorldStatus#NOT_STARTED} -> {@link BuildWorldStatus#FINISHED}).
+     */
     STATUS_NOT_STARTED(Comparator.comparingInt(WorldSort::getStatusSortKey)),
 
-    /** Sort worlds by status ({@link BuildWorldStatus#FINISHED} -> {@link BuildWorldStatus#NOT_STARTED}). */
+    /**
+     * Sort worlds by status ({@link BuildWorldStatus#FINISHED} -> {@link BuildWorldStatus#NOT_STARTED}).
+     */
     STATUS_FINISHED(STATUS_NOT_STARTED.getComparator().reversed()),
 
-    /** Sort worlds by creation date in ascending order (oldest first). */
+    /**
+     * Sort worlds by creation date in ascending order (oldest first).
+     */
     OLDEST_FIRST(Comparator.comparingLong(Displayable::getCreation)),
 
-    /** Sort worlds by creation date in descending order (newest first). */
+    /**
+     * Sort worlds by creation date in descending order (newest first).
+     */
     NEWEST_FIRST(OLDEST_FIRST.getComparator().reversed());
 
     private final Comparator<Displayable> comparator;

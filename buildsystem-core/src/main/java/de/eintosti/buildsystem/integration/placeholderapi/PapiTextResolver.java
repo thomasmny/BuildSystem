@@ -22,7 +22,9 @@ import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
-/** Resolves PlaceholderAPI placeholders. Registered on {@code Messages} only while PlaceholderAPI is present. */
+/**
+ * Resolves PlaceholderAPI placeholders. Registered on {@code Messages} only while PlaceholderAPI is present.
+ */
 @NullMarked
 public final class PapiTextResolver implements TextResolver {
 

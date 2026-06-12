@@ -47,7 +47,9 @@ public final class UpdateChecker {
     private static final String UPDATE_URL = "https://api.spigotmc.org/simple/0.1/index.php?action=getResource&id=%d";
     private static final Pattern DECIMAL_SCHEME_PATTERN = Pattern.compile("\\d+(?:\\.\\d+)*");
 
-    /** The default version scheme for this update checker */
+    /**
+     * The default version scheme for this update checker
+     */
     @Nullable public static final VersionScheme VERSION_SCHEME_DECIMAL = (first, second) -> {
         String[] firstSplit = splitVersionInfo(first), secondSplit = splitVersionInfo(second);
         if (firstSplit == null || secondSplit == null) {
@@ -147,19 +149,29 @@ public final class UpdateChecker {
         return lastResult;
     }
 
-    /** A constant reason for the result of {@link UpdateResult}. */
+    /**
+     * A constant reason for the result of {@link UpdateResult}.
+     */
     public enum UpdateReason {
 
-        /** A new update is available for download on SpigotMC. */
+        /**
+         * A new update is available for download on SpigotMC.
+         */
         NEW_UPDATE, // The only reason that requires an update
 
-        /** A successful connection to the Spigot API could not be established. */
+        /**
+         * A successful connection to the Spigot API could not be established.
+         */
         COULD_NOT_CONNECT,
 
-        /** The JSON retrieved from Spigot was invalid or malformed. */
+        /**
+         * The JSON retrieved from Spigot was invalid or malformed.
+         */
         INVALID_JSON,
 
-        /** A 401 error was returned by the Spigot API. */
+        /**
+         * A 401 error was returned by the Spigot API.
+         */
         UNAUTHORIZED_QUERY,
 
         /**
@@ -168,7 +180,9 @@ public final class UpdateChecker {
          */
         UNRELEASED_VERSION,
 
-        /** An unknown error occurred. */
+        /**
+         * An unknown error occurred.
+         */
         UNKNOWN_ERROR,
 
         /**
@@ -177,11 +191,15 @@ public final class UpdateChecker {
          */
         UNSUPPORTED_VERSION_SCHEME,
 
-        /** The plugin is up-to-date with the version released on SpigotMC's resources section. */
+        /**
+         * The plugin is up-to-date with the version released on SpigotMC's resources section.
+         */
         UP_TO_DATE
     }
 
-    /** A functional interface to compare two version Strings with similar version schemes. */
+    /**
+     * A functional interface to compare two version Strings with similar version schemes.
+     */
     @FunctionalInterface
     public interface VersionScheme {
 
@@ -196,7 +214,9 @@ public final class UpdateChecker {
         @Nullable String compareVersions(String first, String second);
     }
 
-    /** Represents a result for an update query performed by {@link UpdateChecker#requestUpdateCheck()}. */
+    /**
+     * Represents a result for an update query performed by {@link UpdateChecker#requestUpdateCheck()}.
+     */
     public final class UpdateResult {
 
         private final UpdateReason reason;

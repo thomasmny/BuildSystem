@@ -176,13 +176,19 @@ public class WorldServiceImpl implements WorldService {
 
     private enum LoadResult {
 
-        /** The {@link BuildWorld} was successfully loaded. */
+        /**
+         * The {@link BuildWorld} was successfully loaded.
+         */
         LOADED,
 
-        /** The {@link BuildWorld} was attempted to be loaded, but failed. */
+        /**
+         * The {@link BuildWorld} was attempted to be loaded, but failed.
+         */
         FAILED,
 
-        /** Not attempted: unloading is enabled and the world is not blacklisted, so it may stay unloaded. */
+        /**
+         * Not attempted: unloading is enabled and the world is not blacklisted, so it may stay unloaded.
+         */
         NOT_LOADED
     }
 
@@ -372,7 +378,9 @@ public class WorldServiceImpl implements WorldService {
                 worldName -> importWorld(worldName).build() != null);
     }
 
-    /** Per-world progress callbacks for a staggered bulk import. */
+    /**
+     * Per-world progress callbacks for a staggered bulk import.
+     */
     private interface BulkImportListener {
 
         default void skippedExisting(String worldName) {}

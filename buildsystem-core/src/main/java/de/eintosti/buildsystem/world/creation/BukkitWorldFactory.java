@@ -53,7 +53,9 @@ public class BukkitWorldFactory {
     private final WorldDataVersionGuard versionGuard;
     private final GenerationDataStore generationDataStore;
 
-    /** Used when loading or regenerating an existing world (no default settings to apply). */
+    /**
+     * Used when loading or regenerating an existing world (no default settings to apply).
+     */
     public BukkitWorldFactory(BuildSystemPlugin plugin, BuildWorld buildWorld) {
         this.plugin = plugin;
         this.worldName = buildWorld.getName();
@@ -66,7 +68,9 @@ public class BukkitWorldFactory {
         this.generationDataStore = new GenerationDataStore(plugin.getLogger(), Bukkit.getWorldContainer());
     }
 
-    /** Used when creating a new world with defaults from plugin config. */
+    /**
+     * Used when creating a new world with defaults from plugin config.
+     */
     BukkitWorldFactory(
             BuildSystemPlugin plugin,
             String worldName,

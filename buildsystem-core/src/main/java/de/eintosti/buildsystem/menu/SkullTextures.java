@@ -29,19 +29,29 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public final class SkullTextures {
 
-    /** Right-pointing arrow used for the "next page" button (and reused for setup default items). */
+    /**
+     * Right-pointing arrow used for the "next page" button (and reused for setup default items).
+     */
     public static final String NEXT_PAGE = "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158";
 
-    /** Left-pointing arrow used for the "previous page" button. */
+    /**
+     * Left-pointing arrow used for the "previous page" button.
+     */
     public static final String PREVIOUS_PAGE = "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2";
 
-    /** Green plus used for "create"/"add" actions (create world, add builder). */
+    /**
+     * Green plus used for "create"/"add" actions (create world, add builder).
+     */
     public static final String ADD_ITEM = "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716";
 
-    /** Compass-style head used for the world navigator entry. */
+    /**
+     * Compass-style head used for the world navigator entry.
+     */
     public static final String WORLD_NAVIGATOR = "d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622";
 
-    /** Chest/archive head used for the world archive entry. */
+    /**
+     * Chest/archive head used for the world archive entry.
+     */
     public static final String WORLD_ARCHIVE = "7f6bf958abd78295eed6ffc293b1aa59526e80f54976829ea068337c2f5e8";
 
     private SkullTextures() {}

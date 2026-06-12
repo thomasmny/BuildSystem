@@ -85,7 +85,9 @@ public class SettingsService {
         this.scoreboardTasks.put(player.getUniqueId(), scoreboardTask);
     }
 
-    /** Displays scoreboards for all online players who have it enabled and if enabled in the config. */
+    /**
+     * Displays scoreboards for all online players who have it enabled and if enabled in the config.
+     */
     public void displayScoreboard() {
         if (!plugin.getConfigService().current().settings().scoreboard()) {
             return;

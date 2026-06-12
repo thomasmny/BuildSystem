@@ -39,10 +39,14 @@ public interface WorldUnloader {
      */
     void manageUnload();
 
-    /** Starts a delayed task to unload the world, if world unloading is enabled in the config. */
+    /**
+     * Starts a delayed task to unload the world, if world unloading is enabled in the config.
+     */
     void startUnloadTask();
 
-    /** Resets the world unload task. */
+    /**
+     * Resets the world unload task.
+     */
     void resetUnloadTask();
 
     /**

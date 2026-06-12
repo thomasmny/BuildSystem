@@ -24,7 +24,9 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
-/** An inventory class specifically for displaying and managing private {@link BuildWorld}s. */
+/**
+ * An inventory class specifically for displaying and managing private {@link BuildWorld}s.
+ */
 @NullMarked
 public class PrivateWorldsMenu extends CreatableWorldsMenu {
 

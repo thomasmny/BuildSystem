@@ -25,7 +25,9 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-/** Base class for subcommands, holding the dependencies every implementation needs. */
+/**
+ * Base class for subcommands, holding the dependencies every implementation needs.
+ */
 @NullMarked
 public abstract class AbstractSubCommand implements SubCommand {
 

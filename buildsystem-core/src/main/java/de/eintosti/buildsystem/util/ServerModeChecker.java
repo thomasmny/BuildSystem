@@ -75,13 +75,19 @@ public final class ServerModeChecker {
         return SERVER_MODE;
     }
 
-    /** Enum representing the possible server modes. */
+    /**
+     * Enum representing the possible server modes.
+     */
     public enum ServerMode {
 
-        /** The server is online. */
+        /**
+         * The server is online.
+         */
         ONLINE,
 
-        /** The server is offline. */
+        /**
+         * The server is offline.
+         */
         OFFLINE
     }
 }

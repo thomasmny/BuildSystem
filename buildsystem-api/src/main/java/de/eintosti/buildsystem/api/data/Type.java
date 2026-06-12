@@ -70,7 +70,9 @@ public interface Type<T> {
         }
     }
 
-    /** An immutable {@link Type} representing the boolean value {@code true}. */
+    /**
+     * An immutable {@link Type} representing the boolean value {@code true}.
+     */
     Type<Boolean> TRUE = new ImmutableType<>(true);
 
     /**

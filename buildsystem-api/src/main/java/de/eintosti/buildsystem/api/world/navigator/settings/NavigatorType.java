@@ -27,9 +27,13 @@ import org.bukkit.inventory.Inventory;
  */
 public enum NavigatorType {
 
-    /** The old, {@link Inventory}-based navigator. */
+    /**
+     * The old, {@link Inventory}-based navigator.
+     */
     OLD,
 
-    /** The new, {@link ArmorStand}-based navigator. */
+    /**
+     * The new, {@link ArmorStand}-based navigator.
+     */
     NEW
 }
