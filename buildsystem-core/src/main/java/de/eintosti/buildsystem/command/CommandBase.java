@@ -27,12 +27,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public abstract class CommandBase implements CommandExecutor, TabCompleter {
 
-    protected final @Nullable BuildSystemPlugin plugin;
+    protected final BuildSystemPlugin plugin;
     protected final Messages messages;
     protected final Logger logger;
     private final boolean playerOnly;
@@ -41,13 +40,6 @@ public abstract class CommandBase implements CommandExecutor, TabCompleter {
         this.plugin = plugin;
         this.messages = plugin.getMessages();
         this.logger = plugin.getLogger();
-        this.playerOnly = playerOnly;
-    }
-
-    CommandBase(Logger logger, Messages messages, boolean playerOnly) {
-        this.plugin = null;
-        this.logger = logger;
-        this.messages = messages;
         this.playerOnly = playerOnly;
     }
 

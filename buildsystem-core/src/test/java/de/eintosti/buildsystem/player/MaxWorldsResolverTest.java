@@ -34,13 +34,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @NullMarked
-class PlayerServiceImplTest {
+class MaxWorldsResolverTest {
 
-    private PlayerServiceImpl service;
+    private MaxWorldsResolver service;
 
     @BeforeEach
     void setUp() {
-        service = new PlayerServiceImpl(Logger.getLogger("test"));
+        service = new MaxWorldsResolver(Logger.getLogger("test"));
     }
 
     private Player playerWith(boolean isAdmin, String... permissionStrings) {

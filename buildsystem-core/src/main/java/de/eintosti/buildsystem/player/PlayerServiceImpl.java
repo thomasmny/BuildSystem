@@ -29,35 +29,22 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.bukkit.entity.Player;
-import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class PlayerServiceImpl implements PlayerService {
 
-    private final @Nullable BuildSystemPlugin plugin;
-    private final @Nullable PlayerStorageImpl playerStorage;
+    private final BuildSystemPlugin plugin;
+    private final PlayerStorageImpl playerStorage;
+    private final MaxWorldsResolver maxWorldsResolver;
 
     private final Set<UUID> buildModePlayers;
-    private final Logger logger;
 
     public PlayerServiceImpl(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.logger = plugin.getLogger();
         this.playerStorage = new YamlPlayerStorage(plugin);
-        this.buildModePlayers = new HashSet<>();
-    }
-
-    /**
-     * Package-private for unit tests — only getMaxWorlds logic is available.
-     */
-    PlayerServiceImpl(Logger logger) {
-        this.plugin = null;
-        this.logger = logger;
-        this.playerStorage = null;
+        this.maxWorldsResolver = new MaxWorldsResolver(plugin.getLogger());
         this.buildModePlayers = new HashSet<>();
     }
 
@@ -102,43 +89,7 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public int getMaxWorlds(Player player, Visibility visibility) {
-        int max = -1;
-        if (player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)) {
-            return max;
-        }
-
-        for (PermissionAttachmentInfo permission : player.getEffectivePermissions()) {
-            String permissionString = permission.getPermission();
-            String[] splitPermission = permissionString.split("\\.");
-
-            if (splitPermission.length != 4) {
-                continue;
-            }
-
-            if (!splitPermission[1].equalsIgnoreCase("create")) {
-                continue;
-            }
-
-            if (!splitPermission[2].equalsIgnoreCase(visibility.name())) {
-                continue;
-            }
-
-            String amountString = splitPermission[3];
-            if (amountString.equals("*")) {
-                return -1;
-            }
-
-            try {
-                int amount = Integer.parseInt(amountString);
-                if (amount > max) {
-                    max = amount;
-                }
-            } catch (NumberFormatException e) {
-                logger.log(Level.WARNING, "Invalid max. world amount (must be int)", e);
-            }
-        }
-
-        return max;
+        return maxWorldsResolver.getMaxWorlds(player, visibility);
     }
 
     public CompletableFuture<Void> save() {

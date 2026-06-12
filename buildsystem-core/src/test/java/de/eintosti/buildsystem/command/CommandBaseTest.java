@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.command;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.i18n.Messages;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,12 +43,15 @@ class CommandBaseTest {
         final List<String[]> senderInvocations = new ArrayList<>();
 
         TestCommand(boolean playerOnly) {
-            this(mock(Logger.class), mock(Messages.class), playerOnly);
+            super(mockPlugin(), playerOnly);
+            when(messages.getString(anyString(), any(CommandSender.class))).thenReturn("test");
         }
 
-        private TestCommand(Logger logger, Messages messages, boolean playerOnly) {
-            super(logger, messages, playerOnly);
-            when(messages.getString(anyString(), any(CommandSender.class))).thenReturn("test");
+        private static BuildSystemPlugin mockPlugin() {
+            BuildSystemPlugin plugin = mock(BuildSystemPlugin.class);
+            when(plugin.getMessages()).thenReturn(mock(Messages.class));
+            when(plugin.getLogger()).thenReturn(mock(Logger.class));
+            return plugin;
         }
 
         @Override
