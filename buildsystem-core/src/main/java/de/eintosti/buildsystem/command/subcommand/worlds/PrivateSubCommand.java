@@ -41,7 +41,7 @@ public class PrivateSubCommand implements SubCommand {
             return;
         }
 
-        new PrivateWorldsInventory(plugin, player).openInventory();
+        new PrivateWorldsInventory(plugin, player).open(player);
     }
 
     @Override

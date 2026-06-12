@@ -41,7 +41,7 @@ public class ArchiveSubCommand implements SubCommand {
             return;
         }
 
-        new ArchivedWorldsInventory(plugin, player).openInventory();
+        new ArchivedWorldsInventory(plugin, player).open(player);
     }
 
     @Override

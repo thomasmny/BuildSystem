@@ -41,7 +41,7 @@ public class PublicSubCommand implements SubCommand {
             return;
         }
 
-        new PublicWorldsInventory(plugin, player).openInventory();
+        new PublicWorldsInventory(plugin, player).open(player);
     }
 
     @Override

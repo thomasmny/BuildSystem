@@ -20,89 +20,61 @@ package de.eintosti.buildsystem.world.navigator.inventory;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.player.settings.SettingsInventory;
-import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
-import de.eintosti.buildsystem.util.inventory.InventoryHandler;
-import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class NavigatorInventory implements InventoryHandler {
+public class NavigatorInventory extends Menu {
 
     private final BuildSystemPlugin plugin;
-    private final InventoryManager inventoryManager;
 
-    public NavigatorInventory(BuildSystemPlugin plugin) {
+    public NavigatorInventory(BuildSystemPlugin plugin, Player player) {
+        super(plugin.getMessages(), 27, plugin.getMessages().getString("old_navigator_title", player));
         this.plugin = plugin;
-        this.inventoryManager = plugin.getInventoryManager();
-    }
-
-    public void openInventory(Player player) {
-        Inventory inventory = getInventory(player);
-        this.inventoryManager.registerInventoryHandler(inventory, this);
-        player.openInventory(inventory);
-    }
-
-    private Inventory getInventory(Player player) {
-        Inventory inventory = new NavigatorInventoryHolder(player).getInventory();
-        fillGuiWithGlass(player, inventory);
-
-        inventory.setItem(11, InventoryUtils.createSkull(plugin.getMessages().getString("old_navigator_world_navigator", player), Profileable.detect("d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622")));
-        inventory.setItem(12, InventoryUtils.createSkull(plugin.getMessages().getString("old_navigator_world_archive", player), Profileable.detect("7f6bf958abd78295eed6ffc293b1aa59526e80f54976829ea068337c2f5e8")));
-        inventory.setItem(13, InventoryUtils.createSkull(plugin.getMessages().getString("old_navigator_private_worlds", player), Profileable.of(player)));
-
-        inventory.setItem(15, InventoryUtils.createSkull(plugin.getMessages().getString("old_navigator_settings", player), Profileable.detect("1cba7277fc895bf3b673694159864b83351a4d14717e476ebda1c3bf38fcf37")));
-
-        return inventory;
-    }
-
-    private void fillGuiWithGlass(Player player, Inventory inventory) {
-        for (int i = 0; i <= 26; i++) {
-            InventoryUtils.addGlassPane(player, inventory, i);
-        }
     }
 
     @Override
-    public void onClick(InventoryClickEvent event) {
-        if (!(event.getInventory().getHolder() instanceof NavigatorInventoryHolder)) {
-            return;
+    protected void populate(Player player) {
+        for (int i = 0; i <= 26; i++) {
+            InventoryUtils.addGlassPane(player, getInventory(), i);
         }
 
+        getInventory().setItem(11, InventoryUtils.createSkull(messages.getString("old_navigator_world_navigator", player), Profileable.detect("d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622")));
+        getInventory().setItem(12, InventoryUtils.createSkull(messages.getString("old_navigator_world_archive", player), Profileable.detect("7f6bf958abd78295eed6ffc293b1aa59526e80f54976829ea068337c2f5e8")));
+        getInventory().setItem(13, InventoryUtils.createSkull(messages.getString("old_navigator_private_worlds", player), Profileable.of(player)));
+        getInventory().setItem(15, InventoryUtils.createSkull(messages.getString("old_navigator_settings", player), Profileable.detect("1cba7277fc895bf3b673694159864b83351a4d14717e476ebda1c3bf38fcf37")));
+    }
+
+    @Override
+    public void handleClick(InventoryClickEvent event) {
         event.setCancelled(true);
         Player player = (Player) event.getWhoClicked();
 
         switch (event.getSlot()) {
             case 11:
-                new PublicWorldsInventory(plugin, player).openInventory();
+                new PublicWorldsInventory(plugin, player).open(player);
                 break;
             case 12:
-                new ArchivedWorldsInventory(plugin, player).openInventory();
+                new ArchivedWorldsInventory(plugin, player).open(player);
                 break;
             case 13:
-                new PrivateWorldsInventory(plugin, player).openInventory();
+                new PrivateWorldsInventory(plugin, player).open(player);
                 break;
             case 15:
                 if (!player.hasPermission("buildsystem.settings")) {
                     XSound.ENTITY_ITEM_BREAK.play(player);
                     return;
                 }
-                new SettingsInventory(plugin).openInventory(player);
+                new SettingsInventory(plugin, player).open(player);
                 break;
             default:
                 return;
         }
 
         XSound.ENTITY_CHICKEN_EGG.play(player);
-    }
-
-    private static class NavigatorInventoryHolder extends BuildSystemHolder {
-
-        public NavigatorInventoryHolder(Player player) {
-            super(27, BuildSystemPlugin.get().getMessages().getString("old_navigator_title", player));
-        }
     }
 }

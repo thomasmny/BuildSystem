@@ -45,21 +45,10 @@ public class ArchivedWorldsInventory extends DisplayablesInventory {
         );
     }
 
-    /**
-     * Overrides the base method to include the "create folder" item in the inventory page layout.
-     *
-     * @return A newly created {@link Inventory} page with common base items and creation options
-     */
     @Override
-    protected Inventory createBaseInventoryPage(String inventoryTitle) {
-        Inventory inventory = super.createBaseInventoryPage(inventoryTitle);
-        addFolderCreateItem(inventory, player);
-        return inventory;
-    }
-
-    private void addFolderCreateItem(Inventory inventory, Player player) {
+    protected void addExtraItems(Inventory inventory, Player player) {
         if (player.hasPermission("buildsystem.create.folder")) {
-            inventory.setItem(49, InventoryUtils.createSkull(BuildSystemPlugin.get().getMessages().getString("world_navigator_create_folder", player), Profileable.detect(CREATE_FOLDER_PROFILE)));
+            inventory.setItem(49, InventoryUtils.createSkull(plugin.getMessages().getString("world_navigator_create_folder", player), Profileable.detect(CREATE_FOLDER_PROFILE)));
         }
     }
 }

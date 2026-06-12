@@ -76,7 +76,7 @@ public class SetPermissionSubCommand implements SubCommand {
             if (closeInventory) {
                 player.closeInventory();
             } else {
-                new EditInventory(plugin).openInventory(player, buildWorld);
+                new EditInventory(plugin, buildWorld, player).open(player);
             }
         });
     }

@@ -60,7 +60,7 @@ public class EditSubCommand implements SubCommand {
 
         if (buildWorld.isLoaded()) {
             XSound.BLOCK_CHEST_OPEN.play(player);
-            new EditInventory(plugin).openInventory(player, buildWorld);
+            new EditInventory(plugin, buildWorld, player).open(player);
         } else {
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
             player.sendTitle(" ", plugin.getMessages().getString("world_not_loaded", player), 5, 70, 20);

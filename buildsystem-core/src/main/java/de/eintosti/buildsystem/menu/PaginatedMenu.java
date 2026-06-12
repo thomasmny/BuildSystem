@@ -42,6 +42,10 @@ public abstract class PaginatedMenu extends Menu {
         return page;
     }
 
+    protected final void resetPage() {
+        page = 0;
+    }
+
     protected final int totalPages(int itemsPerPage) {
         int total = totalItems();
         return total == 0 ? 1 : (int) Math.ceil((double) total / itemsPerPage);

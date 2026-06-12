@@ -36,16 +36,14 @@ import de.eintosti.buildsystem.api.world.navigator.settings.WorldFilter;
 import de.eintosti.buildsystem.api.world.navigator.settings.WorldFilter.Mode;
 import de.eintosti.buildsystem.api.world.navigator.settings.WorldSort;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
+import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.StringCleaner;
-import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
-import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
-import de.eintosti.buildsystem.util.inventory.PaginatedInventory;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.CreateInventory;
 import de.eintosti.buildsystem.world.creation.CreateInventory.Page;
@@ -68,12 +66,8 @@ import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-/**
- * An abstract inventory class for displaying {@link Displayable} objects such as {@link Folder}s and {@link BuildWorld}s. This class is designed to be instantiated once per player
- * to manage their specific inventory view.
- */
 @NullMarked
-public abstract class DisplayablesInventory extends PaginatedInventory {
+public abstract class DisplayablesInventory extends PaginatedMenu {
 
     private static final int MAX_WORLDS_PER_PAGE = 36;
     private static final int FIRST_WORD_SLOT = 9;
@@ -84,7 +78,6 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
     private static final String NO_WORLDS_SKULL_PROFILE = "2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6";
 
     protected final BuildSystemPlugin plugin;
-    protected final InventoryManager inventoryManager;
     protected final PlayerServiceImpl playerService;
     protected final SettingsManager settingsManager;
     protected final FolderStorageImpl folderStorage;
@@ -94,26 +87,10 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
     protected final NavigatorCategory category;
     protected final Visibility requiredVisibility;
     protected final Set<BuildWorldStatus> validStatuses;
-    private final String inventoryTitle;
-    @Nullable
-    private final String noWorldsMessage;
+    @Nullable private final String noWorldsMessage;
 
-    @Nullable
-    private List<Displayable> cachedDisplayables;
-    @Nullable
-    private Inventory[] generatedInventories;
+    @Nullable private List<Displayable> cachedDisplayables;
 
-    /**
-     * Constructs a new {@link DisplayablesInventory} for a specific player.
-     *
-     * @param plugin             The plugin instance
-     * @param player             The player for whom this inventory is created
-     * @param category           The category of the inventory, used for organizing folders
-     * @param inventoryTitle     The inventory's title
-     * @param noWorldsMessage    The "no worlds" message
-     * @param requiredVisibility The required visibility for worlds to be displayed
-     * @param validStatuses      The set of valid statuses for worlds to be displayed
-     */
     protected DisplayablesInventory(
             BuildSystemPlugin plugin,
             Player player,
@@ -123,105 +100,57 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
             Visibility requiredVisibility,
             Set<BuildWorldStatus> validStatuses
     ) {
+        super(plugin.getMessages(), 54, inventoryTitle);
         this.plugin = plugin;
-        this.inventoryManager = plugin.getInventoryManager();
         this.playerService = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsManager();
         WorldServiceImpl worldService = plugin.getWorldService();
         this.folderStorage = worldService.getFolderStorage();
         this.worldStorage = worldService.getWorldStorage();
-
         this.player = player;
         this.category = category;
-        this.inventoryTitle = inventoryTitle;
         this.noWorldsMessage = noWorldsMessage;
         this.requiredVisibility = requiredVisibility;
         this.validStatuses = validStatuses;
-        generatedInventories = new Inventory[0];
     }
 
-    /**
-     * Opens the inventory for the associated player.
-     */
-    public void openInventory() {
-        if (this.generatedInventories.length == 0) {
-            initializeInventories();
-        }
-
-        Inventory inventory = generatedInventories[getInvIndex(player)];
-        this.inventoryManager.registerInventoryHandler(inventory, this);
-        player.openInventory(inventory);
+    @Override
+    protected int totalItems() {
+        return cachedDisplayables != null ? cachedDisplayables.size() : 0;
     }
 
-    /**
-     * Initializes all inventory pages based on the current player settings and world data.
-     */
-    private void initializeInventories() {
+    @Override
+    protected void populate(Player player) {
         this.cachedDisplayables = collectDisplayables();
-        int numDisplayableObjects = this.cachedDisplayables.size();
+        Inventory inv = getInventory();
 
-        int numPages = calculateNumPages(numDisplayableObjects, MAX_WORLDS_PER_PAGE);
-        this.generatedInventories = new Inventory[numPages];
+        InventoryUtils.fillWithGlass(inv, player);
+        addWorldSortItem(inv);
+        addWorldFilterItem(inv);
+        addExtraItems(inv, player);
+        inv.setItem(52, InventoryUtils.createSkull(plugin.getMessages().getString("gui_previous_page", player), Profileable.detect(PREVIOUS_PAGE_SKULL_PROFILE)));
+        inv.setItem(53, InventoryUtils.createSkull(plugin.getMessages().getString("gui_next_page", player), Profileable.detect(NEXT_PAGE_SKULL_PROFILE)));
 
-        for (int pageIndex = 0; pageIndex < numPages; pageIndex++) {
-            Inventory currentPage = createBaseInventoryPage(this.inventoryTitle);
-            this.generatedInventories[pageIndex] = currentPage;
+        for (int i = FIRST_WORD_SLOT; i <= LAST_WORLD_SLOT; i++) {
+            inv.setItem(i, null);
+        }
 
-            if (numDisplayableObjects == 0 && this.noWorldsMessage != null) {
-                currentPage.setItem(22, InventoryUtils.createSkull(this.noWorldsMessage, Profileable.detect(NO_WORLDS_SKULL_PROFILE)));
-                continue;
-            }
+        if (cachedDisplayables.isEmpty() && noWorldsMessage != null) {
+            inv.setItem(22, InventoryUtils.createSkull(noWorldsMessage, Profileable.detect(NO_WORLDS_SKULL_PROFILE)));
+            return;
+        }
 
-            int startItemIndex = pageIndex * MAX_WORLDS_PER_PAGE;
-            int endItemIndex = Math.min(startItemIndex + MAX_WORLDS_PER_PAGE, numDisplayableObjects);
-
-            int currentSlot = FIRST_WORD_SLOT;
-            for (int i = startItemIndex; i < endItemIndex; i++) {
-                if (currentSlot > LAST_WORLD_SLOT) {
-                    break;
-                }
-                this.cachedDisplayables.get(i).addToInventory(currentPage, currentSlot++, player);
-            }
+        int startIndex = page() * MAX_WORLDS_PER_PAGE;
+        int endIndex = Math.min(startIndex + MAX_WORLDS_PER_PAGE, cachedDisplayables.size());
+        int currentSlot = FIRST_WORD_SLOT;
+        for (int i = startIndex; i < endIndex; i++) {
+            if (currentSlot > LAST_WORLD_SLOT) break;
+            cachedDisplayables.get(i).addToInventory(inv, currentSlot++, player);
         }
     }
 
-    /**
-     * Creates a single inventory page with common navigation and setting items.
-     *
-     * @return A new inventory instance.
-     */
-    protected Inventory createBaseInventoryPage(String inventoryTitle) {
-        Inventory inventory = new DisplayablesInventoryHolder(inventoryTitle).getInventory();
-        InventoryUtils.fillWithGlass(inventory, player);
+    protected void addExtraItems(Inventory inventory, Player player) {}
 
-        addWorldSortItem(inventory);
-        addWorldFilterItem(inventory);
-
-        inventory.setItem(52, InventoryUtils.createSkull(plugin.getMessages().getString("gui_previous_page", player), Profileable.detect(PREVIOUS_PAGE_SKULL_PROFILE)));
-        inventory.setItem(53, InventoryUtils.createSkull(plugin.getMessages().getString("gui_next_page", player), Profileable.detect(NEXT_PAGE_SKULL_PROFILE)));
-
-        return inventory;
-    }
-
-    /**
-     * Collects all {@link Displayable} items (i.e. {@link Folder}s and {@link BuildWorld}s) that should be shown to the player.
-     * <p>
-     * The method applies the following logic:
-     * <ul>
-     *  <li>Fetches all {@link BuildWorld}s visible to the player based on world access rights and filter settings.</li>
-     *  <li>Sorts the filtered worlds according to the player's selected sort order.</li>
-     *  <li>If a world is assigned to a {@link Folder}, it is excluded from display and the folder is shown instead.</li>
-     *  <li>If a world is not assigned to any folder, it is displayed directly.</li>
-     *  <li>All folders are listed first, followed by all standalone worlds.</li>
-     * </ul>
-     * This ensures that:
-     * <ul>
-     *  <li>Worlds are never shown twice (both directly and via their folder).</li>
-     *  <li>Folder grouping takes display priority over individual worlds.</li>
-     * </ul>
-     *
-     * @return A list of {@link Displayable} items to be presented in the UI, sorted with folders first.
-     */
     protected List<Displayable> collectDisplayables() {
         WorldDisplay worldDisplay = settingsManager.getSettings(player).getWorldDisplay();
 
@@ -237,11 +166,6 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
         return displayables;
     }
 
-    /**
-     * Collects all {@link Folder}s that belong to the specified category and do not have a parent folder.
-     *
-     * @return A collection of root folders in the specified category
-     */
     @Unmodifiable
     protected Collection<Folder> collectFolders() {
         return folderStorage.getFolders().stream()
@@ -251,20 +175,10 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
                 .toList();
     }
 
-    /**
-     * Collects all potential {@link BuildWorld}s that be displayed to the player before filtering them based on visibility and status.
-     */
     protected Collection<BuildWorld> collectWorlds() {
         return worldStorage.getBuildWorlds();
     }
 
-    /**
-     * Filters the given collection of {@link BuildWorld}s based on their visibility and status, as well as the player's world display settings.
-     *
-     * @param buildWorlds  The collection of build worlds to filter
-     * @param worldDisplay The world display settings for the player
-     * @return A collection of filtered and sorted {@link BuildWorld}s that are valid for display to the player
-     */
     @Unmodifiable
     protected Collection<BuildWorld> filterWorlds(Collection<BuildWorld> buildWorlds, WorldDisplay worldDisplay) {
         return buildWorlds.stream()
@@ -273,34 +187,20 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
                 .toList();
     }
 
-    /**
-     * Checks if a given {@link BuildWorld} is valid for display based on visibility, status, and player permissions.
-     *
-     * @param buildWorld The world to check.
-     * @return {@code true} if the world should be displayed, {@link false} otherwise
-     */
     private boolean isWorldValidForDisplay(BuildWorld buildWorld) {
         WorldData worldData = buildWorld.getData();
         if (!this.worldStorage.isCorrectVisibility(worldData.privateWorld().get(), this.requiredVisibility)) {
             return false;
         }
-
         if (!this.validStatuses.contains(worldData.status().get())) {
             return false;
         }
-
         if (!buildWorld.getPermissions().canEnter(this.player)) {
             return false;
         }
-
         return Bukkit.getWorld(buildWorld.getName()) != null || !buildWorld.isLoaded();
     }
 
-    /**
-     * Adds the world sorting item to the inventory.
-     *
-     * @param inventory The inventory to add the item to
-     */
     private void addWorldSortItem(Inventory inventory) {
         Settings settings = settingsManager.getSettings(player);
         WorldSort worldSort = settings.getWorldDisplay().getWorldSort();
@@ -319,11 +219,6 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
         inventory.setItem(45, InventoryUtils.createItem(XMaterial.BOOK, plugin.getMessages().getString("world_sort_title", player), plugin.getMessages().getString(messageKey, player)));
     }
 
-    /**
-     * Adds the world filter item to the inventory.
-     *
-     * @param inventory The inventory to add the item to
-     */
     private void addWorldFilterItem(Inventory inventory) {
         Settings settings = settingsManager.getSettings(player);
         WorldFilter worldFilter = settings.getWorldDisplay().getWorldFilter();
@@ -343,11 +238,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
     }
 
     @Override
-    public void onClick(InventoryClickEvent event) {
-        if (!(event.getInventory().getHolder() instanceof DisplayablesInventoryHolder)) {
-            return;
-        }
-
+    public void handleClick(InventoryClickEvent event) {
         ItemStack itemStack = event.getCurrentItem();
         if (itemStack == null) {
             return;
@@ -359,93 +250,93 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
         WorldDisplay worldDisplay = settings.getWorldDisplay();
 
         switch (event.getSlot()) {
-            case 45: // Sort
+            case 45 -> {
                 Function<WorldSort, WorldSort> newSortFunction = event.isLeftClick() ? this::getNextSort : this::getPreviousSort;
-                WorldSort newSort = newSortFunction.apply(worldDisplay.getWorldSort());
-                worldDisplay.setWorldSort(newSort);
-                updateAndReopenInventory();
-                return;
-            case 46: // Filter
-                handleFilterClick(event, worldDisplay);
-                return;
-            case 48: // Create world
+                worldDisplay.setWorldSort(newSortFunction.apply(worldDisplay.getWorldSort()));
+                resetPage();
+                open(player);
+            }
+            case 46 -> handleFilterClick(event, worldDisplay);
+            case 48 -> {
                 if (itemStack.getType() == XMaterial.PLAYER_HEAD.get()) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     beginWorldCreation();
                     return;
                 }
-                break;
-            case 49: // Create folder (archive)
-            case 50: // Create folder (not archive)
+                goBack(player, itemStack);
+            }
+            case 49, 50 -> {
                 if (itemStack.getType() == XMaterial.PLAYER_HEAD.get()) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
-                    player.closeInventory(); // Close to allow chat input
-                    new PlayerChatInput(plugin, player, "enter_folder_name", input -> {
-                        if (StringCleaner.hasInvalidNameCharacters(input)) {
-                            plugin.getMessages().sendMessage(player, "worlds_folder_creation_invalid_characters");
-                        }
-
-                        String sanitizedName = StringCleaner.sanitize(input);
-                        if (sanitizedName.isEmpty()) {
-                            plugin.getMessages().sendMessage(player, "worlds_folder_creation_name_bank");
-                            return;
-                        }
-
-                        if (folderStorage.folderExists(sanitizedName)) {
-                            plugin.getMessages().sendMessage(player, "worlds_folder_exists");
-                            return;
-                        }
-
-                        Folder folder = createFolder(sanitizedName);
-                        plugin.getMessages().sendMessage(player, "worlds_folder_created", Map.entry("%folder%", folder.getName()));
-
-                        initializeInventories();
-                        openInventory();
-                    });
+                    beginFolderCreation(player);
                     return;
                 }
-                break;
-            case 52: // Previous page
-                if (decrementInv(player, cachedDisplayables.size(), MAX_WORLDS_PER_PAGE)) {
-                    openInventory();
+                goBack(player, itemStack);
+            }
+            case 51 -> goBack(player, itemStack);
+            case 52 -> {
+                if (previousPage(player, MAX_WORLDS_PER_PAGE)) {
+                    populate(player);
                 }
-                return;
-            case 53: // Next page
-                if (incrementInv(player, cachedDisplayables.size(), MAX_WORLDS_PER_PAGE)) {
-                    openInventory();
+            }
+            case 53 -> {
+                if (nextPage(player, MAX_WORLDS_PER_PAGE)) {
+                    populate(player);
                 }
-                return;
+            }
+            default -> {
+                if (event.getSlot() >= FIRST_WORD_SLOT && event.getSlot() <= LAST_WORLD_SLOT) {
+                    handleDisplayableItemClick(event, itemStack);
+                } else if (event.getSlot() >= 45 && event.getSlot() <= 53) {
+                    goBack(player, itemStack);
+                }
+            }
         }
+    }
 
-        if (event.getSlot() >= FIRST_WORD_SLOT && event.getSlot() <= LAST_WORLD_SLOT) {
-            handleDisplayableItemClick(event, itemStack);
-        } else if (event.getSlot() >= 45 && event.getSlot() <= 53 && itemStack.getType() != XMaterial.PLAYER_HEAD.get()) {
+    private void goBack(Player player, ItemStack itemStack) {
+        if (itemStack.getType() != XMaterial.PLAYER_HEAD.get()) {
             XSound.BLOCK_CHEST_OPEN.play(player);
             returnToPreviousInventory();
         }
     }
 
     protected void beginWorldCreation() {
-        new CreateInventory(plugin, this.requiredVisibility).openInventory(this.player, Page.PREDEFINED);
+        new CreateInventory(plugin, Page.PREDEFINED, this.requiredVisibility, null, this.player).open(this.player);
+    }
+
+    private void beginFolderCreation(Player player) {
+        player.closeInventory();
+        new PlayerChatInput(plugin, player, "enter_folder_name", input -> {
+            if (StringCleaner.hasInvalidNameCharacters(input)) {
+                plugin.getMessages().sendMessage(player, "worlds_folder_creation_invalid_characters");
+            }
+
+            String sanitizedName = StringCleaner.sanitize(input);
+            if (sanitizedName.isEmpty()) {
+                plugin.getMessages().sendMessage(player, "worlds_folder_creation_name_bank");
+                return;
+            }
+
+            if (folderStorage.folderExists(sanitizedName)) {
+                plugin.getMessages().sendMessage(player, "worlds_folder_exists");
+                return;
+            }
+
+            Folder folder = createFolder(sanitizedName);
+            plugin.getMessages().sendMessage(player, "worlds_folder_created", Map.entry("%folder%", folder.getName()));
+            open(player);
+        });
     }
 
     protected Folder createFolder(String folderName) {
         return this.folderStorage.createFolder(folderName, this.category, Builder.of(this.player));
     }
 
-    /**
-     * Sends the player back to the previous inventory.
-     */
     protected void returnToPreviousInventory() {
-        new NavigatorInventory(plugin).openInventory(this.player);
+        new NavigatorInventory(plugin, this.player).open(this.player);
     }
 
-    /**
-     * Handles clicks on the filter item, managing mode changes, and text input.
-     *
-     * @param event        The InventoryClickEvent.
-     * @param worldDisplay The player's WorldDisplay settings.
-     */
     private void handleFilterClick(InventoryClickEvent event, WorldDisplay worldDisplay) {
         WorldFilter worldFilter = worldDisplay.getWorldFilter();
         Mode currentMode = worldFilter.getMode();
@@ -457,22 +348,18 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
             player.closeInventory();
             new PlayerChatInput(plugin, player, "world_filter_title", input -> {
                 worldFilter.setText(input.replace("\"", ""));
-                openInventory();
+                resetPage();
+                open(player);
             });
             return;
         } else if (event.isRightClick()) {
             worldFilter.setMode(currentMode.getNext());
         }
 
-        updateAndReopenInventory();
+        resetPage();
+        open(player);
     }
 
-    /**
-     * Handles clicks on {@link Displayable} items (worlds or folders) within the inventory.
-     *
-     * @param event       The click event
-     * @param clickedItem The item that was clicked
-     */
     private void handleDisplayableItemClick(InventoryClickEvent event, ItemStack clickedItem) {
         ItemMeta itemMeta = clickedItem.getItemMeta();
         if (itemMeta == null || !itemMeta.hasDisplayName()) {
@@ -486,6 +373,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
             return;
         }
 
+        Player player = (Player) event.getWhoClicked();
         switch (DisplayableType.valueOf(displayableType)) {
             case BUILD_WORLD -> {
                 BuildWorld buildWorld = worldStorage.getBuildWorld(displayableName);
@@ -501,26 +389,29 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
                     plugin.getLogger().warning("Unable to find folder with name: " + displayableName);
                     return;
                 }
-                new FolderContentInventory(plugin, player, category, folder, this, requiredVisibility, validStatuses).openInventory();
+                new FolderContentInventory(plugin, player, category, folder, this, requiredVisibility, validStatuses).open(player);
             }
         }
     }
 
-    /**
-     * Updates the inventory content and reopens it for the player. This is typically called after a setting (sort, filter) has changed.
-     */
-    private void updateAndReopenInventory() {
-        resetInvIndex(player);
-        initializeInventories();
-        openInventory();
+    private void manageWorldItemClick(InventoryClickEvent event, BuildWorld buildWorld) {
+        Player player = (Player) event.getWhoClicked();
+        if (event.isLeftClick() || !buildWorld.getPermissions().canPerformCommand(player, WorldsArgument.EDIT.getPermission())) {
+            playerService.closeNewNavigator(player);
+            buildWorld.getTeleporter().teleport(player);
+            return;
+        }
+
+        if (buildWorld.isLoaded()) {
+            XSound.BLOCK_CHEST_OPEN.play(player);
+            new EditInventory(plugin, buildWorld, player).open(player);
+        } else {
+            player.closeInventory();
+            XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
+            player.sendTitle(" ", plugin.getMessages().getString("world_not_loaded", player), 5, 70, 20);
+        }
     }
 
-    /**
-     * Gets the next {@link WorldSort} order in the cycle.
-     *
-     * @param currentSort The current sort
-     * @return The next sort in the sequence
-     */
     private WorldSort getNextSort(WorldSort currentSort) {
         return switch (currentSort) {
             case NEWEST_FIRST -> WorldSort.OLDEST_FIRST;
@@ -534,12 +425,6 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
         };
     }
 
-    /**
-     * Gets the previous {@link WorldSort} order in the cycle.
-     *
-     * @param currentSort The current sort
-     * @return The previous sort in the sequence.
-     */
     public WorldSort getPreviousSort(WorldSort currentSort) {
         return switch (currentSort) {
             case NEWEST_FIRST -> WorldSort.STATUS_FINISHED;
@@ -551,44 +436,5 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
             case NAME_A_TO_Z -> WorldSort.OLDEST_FIRST;
             case NAME_Z_TO_A -> WorldSort.NAME_A_TO_Z;
         };
-    }
-
-    /**
-     * Manages the click action for an item representing a {@link BuildWorld}.
-     *
-     * @param event      The InventoryClickEvent.
-     * @param buildWorld The BuildWorld associated with the clicked item.
-     */
-    private void manageWorldItemClick(InventoryClickEvent event, BuildWorld buildWorld) {
-        if (event.isLeftClick() || !buildWorld.getPermissions().canPerformCommand(player, WorldsArgument.EDIT.getPermission())) {
-            performNonEditClick(buildWorld);
-            return;
-        }
-
-        if (buildWorld.isLoaded()) {
-            XSound.BLOCK_CHEST_OPEN.play(player);
-            new EditInventory(plugin).openInventory(player, buildWorld);
-        } else {
-            player.closeInventory();
-            XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-            player.sendTitle(" ", plugin.getMessages().getString("world_not_loaded", player), 5, 70, 20);
-        }
-    }
-
-    /**
-     * Performs a non-edit action for a {@link BuildWorld} item click (typically teleportation).
-     *
-     * @param buildWorld The BuildWorld to act upon.
-     */
-    private void performNonEditClick(BuildWorld buildWorld) {
-        playerService.closeNewNavigator(player);
-        buildWorld.getTeleporter().teleport(player);
-    }
-
-    private static class DisplayablesInventoryHolder extends BuildSystemHolder {
-
-        public DisplayablesInventoryHolder(String inventoryTitle) {
-            super(54, inventoryTitle);
-        }
     }
 }

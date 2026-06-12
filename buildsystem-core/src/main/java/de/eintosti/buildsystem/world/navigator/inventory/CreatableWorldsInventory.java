@@ -33,10 +33,6 @@ import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-/**
- * An abstract inventory class extending {@link DisplayablesInventory} that provides common functionality for inventories which allow the creation of new {@link BuildWorld}s and
- * {@link Folder}s.
- */
 @NullMarked
 public abstract class CreatableWorldsInventory extends DisplayablesInventory {
 
@@ -52,15 +48,6 @@ public abstract class CreatableWorldsInventory extends DisplayablesInventory {
 
     private final PlayerServiceImpl playerService;
 
-    /**
-     * Constructs a new {@link CreatableWorldsInventory}.
-     *
-     * @param plugin             The plugin instance
-     * @param player             The player for whom this inventory is created
-     * @param inventoryTitle     The inventory's title
-     * @param noWorldsMessage    The "no worlds" message
-     * @param requiredVisibility The required {@link Visibility} for worlds to be displayed in this inventory
-     */
     protected CreatableWorldsInventory(
             BuildSystemPlugin plugin,
             Player player,
@@ -73,47 +60,17 @@ public abstract class CreatableWorldsInventory extends DisplayablesInventory {
         this.playerService = plugin.getPlayerService();
     }
 
-    /**
-     * Overrides the base method to include the "create world" and "create folder" items in the inventory page layout.
-     *
-     * @return A newly created {@link Inventory} page with common base items and creation options
-     */
     @Override
-    protected Inventory createBaseInventoryPage(String inventoryTitle) {
-        Inventory inventory = super.createBaseInventoryPage(inventoryTitle);
-        addWorldCreateItem(inventory, player);
-        addFolderCreateItem(inventory, player);
-        return inventory;
-    }
-
-    private void addWorldCreateItem(Inventory inventory, Player player) {
-        if (!playerService.canCreateWorld(player, requiredVisibility)) {
-            return;
+    protected void addExtraItems(Inventory inventory, Player player) {
+        if (playerService.canCreateWorld(player, requiredVisibility) && player.hasPermission(getWorldCreationPermission())) {
+            inventory.setItem(48, InventoryUtils.createSkull(plugin.getMessages().getString(getWorldCreationItemTitleKey(), player), Profileable.detect(CREATE_WORLD_PROFILE)));
         }
-
-        if (player.hasPermission(getWorldCreationPermission())) {
-            inventory.setItem(48, InventoryUtils.createSkull(BuildSystemPlugin.get().getMessages().getString(getWorldCreationItemTitleKey(), player), Profileable.detect(CREATE_WORLD_PROFILE)));
-        }
-    }
-
-    private void addFolderCreateItem(Inventory inventory, Player player) {
         if (player.hasPermission("buildsystem.create.folder")) {
-            inventory.setItem(50, InventoryUtils.createSkull(BuildSystemPlugin.get().getMessages().getString("world_navigator_create_folder", player), Profileable.detect(CREATE_FOLDER_PROFILE)));
+            inventory.setItem(50, InventoryUtils.createSkull(plugin.getMessages().getString("world_navigator_create_folder", player), Profileable.detect(CREATE_FOLDER_PROFILE)));
         }
     }
 
-    /**
-     * Gets the specific permission string required for a player to create a {@link BuildWorld} of the type managed by this inventory (e.g., {@code buildsystem.create.private},
-     * {@code buildsystem.create.public}).
-     *
-     * @return The permission string for creating a world of this inventory's type
-     */
     protected abstract String getWorldCreationPermission();
 
-    /**
-     * Gets the message key the title of the "create world" item.
-     *
-     * @return The message key for the "create world" item's title
-     */
     protected abstract String getWorldCreationItemTitleKey();
 }

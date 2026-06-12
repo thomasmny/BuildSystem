@@ -23,10 +23,9 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
-import de.eintosti.buildsystem.util.inventory.InventoryHandler;
-import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import de.eintosti.buildsystem.world.modification.EditInventory;
 import java.util.Map;
@@ -34,67 +33,61 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jspecify.annotations.NullMarked;
-import de.eintosti.buildsystem.i18n.Messages;
 
 @NullMarked
-public class StatusInventory implements InventoryHandler {
+public class StatusInventory extends Menu {
 
     private final BuildSystemPlugin plugin;
-    private final InventoryManager inventoryManager;
     private final PlayerServiceImpl playerService;
+    private final BuildWorld buildWorld;
 
-    public StatusInventory(BuildSystemPlugin plugin) {
+    public StatusInventory(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
+        super(plugin.getMessages(), 27, plugin.getMessages().getString("status_title", player,
+                Map.entry("%world%", formatWorldName(buildWorld))));
         this.plugin = plugin;
-        this.inventoryManager = plugin.getInventoryManager();
         this.playerService = plugin.getPlayerService();
+        this.buildWorld = buildWorld;
     }
 
-    private Inventory getInventory(Player player, BuildWorld buildWorld) {
-        Inventory inventory = new StatusInventoryHolder(buildWorld, player).getInventory();
-        fillGuiWithGlass(player, inventory);
-
-        addStatusItem(player, inventory, 10, BuildWorldStatus.NOT_STARTED, buildWorld);
-        addStatusItem(player, inventory, 11, BuildWorldStatus.IN_PROGRESS, buildWorld);
-        addStatusItem(player, inventory, 12, BuildWorldStatus.ALMOST_FINISHED, buildWorld);
-        addStatusItem(player, inventory, 13, BuildWorldStatus.FINISHED, buildWorld);
-        addStatusItem(player, inventory, 14, BuildWorldStatus.ARCHIVE, buildWorld);
-        addStatusItem(player, inventory, 16, BuildWorldStatus.HIDDEN, buildWorld);
-
-        return inventory;
+    private static String formatWorldName(BuildWorld buildWorld) {
+        String worldName = buildWorld.getName();
+        if (worldName.length() > 17) {
+            worldName = worldName.substring(0, 14) + "...";
+        }
+        return worldName;
     }
 
-    public void openInventory(Player player, BuildWorld buildWorld) {
-        Inventory inventory = getInventory(player, buildWorld);
-        this.inventoryManager.registerInventoryHandler(inventory, this);
-        player.openInventory(inventory);
-    }
-
-    private void fillGuiWithGlass(Player player, Inventory inventory) {
+    @Override
+    protected void populate(Player player) {
         for (int i = 0; i <= 9; i++) {
-            InventoryUtils.addGlassPane(player, inventory, i);
+            InventoryUtils.addGlassPane(player, getInventory(), i);
         }
         for (int i = 17; i <= 26; i++) {
-            InventoryUtils.addGlassPane(player, inventory, i);
+            InventoryUtils.addGlassPane(player, getInventory(), i);
         }
+
+        addStatusItem(player, 10, BuildWorldStatus.NOT_STARTED);
+        addStatusItem(player, 11, BuildWorldStatus.IN_PROGRESS);
+        addStatusItem(player, 12, BuildWorldStatus.ALMOST_FINISHED);
+        addStatusItem(player, 13, BuildWorldStatus.FINISHED);
+        addStatusItem(player, 14, BuildWorldStatus.ARCHIVE);
+        addStatusItem(player, 16, BuildWorldStatus.HIDDEN);
     }
 
     /**
      * Adds a status item to the inventory at the specified position.
      *
-     * @param player     The player who will see the item
-     * @param inventory  The inventory to add the item to
-     * @param position   The position in the inventory to add the item
-     * @param status     The status to represent with the item
-     * @param buildWorld The build world used to determine the current status
+     * @param player   The player who will see the item
+     * @param position The position in the inventory to add the item
+     * @param status   The status to represent with the item
      */
-    private void addStatusItem(Player player, Inventory inventory, int position, BuildWorldStatus status, BuildWorld buildWorld) {
+    private void addStatusItem(Player player, int position, BuildWorldStatus status) {
         XMaterial material = plugin.getCustomizableIcons().getIcon(status);
-        String displayName = plugin.getMessages().getString(Messages.getMessageKey(status), player);
+        String displayName = messages.getString(Messages.getMessageKey(status), player);
 
         if (!player.hasPermission(status.getPermission())) {
             material = XMaterial.BARRIER;
@@ -111,33 +104,23 @@ public class StatusInventory implements InventoryHandler {
             itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.get(), 1);
         }
 
-        inventory.setItem(position, itemStack);
+        getInventory().setItem(position, itemStack);
     }
 
     @Override
-    public void onClick(InventoryClickEvent event) {
-        if (!(event.getInventory().getHolder() instanceof StatusInventoryHolder holder)) {
-            return;
-        }
-
+    public void handleClick(InventoryClickEvent event) {
         ItemStack itemStack = event.getCurrentItem();
         if (itemStack == null || itemStack.getType() == Material.AIR || !itemStack.hasItemMeta()) {
             return;
         }
 
-        Material itemType = itemStack.getType();
-        if (itemType == Material.AIR || !itemStack.hasItemMeta()) {
-            return;
-        }
-
         event.setCancelled(true);
         Player player = (Player) event.getWhoClicked();
-        BuildWorld buildWorld = holder.getBuildWorld();
 
         int slot = event.getSlot();
         if (slot < 10 || slot > 14 && slot != 16) {
             XSound.BLOCK_CHEST_OPEN.play(player);
-            new EditInventory(plugin).openInventory(player, buildWorld);
+            new EditInventory(plugin, buildWorld, player).open(player);
             return;
         }
 
@@ -152,18 +135,12 @@ public class StatusInventory implements InventoryHandler {
         playerService.forceUpdateSidebar(buildWorld);
 
         XSound.ENTITY_CHICKEN_EGG.play(player);
-        plugin.getMessages().sendMessage(player, "worlds_setstatus_set",
+        messages.sendMessage(player, "worlds_setstatus_set",
                 Map.entry("%world%", buildWorld.getName()),
-                Map.entry("%status%", plugin.getMessages().getString(Messages.getMessageKey(status), player))
+                Map.entry("%status%", messages.getString(Messages.getMessageKey(status), player))
         );
     }
 
-    /**
-     * Gets the {@link BuildWorldStatus} which is represented by the item at the given slot.
-     *
-     * @param slot The slot to get the status from
-     * @return The status which is represented by the item at the given slot
-     */
     private BuildWorldStatus getStatusFromSlot(int slot) {
         return switch (slot) {
             case 10 -> BuildWorldStatus.NOT_STARTED;
@@ -174,20 +151,5 @@ public class StatusInventory implements InventoryHandler {
             case 16 -> BuildWorldStatus.HIDDEN;
             default -> throw new IllegalArgumentException("Slot " + slot + " does not correspond to status");
         };
-    }
-
-    private static class StatusInventoryHolder extends BuildWorldHolder {
-
-        public StatusInventoryHolder(BuildWorld buildWorld, Player player) {
-            super(buildWorld, 27, BuildSystemPlugin.get().getMessages().getString("status_title", player, Map.entry("%world%", formatWorldName(buildWorld))));
-        }
-
-        private static String formatWorldName(BuildWorld buildWorld) {
-            String worldName = buildWorld.getName();
-            if (worldName.length() > 17) {
-                worldName = worldName.substring(0, 14) + "...";
-            }
-            return worldName;
-        }
     }
 }

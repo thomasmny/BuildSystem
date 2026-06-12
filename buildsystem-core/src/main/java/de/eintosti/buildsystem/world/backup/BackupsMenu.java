@@ -1,0 +1,122 @@
+/*
+ * Copyright (c) 2018-2026, Thomas Meaney
+ * Copyright (c) contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+package de.eintosti.buildsystem.world.backup;
+
+import com.cryptomorin.xseries.XMaterial;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.backup.Backup;
+import de.eintosti.buildsystem.menu.Menu;
+import de.eintosti.buildsystem.util.StringUtils;
+import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
+public class BackupsMenu extends Menu {
+
+    private static final int FIRST_BACKUP_SLOT = 9;
+
+    private final BuildSystemPlugin plugin;
+    private final BackupService backupService;
+    private final BuildWorld buildWorld;
+    private final List<Backup> backups = new ArrayList<>();
+
+    public BackupsMenu(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
+        super(plugin.getMessages(), 36, plugin.getMessages().getString("backups_title", player));
+        this.plugin = plugin;
+        this.backupService = plugin.getBackupService();
+        this.buildWorld = buildWorld;
+    }
+
+    @Override
+    protected void populate(Player player) {
+        for (int i = 0; i <= 8; i++) {
+            InventoryUtils.addGlassPane(player, getInventory(), i);
+        }
+
+        getInventory().setItem(4, InventoryUtils.createItem(XMaterial.OAK_HANGING_SIGN,
+                messages.getString("backups_information_name", player),
+                messages.getStringList("backups_information_lore", player,
+                        Map.entry("%interval%", plugin.getConfigService().current().world().backup().autoBackup().interval() / 60),
+                        Map.entry("%remaining%", getDurationUntilBackup())
+                )
+        ));
+
+        for (int i = 27; i <= 35; i++) {
+            InventoryUtils.addGlassPane(player, getInventory(), i);
+        }
+
+        loadBackups(player);
+    }
+
+    /**
+     * Loads the {@link Backup} for the world and adds them to the inventory on completion.
+     *
+     * @param player The player to display the backups to
+     */
+    private void loadBackups(Player player) {
+        backupService.getProfile(buildWorld).listBackups().thenAcceptAsync(loaded -> {
+            backups.clear();
+            backups.addAll(loaded);
+
+            for (int i = 0; i < loaded.size(); i++) {
+                getInventory().setItem(FIRST_BACKUP_SLOT + i, InventoryUtils.createItem(XMaterial.GRASS_BLOCK,
+                        messages.getString("backups_backup_name", player,
+                                Map.entry("%timestamp%", StringUtils.formatTime(loaded.get(i).creationTime()))
+                        )
+                ));
+            }
+        });
+    }
+
+    private String getDurationUntilBackup() {
+        int timeUntilBackup = plugin.getConfigService().current().world().backup().autoBackup().interval();
+        int timeSinceBackup = buildWorld.getData().timeSinceBackup().get();
+
+        Date date = new Date((timeUntilBackup - timeSinceBackup) * 1000L);
+        DateFormat formatter = new SimpleDateFormat("mm:ss");
+        return formatter.format(date);
+    }
+
+    @Override
+    public void handleClick(InventoryClickEvent event) {
+        org.bukkit.inventory.ItemStack itemStack = event.getCurrentItem();
+        if (itemStack == null || itemStack.getType() == Material.AIR || !itemStack.hasItemMeta()) {
+            return;
+        }
+
+        event.setCancelled(true);
+        Player player = (Player) event.getWhoClicked();
+
+        int slot = event.getSlot();
+        if (slot >= FIRST_BACKUP_SLOT && slot < FIRST_BACKUP_SLOT + 18 && itemStack.getType() == XMaterial.GRASS_BLOCK.get()) {
+            Backup backup = backups.get(slot - FIRST_BACKUP_SLOT);
+            player.closeInventory();
+            new BackupsConfirmationMenu(plugin, backup, player).open(player);
+        }
+    }
+}

@@ -67,8 +67,8 @@ public class FolderContentInventory extends DisplayablesInventory {
     }
 
     @Override
-    protected Inventory createBaseInventoryPage(String inventoryTitle) {
-        return this.parentInventory.createBaseInventoryPage(inventoryTitle);
+    protected void addExtraItems(Inventory inventory, Player player) {
+        parentInventory.addExtraItems(inventory, player);
     }
 
     @Override
@@ -104,7 +104,7 @@ public class FolderContentInventory extends DisplayablesInventory {
 
     @Override
     protected void beginWorldCreation() {
-        new CreateInventory(plugin, this.requiredVisibility, this.folder).openInventory(this.player, CreateInventory.Page.PREDEFINED);
+        new CreateInventory(plugin, CreateInventory.Page.PREDEFINED, this.requiredVisibility, this.folder, this.player).open(this.player);
     }
 
     @Override
@@ -114,6 +114,6 @@ public class FolderContentInventory extends DisplayablesInventory {
 
     @Override
     protected void returnToPreviousInventory() {
-        this.parentInventory.openInventory();
+        this.parentInventory.open(this.player);
     }
 }

@@ -38,7 +38,6 @@ import de.eintosti.buildsystem.listener.EntityDamageListener;
 import de.eintosti.buildsystem.listener.EntitySpawnListener;
 import de.eintosti.buildsystem.listener.FoodLevelChangeListener;
 import de.eintosti.buildsystem.listener.InventoryCreativeListener;
-import de.eintosti.buildsystem.listener.InventoryListener;
 import de.eintosti.buildsystem.menu.MenuListener;
 import de.eintosti.buildsystem.listener.NavigatorListener;
 import de.eintosti.buildsystem.listener.PlayerChangedWorldListener;
@@ -60,7 +59,6 @@ import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
 import de.eintosti.buildsystem.player.settings.NoClipManager;
 import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.util.UpdateChecker;
-import de.eintosti.buildsystem.util.inventory.InventoryManager;
 import de.eintosti.buildsystem.world.SpawnManager;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.backup.BackupService;
@@ -95,7 +93,6 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     private ArmorStandManager armorStandManager;
     private CustomBlockManager customBlockManager;
-    private InventoryManager inventoryManager;
     private PlayerServiceImpl playerService;
     private NoClipManager noClipManager;
     private SettingsManager settingsManager;
@@ -202,7 +199,6 @@ public class BuildSystemPlugin extends JavaPlugin {
     private void initClasses() {
         this.customizableIcons = new CustomizableIcons(this);
 
-        this.inventoryManager = new InventoryManager();
         this.armorStandManager = new ArmorStandManager();
         this.customBlockManager = new CustomBlockManager(this);
         (this.playerService = new PlayerServiceImpl(this)).init();
@@ -222,7 +218,6 @@ public class BuildSystemPlugin extends JavaPlugin {
         new EntitySpawnListener(this);
         new FoodLevelChangeListener(this);
         new InventoryCreativeListener(this);
-        new InventoryListener(this);
         getServer().getPluginManager().registerEvents(new MenuListener(), this);
         new NavigatorListener(this);
         new PlayerChangedWorldListener(this);
@@ -372,10 +367,6 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     public CustomBlockManager getCustomBlockManager() {
         return customBlockManager;
-    }
-
-    public InventoryManager getInventoryManager() {
-        return inventoryManager;
     }
 
     public PlayerServiceImpl getPlayerService() {

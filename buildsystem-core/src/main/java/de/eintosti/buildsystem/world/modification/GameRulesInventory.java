@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package de.eintosti.buildsystem.world.modification;
 
 import com.cryptomorin.xseries.XMaterial;
@@ -23,10 +22,8 @@ import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
-import de.eintosti.buildsystem.util.inventory.InventoryManager;
+import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
-import de.eintosti.buildsystem.util.inventory.PaginatedInventory;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -36,7 +33,6 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -45,34 +41,28 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class GameRulesInventory extends PaginatedInventory {
+public class GameRulesInventory extends PaginatedMenu {
 
     private static final int[] SLOTS = {11, 12, 13, 14, 15, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33};
+    private static final int ITEMS_PER_PAGE = SLOTS.length;
 
     private final BuildSystemPlugin plugin;
-    private final InventoryManager inventoryManager;
+    private final BuildWorld buildWorld;
 
-    private int numGameRules = 0;
-
-    public GameRulesInventory(BuildSystemPlugin plugin) {
+    public GameRulesInventory(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
+        super(plugin.getMessages(), 45, plugin.getMessages().getString("worldeditor_gamerules_title", player));
         this.plugin = plugin;
-        this.inventoryManager = plugin.getInventoryManager();
+        this.buildWorld = buildWorld;
     }
 
-    public void openInventory(Player player, BuildWorld buildWorld) {
-        Inventory inventory = getInventory(buildWorld, player);
-        this.inventoryManager.registerInventoryHandler(inventory, this);
-        player.openInventory(inventory);
+    @Override
+    protected int totalItems() {
+        World world = buildWorld.getWorld();
+        return world != null ? world.getGameRules().length : 0;
     }
 
-    public Inventory getInventory(BuildWorld buildWorld, Player player) {
-        addGameRules(buildWorld, player);
-        Inventory inventory = inventories[getInvIndex(player)];
-        fillGuiWithGlass(player, inventory);
-        return inventory;
-    }
-
-    public void addGameRules(BuildWorld buildWorld, Player player) {
+    @Override
+    protected void populate(Player player) {
         World world = buildWorld.getWorld();
         if (world == null) {
             player.closeInventory();
@@ -80,32 +70,32 @@ public class GameRulesInventory extends PaginatedInventory {
             return;
         }
 
-        this.numGameRules = world.getGameRules().length;
-        int numPages = calculateNumPages(this.numGameRules, SLOTS.length);
-        inventories = new Inventory[numPages];
-        Inventory inventory = createInventory(buildWorld, player);
-
-        int index = 0;
-        inventories[index] = inventory;
-
-        int columnGameRule = 0, maxColumnGameRule = 14;
-        for (String gameRuleName : world.getGameRules()) {
-            addGameRuleItem(inventory, SLOTS[columnGameRule++], world, gameRuleName, player);
-
-            if (columnGameRule > maxColumnGameRule) {
-                columnGameRule = 0;
-                inventory = createInventory(buildWorld, player);
-                inventories[++index] = inventory;
+        for (int i = 0; i < 45; i++) {
+            if (!isValidSlot(i)) {
+                InventoryUtils.addGlassPane(player, getInventory(), i);
             }
+        }
+
+        if (totalPages(ITEMS_PER_PAGE) > 1 && page() > 0) {
+            getInventory().setItem(36, InventoryUtils.createSkull(messages.getString("gui_previous_page", player), Profileable.detect("f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2")));
+        } else {
+            InventoryUtils.addGlassPane(player, getInventory(), 36);
+        }
+
+        if (totalPages(ITEMS_PER_PAGE) > 1 && page() < totalPages(ITEMS_PER_PAGE) - 1) {
+            getInventory().setItem(44, InventoryUtils.createSkull(messages.getString("gui_next_page", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158")));
+        } else {
+            InventoryUtils.addGlassPane(player, getInventory(), 44);
+        }
+
+        String[] allGameRules = world.getGameRules();
+        int startIndex = page() * ITEMS_PER_PAGE;
+        for (int i = 0; i < SLOTS.length && startIndex + i < allGameRules.length; i++) {
+            addGameRuleItem(SLOTS[i], world, allGameRules[startIndex + i], player);
         }
     }
 
-    @Contract("_, _ -> new")
-    private Inventory createInventory(BuildWorld buildWorld, Player player) {
-        return new GameRulesInventoryHolder(buildWorld, player).getInventory();
-    }
-
-    private void addGameRuleItem(Inventory inventory, int slot, World world, String gameRuleName, Player player) {
+    private void addGameRuleItem(int slot, World world, String gameRuleName, Player player) {
         GameRule<?> gameRule = GameRule.getByName(gameRuleName);
         if (gameRule == null) {
             plugin.getLogger().severe("GameRule '" + gameRuleName + "' does not exist in world '" + world.getName() + "'.");
@@ -120,43 +110,21 @@ public class GameRulesInventory extends PaginatedInventory {
         itemMeta.addItemFlags(ItemFlag.values());
         itemStack.setItemMeta(itemMeta);
 
-        inventory.setItem(slot, itemStack);
+        getInventory().setItem(slot, itemStack);
     }
 
     private List<String> getLore(World world, GameRule<?> gameRule, Player player) {
         List<String> lore;
         if (isOfType(gameRule, Boolean.class)) {
             lore = isEnabled(world, gameRule)
-                    ? plugin.getMessages().getStringList("worldeditor_gamerules_boolean_enabled", player)
-                    : plugin.getMessages().getStringList("worldeditor_gamerules_boolean_disabled", player);
+                    ? messages.getStringList("worldeditor_gamerules_boolean_enabled", player)
+                    : messages.getStringList("worldeditor_gamerules_boolean_disabled", player);
         } else {
-            lore = plugin.getMessages().getStringList("worldeditor_gamerules_integer", player).stream()
+            lore = messages.getStringList("worldeditor_gamerules_integer", player).stream()
                     .map(line -> line.replace("%value%", world.getGameRuleValue(gameRule).toString()))
                     .toList();
         }
         return lore;
-    }
-
-    private void fillGuiWithGlass(Player player, Inventory inventory) {
-        for (int i = 0; i < inventory.getSize(); i++) {
-            if (!isValidSlot(i)) {
-                InventoryUtils.addGlassPane(player, inventory, i);
-            }
-        }
-
-        int invIndex = getInvIndex(player);
-
-        if (numGameRules > 1 && invIndex > 0) {
-            inventory.setItem(36, InventoryUtils.createSkull(plugin.getMessages().getString("gui_previous_page", player), Profileable.detect("f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2")));
-        } else {
-            InventoryUtils.addGlassPane(player, inventory, 36);
-        }
-
-        if (numGameRules > 1 && invIndex < (numGameRules - 1)) {
-            inventory.setItem(44, InventoryUtils.createSkull(plugin.getMessages().getString("gui_next_page", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158")));
-        } else {
-            InventoryUtils.addGlassPane(player, inventory, 44);
-        }
     }
 
     public boolean isValidSlot(int slot) {
@@ -164,11 +132,7 @@ public class GameRulesInventory extends PaginatedInventory {
     }
 
     @Override
-    public void onClick(InventoryClickEvent event) {
-        if (!(event.getInventory().getHolder() instanceof GameRulesInventoryHolder holder)) {
-            return;
-        }
-
+    public void handleClick(InventoryClickEvent event) {
         ItemStack itemStack = event.getCurrentItem();
         if (itemStack == null || itemStack.getType() == Material.AIR || !itemStack.hasItemMeta()) {
             return;
@@ -176,38 +140,40 @@ public class GameRulesInventory extends PaginatedInventory {
 
         event.setCancelled(true);
         Player player = (Player) event.getWhoClicked();
-        BuildWorld buildWorld = holder.getBuildWorld();
 
         switch (XMaterial.matchXMaterial(event.getCurrentItem())) {
             case PLAYER_HEAD:
                 boolean pageChanged = false;
                 int slot = event.getSlot();
                 if (slot == 36) {
-                    pageChanged = decrementInv(player, this.numGameRules, SLOTS.length);
+                    pageChanged = previousPage(player, ITEMS_PER_PAGE);
                 } else if (slot == 44) {
-                    pageChanged = incrementInv(player, this.numGameRules, SLOTS.length);
+                    pageChanged = nextPage(player, ITEMS_PER_PAGE);
                 }
                 if (!pageChanged) {
                     return;
                 }
-                break;
+                populate(player);
+                return;
 
             case FILLED_MAP:
             case MAP:
                 XSound.ENTITY_CHICKEN_EGG.play(player);
                 modifyGameRule(event, buildWorld.getWorld());
-                break;
+                populate(player);
+                return;
 
             default:
                 XSound.BLOCK_CHEST_OPEN.play(player);
-                new EditInventory(plugin).openInventory(player, buildWorld);
-                return;
+                new EditInventory(plugin, buildWorld, player).open(player);
         }
-
-        openInventory(player, buildWorld);
     }
 
-    private void modifyGameRule(InventoryClickEvent event, World world) {
+    private void modifyGameRule(InventoryClickEvent event, @Nullable World world) {
+        if (world == null) {
+            return;
+        }
+
         int slot = event.getSlot();
         if (!isValidSlot(slot)) {
             return;
@@ -256,6 +222,7 @@ public class GameRulesInventory extends PaginatedInventory {
      */
     @SuppressWarnings("unchecked")
     @Nullable
+    @Contract("_, _ -> _")
     private static <T> GameRule<T> castRule(GameRule<?> rule, Class<T> type) {
         return type.equals(rule.getType()) ? (GameRule<T>) rule : null;
     }
@@ -287,12 +254,5 @@ public class GameRulesInventory extends PaginatedInventory {
             return Boolean.TRUE.equals(world.getGameRuleValue(booleanGameRule));
         }
         return true;
-    }
-
-    private static class GameRulesInventoryHolder extends BuildWorldHolder {
-
-        public GameRulesInventoryHolder(BuildWorld buildWorld, Player player) {
-            super(buildWorld, 45, BuildSystemPlugin.get().getMessages().getString("worldeditor_gamerules_title", player));
-        }
     }
 }
