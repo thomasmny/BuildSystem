@@ -43,7 +43,7 @@ public class CustomBlockInventory extends Menu {
     protected void populate(Player player) {
         int[] glassSlots = {0, 8, 9, 17, 18, 26, 27, 35, 36, 44};
         for (int i : glassSlots) {
-            InventoryUtils.addGlassPane(player, getInventory(), i);
+            plugin.getMenuItems().addGlassPane(player, getInventory(), i);
         }
 
         setCustomBlock(player, 1, CustomBlock.FULL_OAK_BARCH);

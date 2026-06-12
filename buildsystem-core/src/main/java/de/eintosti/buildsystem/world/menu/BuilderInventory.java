@@ -71,10 +71,10 @@ public class BuilderInventory extends PaginatedMenu {
         Inventory inv = getInventory();
 
         for (int i = 0; i <= 8; i++) {
-            InventoryUtils.addGlassPane(player, inv, i);
+            plugin.getMenuItems().addGlassPane(player, inv, i);
         }
         for (int i = 18; i <= 26; i++) {
-            InventoryUtils.addGlassPane(player, inv, i);
+            plugin.getMenuItems().addGlassPane(player, inv, i);
         }
 
         addCreatorInfoItem(inv, buildWorld.getBuilders(), player);
@@ -85,7 +85,7 @@ public class BuilderInventory extends PaginatedMenu {
 
         // Clear builder slots from previous state
         for (int i = 9; i <= 17; i++) {
-            InventoryUtils.addGlassPane(player, inv, i);
+            plugin.getMenuItems().addGlassPane(player, inv, i);
         }
 
         Collection<Builder> allBuilders = buildWorld.getBuilders().getAllBuilders();
@@ -119,7 +119,7 @@ public class BuilderInventory extends PaginatedMenu {
         if (buildWorld.getBuilders().isCreator(player) || player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)) {
             builderAddItem = InventoryUtils.createSkull(messages.getString("worldeditor_builders_add_builder_item", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716"));
         } else {
-            builderAddItem = InventoryUtils.getColoredGlassPane(player).parseItem();
+            builderAddItem = plugin.getMenuItems().getColoredGlassPane(player).parseItem();
         }
         inventory.setItem(22, builderAddItem);
     }

@@ -98,7 +98,7 @@ public class NavigatorListener implements Listener {
             return;
         }
 
-        if (InventoryUtils.isNavigator(itemStack)) {
+        if (plugin.getMenuItems().isNavigator(itemStack)) {
             event.setCancelled(true);
             if (!player.hasPermission("buildsystem.navigator.item")) {
                 plugin.getMessages().sendPermissionError(player);
@@ -127,7 +127,7 @@ public class NavigatorListener implements Listener {
                 summonNewNavigator(player);
                 String findItemName = plugin.getMessages().getString("navigator_item", player);
                 ItemStack replaceItem = InventoryUtils.createItem(XMaterial.BARRIER, plugin.getMessages().getString("barrier_item", player));
-                InventoryUtils.replaceItem(player, findItemName, plugin.getConfigService().current().settings().navigator().item(), replaceItem);
+                plugin.getMenuItems().replaceItem(player, findItemName, plugin.getConfigService().current().settings().navigator().item(), replaceItem);
             }
         }
     }

@@ -26,7 +26,6 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.CachedValues;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.menu.InventoryUtils;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -158,11 +157,11 @@ public class NavigatorService {
     public void giveNavigator(Player player) {
         if (!plugin.getConfigService().current().settings().navigator().giveItemOnJoin()
                 || !player.hasPermission("buildsystem.navigator.item")
-                || InventoryUtils.hasNavigator(player)) {
+                || plugin.getMenuItems().hasNavigator(player)) {
             return;
         }
 
-        ItemStack navigatorItem = InventoryUtils.createNavigatorItem(player);
+        ItemStack navigatorItem = plugin.getMenuItems().createNavigatorItem(player);
         PlayerInventory playerInventory = player.getInventory();
         ItemStack slot8 = playerInventory.getItem(8);
 
@@ -184,7 +183,7 @@ public class NavigatorService {
 
         XSound.ENTITY_ITEM_BREAK.play(player);
         displayActionBarMessage(player, "");
-        InventoryUtils.replaceItem(player, plugin.getMessages().getString("barrier_item", player), XMaterial.BARRIER, InventoryUtils.createNavigatorItem(player));
+        plugin.getMenuItems().replaceItem(player, plugin.getMessages().getString("barrier_item", player), XMaterial.BARRIER, plugin.getMenuItems().createNavigatorItem(player));
 
         CachedValues cachedValues = buildPlayer.getCachedValues();
         cachedValues.resetWalkSpeedIfPresent(player);

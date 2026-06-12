@@ -126,7 +126,7 @@ public abstract class DisplayablesInventory extends PaginatedMenu {
         this.cachedDisplayables = collectDisplayables();
         Inventory inv = getInventory();
 
-        InventoryUtils.fillWithGlass(inv, player);
+        plugin.getMenuItems().fillWithGlass(inv, player);
         addWorldSortItem(inv);
         addWorldFilterItem(inv);
         addExtraItems(inv, player);
@@ -373,8 +373,8 @@ public abstract class DisplayablesInventory extends PaginatedMenu {
         }
 
         PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
-        String displayableType = pdc.get(InventoryUtils.DISPLAYABLE_TYPE_KEY, PersistentDataType.STRING);
-        String displayableName = pdc.get(InventoryUtils.DISPLAYABLE_NAME_KEY, PersistentDataType.STRING);
+        String displayableType = pdc.get(plugin.getMenuItems().displayableTypeKey, PersistentDataType.STRING);
+        String displayableName = pdc.get(plugin.getMenuItems().displayableNameKey, PersistentDataType.STRING);
         if (displayableType == null || displayableName == null) {
             return;
         }

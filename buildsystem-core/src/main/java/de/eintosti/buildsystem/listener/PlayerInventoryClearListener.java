@@ -21,7 +21,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
 import de.eintosti.buildsystem.player.settings.SettingsService;
-import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.menu.MenuItems;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -33,9 +33,11 @@ import org.jspecify.annotations.NullMarked;
 public class PlayerInventoryClearListener implements Listener {
 
     private final SettingsService settingsManager;
+    private final MenuItems menuItems;
 
     public PlayerInventoryClearListener(BuildSystemPlugin plugin) {
         this.settingsManager = plugin.getSettingsService();
+        this.menuItems = plugin.getMenuItems();
     }
 
     @EventHandler
@@ -47,7 +49,7 @@ public class PlayerInventoryClearListener implements Listener {
         }
 
         PlayerInventory playerInventory = player.getInventory();
-        ItemStack navigatorItem = InventoryUtils.createNavigatorItem(player);
+        ItemStack navigatorItem = menuItems.createNavigatorItem(player);
         event.getNavigatorSlots().forEach(slot -> playerInventory.setItem(slot, navigatorItem));
     }
 }

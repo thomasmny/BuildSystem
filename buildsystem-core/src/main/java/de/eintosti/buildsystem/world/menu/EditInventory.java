@@ -132,7 +132,7 @@ public class EditInventory extends Menu {
     }
 
     private void fillGuiWithGlass(Player player, Inventory inventory) {
-        IntStream.range(0, inventory.getSize()).forEach(i -> InventoryUtils.addGlassPane(player, inventory, i));
+        IntStream.range(0, inventory.getSize()).forEach(i -> plugin.getMenuItems().addGlassPane(player, inventory, i));
     }
 
     private void addBuildWorldInfoItem(Player player, Inventory inventory) {
@@ -141,7 +141,7 @@ public class EditInventory extends Menu {
         XMaterial material = buildWorld.getData().material().get();
 
         if (material == XMaterial.PLAYER_HEAD) {
-            InventoryUtils.addWorldItem(inventory, 4, buildWorld, displayName, new ArrayList<>());
+            plugin.getMenuItems().addWorldItem(inventory, 4, buildWorld, displayName, new ArrayList<>());
         } else {
             inventory.setItem(4, InventoryUtils.createItem(material, displayName));
         }

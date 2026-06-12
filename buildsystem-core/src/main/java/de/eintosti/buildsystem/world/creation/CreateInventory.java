@@ -72,10 +72,10 @@ public class CreateInventory extends PaginatedMenu {
     @Override
     protected void populate(Player player) {
         for (int i = 0; i <= 28; i++) {
-            InventoryUtils.addGlassPane(player, getInventory(), i);
+            plugin.getMenuItems().addGlassPane(player, getInventory(), i);
         }
         for (int i = 34; i <= 44; i++) {
-            InventoryUtils.addGlassPane(player, getInventory(), i);
+            plugin.getMenuItems().addGlassPane(player, getInventory(), i);
         }
 
         addPageItem(Page.PREDEFINED, InventoryUtils.createSkull(messages.getString("create_predefined_worlds", player), Profileable.detect("2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78")));
@@ -116,10 +116,10 @@ public class CreateInventory extends PaginatedMenu {
     }
 
     private void populateGenerator(Player player) {
-        InventoryUtils.addGlassPane(player, getInventory(), 29);
-        InventoryUtils.addGlassPane(player, getInventory(), 30);
-        InventoryUtils.addGlassPane(player, getInventory(), 32);
-        InventoryUtils.addGlassPane(player, getInventory(), 33);
+        plugin.getMenuItems().addGlassPane(player, getInventory(), 29);
+        plugin.getMenuItems().addGlassPane(player, getInventory(), 30);
+        plugin.getMenuItems().addGlassPane(player, getInventory(), 32);
+        plugin.getMenuItems().addGlassPane(player, getInventory(), 33);
         getInventory().setItem(31, InventoryUtils.createSkull(messages.getString("create_generators_create_world", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716")));
     }
 
@@ -134,7 +134,7 @@ public class CreateInventory extends PaginatedMenu {
         this.numTemplates = templateFiles != null ? templateFiles.length : 0;
 
         for (int i = 29; i <= 33; i++) {
-            InventoryUtils.addGlassPane(player, getInventory(), i);
+            plugin.getMenuItems().addGlassPane(player, getInventory(), i);
         }
 
         if (numTemplates == 0) {

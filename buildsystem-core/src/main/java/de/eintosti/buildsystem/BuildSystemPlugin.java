@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.migration.ConfigMigrationManager;
 import de.eintosti.buildsystem.integration.Integrations;
 import de.eintosti.buildsystem.listener.ListenerRegistrar;
+import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
@@ -71,6 +72,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     private WorldServiceImpl worldService;
     private BackupService backupService;
     private CustomizableIcons customizableIcons;
+    private MenuItems menuItems;
 
     private UpdateChecker updateChecker;
 
@@ -170,6 +172,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         this.backupService = new BackupService(this);
         this.settingsService = new SettingsService(this);
         this.spawnService = new SpawnService(this);
+        this.menuItems = new MenuItems(this, configService, messages, settingsService);
     }
 
     private void registerStats() {
@@ -311,5 +314,9 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     public CustomizableIcons getCustomizableIcons() {
         return customizableIcons;
+    }
+
+    public MenuItems getMenuItems() {
+        return menuItems;
     }
 }

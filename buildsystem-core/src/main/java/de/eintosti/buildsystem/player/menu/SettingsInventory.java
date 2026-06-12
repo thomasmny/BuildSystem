@@ -55,7 +55,7 @@ public class SettingsInventory extends Menu {
     protected void populate(Player player) {
         Inventory inv = getInventory();
         for (int i = 0; i <= 44; i++) {
-            InventoryUtils.addGlassPane(player, inv, i);
+            plugin.getMenuItems().addGlassPane(player, inv, i);
         }
 
         Settings settings = settingsManager.getSettings(player);

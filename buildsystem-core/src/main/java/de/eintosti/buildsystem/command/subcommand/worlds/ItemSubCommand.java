@@ -21,7 +21,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.i18n.Messages;
-import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.menu.MenuItems;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -29,9 +29,11 @@ import org.jspecify.annotations.NullMarked;
 public class ItemSubCommand implements SubCommand {
 
     private final Messages messages;
+    private final MenuItems menuItems;
 
     public ItemSubCommand(BuildSystemPlugin plugin) {
         this.messages = plugin.getMessages();
+        this.menuItems = plugin.getMenuItems();
     }
 
     @Override
@@ -41,7 +43,7 @@ public class ItemSubCommand implements SubCommand {
             return;
         }
 
-        player.getInventory().addItem(InventoryUtils.createNavigatorItem(player));
+        player.getInventory().addItem(menuItems.createNavigatorItem(player));
         messages.sendMessage(player, "worlds_item_receive");
     }
 

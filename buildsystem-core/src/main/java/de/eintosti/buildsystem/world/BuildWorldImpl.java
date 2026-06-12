@@ -31,7 +31,6 @@ import de.eintosti.buildsystem.api.world.util.WorldPermissions;
 import de.eintosti.buildsystem.api.world.util.WorldTeleporter;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.i18n.Messages;
-import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.world.builder.BuildersImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
@@ -228,7 +227,7 @@ public final class BuildWorldImpl implements BuildWorld {
     @Override
     public void addToInventory(Inventory inventory, int slot, Player player) {
         if (getIcon() == XMaterial.PLAYER_HEAD) {
-            InventoryUtils.addWorldItem(inventory, slot, this, getDisplayName(player), getLore(player));
+            plugin.getMenuItems().addWorldItem(inventory, slot, this, getDisplayName(player), getLore(player));
             return;
         }
         BuildWorld.super.addToInventory(inventory, slot, player);

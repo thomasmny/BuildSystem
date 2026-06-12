@@ -26,7 +26,6 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.world.menu.EditInventory;
 import java.util.Map;
 import org.bukkit.ChatColor;
@@ -64,10 +63,10 @@ public class StatusInventory extends Menu {
     @Override
     protected void populate(Player player) {
         for (int i = 0; i <= 9; i++) {
-            InventoryUtils.addGlassPane(player, getInventory(), i);
+            plugin.getMenuItems().addGlassPane(player, getInventory(), i);
         }
         for (int i = 17; i <= 26; i++) {
-            InventoryUtils.addGlassPane(player, getInventory(), i);
+            plugin.getMenuItems().addGlassPane(player, getInventory(), i);
         }
 
         addStatusItem(player, 10, BuildWorldStatus.NOT_STARTED);

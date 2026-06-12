@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Function;
-import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -51,10 +50,20 @@ public final class Messages {
     private final BuildSystemPlugin plugin;
     private final ConfigService configService;
     private volatile Map<String, String> messages = Map.of();
+    private volatile @Nullable TextResolver placeholderResolver;
 
     public Messages(BuildSystemPlugin plugin, ConfigService configService) {
         this.plugin = plugin;
         this.configService = configService;
+    }
+
+    /**
+     * Registers a resolver applied to every message after BuildSystem's own placeholder substitution, or {@code null} to disable external expansion.
+     *
+     * @param resolver The resolver, or {@code null} to clear
+     */
+    public void setPlaceholderResolver(@Nullable TextResolver resolver) {
+        this.placeholderResolver = resolver;
     }
 
     public void load() {
@@ -119,7 +128,6 @@ public final class Messages {
     private void checkIfKeyPresent(String key) {
         if (!messages.containsKey(key)) {
             plugin.getLogger().warning("Could not find message with key: " + key);
-            load();
         }
     }
 
@@ -140,10 +148,24 @@ public final class Messages {
         checkIfKeyPresent(key);
         String message = messages.getOrDefault(key, "").replace("%prefix%", getPrefix());
         String result = Placeholders.apply(message, placeholders);
-        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null && sender instanceof Player player) {
-            result = PlaceholderAPI.setPlaceholders(player, result);
+        Player player = sender instanceof Player p ? p : null;
+        return ColorAPI.process(applyResolver(this.placeholderResolver, player, result));
+    }
+
+    /**
+     * Applies an external placeholder resolver, when one is registered and the audience is a player. Package-private and pure so the registration/clearing behavior is unit-testable
+     * without a live server.
+     *
+     * @param resolver The resolver, or {@code null}
+     * @param player   The player the text is for, or {@code null} for non-player audiences
+     * @param text     The text to expand
+     * @return The expanded text, or {@code text} unchanged when no resolver applies
+     */
+    static String applyResolver(@Nullable TextResolver resolver, @Nullable Player player, String text) {
+        if (resolver != null && player != null) {
+            return resolver.resolve(player, text);
         }
-        return ColorAPI.process(result);
+        return text;
     }
 
     @SafeVarargs
@@ -154,12 +176,10 @@ public final class Messages {
     @Unmodifiable
     public List<String> getStringList(String key, @Nullable Player player, Function<String, Entry<String, Object>[]> placeholders) {
         String message = messages.getOrDefault(key, "").replace("%prefix%", getPrefix());
-        boolean papiEnabled = Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null;
+        TextResolver resolver = this.placeholderResolver;
         return Arrays.stream(message.split("\n"))
                 .map(line -> Placeholders.apply(line, placeholders.apply(line)))
-                .map(line -> papiEnabled && player != null
-                        ? PlaceholderAPI.setPlaceholders(player, line)
-                        : line)
+                .map(line -> applyResolver(resolver, player, line))
                 .map(ColorAPI::process)
                 .toList();
     }

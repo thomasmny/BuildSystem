@@ -44,10 +44,10 @@ public class DesignInventory extends Menu {
     @Override
     protected void populate(Player player) {
         for (int i = 0; i <= 8; i++) {
-            InventoryUtils.addGlassPane(player, getInventory(), i);
+            plugin.getMenuItems().addGlassPane(player, getInventory(), i);
         }
         for (int i = 27; i <= 35; i++) {
-            InventoryUtils.addGlassPane(player, getInventory(), i);
+            plugin.getMenuItems().addGlassPane(player, getInventory(), i);
         }
 
         setItem(player, 10, XMaterial.RED_STAINED_GLASS, "design_red", DesignColor.RED);

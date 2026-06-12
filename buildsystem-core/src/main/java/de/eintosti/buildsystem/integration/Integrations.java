@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.integration;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.integration.luckperms.LuckPermsExpansion;
+import de.eintosti.buildsystem.integration.placeholderapi.PapiTextResolver;
 import de.eintosti.buildsystem.integration.placeholderapi.PlaceholderApiExpansion;
 import org.bukkit.plugin.PluginManager;
 import org.jspecify.annotations.NullMarked;
@@ -46,6 +47,7 @@ public final class Integrations {
         if (pluginManager.getPlugin("PlaceholderAPI") != null) {
             this.placeholderApi = new PlaceholderApiExpansion(plugin);
             this.placeholderApi.register();
+            plugin.getMessages().setPlaceholderResolver(new PapiTextResolver());
         }
 
         if (pluginManager.getPlugin("LuckPerms") != null) {
@@ -57,6 +59,7 @@ public final class Integrations {
     public void deactivate() {
         if (this.placeholderApi != null) {
             this.placeholderApi.unregister();
+            plugin.getMessages().setPlaceholderResolver(null);
         }
 
         if (this.luckPerms != null) {
