@@ -19,7 +19,8 @@ package de.eintosti.buildsystem.api.world;
 
 import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
-import de.eintosti.buildsystem.api.world.creation.BuildWorldCreator;
+import de.eintosti.buildsystem.api.world.creation.WorldBuilder;
+import de.eintosti.buildsystem.api.world.creation.WorldImporter;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import java.util.concurrent.CompletableFuture;
 import org.jspecify.annotations.NullMarked;
@@ -48,12 +49,30 @@ public interface WorldService {
     WorldStorage getWorldStorage();
 
     /**
-     * Creates a new {@link BuildWorldCreator} for the given name.
+     * Opens a {@link WorldBuilder} to generate a brand-new world with the given name.
+     *
+     * <pre>{@code
+     * BuildWorld world = worldService.newWorld("Lobby")
+     *         .type(BuildWorldType.NORMAL)
+     *         .creator(builder)
+     *         .build();
+     * }</pre>
      *
      * @param name The name of the world to create
-     * @return A new {@link BuildWorldCreator} instance for the specified world name
+     * @return A new {@link WorldBuilder} for the specified world name
+     * @since 3.1.0
      */
-    BuildWorldCreator createWorld(String name);
+    WorldBuilder newWorld(String name);
+
+    /**
+     * Opens a {@link WorldImporter} to adopt an existing world directory (located under the server's world container by
+     * the given name) as a {@link BuildWorld}.
+     *
+     * @param name The name of the existing world directory to import
+     * @return A new {@link WorldImporter} for the specified world name
+     * @since 3.1.0
+     */
+    WorldImporter importWorld(String name);
 
     /**
      * Unimport an existing {@link BuildWorld}. In comparison to {@link #deleteWorld(BuildWorld)}, unimporting a world

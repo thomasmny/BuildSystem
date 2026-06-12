@@ -25,6 +25,8 @@ import de.eintosti.buildsystem.api.exception.WorldNotFoundException;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.WorldService;
 import de.eintosti.buildsystem.api.world.builder.Builder;
+import de.eintosti.buildsystem.api.world.creation.WorldBuilder;
+import de.eintosti.buildsystem.api.world.creation.WorldImporter;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
@@ -91,8 +93,14 @@ public class WorldServiceImpl implements WorldService {
 
     @Override
     @Contract("_ -> new")
-    public BuildWorldCreatorImpl createWorld(String name) {
+    public WorldBuilder newWorld(String name) {
         return new BuildWorldCreatorImpl(plugin, name);
+    }
+
+    @Override
+    @Contract("_ -> new")
+    public WorldImporter importWorld(String name) {
+        return new BuildWorldCreatorImpl(plugin, name, true);
     }
 
     public void startWorldNameInput(
@@ -118,12 +126,17 @@ public class WorldServiceImpl implements WorldService {
             if (worldType == BuildWorldType.CUSTOM) {
                 startCustomGeneratorInput(player, worldName, template, privateWorld, folder);
             } else {
-                createWorld(worldName)
-                        .setType(worldType)
-                        .setTemplate(template)
-                        .setPrivate(privateWorld)
-                        .setFolder(folder)
-                        .createWorld(player);
+                BuildWorld world = newWorld(worldName)
+                        .type(worldType)
+                        .template(template)
+                        .privateWorld(privateWorld)
+                        .folder(folder)
+                        .creator(Builder.of(player))
+                        .notify(player)
+                        .build();
+                if (world != null) {
+                    world.getTeleporter().teleport(player);
+                }
             }
         });
     }
@@ -138,13 +151,18 @@ public class WorldServiceImpl implements WorldService {
                 return;
             }
 
-            createWorld(worldName)
-                    .setType(BuildWorldType.CUSTOM)
-                    .setTemplate(template)
-                    .setPrivate(privateWorld)
-                    .setCustomGenerator(customGenerator)
-                    .setFolder(folder)
-                    .createWorld(player);
+            BuildWorld world = newWorld(worldName)
+                    .type(BuildWorldType.CUSTOM)
+                    .template(template)
+                    .privateWorld(privateWorld)
+                    .customGenerator(customGenerator)
+                    .folder(folder)
+                    .creator(Builder.of(player))
+                    .notify(player)
+                    .build();
+            if (world != null) {
+                world.getTeleporter().teleport(player);
+            }
         });
     }
 
@@ -165,15 +183,16 @@ public class WorldServiceImpl implements WorldService {
             }
         }
 
-        BuildWorldCreatorImpl worldCreator = createWorld(worldName)
-                .setType(worldType)
-                .setCreator(creator)
-                .setCustomGenerator(
+        BuildWorldCreatorImpl worldCreator = new BuildWorldCreatorImpl(plugin, worldName, true);
+        worldCreator
+                .type(worldType)
+                .creator(creator)
+                .customGenerator(
                         customGenerator != null
                                 ? customGenerator
                                 : new CustomGeneratorImpl("BuildSystem", generatorData, null))
-                .setPrivate(false)
-                .setCreationDate(FileUtils.getDirectoryCreation(new File(Bukkit.getWorldContainer(), worldName)));
+                .privateWorld(false)
+                .creationDate(FileUtils.getDirectoryCreation(new File(Bukkit.getWorldContainer(), worldName)));
 
         if (worldCreator.isDataVersionTooHigh()) {
             String key = single ? "import" : "importall";
@@ -182,7 +201,13 @@ public class WorldServiceImpl implements WorldService {
             return false;
         }
 
-        worldCreator.importWorld(player, single);
+        BuildWorld world = worldCreator.build();
+        if (world == null) {
+            return false;
+        }
+        if (single) {
+            world.getTeleporter().teleport(player);
+        }
         return true;
     }
 

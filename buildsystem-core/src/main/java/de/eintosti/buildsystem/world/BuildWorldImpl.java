@@ -71,7 +71,7 @@ public final class BuildWorldImpl implements BuildWorld {
     public BuildWorldImpl(
             BuildSystemPlugin plugin,
             String name,
-            Builder creator,
+            @Nullable Builder creator,
             BuildWorldType worldType,
             long creation,
             boolean privateWorld,
