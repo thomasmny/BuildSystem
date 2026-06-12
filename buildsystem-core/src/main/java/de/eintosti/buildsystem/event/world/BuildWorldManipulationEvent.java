@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.listener.WorldManipulateListener;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
+import org.bukkit.event.HandlerList;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -40,6 +41,8 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public class BuildWorldManipulationEvent extends BuildWorldEvent implements Cancellable {
+
+    private static final HandlerList HANDLERS = new HandlerList();
 
     private final Cancellable parentEvent;
     private final Player player;
@@ -74,5 +77,14 @@ public class BuildWorldManipulationEvent extends BuildWorldEvent implements Canc
      */
     public Player getPlayer() {
         return player;
+    }
+
+    @Override
+    public HandlerList getHandlers() {
+        return HANDLERS;
+    }
+
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
     }
 }

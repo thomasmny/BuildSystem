@@ -33,6 +33,7 @@ tasks.withType<Javadoc> {
     opt.isLinkSource = true
     opt.isUse = true
     opt.keyWords()
+    opt.addBooleanOption("Xdoclint:all", true)
 }
 
 publishing {

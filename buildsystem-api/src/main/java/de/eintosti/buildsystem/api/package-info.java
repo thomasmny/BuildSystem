@@ -18,5 +18,15 @@
 
 /**
  * Main package for the {@link de.eintosti.buildsystem.api.BuildSystem} API interface.
+ *
+ * <h2>API stability and deprecation protocol</h2>
+ * <p>Public API is never removed or signature-changed without a deprecation cycle:</p>
+ * <ol>
+ *   <li>Mark with {@code @Deprecated(forRemoval = true, since = "&lt;version&gt;")} and add a
+ *       {@code @deprecated} Javadoc tag naming the replacement.</li>
+ *   <li>The deprecated member is kept until the maintainer explicitly designates a major version
+ *       for removal.</li>
+ *   <li>New additions must include Javadoc and a {@code @since} tag.</li>
+ * </ol>
  */
 package de.eintosti.buildsystem.api;
