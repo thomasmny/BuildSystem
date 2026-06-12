@@ -20,10 +20,8 @@ package de.eintosti.buildsystem.world.backup.storage;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
-import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.backup.BackupImpl;
-import de.eintosti.buildsystem.world.backup.BackupService;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
@@ -37,11 +35,11 @@ import java.security.Security;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.session.ClientSession;
@@ -55,13 +53,11 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class SftpBackupStorage implements BackupStorage {
+public class SftpBackupStorage extends AbstractBackupStorage {
 
     private static final Duration CONNECTION_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration AUTH_TIMEOUT = Duration.ofSeconds(5);
     private static final int BUFFER_SIZE = 8192;
-
-    private final BuildSystemPlugin plugin;
 
     private final String host;
     private final int port;
@@ -77,8 +73,8 @@ public class SftpBackupStorage implements BackupStorage {
     @Nullable
     private volatile SftpClient sftpClient;
 
-    public SftpBackupStorage(BuildSystemPlugin plugin, String host, int port, String username, String password, String remoteBasePath) {
-        this.plugin = plugin;
+    public SftpBackupStorage(BuildSystemPlugin plugin, Executor executor, String host, int port, String username, String password, String remoteBasePath) {
+        super(plugin, executor);
 
         this.host = host;
         this.port = validatePort(port);
@@ -89,6 +85,11 @@ public class SftpBackupStorage implements BackupStorage {
 
         Security.addProvider(new BouncyCastleProvider());
         establishConnection();
+    }
+
+    @Override
+    protected void onIoFailure() {
+        disconnectAll();
     }
 
     private static int validatePort(int port) {
@@ -107,37 +108,34 @@ public class SftpBackupStorage implements BackupStorage {
     }
 
     private synchronized void establishConnection() {
-        if (this.sshClient == null) {
+        if (sshClient == null) {
             initializeSshClient();
         }
 
         try {
-            this.clientSession = this.sshClient.connect(this.username, this.host, this.port)
+            clientSession = sshClient.connect(username, host, port)
                     .verify(CONNECTION_TIMEOUT.toMillis())
                     .getSession();
 
-            if (this.clientSession == null) {
+            if (clientSession == null) {
                 throw new IllegalStateException();
             }
 
-            this.clientSession.addPasswordIdentity(this.password);
-            this.clientSession.auth().verify(AUTH_TIMEOUT.toMillis());
+            clientSession.addPasswordIdentity(password);
+            clientSession.auth().verify(AUTH_TIMEOUT.toMillis());
 
-            this.sftpClient = SftpClientFactory.instance().createSftpClient(this.clientSession);
+            sftpClient = SftpClientFactory.instance().createSftpClient(clientSession);
             plugin.getLogger().info("SFTP connection established successfully.");
         } catch (Exception e) {
             disconnectAll();
-            plugin.getLogger().log(Level.SEVERE, "Failed to establish SFTP connection to " + this.host + ":" + this.port, e);
+            plugin.getLogger().log(Level.SEVERE, "Failed to establish SFTP connection to " + host + ":" + port, e);
         }
     }
 
     private void initializeSshClient() {
-        this.sshClient = SshClient.setUpDefaultClient();
-        this.sshClient.setSignatureFactories(Arrays.asList(
-                BuiltinSignatures.rsa,
-                BuiltinSignatures.ed25519
-        ));
-        this.sshClient.start();
+        sshClient = SshClient.setUpDefaultClient();
+        sshClient.setSignatureFactories(Arrays.asList(BuiltinSignatures.rsa, BuiltinSignatures.ed25519));
+        sshClient.start();
     }
 
     private SftpClient getSftpClient() throws IOException {
@@ -155,80 +153,112 @@ public class SftpBackupStorage implements BackupStorage {
     }
 
     private String getBackupDirectory(BuildWorld buildWorld) {
-        return this.remoteBasePath + buildWorld.getUniqueId() + "/";
+        return remoteBasePath + buildWorld.getUniqueId() + "/";
     }
 
     @Override
-    public synchronized CompletableFuture<List<Backup>> listBackups(BuildWorld buildWorld) {
-        return CompletableFuture.supplyAsync(() -> {
-            List<Backup> backups = new ArrayList<>(plugin.getConfigService().current().world().backup().maxBackupsPerWorld());
-            String backupDirectory = getBackupDirectory(buildWorld);
+    protected synchronized List<Backup> doListBackups(BuildWorld buildWorld) throws IOException {
+        List<Backup> backups = new ArrayList<>(plugin.getConfigService().current().world().backup().maxBackupsPerWorld());
+        String backupDirectory = getBackupDirectory(buildWorld);
 
-            try {
-                SftpClient sftp = getSftpClient();
-                createDirectoryIfNotExists(sftp, backupDirectory);
+        SftpClient sftp = getSftpClient();
+        createDirectoryIfNotExists(sftp, backupDirectory);
 
-                Iterable<DirEntry> files = sftp.readDir(backupDirectory);
-                for (SftpClient.DirEntry file : files) {
-                    if (!file.getFilename().endsWith(".zip")) {
-                        continue;
-                    }
-
-                    Attributes attributes = file.getAttributes();
-                    long timestamp = Optional.ofNullable(attributes.getCreateTime())
-                            .orElse(attributes.getModifyTime())
-                            .toMillis();
-
-                    backups.add(new BackupImpl(
-                            plugin.getBackupService().getProfile(buildWorld),
-                            timestamp,
-                            backupDirectory + file.getFilename()
-                    ));
-                }
-            } catch (IOException e) {
-                disconnectAll();
-                throw new RuntimeException("Failed to list SFTP backups", e);
+        for (DirEntry file : sftp.readDir(backupDirectory)) {
+            if (!file.getFilename().endsWith(".zip")) {
+                continue;
             }
+            Attributes attributes = file.getAttributes();
+            long timestamp = Optional.ofNullable(attributes.getCreateTime())
+                    .orElse(attributes.getModifyTime())
+                    .toMillis();
+            backups.add(new BackupImpl(
+                    plugin.getBackupService().getProfile(buildWorld),
+                    timestamp,
+                    backupDirectory + file.getFilename()
+            ));
+        }
 
-            backups.sort(Comparator.comparingLong(Backup::creationTime).reversed());
-            return backups;
-        }, BackupService.BACKUP_EXECUTOR);
+        return backups;
     }
 
     @Override
     public synchronized CompletableFuture<Backup> storeBackup(BuildWorld buildWorld) {
-        return CompletableFuture.supplyAsync(() -> {
+        return supply("store SFTP backup for " + buildWorld.getName(), () -> {
             long timestamp = System.currentTimeMillis();
-            String backupName = getBackupName(timestamp);
             String backupDirectory = getBackupDirectory(buildWorld);
-            String remotePath = backupDirectory + backupName;
+            String remotePath = backupDirectory + backupName(timestamp);
 
-            byte[] zipBytes;
-            try {
-                zipBytes = FileUtils.zipWorldToMemory(buildWorld);
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to zip world: " + buildWorld.getName());
+            byte[] zipBytes = FileUtils.zipWorldToMemory(buildWorld);
+
+            SftpClient sftp = getSftpClient();
+            createDirectoryIfNotExists(sftp, backupDirectory);
+
+            try (
+                    OutputStream out = sftp.write(remotePath);
+                    BufferedOutputStream bufferedOut = new BufferedOutputStream(out, BUFFER_SIZE)
+            ) {
+                bufferedOut.write(zipBytes);
+                bufferedOut.flush();
             }
 
-            try {
-                SftpClient sftp = getSftpClient();
-                createDirectoryIfNotExists(sftp, backupDirectory);
+            logDuration(buildWorld, timestamp);
+            return new BackupImpl(plugin.getBackupService().getProfile(buildWorld), timestamp, remotePath);
+        });
+    }
 
-                try (
-                        OutputStream out = sftp.write(remotePath);
-                        BufferedOutputStream bufferedOut = new BufferedOutputStream(out, BUFFER_SIZE)
-                ) {
-                    bufferedOut.write(zipBytes);
-                    bufferedOut.flush();
-                }
+    @Override
+    public synchronized CompletableFuture<File> downloadBackup(Backup backup) {
+        return supply("download SFTP backup " + backup.key(), () -> {
+            SftpClient sftp = getSftpClient();
+            Path target = tmpDownloadPath.resolve(UUID.randomUUID() + ".zip");
 
-                plugin.getLogger().info("Backed up world '%s'. Took %sms".formatted(buildWorld.getName(), (System.currentTimeMillis() - timestamp)));
-                return new BackupImpl(plugin.getBackupService().getProfile(buildWorld), timestamp, remotePath);
-            } catch (IOException e) {
-                disconnectAll();
-                throw new RuntimeException("Failed to upload SFTP backup", e);
+            try (
+                    InputStream in = sftp.read(backup.key());
+                    BufferedInputStream bufferedIn = new BufferedInputStream(in, BUFFER_SIZE);
+                    OutputStream out = Files.newOutputStream(target);
+                    BufferedOutputStream bufferedOut = new BufferedOutputStream(out, BUFFER_SIZE)
+            ) {
+                bufferedIn.transferTo(bufferedOut);
             }
-        }, BackupService.BACKUP_EXECUTOR);
+
+            return target.toFile();
+        });
+    }
+
+    @Override
+    protected void doDeleteBackup(Backup backup) throws IOException {
+        getSftpClient().remove(backup.key());
+    }
+
+    @Override
+    public void close() {
+        disconnectAll();
+        try {
+            FileUtils.deleteDirectory(tmpDownloadPath);
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to delete temporary download directory", e);
+        }
+    }
+
+    private void disconnectAll() {
+        closeQuietly(sftpClient);
+        sftpClient = null;
+        closeQuietly(clientSession);
+        clientSession = null;
+        closeQuietly(sshClient);
+        sshClient = null;
+    }
+
+    private void closeQuietly(@Nullable Closeable closeable) {
+        if (closeable == null) {
+            return;
+        }
+        try {
+            closeable.close();
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to close resource", e);
+        }
     }
 
     private void createDirectoryIfNotExists(SftpClient sftp, String path) throws IOException {
@@ -245,23 +275,18 @@ public class SftpBackupStorage implements BackupStorage {
         if (path == null || path.isEmpty() || path.equals("/")) {
             return;
         }
-
-        String normalizedPath = path.replace("\\", "/");
-        if (normalizedPath.endsWith("/")) {
-            normalizedPath = normalizedPath.substring(0, normalizedPath.length() - 1);
+        String normalized = path.replace("\\", "/");
+        if (normalized.endsWith("/")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
         }
-
-        if (directoryExists(sftp, normalizedPath)) {
+        if (directoryExists(sftp, normalized)) {
             return;
         }
-
-        int lastSeparator = normalizedPath.lastIndexOf('/');
+        int lastSeparator = normalized.lastIndexOf('/');
         if (lastSeparator > 0) {
-            String parentPath = normalizedPath.substring(0, lastSeparator);
-            createDirectoriesRecursively(sftp, parentPath);
+            createDirectoriesRecursively(sftp, normalized.substring(0, lastSeparator));
         }
-
-        sftp.mkdir(normalizedPath);
+        sftp.mkdir(normalized);
     }
 
     private boolean directoryExists(SftpClient sftp, String path) {
@@ -269,75 +294,6 @@ public class SftpBackupStorage implements BackupStorage {
             return sftp.stat(path).isDirectory();
         } catch (IOException e) {
             return false;
-        }
-    }
-
-    @Override
-    public synchronized CompletableFuture<File> downloadBackup(Backup backup) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                SftpClient sftp = getSftpClient();
-                Path target = tmpDownloadPath.resolve(UUID.randomUUID() + ".zip");
-
-                try (
-                        InputStream in = sftp.read(backup.key());
-                        BufferedInputStream bufferedIn = new BufferedInputStream(in, BUFFER_SIZE);
-                        OutputStream out = Files.newOutputStream(target);
-                        BufferedOutputStream bufferedOut = new BufferedOutputStream(out, BUFFER_SIZE)
-                ) {
-                    bufferedIn.transferTo(bufferedOut);
-                    return target.toFile();
-                }
-            } catch (IOException e) {
-                disconnectAll();
-                throw new RuntimeException("Failed to download SFTP backup: " + backup.key(), e);
-            }
-        }, BackupService.BACKUP_EXECUTOR);
-    }
-
-    @Override
-    public synchronized CompletableFuture<Void> deleteBackup(Backup backup) {
-        return CompletableFuture.runAsync(() -> {
-            try {
-                SftpClient sftp = getSftpClient();
-                sftp.remove(backup.key());
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to delete SFTP backup: " + backup.key(), e);
-            }
-        }, BackupService.BACKUP_EXECUTOR);
-    }
-
-    @Override
-    public void close() {
-        disconnectAll();
-
-        try {
-            FileUtils.deleteDirectory(this.tmpDownloadPath);
-        } catch (IOException e) {
-            plugin.getLogger().log(Level.WARNING, "Failed to delete temporary download directory", e);
-        }
-    }
-
-    private void disconnectAll() {
-        close(this.sshClient);
-        this.sshClient = null;
-
-        close(this.sftpClient);
-        this.sftpClient = null;
-
-        close(this.clientSession);
-        this.clientSession = null;
-    }
-
-    private void close(@Nullable Closeable closeable) {
-        if (closeable == null) {
-            return;
-        }
-
-        try {
-            closeable.close();
-        } catch (IOException e) {
-            plugin.getLogger().log(Level.WARNING, "Failed to close resource", e);
         }
     }
 }

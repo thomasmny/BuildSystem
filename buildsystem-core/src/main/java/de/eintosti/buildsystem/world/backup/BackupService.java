@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -40,10 +40,10 @@ import de.eintosti.buildsystem.world.backup.storage.SftpBackupStorage;
 @NullMarked
 public class BackupService {
 
-    public static final Executor BACKUP_EXECUTOR = Executors.newCachedThreadPool();
     private static final long UPDATE_PERIOD = Duration.ofSeconds(5).getSeconds();
 
     private final BuildSystemPlugin plugin;
+    private final ExecutorService executor;
     private BackupStorage backupStorage;
     private final WorldStorage worldStorage;
 
@@ -54,8 +54,9 @@ public class BackupService {
 
     public BackupService(BuildSystemPlugin plugin) {
         this.plugin = plugin;
+        this.executor = Executors.newCachedThreadPool();
         PluginConfig.World.Backup backupConfig = plugin.getConfigService().current().world().backup();
-        this.backupStorage = createStorage(plugin, backupConfig.storage());
+        this.backupStorage = createStorage(plugin, executor, backupConfig.storage());
         this.worldStorage = plugin.getWorldService().getWorldStorage();
 
         if (backupConfig.autoBackup().enabled()) {
@@ -63,11 +64,11 @@ public class BackupService {
         }
     }
 
-    private static BackupStorage createStorage(BuildSystemPlugin plugin, PluginConfig.World.Backup.StorageSettings settings) {
+    private static BackupStorage createStorage(BuildSystemPlugin plugin, ExecutorService executor, PluginConfig.World.Backup.StorageSettings settings) {
         return switch (settings) {
-            case PluginConfig.World.Backup.Local l -> new LocalBackupStorage(plugin);
-            case PluginConfig.World.Backup.Sftp s -> new SftpBackupStorage(plugin, s.host(), s.port(), s.username(), s.password(), s.path());
-            case PluginConfig.World.Backup.S3 s3 -> new S3BackupStorage(plugin, s3.url(), s3.accessKey(), s3.secretKey(), s3.region(), s3.bucket(), s3.path());
+            case PluginConfig.World.Backup.Local l -> new LocalBackupStorage(plugin, executor);
+            case PluginConfig.World.Backup.Sftp s -> new SftpBackupStorage(plugin, executor, s.host(), s.port(), s.username(), s.password(), s.path());
+            case PluginConfig.World.Backup.S3 s3 -> new S3BackupStorage(plugin, executor, s3.url(), s3.accessKey(), s3.secretKey(), s3.region(), s3.bucket(), s3.path());
         };
     }
 
@@ -83,7 +84,7 @@ public class BackupService {
         }
         this.backupStorage.close();
         PluginConfig.World.Backup backupConfig = plugin.getConfigService().current().world().backup();
-        this.backupStorage = createStorage(plugin, backupConfig.storage());
+        this.backupStorage = createStorage(plugin, executor, backupConfig.storage());
         if (backupConfig.autoBackup().enabled() && plugin.isEnabled()) {
             this.autoBackupTask = Bukkit.getScheduler().runTaskTimer(plugin, this::incrementTimeSinceBackup, UPDATE_PERIOD * 20, UPDATE_PERIOD * 20);
         }
@@ -91,6 +92,11 @@ public class BackupService {
 
     public BackupStorage getStorage() {
         return this.backupStorage;
+    }
+
+    public void close() {
+        this.backupStorage.close();
+        this.executor.shutdown();
     }
 
     /**

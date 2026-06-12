@@ -30,16 +30,6 @@ import org.jspecify.annotations.NullMarked;
 public interface BackupStorage {
 
     /**
-     * Generates a unique backup name based on a given timestamp.
-     *
-     * @param timestamp The timestamp to use for the backup name.
-     * @return A string representing the backup name (e.g., "1678886400000.zip").
-     */
-    default String getBackupName(long timestamp) {
-        return timestamp + ".zip";
-    }
-
-    /**
      * Lists all available {@link Backup}s for a specific {@link BuildWorld}.
      *
      * @param buildWorld The world for which to list backups
