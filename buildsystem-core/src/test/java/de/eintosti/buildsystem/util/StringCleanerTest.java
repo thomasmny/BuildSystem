@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
@@ -83,5 +84,26 @@ class StringCleanerTest {
     @Test
     void sanitize_trailingWhitespace_trimmed() {
         assertEquals("abc", StringCleaner.sanitize("  abc  ", NO_OP));
+    }
+
+    @Test
+    void isPathEscape_normalChild_returnsFalse() {
+        File base = new File("/srv/templates");
+        File child = new File("/srv/templates/myworld");
+        assertFalse(StringCleaner.isPathEscape(base, child));
+    }
+
+    @Test
+    void isPathEscape_traversalAttempt_returnsTrue() {
+        File base = new File("/srv/templates");
+        File child = new File("/srv/templates/../../../etc/passwd");
+        assertTrue(StringCleaner.isPathEscape(base, child));
+    }
+
+    @Test
+    void isPathEscape_slashPrefix_returnsTrue() {
+        File base = new File("/srv/templates");
+        File child = new File("/etc/passwd");
+        assertTrue(StringCleaner.isPathEscape(base, child));
     }
 }

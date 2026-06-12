@@ -17,6 +17,8 @@
  */
 package de.eintosti.buildsystem.util;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -46,5 +48,22 @@ public final class StringCleaner {
                 .replaceAll(configuredPattern, "")
                 .replace(" ", "_")
                 .trim();
+    }
+
+    /**
+     * Checks whether a resolved file escapes a given base directory.
+     *
+     * @param base     the expected parent directory
+     * @param resolved the file to check (must already be constructed from base + user input)
+     * @return {@code true} if the resolved file is NOT under base (i.e., an escape attempt)
+     */
+    public static boolean isPathEscape(File base, File resolved) {
+        try {
+            return !resolved.getCanonicalPath().startsWith(base.getCanonicalPath() + File.separator)
+                    && !resolved.getCanonicalFile().equals(base.getCanonicalFile());
+        } catch (IOException e) {
+            // If we can't resolve canonical paths, assume escape
+            return true;
+        }
     }
 }

@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.FileUtils;
+import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import java.io.File;
 import java.util.Map;
@@ -194,7 +195,13 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
             throw new IllegalStateException("Attempted to create a template world without a template name");
         }
 
+        File templatesDir = new File(plugin.getDataFolder(), TEMPLATES_DIRECTORY);
         File templateFile = new File(plugin.getDataFolder(), TEMPLATES_DIRECTORY + File.separator + template);
+        if (StringCleaner.isPathEscape(templatesDir, templateFile)) {
+            plugin.getMessages().sendMessage(player, "worlds_template_does_not_exist");
+            return false;
+        }
+
         if (!templateFile.exists()) {
             plugin.getMessages().sendMessage(player, "worlds_template_does_not_exist");
             return false;
