@@ -21,26 +21,23 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.world.menu.EditMenu;
 import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class EditSubCommand implements SubCommand {
-
-    private final BuildSystemPlugin plugin;
+public class EditSubCommand extends AbstractSubCommand {
 
     public EditSubCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
     }
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld =
-                GuardedWorldCommand.requireWorld(plugin, player, worldName, args, 2, getArgument(), "worlds_edit");
+        BuildWorld buildWorld = requireWorld(player, worldName, args, 2, "worlds_edit");
         if (buildWorld == null) {
             return;
         }
@@ -50,7 +47,7 @@ public class EditSubCommand implements SubCommand {
             new EditMenu(plugin, buildWorld, player).open(player);
         } else {
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-            player.sendTitle(" ", plugin.getMessages().getString("world_not_loaded", player), 5, 70, 20);
+            player.sendTitle(" ", messages.getString("world_not_loaded", player), 5, 70, 20);
         }
     }
 

@@ -20,34 +20,31 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class UnimportSubCommand implements SubCommand {
-
-    private final BuildSystemPlugin plugin;
+public class UnimportSubCommand extends AbstractSubCommand {
 
     public UnimportSubCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
     }
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld =
-                GuardedWorldCommand.requireWorld(plugin, player, worldName, args, 2, getArgument(), "worlds_unimport");
+        BuildWorld buildWorld = requireWorld(player, worldName, args, 2, "worlds_unimport");
         if (buildWorld == null) {
             return;
         }
 
         plugin.getWorldService()
                 .unimportWorld(buildWorld, true)
-                .thenRun(() -> plugin.getMessages()
-                        .sendMessage(player, "worlds_unimport_finished", Map.entry("%world%", buildWorld.getName())));
+                .thenRun(() -> messages.sendMessage(
+                        player, "worlds_unimport_finished", Map.entry("%world%", buildWorld.getName())));
     }
 
     @Override

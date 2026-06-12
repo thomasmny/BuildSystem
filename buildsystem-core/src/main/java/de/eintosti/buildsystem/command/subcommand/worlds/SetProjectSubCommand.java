@@ -21,8 +21,8 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.world.menu.EditMenu;
 import java.util.List;
@@ -31,18 +31,15 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class SetProjectSubCommand implements SubCommand {
-
-    private final BuildSystemPlugin plugin;
+public class SetProjectSubCommand extends AbstractSubCommand {
 
     public SetProjectSubCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
     }
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = GuardedWorldCommand.requireWorld(
-                plugin, player, worldName, args, 2, getArgument(), "worlds_setproject");
+        BuildWorld buildWorld = requireWorld(player, worldName, args, 2, "worlds_setproject");
         if (buildWorld == null) {
             return;
         }
@@ -56,8 +53,7 @@ public class SetProjectSubCommand implements SubCommand {
             plugin.getSettingsService().forceUpdateSidebar(buildWorld);
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
-            plugin.getMessages()
-                    .sendMessage(player, "worlds_setproject_set", Map.entry("%world%", buildWorld.getName()));
+            messages.sendMessage(player, "worlds_setproject_set", Map.entry("%world%", buildWorld.getName()));
 
             if (closeInventory) {
                 player.closeInventory();

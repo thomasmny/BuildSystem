@@ -21,8 +21,8 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.ArrayList;
@@ -34,12 +34,10 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class RemoveBuilderSubCommand implements SubCommand {
-
-    private final BuildSystemPlugin plugin;
+public class RemoveBuilderSubCommand extends AbstractSubCommand {
 
     public RemoveBuilderSubCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
     }
 
     @Override
@@ -49,19 +47,19 @@ public class RemoveBuilderSubCommand implements SubCommand {
                 .getBuildWorld(player.getWorld().getName());
         var permissions = WorldPermissionsImpl.of(plugin, buildWorld);
         if (!permissions.canPerformCommand(player, getArgument().getPermission())) {
-            plugin.getMessages().sendPermissionError(player);
+            messages.sendPermissionError(player);
             return;
         }
 
         if (buildWorld == null) {
-            plugin.getMessages().sendMessage(player, "worlds_removebuilder_unknown_world");
+            messages.sendMessage(player, "worlds_removebuilder_unknown_world");
             return;
         }
 
         switch (args.length) {
             case 1 -> getRemoveBuilderInput(player, buildWorld);
             case 2 -> removeBuilder(player, buildWorld, args[1]);
-            default -> plugin.getMessages().sendMessage(player, "worlds_removebuilder_usage");
+            default -> messages.sendMessage(player, "worlds_removebuilder_usage");
         }
     }
 
@@ -76,7 +74,7 @@ public class RemoveBuilderSubCommand implements SubCommand {
                 .lookupUniqueId(builderName)
                 .thenAccept(builderId -> Bukkit.getScheduler().runTask(plugin, () -> {
                     if (builderId == null) {
-                        plugin.getMessages().sendMessage(player, "worlds_removebuilder_player_not_found");
+                        messages.sendMessage(player, "worlds_removebuilder_player_not_found");
                         player.closeInventory();
                         return;
                     }
@@ -87,20 +85,20 @@ public class RemoveBuilderSubCommand implements SubCommand {
     private void applyRemove(Player player, BuildWorld buildWorld, UUID builderId, String builderName) {
         Builders builders = buildWorld.getBuilders();
         if (builderId.equals(player.getUniqueId()) && builders.isCreator(player)) {
-            plugin.getMessages().sendMessage(player, "worlds_removebuilder_not_yourself");
+            messages.sendMessage(player, "worlds_removebuilder_not_yourself");
             player.closeInventory();
             return;
         }
 
         if (!builders.isBuilder(builderId)) {
-            plugin.getMessages().sendMessage(player, "worlds_removebuilder_not_builder");
+            messages.sendMessage(player, "worlds_removebuilder_not_builder");
             player.closeInventory();
             return;
         }
 
         builders.removeBuilder(builderId);
         XSound.ENTITY_PLAYER_LEVELUP.play(player);
-        plugin.getMessages().sendMessage(player, "worlds_removebuilder_removed", Map.entry("%builder%", builderName));
+        messages.sendMessage(player, "worlds_removebuilder_removed", Map.entry("%builder%", builderName));
 
         player.closeInventory();
     }

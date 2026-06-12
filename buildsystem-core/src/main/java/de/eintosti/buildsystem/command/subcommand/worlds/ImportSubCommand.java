@@ -24,8 +24,8 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -37,48 +37,45 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class ImportSubCommand implements SubCommand {
-
-    private final BuildSystemPlugin plugin;
+public class ImportSubCommand extends AbstractSubCommand {
 
     public ImportSubCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
     }
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
         if (!hasPermission(player)) {
-            plugin.getMessages().sendPermissionError(player);
+            messages.sendPermissionError(player);
             return;
         }
 
         if (args.length < 2) {
-            plugin.getMessages().sendMessage(player, "worlds_import_usage");
+            messages.sendMessage(player, "worlds_import_usage");
             return;
         }
 
         WorldServiceImpl worldService = plugin.getWorldService();
         if (worldService.getWorldStorage().worldExists(worldName)) {
-            plugin.getMessages().sendMessage(player, "worlds_import_world_is_imported");
+            messages.sendMessage(player, "worlds_import_world_is_imported");
             return;
         }
 
         File worldFolder = new File(Bukkit.getWorldContainer(), args[1]);
         File levelFile = new File(worldFolder, "level.dat");
         if (!worldFolder.isDirectory() || !levelFile.exists()) {
-            plugin.getMessages().sendMessage(player, "worlds_import_unknown_world");
+            messages.sendMessage(player, "worlds_import_unknown_world");
             return;
         }
 
         String invalidChar = StringCleaner.firstInvalidChar(
                 worldName, plugin.getConfigService().current().world().invalidCharacters());
         if (invalidChar != null) {
-            plugin.getMessages()
-                    .sendMessage(
-                            player,
-                            "worlds_import_invalid_character",
-                            Map.entry("%world%", worldName),
-                            Map.entry("%char%", invalidChar));
+            messages.sendMessage(
+                    player,
+                    "worlds_import_invalid_character",
+                    Map.entry("%world%", worldName),
+                    Map.entry("%char%", invalidChar));
             return;
         }
 
@@ -93,7 +90,7 @@ public class ImportSubCommand implements SubCommand {
             if (parser.isArgument("g")) {
                 String generatorArg = parser.getValue("g");
                 if (generatorArg == null) {
-                    plugin.getMessages().sendMessage(player, "worlds_import_usage");
+                    messages.sendMessage(player, "worlds_import_usage");
                     return;
                 }
                 try {
@@ -108,7 +105,7 @@ public class ImportSubCommand implements SubCommand {
             if (parser.isArgument("c")) {
                 creatorArg = parser.getValue("c");
                 if (creatorArg == null) {
-                    plugin.getMessages().sendMessage(player, "worlds_import_usage");
+                    messages.sendMessage(player, "worlds_import_usage");
                     return;
                 }
             }
@@ -116,7 +113,7 @@ public class ImportSubCommand implements SubCommand {
             if (parser.isArgument("t")) {
                 String worldTypeArg = parser.getValue("t");
                 if (worldTypeArg == null) {
-                    plugin.getMessages().sendMessage(player, "worlds_import_usage");
+                    messages.sendMessage(player, "worlds_import_usage");
                     return;
                 }
                 try {
@@ -139,7 +136,7 @@ public class ImportSubCommand implements SubCommand {
                 .lookupUniqueId(creatorName)
                 .thenAccept(creatorId -> Bukkit.getScheduler().runTask(plugin, () -> {
                     if (creatorId == null) {
-                        plugin.getMessages().sendMessage(player, "worlds_import_player_not_found");
+                        messages.sendMessage(player, "worlds_import_player_not_found");
                         return;
                     }
                     startImport(
@@ -159,10 +156,10 @@ public class ImportSubCommand implements SubCommand {
             BuildWorldType worldType,
             Generator generator,
             String generatorName) {
-        plugin.getMessages().sendMessage(player, "worlds_import_started", Map.entry("%world%", worldName));
+        messages.sendMessage(player, "worlds_import_started", Map.entry("%world%", worldName));
         if (plugin.getWorldService()
                 .importWorld(player, worldName, creator, worldType, generator, generatorName, true)) {
-            plugin.getMessages().sendMessage(player, "worlds_import_finished");
+            messages.sendMessage(player, "worlds_import_finished");
         }
     }
 

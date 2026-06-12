@@ -119,8 +119,8 @@ public class WorldServiceImpl implements WorldService {
     }
 
     /**
-     * Assigns all {@link BuildWorld}s to their respective {@link Folder}s, dropping references to worlds that no
-     * longer exist.
+     * Assigns all {@link BuildWorld}s to their respective {@link Folder}s, dropping references to worlds that no longer
+     * exist.
      *
      * <p>Must be called after all folders and worlds have been loaded.
      */
@@ -133,8 +133,8 @@ public class WorldServiceImpl implements WorldService {
                         if (buildWorld == null) {
                             invalidWorlds.add(worldUUID);
                             plugin.getLogger()
-                                    .warning("World with UUID " + worldUUID
-                                            + " does not exist. Removing from folder: " + folder.getName());
+                                    .warning("World with UUID " + worldUUID + " does not exist. Removing from folder: "
+                                            + folder.getName());
                         }
                         return buildWorld;
                     })

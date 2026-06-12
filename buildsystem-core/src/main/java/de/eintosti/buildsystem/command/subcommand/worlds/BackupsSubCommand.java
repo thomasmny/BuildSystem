@@ -20,8 +20,8 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import de.eintosti.buildsystem.world.menu.BackupsMenu;
 import java.util.List;
@@ -31,12 +31,10 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class BackupsSubCommand implements SubCommand {
-
-    private final BuildSystemPlugin plugin;
+public class BackupsSubCommand extends AbstractSubCommand {
 
     public BackupsSubCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
     }
 
     @Override
@@ -46,12 +44,12 @@ public class BackupsSubCommand implements SubCommand {
                 .getBuildWorld(player.getWorld().getName());
         if (!WorldPermissionsImpl.of(plugin, buildWorld)
                 .canPerformCommand(player, getArgument().getPermission())) {
-            plugin.getMessages().sendPermissionError(player);
+            messages.sendPermissionError(player);
             return;
         }
 
         if (buildWorld == null) {
-            plugin.getMessages().sendMessage(player, "worlds_backup_world_not_imported");
+            messages.sendMessage(player, "worlds_backup_world_not_imported");
             return;
         }
 
@@ -63,7 +61,7 @@ public class BackupsSubCommand implements SubCommand {
             case 2 -> {
                 if (args[1].equalsIgnoreCase("create")) {
                     if (!player.hasPermission(getArgument().getPermission() + ".create")) {
-                        plugin.getMessages().sendPermissionError(player);
+                        messages.sendPermissionError(player);
                         return;
                     }
 
@@ -71,16 +69,14 @@ public class BackupsSubCommand implements SubCommand {
                     plugin.getBackupService()
                             .backup(
                                     buildWorld,
-                                    () -> plugin.getMessages()
-                                            .sendMessage(player, "worlds_backup_created", worldNamePlaceholder),
-                                    () -> plugin.getMessages()
-                                            .sendMessage(player, "worlds_backup_failed", worldNamePlaceholder));
+                                    () -> messages.sendMessage(player, "worlds_backup_created", worldNamePlaceholder),
+                                    () -> messages.sendMessage(player, "worlds_backup_failed", worldNamePlaceholder));
                 } else {
-                    plugin.getMessages().sendMessage(player, "worlds_backup_usage");
+                    messages.sendMessage(player, "worlds_backup_usage");
                 }
             }
             default -> {
-                plugin.getMessages().sendMessage(player, "worlds_backup_usage");
+                messages.sendMessage(player, "worlds_backup_usage");
             }
         }
     }

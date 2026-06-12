@@ -19,8 +19,8 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.Map;
 import org.bukkit.Location;
@@ -28,12 +28,10 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class SetSpawnSubCommand implements SubCommand {
-
-    private final BuildSystemPlugin plugin;
+public class SetSpawnSubCommand extends AbstractSubCommand {
 
     public SetSpawnSubCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
     }
 
     @Override
@@ -41,12 +39,12 @@ public class SetSpawnSubCommand implements SubCommand {
         BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld());
         if (!WorldPermissionsImpl.of(plugin, buildWorld)
                 .canPerformCommand(player, getArgument().getPermission())) {
-            plugin.getMessages().sendPermissionError(player);
+            messages.sendPermissionError(player);
             return;
         }
 
         if (buildWorld == null) {
-            plugin.getMessages().sendMessage(player, "worlds_setspawn_world_not_imported");
+            messages.sendMessage(player, "worlds_setspawn_world_not_imported");
             return;
         }
 
@@ -61,8 +59,7 @@ public class SetSpawnSubCommand implements SubCommand {
                                 playerLocation.getZ(),
                                 playerLocation.getYaw(),
                                 playerLocation.getPitch()));
-        plugin.getMessages()
-                .sendMessage(player, "worlds_setspawn_world_spawn_set", Map.entry("%world%", buildWorld.getName()));
+        messages.sendMessage(player, "worlds_setspawn_world_spawn_set", Map.entry("%world%", buildWorld.getName()));
     }
 
     @Override

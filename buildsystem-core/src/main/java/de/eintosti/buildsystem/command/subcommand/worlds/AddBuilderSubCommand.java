@@ -22,8 +22,8 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import de.eintosti.buildsystem.world.menu.BuilderMenu;
@@ -36,12 +36,10 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class AddBuilderSubCommand implements SubCommand {
-
-    private final BuildSystemPlugin plugin;
+public class AddBuilderSubCommand extends AbstractSubCommand {
 
     public AddBuilderSubCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
     }
 
     @Override
@@ -51,19 +49,19 @@ public class AddBuilderSubCommand implements SubCommand {
                 .getBuildWorld(player.getWorld().getName());
         var permissions = WorldPermissionsImpl.of(plugin, buildWorld);
         if (!permissions.canPerformCommand(player, getArgument().getPermission())) {
-            plugin.getMessages().sendPermissionError(player);
+            messages.sendPermissionError(player);
             return;
         }
 
         if (buildWorld == null) {
-            plugin.getMessages().sendMessage(player, "worlds_addbuilder_unknown_world");
+            messages.sendMessage(player, "worlds_addbuilder_unknown_world");
             return;
         }
 
         switch (args.length) {
             case 1 -> getAddBuilderInput(player, buildWorld, true);
             case 2 -> addBuilder(player, buildWorld, args[1], true);
-            default -> plugin.getMessages().sendMessage(player, "worlds_addbuilder_usage");
+            default -> messages.sendMessage(player, "worlds_addbuilder_usage");
         }
     }
 
@@ -84,7 +82,7 @@ public class AddBuilderSubCommand implements SubCommand {
                 .lookupUniqueId(builderName)
                 .thenAccept(builderId -> Bukkit.getScheduler().runTask(plugin, () -> {
                     if (builderId == null) {
-                        plugin.getMessages().sendMessage(player, "worlds_addbuilder_player_not_found");
+                        messages.sendMessage(player, "worlds_addbuilder_player_not_found");
                         player.closeInventory();
                         return;
                     }
@@ -107,20 +105,20 @@ public class AddBuilderSubCommand implements SubCommand {
             boolean closeInventory) {
         Builders builders = buildWorld.getBuilders();
         if (builderId.equals(player.getUniqueId()) && builders.isCreator(player)) {
-            plugin.getMessages().sendMessage(player, "worlds_addbuilder_already_creator");
+            messages.sendMessage(player, "worlds_addbuilder_already_creator");
             player.closeInventory();
             return;
         }
 
         if (builders.isBuilder(builderId)) {
-            plugin.getMessages().sendMessage(player, "worlds_addbuilder_already_added");
+            messages.sendMessage(player, "worlds_addbuilder_already_added");
             player.closeInventory();
             return;
         }
 
         builders.addBuilder(builder);
         XSound.ENTITY_PLAYER_LEVELUP.play(player);
-        plugin.getMessages().sendMessage(player, "worlds_addbuilder_added", Map.entry("%builder%", builderName));
+        messages.sendMessage(player, "worlds_addbuilder_added", Map.entry("%builder%", builderName));
 
         if (closeInventory) {
             player.closeInventory();

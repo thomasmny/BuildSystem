@@ -22,8 +22,8 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
 import java.util.List;
 import java.util.Map;
@@ -33,18 +33,15 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class SetCreatorSubCommand implements SubCommand {
-
-    private final BuildSystemPlugin plugin;
+public class SetCreatorSubCommand extends AbstractSubCommand {
 
     public SetCreatorSubCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
     }
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = GuardedWorldCommand.requireWorld(
-                plugin, player, worldName, args, 2, getArgument(), "worlds_setcreator");
+        BuildWorld buildWorld = requireWorld(player, worldName, args, 2, "worlds_setcreator");
         if (buildWorld == null) {
             return;
         }
@@ -60,7 +57,7 @@ public class SetCreatorSubCommand implements SubCommand {
                     .lookupUniqueId(creatorName)
                     .thenAccept(creatorId -> Bukkit.getScheduler().runTask(plugin, () -> {
                         if (creatorId == null) {
-                            plugin.getMessages().sendMessage(player, "worlds_setcreator_player_not_found");
+                            messages.sendMessage(player, "worlds_setcreator_player_not_found");
                             player.closeInventory();
                             return;
                         }
@@ -74,7 +71,7 @@ public class SetCreatorSubCommand implements SubCommand {
 
         plugin.getSettingsService().forceUpdateSidebar(buildWorld);
         XSound.ENTITY_PLAYER_LEVELUP.play(player);
-        plugin.getMessages().sendMessage(player, "worlds_setcreator_set", Map.entry("%world%", buildWorld.getName()));
+        messages.sendMessage(player, "worlds_setcreator_set", Map.entry("%world%", buildWorld.getName()));
         player.closeInventory();
     }
 

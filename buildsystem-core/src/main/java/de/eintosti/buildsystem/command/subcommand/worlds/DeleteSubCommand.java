@@ -19,26 +19,23 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.world.menu.DeleteMenu;
 import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class DeleteSubCommand implements SubCommand {
-
-    private final BuildSystemPlugin plugin;
+public class DeleteSubCommand extends AbstractSubCommand {
 
     public DeleteSubCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
     }
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld =
-                GuardedWorldCommand.requireWorld(plugin, player, worldName, args, 2, getArgument(), "worlds_delete");
+        BuildWorld buildWorld = requireWorld(player, worldName, args, 2, "worlds_delete");
         if (buildWorld == null) {
             return;
         }
@@ -48,7 +45,7 @@ public class DeleteSubCommand implements SubCommand {
                 .world()
                 .deletionBlacklist()
                 .contains(buildWorld.getName().toLowerCase())) {
-            plugin.getMessages().sendMessage(player, "worlds_delete_forbidden");
+            messages.sendMessage(player, "worlds_delete_forbidden");
             return;
         }
 

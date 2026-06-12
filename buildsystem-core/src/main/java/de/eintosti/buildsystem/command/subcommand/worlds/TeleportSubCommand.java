@@ -20,8 +20,8 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -29,40 +29,38 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class TeleportSubCommand implements SubCommand {
-
-    private final BuildSystemPlugin plugin;
+public class TeleportSubCommand extends AbstractSubCommand {
 
     public TeleportSubCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
     }
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
         if (!hasPermission(player)) {
-            plugin.getMessages().sendPermissionError(player);
+            messages.sendPermissionError(player);
             return;
         }
 
         if (args.length != 2) {
-            plugin.getMessages().sendMessage(player, "worlds_tp_usage");
+            messages.sendMessage(player, "worlds_tp_usage");
             return;
         }
 
         BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(args[1]);
         if (buildWorld == null) {
-            plugin.getMessages().sendMessage(player, "worlds_tp_unknown_world");
+            messages.sendMessage(player, "worlds_tp_unknown_world");
             return;
         }
 
         World bukkitWorld = Bukkit.getServer().getWorld(args[1]);
         if (buildWorld.isLoaded() && bukkitWorld == null) {
-            plugin.getMessages().sendMessage(player, "worlds_tp_unknown_world");
+            messages.sendMessage(player, "worlds_tp_unknown_world");
             return;
         }
 
         if (!buildWorld.getPermissions().canEnter(player)) {
-            plugin.getMessages().sendMessage(player, "worlds_tp_entry_forbidden");
+            messages.sendMessage(player, "worlds_tp_entry_forbidden");
             return;
         }
 

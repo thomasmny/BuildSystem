@@ -15,57 +15,59 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.command.subcommand.worlds;
+package de.eintosti.buildsystem.command.subcommand;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-/** Shared preamble for the {@code /worlds} subcommands that act on a named world. */
+/** Base class for subcommands, holding the dependencies every implementation needs. */
 @NullMarked
-final class GuardedWorldCommand {
+public abstract class AbstractSubCommand implements SubCommand {
 
-    private GuardedWorldCommand() {}
+    protected final BuildSystemPlugin plugin;
+    protected final Messages messages;
+
+    protected AbstractSubCommand(BuildSystemPlugin plugin) {
+        this.plugin = plugin;
+        this.messages = plugin.getMessages();
+    }
 
     /**
-     * Runs the shared preamble: permission (checked before existence so unpermitted players cannot probe which world
-     * names exist), argument count, then existence.
+     * Runs the shared preamble for subcommands that act on a named world: permission (checked before existence so
+     * unpermitted players cannot probe which world names exist), argument count, then existence.
      *
-     * @param plugin The plugin
      * @param player The command sender
      * @param worldName The world name argument
      * @param args The raw command arguments
      * @param maxArgs The maximum permitted argument count (inclusive)
-     * @param argument The argument supplying the permission node
      * @param messageKeyPrefix The message key prefix, e.g. {@code "worlds_edit"}; {@code _usage}/{@code _unknown_world}
      *     are appended
      * @return The world if all checks pass, otherwise {@code null} (an error message has already been sent)
      */
-    @Nullable static BuildWorld requireWorld(
-            BuildSystemPlugin plugin,
-            Player player,
-            String worldName,
-            String[] args,
-            int maxArgs,
-            Argument argument,
-            String messageKeyPrefix) {
+    @Nullable protected BuildWorld requireWorld(
+            Player player, String worldName, String[] args, int maxArgs, String messageKeyPrefix) {
         BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
-        if (!WorldPermissionsImpl.of(plugin, buildWorld).canPerformCommand(player, argument.getPermission())) {
-            plugin.getMessages().sendPermissionError(player);
+        if (!WorldPermissionsImpl.of(plugin, buildWorld)
+                .canPerformCommand(player, getArgument().getPermission())) {
+            messages.sendPermissionError(player);
             return null;
         }
+
         if (args.length > maxArgs) {
-            plugin.getMessages().sendMessage(player, messageKeyPrefix + "_usage");
+            messages.sendMessage(player, messageKeyPrefix + "_usage");
             return null;
         }
+
         if (buildWorld == null) {
-            plugin.getMessages().sendMessage(player, messageKeyPrefix + "_unknown_world");
+            messages.sendMessage(player, messageKeyPrefix + "_unknown_world");
             return null;
         }
+
         return buildWorld;
     }
 }

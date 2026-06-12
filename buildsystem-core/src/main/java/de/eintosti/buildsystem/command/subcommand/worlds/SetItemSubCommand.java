@@ -21,8 +21,8 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.Material;
@@ -31,30 +31,27 @@ import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class SetItemSubCommand implements SubCommand {
-
-    private final BuildSystemPlugin plugin;
+public class SetItemSubCommand extends AbstractSubCommand {
 
     public SetItemSubCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
     }
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld =
-                GuardedWorldCommand.requireWorld(plugin, player, worldName, args, 2, getArgument(), "worlds_setitem");
+        BuildWorld buildWorld = requireWorld(player, worldName, args, 2, "worlds_setitem");
         if (buildWorld == null) {
             return;
         }
 
         ItemStack itemStack = player.getInventory().getItemInMainHand();
         if (itemStack.getType() == Material.AIR) {
-            plugin.getMessages().sendMessage(player, "worlds_setitem_hand_empty");
+            messages.sendMessage(player, "worlds_setitem_hand_empty");
             return;
         }
 
         buildWorld.getData().material().set(XMaterial.matchXMaterial(itemStack));
-        plugin.getMessages().sendMessage(player, "worlds_setitem_set", Map.entry("%world%", buildWorld.getName()));
+        messages.sendMessage(player, "worlds_setitem_set", Map.entry("%world%", buildWorld.getName()));
     }
 
     @Override

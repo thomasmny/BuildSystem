@@ -18,21 +18,19 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.MenuItems;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class ItemSubCommand implements SubCommand {
+public class ItemSubCommand extends AbstractSubCommand {
 
-    private final Messages messages;
     private final MenuItems menuItems;
 
     public ItemSubCommand(BuildSystemPlugin plugin) {
-        this.messages = plugin.getMessages();
+        super(plugin);
         this.menuItems = plugin.getMenuItems();
     }
 
