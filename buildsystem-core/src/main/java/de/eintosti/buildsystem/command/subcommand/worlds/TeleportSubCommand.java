@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
@@ -40,29 +39,29 @@ public class TeleportSubCommand implements SubCommand {
     @Override
     public void execute(Player player, String[] args) {
         if (!hasPermission(player)) {
-            Messages.sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return;
         }
 
         if (args.length != 2) {
-            Messages.sendMessage(player, "worlds_tp_usage");
+            plugin.getMessages().sendMessage(player, "worlds_tp_usage");
             return;
         }
 
         BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(args[1]);
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_tp_unknown_world");
+            plugin.getMessages().sendMessage(player, "worlds_tp_unknown_world");
             return;
         }
 
         World bukkitWorld = Bukkit.getServer().getWorld(args[1]);
         if (buildWorld.isLoaded() && bukkitWorld == null) {
-            Messages.sendMessage(player, "worlds_tp_unknown_world");
+            plugin.getMessages().sendMessage(player, "worlds_tp_unknown_world");
             return;
         }
 
         if (!buildWorld.getPermissions().canEnter(player)) {
-            Messages.sendMessage(player, "worlds_tp_entry_forbidden");
+            plugin.getMessages().sendMessage(player, "worlds_tp_entry_forbidden");
             return;
         }
 

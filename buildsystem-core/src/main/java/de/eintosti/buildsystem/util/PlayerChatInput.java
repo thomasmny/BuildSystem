@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.util;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -48,8 +47,8 @@ public class PlayerChatInput implements Listener {
     public PlayerChatInput(BuildSystemPlugin plugin, Player player, String titleKey, InputRunnable runWhenComplete) {
         this.plugin = plugin;
 
-        String title = Messages.getString(titleKey, player);
-        String subtitle = Messages.getString("cancel_subtitle", player);
+        String title = plugin.getMessages().getString(titleKey, player);
+        String subtitle = plugin.getMessages().getString("cancel_subtitle", player);
 
         this.taskId = new BukkitRunnable() {
             public void run() {
@@ -90,7 +89,7 @@ public class PlayerChatInput implements Listener {
 
             XSound.ENTITY_ITEM_BREAK.play(player);
             player.resetTitle();
-            Messages.sendMessage(player, "input_cancelled");
+            plugin.getMessages().sendMessage(player, "input_cancelled");
             return;
         }
 

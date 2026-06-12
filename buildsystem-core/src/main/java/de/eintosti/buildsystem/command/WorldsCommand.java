@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.ArchiveSubCommand;
@@ -67,13 +66,13 @@ public class WorldsCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
+            plugin.getLogger().warning(plugin.getMessages().getString("sender_not_player", sender));
             return true;
         }
 
         if (args.length == 0) {
             if (!player.hasPermission("buildsystem.navigator")) {
-                Messages.sendPermissionError(player);
+                plugin.getMessages().sendPermissionError(player);
                 return true;
             }
 
@@ -84,7 +83,7 @@ public class WorldsCommand implements CommandExecutor {
 
         WorldsTabCompleter.WorldsArgument argument = WorldsTabCompleter.WorldsArgument.matchArgument(args[0]);
         if (argument == null) {
-            Messages.sendMessage(player, "worlds_unknown_command");
+            plugin.getMessages().sendMessage(player, "worlds_unknown_command");
             return true;
         }
 

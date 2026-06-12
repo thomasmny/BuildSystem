@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.command;
 
 import com.google.common.collect.Lists;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import java.util.List;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.command.Command;
@@ -43,12 +42,12 @@ public class BuildSystemCommand extends PagedCommand implements CommandExecutor 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
+            plugin.getLogger().warning(plugin.getMessages().getString("sender_not_player", sender));
             return true;
         }
 
         if (!player.hasPermission("buildsystem.help.buildsystem")) {
-            Messages.sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return true;
         }
 
@@ -59,10 +58,10 @@ public class BuildSystemCommand extends PagedCommand implements CommandExecutor 
                 int page = Integer.parseInt(args[0]);
                 sendMessage(player, page);
             } catch (NumberFormatException e) {
-                Messages.sendMessage(player, "buildsystem_invalid_page");
+                plugin.getMessages().sendMessage(player, "buildsystem_invalid_page");
             }
         } else {
-            Messages.sendMessage(player, "buildsystem_usage");
+            plugin.getMessages().sendMessage(player, "buildsystem_usage");
         }
         return true;
     }

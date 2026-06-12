@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.world.modification.SetupInventory;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -39,12 +38,12 @@ public class SetupCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
+            plugin.getLogger().warning(plugin.getMessages().getString("sender_not_player", sender));
             return true;
         }
 
         if (!player.hasPermission("buildsystem.setup")) {
-            Messages.sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return true;
         }
 

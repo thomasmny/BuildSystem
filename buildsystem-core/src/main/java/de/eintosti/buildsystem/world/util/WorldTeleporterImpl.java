@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.world.util;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.util.WorldTeleporter;
 import io.papermc.lib.PaperLib;
@@ -59,7 +58,7 @@ public class WorldTeleporterImpl implements WorldTeleporter {
 
         World bukkitWorld = Bukkit.getServer().getWorld(buildWorld.getName());
         if (bukkitWorld == null) {
-            Messages.sendMessage(player, "worlds_tp_unknown_world");
+            plugin.getMessages().sendMessage(player, "worlds_tp_unknown_world");
             return;
         }
 

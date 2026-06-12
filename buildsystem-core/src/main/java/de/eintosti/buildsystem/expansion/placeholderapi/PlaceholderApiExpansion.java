@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.expansion.placeholderapi;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
@@ -30,6 +29,7 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import de.eintosti.buildsystem.i18n.Messages;
 
 @NullMarked
 public class PlaceholderApiExpansion extends PlaceholderExpansion {
@@ -184,13 +184,13 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "blockplacement" -> String.valueOf(worldData.blockPlacement().get());
             case "builders" -> builders.asPlaceholder(player);
             case "buildersenabled" -> String.valueOf(worldData.buildersEnabled().get());
-            case "creation" -> Messages.formatDate(buildWorld.getCreation());
+            case "creation" -> plugin.getMessages().formatDate(buildWorld.getCreation());
             case "creator" -> builders.hasCreator() ? builders.getCreator().getName() : "-";
             case "creatorid" -> builders.hasCreator() ? String.valueOf(builders.getCreator().getUniqueId()) : "-";
             case "explosions" -> String.valueOf(worldData.explosions().get());
-            case "lastedited" -> Messages.formatDate(worldData.lastEdited().get());
-            case "lastloaded" -> Messages.formatDate(worldData.lastLoaded().get());
-            case "lastunloaded" -> Messages.formatDate(worldData.lastUnloaded().get());
+            case "lastedited" -> plugin.getMessages().formatDate(worldData.lastEdited().get());
+            case "lastloaded" -> plugin.getMessages().formatDate(worldData.lastLoaded().get());
+            case "lastunloaded" -> plugin.getMessages().formatDate(worldData.lastUnloaded().get());
             case "loaded" -> String.valueOf(buildWorld.isLoaded());
             case "material" -> worldData.material().get().name();
             case "mobai" -> String.valueOf(worldData.mobAi().get());
@@ -199,9 +199,9 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "project" -> worldData.project().get();
             case "physics" -> String.valueOf(worldData.physics().get());
             case "spawn" -> worldData.customSpawn().get();
-            case "status" -> Messages.getString(Messages.getMessageKey(worldData.status().get()), player);
+            case "status" -> plugin.getMessages().getString(Messages.getMessageKey(worldData.status().get()), player);
             case "time" -> buildWorld.getWorldTime();
-            case "type" -> Messages.getString(Messages.getMessageKey(buildWorld.getType()), player);
+            case "type" -> plugin.getMessages().getString(Messages.getMessageKey(buildWorld.getType()), player);
             case "world" -> buildWorld.getName();
             default -> null;
         };

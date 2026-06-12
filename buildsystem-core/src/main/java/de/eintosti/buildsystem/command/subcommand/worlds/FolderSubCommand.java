@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.display.Folder;
@@ -55,7 +54,7 @@ public class FolderSubCommand implements SubCommand {
     @Override
     public void execute(Player player, String[] args) {
         if (args.length < 2) {
-            Messages.sendMessage(player, "worlds_folder_usage");
+            plugin.getMessages().sendMessage(player, "worlds_folder_usage");
             return;
         }
 
@@ -64,7 +63,7 @@ public class FolderSubCommand implements SubCommand {
 
         Folder folder = this.folderStorage.getFolder(folderName);
         if (folder == null) {
-            Messages.sendMessage(player, "worlds_folder_unknown_folder");
+            plugin.getMessages().sendMessage(player, "worlds_folder_unknown_folder");
             return;
         }
 
@@ -72,7 +71,7 @@ public class FolderSubCommand implements SubCommand {
             case "add":
             case "remove": {
                 if (args.length != 4) {
-                    Messages.sendMessage(player, "worlds_folder_usage");
+                    plugin.getMessages().sendMessage(player, "worlds_folder_usage");
                     return;
                 }
                 handleWorldFolderOperation(player, folder, operation, args[3]);
@@ -100,7 +99,7 @@ public class FolderSubCommand implements SubCommand {
             }
 
             default: {
-                Messages.sendMessage(player, "worlds_folder_usage");
+                plugin.getMessages().sendMessage(player, "worlds_folder_usage");
                 break;
             }
         }
@@ -109,7 +108,7 @@ public class FolderSubCommand implements SubCommand {
     private void handleWorldFolderOperation(Player player, Folder folder, String operation, String worldName) {
         BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(worldName);
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_folder_unknown_world");
+            plugin.getMessages().sendMessage(player, "worlds_folder_unknown_world");
             return;
         }
 
@@ -119,22 +118,22 @@ public class FolderSubCommand implements SubCommand {
         switch (operation) {
             case "add":
                 if (!player.hasPermission("buildsystem.folder.add")) {
-                    Messages.sendPermissionError(player);
+                    plugin.getMessages().sendPermissionError(player);
                     return;
                 }
 
                 if (folder.containsWorld(buildWorld)) {
-                    Messages.sendMessage(player, "worlds_folder_world_already_in_folder", folderPlaceholder, worldPlaceholder);
+                    plugin.getMessages().sendMessage(player, "worlds_folder_world_already_in_folder", folderPlaceholder, worldPlaceholder);
                     return;
                 }
 
                 if (buildWorld.isAssignedToFolder()) {
-                    Messages.sendMessage(player, "worlds_folder_world_already_in_another_folder", worldPlaceholder);
+                    plugin.getMessages().sendMessage(player, "worlds_folder_world_already_in_another_folder", worldPlaceholder);
                     return;
                 }
 
                 if (folder.getCategory() != NavigatorCategory.of(buildWorld)) {
-                    Messages.sendMessage(player, "worlds_folder_world_category_mismatch",
+                    plugin.getMessages().sendMessage(player, "worlds_folder_world_category_mismatch",
                             Map.entry("%folder_category%", folder.getCategory().name()),
                             Map.entry("%world_category%", NavigatorCategory.of(buildWorld).name())
                     );
@@ -142,29 +141,29 @@ public class FolderSubCommand implements SubCommand {
                 }
 
                 folder.addWorld(buildWorld);
-                Messages.sendMessage(player, "worlds_folder_world_added_to_folder", folderPlaceholder, worldPlaceholder);
+                plugin.getMessages().sendMessage(player, "worlds_folder_world_added_to_folder", folderPlaceholder, worldPlaceholder);
                 break;
 
             case "remove":
                 if (!player.hasPermission("buildsystem.folder.remove")) {
-                    Messages.sendPermissionError(player);
+                    plugin.getMessages().sendPermissionError(player);
                     return;
                 }
 
                 if (!folder.containsWorld(buildWorld)) {
-                    Messages.sendMessage(player, "worlds_folder_world_not_in_folder", folderPlaceholder, worldPlaceholder);
+                    plugin.getMessages().sendMessage(player, "worlds_folder_world_not_in_folder", folderPlaceholder, worldPlaceholder);
                     return;
                 }
 
                 folder.removeWorld(buildWorld);
-                Messages.sendMessage(player, "worlds_folder_world_removed_from_folder", folderPlaceholder, worldPlaceholder);
+                plugin.getMessages().sendMessage(player, "worlds_folder_world_removed_from_folder", folderPlaceholder, worldPlaceholder);
                 break;
         }
     }
 
     private void handlePermissionInput(Player player, Folder folder) {
         if (!player.hasPermission("buildsystem.folder.setpermission")) {
-            Messages.sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return;
         }
 
@@ -172,7 +171,7 @@ public class FolderSubCommand implements SubCommand {
             folder.setPermission(input.trim());
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
-            Messages.sendMessage(player, "worlds_folder_permission_set",
+            plugin.getMessages().sendMessage(player, "worlds_folder_permission_set",
                     Map.entry("%folder%", folder.getName())
             );
         });
@@ -180,7 +179,7 @@ public class FolderSubCommand implements SubCommand {
 
     private void handleProjectInput(Player player, Folder folder) {
         if (!player.hasPermission("buildsystem.folder.setproject")) {
-            Messages.sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return;
         }
 
@@ -188,7 +187,7 @@ public class FolderSubCommand implements SubCommand {
             folder.setProject(input.trim());
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
-            Messages.sendMessage(player, "worlds_folder_project_set",
+            plugin.getMessages().sendMessage(player, "worlds_folder_project_set",
                     Map.entry("%folder%", folder.getName())
             );
         });
@@ -196,39 +195,39 @@ public class FolderSubCommand implements SubCommand {
 
     private void handleIconChange(Player player, Folder folder) {
         if (!player.hasPermission("buildsystem.folder.setitem")) {
-            Messages.sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return;
         }
 
         ItemStack itemStack = player.getInventory().getItemInMainHand();
         if (itemStack.getType() == Material.AIR) {
-            Messages.sendMessage(player, "worlds_setitem_hand_empty");
+            plugin.getMessages().sendMessage(player, "worlds_setitem_hand_empty");
             return;
         }
 
         folder.setIcon(XMaterial.matchXMaterial(itemStack));
-        Messages.sendMessage(player, "worlds_folder_item_set",
+        plugin.getMessages().sendMessage(player, "worlds_folder_item_set",
                 Map.entry("%folder%", folder.getName())
         );
     }
 
     private void handleDeletion(Player player, Folder folder) {
         if (!player.hasPermission("buildsystem.folder.delete")) {
-            Messages.sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return;
         }
 
         boolean hasWorlds = folder.getWorldCount() > 0;
         boolean hasSubFolders = this.folderStorage.getFolders().stream().anyMatch(f -> Objects.equals(f.getParent(), folder));
         if (hasWorlds || hasSubFolders) {
-            Messages.sendMessage(player, "worlds_folder_not_empty",
+            plugin.getMessages().sendMessage(player, "worlds_folder_not_empty",
                     Map.entry("%folder%", folder.getName())
             );
             return;
         }
 
         this.folderStorage.removeFolder(folder);
-        Messages.sendMessage(player, "worlds_folder_deleted",
+        plugin.getMessages().sendMessage(player, "worlds_folder_deleted",
                 Map.entry("%folder%", folder.getName())
         );
         XSound.ENTITY_PLAYER_LEVELUP.play(player);

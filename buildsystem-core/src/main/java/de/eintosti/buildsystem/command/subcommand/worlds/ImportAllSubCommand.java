@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.command.subcommand.Argument;
@@ -46,18 +45,18 @@ public class ImportAllSubCommand implements SubCommand {
     @Override
     public void execute(Player player, String[] args) {
         if (!hasPermission(player)) {
-            Messages.sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return;
         }
 
         if (args.length != 1) {
-            Messages.sendMessage(player, "worlds_importall_usage");
+            plugin.getMessages().sendMessage(player, "worlds_importall_usage");
             return;
         }
 
         WorldServiceImpl worldService = plugin.getWorldService();
         if (worldService.isImportingAllWorlds()) {
-            Messages.sendMessage(player, "worlds_importall_already_started");
+            plugin.getMessages().sendMessage(player, "worlds_importall_already_started");
             return;
         }
 
@@ -76,7 +75,7 @@ public class ImportAllSubCommand implements SubCommand {
         });
 
         if (directories == null || directories.length == 0) {
-            Messages.sendMessage(player, "worlds_importall_no_worlds");
+            plugin.getMessages().sendMessage(player, "worlds_importall_no_worlds");
             return;
         }
 
@@ -87,7 +86,7 @@ public class ImportAllSubCommand implements SubCommand {
         if (parser.isArgument("g")) {
             String generatorArg = parser.getValue("g");
             if (generatorArg == null) {
-                Messages.sendMessage(player, "worlds_importall_usage");
+                plugin.getMessages().sendMessage(player, "worlds_importall_usage");
                 return;
             }
             try {
@@ -99,12 +98,12 @@ public class ImportAllSubCommand implements SubCommand {
         if (parser.isArgument("c")) {
             String creatorArg = parser.getValue("c");
             if (creatorArg == null) {
-                Messages.sendMessage(player, "worlds_importall_usage");
+                plugin.getMessages().sendMessage(player, "worlds_importall_usage");
                 return;
             }
             UUID creatorId = UUIDFetcher.getUUID(creatorArg);
             if (creatorId == null) {
-                Messages.sendMessage(player, "worlds_importall_player_not_found");
+                plugin.getMessages().sendMessage(player, "worlds_importall_player_not_found");
                 return;
             }
             creator = Builder.of(creatorId, creatorArg);

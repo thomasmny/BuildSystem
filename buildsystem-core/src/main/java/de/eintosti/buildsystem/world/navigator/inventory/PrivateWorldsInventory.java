@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.world.navigator.inventory;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
@@ -42,8 +41,8 @@ public class PrivateWorldsInventory extends CreatableWorldsInventory {
                 plugin,
                 player,
                 NavigatorCategory.PRIVATE,
-                Messages.getString("private_title", player),
-                Messages.getString("private_no_worlds", player),
+                BuildSystemPlugin.get().getMessages().getString("private_title", player),
+                BuildSystemPlugin.get().getMessages().getString("private_no_worlds", player),
                 Visibility.PRIVATE
         );
     }

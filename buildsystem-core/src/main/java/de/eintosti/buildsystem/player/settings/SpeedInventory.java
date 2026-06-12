@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.player.settings;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
 import de.eintosti.buildsystem.util.inventory.InventoryHandler;
 import de.eintosti.buildsystem.util.inventory.InventoryManager;
@@ -51,11 +50,11 @@ public class SpeedInventory implements InventoryHandler {
         Inventory inventory = new SpeedInventoryHolder(player).getInventory();
         fillGuiWithGlass(player, inventory);
 
-        inventory.setItem(11, InventoryUtils.createSkull(Messages.getString("speed_1", player), Profileable.detect("71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530")));
-        inventory.setItem(12, InventoryUtils.createSkull(Messages.getString("speed_2", player), Profileable.detect("4cd9eeee883468881d83848a46bf3012485c23f75753b8fbe8487341419847")));
-        inventory.setItem(13, InventoryUtils.createSkull(Messages.getString("speed_3", player), Profileable.detect("1d4eae13933860a6df5e8e955693b95a8c3b15c36b8b587532ac0996bc37e5")));
-        inventory.setItem(14, InventoryUtils.createSkull(Messages.getString("speed_4", player), Profileable.detect("d2e78fb22424232dc27b81fbcb47fd24c1acf76098753f2d9c28598287db5")));
-        inventory.setItem(15, InventoryUtils.createSkull(Messages.getString("speed_5", player), Profileable.detect("6d57e3bc88a65730e31a14e3f41e038a5ecf0891a6c243643b8e5476ae2")));
+        inventory.setItem(11, InventoryUtils.createSkull(BuildSystemPlugin.get().getMessages().getString("speed_1", player), Profileable.detect("71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530")));
+        inventory.setItem(12, InventoryUtils.createSkull(BuildSystemPlugin.get().getMessages().getString("speed_2", player), Profileable.detect("4cd9eeee883468881d83848a46bf3012485c23f75753b8fbe8487341419847")));
+        inventory.setItem(13, InventoryUtils.createSkull(BuildSystemPlugin.get().getMessages().getString("speed_3", player), Profileable.detect("1d4eae13933860a6df5e8e955693b95a8c3b15c36b8b587532ac0996bc37e5")));
+        inventory.setItem(14, InventoryUtils.createSkull(BuildSystemPlugin.get().getMessages().getString("speed_4", player), Profileable.detect("d2e78fb22424232dc27b81fbcb47fd24c1acf76098753f2d9c28598287db5")));
+        inventory.setItem(15, InventoryUtils.createSkull(BuildSystemPlugin.get().getMessages().getString("speed_5", player), Profileable.detect("6d57e3bc88a65730e31a14e3f41e038a5ecf0891a6c243643b8e5476ae2")));
 
         return inventory;
     }
@@ -111,17 +110,17 @@ public class SpeedInventory implements InventoryHandler {
     private void setSpeed(Player player, float speed, int num) {
         if (player.isFlying()) {
             player.setFlySpeed(speed - 0.1f);
-            Messages.sendMessage(player, "speed_set_flying", Map.entry("%speed%", num));
+            BuildSystemPlugin.get().getMessages().sendMessage(player, "speed_set_flying", Map.entry("%speed%", num));
         } else {
             player.setWalkSpeed(speed);
-            Messages.sendMessage(player, "speed_set_walking", Map.entry("%speed%", num));
+            BuildSystemPlugin.get().getMessages().sendMessage(player, "speed_set_walking", Map.entry("%speed%", num));
         }
     }
 
     private static class SpeedInventoryHolder extends BuildSystemHolder {
 
         public SpeedInventoryHolder(Player player) {
-            super(27, Messages.getString("speed_title", player));
+            super(27, BuildSystemPlugin.get().getMessages().getString("speed_title", player));
         }
     }
 }

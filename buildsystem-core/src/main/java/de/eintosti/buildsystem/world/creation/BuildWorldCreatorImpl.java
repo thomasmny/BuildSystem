@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.world.creation;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.BuildWorldCreator;
@@ -56,6 +55,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import de.eintosti.buildsystem.i18n.Messages;
 
 @NullMarked
 public class BuildWorldCreatorImpl implements BuildWorldCreator {
@@ -177,7 +177,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
     @Override
     public void createWorld(Player player) {
         if (this.worldStorage.worldAndFolderExist(this.worldName)) {
-            Messages.sendMessage(player, "worlds_world_exists");
+            plugin.getMessages().sendMessage(player, "worlds_world_exists");
             return;
         }
 
@@ -187,7 +187,7 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
 
         if (success) {
             teleportAfterCreation(player);
-            Messages.sendMessage(player, "worlds_creation_finished");
+            plugin.getMessages().sendMessage(player, "worlds_creation_finished");
         }
     }
 
@@ -207,9 +207,9 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
      * @return true if the process started successfully, false otherwise
      */
     private boolean createWorldFromGenerator(Player player) {
-        Messages.sendMessage(player, "worlds_world_creation_started",
+        plugin.getMessages().sendMessage(player, "worlds_world_creation_started",
                 Map.entry("%world%", this.worldName),
-                Map.entry("%type%", Messages.getString(Messages.getMessageKey(this.worldType), player))
+                Map.entry("%type%", plugin.getMessages().getString(Messages.getMessageKey(this.worldType), player))
         );
 
         this.buildWorld = createAndRegisterBuildWorld(player);
@@ -230,11 +230,11 @@ public class BuildWorldCreatorImpl implements BuildWorldCreator {
 
         File templateFile = new File(this.plugin.getDataFolder(), TEMPLATES_DIRECTORY + File.separator + template);
         if (!templateFile.exists()) {
-            Messages.sendMessage(player, "worlds_template_does_not_exist");
+            plugin.getMessages().sendMessage(player, "worlds_template_does_not_exist");
             return false;
         }
 
-        Messages.sendMessage(player, "worlds_template_creation_started",
+        plugin.getMessages().sendMessage(player, "worlds_template_creation_started",
                 Map.entry("%world%", this.worldName),
                 Map.entry("%template%", this.template)
         );

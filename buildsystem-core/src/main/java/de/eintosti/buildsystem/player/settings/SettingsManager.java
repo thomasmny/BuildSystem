@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.player.settings;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
@@ -34,6 +33,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
+import de.eintosti.buildsystem.i18n.Messages;
 
 @NullMarked
 public class SettingsManager {
@@ -73,7 +73,7 @@ public class SettingsManager {
             return;
         }
 
-        board.updateTitle(Messages.getString("title", player));
+        board.updateTitle(plugin.getMessages().getString("title", player));
         BukkitTask scoreboardTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> updateScoreboard(player, board), 0L, 20L);
         settings.setScoreboardTask(scoreboardTask);
     }
@@ -97,7 +97,7 @@ public class SettingsManager {
     }
 
     private void updateScoreboard(Player player, FastBoard board) {
-        List<String> body = Messages.getStringList("body", player, (line) -> getPlaceholders(line, player));
+        List<String> body = plugin.getMessages().getStringList("body", player, (line) -> getPlaceholders(line, player));
         board.updateLines(body);
     }
 
@@ -125,14 +125,14 @@ public class SettingsManager {
             WorldData worldData = buildWorld.getData();
             Builders builders = buildWorld.getBuilders();
 
-            status = Messages.getString(Messages.getMessageKey(worldData.status().get()), player);
+            status = plugin.getMessages().getString(Messages.getMessageKey(worldData.status().get()), player);
             permission = worldData.permission().get();
             project = worldData.project().get();
             creator = builders.hasCreator() ? builders.getCreator().getName() : "-";
-            creation = Messages.formatDate(buildWorld.getCreation());
-            lastEdited = Messages.formatDate(worldData.lastEdited().get());
-            lastLoaded = Messages.formatDate(worldData.lastLoaded().get());
-            lastUnloaded = Messages.formatDate(worldData.lastUnloaded().get());
+            creation = plugin.getMessages().formatDate(buildWorld.getCreation());
+            lastEdited = plugin.getMessages().formatDate(worldData.lastEdited().get());
+            lastLoaded = plugin.getMessages().formatDate(worldData.lastLoaded().get());
+            lastUnloaded = plugin.getMessages().formatDate(worldData.lastUnloaded().get());
         }
 
         return new Map.Entry[]{

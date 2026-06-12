@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.Messages;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +28,7 @@ import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 
 @NullMarked
 public abstract class PagedCommand {
@@ -48,7 +48,7 @@ public abstract class PagedCommand {
 
         List<TextComponent> page = createPage(commands, numPages, pageNum);
         page.add(0, new TextComponent("§7§m----------------------------------------------------"));
-        page.add(1, new TextComponent(Messages.getString(this.title, player)
+        page.add(1, new TextComponent(BuildSystemPlugin.get().getMessages().getString(this.title, player)
                 .replace("%page%", String.valueOf(pageNum))
                 .replace("%max%", String.valueOf(numPages))
                 .concat("\n"))
@@ -85,11 +85,11 @@ public abstract class PagedCommand {
         }
 
         TextComponent commandComponent = new TextComponent("§b" + command);
-        TextComponent textComponent = new TextComponent(" §8» " + Messages.getString(commandDescriptionKey, player));
+        TextComponent textComponent = new TextComponent(" §8» " + BuildSystemPlugin.get().getMessages().getString(commandDescriptionKey, player));
 
         commandComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, suggest));
         commandComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new Text(Messages.getString(this.permissionTemplate, player, Map.entry("%permission%", permission)))
+                new Text(BuildSystemPlugin.get().getMessages().getString(this.permissionTemplate, player, Map.entry("%permission%", permission)))
         ));
         commandComponent.addExtra(textComponent);
         return commandComponent;

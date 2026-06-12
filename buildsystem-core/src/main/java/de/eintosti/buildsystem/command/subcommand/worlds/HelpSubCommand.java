@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.google.common.collect.Lists;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.PagedCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
@@ -27,6 +26,7 @@ import java.util.List;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 
 @NullMarked
 public class HelpSubCommand extends PagedCommand implements SubCommand {
@@ -38,7 +38,7 @@ public class HelpSubCommand extends PagedCommand implements SubCommand {
     @Override
     public void execute(Player player, String[] args) {
         if (!hasPermission(player)) {
-            Messages.sendPermissionError(player);
+            BuildSystemPlugin.get().getMessages().sendPermissionError(player);
             return;
         }
 
@@ -49,10 +49,10 @@ public class HelpSubCommand extends PagedCommand implements SubCommand {
                 int page = Integer.parseInt(args[1]);
                 sendMessage(player, page);
             } catch (NumberFormatException e) {
-                Messages.sendMessage(player, "worlds_help_invalid_page");
+                BuildSystemPlugin.get().getMessages().sendMessage(player, "worlds_help_invalid_page");
             }
         } else {
-            Messages.sendMessage(player, "worlds_help_usage");
+            BuildSystemPlugin.get().getMessages().sendMessage(player, "worlds_help_usage");
         }
     }
 

@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.player.settings.SpeedInventory;
 import java.util.Map;
 import org.bukkit.command.Command;
@@ -42,12 +41,12 @@ public class SpeedCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
+            plugin.getLogger().warning(plugin.getMessages().getString("sender_not_player", sender));
             return true;
         }
 
         if (!player.hasPermission("buildsystem.speed")) {
-            Messages.sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return true;
         }
 
@@ -67,14 +66,14 @@ public class SpeedCommand implements CommandExecutor {
                 };
 
                 if (speed == INVALID_SPEED) {
-                    Messages.sendMessage(player, "speed_usage");
+                    plugin.getMessages().sendMessage(player, "speed_usage");
                     return true;
                 }
 
                 setSpeed(player, speed, speedString);
                 break;
             default:
-                Messages.sendMessage(player, "speed_usage");
+                plugin.getMessages().sendMessage(player, "speed_usage");
                 break;
         }
 
@@ -84,10 +83,10 @@ public class SpeedCommand implements CommandExecutor {
     private void setSpeed(Player player, float speed, String speedString) {
         if (player.isFlying()) {
             player.setFlySpeed(speed - 0.1f);
-            Messages.sendMessage(player, "speed_set_flying", Map.entry("%speed%", speedString));
+            plugin.getMessages().sendMessage(player, "speed_set_flying", Map.entry("%speed%", speedString));
         } else {
             player.setWalkSpeed(speed);
-            Messages.sendMessage(player, "speed_set_walking", Map.entry("%speed%", speedString));
+            plugin.getMessages().sendMessage(player, "speed_set_walking", Map.entry("%speed%", speedString));
         }
     }
 }

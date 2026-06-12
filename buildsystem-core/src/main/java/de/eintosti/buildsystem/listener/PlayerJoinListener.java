@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.listener;
 
 import com.cryptomorin.xseries.XPotion;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.LogoutLocation;
 import de.eintosti.buildsystem.api.player.settings.Settings;
@@ -68,7 +67,7 @@ public class PlayerJoinListener implements Listener {
     public void sendPlayerJoinMessage(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         String message = plugin.getConfigService().current().messages().joinQuitMessages()
-                ? Messages.getString("player_join", player, Map.entry("%player%", player.getName()))
+                ? plugin.getMessages().getString("player_join", player, Map.entry("%player%", player.getName()))
                 : null;
         event.setJoinMessage(message);
     }
@@ -90,7 +89,7 @@ public class PlayerJoinListener implements Listener {
         if (buildWorld != null) {
             WorldData worldData = buildWorld.getData();
             if (!worldData.physics().get() && player.hasPermission("buildsystem.physics.message")) {
-                Messages.sendMessage(player, "physics_deactivated_in_world", Map.entry("%world%", worldName));
+                plugin.getMessages().sendMessage(player, "physics_deactivated_in_world", Map.entry("%world%", worldName));
             }
 
             if (plugin.getConfigService().current().settings().archive().vanish() && worldData.status().get() == BuildWorldStatus.ARCHIVE) {
@@ -187,7 +186,7 @@ public class PlayerJoinListener implements Listener {
                 .whenComplete((result, e) -> {
                     if (result.requiresUpdate()) {
                         StringBuilder stringBuilder = new StringBuilder();
-                        Messages.getStringList("update_available", player).forEach(line ->
+                        plugin.getMessages().getStringList("update_available", player).forEach(line ->
                                 stringBuilder.append(line
                                                 .replace("%new_version%", result.getNewestVersion())
                                                 .replace("%current_version%", plugin.getDescription().getVersion()))

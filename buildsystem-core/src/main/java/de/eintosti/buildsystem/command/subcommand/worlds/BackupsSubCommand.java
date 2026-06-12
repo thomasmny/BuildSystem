@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
@@ -44,12 +43,12 @@ public class BackupsSubCommand implements SubCommand {
     public void execute(Player player, String[] args) {
         BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld().getName());
         if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
-            Messages.sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return;
         }
 
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_backup_world_not_imported");
+            plugin.getMessages().sendMessage(player, "worlds_backup_world_not_imported");
             return;
         }
 
@@ -61,21 +60,21 @@ public class BackupsSubCommand implements SubCommand {
             case 2 -> {
                 if (args[1].equalsIgnoreCase("create")) {
                     if (!player.hasPermission(getArgument().getPermission() + ".create")) {
-                        Messages.sendPermissionError(player);
+                        plugin.getMessages().sendPermissionError(player);
                         return;
                     }
 
                     Entry<String, Object> worldNamePlaceholder = Map.entry("%world%", buildWorld.getName());
                     plugin.getBackupService().backup(buildWorld,
-                            () -> Messages.sendMessage(player, "worlds_backup_created", worldNamePlaceholder),
-                            () -> Messages.sendMessage(player, "worlds_backup_failed", worldNamePlaceholder)
+                            () -> plugin.getMessages().sendMessage(player, "worlds_backup_created", worldNamePlaceholder),
+                            () -> plugin.getMessages().sendMessage(player, "worlds_backup_failed", worldNamePlaceholder)
                     );
                 } else {
-                    Messages.sendMessage(player, "worlds_backup_usage");
+                    plugin.getMessages().sendMessage(player, "worlds_backup_usage");
                 }
             }
             default -> {
-                Messages.sendMessage(player, "worlds_backup_usage");
+                plugin.getMessages().sendMessage(player, "worlds_backup_usage");
             }
         }
     }

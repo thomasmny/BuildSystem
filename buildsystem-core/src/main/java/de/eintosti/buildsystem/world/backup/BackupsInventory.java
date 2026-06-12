@@ -9,7 +9,6 @@ package de.eintosti.buildsystem.world.backup;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.util.StringUtils;
@@ -64,8 +63,8 @@ public class BackupsInventory implements InventoryHandler {
         }
 
         inventory.setItem(4, InventoryUtils.createItem(XMaterial.OAK_HANGING_SIGN,
-                Messages.getString("backups_information_name", player),
-                Messages.getStringList("backups_information_lore", player,
+                plugin.getMessages().getString("backups_information_name", player),
+                plugin.getMessages().getStringList("backups_information_lore", player,
                         Map.entry("%interval%", plugin.getConfigService().current().world().backup().autoBackup().interval() / 60),
                         Map.entry("%remaining%", getDurationUntilBackup(buildWorld))
                 )
@@ -92,7 +91,7 @@ public class BackupsInventory implements InventoryHandler {
             Inventory inventory = backupsHolder.getInventory();
             for (int i = 0; i < backups.size(); i++) {
                 inventory.setItem(FIRST_BACKUP_SLOT + i, InventoryUtils.createItem(XMaterial.GRASS_BLOCK,
-                        Messages.getString("backups_backup_name", player,
+                        plugin.getMessages().getString("backups_backup_name", player,
                                 Map.entry("%timestamp%", StringUtils.formatTime(backups.get(i).creationTime()))
                         )
                 ));
@@ -135,13 +134,13 @@ public class BackupsInventory implements InventoryHandler {
         }
 
         inventory.setItem(11, InventoryUtils.createItem(XMaterial.LIME_DYE,
-                Messages.getString("restore_backup_confirm_name", player),
-                Messages.getStringList("restore_backup_confirm_lore", player,
+                plugin.getMessages().getString("restore_backup_confirm_name", player),
+                plugin.getMessages().getStringList("restore_backup_confirm_lore", player,
                         Map.entry("%timestamp%", StringUtils.formatTime(backup.creationTime()))
                 )
         ));
         inventory.setItem(15, InventoryUtils.createItem(XMaterial.RED_DYE,
-                Messages.getString("restore_backup_cancel_name", player)
+                plugin.getMessages().getString("restore_backup_cancel_name", player)
         ));
         return inventory;
     }
@@ -190,7 +189,7 @@ public class BackupsInventory implements InventoryHandler {
         private final List<Backup> backups;
 
         public BackupsHolder(BuildWorld buildWorld, Player player, List<Backup> backups) {
-            super(buildWorld, 36, Messages.getString("backups_title", player));
+            super(buildWorld, 36, BuildSystemPlugin.get().getMessages().getString("backups_title", player));
             this.backups = backups;
         }
 
@@ -204,7 +203,7 @@ public class BackupsInventory implements InventoryHandler {
         private final Backup backup;
 
         public ConfirmationHolder(Backup backup, Player player) {
-            super(27, Messages.getString("restore_backup_title", player));
+            super(27, BuildSystemPlugin.get().getMessages().getString("restore_backup_title", player));
             this.backup = backup;
         }
 

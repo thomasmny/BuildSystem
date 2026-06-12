@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.player.settings;
 import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
@@ -90,7 +89,7 @@ public class DesignInventory implements InventoryHandler {
         SettingsManager settingsManager = plugin.getSettingsManager();
         Settings settings = settingsManager.getSettings(player);
 
-        String displayName = Messages.getString(key, player);
+        String displayName = plugin.getMessages().getString(key, player);
         ItemStack itemStack = InventoryUtils.createItem(material,
                 settings.getDesignColor() == color
                         ? "§a" + displayName
@@ -187,7 +186,7 @@ public class DesignInventory implements InventoryHandler {
     private static class DesignInventoryHolder extends BuildSystemHolder {
 
         public DesignInventoryHolder(Player player) {
-            super(36, Messages.getString("design_title", player));
+            super(36, BuildSystemPlugin.get().getMessages().getString("design_title", player));
         }
     }
 }

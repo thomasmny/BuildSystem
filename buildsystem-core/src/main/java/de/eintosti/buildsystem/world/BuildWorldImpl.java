@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.world;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
@@ -51,6 +50,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import de.eintosti.buildsystem.i18n.Messages;
 
 @NullMarked
 public final class BuildWorldImpl implements BuildWorld {
@@ -161,7 +161,7 @@ public final class BuildWorldImpl implements BuildWorld {
 
     @Override
     public String getDisplayName(Player player) {
-        return Messages.getString("world_item_title", player,
+        return BuildSystemPlugin.get().getMessages().getString("world_item_title", player,
                 Map.entry("%world%", this.name)
         );
     }
@@ -170,19 +170,19 @@ public final class BuildWorldImpl implements BuildWorld {
     public List<String> getLore(Player player) {
         @SuppressWarnings("unchecked")
         Map.Entry<String, Object>[] placeholders = List.of(
-                Map.entry("%status%", Messages.getString(Messages.getMessageKey(worldData.status().get()), player)),
+                Map.entry("%status%", BuildSystemPlugin.get().getMessages().getString(Messages.getMessageKey(worldData.status().get()), player)),
                 Map.entry("%project%", worldData.project().get()),
                 Map.entry("%permission%", worldData.permission().get()),
                 Map.entry("%creator%", builders.hasCreator() ? builders.getCreator().getName() : "-"),
-                Map.entry("%creation%", Messages.formatDate(getCreation())),
-                Map.entry("%lastedited%", Messages.formatDate(worldData.lastEdited().get())),
-                Map.entry("%lastloaded%", Messages.formatDate(worldData.lastLoaded().get())),
-                Map.entry("%lastunloaded%", Messages.formatDate(worldData.lastUnloaded().get()))
+                Map.entry("%creation%", BuildSystemPlugin.get().getMessages().formatDate(getCreation())),
+                Map.entry("%lastedited%", BuildSystemPlugin.get().getMessages().formatDate(worldData.lastEdited().get())),
+                Map.entry("%lastloaded%", BuildSystemPlugin.get().getMessages().formatDate(worldData.lastLoaded().get())),
+                Map.entry("%lastunloaded%", BuildSystemPlugin.get().getMessages().formatDate(worldData.lastUnloaded().get()))
         ).toArray(Map.Entry[]::new);
 
         List<String> messageList = getPermissions().canPerformCommand(player, WorldsTabCompleter.WorldsArgument.EDIT.getPermission())
-                ? Messages.getStringList("world_item_lore_edit", player, placeholders)
-                : Messages.getStringList("world_item_lore_normal", player, placeholders);
+                ? BuildSystemPlugin.get().getMessages().getStringList("world_item_lore_edit", player, placeholders)
+                : BuildSystemPlugin.get().getMessages().getStringList("world_item_lore_normal", player, placeholders);
 
         List<String> lore = new ArrayList<>();
 

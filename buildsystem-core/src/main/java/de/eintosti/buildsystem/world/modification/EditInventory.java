@@ -23,7 +23,6 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
@@ -55,6 +54,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jspecify.annotations.NullMarked;
+import de.eintosti.buildsystem.i18n.Messages;
 
 @NullMarked
 public class EditInventory implements InventoryHandler {
@@ -107,7 +107,7 @@ public class EditInventory implements InventoryHandler {
                 worldData.explosions().get(), "worldeditor_explosions_item", "worldeditor_explosions_lore"
         );
         inventory.setItem(29, InventoryUtils.createItem(XMaterial.DIAMOND_SWORD,
-                Messages.getString("worldeditor_butcher_item", player), Messages.getStringList("worldeditor_butcher_lore", player)
+                plugin.getMessages().getString("worldeditor_butcher_item", player), plugin.getMessages().getStringList("worldeditor_butcher_lore", player)
         ));
         addBuildersItem(player, inventory, buildWorld);
         addSettingsItem(player, inventory, 31, XMaterial.ARMOR_STAND,
@@ -118,21 +118,21 @@ public class EditInventory implements InventoryHandler {
                 worldData.blockInteractions().get(), "worldeditor_blockinteractions_item", "worldeditor_blockinteractions_lore"
         );
         inventory.setItem(38, InventoryUtils.createItem(XMaterial.FILLED_MAP,
-                Messages.getString("worldeditor_gamerules_item", player), Messages.getStringList("worldeditor_gamerules_lore", player)
+                plugin.getMessages().getString("worldeditor_gamerules_item", player), plugin.getMessages().getStringList("worldeditor_gamerules_lore", player)
         ));
         addDifficultyItem(player, inventory, buildWorld);
-        inventory.setItem(40, InventoryUtils.createItem(plugin.getCustomizableIcons().getIcon(worldData.status().get()), Messages.getString("worldeditor_status_item", player),
-                Messages.getStringList("worldeditor_status_lore", player,
-                        Map.entry("%status%", Messages.getString(Messages.getMessageKey(buildWorld.getData().status().get()), player))
+        inventory.setItem(40, InventoryUtils.createItem(plugin.getCustomizableIcons().getIcon(worldData.status().get()), plugin.getMessages().getString("worldeditor_status_item", player),
+                plugin.getMessages().getStringList("worldeditor_status_lore", player,
+                        Map.entry("%status%", plugin.getMessages().getString(Messages.getMessageKey(buildWorld.getData().status().get()), player))
                 )
         ));
-        inventory.setItem(41, InventoryUtils.createItem(XMaterial.ANVIL, Messages.getString("worldeditor_project_item", player),
-                Messages.getStringList("worldeditor_project_lore", player,
+        inventory.setItem(41, InventoryUtils.createItem(XMaterial.ANVIL, plugin.getMessages().getString("worldeditor_project_item", player),
+                plugin.getMessages().getStringList("worldeditor_project_lore", player,
                         Map.entry("%project%", buildWorld.getData().project().get())
                 )
         ));
-        inventory.setItem(42, InventoryUtils.createItem(XMaterial.PAPER, Messages.getString("worldeditor_permission_item", player),
-                Messages.getStringList("worldeditor_permission_lore", player,
+        inventory.setItem(42, InventoryUtils.createItem(XMaterial.PAPER, plugin.getMessages().getString("worldeditor_permission_item", player),
+                plugin.getMessages().getStringList("worldeditor_permission_lore", player,
                         Map.entry("%permission%", buildWorld.getData().permission().get())
                 )
         ));
@@ -146,7 +146,7 @@ public class EditInventory implements InventoryHandler {
 
     private void addBuildWorldInfoItem(Player player, Inventory inventory, BuildWorld buildWorld) {
         String worldName = buildWorld.getName();
-        String displayName = Messages.getString("worldeditor_world_item", player, Map.entry("%world%", worldName));
+        String displayName = plugin.getMessages().getString("worldeditor_world_item", player, Map.entry("%world%", worldName));
         XMaterial material = buildWorld.getData().material().get();
 
         if (material == XMaterial.PLAYER_HEAD) {
@@ -160,8 +160,8 @@ public class EditInventory implements InventoryHandler {
         ItemStack itemStack = material.parseItem();
         ItemMeta itemMeta = itemStack.getItemMeta();
 
-        itemMeta.setDisplayName(Messages.getString(displayNameKey, player));
-        itemMeta.setLore(Messages.getStringList(loreKey, player));
+        itemMeta.setDisplayName(plugin.getMessages().getString(displayNameKey, player));
+        itemMeta.setLore(plugin.getMessages().getStringList(loreKey, player));
         itemMeta.addItemFlags(ItemFlag.values());
 
         itemStack.setItemMeta(itemMeta);
@@ -178,20 +178,20 @@ public class EditInventory implements InventoryHandler {
         switch (getWorldTime(buildWorld)) {
             case NIGHT -> {
                 xMaterial = XMaterial.BLUE_STAINED_GLASS;
-                value = Messages.getString("worldeditor_time_lore_night", player);
+                value = plugin.getMessages().getString("worldeditor_time_lore_night", player);
             }
             case NOON -> {
                 xMaterial = XMaterial.YELLOW_STAINED_GLASS;
-                value = Messages.getString("worldeditor_time_lore_noon", player);
+                value = plugin.getMessages().getString("worldeditor_time_lore_noon", player);
             }
             default -> {
                 xMaterial = XMaterial.ORANGE_STAINED_GLASS;
-                value = Messages.getString("worldeditor_time_lore_sunrise", player);
+                value = plugin.getMessages().getString("worldeditor_time_lore_sunrise", player);
             }
         }
 
-        inventory.setItem(23, InventoryUtils.createItem(xMaterial, Messages.getString("worldeditor_time_item", player),
-                Messages.getStringList("worldeditor_time_lore", player, Map.entry("%time%", value))
+        inventory.setItem(23, InventoryUtils.createItem(xMaterial, plugin.getMessages().getString("worldeditor_time_item", player),
+                plugin.getMessages().getStringList("worldeditor_time_lore", player, Map.entry("%time%", value))
         ));
     }
 
@@ -215,15 +215,15 @@ public class EditInventory implements InventoryHandler {
             );
         } else {
             inventory.setItem(30, InventoryUtils.createItem(XMaterial.BARRIER,
-                    Messages.getString("worldeditor_builders_not_creator_item", player),
-                    Messages.getStringList("worldeditor_builders_not_creator_lore", player)
+                    plugin.getMessages().getString("worldeditor_builders_not_creator_item", player),
+                    plugin.getMessages().getStringList("worldeditor_builders_not_creator_lore", player)
             ));
         }
     }
 
     private void addVisibilityItem(Player player, Inventory inventory, BuildWorld buildWorld) {
         int slot = 32;
-        String displayName = Messages.getString("worldeditor_visibility_item", player);
+        String displayName = plugin.getMessages().getString("worldeditor_visibility_item", player);
         boolean isPrivate = buildWorld.getData().privateWorld().get();
 
         if (!playerManager.canCreateWorld(player, Visibility.matchVisibility(isPrivate))) {
@@ -232,11 +232,11 @@ public class EditInventory implements InventoryHandler {
         }
 
         XMaterial xMaterial = XMaterial.ENDER_EYE;
-        List<String> lore = Messages.getStringList("worldeditor_visibility_lore_public", player);
+        List<String> lore = plugin.getMessages().getStringList("worldeditor_visibility_lore_public", player);
 
         if (isPrivate) {
             xMaterial = XMaterial.ENDER_PEARL;
-            lore = Messages.getStringList("worldeditor_visibility_lore_private", player);
+            lore = plugin.getMessages().getStringList("worldeditor_visibility_lore_private", player);
         }
 
         inventory.setItem(slot, InventoryUtils.createItem(xMaterial, displayName, lore));
@@ -251,8 +251,8 @@ public class EditInventory implements InventoryHandler {
         };
 
         inventory.setItem(39, InventoryUtils.createItem(material,
-                Messages.getString("worldeditor_difficulty_item", player),
-                Messages.getStringList("worldeditor_difficulty_lore", player,
+                plugin.getMessages().getString("worldeditor_difficulty_item", player),
+                plugin.getMessages().getStringList("worldeditor_difficulty_lore", player,
                         Map.entry("%difficulty%", getDifficultyName(buildWorld, player))
                 )
         ));
@@ -267,10 +267,10 @@ public class EditInventory implements InventoryHandler {
      */
     private String getDifficultyName(BuildWorld buildWorld, Player player) {
         return switch (buildWorld.getData().difficulty().get()) {
-            case PEACEFUL -> Messages.getString("difficulty_peaceful", player);
-            case EASY -> Messages.getString("difficulty_easy", player);
-            case NORMAL -> Messages.getString("difficulty_normal", player);
-            case HARD -> Messages.getString("difficulty_hard", player);
+            case PEACEFUL -> plugin.getMessages().getString("difficulty_peaceful", player);
+            case EASY -> plugin.getMessages().getString("difficulty_easy", player);
+            case NORMAL -> plugin.getMessages().getString("difficulty_normal", player);
+            case HARD -> plugin.getMessages().getString("difficulty_hard", player);
         };
     }
 
@@ -403,7 +403,7 @@ public class EditInventory implements InventoryHandler {
             return true;
         }
         player.closeInventory();
-        Messages.sendPermissionError(player);
+        plugin.getMessages().sendPermissionError(player);
         XSound.ENTITY_ITEM_BREAK.play(player);
         return false;
     }
@@ -433,7 +433,7 @@ public class EditInventory implements InventoryHandler {
                 });
 
         player.closeInventory();
-        Messages.sendMessage(player, "worldeditor_butcher_removed", Map.entry("%amount%", entitiesRemoved.get()));
+        plugin.getMessages().sendMessage(player, "worldeditor_butcher_removed", Map.entry("%amount%", entitiesRemoved.get()));
     }
 
     public enum Time {
@@ -443,7 +443,7 @@ public class EditInventory implements InventoryHandler {
     private static class EditInventoryHolder extends BuildWorldHolder {
 
         public EditInventoryHolder(BuildWorld buildWorld, Player player) {
-            super(buildWorld, 54, Messages.getString("worldeditor_title", player));
+            super(buildWorld, 54, BuildSystemPlugin.get().getMessages().getString("worldeditor_title", player));
         }
     }
 }

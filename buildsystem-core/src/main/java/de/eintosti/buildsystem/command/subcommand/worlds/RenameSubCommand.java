@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
@@ -46,17 +45,17 @@ public class RenameSubCommand implements SubCommand {
     @Override
     public void execute(Player player, String[] args) {
         if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
-            Messages.sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return;
         }
 
         if (args.length > 2) {
-            Messages.sendMessage(player, "worlds_rename_usage");
+            plugin.getMessages().sendMessage(player, "worlds_rename_usage");
             return;
         }
 
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_rename_unknown_world");
+            plugin.getMessages().sendMessage(player, "worlds_rename_unknown_world");
             return;
         }
 

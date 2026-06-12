@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
@@ -41,17 +40,17 @@ public class RemoveSpawnSubCommand implements SubCommand {
     public void execute(Player player, String[] args) {
         BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld());
         if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
-            Messages.sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return;
         }
 
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_removespawn_world_not_imported");
+            plugin.getMessages().sendMessage(player, "worlds_removespawn_world_not_imported");
             return;
         }
 
         buildWorld.getData().customSpawn().set("");
-        Messages.sendMessage(player, "worlds_removespawn_world_spawn_removed",
+        plugin.getMessages().sendMessage(player, "worlds_removespawn_world_spawn_removed",
                 Map.entry("%world%", buildWorld.getName())
         );
     }

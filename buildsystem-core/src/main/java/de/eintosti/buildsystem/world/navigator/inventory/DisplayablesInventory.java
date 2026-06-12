@@ -21,7 +21,6 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
@@ -198,8 +197,8 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
         addWorldSortItem(inventory);
         addWorldFilterItem(inventory);
 
-        inventory.setItem(52, InventoryUtils.createSkull(Messages.getString("gui_previous_page", player), Profileable.detect(PREVIOUS_PAGE_SKULL_PROFILE)));
-        inventory.setItem(53, InventoryUtils.createSkull(Messages.getString("gui_next_page", player), Profileable.detect(NEXT_PAGE_SKULL_PROFILE)));
+        inventory.setItem(52, InventoryUtils.createSkull(plugin.getMessages().getString("gui_previous_page", player), Profileable.detect(PREVIOUS_PAGE_SKULL_PROFILE)));
+        inventory.setItem(53, InventoryUtils.createSkull(plugin.getMessages().getString("gui_next_page", player), Profileable.detect(NEXT_PAGE_SKULL_PROFILE)));
 
         return inventory;
     }
@@ -317,7 +316,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
             case OLDEST_FIRST -> "world_sort_date_oldest";
         };
 
-        inventory.setItem(45, InventoryUtils.createItem(XMaterial.BOOK, Messages.getString("world_sort_title", player), Messages.getString(messageKey, player)));
+        inventory.setItem(45, InventoryUtils.createItem(XMaterial.BOOK, plugin.getMessages().getString("world_sort_title", player), plugin.getMessages().getString(messageKey, player)));
     }
 
     /**
@@ -337,10 +336,10 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
         };
 
         List<String> lore = new ArrayList<>();
-        lore.add(Messages.getString(loreKey, player, Map.entry("%text%", worldFilter.getText())));
-        lore.addAll(Messages.getStringList("world_filter_lore", player));
+        lore.add(plugin.getMessages().getString(loreKey, player, Map.entry("%text%", worldFilter.getText())));
+        lore.addAll(plugin.getMessages().getStringList("world_filter_lore", player));
 
-        inventory.setItem(46, InventoryUtils.createItem(XMaterial.HOPPER, Messages.getString("world_filter_title", player), lore));
+        inventory.setItem(46, InventoryUtils.createItem(XMaterial.HOPPER, plugin.getMessages().getString("world_filter_title", player), lore));
     }
 
     @Override
@@ -383,22 +382,22 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
                     player.closeInventory(); // Close to allow chat input
                     new PlayerChatInput(plugin, player, "enter_folder_name", input -> {
                         if (StringCleaner.hasInvalidNameCharacters(input)) {
-                            Messages.sendMessage(player, "worlds_folder_creation_invalid_characters");
+                            plugin.getMessages().sendMessage(player, "worlds_folder_creation_invalid_characters");
                         }
 
                         String sanitizedName = StringCleaner.sanitize(input);
                         if (sanitizedName.isEmpty()) {
-                            Messages.sendMessage(player, "worlds_folder_creation_name_bank");
+                            plugin.getMessages().sendMessage(player, "worlds_folder_creation_name_bank");
                             return;
                         }
 
                         if (folderStorage.folderExists(sanitizedName)) {
-                            Messages.sendMessage(player, "worlds_folder_exists");
+                            plugin.getMessages().sendMessage(player, "worlds_folder_exists");
                             return;
                         }
 
                         Folder folder = createFolder(sanitizedName);
-                        Messages.sendMessage(player, "worlds_folder_created", Map.entry("%folder%", folder.getName()));
+                        plugin.getMessages().sendMessage(player, "worlds_folder_created", Map.entry("%folder%", folder.getName()));
 
                         initializeInventories();
                         openInventory();
@@ -572,7 +571,7 @@ public abstract class DisplayablesInventory extends PaginatedInventory {
         } else {
             player.closeInventory();
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-            player.sendTitle(" ", Messages.getString("world_not_loaded", player), 5, 70, 20);
+            player.sendTitle(" ", plugin.getMessages().getString("world_not_loaded", player), 5, 70, 20);
         }
     }
 

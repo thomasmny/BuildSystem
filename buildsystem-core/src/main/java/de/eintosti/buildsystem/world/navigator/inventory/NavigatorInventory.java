@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.world.navigator.inventory;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.player.settings.SettingsInventory;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
 import de.eintosti.buildsystem.util.inventory.InventoryHandler;
@@ -52,11 +51,11 @@ public class NavigatorInventory implements InventoryHandler {
         Inventory inventory = new NavigatorInventoryHolder(player).getInventory();
         fillGuiWithGlass(player, inventory);
 
-        inventory.setItem(11, InventoryUtils.createSkull(Messages.getString("old_navigator_world_navigator", player), Profileable.detect("d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622")));
-        inventory.setItem(12, InventoryUtils.createSkull(Messages.getString("old_navigator_world_archive", player), Profileable.detect("7f6bf958abd78295eed6ffc293b1aa59526e80f54976829ea068337c2f5e8")));
-        inventory.setItem(13, InventoryUtils.createSkull(Messages.getString("old_navigator_private_worlds", player), Profileable.of(player)));
+        inventory.setItem(11, InventoryUtils.createSkull(plugin.getMessages().getString("old_navigator_world_navigator", player), Profileable.detect("d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622")));
+        inventory.setItem(12, InventoryUtils.createSkull(plugin.getMessages().getString("old_navigator_world_archive", player), Profileable.detect("7f6bf958abd78295eed6ffc293b1aa59526e80f54976829ea068337c2f5e8")));
+        inventory.setItem(13, InventoryUtils.createSkull(plugin.getMessages().getString("old_navigator_private_worlds", player), Profileable.of(player)));
 
-        inventory.setItem(15, InventoryUtils.createSkull(Messages.getString("old_navigator_settings", player), Profileable.detect("1cba7277fc895bf3b673694159864b83351a4d14717e476ebda1c3bf38fcf37")));
+        inventory.setItem(15, InventoryUtils.createSkull(plugin.getMessages().getString("old_navigator_settings", player), Profileable.detect("1cba7277fc895bf3b673694159864b83351a4d14717e476ebda1c3bf38fcf37")));
 
         return inventory;
     }
@@ -103,7 +102,7 @@ public class NavigatorInventory implements InventoryHandler {
     private static class NavigatorInventoryHolder extends BuildSystemHolder {
 
         public NavigatorInventoryHolder(Player player) {
-            super(27, Messages.getString("old_navigator_title", player));
+            super(27, BuildSystemPlugin.get().getMessages().getString("old_navigator_title", player));
         }
     }
 }

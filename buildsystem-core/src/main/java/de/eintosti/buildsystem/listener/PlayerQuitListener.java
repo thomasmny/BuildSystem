@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.CachedValues;
 import de.eintosti.buildsystem.api.player.settings.Settings;
@@ -52,7 +51,7 @@ public class PlayerQuitListener implements Listener {
     public void sendPlayerQuitMessage(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         String message = plugin.getConfigService().current().messages().joinQuitMessages()
-                ? Messages.getString("player_quit", player, Map.entry("%player%", player.getName()))
+                ? plugin.getMessages().getString("player_quit", player, Map.entry("%player%", player.getName()))
                 : null;
         event.setQuitMessage(message);
     }

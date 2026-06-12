@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
@@ -51,31 +50,31 @@ public class ImportSubCommand implements SubCommand {
     @Override
     public void execute(Player player, String[] args) {
         if (!hasPermission(player)) {
-            Messages.sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return;
         }
 
         if (args.length < 2) {
-            Messages.sendMessage(player, "worlds_import_usage");
+            plugin.getMessages().sendMessage(player, "worlds_import_usage");
             return;
         }
 
         WorldServiceImpl worldService = plugin.getWorldService();
         if (worldService.getWorldStorage().worldExists(worldName)) {
-            Messages.sendMessage(player, "worlds_import_world_is_imported");
+            plugin.getMessages().sendMessage(player, "worlds_import_world_is_imported");
             return;
         }
 
         File worldFolder = new File(Bukkit.getWorldContainer(), args[1]);
         File levelFile = new File(worldFolder, "level.dat");
         if (!worldFolder.isDirectory() || !levelFile.exists()) {
-            Messages.sendMessage(player, "worlds_import_unknown_world");
+            plugin.getMessages().sendMessage(player, "worlds_import_unknown_world");
             return;
         }
 
         String invalidChar = StringCleaner.firstInvalidChar(worldName);
         if (invalidChar != null) {
-            Messages.sendMessage(player, "worlds_import_invalid_character",
+            plugin.getMessages().sendMessage(player, "worlds_import_invalid_character",
                     Map.entry("%world%", worldName),
                     Map.entry("%char%", invalidChar)
             );
@@ -93,7 +92,7 @@ public class ImportSubCommand implements SubCommand {
             if (parser.isArgument("g")) {
                 String generatorArg = parser.getValue("g");
                 if (generatorArg == null) {
-                    Messages.sendMessage(player, "worlds_import_usage");
+                    plugin.getMessages().sendMessage(player, "worlds_import_usage");
                     return;
                 }
                 try {
@@ -108,12 +107,12 @@ public class ImportSubCommand implements SubCommand {
             if (parser.isArgument("c")) {
                 String creatorArg = parser.getValue("c");
                 if (creatorArg == null) {
-                    Messages.sendMessage(player, "worlds_import_usage");
+                    plugin.getMessages().sendMessage(player, "worlds_import_usage");
                     return;
                 }
                 UUID creatorId = UUIDFetcher.getUUID(creatorArg);
                 if (creatorId == null) {
-                    Messages.sendMessage(player, "worlds_import_player_not_found");
+                    plugin.getMessages().sendMessage(player, "worlds_import_player_not_found");
                     return;
                 }
                 creator = Builder.of(creatorId, creatorArg);
@@ -122,7 +121,7 @@ public class ImportSubCommand implements SubCommand {
             if (parser.isArgument("t")) {
                 String worldTypeArg = parser.getValue("t");
                 if (worldTypeArg == null) {
-                    Messages.sendMessage(player, "worlds_import_usage");
+                    plugin.getMessages().sendMessage(player, "worlds_import_usage");
                     return;
                 }
                 try {
@@ -132,11 +131,11 @@ public class ImportSubCommand implements SubCommand {
             }
         }
 
-        Messages.sendMessage(player, "worlds_import_started",
+        plugin.getMessages().sendMessage(player, "worlds_import_started",
                 Map.entry("%world%", worldName)
         );
         if (worldService.importWorld(player, worldName, creator, worldType, generator, generatorName, true)) {
-            Messages.sendMessage(player, "worlds_import_finished");
+            plugin.getMessages().sendMessage(player, "worlds_import_finished");
         }
     }
 

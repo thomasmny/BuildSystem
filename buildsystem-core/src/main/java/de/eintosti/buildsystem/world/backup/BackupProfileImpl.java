@@ -8,7 +8,6 @@
 package de.eintosti.buildsystem.world.backup;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
@@ -102,7 +101,7 @@ public class BackupProfileImpl implements BackupProfile {
         String worldName = this.buildWorld.getName();
         World world = this.buildWorld.getWorld();
         if (world == null) {
-            Messages.sendMessage(player, "worlds_backup_unknown_world");
+            plugin.getMessages().sendMessage(player, "worlds_backup_unknown_world");
             return;
         }
 
@@ -143,7 +142,7 @@ public class BackupProfileImpl implements BackupProfile {
             spawnManager.set(spawn, worldName);
         }
 
-        Messages.sendMessage(player, "worlds_backup_restoration_successful",
+        plugin.getMessages().sendMessage(player, "worlds_backup_restoration_successful",
                 Map.entry("%timestamp%", StringUtils.formatTime(backup.creationTime()))
         );
     }

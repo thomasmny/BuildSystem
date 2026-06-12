@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
@@ -42,12 +41,12 @@ public class SetSpawnSubCommand implements SubCommand {
     public void execute(Player player, String[] args) {
         BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld());
         if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
-            Messages.sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return;
         }
 
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_setspawn_world_not_imported");
+            plugin.getMessages().sendMessage(player, "worlds_setspawn_world_not_imported");
             return;
         }
 
@@ -55,7 +54,7 @@ public class SetSpawnSubCommand implements SubCommand {
         buildWorld.getData().customSpawn().set("%s;%s;%s;%s;%s".formatted(
                 playerLocation.getX(), playerLocation.getY(), playerLocation.getZ(), playerLocation.getYaw(), playerLocation.getPitch()
         ));
-        Messages.sendMessage(player, "worlds_setspawn_world_spawn_set",
+        plugin.getMessages().sendMessage(player, "worlds_setspawn_world_spawn_set",
                 Map.entry("%world%", buildWorld.getName())
         );
     }

@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.command.subcommand.Argument;
@@ -49,17 +48,17 @@ public class SetCreatorSubCommand implements SubCommand {
     @Override
     public void execute(Player player, String[] args) {
         if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
-            Messages.sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return;
         }
 
         if (args.length > 2) {
-            Messages.sendMessage(player, "worlds_setcreator_usage");
+            plugin.getMessages().sendMessage(player, "worlds_setcreator_usage");
             return;
         }
 
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_setcreator_unknown_world");
+            plugin.getMessages().sendMessage(player, "worlds_setcreator_unknown_world");
             return;
         }
 
@@ -73,7 +72,7 @@ public class SetCreatorSubCommand implements SubCommand {
 
             plugin.getPlayerService().forceUpdateSidebar(buildWorld);
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
-            Messages.sendMessage(player, "worlds_setcreator_set",
+            plugin.getMessages().sendMessage(player, "worlds_setcreator_set",
                     Map.entry("%world%", buildWorld.getName())
             );
             player.closeInventory();

@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.world.navigator.inventory;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
@@ -93,13 +92,13 @@ public abstract class CreatableWorldsInventory extends DisplayablesInventory {
         }
 
         if (player.hasPermission(getWorldCreationPermission())) {
-            inventory.setItem(48, InventoryUtils.createSkull(Messages.getString(getWorldCreationItemTitleKey(), player), Profileable.detect(CREATE_WORLD_PROFILE)));
+            inventory.setItem(48, InventoryUtils.createSkull(BuildSystemPlugin.get().getMessages().getString(getWorldCreationItemTitleKey(), player), Profileable.detect(CREATE_WORLD_PROFILE)));
         }
     }
 
     private void addFolderCreateItem(Inventory inventory, Player player) {
         if (player.hasPermission("buildsystem.create.folder")) {
-            inventory.setItem(50, InventoryUtils.createSkull(Messages.getString("world_navigator_create_folder", player), Profileable.detect(CREATE_FOLDER_PROFILE)));
+            inventory.setItem(50, InventoryUtils.createSkull(BuildSystemPlugin.get().getMessages().getString("world_navigator_create_folder", player), Profileable.detect(CREATE_FOLDER_PROFILE)));
         }
     }
 

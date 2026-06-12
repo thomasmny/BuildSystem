@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.util.WorldPermissions;
 import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
@@ -46,14 +45,14 @@ public class TimeCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
+            plugin.getLogger().warning(plugin.getMessages().getString("sender_not_player", sender));
             return true;
         }
 
         String worldName = args.length == 0 ? player.getWorld().getName() : args[0];
         World world = Bukkit.getWorld(worldName);
         if (world == null) {
-            Messages.sendMessage(player, "day_unknown_world");
+            plugin.getMessages().sendMessage(player, "day_unknown_world");
             return true;
         }
 
@@ -63,32 +62,32 @@ public class TimeCommand implements CommandExecutor {
         switch (label.toLowerCase(Locale.ROOT)) {
             case "day" -> {
                 if (!permissions.canPerformCommand(player, "buildsystem.day")) {
-                    Messages.sendPermissionError(player);
+                    plugin.getMessages().sendPermissionError(player);
                     return true;
                 }
 
                 switch (args.length) {
                     case 0, 1 -> {
                         world.setTime(plugin.getConfigService().current().world().defaults().time().noon());
-                        Messages.sendMessage(player, "day_set", Map.entry("%world%", world.getName()));
+                        plugin.getMessages().sendMessage(player, "day_set", Map.entry("%world%", world.getName()));
                     }
-                    default -> Messages.sendMessage(player, "day_usage");
+                    default -> plugin.getMessages().sendMessage(player, "day_usage");
                 }
             }
 
             case "night" -> {
                 if (!permissions.canPerformCommand(player, "buildsystem.night")) {
-                    Messages.sendPermissionError(player);
+                    plugin.getMessages().sendPermissionError(player);
                     return true;
                 }
 
                 switch (args.length) {
                     case 0, 1 -> {
                         world.setTime(plugin.getConfigService().current().world().defaults().time().night());
-                        Messages.sendMessage(player, "night_set", Map.entry("%world%", world.getName()));
+                        plugin.getMessages().sendMessage(player, "night_set", Map.entry("%world%", world.getName()));
                     }
                     default -> {
-                        Messages.sendMessage(player, "night_usage");
+                        plugin.getMessages().sendMessage(player, "night_usage");
                     }
                 }
             }

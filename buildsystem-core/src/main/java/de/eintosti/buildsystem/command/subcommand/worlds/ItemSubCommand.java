@@ -17,13 +17,13 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 
 @NullMarked
 public class ItemSubCommand implements SubCommand {
@@ -34,12 +34,12 @@ public class ItemSubCommand implements SubCommand {
     @Override
     public void execute(Player player, String[] args) {
         if (!hasPermission(player)) {
-            Messages.sendPermissionError(player);
+            BuildSystemPlugin.get().getMessages().sendPermissionError(player);
             return;
         }
 
         player.getInventory().addItem(InventoryUtils.createNavigatorItem(player));
-        Messages.sendMessage(player, "worlds_item_receive");
+        BuildSystemPlugin.get().getMessages().sendMessage(player, "worlds_item_receive");
     }
 
     @Override

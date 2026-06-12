@@ -22,7 +22,6 @@ import static de.eintosti.buildsystem.world.navigator.inventory.CreatableWorldsI
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
@@ -39,8 +38,8 @@ public class ArchivedWorldsInventory extends DisplayablesInventory {
                 plugin,
                 player,
                 NavigatorCategory.ARCHIVE,
-                Messages.getString("archive_title", player),
-                Messages.getString("archive_no_worlds", player),
+                BuildSystemPlugin.get().getMessages().getString("archive_title", player),
+                BuildSystemPlugin.get().getMessages().getString("archive_no_worlds", player),
                 Visibility.IGNORE,
                 Sets.newHashSet(BuildWorldStatus.ARCHIVE)
         );
@@ -60,7 +59,7 @@ public class ArchivedWorldsInventory extends DisplayablesInventory {
 
     private void addFolderCreateItem(Inventory inventory, Player player) {
         if (player.hasPermission("buildsystem.create.folder")) {
-            inventory.setItem(49, InventoryUtils.createSkull(Messages.getString("world_navigator_create_folder", player), Profileable.detect(CREATE_FOLDER_PROFILE)));
+            inventory.setItem(49, InventoryUtils.createSkull(BuildSystemPlugin.get().getMessages().getString("world_navigator_create_folder", player), Profileable.detect(CREATE_FOLDER_PROFILE)));
         }
     }
 }

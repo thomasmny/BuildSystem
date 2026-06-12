@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.world.navigator.inventory;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
@@ -58,7 +57,7 @@ public class FolderContentInventory extends DisplayablesInventory {
                 plugin,
                 player,
                 category,
-                Messages.getString("folder_title", player, new SimpleEntry<>("%folder%", folder.getName())),
+                BuildSystemPlugin.get().getMessages().getString("folder_title", player, new SimpleEntry<>("%folder%", folder.getName())),
                 null,
                 requiredVisibility,
                 validStatuses

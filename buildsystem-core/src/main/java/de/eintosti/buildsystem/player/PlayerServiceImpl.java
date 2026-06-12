@@ -21,7 +21,6 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.CachedValues;
 import de.eintosti.buildsystem.api.player.PlayerService;
@@ -341,7 +340,7 @@ public class PlayerServiceImpl implements PlayerService {
             case ARCHIVE -> "new_navigator_world_archive";
             case PRIVATE -> "new_navigator_private_worlds";
         };
-        displayActionBarMessage(player, Messages.getString(message, player));
+        displayActionBarMessage(player, plugin.getMessages().getString(message, player));
     }
 
     private void displayActionBarMessage(Player player, String message) {
@@ -366,7 +365,7 @@ public class PlayerServiceImpl implements PlayerService {
 
         XSound.ENTITY_ITEM_BREAK.play(player);
         displayActionBarMessage(player, "");
-        InventoryUtils.replaceItem(player, Messages.getString("barrier_item", player), XMaterial.BARRIER, InventoryUtils.createNavigatorItem(player));
+        InventoryUtils.replaceItem(player, plugin.getMessages().getString("barrier_item", player), XMaterial.BARRIER, InventoryUtils.createNavigatorItem(player));
 
         CachedValues cachedValues = buildPlayer.getCachedValues();
         cachedValues.resetWalkSpeedIfPresent(player);

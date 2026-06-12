@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.world.util;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.event.world.BuildWorldLoadEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostLoadEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -54,7 +53,7 @@ public class WorldLoaderImpl implements WorldLoader {
         }
 
         player.closeInventory();
-        player.sendTitle(" ", Messages.getString("loading_world", player, Map.entry("%world%", this.buildWorld.getName())), 5, 70, 20);
+        player.sendTitle(" ", plugin.getMessages().getString("loading_world", player, Map.entry("%world%", this.buildWorld.getName())), 5, 70, 20);
 
         load();
     }

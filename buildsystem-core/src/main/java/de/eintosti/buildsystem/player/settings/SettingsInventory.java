@@ -22,7 +22,6 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
@@ -94,8 +93,8 @@ public class SettingsInventory implements InventoryHandler {
         ItemStack itemStack = material.parseItem();
         ItemMeta itemMeta = itemStack.getItemMeta();
 
-        itemMeta.setDisplayName(Messages.getString(displayNameKey, player));
-        itemMeta.setLore(Messages.getStringList(loreKey, player));
+        itemMeta.setDisplayName(plugin.getMessages().getString(displayNameKey, player));
+        itemMeta.setLore(plugin.getMessages().getStringList(loreKey, player));
         itemMeta.addItemFlags(ItemFlag.values());
         itemStack.setItemMeta(itemMeta);
 
@@ -117,11 +116,11 @@ public class SettingsInventory implements InventoryHandler {
     private void addDesignItem(Inventory inventory, Player player) {
         DesignColor color = plugin.getSettingsManager().getSettings(player).getDesignColor();
         XMaterial material = XMaterial.matchXMaterial(color.name() + "_STAINED_GLASS").orElse(XMaterial.BLACK_STAINED_GLASS);
-        ItemStack itemStack = InventoryUtils.createItem(material, Messages.getString("settings_change_design_item", player));
+        ItemStack itemStack = InventoryUtils.createItem(material, plugin.getMessages().getString("settings_change_design_item", player));
         ItemMeta itemMeta = itemStack.getItemMeta();
 
         itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        itemMeta.setLore(Messages.getStringList("settings_change_design_lore", player));
+        itemMeta.setLore(plugin.getMessages().getStringList("settings_change_design_lore", player));
         itemStack.setItemMeta(itemMeta);
         itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.get(), 1);
 
@@ -235,7 +234,7 @@ public class SettingsInventory implements InventoryHandler {
     private static class SettingsInventoryHolder extends BuildSystemHolder {
 
         public SettingsInventoryHolder(Player player) {
-            super(45, Messages.getString("settings_title", player));
+            super(45, BuildSystemPlugin.get().getMessages().getString("settings_title", player));
         }
     }
 }

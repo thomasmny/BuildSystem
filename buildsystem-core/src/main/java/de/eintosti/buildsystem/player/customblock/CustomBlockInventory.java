@@ -21,7 +21,6 @@ import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
 import de.eintosti.buildsystem.util.inventory.InventoryHandler;
 import de.eintosti.buildsystem.util.inventory.InventoryManager;
@@ -87,7 +86,7 @@ public class CustomBlockInventory implements InventoryHandler {
     }
 
     private void setCustomBlock(Inventory inventory, Player player, int position, CustomBlock customBlock) {
-        inventory.setItem(position, InventoryUtils.createSkull(Messages.getString(customBlock.getMessageKey(), player), Profileable.detect(customBlock.getSkullUrl())));
+        inventory.setItem(position, InventoryUtils.createSkull(BuildSystemPlugin.get().getMessages().getString(customBlock.getMessageKey(), player), Profileable.detect(customBlock.getSkullUrl())));
     }
 
     private void fillGuiWithGlass(Player player, Inventory inventory) {
@@ -147,9 +146,9 @@ public class CustomBlockInventory implements InventoryHandler {
     private void giveCustomBlock(Player player, CustomBlock customBlock, XMaterial material) {
         ItemStack itemStack;
         if (material == XMaterial.PLAYER_HEAD) {
-            itemStack = InventoryUtils.createSkull(Messages.getString(customBlock.getMessageKey(), player), Profileable.detect(customBlock.getSkullUrl()));
+            itemStack = InventoryUtils.createSkull(BuildSystemPlugin.get().getMessages().getString(customBlock.getMessageKey(), player), Profileable.detect(customBlock.getSkullUrl()));
         } else {
-            itemStack = InventoryUtils.createItem(material, Messages.getString(customBlock.getMessageKey(), player));
+            itemStack = InventoryUtils.createItem(material, BuildSystemPlugin.get().getMessages().getString(customBlock.getMessageKey(), player));
             ItemMeta itemMeta = itemStack.getItemMeta();
             itemMeta.addEnchant(XEnchantment.UNBREAKING.get(), 1, true);
             itemStack.setItemMeta(itemMeta);
@@ -160,7 +159,7 @@ public class CustomBlockInventory implements InventoryHandler {
     private static class BlocksInventoryHolder extends BuildSystemHolder {
 
         public BlocksInventoryHolder(Player player) {
-            super(45, Messages.getString("blocks_title", player));
+            super(45, BuildSystemPlugin.get().getMessages().getString("blocks_title", player));
         }
     }
 }

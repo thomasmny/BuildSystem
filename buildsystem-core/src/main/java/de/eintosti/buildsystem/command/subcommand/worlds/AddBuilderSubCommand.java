@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
@@ -56,19 +55,19 @@ public class AddBuilderSubCommand implements SubCommand {
     @Override
     public void execute(Player player, String[] args) {
         if (!permissions.canPerformCommand(player, getArgument().getPermission())) {
-            Messages.sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return;
         }
 
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_addbuilder_unknown_world");
+            plugin.getMessages().sendMessage(player, "worlds_addbuilder_unknown_world");
             return;
         }
 
         switch (args.length) {
             case 1 -> getAddBuilderInput(player, buildWorld, true);
             case 2 -> addBuilder(player, buildWorld, args[1], true);
-            default -> Messages.sendMessage(player, "worlds_addbuilder_usage");
+            default -> plugin.getMessages().sendMessage(player, "worlds_addbuilder_usage");
         }
     }
 
@@ -80,7 +79,7 @@ public class AddBuilderSubCommand implements SubCommand {
         if (builderPlayer == null) {
             builderId = UUIDFetcher.getUUID(builderName);
             if (builderId == null) {
-                Messages.sendMessage(player, "worlds_addbuilder_player_not_found");
+                plugin.getMessages().sendMessage(player, "worlds_addbuilder_player_not_found");
                 player.closeInventory();
                 return;
             }
@@ -92,20 +91,20 @@ public class AddBuilderSubCommand implements SubCommand {
 
         Builders builders = buildWorld.getBuilders();
         if (builderId.equals(player.getUniqueId()) && builders.isCreator(player)) {
-            Messages.sendMessage(player, "worlds_addbuilder_already_creator");
+            plugin.getMessages().sendMessage(player, "worlds_addbuilder_already_creator");
             player.closeInventory();
             return;
         }
 
         if (builders.isBuilder(builderId)) {
-            Messages.sendMessage(player, "worlds_addbuilder_already_added");
+            plugin.getMessages().sendMessage(player, "worlds_addbuilder_already_added");
             player.closeInventory();
             return;
         }
 
         builders.addBuilder(builder);
         XSound.ENTITY_PLAYER_LEVELUP.play(player);
-        Messages.sendMessage(player, "worlds_addbuilder_added",
+        plugin.getMessages().sendMessage(player, "worlds_addbuilder_added",
                 Map.entry("%builder%", builderName)
         );
 

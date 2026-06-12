@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import java.util.Locale;
 import java.util.Map;
 import org.bukkit.Bukkit;
@@ -42,7 +41,7 @@ public class GamemodeCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
+            plugin.getLogger().warning(plugin.getMessages().getString("sender_not_player", sender));
             return true;
         }
 
@@ -55,22 +54,22 @@ public class GamemodeCommand implements CommandExecutor {
             case "survival":
             case "s":
             case "0":
-                setGamemode(player, args, GameMode.SURVIVAL, Messages.getString("gamemode_survival", player));
+                setGamemode(player, args, GameMode.SURVIVAL, plugin.getMessages().getString("gamemode_survival", player));
                 break;
             case "creative":
             case "c":
             case "1":
-                setGamemode(player, args, GameMode.CREATIVE, Messages.getString("gamemode_creative", player));
+                setGamemode(player, args, GameMode.CREATIVE, plugin.getMessages().getString("gamemode_creative", player));
                 break;
             case "adventure":
             case "a":
             case "2":
-                setGamemode(player, args, GameMode.ADVENTURE, Messages.getString("gamemode_adventure", player));
+                setGamemode(player, args, GameMode.ADVENTURE, plugin.getMessages().getString("gamemode_adventure", player));
                 break;
             case "spectator":
             case "sp":
             case "3":
-                setGamemode(player, args, GameMode.SPECTATOR, Messages.getString("gamemode_spectator", player));
+                setGamemode(player, args, GameMode.SPECTATOR, plugin.getMessages().getString("gamemode_spectator", player));
                 break;
             default:
                 sendUsageMessage(player);
@@ -89,34 +88,34 @@ public class GamemodeCommand implements CommandExecutor {
     }
 
     private void sendUsageMessage(Player player) {
-        Messages.sendMessage(player, "gamemode_usage");
+        plugin.getMessages().sendMessage(player, "gamemode_usage");
     }
 
     private void setPlayerGamemode(Player player, GameMode gameMode, String gameModeName) {
         if (!player.hasPermission("buildsystem.gamemode.%s".formatted(gameMode.name().toLowerCase(Locale.ROOT)))) {
-            Messages.sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return;
         }
 
         player.setGameMode(gameMode);
-        Messages.sendMessage(player, "gamemode_set_self", Map.entry("%gamemode%", gameModeName));
+        plugin.getMessages().sendMessage(player, "gamemode_set_self", Map.entry("%gamemode%", gameModeName));
     }
 
     private void setTargetGamemode(Player player, String[] args, GameMode gameMode, String gameModeName) {
         if (!player.hasPermission("buildsystem.gamemode.%s.other".formatted(gameMode.name().toLowerCase(Locale.ROOT)))) {
-            Messages.sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return;
         }
 
         Player target = Bukkit.getPlayerExact(args[1]);
         if (target == null) {
-            Messages.sendMessage(player, "gamemode_player_not_found");
+            plugin.getMessages().sendMessage(player, "gamemode_player_not_found");
             return;
         }
 
         target.setGameMode(gameMode);
-        Messages.sendMessage(target, "gamemode_set_self", Map.entry("%gamemode%", gameModeName));
-        Messages.sendMessage(player, "gamemode_set_other",
+        plugin.getMessages().sendMessage(target, "gamemode_set_self", Map.entry("%gamemode%", gameModeName));
+        plugin.getMessages().sendMessage(player, "gamemode_set_other",
                 Map.entry("%target%", target.getName()),
                 Map.entry("%gamemode%", gameModeName)
         );

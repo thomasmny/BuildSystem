@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.SpawnManager;
@@ -49,22 +48,22 @@ public class SpawnCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
+            plugin.getLogger().warning(plugin.getMessages().getString("sender_not_player", sender));
             return true;
         }
 
         switch (args.length) {
             case 0 -> {
                 if (!spawnManager.teleport(player)) {
-                    Messages.sendMessage(player, "spawn_unavailable");
+                    plugin.getMessages().sendMessage(player, "spawn_unavailable");
                 } else if (plugin.getConfigService().current().messages().spawnTeleportMessage()) {
-                    Messages.sendMessage(player, "spawn_teleported");
+                    plugin.getMessages().sendMessage(player, "spawn_teleported");
                 }
             }
 
             case 1 -> {
                 if (!player.hasPermission("buildsystem.spawn")) {
-                    Messages.sendMessage(player, "spawn_usage");
+                    plugin.getMessages().sendMessage(player, "spawn_usage");
                     return true;
                 }
 
@@ -73,18 +72,18 @@ public class SpawnCommand implements CommandExecutor {
                         Location playerLocation = player.getLocation();
                         World bukkitWorld = playerLocation.getWorld();
                         if (bukkitWorld == null) {
-                            Messages.sendMessage(player, "spawn_world_not_imported");
+                            plugin.getMessages().sendMessage(player, "spawn_world_not_imported");
                             return true;
                         }
 
                         BuildWorld buildWorld = worldStorage.getBuildWorld(bukkitWorld);
                         if (buildWorld == null) {
-                            Messages.sendMessage(player, "spawn_world_not_imported");
+                            plugin.getMessages().sendMessage(player, "spawn_world_not_imported");
                             return true;
                         }
 
                         spawnManager.set(playerLocation, buildWorld.getName());
-                        Messages.sendMessage(player, "spawn_set",
+                        plugin.getMessages().sendMessage(player, "spawn_set",
                                 Map.entry("%x%", round(playerLocation.getX())),
                                 Map.entry("%y%", round(playerLocation.getY())),
                                 Map.entry("%z%", round(playerLocation.getZ())),
@@ -93,17 +92,17 @@ public class SpawnCommand implements CommandExecutor {
                     }
                     case "remove" -> {
                         spawnManager.remove();
-                        Messages.sendMessage(player, "spawn_remove");
+                        plugin.getMessages().sendMessage(player, "spawn_remove");
                     }
                     default -> {
-                        Messages.sendMessage(player, "spawn_admin");
+                        plugin.getMessages().sendMessage(player, "spawn_admin");
                     }
                 }
             }
 
             default -> {
                 String key = player.hasPermission("buildsystem.spawn") ? "spawn_admin" : "spawn_usage";
-                Messages.sendMessage(player, key);
+                plugin.getMessages().sendMessage(player, key);
             }
         }
         return true;

@@ -22,7 +22,6 @@ import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.inventory.XInventoryView;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.player.CachedValues;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
@@ -103,7 +102,7 @@ public class NavigatorListener implements Listener {
         if (InventoryUtils.isNavigator(itemStack)) {
             event.setCancelled(true);
             if (!player.hasPermission("buildsystem.navigator.item")) {
-                Messages.sendPermissionError(player);
+                plugin.getMessages().sendPermissionError(player);
                 return;
             }
             openNavigator(player);
@@ -122,13 +121,13 @@ public class NavigatorListener implements Listener {
             }
             case NEW -> {
                 if (playerService.getOpenNavigator().contains(player)) {
-                    Messages.sendMessage(player, "worlds_navigator_open");
+                    plugin.getMessages().sendMessage(player, "worlds_navigator_open");
                     return;
                 }
 
                 summonNewNavigator(player);
-                String findItemName = Messages.getString("navigator_item", player);
-                ItemStack replaceItem = InventoryUtils.createItem(XMaterial.BARRIER, Messages.getString("barrier_item", player));
+                String findItemName = plugin.getMessages().getString("navigator_item", player);
+                ItemStack replaceItem = InventoryUtils.createItem(XMaterial.BARRIER, plugin.getMessages().getString("barrier_item", player));
                 InventoryUtils.replaceItem(player, findItemName, plugin.getConfigService().current().settings().navigator().item(), replaceItem);
             }
         }
@@ -268,6 +267,6 @@ public class NavigatorListener implements Listener {
             return false;
         }
 
-        return itemMeta.getDisplayName().equals(Messages.getString("barrier_item", player));
+        return itemMeta.getDisplayName().equals(plugin.getMessages().getString("barrier_item", player));
     }
 }

@@ -115,6 +115,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     private static BuildSystemPlugin instance;
 
     private ConfigService configService;
+    private de.eintosti.buildsystem.i18n.Messages messages;
 
     private ArmorStandManager armorStandManager;
     private CustomBlockManager customBlockManager;
@@ -144,7 +145,8 @@ public class BuildSystemPlugin extends JavaPlugin {
         this.saveConfig();
         this.configService.load();
 
-        Messages.createMessageFile();
+        this.messages = new de.eintosti.buildsystem.i18n.Messages(this, configService);
+        this.messages.load();
         createTemplateFolder();
     }
 
@@ -458,6 +460,10 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     public ConfigService getConfigService() {
         return configService;
+    }
+
+    public de.eintosti.buildsystem.i18n.Messages getMessages() {
+        return messages;
     }
 
     public CustomizableIcons getCustomizableIcons() {

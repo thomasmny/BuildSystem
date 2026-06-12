@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
@@ -45,28 +44,28 @@ public class SetItemSubCommand implements SubCommand {
     @Override
     public void execute(Player player, String[] args) {
         if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
-            Messages.sendPermissionError(player);
+            BuildSystemPlugin.get().getMessages().sendPermissionError(player);
             return;
         }
 
         if (args.length > 2) {
-            Messages.sendMessage(player, "worlds_setitem_usage");
+            BuildSystemPlugin.get().getMessages().sendMessage(player, "worlds_setitem_usage");
             return;
         }
 
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_setitem_unknown_world");
+            BuildSystemPlugin.get().getMessages().sendMessage(player, "worlds_setitem_unknown_world");
             return;
         }
 
         ItemStack itemStack = player.getInventory().getItemInMainHand();
         if (itemStack.getType() == Material.AIR) {
-            Messages.sendMessage(player, "worlds_setitem_hand_empty");
+            BuildSystemPlugin.get().getMessages().sendMessage(player, "worlds_setitem_hand_empty");
             return;
         }
 
         buildWorld.getData().material().set(XMaterial.matchXMaterial(itemStack));
-        Messages.sendMessage(player, "worlds_setitem_set",
+        BuildSystemPlugin.get().getMessages().sendMessage(player, "worlds_setitem_set",
                 Map.entry("%world%", buildWorld.getName())
         );
     }

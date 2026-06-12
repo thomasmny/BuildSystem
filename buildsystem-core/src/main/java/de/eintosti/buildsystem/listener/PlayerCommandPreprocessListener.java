@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.listener;
 
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
@@ -279,7 +278,7 @@ public class PlayerCommandPreprocessListener implements Listener {
 
         if (buildWorld.getData().status().get() == BuildWorldStatus.ARCHIVE) {
             event.setCancelled(true);
-            Messages.sendMessage(player, "command_archive_world");
+            plugin.getMessages().sendMessage(player, "command_archive_world");
             return true;
         }
         return false;
@@ -297,7 +296,7 @@ public class PlayerCommandPreprocessListener implements Listener {
 
         if (buildWorld.getData().buildersEnabled().get() && !builders.isBuilder(player)) {
             event.setCancelled(true);
-            Messages.sendMessage(player, "command_not_builder");
+            plugin.getMessages().sendMessage(player, "command_not_builder");
         }
     }
 }

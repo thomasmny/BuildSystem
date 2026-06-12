@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.world.modification;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
 import de.eintosti.buildsystem.util.inventory.InventoryHandler;
@@ -55,14 +54,14 @@ public class DeleteInventory implements InventoryHandler {
         fillGuiWithGlass(inventory);
 
         inventory.setItem(11, InventoryUtils.createItem(XMaterial.LIME_DYE,
-                Messages.getString("delete_world_confirm", player))
+                plugin.getMessages().getString("delete_world_confirm", player))
         );
         inventory.setItem(13, InventoryUtils.createItem(XMaterial.FILLED_MAP,
-                Messages.getString("delete_world_name", player, Map.entry("%world%", buildWorld.getName())),
-                Messages.getStringList("delete_world_name_lore", player)
+                plugin.getMessages().getString("delete_world_name", player, Map.entry("%world%", buildWorld.getName())),
+                plugin.getMessages().getStringList("delete_world_name_lore", player)
         ));
         inventory.setItem(15, InventoryUtils.createItem(XMaterial.RED_DYE,
-                Messages.getString("delete_world_cancel", player))
+                plugin.getMessages().getString("delete_world_cancel", player))
         );
 
         return inventory;
@@ -97,7 +96,7 @@ public class DeleteInventory implements InventoryHandler {
             case 15 -> {
                 XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
                 player.closeInventory();
-                Messages.sendMessage(player, "worlds_delete_canceled", Map.entry("%world%", buildWorld.getName()));
+                plugin.getMessages().sendMessage(player, "worlds_delete_canceled", Map.entry("%world%", buildWorld.getName()));
             }
         }
     }
@@ -105,7 +104,7 @@ public class DeleteInventory implements InventoryHandler {
     private static class DeleteInventoryHolder extends BuildWorldHolder {
 
         public DeleteInventoryHolder(BuildWorld buildWorld, Player player) {
-            super(buildWorld, 27, Messages.getString("delete_title", player));
+            super(buildWorld, 27, BuildSystemPlugin.get().getMessages().getString("delete_title", player));
         }
     }
 }

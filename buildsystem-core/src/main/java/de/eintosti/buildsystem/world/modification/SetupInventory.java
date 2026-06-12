@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.world.modification;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.util.inventory.BuildSystemHolder;
@@ -75,22 +74,22 @@ public class SetupInventory implements InventoryHandler {
         Inventory inventory = new SetupInventoryHolder(player).getInventory();
         fillGuiWithGlass(player, inventory);
 
-        inventory.setItem(10, InventoryUtils.createSkull(Messages.getString("setup_default_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_default_item_lore", player)));
-        inventory.setItem(19, InventoryUtils.createSkull(Messages.getString("setup_status_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), Messages.getStringList("setup_status_item_name_lore", player)));
+        inventory.setItem(10, InventoryUtils.createSkull(plugin.getMessages().getString("setup_default_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), plugin.getMessages().getStringList("setup_default_item_lore", player)));
+        inventory.setItem(19, InventoryUtils.createSkull(plugin.getMessages().getString("setup_status_item_name", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"), plugin.getMessages().getStringList("setup_status_item_name_lore", player)));
 
-        inventory.setItem(11, InventoryUtils.createItem(icons.getIcon(BuildWorldType.NORMAL), Messages.getString("setup_normal_world", player)));
-        inventory.setItem(12, InventoryUtils.createItem(icons.getIcon(BuildWorldType.FLAT), Messages.getString("setup_flat_world", player)));
-        inventory.setItem(13, InventoryUtils.createItem(icons.getIcon(BuildWorldType.NETHER), Messages.getString("setup_nether_world", player)));
-        inventory.setItem(14, InventoryUtils.createItem(icons.getIcon(BuildWorldType.END), Messages.getString("setup_end_world", player)));
-        inventory.setItem(15, InventoryUtils.createItem(icons.getIcon(BuildWorldType.VOID), Messages.getString("setup_void_world", player)));
-        inventory.setItem(16, InventoryUtils.createItem(icons.getIcon(BuildWorldType.IMPORTED), Messages.getString("setup_imported_world", player)));
+        inventory.setItem(11, InventoryUtils.createItem(icons.getIcon(BuildWorldType.NORMAL), plugin.getMessages().getString("setup_normal_world", player)));
+        inventory.setItem(12, InventoryUtils.createItem(icons.getIcon(BuildWorldType.FLAT), plugin.getMessages().getString("setup_flat_world", player)));
+        inventory.setItem(13, InventoryUtils.createItem(icons.getIcon(BuildWorldType.NETHER), plugin.getMessages().getString("setup_nether_world", player)));
+        inventory.setItem(14, InventoryUtils.createItem(icons.getIcon(BuildWorldType.END), plugin.getMessages().getString("setup_end_world", player)));
+        inventory.setItem(15, InventoryUtils.createItem(icons.getIcon(BuildWorldType.VOID), plugin.getMessages().getString("setup_void_world", player)));
+        inventory.setItem(16, InventoryUtils.createItem(icons.getIcon(BuildWorldType.IMPORTED), plugin.getMessages().getString("setup_imported_world", player)));
 
-        inventory.setItem(20, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.NOT_STARTED), Messages.getString("status_not_started", player)));
-        inventory.setItem(21, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.IN_PROGRESS), Messages.getString("status_in_progress", player)));
-        inventory.setItem(22, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.ALMOST_FINISHED), Messages.getString("status_almost_finished", player)));
-        inventory.setItem(23, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.FINISHED), Messages.getString("status_finished", player)));
-        inventory.setItem(24, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.ARCHIVE), Messages.getString("status_archive", player)));
-        inventory.setItem(25, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.HIDDEN), Messages.getString("status_hidden", player)));
+        inventory.setItem(20, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.NOT_STARTED), plugin.getMessages().getString("status_not_started", player)));
+        inventory.setItem(21, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.IN_PROGRESS), plugin.getMessages().getString("status_in_progress", player)));
+        inventory.setItem(22, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.ALMOST_FINISHED), plugin.getMessages().getString("status_almost_finished", player)));
+        inventory.setItem(23, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.FINISHED), plugin.getMessages().getString("status_finished", player)));
+        inventory.setItem(24, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.ARCHIVE), plugin.getMessages().getString("status_archive", player)));
+        inventory.setItem(25, InventoryUtils.createItem(icons.getIcon(BuildWorldStatus.HIDDEN), plugin.getMessages().getString("status_hidden", player)));
 
         return inventory;
     }
@@ -173,7 +172,7 @@ public class SetupInventory implements InventoryHandler {
     private static class SetupInventoryHolder extends BuildSystemHolder {
 
         public SetupInventoryHolder(Player player) {
-            super(36, Messages.getString("setup_title", player));
+            super(36, BuildSystemPlugin.get().getMessages().getString("setup_title", player));
         }
     }
 }

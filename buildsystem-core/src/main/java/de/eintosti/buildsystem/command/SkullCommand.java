@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import java.util.Map;
 import org.bukkit.command.Command;
@@ -41,32 +40,32 @@ public class SkullCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
+            plugin.getLogger().warning(plugin.getMessages().getString("sender_not_player", sender));
             return true;
         }
 
         if (!player.hasPermission("buildsystem.skull")) {
-            Messages.sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return true;
         }
 
         switch (args.length) {
             case 0 -> {
                 addSkull(player, "§b" + player.getName(), Profileable.of(player));
-                Messages.sendMessage(player, "skull_player_received", Map.entry("%player%", player.getName()));
+                plugin.getMessages().sendMessage(player, "skull_player_received", Map.entry("%player%", player.getName()));
             }
             case 1 -> {
                 String identifier = args[0];
                 if (identifier.length() > 16) {
-                    addSkull(player, Messages.getString("custom_skull_item", player), Profileable.detect(identifier));
-                    Messages.sendMessage(player, "skull_custom_received");
+                    addSkull(player, plugin.getMessages().getString("custom_skull_item", player), Profileable.detect(identifier));
+                    plugin.getMessages().sendMessage(player, "skull_custom_received");
                 } else {
                     addSkull(player, "§b" + identifier, Profileable.detect(identifier));
-                    Messages.sendMessage(player, "skull_player_received", Map.entry("%player%", identifier));
+                    plugin.getMessages().sendMessage(player, "skull_player_received", Map.entry("%player%", identifier));
                 }
             }
             default -> {
-                Messages.sendMessage(player, "skull_usage");
+                plugin.getMessages().sendMessage(player, "skull_usage");
             }
         }
         return true;

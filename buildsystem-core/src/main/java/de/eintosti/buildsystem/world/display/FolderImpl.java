@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.world.display;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
@@ -91,7 +90,7 @@ public class FolderImpl implements Folder {
 
     @Override
     public String getDisplayName(Player player) {
-        return Messages.getString("folder_item_title", player,
+        return BuildSystemPlugin.get().getMessages().getString("folder_item_title", player,
                 Map.entry("%folder%", name)
         );
     }
@@ -119,7 +118,7 @@ public class FolderImpl implements Folder {
     @Override
     @Contract("_ -> new")
     public List<String> getLore(Player player) {
-        return new ArrayList<>(Messages.getStringList("folder_item_lore", player,
+        return new ArrayList<>(BuildSystemPlugin.get().getMessages().getStringList("folder_item_lore", player,
                 Map.entry("%permission%", this.permission),
                 Map.entry("%project%", this.project),
                 Map.entry("%worlds%", String.valueOf(getWorldCount())))

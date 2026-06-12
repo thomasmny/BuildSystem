@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -48,21 +47,21 @@ public class NoAICommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
+            plugin.getLogger().warning(plugin.getMessages().getString("sender_not_player", sender));
             return true;
         }
 
         String worldName = args.length == 0 ? player.getWorld().getName() : args[0];
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, "buildsystem.noai")) {
-            Messages.sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return true;
         }
 
         switch (args.length) {
             case 0 -> toggleAI(player, player.getWorld());
             case 1 -> toggleAI(player, Bukkit.getWorld(args[0]));
-            default -> Messages.sendMessage(player, "noai_usage");
+            default -> plugin.getMessages().sendMessage(player, "noai_usage");
         }
 
         return true;
@@ -70,23 +69,23 @@ public class NoAICommand implements CommandExecutor {
 
     private void toggleAI(Player player, @Nullable World world) {
         if (world == null) {
-            Messages.sendMessage(player, "noai_unknown_world");
+            plugin.getMessages().sendMessage(player, "noai_unknown_world");
             return;
         }
 
         BuildWorld buildWorld = worldStorage.getBuildWorld(world);
         if (buildWorld == null) {
-            Messages.sendMessage(player, "noai_world_not_imported");
+            plugin.getMessages().sendMessage(player, "noai_world_not_imported");
             return;
         }
 
         WorldData worldData = buildWorld.getData();
         if (worldData.mobAi().get()) {
             worldData.mobAi().set(false);
-            Messages.sendMessage(player, "noai_activated", Map.entry("%world%", buildWorld.getName()));
+            plugin.getMessages().sendMessage(player, "noai_activated", Map.entry("%world%", buildWorld.getName()));
         } else {
             worldData.mobAi().set(true);
-            Messages.sendMessage(player, "noai_deactivated", Map.entry("%world%", buildWorld.getName()));
+            plugin.getMessages().sendMessage(player, "noai_deactivated", Map.entry("%world%", buildWorld.getName()));
         }
 
         boolean hasAi = worldData.mobAi().get();

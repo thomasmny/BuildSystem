@@ -21,7 +21,6 @@ import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
@@ -40,6 +39,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jspecify.annotations.NullMarked;
+import de.eintosti.buildsystem.i18n.Messages;
 
 @NullMarked
 public class StatusInventory implements InventoryHandler {
@@ -94,7 +94,7 @@ public class StatusInventory implements InventoryHandler {
      */
     private void addStatusItem(Player player, Inventory inventory, int position, BuildWorldStatus status, BuildWorld buildWorld) {
         XMaterial material = plugin.getCustomizableIcons().getIcon(status);
-        String displayName = Messages.getString(Messages.getMessageKey(status), player);
+        String displayName = plugin.getMessages().getString(Messages.getMessageKey(status), player);
 
         if (!player.hasPermission(status.getPermission())) {
             material = XMaterial.BARRIER;
@@ -152,9 +152,9 @@ public class StatusInventory implements InventoryHandler {
         playerService.forceUpdateSidebar(buildWorld);
 
         XSound.ENTITY_CHICKEN_EGG.play(player);
-        Messages.sendMessage(player, "worlds_setstatus_set",
+        plugin.getMessages().sendMessage(player, "worlds_setstatus_set",
                 Map.entry("%world%", buildWorld.getName()),
-                Map.entry("%status%", Messages.getString(Messages.getMessageKey(status), player))
+                Map.entry("%status%", plugin.getMessages().getString(Messages.getMessageKey(status), player))
         );
     }
 
@@ -179,7 +179,7 @@ public class StatusInventory implements InventoryHandler {
     private static class StatusInventoryHolder extends BuildWorldHolder {
 
         public StatusInventoryHolder(BuildWorld buildWorld, Player player) {
-            super(buildWorld, 27, Messages.getString("status_title", player, Map.entry("%world%", formatWorldName(buildWorld))));
+            super(buildWorld, 27, BuildSystemPlugin.get().getMessages().getString("status_title", player, Map.entry("%world%", formatWorldName(buildWorld))));
         }
 
         private static String formatWorldName(BuildWorld buildWorld) {

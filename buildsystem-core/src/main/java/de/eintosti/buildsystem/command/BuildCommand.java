@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.event.world.PlayerBuildModeToggleEvent;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.CachedValues;
@@ -49,12 +48,12 @@ public class BuildCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
+            plugin.getLogger().warning(plugin.getMessages().getString("sender_not_player", sender));
             return true;
         }
 
         if (!player.hasPermission("buildsystem.build")) {
-            Messages.sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return true;
         }
 
@@ -65,13 +64,13 @@ public class BuildCommand implements CommandExecutor {
 
             case 1 -> {
                 if (!player.hasPermission("buildsystem.build.other")) {
-                    Messages.sendPermissionError(player);
+                    plugin.getMessages().sendPermissionError(player);
                     return true;
                 }
 
                 Player target = Bukkit.getPlayer(args[0]);
                 if (target == null) {
-                    Messages.sendMessage(player, "build_player_not_found");
+                    plugin.getMessages().sendMessage(player, "build_player_not_found");
                     return true;
                 }
 
@@ -79,7 +78,7 @@ public class BuildCommand implements CommandExecutor {
             }
 
             default -> {
-                Messages.sendMessage(player, "build_usage");
+                plugin.getMessages().sendMessage(player, "build_usage");
             }
         }
 
@@ -113,11 +112,11 @@ public class BuildCommand implements CommandExecutor {
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
             if (sender.equals(target)) {
-                Messages.sendMessage(target, "build_activated_self");
+                plugin.getMessages().sendMessage(target, "build_activated_self");
             } else {
                 XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(sender);
-                Messages.sendMessage(sender, "build_activated_other_sender", Map.entry("%target%", target.getName()));
-                Messages.sendMessage(target, "build_activated_other_target", Map.entry("%sender%", sender.getName()));
+                plugin.getMessages().sendMessage(sender, "build_activated_other_sender", Map.entry("%target%", target.getName()));
+                plugin.getMessages().sendMessage(target, "build_activated_other_target", Map.entry("%sender%", sender.getName()));
             }
         } else {
             if (!playerService.getBuildModePlayers().remove(targetUuid)) {
@@ -129,11 +128,11 @@ public class BuildCommand implements CommandExecutor {
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
             if (sender.equals(target)) {
-                Messages.sendMessage(target, "build_deactivated_self");
+                plugin.getMessages().sendMessage(target, "build_deactivated_self");
             } else {
                 XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(sender);
-                Messages.sendMessage(sender, "build_deactivated_other_sender", Map.entry("%target%", target.getName()));
-                Messages.sendMessage(target, "build_deactivated_other_target", Map.entry("%sender%", sender.getName()));
+                plugin.getMessages().sendMessage(sender, "build_deactivated_other_sender", Map.entry("%target%", target.getName()));
+                plugin.getMessages().sendMessage(target, "build_deactivated_other_target", Map.entry("%sender%", sender.getName()));
             }
         }
     }

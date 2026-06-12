@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -48,14 +47,14 @@ public class PhysicsCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
+            plugin.getLogger().warning(plugin.getMessages().getString("sender_not_player", sender));
             return true;
         }
 
         String worldName = args.length == 0 ? player.getWorld().getName() : args[0];
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, "buildsystem.physics")) {
-            Messages.sendPermissionError(player);
+            plugin.getMessages().sendPermissionError(player);
             return true;
         }
 
@@ -67,13 +66,13 @@ public class PhysicsCommand implements CommandExecutor {
                 // TODO: Check each world for permission individually?
                 if (args[0].equalsIgnoreCase("all") && !worldStorage.worldExists("all")) {
                     worldStorage.getBuildWorlds().forEach(world -> world.getData().physics().set(true));
-                    Messages.sendMessage(player, "physics_activated_all");
+                    plugin.getMessages().sendMessage(player, "physics_activated_all");
                 } else {
                     togglePhysics(player, Bukkit.getWorld(args[0]));
                 }
             }
             default -> {
-                Messages.sendMessage(player, "physics_usage");
+                plugin.getMessages().sendMessage(player, "physics_usage");
             }
         }
         return true;
@@ -81,23 +80,23 @@ public class PhysicsCommand implements CommandExecutor {
 
     private void togglePhysics(Player player, @Nullable World world) {
         if (world == null) {
-            Messages.sendMessage(player, "physics_unknown_world");
+            plugin.getMessages().sendMessage(player, "physics_unknown_world");
             return;
         }
 
         BuildWorld buildWorld = worldStorage.getBuildWorld(world.getName());
         if (buildWorld == null) {
-            Messages.sendMessage(player, "physics_world_not_imported");
+            plugin.getMessages().sendMessage(player, "physics_world_not_imported");
             return;
         }
 
         WorldData worldData = buildWorld.getData();
         if (!worldData.physics().get()) {
             worldData.physics().set(true);
-            Messages.sendMessage(player, "physics_activated", Map.entry("%world%", buildWorld.getName()));
+            plugin.getMessages().sendMessage(player, "physics_activated", Map.entry("%world%", buildWorld.getName()));
         } else {
             worldData.physics().set(false);
-            Messages.sendMessage(player, "physics_deactivated", Map.entry("%world%", buildWorld.getName()));
+            plugin.getMessages().sendMessage(player, "physics_deactivated", Map.entry("%world%", buildWorld.getName()));
         }
     }
 }

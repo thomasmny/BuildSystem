@@ -22,7 +22,6 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
@@ -98,7 +97,7 @@ public class CreateInventory extends PaginatedInventory {
         this.inventories[index] = inventory;
 
         if (numTemplates == 0) {
-            ItemStack barrier = InventoryUtils.createItem(XMaterial.BARRIER, Messages.getString("create_no_templates", player));
+            ItemStack barrier = InventoryUtils.createItem(XMaterial.BARRIER, plugin.getMessages().getString("create_no_templates", player));
             for (int i = 29; i <= 33; i++) {
                 inventory.setItem(i, barrier);
             }
@@ -112,7 +111,7 @@ public class CreateInventory extends PaginatedInventory {
         int columnTemplate = 29, maxColumnTemplate = 33;
         for (File templateFile : templateFiles) {
             inventory.setItem(columnTemplate++,
-                    InventoryUtils.createItem(XMaterial.FILLED_MAP, Messages.getString("create_template", player,
+                    InventoryUtils.createItem(XMaterial.FILLED_MAP, plugin.getMessages().getString("create_template", player,
                             Map.entry("%template%", templateFile.getName()))
                     )
             );
@@ -129,20 +128,20 @@ public class CreateInventory extends PaginatedInventory {
         Inventory inventory = new CreateInventoryHolder(player, page).getInventory();
         fillGuiWithGlass(player, inventory, page);
 
-        addPageItem(inventory, page, Page.PREDEFINED, InventoryUtils.createSkull(Messages.getString("create_predefined_worlds", player), Profileable.detect("2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78")));
-        addPageItem(inventory, page, Page.GENERATOR, InventoryUtils.createSkull(Messages.getString("create_generators", player), Profileable.detect("b2f79016cad84d1ae21609c4813782598e387961be13c15682752f126dce7a")));
-        addPageItem(inventory, page, Page.TEMPLATES, InventoryUtils.createSkull(Messages.getString("create_templates", player), Profileable.detect("d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c")));
+        addPageItem(inventory, page, Page.PREDEFINED, InventoryUtils.createSkull(plugin.getMessages().getString("create_predefined_worlds", player), Profileable.detect("2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78")));
+        addPageItem(inventory, page, Page.GENERATOR, InventoryUtils.createSkull(plugin.getMessages().getString("create_generators", player), Profileable.detect("b2f79016cad84d1ae21609c4813782598e387961be13c15682752f126dce7a")));
+        addPageItem(inventory, page, Page.TEMPLATES, InventoryUtils.createSkull(plugin.getMessages().getString("create_templates", player), Profileable.detect("d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c")));
 
         switch (page) {
             case PREDEFINED:
-                addPredefinedWorldItem(player, inventory, 29, BuildWorldType.NORMAL, Messages.getString("create_normal_world", player));
-                addPredefinedWorldItem(player, inventory, 30, BuildWorldType.FLAT, Messages.getString("create_flat_world", player));
-                addPredefinedWorldItem(player, inventory, 31, BuildWorldType.NETHER, Messages.getString("create_nether_world", player));
-                addPredefinedWorldItem(player, inventory, 32, BuildWorldType.END, Messages.getString("create_end_world", player));
-                addPredefinedWorldItem(player, inventory, 33, BuildWorldType.VOID, Messages.getString("create_void_world", player));
+                addPredefinedWorldItem(player, inventory, 29, BuildWorldType.NORMAL, plugin.getMessages().getString("create_normal_world", player));
+                addPredefinedWorldItem(player, inventory, 30, BuildWorldType.FLAT, plugin.getMessages().getString("create_flat_world", player));
+                addPredefinedWorldItem(player, inventory, 31, BuildWorldType.NETHER, plugin.getMessages().getString("create_nether_world", player));
+                addPredefinedWorldItem(player, inventory, 32, BuildWorldType.END, plugin.getMessages().getString("create_end_world", player));
+                addPredefinedWorldItem(player, inventory, 33, BuildWorldType.VOID, plugin.getMessages().getString("create_void_world", player));
                 break;
             case GENERATOR:
-                inventory.setItem(31, InventoryUtils.createSkull(Messages.getString("create_generators_create_world", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716")));
+                inventory.setItem(31, InventoryUtils.createSkull(plugin.getMessages().getString("create_generators_create_world", player), Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716")));
                 break;
             case TEMPLATES:
                 // Template stuff is done during inventory open
@@ -186,8 +185,8 @@ public class CreateInventory extends PaginatedInventory {
                 InventoryUtils.addGlassPane(player, inventory, 33);
                 break;
             case TEMPLATES:
-                inventory.setItem(28, InventoryUtils.createSkull(Messages.getString("gui_previous_page", player), Profileable.detect("f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2")));
-                inventory.setItem(34, InventoryUtils.createSkull(Messages.getString("gui_next_page", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158")));
+                inventory.setItem(28, InventoryUtils.createSkull(plugin.getMessages().getString("gui_previous_page", player), Profileable.detect("f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2")));
+                inventory.setItem(34, InventoryUtils.createSkull(plugin.getMessages().getString("gui_next_page", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158")));
                 break;
         }
     }
@@ -300,7 +299,7 @@ public class CreateInventory extends PaginatedInventory {
         private final Page page;
 
         public CreateInventoryHolder(Player player, Page page) {
-            super(45, Messages.getString("create_title", player));
+            super(45, BuildSystemPlugin.get().getMessages().getString("create_title", player));
             this.page = page;
         }
 

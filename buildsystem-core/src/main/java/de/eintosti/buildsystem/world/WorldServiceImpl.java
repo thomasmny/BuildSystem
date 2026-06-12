@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.world;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.exception.WorldDeletionException;
 import de.eintosti.buildsystem.api.exception.WorldDirectoryNotFoundException;
 import de.eintosti.buildsystem.api.exception.WorldNotFoundException;
@@ -100,12 +99,12 @@ public class WorldServiceImpl implements WorldService {
         player.closeInventory();
         new PlayerChatInput(plugin, player, "enter_world_name", input -> {
             if (StringCleaner.hasInvalidNameCharacters(input)) {
-                Messages.sendMessage(player, "worlds_world_creation_invalid_characters");
+                plugin.getMessages().sendMessage(player, "worlds_world_creation_invalid_characters");
             }
 
             String worldName = StringCleaner.sanitize(input);
             if (worldName.isEmpty()) {
-                Messages.sendMessage(player, "worlds_world_creation_name_bank");
+                plugin.getMessages().sendMessage(player, "worlds_world_creation_name_bank");
                 return;
             }
 
@@ -126,7 +125,7 @@ public class WorldServiceImpl implements WorldService {
         new PlayerChatInput(plugin, player, "enter_generator_name", input -> {
             CustomGenerator customGenerator = CustomGeneratorImpl.of(input, worldName);
             if (customGenerator == null) {
-                Messages.sendMessage(player, "worlds_import_unknown_generator");
+                plugin.getMessages().sendMessage(player, "worlds_import_unknown_generator");
                 XSound.ENTITY_ITEM_BREAK.play(player);
                 return;
             }
@@ -146,7 +145,7 @@ public class WorldServiceImpl implements WorldService {
         if (generator == Generator.CUSTOM) {
             customGenerator = CustomGeneratorImpl.of(generatorData, worldName);
             if (customGenerator == null) {
-                Messages.sendMessage(player, "worlds_import_unknown_generator");
+                plugin.getMessages().sendMessage(player, "worlds_import_unknown_generator");
                 return false;
             }
         }
@@ -160,7 +159,7 @@ public class WorldServiceImpl implements WorldService {
 
         if (worldCreator.isDataVersionTooHigh()) {
             String key = single ? "import" : "importall";
-            Messages.sendMessage(player, "worlds_" + key + "_newer_version",
+            plugin.getMessages().sendMessage(player, "worlds_" + key + "_newer_version",
                     Map.entry("%world%", worldName)
             );
             return false;
@@ -174,10 +173,10 @@ public class WorldServiceImpl implements WorldService {
         int worlds = worldList.length;
         int delay = plugin.getConfigService().current().world().importAllDelay();
 
-        Messages.sendMessage(player, "worlds_importall_started",
+        plugin.getMessages().sendMessage(player, "worlds_importall_started",
                 Map.entry("%amount%", String.valueOf(worlds))
         );
-        Messages.sendMessage(player, "worlds_importall_delay",
+        plugin.getMessages().sendMessage(player, "worlds_importall_delay",
                 Map.entry("%delay%", String.valueOf(delay))
         );
         importingAllWorlds = true;
@@ -190,13 +189,13 @@ public class WorldServiceImpl implements WorldService {
                 if (i >= worlds) {
                     this.cancel();
                     importingAllWorlds = false;
-                    Messages.sendMessage(player, "worlds_importall_finished");
+                    plugin.getMessages().sendMessage(player, "worlds_importall_finished");
                     return;
                 }
 
                 String worldName = worldList[i];
                 if (worldStorage.worldExists(worldName)) {
-                    Messages.sendMessage(player, "worlds_importall_world_already_imported",
+                    plugin.getMessages().sendMessage(player, "worlds_importall_world_already_imported",
                             Map.entry("%world%", worldName)
                     );
                     return;
@@ -204,7 +203,7 @@ public class WorldServiceImpl implements WorldService {
 
                 String invalidChar = StringCleaner.firstInvalidChar(worldName);
                 if (invalidChar != null) {
-                    Messages.sendMessage(player, "worlds_importall_invalid_character",
+                    plugin.getMessages().sendMessage(player, "worlds_importall_invalid_character",
                             Map.entry("%world%", worldName),
                             Map.entry("%char%", invalidChar)
                     );
@@ -212,7 +211,7 @@ public class WorldServiceImpl implements WorldService {
                 }
 
                 if (importWorld(player, worldName, creator, BuildWorldType.IMPORTED, generator, "void", false)) {
-                    Messages.sendMessage(player, "worlds_importall_world_imported", Map.entry("%world%", worldName));
+                    plugin.getMessages().sendMessage(player, "worlds_importall_world_imported", Map.entry("%world%", worldName));
                 }
             }
         }.runTaskTimer(plugin, 0, 20L * delay);
@@ -232,16 +231,16 @@ public class WorldServiceImpl implements WorldService {
 
     public void deleteWorld(Player player, BuildWorld buildWorld) {
         String worldName = buildWorld.getName();
-        Messages.sendMessage(player, "worlds_delete_started", Map.entry("%world%", worldName));
+        plugin.getMessages().sendMessage(player, "worlds_delete_started", Map.entry("%world%", worldName));
         deleteWorld(buildWorld)
-                .thenRun(() -> Messages.sendMessage(player, "worlds_delete_finished"))
+                .thenRun(() -> plugin.getMessages().sendMessage(player, "worlds_delete_finished"))
                 .exceptionally(e -> {
                     Throwable cause = e.getCause() != null ? e.getCause() : e;
                     switch (cause) {
-                        case WorldNotFoundException ignored -> Messages.sendMessage(player, "worlds_delete_unknown_world");
-                        case WorldDirectoryNotFoundException ignored -> Messages.sendMessage(player, "worlds_delete_unknown_directory");
+                        case WorldNotFoundException ignored -> plugin.getMessages().sendMessage(player, "worlds_delete_unknown_world");
+                        case WorldDirectoryNotFoundException ignored -> plugin.getMessages().sendMessage(player, "worlds_delete_unknown_directory");
                         default -> {
-                            Messages.sendMessage(player, "worlds_delete_error", Map.entry("%world%", worldName));
+                            plugin.getMessages().sendMessage(player, "worlds_delete_error", Map.entry("%world%", worldName));
                             plugin.getLogger().log(Level.SEVERE, "An unexpected error occurred while deleting the world: " + worldName, cause);
                         }
                     }
@@ -286,23 +285,23 @@ public class WorldServiceImpl implements WorldService {
     public void renameWorld(Player player, BuildWorld buildWorld, String newName) {
         player.closeInventory();
         if (worldStorage.worldAndFolderExist(newName)) {
-            Messages.sendMessage(player, "worlds_world_exists");
+            plugin.getMessages().sendMessage(player, "worlds_world_exists");
             XSound.ENTITY_ITEM_BREAK.play(player);
             return;
         }
 
         String oldName = buildWorld.getName();
         if (oldName.equalsIgnoreCase(newName)) {
-            Messages.sendMessage(player, "worlds_rename_same_name");
+            plugin.getMessages().sendMessage(player, "worlds_rename_same_name");
             return;
         }
 
         if (StringCleaner.hasInvalidNameCharacters(newName)) {
-            Messages.sendMessage(player, "worlds_world_creation_invalid_characters");
+            plugin.getMessages().sendMessage(player, "worlds_world_creation_invalid_characters");
         }
         String sanitizedNewName = StringCleaner.sanitize(newName);
         if (sanitizedNewName.isEmpty()) {
-            Messages.sendMessage(player, "worlds_world_creation_name_bank");
+            plugin.getMessages().sendMessage(player, "worlds_world_creation_name_bank");
             return;
         }
 
@@ -312,7 +311,7 @@ public class WorldServiceImpl implements WorldService {
 
         World oldWorld = Bukkit.getWorld(oldName);
         if (oldWorld == null) {
-            Messages.sendMessage(player, "worlds_rename_unknown_world");
+            plugin.getMessages().sendMessage(player, "worlds_rename_unknown_world");
             return;
         }
 
@@ -358,7 +357,7 @@ public class WorldServiceImpl implements WorldService {
                 spawnManager.set(newSpawn, sanitizedNewName);
             }
 
-            Messages.sendMessage(player, "worlds_rename_set",
+            plugin.getMessages().sendMessage(player, "worlds_rename_set",
                     Map.entry("%oldName%", oldName),
                     Map.entry("%newName%", sanitizedNewName)
             );
@@ -397,11 +396,11 @@ public class WorldServiceImpl implements WorldService {
             if (!teleported) {
                 // No valid spawn and fallback world is the one being deleted -> kick
                 spawnManager.remove();
-                player.kickPlayer(Messages.getString(messageKey, player));
+                player.kickPlayer(plugin.getMessages().getString(messageKey, player));
                 return;
             }
 
-            Messages.sendMessage(player, messageKey);
+            plugin.getMessages().sendMessage(player, messageKey);
             affectedPlayers.add(player);
         });
 

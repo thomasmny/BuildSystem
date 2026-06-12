@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import java.util.Locale;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -38,24 +37,24 @@ public class ConfigCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!sender.hasPermission("buildsystem.config")) {
-            Messages.sendPermissionError(sender);
+            plugin.getMessages().sendPermissionError(sender);
             return true;
         }
 
         if (args.length != 1) {
-            Messages.sendMessage(sender, "config_usage");
+            plugin.getMessages().sendMessage(sender, "config_usage");
             return true;
         }
 
         switch (args[0].toLowerCase(Locale.ROOT)) {
             case "rl":
             case "reload":
-                Messages.reloadMessages();
+                plugin.getMessages().reload();
                 plugin.reloadConfigData(true);
-                Messages.sendMessage(sender, "config_reloaded");
+                plugin.getMessages().sendMessage(sender, "config_reloaded");
                 break;
             default:
-                Messages.sendMessage(sender, "config_usage");
+                plugin.getMessages().sendMessage(sender, "config_usage");
                 break;
         }
 

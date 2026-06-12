@@ -22,7 +22,6 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.util.inventory.BuildWorldHolder;
 import de.eintosti.buildsystem.util.inventory.InventoryManager;
@@ -128,10 +127,10 @@ public class GameRulesInventory extends PaginatedInventory {
         List<String> lore;
         if (isOfType(gameRule, Boolean.class)) {
             lore = isEnabled(world, gameRule)
-                    ? Messages.getStringList("worldeditor_gamerules_boolean_enabled", player)
-                    : Messages.getStringList("worldeditor_gamerules_boolean_disabled", player);
+                    ? plugin.getMessages().getStringList("worldeditor_gamerules_boolean_enabled", player)
+                    : plugin.getMessages().getStringList("worldeditor_gamerules_boolean_disabled", player);
         } else {
-            lore = Messages.getStringList("worldeditor_gamerules_integer", player).stream()
+            lore = plugin.getMessages().getStringList("worldeditor_gamerules_integer", player).stream()
                     .map(line -> line.replace("%value%", world.getGameRuleValue(gameRule).toString()))
                     .toList();
         }
@@ -148,13 +147,13 @@ public class GameRulesInventory extends PaginatedInventory {
         int invIndex = getInvIndex(player);
 
         if (numGameRules > 1 && invIndex > 0) {
-            inventory.setItem(36, InventoryUtils.createSkull(Messages.getString("gui_previous_page", player), Profileable.detect("f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2")));
+            inventory.setItem(36, InventoryUtils.createSkull(plugin.getMessages().getString("gui_previous_page", player), Profileable.detect("f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2")));
         } else {
             InventoryUtils.addGlassPane(player, inventory, 36);
         }
 
         if (numGameRules > 1 && invIndex < (numGameRules - 1)) {
-            inventory.setItem(44, InventoryUtils.createSkull(Messages.getString("gui_next_page", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158")));
+            inventory.setItem(44, InventoryUtils.createSkull(plugin.getMessages().getString("gui_next_page", player), Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158")));
         } else {
             InventoryUtils.addGlassPane(player, inventory, 44);
         }
@@ -293,7 +292,7 @@ public class GameRulesInventory extends PaginatedInventory {
     private static class GameRulesInventoryHolder extends BuildWorldHolder {
 
         public GameRulesInventoryHolder(BuildWorld buildWorld, Player player) {
-            super(buildWorld, 45, Messages.getString("worldeditor_gamerules_title", player));
+            super(buildWorld, 45, BuildSystemPlugin.get().getMessages().getString("worldeditor_gamerules_title", player));
         }
     }
 }
