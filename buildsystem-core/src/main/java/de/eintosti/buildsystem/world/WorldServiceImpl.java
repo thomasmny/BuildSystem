@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
@@ -64,7 +65,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class WorldServiceImpl implements WorldService {
 
-    private static boolean importingAllWorlds = false;
+    private final AtomicBoolean importingAllWorlds = new AtomicBoolean(false);
 
     private final BuildSystemPlugin plugin;
     private final FolderStorageImpl folderStorage;
@@ -218,7 +219,7 @@ public class WorldServiceImpl implements WorldService {
         plugin.getMessages()
                 .sendMessage(player, "worlds_importall_started", Map.entry("%amount%", String.valueOf(worlds)));
         plugin.getMessages().sendMessage(player, "worlds_importall_delay", Map.entry("%delay%", String.valueOf(delay)));
-        importingAllWorlds = true;
+        importingAllWorlds.set(true);
 
         AtomicInteger worldsImported = new AtomicInteger(0);
         new BukkitRunnable() {
@@ -227,7 +228,7 @@ public class WorldServiceImpl implements WorldService {
                 int i = worldsImported.getAndIncrement();
                 if (i >= worlds) {
                     this.cancel();
-                    importingAllWorlds = false;
+                    importingAllWorlds.set(false);
                     plugin.getMessages().sendMessage(player, "worlds_importall_finished");
                     return;
                 }
@@ -261,7 +262,65 @@ public class WorldServiceImpl implements WorldService {
     }
 
     public boolean isImportingAllWorlds() {
-        return importingAllWorlds;
+        return importingAllWorlds.get();
+    }
+
+    @Override
+    public CompletableFuture<Integer> importWorlds() {
+        if (!importingAllWorlds.compareAndSet(false, true)) {
+            return CompletableFuture.failedFuture(new IllegalStateException("A bulk import is already in progress"));
+        }
+
+        String[] directories = scanImportableDirectories();
+        if (directories.length == 0) {
+            importingAllWorlds.set(false);
+            return CompletableFuture.completedFuture(0);
+        }
+
+        int delay = plugin.getConfigService().current().world().importAllDelay();
+        CompletableFuture<Integer> result = new CompletableFuture<>();
+        AtomicInteger index = new AtomicInteger(0);
+        AtomicInteger imported = new AtomicInteger(0);
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                int i = index.getAndIncrement();
+                if (i >= directories.length) {
+                    this.cancel();
+                    importingAllWorlds.set(false);
+                    result.complete(imported.get());
+                    return;
+                }
+
+                String worldName = directories[i];
+                if (worldStorage.worldExists(worldName)) {
+                    return;
+                }
+                if (StringCleaner.firstInvalidChar(
+                                worldName,
+                                plugin.getConfigService().current().world().invalidCharacters())
+                        != null) {
+                    return;
+                }
+
+                if (importWorld(worldName).build() != null) {
+                    imported.incrementAndGet();
+                }
+            }
+        }.runTaskTimer(plugin, 0, 20L * delay);
+
+        return result;
+    }
+
+    private String[] scanImportableDirectories() {
+        String[] directories = Bukkit.getWorldContainer().list((dir, name) -> {
+            File worldFolder = new File(dir, name);
+            return worldFolder.isDirectory()
+                    && new File(worldFolder, "level.dat").exists()
+                    && !worldStorage.worldExists(name);
+        });
+        return directories != null ? directories : new String[0];
     }
 
     @Override

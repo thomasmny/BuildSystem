@@ -75,6 +75,24 @@ public interface WorldService {
     WorldImporter importWorld(String name);
 
     /**
+     * Imports every unregistered world directory found under the server's world container as a
+     * {@link de.eintosti.buildsystem.api.world.data.BuildWorldType#IMPORTED IMPORTED} world. Directories already
+     * registered with BuildSystem, and those with invalid names, are skipped.
+     *
+     * <p>To avoid lag-spiking the server, the imports are spread across server ticks (one per configured
+     * {@code import-all-delay} interval); the returned future therefore completes some time later, on the main thread,
+     * once every directory has been processed. Failures on individual worlds are skipped, not rolled back — partial
+     * success is possible.
+     *
+     * @return A future that completes with the number of worlds successfully imported, or completes exceptionally with
+     *     an {@link IllegalStateException} if a bulk import is already running
+     * @apiNote Each individual import goes through Bukkit's main-thread world machinery; the spreading is handled
+     *     internally. Safe to call from the main thread.
+     * @since 3.1.0
+     */
+    CompletableFuture<Integer> importWorlds();
+
+    /**
      * Unimport an existing {@link BuildWorld}. In comparison to {@link #deleteWorld(BuildWorld)}, unimporting a world
      * does not delete the world's directory.
      *

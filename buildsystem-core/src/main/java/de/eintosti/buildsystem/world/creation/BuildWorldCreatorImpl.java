@@ -30,6 +30,7 @@ import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import java.io.File;
 import java.util.Map;
 import org.bukkit.Bukkit;
@@ -178,9 +179,14 @@ public class BuildWorldCreatorImpl implements WorldBuilder, WorldImporter {
     }
 
     private @Nullable BuildWorld buildImported() {
-        if (versionGuard.isDataVersionTooHigh()) {
+        if (isDataVersionTooHigh()) {
             notifyAudience("worlds_import_newer_version", Map.entry("%world%", worldName));
             return null;
+        }
+
+        if (customGenerator == null) {
+            // Imported worlds default to a void generator so unexplored chunks are not filled with terrain.
+            customGenerator = new CustomGeneratorImpl("BuildSystem", "void", null);
         }
 
         buildWorld = createAndRegisterBuildWorld();
