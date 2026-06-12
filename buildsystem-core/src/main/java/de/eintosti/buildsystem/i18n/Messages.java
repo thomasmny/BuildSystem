@@ -23,12 +23,14 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;
+import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -64,7 +66,7 @@ public final class Messages {
 
     public void load() {
         // 1. If user file doesn't exist, save the bundled default
-        File file = new java.io.File(plugin.getDataFolder(), "messages.yml");
+        File file = new File(plugin.getDataFolder(), "messages.yml");
         if (!file.exists()) {
             plugin.saveResource("messages.yml", false);
         }
@@ -86,8 +88,8 @@ public final class Messages {
             if (changed) {
                 try {
                     userConfig.save(file);
-                } catch (java.io.IOException e) {
-                    plugin.getLogger().log(java.util.logging.Level.SEVERE, "Could not save messages.yml", e);
+                } catch (IOException e) {
+                    plugin.getLogger().log(Level.SEVERE, "Could not save messages.yml", e);
                 }
             }
         }
@@ -190,7 +192,7 @@ public final class Messages {
                 : "-";
     }
 
-    @Nullable public static String getMessageKey(BuildWorldStatus status) {
+    public static String getMessageKey(BuildWorldStatus status) {
         return switch (status) {
             case NOT_STARTED -> "status_not_started";
             case IN_PROGRESS -> "status_in_progress";

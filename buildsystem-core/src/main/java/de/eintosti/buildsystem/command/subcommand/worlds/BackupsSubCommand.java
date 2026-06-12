@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import de.eintosti.buildsystem.world.menu.BackupsMenu;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -86,11 +87,13 @@ public class BackupsSubCommand extends AbstractSubCommand {
         if (args.length != 2) {
             return List.of();
         }
+
         if (player.hasPermission(getArgument().getPermission() + ".create")) {
-            List<String> result = new java.util.ArrayList<>();
+            List<String> result = new ArrayList<>();
             WorldsCompletions.addIfStartsWith(args[1], "create", result);
             return result;
         }
+
         return List.of();
     }
 
