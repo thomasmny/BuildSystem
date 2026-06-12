@@ -25,7 +25,7 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.api.world.navigator.settings.WorldDisplay;
+import de.eintosti.buildsystem.api.world.display.WorldDisplay;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import org.bukkit.entity.Player;

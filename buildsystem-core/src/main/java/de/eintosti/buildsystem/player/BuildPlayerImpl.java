@@ -60,7 +60,10 @@ public final class BuildPlayerImpl implements BuildPlayer {
      * @param buildPlayer The API view
      * @return The same instance, typed as the impl
      */
-    public static BuildPlayerImpl of(BuildPlayer buildPlayer) {
+    @Nullable public static BuildPlayerImpl of(@Nullable BuildPlayer buildPlayer) {
+        if (buildPlayer == null) {
+            return null;
+        }
         return (BuildPlayerImpl) buildPlayer;
     }
 

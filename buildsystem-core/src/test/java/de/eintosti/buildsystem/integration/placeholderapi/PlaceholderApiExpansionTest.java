@@ -23,11 +23,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.api.data.Type;
+import de.eintosti.buildsystem.api.player.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.WorldData;
-import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;

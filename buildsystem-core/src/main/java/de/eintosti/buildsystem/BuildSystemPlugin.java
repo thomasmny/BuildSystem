@@ -19,8 +19,8 @@ package de.eintosti.buildsystem;
 
 import de.eintosti.buildsystem.api.BuildSystem;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
+import de.eintosti.buildsystem.api.player.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
 import de.eintosti.buildsystem.command.CommandRegistrar;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.migration.ConfigMigrationManager;

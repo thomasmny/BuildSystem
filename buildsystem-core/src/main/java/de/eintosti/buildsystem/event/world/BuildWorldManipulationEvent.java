@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.event.world;
 
 import de.eintosti.buildsystem.api.event.world.BuildWorldEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.listener.WorldManipulateListener;
+import de.eintosti.buildsystem.listener.world.WorldManipulateListener;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
