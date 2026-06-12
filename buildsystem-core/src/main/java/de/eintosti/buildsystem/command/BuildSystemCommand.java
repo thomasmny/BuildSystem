@@ -21,34 +21,20 @@ import com.google.common.collect.Lists;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import java.util.List;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class BuildSystemCommand extends PagedCommand implements CommandExecutor {
-
-    private final BuildSystemPlugin plugin;
+public class BuildSystemCommand extends PagedCommand {
 
     public BuildSystemCommand(BuildSystemPlugin plugin) {
-        super("buildsystem_title_with_page", "buildsystem_permission");
-
-        this.plugin = plugin;
-        plugin.getCommand("buildsystem").setExecutor(this);
+        super(plugin, "buildsystem_title_with_page", "buildsystem_permission");
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(plugin.getMessages().getString("sender_not_player", sender));
-            return true;
-        }
-
-        if (!player.hasPermission("buildsystem.help.buildsystem")) {
-            plugin.getMessages().sendPermissionError(player);
-            return true;
+    protected void run(Player player, String label, String[] args) {
+        if (!requirePermission(player, "buildsystem.help.buildsystem")) {
+            return;
         }
 
         if (args.length == 0) {
@@ -58,12 +44,11 @@ public class BuildSystemCommand extends PagedCommand implements CommandExecutor 
                 int page = Integer.parseInt(args[0]);
                 sendMessage(player, page);
             } catch (NumberFormatException e) {
-                plugin.getMessages().sendMessage(player, "buildsystem_invalid_page");
+                messages.sendMessage(player, "buildsystem_invalid_page");
             }
         } else {
-            plugin.getMessages().sendMessage(player, "buildsystem_usage");
+            messages.sendMessage(player, "buildsystem_usage");
         }
-        return true;
     }
 
     @Override

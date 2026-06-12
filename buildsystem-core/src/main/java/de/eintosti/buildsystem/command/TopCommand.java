@@ -22,41 +22,28 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.world.util.WorldTeleporterImpl;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class TopCommand implements CommandExecutor {
-
-    private final BuildSystemPlugin plugin;
+public class TopCommand extends CommandBase {
 
     public TopCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        plugin.getCommand("top").setExecutor(this);
+        super(plugin, true);
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(plugin.getMessages().getString("sender_not_player", sender));
-            return true;
-        }
-
-        if (!player.hasPermission("buildsystem.top")) {
-            plugin.getMessages().sendPermissionError(player);
-            return true;
+    protected void run(Player player, String label, String[] args) {
+        if (!requirePermission(player, "buildsystem.top")) {
+            return;
         }
 
         if (args.length != 0) {
-            plugin.getMessages().sendMessage(player, "top_usage");
-            return true;
+            messages.sendMessage(player, "top_usage");
+            return;
         }
 
         sendToTop(player);
-        return true;
     }
 
     private void sendToTop(Player player) {
@@ -67,7 +54,7 @@ public class TopCommand implements CommandExecutor {
 
         boolean failed = !WorldTeleporterImpl.isSafeLocation(blockLocation) || blockLocation.getBlock().getY() < playerLocation.getBlock().getY();
         if (failed) {
-            plugin.getMessages().sendMessage(player, "top_failed");
+            messages.sendMessage(player, "top_failed");
             return;
         }
 
@@ -77,7 +64,7 @@ public class TopCommand implements CommandExecutor {
                         return;
                     }
                     XSound.ENTITY_ZOMBIE_INFECT.play(player);
-                    plugin.getMessages().sendMessage(player, "top_teleported");
+                    messages.sendMessage(player, "top_teleported");
                 });
     }
 }

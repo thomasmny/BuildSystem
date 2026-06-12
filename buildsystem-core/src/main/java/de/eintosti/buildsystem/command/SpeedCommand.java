@@ -19,35 +19,25 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.player.settings.SpeedInventory;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class SpeedCommand implements CommandExecutor {
+public class SpeedCommand extends CommandBase {
 
     private static final float INVALID_SPEED = -1.0f;
 
-    private final BuildSystemPlugin plugin;
-
     public SpeedCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        plugin.getCommand("speed").setExecutor(this);
+        super(plugin, true);
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(plugin.getMessages().getString("sender_not_player", sender));
-            return true;
-        }
-
-        if (!player.hasPermission("buildsystem.speed")) {
-            plugin.getMessages().sendPermissionError(player);
-            return true;
+    protected void run(Player player, String label, String[] args) {
+        if (!requirePermission(player, "buildsystem.speed")) {
+            return;
         }
 
         switch (args.length) {
@@ -66,27 +56,34 @@ public class SpeedCommand implements CommandExecutor {
                 };
 
                 if (speed == INVALID_SPEED) {
-                    plugin.getMessages().sendMessage(player, "speed_usage");
-                    return true;
+                    messages.sendMessage(player, "speed_usage");
+                    return;
                 }
 
                 setSpeed(player, speed, speedString);
                 break;
             default:
-                plugin.getMessages().sendMessage(player, "speed_usage");
+                messages.sendMessage(player, "speed_usage");
                 break;
         }
+    }
 
-        return true;
+    @Override
+    protected List<String> complete(Player player, String label, String[] args) {
+        List<String> list = new ArrayList<>();
+        for (int i = 1; i <= 5; i++) {
+            list.add(String.valueOf(i));
+        }
+        return list;
     }
 
     private void setSpeed(Player player, float speed, String speedString) {
         if (player.isFlying()) {
             player.setFlySpeed(speed - 0.1f);
-            plugin.getMessages().sendMessage(player, "speed_set_flying", Map.entry("%speed%", speedString));
+            messages.sendMessage(player, "speed_set_flying", Map.entry("%speed%", speedString));
         } else {
             player.setWalkSpeed(speed);
-            plugin.getMessages().sendMessage(player, "speed_set_walking", Map.entry("%speed%", speedString));
+            messages.sendMessage(player, "speed_set_walking", Map.entry("%speed%", speedString));
         }
     }
 }

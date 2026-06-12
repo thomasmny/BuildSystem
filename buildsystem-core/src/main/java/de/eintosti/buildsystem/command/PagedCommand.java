@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.command;
 
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,16 +29,16 @@ import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 
 @NullMarked
-public abstract class PagedCommand {
+public abstract class PagedCommand extends CommandBase {
 
     private static final int MAX_COMMANDS_PER_PAGE = 7;
 
     private final String title, permissionTemplate;
 
-    public PagedCommand(String title, String permissionTemplate) {
+    protected PagedCommand(BuildSystemPlugin plugin, String title, String permissionTemplate) {
+        super(plugin, true);
         this.title = title;
         this.permissionTemplate = permissionTemplate;
     }

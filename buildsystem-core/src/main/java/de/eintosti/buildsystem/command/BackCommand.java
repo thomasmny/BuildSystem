@@ -23,50 +23,37 @@ import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class BackCommand implements CommandExecutor {
+public class BackCommand extends CommandBase {
 
-    private final BuildSystemPlugin plugin;
     private final PlayerStorage playerStorage;
 
     public BackCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin, true);
         this.playerStorage = plugin.getPlayerService().getPlayerStorage();
-        plugin.getCommand("back").setExecutor(this);
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(plugin.getMessages().getString("sender_not_player", sender));
-            return true;
-        }
-
-        if (!player.hasPermission("buildsystem.back")) {
-            plugin.getMessages().sendPermissionError(player);
-            return true;
+    protected void run(Player player, String label, String[] args) {
+        if (!requirePermission(player, "buildsystem.back")) {
+            return;
         }
 
         if (args.length == 0) {
             teleportBack(player);
         } else {
-            plugin.getMessages().sendMessage(player, "back_usage");
+            messages.sendMessage(player, "back_usage");
         }
-
-        return true;
     }
 
     private void teleportBack(Player player) {
         BuildPlayer buildPlayer = playerStorage.getBuildPlayer(player);
         Location previousLocation = buildPlayer.getPreviousLocation();
         if (previousLocation == null) {
-            plugin.getMessages().sendMessage(player, "back_failed");
+            messages.sendMessage(player, "back_failed");
             return;
         }
 
@@ -76,7 +63,7 @@ public class BackCommand implements CommandExecutor {
                         return;
                     }
                     XSound.ENTITY_ZOMBIE_INFECT.play(player);
-                    plugin.getMessages().sendMessage(player, "back_teleported");
+                    messages.sendMessage(player, "back_teleported");
                     buildPlayer.setPreviousLocation(null);
                 });
     }

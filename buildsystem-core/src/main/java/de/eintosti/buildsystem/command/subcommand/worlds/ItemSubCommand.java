@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
+import de.eintosti.buildsystem.command.WorldsCommand.WorldsArgument;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;

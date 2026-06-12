@@ -23,74 +23,66 @@ import de.eintosti.buildsystem.api.event.world.PlayerBuildModeToggleEvent;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.CachedValues;
 import de.eintosti.buildsystem.api.player.PlayerService;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class BuildCommand implements CommandExecutor {
+public class BuildCommand extends CommandBase {
 
-    private final BuildSystemPlugin plugin;
     private final PlayerService playerService;
 
     public BuildCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin, true);
         this.playerService = plugin.getPlayerService();
-        plugin.getCommand("build").setExecutor(this);
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(plugin.getMessages().getString("sender_not_player", sender));
-            return true;
-        }
-
-        if (!player.hasPermission("buildsystem.build")) {
-            plugin.getMessages().sendPermissionError(player);
-            return true;
+    protected void run(Player player, String label, String[] args) {
+        if (!requirePermission(player, "buildsystem.build")) {
+            return;
         }
 
         switch (args.length) {
-            case 0 -> {
-                toggleBuildMode(player, player);
-            }
+            case 0 -> toggleBuildMode(player, player);
 
             case 1 -> {
-                if (!player.hasPermission("buildsystem.build.other")) {
-                    plugin.getMessages().sendPermissionError(player);
-                    return true;
+                if (!requirePermission(player, "buildsystem.build.other")) {
+                    return;
                 }
 
                 Player target = Bukkit.getPlayer(args[0]);
                 if (target == null) {
-                    plugin.getMessages().sendMessage(player, "build_player_not_found");
-                    return true;
+                    messages.sendMessage(player, "build_player_not_found");
+                    return;
                 }
 
                 toggleBuildMode(target, player);
             }
 
-            default -> {
-                plugin.getMessages().sendMessage(player, "build_usage");
-            }
+            default -> messages.sendMessage(player, "build_usage");
         }
-
-        return true;
     }
 
-    /**
-     * Toggles the build mode for a target player.
-     *
-     * @param target The player whose build mode is being changed
-     * @param sender The player who initiated the action, may be the target player themselves
-     */
+    @Override
+    protected List<String> complete(Player player, String label, String[] args) {
+        List<String> list = new ArrayList<>();
+        if (!player.hasPermission("buildsystem.build")) {
+            return list;
+        }
+
+        if (args.length == 1 && !player.hasPermission("buildsystem.build.other")) {
+            Bukkit.getOnlinePlayers().forEach(pl -> addArgument(args[0], pl.getName(), list));
+        }
+
+        return list;
+    }
+
     private void toggleBuildMode(Player target, Player sender) {
         UUID targetUuid = target.getUniqueId();
         boolean isEnteringBuildMode = !playerService.getBuildModePlayers().contains(targetUuid);
@@ -112,11 +104,11 @@ public class BuildCommand implements CommandExecutor {
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
             if (sender.equals(target)) {
-                plugin.getMessages().sendMessage(target, "build_activated_self");
+                messages.sendMessage(target, "build_activated_self");
             } else {
                 XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(sender);
-                plugin.getMessages().sendMessage(sender, "build_activated_other_sender", Map.entry("%target%", target.getName()));
-                plugin.getMessages().sendMessage(target, "build_activated_other_target", Map.entry("%sender%", sender.getName()));
+                messages.sendMessage(sender, "build_activated_other_sender", Map.entry("%target%", target.getName()));
+                messages.sendMessage(target, "build_activated_other_target", Map.entry("%sender%", sender.getName()));
             }
         } else {
             if (!playerService.getBuildModePlayers().remove(targetUuid)) {
@@ -128,11 +120,11 @@ public class BuildCommand implements CommandExecutor {
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
             if (sender.equals(target)) {
-                plugin.getMessages().sendMessage(target, "build_deactivated_self");
+                messages.sendMessage(target, "build_deactivated_self");
             } else {
                 XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(sender);
-                plugin.getMessages().sendMessage(sender, "build_deactivated_other_sender", Map.entry("%target%", target.getName()));
-                plugin.getMessages().sendMessage(target, "build_deactivated_other_target", Map.entry("%sender%", sender.getName()));
+                messages.sendMessage(sender, "build_deactivated_other_sender", Map.entry("%target%", target.getName()));
+                messages.sendMessage(target, "build_deactivated_other_target", Map.entry("%sender%", sender.getName()));
             }
         }
     }

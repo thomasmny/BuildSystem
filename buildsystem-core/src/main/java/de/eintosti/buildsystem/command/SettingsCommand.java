@@ -19,35 +19,22 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.player.settings.SettingsInventory;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class SettingsCommand implements CommandExecutor {
-
-    private final BuildSystemPlugin plugin;
+public class SettingsCommand extends CommandBase {
 
     public SettingsCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        plugin.getCommand("settings").setExecutor(this);
+        super(plugin, true);
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(plugin.getMessages().getString("sender_not_player", sender));
-            return true;
-        }
-
-        if (!player.hasPermission("buildsystem.settings")) {
-            plugin.getMessages().sendPermissionError(player);
-            return true;
+    protected void run(Player player, String label, String[] args) {
+        if (!requirePermission(player, "buildsystem.settings")) {
+            return;
         }
 
         new SettingsInventory(plugin).openInventory(player);
-        return true;
     }
 }

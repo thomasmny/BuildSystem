@@ -22,32 +22,7 @@ import de.eintosti.buildsystem.api.BuildSystemApi;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
-import de.eintosti.buildsystem.command.BackCommand;
-import de.eintosti.buildsystem.command.BlocksCommand;
-import de.eintosti.buildsystem.command.BuildCommand;
-import de.eintosti.buildsystem.command.BuildSystemCommand;
-import de.eintosti.buildsystem.command.ConfigCommand;
-import de.eintosti.buildsystem.command.ExplosionsCommand;
-import de.eintosti.buildsystem.command.GamemodeCommand;
-import de.eintosti.buildsystem.command.NoAICommand;
-import de.eintosti.buildsystem.command.PhysicsCommand;
-import de.eintosti.buildsystem.command.SettingsCommand;
-import de.eintosti.buildsystem.command.SetupCommand;
-import de.eintosti.buildsystem.command.SkullCommand;
-import de.eintosti.buildsystem.command.SpawnCommand;
-import de.eintosti.buildsystem.command.SpeedCommand;
-import de.eintosti.buildsystem.command.TimeCommand;
-import de.eintosti.buildsystem.command.TopCommand;
-import de.eintosti.buildsystem.command.WorldsCommand;
-import de.eintosti.buildsystem.command.tabcomplete.BuildTabCompleter;
-import de.eintosti.buildsystem.command.tabcomplete.ConfigTabCompleter;
-import de.eintosti.buildsystem.command.tabcomplete.EmptyTabCompleter;
-import de.eintosti.buildsystem.command.tabcomplete.GamemodeTabCompleter;
-import de.eintosti.buildsystem.command.tabcomplete.PhysicsTabCompleter;
-import de.eintosti.buildsystem.command.tabcomplete.SpawnTabCompleter;
-import de.eintosti.buildsystem.command.tabcomplete.SpeedTabCompleter;
-import de.eintosti.buildsystem.command.tabcomplete.TimeTabCompleter;
-import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter;
+import de.eintosti.buildsystem.command.CommandRegistrar;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.config.migration.ConfigMigrationManager;
@@ -154,8 +129,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     public void onEnable() {
         initClasses();
 
-        registerCommands();
-        registerTabCompleters();
+        new CommandRegistrar(this).registerAll();
         registerListeners();
         registerExpansions();
 
@@ -236,38 +210,6 @@ public class BuildSystemPlugin extends JavaPlugin {
         this.backupService = new BackupService(this);
         this.settingsManager = new SettingsManager(this);
         this.spawnManager = new SpawnManager(this);
-    }
-
-    private void registerCommands() {
-        new BackCommand(this);
-        new BlocksCommand(this);
-        new BuildCommand(this);
-        new BuildSystemCommand(this);
-        new ConfigCommand(this);
-        new ExplosionsCommand(this);
-        new GamemodeCommand(this);
-        new NoAICommand(this);
-        new PhysicsCommand(this);
-        new SettingsCommand(this);
-        new SetupCommand(this);
-        new SkullCommand(this);
-        new SpawnCommand(this);
-        new SpeedCommand(this);
-        new TimeCommand(this);
-        new TopCommand(this);
-        new WorldsCommand(this);
-    }
-
-    private void registerTabCompleters() {
-        new BuildTabCompleter(this);
-        new ConfigTabCompleter(this);
-        new EmptyTabCompleter(this);
-        new GamemodeTabCompleter(this);
-        new PhysicsTabCompleter(this);
-        new SpawnTabCompleter(this);
-        new SpeedTabCompleter(this);
-        new TimeTabCompleter(this);
-        new WorldsTabCompleter(this);
     }
 
     private void registerListeners() {

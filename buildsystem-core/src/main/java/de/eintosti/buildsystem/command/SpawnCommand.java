@@ -21,50 +21,42 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.SpawnManager;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class SpawnCommand implements CommandExecutor {
+public class SpawnCommand extends CommandBase {
 
-    private final BuildSystemPlugin plugin;
     private final SpawnManager spawnManager;
     private final WorldStorageImpl worldStorage;
 
     public SpawnCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin, true);
         this.spawnManager = plugin.getSpawnManager();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
-        plugin.getCommand("spawn").setExecutor(this);
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(plugin.getMessages().getString("sender_not_player", sender));
-            return true;
-        }
-
+    protected void run(Player player, String label, String[] args) {
         switch (args.length) {
             case 0 -> {
                 if (!spawnManager.teleport(player)) {
-                    plugin.getMessages().sendMessage(player, "spawn_unavailable");
+                    messages.sendMessage(player, "spawn_unavailable");
                 } else if (plugin.getConfigService().current().messages().spawnTeleportMessage()) {
-                    plugin.getMessages().sendMessage(player, "spawn_teleported");
+                    messages.sendMessage(player, "spawn_teleported");
                 }
             }
 
             case 1 -> {
                 if (!player.hasPermission("buildsystem.spawn")) {
-                    plugin.getMessages().sendMessage(player, "spawn_usage");
-                    return true;
+                    messages.sendMessage(player, "spawn_usage");
+                    return;
                 }
 
                 switch (args[0].toLowerCase(Locale.ROOT)) {
@@ -72,18 +64,18 @@ public class SpawnCommand implements CommandExecutor {
                         Location playerLocation = player.getLocation();
                         World bukkitWorld = playerLocation.getWorld();
                         if (bukkitWorld == null) {
-                            plugin.getMessages().sendMessage(player, "spawn_world_not_imported");
-                            return true;
+                            messages.sendMessage(player, "spawn_world_not_imported");
+                            return;
                         }
 
                         BuildWorld buildWorld = worldStorage.getBuildWorld(bukkitWorld);
                         if (buildWorld == null) {
-                            plugin.getMessages().sendMessage(player, "spawn_world_not_imported");
-                            return true;
+                            messages.sendMessage(player, "spawn_world_not_imported");
+                            return;
                         }
 
                         spawnManager.set(playerLocation, buildWorld.getName());
-                        plugin.getMessages().sendMessage(player, "spawn_set",
+                        messages.sendMessage(player, "spawn_set",
                                 Map.entry("%x%", round(playerLocation.getX())),
                                 Map.entry("%y%", round(playerLocation.getY())),
                                 Map.entry("%z%", round(playerLocation.getZ())),
@@ -92,20 +84,27 @@ public class SpawnCommand implements CommandExecutor {
                     }
                     case "remove" -> {
                         spawnManager.remove();
-                        plugin.getMessages().sendMessage(player, "spawn_remove");
+                        messages.sendMessage(player, "spawn_remove");
                     }
-                    default -> {
-                        plugin.getMessages().sendMessage(player, "spawn_admin");
-                    }
+                    default -> messages.sendMessage(player, "spawn_admin");
                 }
             }
 
             default -> {
                 String key = player.hasPermission("buildsystem.spawn") ? "spawn_admin" : "spawn_usage";
-                plugin.getMessages().sendMessage(player, key);
+                messages.sendMessage(player, key);
             }
         }
-        return true;
+    }
+
+    @Override
+    protected List<String> complete(Player player, String label, String[] args) {
+        List<String> list = new ArrayList<>();
+        if (player.hasPermission("buildsystem.spawn")) {
+            addArgument(args[0], "set", list);
+            addArgument(args[0], "remove", list);
+        }
+        return list;
     }
 
     private String round(double value) {
