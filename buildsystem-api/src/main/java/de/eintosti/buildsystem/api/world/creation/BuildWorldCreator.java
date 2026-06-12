@@ -118,6 +118,8 @@ public interface BuildWorldCreator {
      * player of the progress.
      *
      * @param player The player who is creating the world
+     * @apiNote World generation goes through Bukkit's {@code WorldCreator}, which is main-thread only. This method
+     *     <b>must be called on the Bukkit main thread</b> and completes synchronously before it returns.
      */
     void createWorld(Player player);
 
@@ -126,6 +128,8 @@ public interface BuildWorldCreator {
      *
      * @param player The player who is importing the world
      * @param teleport If true, the player will be teleported to the world after the import is finished
+     * @apiNote World generation goes through Bukkit's {@code WorldCreator}, which is main-thread only. This method
+     *     <b>must be called on the Bukkit main thread</b> and completes synchronously before it returns.
      */
     void importWorld(Player player, boolean teleport);
 

@@ -24,7 +24,6 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldLoader;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -48,9 +47,9 @@ public class WorldLoaderImpl implements WorldLoader {
     }
 
     @Override
-    public CompletableFuture<Void> loadForPlayer(Player player) {
+    public void loadForPlayer(Player player) {
         if (this.buildWorld.isLoaded()) {
-            return CompletableFuture.completedFuture(null);
+            return;
         }
 
         player.closeInventory();
@@ -62,19 +61,19 @@ public class WorldLoaderImpl implements WorldLoader {
                 70,
                 20);
 
-        return load();
+        load();
     }
 
     @Override
-    public CompletableFuture<Void> load() {
+    public void load() {
         if (this.buildWorld.isLoaded()) {
-            return CompletableFuture.completedFuture(null);
+            return;
         }
 
         BuildWorldLoadEvent loadEvent = new BuildWorldLoadEvent(this.buildWorld);
         Bukkit.getServer().getPluginManager().callEvent(loadEvent);
         if (loadEvent.isCancelled()) {
-            return CompletableFuture.completedFuture(null);
+            return;
         }
 
         String worldName = this.buildWorld.getName();
@@ -82,7 +81,7 @@ public class WorldLoaderImpl implements WorldLoader {
         World world =
                 new BukkitWorldFactory(this.plugin, this.buildWorld).generate(BukkitWorldFactory.VersionCheck.REQUIRED);
         if (world == null) {
-            return CompletableFuture.completedFuture(null);
+            return;
         }
 
         this.buildWorld.getData().lastLoaded().set(System.currentTimeMillis());
@@ -90,6 +89,5 @@ public class WorldLoaderImpl implements WorldLoader {
 
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostLoadEvent(this.buildWorld));
         this.buildWorld.getUnloader().resetUnloadTask();
-        return CompletableFuture.completedFuture(null);
     }
 }

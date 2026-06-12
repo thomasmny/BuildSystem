@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.api.world.lifecycle;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import java.util.concurrent.CompletableFuture;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -32,19 +31,19 @@ import org.jspecify.annotations.NullMarked;
 public interface WorldLoader {
 
     /**
-     * Loads the world associated with this loader, announcing progress to the given player. World generation runs on
-     * the server main thread, so the returned future completes there — do not block on it from the main thread.
+     * Loads the world associated with this loader, announcing progress to the given player.
      *
      * @param player The {@link Player} the loading notification is shown to
-     * @return A future that completes once the world has finished loading
+     * @apiNote World generation goes through Bukkit's {@code WorldCreator}, which is main-thread only. This method
+     *     <b>must be called on the Bukkit main thread</b> and completes synchronously before it returns.
      */
-    CompletableFuture<Void> loadForPlayer(Player player);
+    void loadForPlayer(Player player);
 
     /**
-     * Loads the world associated with this loader without notifying any specific player. World generation runs on the
-     * server main thread, so the returned future completes there — do not block on it from the main thread.
+     * Loads the world associated with this loader without notifying any specific player.
      *
-     * @return A future that completes once the world has finished loading
+     * @apiNote World generation goes through Bukkit's {@code WorldCreator}, which is main-thread only. This method
+     *     <b>must be called on the Bukkit main thread</b> and completes synchronously before it returns.
      */
-    CompletableFuture<Void> load();
+    void load();
 }

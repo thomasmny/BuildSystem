@@ -25,6 +25,9 @@ import org.jspecify.annotations.NullMarked;
  * initiating and cancelling unload procedures.
  *
  * @since 3.0.0
+ * @apiNote Every method on this interface touches the Bukkit API (scheduler / world unloading) and <b>must be called on
+ *     the Bukkit main thread</b>. All methods complete synchronously except {@link #startUnloadTask()} (and the
+ *     {@link #manageUnload()} that may start it), which schedule the actual unload for a later main-thread tick.
  */
 @NullMarked
 public interface WorldUnloader {

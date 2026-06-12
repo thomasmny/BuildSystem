@@ -35,6 +35,9 @@ public interface WorldTeleporter {
      * If a custom spawn is not set, the player will be teleported to the world's default spawn.
      *
      * @param player The {@link Player} to teleport
+     * @apiNote <b>Must be called on the Bukkit main thread.</b> Returns immediately; if the target world is not yet
+     *     loaded it is loaded first and the teleport is then performed on the main thread (possibly after a short
+     *     scheduler delay).
      */
     void teleport(Player player);
 }

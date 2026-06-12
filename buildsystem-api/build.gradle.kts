@@ -33,6 +33,11 @@ tasks.withType<Javadoc> {
     opt.isLinkSource = true
     opt.isUse = true
     opt.keyWords()
+    opt.tags(
+        "apiNote:a:API Note:",
+        "implSpec:a:Implementation Requirements:",
+        "implNote:a:Implementation Note:",
+    )
     opt.addBooleanOption("Xdoclint:all", true)
 }
 
