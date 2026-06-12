@@ -22,7 +22,7 @@ import de.eintosti.buildsystem.api.event.world.BuildWorldLoadEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostLoadEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.util.WorldLoader;
-import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl;
+import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
 import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -72,7 +72,7 @@ public class WorldLoaderImpl implements WorldLoader {
 
         String worldName = this.buildWorld.getName();
         this.plugin.getLogger().info("*** Loading world \"" + worldName + "\" ***");
-        World world = new BuildWorldCreatorImpl(this.plugin, this.buildWorld).generateBukkitWorld();
+        World world = new BukkitWorldFactory(this.plugin, this.buildWorld).generate(BukkitWorldFactory.VersionCheck.REQUIRED);
         if (world == null) {
             return;
         }

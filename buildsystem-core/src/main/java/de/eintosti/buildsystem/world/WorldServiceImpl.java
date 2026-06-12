@@ -36,6 +36,7 @@ import de.eintosti.buildsystem.storage.factory.WorldStorageFactory;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.StringCleaner;
+import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
 import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl;
 import de.eintosti.buildsystem.world.util.WorldUnloaderImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
@@ -337,7 +338,7 @@ public class WorldServiceImpl implements WorldService {
             worldStorage.rename(buildWorld, oldName, sanitizedNewName);
             buildWorld.setName(sanitizedNewName);
             worldStorage.save(buildWorld);
-            World newWorld = new BuildWorldCreatorImpl(plugin, buildWorld).generateBukkitWorld(false);
+            World newWorld = new BukkitWorldFactory(plugin, buildWorld).generate(BukkitWorldFactory.VersionCheck.SKIP);
             Location spawnLocation = oldSpawnLocation;
             spawnLocation.setWorld(newWorld);
 

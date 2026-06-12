@@ -23,7 +23,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
-import de.eintosti.buildsystem.world.creation.BuildWorldCreatorImpl;
+import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -239,7 +239,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
             return LoadResult.NOT_LOADED;
         }
 
-        World world = new BuildWorldCreatorImpl(plugin, buildWorld).generateBukkitWorld();
+        World world = new BukkitWorldFactory(plugin, buildWorld).generate(BukkitWorldFactory.VersionCheck.REQUIRED);
         if (world == null) {
             return LoadResult.FAILED;
         }
