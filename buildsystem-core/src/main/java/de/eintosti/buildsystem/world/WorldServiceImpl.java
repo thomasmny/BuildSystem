@@ -31,8 +31,8 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.storage.factory.FolderStorageFactory;
-import de.eintosti.buildsystem.storage.factory.WorldStorageFactory;
+import de.eintosti.buildsystem.storage.yaml.YamlFolderStorage;
+import de.eintosti.buildsystem.storage.yaml.YamlWorldStorage;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.PlayerChatInput;
 import de.eintosti.buildsystem.util.StringCleaner;
@@ -73,8 +73,8 @@ public class WorldServiceImpl implements WorldService {
 
     public WorldServiceImpl(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.folderStorage = new FolderStorageFactory(plugin).createStorage(this);
-        this.worldStorage = new WorldStorageFactory(plugin).createStorage(this);
+        this.worldStorage = new YamlWorldStorage(plugin, this);
+        this.folderStorage = new YamlFolderStorage(plugin, this.worldStorage);
     }
 
     public void init() {

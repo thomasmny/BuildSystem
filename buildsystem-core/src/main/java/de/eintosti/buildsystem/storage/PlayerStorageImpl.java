@@ -24,9 +24,9 @@ import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,16 +38,24 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public abstract class PlayerStorageImpl implements PlayerStorage {
 
+    @org.jspecify.annotations.Nullable
     protected final BuildSystemPlugin plugin;
     protected final Logger logger;
 
-    private final Map<UUID, BuildPlayer> buildPlayers;
+    private final ConcurrentHashMap<UUID, BuildPlayer> buildPlayers;
 
     public PlayerStorageImpl(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.logger = plugin.getLogger();
 
-        this.buildPlayers = new HashMap<>();
+        this.buildPlayers = new ConcurrentHashMap<>();
+    }
+
+    /** Package-private for unit tests only. */
+    PlayerStorageImpl() {
+        this.plugin = null;
+        this.logger = java.util.logging.Logger.getLogger(PlayerStorageImpl.class.getName());
+        this.buildPlayers = new ConcurrentHashMap<>();
     }
 
     public void loadPlayers() {
@@ -63,9 +71,7 @@ public abstract class PlayerStorageImpl implements PlayerStorage {
 
     @Override
     public BuildPlayer createBuildPlayer(UUID uuid) {
-        BuildPlayer buildPlayer = this.buildPlayers.getOrDefault(uuid, new BuildPlayerImpl(uuid, new SettingsImpl()));
-        this.buildPlayers.put(uuid, buildPlayer);
-        return buildPlayer;
+        return this.buildPlayers.computeIfAbsent(uuid, id -> new BuildPlayerImpl(id, new SettingsImpl()));
     }
 
     @Override
@@ -85,7 +91,6 @@ public abstract class PlayerStorageImpl implements PlayerStorage {
     }
 
     public BuildPlayer getBuildPlayer(Player player) {
-        UUID playerUuid = player.getUniqueId();
-        return this.buildPlayers.getOrDefault(playerUuid, createBuildPlayer(playerUuid));
+        return this.buildPlayers.computeIfAbsent(player.getUniqueId(), id -> new BuildPlayerImpl(id, new SettingsImpl()));
     }
 }

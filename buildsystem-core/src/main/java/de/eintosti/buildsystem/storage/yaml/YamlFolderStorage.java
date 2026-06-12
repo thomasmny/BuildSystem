@@ -19,11 +19,11 @@ package de.eintosti.buildsystem.storage.yaml;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.display.FolderImpl;
 import java.io.File;
 import java.io.IOException;
@@ -55,8 +55,8 @@ public class YamlFolderStorage extends FolderStorageImpl {
     private final File file;
     private final FileConfiguration config;
 
-    public YamlFolderStorage(BuildSystemPlugin plugin, WorldServiceImpl worldService) {
-        super(plugin, worldService);
+    public YamlFolderStorage(BuildSystemPlugin plugin, WorldStorage worldStorage) {
+        super(plugin, worldStorage);
         this.file = new File(plugin.getDataFolder(), "folders.yml");
         this.config = YamlConfiguration.loadConfiguration(file);
     }

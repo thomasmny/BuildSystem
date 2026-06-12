@@ -23,7 +23,7 @@ import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.storage.factory.PlayerStorageFactory;
+import de.eintosti.buildsystem.storage.yaml.YamlPlayerStorage;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -49,7 +49,7 @@ public class PlayerServiceImpl implements PlayerService {
     public PlayerServiceImpl(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.logger = plugin.getLogger();
-        this.playerStorage = new PlayerStorageFactory(plugin).createStorage();
+        this.playerStorage = new YamlPlayerStorage(plugin);
         this.buildModePlayers = new HashSet<>();
     }
 

@@ -20,16 +20,16 @@ package de.eintosti.buildsystem.storage;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.display.FolderImpl;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -42,17 +42,27 @@ import org.jspecify.annotations.NullMarked;
 public abstract class FolderStorageImpl implements FolderStorage {
 
     protected final Logger logger;
+    @org.jspecify.annotations.Nullable
     protected final BuildSystemPlugin plugin;
-    protected final WorldServiceImpl worldService;
+    protected final WorldStorage worldStorage;
 
-    private final Map<String, Folder> foldersByName;
+    private final ConcurrentHashMap<String, Folder> foldersByName;
 
-    public FolderStorageImpl(BuildSystemPlugin plugin, WorldServiceImpl worldService) {
+    public FolderStorageImpl(BuildSystemPlugin plugin, WorldStorage worldStorage) {
         this.logger = plugin.getLogger();
         this.plugin = plugin;
-        this.worldService = worldService;
+        this.worldStorage = worldStorage;
 
-        this.foldersByName = new HashMap<>();
+        this.foldersByName = new ConcurrentHashMap<>();
+    }
+
+    /** Package-private for unit tests only. */
+    FolderStorageImpl(Logger logger, WorldStorage worldStorage) {
+        this.logger = logger;
+        this.plugin = null;
+        this.worldStorage = worldStorage;
+
+        this.foldersByName = new ConcurrentHashMap<>();
     }
 
     public void loadFolders() {
@@ -89,9 +99,13 @@ public abstract class FolderStorageImpl implements FolderStorage {
 
     @Override
     public Folder createFolder(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
-        Folder folder = new FolderImpl(plugin, name, category, parent, creator);
+        Folder folder = newFolder(name, category, parent, creator);
         foldersByName.put(name.toLowerCase(), folder);
         return folder;
+    }
+
+    protected Folder newFolder(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
+        return new FolderImpl(plugin, name, category, parent, creator);
     }
 
     @Override
@@ -107,7 +121,6 @@ public abstract class FolderStorageImpl implements FolderStorage {
                 .forEach(this::removeFolder);
 
         // Remove world <> folder assignments
-        WorldStorage worldStorage = worldService.getWorldStorage();
         removed.getWorldUUIDs()
                 .stream()
                 .map(worldStorage::getBuildWorld)
