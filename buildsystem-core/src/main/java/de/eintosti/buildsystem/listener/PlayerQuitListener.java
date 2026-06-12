@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.player.CachedValues;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import java.util.Map;
 import org.bukkit.Bukkit;
@@ -38,11 +39,13 @@ public class PlayerQuitListener implements Listener {
 
     private final BuildSystemPlugin plugin;
     private final PlayerServiceImpl playerManager;
+    private final NavigatorService navigatorService;
     private final SettingsService settingsManager;
 
     public PlayerQuitListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.playerManager = plugin.getPlayerService();
+        this.navigatorService = plugin.getNavigatorService();
         this.settingsManager = plugin.getSettingsService();
     }
 
@@ -58,7 +61,7 @@ public class PlayerQuitListener implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        playerManager.closeNewNavigator(player);
+        navigatorService.closeNewNavigator(player);
 
         Settings settings = settingsManager.getSettings(player);
         if (settings.isNoClip()) {

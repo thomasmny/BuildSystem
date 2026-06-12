@@ -397,7 +397,7 @@ public abstract class DisplayablesInventory extends PaginatedMenu {
     private void manageWorldItemClick(InventoryClickEvent event, BuildWorld buildWorld) {
         Player player = (Player) event.getWhoClicked();
         if (event.isLeftClick() || !buildWorld.getPermissions().canPerformCommand(player, WorldsArgument.EDIT.getPermission())) {
-            playerService.closeNewNavigator(player);
+            plugin.getNavigatorService().closeNewNavigator(player);
             buildWorld.getTeleporter().teleport(player);
             return;
         }

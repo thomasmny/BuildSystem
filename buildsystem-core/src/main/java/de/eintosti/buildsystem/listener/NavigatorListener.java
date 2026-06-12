@@ -30,10 +30,10 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
 
-import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
-import de.eintosti.buildsystem.world.navigator.ArmorStandManager;
+
 import de.eintosti.buildsystem.world.navigator.inventory.ArchivedWorldsInventory;
 import de.eintosti.buildsystem.world.navigator.inventory.DisplayablesInventory;
 import de.eintosti.buildsystem.world.navigator.inventory.NavigatorInventory;
@@ -67,15 +67,15 @@ public class NavigatorListener implements Listener {
     private static final double MIN_HEIGHT = 1.4409877061843872;
 
     private final BuildSystemPlugin plugin;
-    private final ArmorStandManager armorStandManager;
-    private final PlayerServiceImpl playerService;
+
+    private final NavigatorService navigatorService;
     private final SettingsService settingsManager;
     private final WorldStorage worldStorage;
 
     public NavigatorListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.armorStandManager = plugin.getArmorStandManager();
-        this.playerService = plugin.getPlayerService();
+
+        this.navigatorService = plugin.getNavigatorService();
         this.settingsManager = plugin.getSettingsService();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
 
@@ -107,7 +107,7 @@ public class NavigatorListener implements Listener {
             openNavigator(player);
         } else if (isCloseNavigatorItem(player, itemStack)) {
             event.setCancelled(true);
-            playerService.closeNewNavigator(player);
+            navigatorService.closeNewNavigator(player);
         }
     }
 
@@ -119,7 +119,7 @@ public class NavigatorListener implements Listener {
                 XSound.BLOCK_CHEST_OPEN.play(player);
             }
             case NEW -> {
-                if (playerService.getOpenNavigator().contains(player)) {
+                if (navigatorService.getOpenNavigator().contains(player)) {
                     plugin.getMessages().sendMessage(player, "worlds_navigator_open");
                     return;
                 }
@@ -133,7 +133,7 @@ public class NavigatorListener implements Listener {
     }
 
     private void summonNewNavigator(Player player) {
-        CachedValues cachedValues = playerService.getPlayerStorage().getBuildPlayer(player).getCachedValues();
+        CachedValues cachedValues = plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player).getCachedValues();
         cachedValues.saveWalkSpeed(player.getWalkSpeed());
         cachedValues.saveFlySpeed(player.getFlySpeed());
 
@@ -146,8 +146,8 @@ public class NavigatorListener implements Listener {
         player.addPotionEffect(new PotionEffect(XPotion.BLINDNESS.get(), PotionEffect.INFINITE_DURATION, 0, false, false));
         player.addPotionEffect(new PotionEffect(XPotion.JUMP_BOOST.get(), PotionEffect.INFINITE_DURATION, 250, false, false));
 
-        armorStandManager.spawnArmorStands(player);
-        playerService.getOpenNavigator().add(player);
+        navigatorService.spawnArmorStands(player);
+        navigatorService.getOpenNavigator().add(player);
     }
 
     /**
@@ -163,24 +163,24 @@ public class NavigatorListener implements Listener {
         // Disable interaction entities in archived worlds
         disableArchivedWorlds(player, event);
 
-        if (!playerService.getOpenNavigator().contains(player) || !(entity instanceof ArmorStand armorStand)) {
+        if (!navigatorService.getOpenNavigator().contains(player) || !(entity instanceof ArmorStand armorStand)) {
             return;
         }
 
         if (isCloseNavigatorItem(player, player.getInventory().getItemInMainHand())) {
             event.setCancelled(true);
-            playerService.closeNewNavigator(player);
+            navigatorService.closeNewNavigator(player);
             return;
         }
 
         Vector clickedPosition = event.getClickedPosition();
         if (clickedPosition.getY() > MIN_HEIGHT && clickedPosition.getY() < MAX_HEIGHT) {
-            NavigatorCategory category = ArmorStandManager.matchNavigatorCategory(armorStand);
+            NavigatorCategory category = navigatorService.matchNavigatorCategory(armorStand);
             if (category == null) {
                 return;
             }
 
-            UUID ownerUUID = ArmorStandManager.getOwner(armorStand);
+            UUID ownerUUID = navigatorService.getOwner(armorStand);
             if (!Objects.equals(ownerUUID, player.getUniqueId())) {
                 return;
             }
@@ -208,7 +208,7 @@ public class NavigatorListener implements Listener {
             return;
         }
 
-        if (!playerService.isInBuildMode(player)) {
+        if (!plugin.getPlayerService().isInBuildMode(player)) {
             cancellable.setCancelled(true);
         }
     }
@@ -221,7 +221,7 @@ public class NavigatorListener implements Listener {
     @EventHandler
     public void preventNewNavigatorManipulation(PlayerArmorStandManipulateEvent event) {
         ArmorStand armorStand = event.getRightClicked();
-        if (ArmorStandManager.matchNavigatorCategory(armorStand) == null || ArmorStandManager.getOwner(armorStand) == null) {
+        if (navigatorService.matchNavigatorCategory(armorStand) == null || navigatorService.getOwner(armorStand) == null) {
             return;
         }
 
@@ -236,7 +236,7 @@ public class NavigatorListener implements Listener {
     @EventHandler
     public void preventBarrierDrop(PlayerDropItemEvent event) {
         Player player = event.getPlayer();
-        if (!playerService.getOpenNavigator().contains(player)) {
+        if (!navigatorService.getOpenNavigator().contains(player)) {
             return;
         }
 

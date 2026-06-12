@@ -27,7 +27,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.world.navigator.ArmorStandManager;
+import de.eintosti.buildsystem.navigator.NavigatorService;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -49,7 +49,7 @@ import org.jspecify.annotations.Nullable;
 public class PlayerChangedWorldListener implements Listener {
 
     private final BuildSystemPlugin plugin;
-    private final ArmorStandManager armorStandManager;
+    private final NavigatorService navigatorService;
     private final PlayerServiceImpl playerManager;
     private final SettingsService settingsManager;
     private final WorldStorageImpl worldStorage;
@@ -60,7 +60,7 @@ public class PlayerChangedWorldListener implements Listener {
 
     public PlayerChangedWorldListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.armorStandManager = plugin.getArmorStandManager();
+        this.navigatorService = plugin.getNavigatorService();
         this.playerManager = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsService();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
@@ -99,7 +99,7 @@ public class PlayerChangedWorldListener implements Listener {
     }
 
     private void removeOldNavigator(Player player) {
-        armorStandManager.removeArmorStands(player);
+        navigatorService.removeArmorStands(player);
         player.removePotionEffect(XPotion.BLINDNESS.get());
     }
 
@@ -174,7 +174,7 @@ public class PlayerChangedWorldListener implements Listener {
             Bukkit.getOnlinePlayers().forEach(pl -> pl.showPlayer(player));
         }
 
-        playerManager.giveNavigator(player);
+        navigatorService.giveNavigator(player);
     }
 
     private void setSpectatorMode(Player player) {

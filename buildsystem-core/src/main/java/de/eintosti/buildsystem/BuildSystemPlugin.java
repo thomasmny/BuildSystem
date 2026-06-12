@@ -32,6 +32,7 @@ import de.eintosti.buildsystem.listener.ListenerRegistrar;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
+import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.settings.NoClipManager;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.UpdateChecker;
@@ -39,7 +40,6 @@ import de.eintosti.buildsystem.world.SpawnManager;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.backup.BackupService;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
-import de.eintosti.buildsystem.world.navigator.ArmorStandManager;
 import java.io.File;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -67,7 +67,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     private ConfigService configService;
     private de.eintosti.buildsystem.i18n.Messages messages;
 
-    private ArmorStandManager armorStandManager;
+    private NavigatorService navigatorService;
     private CustomBlockManager customBlockManager;
     private PlayerServiceImpl playerService;
     private NoClipManager noClipManager;
@@ -138,7 +138,7 @@ public class BuildSystemPlugin extends JavaPlugin {
 
             settingsService.hideScoreboard(pl);
             noClipManager.stopNoClip(pl.getUniqueId());
-            playerService.closeNewNavigator(pl);
+            navigatorService.closeNewNavigator(pl);
         });
 
         this.backupService.close();
@@ -176,9 +176,9 @@ public class BuildSystemPlugin extends JavaPlugin {
     private void initClasses() {
         this.customizableIcons = new CustomizableIcons(this);
 
-        this.armorStandManager = new ArmorStandManager();
         this.customBlockManager = new CustomBlockManager(this);
         (this.playerService = new PlayerServiceImpl(this)).init();
+        this.navigatorService = new NavigatorService(this);
         this.noClipManager = new NoClipManager(this);
         (this.worldService = new WorldServiceImpl(this)).init();
         this.backupService = new BackupService(this);
@@ -303,8 +303,8 @@ public class BuildSystemPlugin extends JavaPlugin {
         }
     }
 
-    public ArmorStandManager getArmorStandManager() {
-        return armorStandManager;
+    public NavigatorService getNavigatorService() {
+        return navigatorService;
     }
 
     public CustomBlockManager getCustomBlockManager() {

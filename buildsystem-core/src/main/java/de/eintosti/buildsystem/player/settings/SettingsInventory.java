@@ -146,7 +146,7 @@ public class SettingsInventory extends Menu {
                     settings.setNavigatorType(NavigatorType.NEW);
                 } else {
                     settings.setNavigatorType(NavigatorType.OLD);
-                    plugin.getArmorStandManager().removeArmorStands(player);
+                    plugin.getNavigatorService().removeArmorStands(player);
                     player.removePotionEffect(XPotion.BLINDNESS.get());
                 }
                 break;

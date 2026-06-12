@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -51,6 +52,7 @@ public class PlayerJoinListener implements Listener {
     private final BuildSystemPlugin plugin;
     private final PlayerServiceImpl playerManager;
     private final SettingsService settingsManager;
+    private final NavigatorService navigatorService;
     private final SpawnManager spawnManager;
     private final WorldStorageImpl worldStorage;
 
@@ -58,6 +60,7 @@ public class PlayerJoinListener implements Listener {
         this.plugin = plugin;
         this.playerManager = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsService();
+        this.navigatorService = plugin.getNavigatorService();
         this.spawnManager = plugin.getSpawnManager();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
     }
@@ -81,7 +84,7 @@ public class PlayerJoinListener implements Listener {
         manageHidePlayer(player, buildPlayer);
         manageSettings(player, buildPlayer.getSettings());
         teleportToCorrectLocation(player, buildPlayer);
-        playerManager.giveNavigator(player);
+        navigatorService.giveNavigator(player);
 
         String worldName = player.getWorld().getName();
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
