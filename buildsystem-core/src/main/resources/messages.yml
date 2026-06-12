@@ -322,6 +322,7 @@ worlds_setitem_set: "%prefix% &b%world%&7's item was successfully changed."
 worlds_setcreator_usage: "%prefix% &7Usage: &b/worlds setCreator <world>"
 worlds_setcreator_unknown_world: "%prefix% &cUnknown world."
 worlds_setcreator_error: "%prefix% &cPlease try again."
+worlds_setcreator_player_not_found: "%prefix% &cThat player was not found."
 worlds_setcreator_set: "%prefix% &b%world%&7's creator was successfully changed."
 
 worlds_setproject_usage: "%prefix% &7Usage: &b/worlds setProject <world>"

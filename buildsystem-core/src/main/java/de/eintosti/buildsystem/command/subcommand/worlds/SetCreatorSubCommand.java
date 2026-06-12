@@ -25,12 +25,13 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
-import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.List;
 import java.util.Map;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class SetCreatorSubCommand implements SubCommand {
@@ -62,19 +63,32 @@ public class SetCreatorSubCommand implements SubCommand {
 
         new PlayerChatInput(plugin, player, "enter_world_creator", input -> {
             String creatorName = input.trim();
-            Builder creator = null;
-            if (!creatorName.equalsIgnoreCase("-")) {
-                creator = Builder.of(UUIDFetcher.getUUID(creatorName), creatorName);
+            if (creatorName.equalsIgnoreCase("-")) {
+                applyCreator(player, buildWorld, null);
+                return;
             }
-            buildWorld.getBuilders().setCreator(creator);
 
-            plugin.getSettingsService().forceUpdateSidebar(buildWorld);
-            XSound.ENTITY_PLAYER_LEVELUP.play(player);
-            plugin.getMessages().sendMessage(player, "worlds_setcreator_set",
-                    Map.entry("%world%", buildWorld.getName())
-            );
-            player.closeInventory();
+            plugin.getPlayerLookupService().lookupUniqueId(creatorName)
+                    .thenAccept(creatorId -> Bukkit.getScheduler().runTask(plugin, () -> {
+                        if (creatorId == null) {
+                            plugin.getMessages().sendMessage(player, "worlds_setcreator_player_not_found");
+                            player.closeInventory();
+                            return;
+                        }
+                        applyCreator(player, buildWorld, Builder.of(creatorId, creatorName));
+                    }));
         });
+    }
+
+    private void applyCreator(Player player, BuildWorld buildWorld, @Nullable Builder creator) {
+        buildWorld.getBuilders().setCreator(creator);
+
+        plugin.getSettingsService().forceUpdateSidebar(buildWorld);
+        XSound.ENTITY_PLAYER_LEVELUP.play(player);
+        plugin.getMessages().sendMessage(player, "worlds_setcreator_set",
+                Map.entry("%world%", buildWorld.getName())
+        );
+        player.closeInventory();
     }
 
     @Override

@@ -24,7 +24,6 @@ import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
-import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,19 +65,23 @@ public class RemoveBuilderSubCommand implements SubCommand {
 
     private void removeBuilder(Player player, BuildWorld buildWorld, String builderName) {
         Player builderPlayer = Bukkit.getPlayerExact(builderName);
-        UUID builderId;
-
-        if (builderPlayer == null) {
-            builderId = UUIDFetcher.getUUID(builderName);
-            if (builderId == null) {
-                plugin.getMessages().sendMessage(player, "worlds_removebuilder_player_not_found");
-                player.closeInventory();
-                return;
-            }
-        } else {
-            builderId = builderPlayer.getUniqueId();
+        if (builderPlayer != null) {
+            applyRemove(player, buildWorld, builderPlayer.getUniqueId(), builderName);
+            return;
         }
 
+        plugin.getPlayerLookupService().lookupUniqueId(builderName)
+                .thenAccept(builderId -> Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (builderId == null) {
+                        plugin.getMessages().sendMessage(player, "worlds_removebuilder_player_not_found");
+                        player.closeInventory();
+                        return;
+                    }
+                    applyRemove(player, buildWorld, builderId, builderName);
+                }));
+    }
+
+    private void applyRemove(Player player, BuildWorld buildWorld, UUID builderId, String builderName) {
         Builders builders = buildWorld.getBuilders();
         if (builderId.equals(player.getUniqueId()) && builders.isCreator(player)) {
             plugin.getMessages().sendMessage(player, "worlds_removebuilder_not_yourself");

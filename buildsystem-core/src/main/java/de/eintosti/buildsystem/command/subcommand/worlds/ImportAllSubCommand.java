@@ -23,11 +23,9 @@ import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.util.ArgumentParser;
-import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
 import java.util.Locale;
-import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -80,7 +78,7 @@ public class ImportAllSubCommand implements SubCommand {
 
         ArgumentParser parser = new ArgumentParser(args);
         Generator generator = Generator.VOID;
-        Builder creator = null;
+        String creatorArg = null;
 
         if (parser.isArgument("g")) {
             String generatorArg = parser.getValue("g");
@@ -95,20 +93,28 @@ public class ImportAllSubCommand implements SubCommand {
         }
 
         if (parser.isArgument("c")) {
-            String creatorArg = parser.getValue("c");
+            creatorArg = parser.getValue("c");
             if (creatorArg == null) {
                 plugin.getMessages().sendMessage(player, "worlds_importall_usage");
                 return;
             }
-            UUID creatorId = UUIDFetcher.getUUID(creatorArg);
-            if (creatorId == null) {
-                plugin.getMessages().sendMessage(player, "worlds_importall_player_not_found");
-                return;
-            }
-            creator = Builder.of(creatorId, creatorArg);
         }
 
-        worldService.importWorlds(player, directories, generator, creator);
+        if (creatorArg == null) {
+            worldService.importWorlds(player, directories, generator, null);
+            return;
+        }
+
+        String creatorName = creatorArg;
+        Generator resolvedGenerator = generator;
+        plugin.getPlayerLookupService().lookupUniqueId(creatorName)
+                .thenAccept(creatorId -> Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (creatorId == null) {
+                        plugin.getMessages().sendMessage(player, "worlds_importall_player_not_found");
+                        return;
+                    }
+                    worldService.importWorlds(player, directories, resolvedGenerator, Builder.of(creatorId, creatorName));
+                }));
     }
 
     @Override

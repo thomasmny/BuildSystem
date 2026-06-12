@@ -25,7 +25,6 @@ import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
-import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.menu.BuilderInventory;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.ArrayList;
@@ -68,22 +67,23 @@ public class AddBuilderSubCommand implements SubCommand {
 
     private void addBuilder(Player player, BuildWorld buildWorld, String builderName, boolean closeInventory) {
         Player builderPlayer = Bukkit.getPlayerExact(builderName);
-        Builder builder;
-        UUID builderId;
-
-        if (builderPlayer == null) {
-            builderId = UUIDFetcher.getUUID(builderName);
-            if (builderId == null) {
-                plugin.getMessages().sendMessage(player, "worlds_addbuilder_player_not_found");
-                player.closeInventory();
-                return;
-            }
-            builder = Builder.of(builderId, builderName);
-        } else {
-            builder = Builder.of(builderPlayer);
-            builderId = builderPlayer.getUniqueId();
+        if (builderPlayer != null) {
+            applyBuilder(player, buildWorld, Builder.of(builderPlayer), builderPlayer.getUniqueId(), builderName, closeInventory);
+            return;
         }
 
+        plugin.getPlayerLookupService().lookupUniqueId(builderName)
+                .thenAccept(builderId -> Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (builderId == null) {
+                        plugin.getMessages().sendMessage(player, "worlds_addbuilder_player_not_found");
+                        player.closeInventory();
+                        return;
+                    }
+                    applyBuilder(player, buildWorld, Builder.of(builderId, builderName), builderId, builderName, closeInventory);
+                }));
+    }
+
+    private void applyBuilder(Player player, BuildWorld buildWorld, Builder builder, UUID builderId, String builderName, boolean closeInventory) {
         Builders builders = buildWorld.getBuilders();
         if (builderId.equals(player.getUniqueId()) && builders.isCreator(player)) {
             plugin.getMessages().sendMessage(player, "worlds_addbuilder_already_creator");

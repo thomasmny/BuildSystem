@@ -27,7 +27,6 @@ import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
-import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.world.menu.EditInventory;
 import java.util.ArrayList;
@@ -35,6 +34,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -178,22 +178,33 @@ public class BuilderInventory extends PaginatedMenu {
                 if (slot == 4 || !event.isShiftClick()) {
                     return;
                 }
+                removeBuilderByItem(player, itemStack);
+        }
+    }
 
-                String builderName = itemStack.getItemMeta().getPersistentDataContainer().get(this.builderNameKey, PersistentDataType.STRING);
-                UUID builderId;
-                if (builderName == null || (builderId = UUIDFetcher.getUUID(builderName)) == null) {
-                    player.closeInventory();
-                    messages.sendMessage(player, "worlds_removebuilder_error");
-                    plugin.getLogger().warning("Could not find UUID for " + builderName);
-                    return;
-                }
-
-                buildWorld.getBuilders().removeBuilder(builderId);
-                XSound.ENTITY_ENDERMAN_TELEPORT.play(player);
-                messages.sendMessage(player, "worlds_removebuilder_removed", Map.entry("%builder%", builderName));
+    private void removeBuilderByItem(Player player, ItemStack itemStack) {
+        String builderName = itemStack.getItemMeta().getPersistentDataContainer().get(this.builderNameKey, PersistentDataType.STRING);
+        if (builderName == null) {
+            player.closeInventory();
+            messages.sendMessage(player, "worlds_removebuilder_error");
+            plugin.getLogger().warning("Could not find UUID for null builder name");
+            return;
         }
 
-        XSound.ENTITY_CHICKEN_EGG.play(player);
-        populate(player);
+        plugin.getPlayerLookupService().lookupUniqueId(builderName)
+                .thenAccept(builderId -> Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (builderId == null) {
+                        player.closeInventory();
+                        messages.sendMessage(player, "worlds_removebuilder_error");
+                        plugin.getLogger().warning("Could not find UUID for " + builderName);
+                        return;
+                    }
+
+                    buildWorld.getBuilders().removeBuilder(builderId);
+                    XSound.ENTITY_ENDERMAN_TELEPORT.play(player);
+                    messages.sendMessage(player, "worlds_removebuilder_removed", Map.entry("%builder%", builderName));
+                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    populate(player);
+                }));
     }
 }

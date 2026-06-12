@@ -30,6 +30,7 @@ import de.eintosti.buildsystem.listener.ListenerRegistrar;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
+import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
@@ -66,6 +67,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     private NavigatorService navigatorService;
     private CustomBlockManager customBlockManager;
     private PlayerServiceImpl playerService;
+    private PlayerLookupService playerLookupService;
     private NoClipService noClipService;
     private SettingsService settingsService;
     private SpawnService spawnService;
@@ -165,6 +167,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         this.customizableIcons = new CustomizableIcons(this);
 
         this.customBlockManager = new CustomBlockManager(this);
+        this.playerLookupService = new PlayerLookupService(this);
         (this.playerService = new PlayerServiceImpl(this)).init();
         this.navigatorService = new NavigatorService(this);
         this.noClipService = new NoClipService(this);
@@ -282,6 +285,10 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     public PlayerServiceImpl getPlayerService() {
         return playerService;
+    }
+
+    public PlayerLookupService getPlayerLookupService() {
+        return playerLookupService;
     }
 
     public NoClipService getNoClipService() {

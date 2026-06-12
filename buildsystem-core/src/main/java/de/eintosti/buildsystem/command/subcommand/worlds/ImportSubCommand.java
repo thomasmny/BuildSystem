@@ -26,7 +26,6 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.StringCleaner;
-import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
 import java.util.ArrayList;
@@ -34,10 +33,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class ImportSubCommand implements SubCommand {
@@ -82,10 +81,10 @@ public class ImportSubCommand implements SubCommand {
             return;
         }
 
-        Builder creator = null;
         Generator generator = Generator.VOID;
         String generatorName = generator.name();
         BuildWorldType worldType = BuildWorldType.IMPORTED;
+        String creatorArg = null;
 
         if (args.length != 2) {
             ArgumentParser parser = new ArgumentParser(args);
@@ -106,17 +105,11 @@ public class ImportSubCommand implements SubCommand {
             }
 
             if (parser.isArgument("c")) {
-                String creatorArg = parser.getValue("c");
+                creatorArg = parser.getValue("c");
                 if (creatorArg == null) {
                     plugin.getMessages().sendMessage(player, "worlds_import_usage");
                     return;
                 }
-                UUID creatorId = UUIDFetcher.getUUID(creatorArg);
-                if (creatorId == null) {
-                    plugin.getMessages().sendMessage(player, "worlds_import_player_not_found");
-                    return;
-                }
-                creator = Builder.of(creatorId, creatorArg);
             }
 
             if (parser.isArgument("t")) {
@@ -132,10 +125,30 @@ public class ImportSubCommand implements SubCommand {
             }
         }
 
+        if (creatorArg == null) {
+            startImport(player, worldName, null, worldType, generator, generatorName);
+            return;
+        }
+
+        String creatorName = creatorArg;
+        Generator resolvedGenerator = generator;
+        String resolvedGeneratorName = generatorName;
+        BuildWorldType resolvedWorldType = worldType;
+        plugin.getPlayerLookupService().lookupUniqueId(creatorName)
+                .thenAccept(creatorId -> Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (creatorId == null) {
+                        plugin.getMessages().sendMessage(player, "worlds_import_player_not_found");
+                        return;
+                    }
+                    startImport(player, worldName, Builder.of(creatorId, creatorName), resolvedWorldType, resolvedGenerator, resolvedGeneratorName);
+                }));
+    }
+
+    private void startImport(Player player, String worldName, @Nullable Builder creator, BuildWorldType worldType, Generator generator, String generatorName) {
         plugin.getMessages().sendMessage(player, "worlds_import_started",
                 Map.entry("%world%", worldName)
         );
-        if (worldService.importWorld(player, worldName, creator, worldType, generator, generatorName, true)) {
+        if (plugin.getWorldService().importWorld(player, worldName, creator, worldType, generator, generatorName, true)) {
             plugin.getMessages().sendMessage(player, "worlds_import_finished");
         }
     }

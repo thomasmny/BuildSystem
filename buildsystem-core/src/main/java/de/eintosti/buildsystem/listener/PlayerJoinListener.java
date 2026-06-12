@@ -31,7 +31,6 @@ import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import io.papermc.lib.PaperLib;
 import java.util.Map;
@@ -77,7 +76,7 @@ public class PlayerJoinListener implements Listener {
     @SuppressWarnings("deprecation")
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        UUIDFetcher.cacheUser(player.getUniqueId(), player.getName());
+        plugin.getPlayerLookupService().cacheUser(player.getUniqueId(), player.getName());
 
         BuildPlayer buildPlayer = playerManager.getPlayerStorage().createBuildPlayer(player);
         manageHidePlayer(player, buildPlayer);

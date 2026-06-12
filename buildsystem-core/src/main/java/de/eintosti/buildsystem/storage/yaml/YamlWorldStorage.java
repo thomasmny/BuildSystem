@@ -26,7 +26,6 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
@@ -247,7 +246,8 @@ public class YamlWorldStorage extends WorldStorageImpl {
                 return Builder.of(UUID.fromString(oldCreatorId), creator);
             }
 
-            UUID creatorId = UUIDFetcher.getUUID(creator);
+            // Runs inside load()'s supplyAsync, so this off-main blocking lookup is safe.
+            UUID creatorId = plugin.getPlayerLookupService().lookupUniqueIdBlocking(creator);
             if (creatorId == null) {
                 return null;
             }
