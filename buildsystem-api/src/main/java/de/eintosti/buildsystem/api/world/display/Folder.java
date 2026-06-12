@@ -19,13 +19,12 @@ package de.eintosti.buildsystem.api.world.display;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
+import java.util.List;
+import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.List;
-import java.util.UUID;
 
 /**
  * Represents a folder within the BuildSystem's world navigation structure. Folders can contain {@link BuildWorld}s and

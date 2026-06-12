@@ -22,11 +22,10 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.storage.yaml.YamlSetupStorage;
-import org.jspecify.annotations.NullMarked;
-
 import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
+import org.jspecify.annotations.NullMarked;
 
 /** User-customizable icons for different areas of the plugin. */
 @NullMarked

@@ -18,13 +18,12 @@
 package de.eintosti.buildsystem.api.storage;
 
 import de.eintosti.buildsystem.api.player.BuildPlayer;
+import java.util.Collection;
+import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.Collection;
-import java.util.UUID;
 
 /**
  * Interface for managing the storage of {@link BuildPlayer} objects.

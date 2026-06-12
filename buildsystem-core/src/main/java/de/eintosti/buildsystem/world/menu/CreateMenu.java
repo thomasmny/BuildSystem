@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
+import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
@@ -133,7 +134,7 @@ public class CreateMenu extends PaginatedMenu {
                         31,
                         InventoryUtils.createSkull(
                                 messages.getString("create_generators_create_world", player),
-                                Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716")));
+                                Profileable.detect(SkullTextures.ADD_ITEM)));
     }
 
     private void populateTemplates(Player player) {
@@ -142,15 +143,13 @@ public class CreateMenu extends PaginatedMenu {
                         28,
                         InventoryUtils.createSkull(
                                 messages.getString("gui_previous_page", player),
-                                Profileable.detect(
-                                        "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2")));
+                                Profileable.detect(SkullTextures.PREVIOUS_PAGE)));
         getInventory()
                 .setItem(
                         34,
                         InventoryUtils.createSkull(
                                 messages.getString("gui_next_page", player),
-                                Profileable.detect(
-                                        "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158")));
+                                Profileable.detect(SkullTextures.NEXT_PAGE)));
 
         File[] templateFiles = FileUtils.resolve(plugin.getDataFolder(), "templates")
                 .toFile()

@@ -17,11 +17,11 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import de.eintosti.buildsystem.world.menu.EditMenu.TimeOfDay;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Pins the tick → {@link TimeOfDay} bucketing used by the editor's time button. The boundaries are

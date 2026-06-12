@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import java.util.Set;
 import org.bukkit.entity.Player;
@@ -40,7 +41,7 @@ public abstract class CreatableWorldsMenu extends DisplayablesMenu {
             BuildWorldStatus.ALMOST_FINISHED,
             BuildWorldStatus.FINISHED);
 
-    static final String CREATE_WORLD_PROFILE = "3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716";
+    static final String CREATE_WORLD_PROFILE = SkullTextures.ADD_ITEM;
     static final String CREATE_FOLDER_PROFILE = "69b861aabb316c4ed73b4e5428305782e735565ba2a053912e1efd834fa5a6f";
 
     private final PlayerServiceImpl playerService;

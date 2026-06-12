@@ -28,6 +28,7 @@ import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
+import de.eintosti.buildsystem.menu.SkullTextures;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -78,12 +79,11 @@ public class BuilderMenu extends PaginatedMenu {
                 18,
                 InventoryUtils.createSkull(
                         messages.getString("gui_previous_page", player),
-                        Profileable.detect("f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2")));
+                        Profileable.detect(SkullTextures.PREVIOUS_PAGE)));
         inv.setItem(
                 26,
                 InventoryUtils.createSkull(
-                        messages.getString("gui_next_page", player),
-                        Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158")));
+                        messages.getString("gui_next_page", player), Profileable.detect(SkullTextures.NEXT_PAGE)));
 
         // Clear builder slots from previous state
         plugin.getMenuItems().fillRange(player, inv, 9, 18);
@@ -120,7 +120,7 @@ public class BuilderMenu extends PaginatedMenu {
         if (buildWorld.getBuilders().isCreator(player) || player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)) {
             builderAddItem = InventoryUtils.createSkull(
                     messages.getString("worldeditor_builders_add_builder_item", player),
-                    Profileable.detect("3edd20be93520949e6ce789dc4f43efaeb28c717ee6bfcbbe02780142f716"));
+                    Profileable.detect(SkullTextures.ADD_ITEM));
         } else {
             builderAddItem = plugin.getMenuItems().getColoredGlassPane(player).parseItem();
         }

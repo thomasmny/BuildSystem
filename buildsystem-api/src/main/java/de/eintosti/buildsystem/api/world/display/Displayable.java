@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.api.world.display;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import java.util.List;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -29,8 +30,6 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
-
-import java.util.List;
 
 /**
  * Represents an object that can be displayed in an inventory.

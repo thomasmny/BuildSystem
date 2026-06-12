@@ -21,12 +21,11 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.data.Type;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
+import java.util.Map;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.Map;
 
 /**
  * Manages and provides access to various data points and settings for a {@link BuildWorld}. This interface allows for

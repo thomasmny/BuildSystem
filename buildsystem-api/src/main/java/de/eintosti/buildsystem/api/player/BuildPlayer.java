@@ -18,17 +18,16 @@
 package de.eintosti.buildsystem.api.player;
 
 import de.eintosti.buildsystem.api.player.settings.Settings;
+import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-
-import java.util.UUID;
 
 /**
  * A player managed by BuildSystem.
  *
  * <p>Identity ({@link #getUniqueId()}) is stable across sessions; {@linkplain #getSettings() settings} are mutable.
  * Anything beyond identity and settings — cached gameplay state, logout location, navigator UI state — is internal
- * runtime state and lives outside this interface so the public surface stays focused.
+ * runtime state and lives outside this interface, so the public surface stays focused.
  *
  * @since 3.0.0
  */

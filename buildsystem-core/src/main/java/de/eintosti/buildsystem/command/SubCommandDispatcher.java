@@ -19,10 +19,9 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.i18n.Messages;
+import java.util.*;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-
-import java.util.*;
 
 /**
  * Generic dispatcher for slash-command subcommands. The command name is matched case-insensitively; worldName is

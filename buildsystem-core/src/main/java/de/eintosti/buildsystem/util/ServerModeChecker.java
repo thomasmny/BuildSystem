@@ -17,11 +17,10 @@
  */
 package de.eintosti.buildsystem.util;
 
-import org.bukkit.Bukkit;
-import org.jspecify.annotations.NullMarked;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import org.bukkit.Bukkit;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Utility class to determine the mode in which the server is running. The server can be in one of the following modes:

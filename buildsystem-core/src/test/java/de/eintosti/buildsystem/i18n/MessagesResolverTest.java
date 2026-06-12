@@ -17,10 +17,10 @@
  */
 package de.eintosti.buildsystem.i18n;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Pins the external-placeholder seam: a resolver is applied only when both a resolver is registered and the audience is

@@ -64,8 +64,7 @@ public record CustomGeneratorImpl(
      *     {@code null} if the plugin specified in the identifier does not exist or if the identifier format is
      *     unexpectedly empty
      */
-    @Nullable
-    public static CustomGeneratorImpl of(String identifier, String worldName) {
+    @Nullable public static CustomGeneratorImpl of(String identifier, String worldName) {
         String[] generatorInfo = identifier.split(":");
         if (generatorInfo.length == 1) {
             generatorInfo = new String[] {generatorInfo[0], generatorInfo[0]};

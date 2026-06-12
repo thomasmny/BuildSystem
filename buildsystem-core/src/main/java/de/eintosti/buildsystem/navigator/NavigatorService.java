@@ -24,6 +24,7 @@ import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
 import java.util.*;
@@ -98,21 +99,12 @@ public class NavigatorService {
     private ArmorStand spawnWorldNavigator(Player player) {
         Location navigatorLocation = calculatePosition(player, SPREAD / 2 * -1);
         return spawnArmorStand(
-                player,
-                navigatorLocation,
-                NavigatorCategory.PUBLIC,
-                true,
-                "d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622");
+                player, navigatorLocation, NavigatorCategory.PUBLIC, true, SkullTextures.WORLD_NAVIGATOR);
     }
 
     private ArmorStand spawnWorldArchive(Player player) {
         Location archiveLocation = calculatePosition(player, 0);
-        return spawnArmorStand(
-                player,
-                archiveLocation,
-                NavigatorCategory.ARCHIVE,
-                true,
-                "7f6bf958abd78295eed6ffc293b1aa59526e80f54976829ea068337c2f5e8");
+        return spawnArmorStand(player, archiveLocation, NavigatorCategory.ARCHIVE, true, SkullTextures.WORLD_ARCHIVE);
     }
 
     private ArmorStand spawnPrivateWorlds(Player player) {

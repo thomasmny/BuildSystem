@@ -21,9 +21,8 @@ import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.creation.BuildWorldCreator;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import org.jspecify.annotations.NullMarked;
-
 import java.util.concurrent.CompletableFuture;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Provides a service for managing world-related operations and data. This interface offers methods to access and

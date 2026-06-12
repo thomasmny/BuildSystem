@@ -20,14 +20,13 @@ package de.eintosti.buildsystem.world.builder;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.i18n.Messages;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @NullMarked
 public class BuildersImpl implements Builders {

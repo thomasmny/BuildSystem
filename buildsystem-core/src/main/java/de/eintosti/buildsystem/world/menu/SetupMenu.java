@@ -17,6 +17,8 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
+import static java.util.Map.entry;
+
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
@@ -24,7 +26,11 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.Menu;
+import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiConsumer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -33,12 +39,6 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
-
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-
-import static java.util.Map.entry;
 
 @NullMarked
 public class SetupMenu extends Menu {
@@ -77,13 +77,13 @@ public class SetupMenu extends Menu {
                 10,
                 InventoryUtils.createSkull(
                         messages.getString("setup_default_item_name", player),
-                        Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"),
+                        Profileable.detect(SkullTextures.NEXT_PAGE),
                         messages.getStringList("setup_default_item_lore", player)));
         inv.setItem(
                 19,
                 InventoryUtils.createSkull(
                         messages.getString("setup_status_item_name", player),
-                        Profileable.detect("d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158"),
+                        Profileable.detect(SkullTextures.NEXT_PAGE),
                         messages.getStringList("setup_status_item_name_lore", player)));
 
         inv.setItem(

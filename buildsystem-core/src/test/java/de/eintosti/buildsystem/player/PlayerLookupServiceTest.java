@@ -17,14 +17,13 @@
  */
 package de.eintosti.buildsystem.player;
 
-import org.jspecify.annotations.NullMarked;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.Test;
 
 /**
  * Pins the offline-safe behavior of {@link PlayerLookupService}: cached lookups resolve without scheduling, names are

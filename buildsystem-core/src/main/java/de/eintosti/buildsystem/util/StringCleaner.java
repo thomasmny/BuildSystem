@@ -17,12 +17,11 @@
  */
 package de.eintosti.buildsystem.util;
 
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class StringCleaner {

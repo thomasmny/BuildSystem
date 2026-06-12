@@ -50,6 +50,5 @@ public interface CustomGenerator {
      *
      * @return The chunk generator instance, or {@code null} if it could not be loaded or has not been not set
      */
-    @Nullable
-    ChunkGenerator chunkGenerator();
+    @Nullable ChunkGenerator chunkGenerator();
 }

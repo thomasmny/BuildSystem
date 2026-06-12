@@ -21,11 +21,6 @@ import com.google.common.base.Preconditions;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.Contract;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -34,6 +29,10 @@ import java.net.URL;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A utility class to assist in checking for updates for plugins uploaded to <a
@@ -49,8 +48,7 @@ public final class UpdateChecker {
     private static final Pattern DECIMAL_SCHEME_PATTERN = Pattern.compile("\\d+(?:\\.\\d+)*");
 
     /** The default version scheme for this update checker */
-    @Nullable
-    public static final VersionScheme VERSION_SCHEME_DECIMAL = (first, second) -> {
+    @Nullable public static final VersionScheme VERSION_SCHEME_DECIMAL = (first, second) -> {
         String[] firstSplit = splitVersionInfo(first), secondSplit = splitVersionInfo(second);
         if (firstSplit == null || secondSplit == null) {
             return null;
@@ -145,8 +143,7 @@ public final class UpdateChecker {
      *
      * @return the last update check result. {@code null} if none.
      */
-    @Nullable
-    public UpdateResult getLastResult() {
+    @Nullable public UpdateResult getLastResult() {
         return lastResult;
     }
 
@@ -196,8 +193,7 @@ public final class UpdateChecker {
          * @param second the second version to check
          * @return the greater of the two versions. {@code null} if unsupported version schemes
          */
-        @Nullable
-        String compareVersions(String first, String second);
+        @Nullable String compareVersions(String first, String second);
     }
 
     /** Represents a result for an update query performed by {@link UpdateChecker#requestUpdateCheck()}. */

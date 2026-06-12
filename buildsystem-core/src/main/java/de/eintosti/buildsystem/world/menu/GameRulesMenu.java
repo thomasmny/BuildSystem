@@ -24,6 +24,10 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
+import de.eintosti.buildsystem.menu.SkullTextures;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import org.bukkit.ChatColor;
 import org.bukkit.GameRule;
 import org.bukkit.Material;
@@ -36,10 +40,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
 
 @NullMarked
 public class GameRulesMenu extends PaginatedMenu {
@@ -83,8 +83,7 @@ public class GameRulesMenu extends PaginatedMenu {
                             36,
                             InventoryUtils.createSkull(
                                     messages.getString("gui_previous_page", player),
-                                    Profileable.detect(
-                                            "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2")));
+                                    Profileable.detect(SkullTextures.PREVIOUS_PAGE)));
         } else {
             plugin.getMenuItems().addGlassPane(player, getInventory(), 36);
         }
@@ -95,8 +94,7 @@ public class GameRulesMenu extends PaginatedMenu {
                             44,
                             InventoryUtils.createSkull(
                                     messages.getString("gui_next_page", player),
-                                    Profileable.detect(
-                                            "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158")));
+                                    Profileable.detect(SkullTextures.NEXT_PAGE)));
         } else {
             plugin.getMenuItems().addGlassPane(player, getInventory(), 44);
         }
@@ -239,8 +237,7 @@ public class GameRulesMenu extends PaginatedMenu {
      * @return The casted game rule if it matches the type, or {@code null} if it does not match
      */
     @SuppressWarnings("unchecked")
-    @Nullable
-    @Contract("_, _ -> _")
+    @Nullable @Contract("_, _ -> _")
     private static <T> GameRule<T> castRule(GameRule<?> rule, Class<T> type) {
         return type.equals(rule.getType()) ? (GameRule<T>) rule : null;
     }
