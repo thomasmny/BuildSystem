@@ -66,7 +66,7 @@ public final class ItemBuilder {
 
     public static ItemBuilder glassPane(Player player) {
         BuildSystemPlugin plugin = BuildSystemPlugin.get();
-        Settings settings = plugin.getSettingsManager().getSettings(player);
+        Settings settings = plugin.getSettingsService().getSettings(player);
         DesignColor color = settings.getDesignColor();
         XMaterial material = XMaterial.matchXMaterial(color.name() + "_STAINED_GLASS_PANE")
                 .orElse(XMaterial.BLACK_STAINED_GLASS_PANE);

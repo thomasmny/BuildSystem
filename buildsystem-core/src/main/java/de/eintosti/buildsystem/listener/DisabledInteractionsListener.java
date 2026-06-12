@@ -23,7 +23,7 @@ import com.cryptomorin.xseries.XTag;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
-import de.eintosti.buildsystem.player.settings.SettingsManager;
+import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -53,7 +53,7 @@ public class DisabledInteractionsListener implements Listener {
 
     private final BuildSystemPlugin plugin;
     private final CustomBlockManager customBlockManager;
-    private final SettingsManager settingsManager;
+    private final SettingsService settingsManager;
     private final WorldStorageImpl worldStorage;
     private final WorldProtectionPolicy policy;
     private final Set<UUID> cachePlayers;
@@ -61,7 +61,7 @@ public class DisabledInteractionsListener implements Listener {
     public DisabledInteractionsListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.customBlockManager = plugin.getCustomBlockManager();
-        this.settingsManager = plugin.getSettingsManager();
+        this.settingsManager = plugin.getSettingsService();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
         this.policy = new WorldProtectionPolicy();
         this.cachePlayers = new HashSet<>();

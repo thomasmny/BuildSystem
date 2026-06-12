@@ -132,7 +132,7 @@ public class StatusInventory extends Menu {
 
         player.closeInventory();
         buildWorld.getData().status().set(status);
-        playerService.forceUpdateSidebar(buildWorld);
+        plugin.getSettingsService().forceUpdateSidebar(buildWorld);
 
         XSound.ENTITY_CHICKEN_EGG.play(player);
         messages.sendMessage(player, "worlds_setstatus_set",

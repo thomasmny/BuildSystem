@@ -31,7 +31,7 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
 
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.player.settings.SettingsManager;
+import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.inventory.InventoryUtils;
 import de.eintosti.buildsystem.world.navigator.ArmorStandManager;
 import de.eintosti.buildsystem.world.navigator.inventory.ArchivedWorldsInventory;
@@ -69,14 +69,14 @@ public class NavigatorListener implements Listener {
     private final BuildSystemPlugin plugin;
     private final ArmorStandManager armorStandManager;
     private final PlayerServiceImpl playerService;
-    private final SettingsManager settingsManager;
+    private final SettingsService settingsManager;
     private final WorldStorage worldStorage;
 
     public NavigatorListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.armorStandManager = plugin.getArmorStandManager();
         this.playerService = plugin.getPlayerService();
-        this.settingsManager = plugin.getSettingsManager();
+        this.settingsManager = plugin.getSettingsService();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
 
     }

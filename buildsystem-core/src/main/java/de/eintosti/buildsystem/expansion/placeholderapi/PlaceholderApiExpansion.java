@@ -22,7 +22,7 @@ import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.WorldData;
-import de.eintosti.buildsystem.player.settings.SettingsManager;
+import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import java.util.Locale;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
@@ -37,12 +37,12 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
     private static final String SETTINGS_KEY = "settings";
 
     private final BuildSystemPlugin plugin;
-    private final SettingsManager settingsManager;
+    private final SettingsService settingsManager;
     private final WorldStorageImpl worldStorage;
 
     public PlaceholderApiExpansion(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.settingsManager = plugin.getSettingsManager();
+        this.settingsManager = plugin.getSettingsService();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
         plugin.getLogger().info("PlaceholderAPI expansion initialized");
     }

@@ -158,7 +158,7 @@ public final class InventoryUtils {
      * @return The colored glass pane material
      */
     public static XMaterial getColoredGlassPane(Player player) {
-        Settings settings = PLUGIN.getSettingsManager().getSettings(player);
+        Settings settings = PLUGIN.getSettingsService().getSettings(player);
         DesignColor color = settings.getDesignColor();
         String paneItemName = color.name() + "_STAINED_GLASS_PANE";
         return XMaterial.matchXMaterial(paneItemName).orElse(XMaterial.BLACK_STAINED_GLASS_PANE);

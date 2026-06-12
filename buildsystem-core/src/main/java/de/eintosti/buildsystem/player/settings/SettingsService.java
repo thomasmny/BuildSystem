@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Contract;
@@ -36,14 +37,14 @@ import org.jspecify.annotations.NullMarked;
 import de.eintosti.buildsystem.i18n.Messages;
 
 @NullMarked
-public class SettingsManager {
+public class SettingsService {
 
     private final BuildSystemPlugin plugin;
     private final WorldServiceImpl worldService;
 
     private final Map<UUID, FastBoard> boards;
 
-    public SettingsManager(BuildSystemPlugin plugin) {
+    public SettingsService(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.worldService = plugin.getWorldService();
 
@@ -164,5 +165,23 @@ public class SettingsManager {
 
     public void hideScoreboards() {
         Bukkit.getOnlinePlayers().forEach(this::hideScoreboard);
+    }
+
+    public void forceUpdateSidebar(BuildWorld buildWorld) {
+        if (!plugin.getConfigService().current().settings().scoreboard()) {
+            return;
+        }
+        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
+        if (bukkitWorld == null) {
+            return;
+        }
+        bukkitWorld.getPlayers().forEach(this::forceUpdateSidebar);
+    }
+
+    public void forceUpdateSidebar(Player player) {
+        if (!plugin.getConfigService().current().settings().scoreboard() || !getSettings(player).isScoreboard()) {
+            return;
+        }
+        updateScoreboard(player);
     }
 }

@@ -66,7 +66,7 @@ public class SetProjectSubCommand implements SubCommand {
     public void getProjectInput(Player player, BuildWorld buildWorld, boolean closeInventory) {
         new PlayerChatInput(plugin, player, "enter_world_project", input -> {
             buildWorld.getData().project().set(input.trim());
-            plugin.getPlayerService().forceUpdateSidebar(buildWorld);
+            plugin.getSettingsService().forceUpdateSidebar(buildWorld);
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
             plugin.getMessages().sendMessage(player, "worlds_setproject_set",

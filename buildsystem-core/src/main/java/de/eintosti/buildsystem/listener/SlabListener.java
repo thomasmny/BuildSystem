@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.player.settings.SettingsManager;
+import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -36,12 +36,12 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class SlabListener implements Listener {
 
-    private final SettingsManager settingsManager;
+    private final SettingsService settingsManager;
     private final WorldStorageImpl worldStorage;
     private final WorldProtectionPolicy policy;
 
     public SlabListener(BuildSystemPlugin plugin) {
-        this.settingsManager = plugin.getSettingsManager();
+        this.settingsManager = plugin.getSettingsService();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
         this.policy = new WorldProtectionPolicy();
     }

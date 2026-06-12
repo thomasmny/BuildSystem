@@ -23,7 +23,7 @@ import de.eintosti.buildsystem.api.player.CachedValues;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.player.settings.SettingsManager;
+import de.eintosti.buildsystem.player.settings.SettingsService;
 import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -38,12 +38,12 @@ public class PlayerQuitListener implements Listener {
 
     private final BuildSystemPlugin plugin;
     private final PlayerServiceImpl playerManager;
-    private final SettingsManager settingsManager;
+    private final SettingsService settingsManager;
 
     public PlayerQuitListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.playerManager = plugin.getPlayerService();
-        this.settingsManager = plugin.getSettingsManager();
+        this.settingsManager = plugin.getSettingsService();
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

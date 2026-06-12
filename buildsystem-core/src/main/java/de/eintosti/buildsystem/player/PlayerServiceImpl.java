@@ -28,7 +28,6 @@ import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.player.settings.SettingsManager;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.factory.PlayerStorageFactory;
@@ -43,7 +42,6 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -152,37 +150,6 @@ public class PlayerServiceImpl implements PlayerService {
         }
 
         return max;
-    }
-
-    /**
-     * Forces an update of the sidebar for all players in the given {@link BuildWorld}.
-     *
-     * @param buildWorld The world for which the sidebar should be updated
-     */
-    public void forceUpdateSidebar(BuildWorld buildWorld) {
-        if (!plugin.getConfigService().current().settings().scoreboard()) {
-            return;
-        }
-
-        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
-        if (bukkitWorld == null) {
-            return;
-        }
-
-        bukkitWorld.getPlayers().forEach(this::forceUpdateSidebar);
-    }
-
-    /**
-     * Forces an update of the sidebar for a specific player.
-     *
-     * @param player The player for whom the sidebar should be updated
-     */
-    public void forceUpdateSidebar(Player player) {
-        SettingsManager settingsManager = plugin.getSettingsManager();
-        if (!plugin.getConfigService().current().settings().scoreboard() || !settingsManager.getSettings(player).isScoreboard()) {
-            return;
-        }
-        settingsManager.updateScoreboard(player);
     }
 
     /**

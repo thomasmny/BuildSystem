@@ -25,7 +25,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.player.settings.SettingsManager;
+import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.navigator.ArmorStandManager;
 import java.util.HashMap;
@@ -51,7 +51,7 @@ public class PlayerChangedWorldListener implements Listener {
     private final BuildSystemPlugin plugin;
     private final ArmorStandManager armorStandManager;
     private final PlayerServiceImpl playerManager;
-    private final SettingsManager settingsManager;
+    private final SettingsService settingsManager;
     private final WorldStorageImpl worldStorage;
 
     private final Map<UUID, GameMode> playerGamemode;
@@ -62,7 +62,7 @@ public class PlayerChangedWorldListener implements Listener {
         this.plugin = plugin;
         this.armorStandManager = plugin.getArmorStandManager();
         this.playerManager = plugin.getPlayerService();
-        this.settingsManager = plugin.getSettingsManager();
+        this.settingsManager = plugin.getSettingsService();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
 
         this.playerGamemode = new HashMap<>();
@@ -94,7 +94,7 @@ public class PlayerChangedWorldListener implements Listener {
         checkWorldStatus(player);
 
         if (settingsManager.getSettings(player).isScoreboard()) {
-            playerManager.forceUpdateSidebar(player);
+            settingsManager.forceUpdateSidebar(player);
         }
     }
 

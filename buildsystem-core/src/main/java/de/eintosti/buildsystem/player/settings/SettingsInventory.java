@@ -41,12 +41,12 @@ import org.jspecify.annotations.NullMarked;
 public class SettingsInventory extends Menu {
 
     private final BuildSystemPlugin plugin;
-    private final SettingsManager settingsManager;
+    private final SettingsService settingsManager;
 
     public SettingsInventory(BuildSystemPlugin plugin, Player player) {
         super(plugin.getMessages(), 45, plugin.getMessages().getString("settings_title", player));
         this.plugin = plugin;
-        this.settingsManager = plugin.getSettingsManager();
+        this.settingsManager = plugin.getSettingsService();
     }
 
     @Override
@@ -187,7 +187,7 @@ public class SettingsInventory extends Menu {
                 } else {
                     settings.setScoreboard(true);
                     settingsManager.displayScoreboard(player);
-                    plugin.getPlayerService().forceUpdateSidebar(player);
+                    plugin.getSettingsService().forceUpdateSidebar(player);
                 }
                 break;
             case 31:

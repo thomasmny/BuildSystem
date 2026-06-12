@@ -66,7 +66,7 @@ public class SetPermissionSubCommand implements SubCommand {
     public void getPermissionInput(Player player, BuildWorld buildWorld, boolean closeInventory) {
         new PlayerChatInput(plugin, player, "enter_world_permission", input -> {
             buildWorld.getData().permission().set(input.trim());
-            plugin.getPlayerService().forceUpdateSidebar(buildWorld);
+            plugin.getSettingsService().forceUpdateSidebar(buildWorld);
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
             plugin.getMessages().sendMessage(player, "worlds_setpermission_set",

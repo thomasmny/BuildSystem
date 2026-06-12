@@ -142,7 +142,7 @@ public class WorldManipulateListener implements Listener {
     private void updateStatus(WorldData worldData, Player player) {
         if (worldData.status().get() == BuildWorldStatus.NOT_STARTED) {
             worldData.status().set(BuildWorldStatus.IN_PROGRESS);
-            plugin.getPlayerService().forceUpdateSidebar(player);
+            plugin.getSettingsService().forceUpdateSidebar(player);
         }
     }
 }

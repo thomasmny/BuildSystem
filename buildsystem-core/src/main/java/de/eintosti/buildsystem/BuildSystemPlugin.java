@@ -33,7 +33,7 @@ import de.eintosti.buildsystem.player.LogoutLocationImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
 import de.eintosti.buildsystem.player.settings.NoClipManager;
-import de.eintosti.buildsystem.player.settings.SettingsManager;
+import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.world.SpawnManager;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -71,7 +71,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     private CustomBlockManager customBlockManager;
     private PlayerServiceImpl playerService;
     private NoClipManager noClipManager;
-    private SettingsManager settingsManager;
+    private SettingsService settingsService;
     private SpawnManager spawnManager;
     private WorldServiceImpl worldService;
     private BackupService backupService;
@@ -117,7 +117,7 @@ public class BuildSystemPlugin extends JavaPlugin {
             BuildPlayer buildPlayer = playerService.getPlayerStorage().createBuildPlayer(pl);
             Settings settings = buildPlayer.getSettings();
             noClipManager.startNoClip(pl, settings);
-            settingsManager.displayScoreboard(pl);
+            settingsService.displayScoreboard(pl);
         });
 
         registerStats();
@@ -136,7 +136,7 @@ public class BuildSystemPlugin extends JavaPlugin {
             buildPlayer.getCachedValues().resetCachedValues(pl);
             buildPlayer.setLogoutLocation(new LogoutLocationImpl(pl.getWorld().getName(), pl.getLocation()));
 
-            settingsManager.hideScoreboard(pl);
+            settingsService.hideScoreboard(pl);
             noClipManager.stopNoClip(pl.getUniqueId());
             playerService.closeNewNavigator(pl);
         });
@@ -182,7 +182,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         this.noClipManager = new NoClipManager(this);
         (this.worldService = new WorldServiceImpl(this)).init();
         this.backupService = new BackupService(this);
-        this.settingsManager = new SettingsManager(this);
+        this.settingsService = new SettingsService(this);
         this.spawnManager = new SpawnManager(this);
     }
 
@@ -283,7 +283,7 @@ public class BuildSystemPlugin extends JavaPlugin {
      */
     public void reloadConfigData(boolean init) {
         for (Player pl : Bukkit.getOnlinePlayers()) {
-            getSettingsManager().hideScoreboard(pl);
+            getSettingsService().hideScoreboard(pl);
         }
 
         reloadConfig();
@@ -296,9 +296,9 @@ public class BuildSystemPlugin extends JavaPlugin {
             worldService.remanageAllUnloadTasks();
 
             if (configService.current().settings().scoreboard()) {
-                getSettingsManager().displayScoreboard();
+                getSettingsService().displayScoreboard();
             } else {
-                getSettingsManager().hideScoreboards();
+                getSettingsService().hideScoreboards();
             }
         }
     }
@@ -319,8 +319,8 @@ public class BuildSystemPlugin extends JavaPlugin {
         return noClipManager;
     }
 
-    public SettingsManager getSettingsManager() {
-        return settingsManager;
+    public SettingsService getSettingsService() {
+        return settingsService;
     }
 
     public SpawnManager getSpawnManager() {

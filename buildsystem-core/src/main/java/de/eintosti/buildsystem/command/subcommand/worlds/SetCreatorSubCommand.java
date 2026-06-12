@@ -69,7 +69,7 @@ public class SetCreatorSubCommand implements SubCommand {
             }
             buildWorld.getBuilders().setCreator(creator);
 
-            plugin.getPlayerService().forceUpdateSidebar(buildWorld);
+            plugin.getSettingsService().forceUpdateSidebar(buildWorld);
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
             plugin.getMessages().sendMessage(player, "worlds_setcreator_set",
                     Map.entry("%world%", buildWorld.getName())

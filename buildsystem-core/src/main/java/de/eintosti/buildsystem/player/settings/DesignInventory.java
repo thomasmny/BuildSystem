@@ -70,7 +70,7 @@ public class DesignInventory extends Menu {
     }
 
     private void setItem(Player player, int position, XMaterial material, String key, DesignColor color) {
-        Settings settings = plugin.getSettingsManager().getSettings(player);
+        Settings settings = plugin.getSettingsService().getSettings(player);
 
         String displayName = messages.getString(key, player);
         ItemStack itemStack = InventoryUtils.createItem(material,
@@ -106,7 +106,7 @@ public class DesignInventory extends Menu {
             return;
         }
 
-        Settings settings = plugin.getSettingsManager().getSettings(player);
+        Settings settings = plugin.getSettingsService().getSettings(player);
 
         switch (event.getSlot()) {
             case 10: settings.setDesignColor(DesignColor.RED); break;

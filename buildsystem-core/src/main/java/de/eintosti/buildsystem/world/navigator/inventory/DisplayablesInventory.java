@@ -38,7 +38,7 @@ import de.eintosti.buildsystem.api.world.navigator.settings.WorldSort;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.player.settings.SettingsManager;
+import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.PlayerChatInput;
@@ -79,7 +79,7 @@ public abstract class DisplayablesInventory extends PaginatedMenu {
 
     protected final BuildSystemPlugin plugin;
     protected final PlayerServiceImpl playerService;
-    protected final SettingsManager settingsManager;
+    protected final SettingsService settingsManager;
     protected final FolderStorageImpl folderStorage;
     protected final WorldStorageImpl worldStorage;
 
@@ -103,7 +103,7 @@ public abstract class DisplayablesInventory extends PaginatedMenu {
         super(plugin.getMessages(), 54, inventoryTitle);
         this.plugin = plugin;
         this.playerService = plugin.getPlayerService();
-        this.settingsManager = plugin.getSettingsManager();
+        this.settingsManager = plugin.getSettingsService();
         WorldServiceImpl worldService = plugin.getWorldService();
         this.folderStorage = worldService.getFolderStorage();
         this.worldStorage = worldService.getWorldStorage();

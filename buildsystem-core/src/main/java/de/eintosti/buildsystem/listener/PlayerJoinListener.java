@@ -28,7 +28,7 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.player.LogoutLocationImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
-import de.eintosti.buildsystem.player.settings.SettingsManager;
+import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.util.UpdateChecker;
@@ -50,14 +50,14 @@ public class PlayerJoinListener implements Listener {
 
     private final BuildSystemPlugin plugin;
     private final PlayerServiceImpl playerManager;
-    private final SettingsManager settingsManager;
+    private final SettingsService settingsManager;
     private final SpawnManager spawnManager;
     private final WorldStorageImpl worldStorage;
 
     public PlayerJoinListener(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.playerManager = plugin.getPlayerService();
-        this.settingsManager = plugin.getSettingsManager();
+        this.settingsManager = plugin.getSettingsService();
         this.spawnManager = plugin.getSpawnManager();
         this.worldStorage = plugin.getWorldService().getWorldStorage();
     }
@@ -167,7 +167,7 @@ public class PlayerJoinListener implements Listener {
 
         if (settings.isScoreboard()) {
             settingsManager.displayScoreboard(player);
-            plugin.getPlayerService().forceUpdateSidebar(player);
+            plugin.getSettingsService().forceUpdateSidebar(player);
         }
 
         if (settings.isClearInventory()) {
