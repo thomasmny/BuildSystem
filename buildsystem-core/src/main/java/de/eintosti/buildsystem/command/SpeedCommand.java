@@ -42,7 +42,7 @@ public class SpeedCommand extends CommandBase {
 
         switch (args.length) {
             case 0:
-                new SpeedInventory(plugin).openInventory(player);
+                new SpeedInventory(plugin, player).open(player);
                 break;
             case 1:
                 String speedString = args[0];

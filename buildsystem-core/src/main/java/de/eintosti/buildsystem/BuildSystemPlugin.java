@@ -39,6 +39,7 @@ import de.eintosti.buildsystem.listener.EntitySpawnListener;
 import de.eintosti.buildsystem.listener.FoodLevelChangeListener;
 import de.eintosti.buildsystem.listener.InventoryCreativeListener;
 import de.eintosti.buildsystem.listener.InventoryListener;
+import de.eintosti.buildsystem.menu.MenuListener;
 import de.eintosti.buildsystem.listener.NavigatorListener;
 import de.eintosti.buildsystem.listener.PlayerChangedWorldListener;
 import de.eintosti.buildsystem.listener.PlayerCommandPreprocessListener;
@@ -222,6 +223,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         new FoodLevelChangeListener(this);
         new InventoryCreativeListener(this);
         new InventoryListener(this);
+        getServer().getPluginManager().registerEvents(new MenuListener(), this);
         new NavigatorListener(this);
         new PlayerChangedWorldListener(this);
         new EntityDamageListener(this);
