@@ -29,6 +29,7 @@ import de.eintosti.buildsystem.menu.SkullTextures;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -58,18 +59,18 @@ public class GameRulesMenu extends PaginatedMenu {
 
     @Override
     protected int totalItems() {
-        World world = buildWorld.getWorld();
-        return world != null ? world.getGameRules().length : 0;
+        return buildWorld.getWorld().map(world -> world.getGameRules().length).orElse(0);
     }
 
     @Override
     protected void populate(Player player) {
-        World world = buildWorld.getWorld();
-        if (world == null) {
+        Optional<World> optionalWorld = buildWorld.getWorld();
+        if (optionalWorld.isEmpty()) {
             player.closeInventory();
             plugin.getLogger().severe("World '" + buildWorld.getName() + "' does not exist.");
             return;
         }
+        World world = optionalWorld.get();
 
         for (int i = 0; i < 45; i++) {
             if (!isValidSlot(i)) {
@@ -171,7 +172,7 @@ public class GameRulesMenu extends PaginatedMenu {
             case FILLED_MAP:
             case MAP:
                 XSound.ENTITY_CHICKEN_EGG.play(player);
-                modifyGameRule(event, buildWorld.getWorld());
+                modifyGameRule(event, buildWorld.getWorld().orElse(null));
                 populate(player);
                 return;
 

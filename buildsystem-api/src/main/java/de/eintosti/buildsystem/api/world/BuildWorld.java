@@ -28,6 +28,7 @@ import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldLoader;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldUnloader;
+import java.util.Optional;
 import java.util.UUID;
 import org.bukkit.Difficulty;
 import org.bukkit.Material;
@@ -47,9 +48,10 @@ public interface BuildWorld extends Displayable {
     /**
      * Gets the Bukkit {@link World} associated with this {@link BuildWorld}.
      *
-     * @return The Bukkit world, or {@code null} if not loaded
+     * @return An {@link Optional} containing the Bukkit world, or {@link Optional#empty()} if not loaded
+     * @since TODO
      */
-    @Nullable World getWorld();
+    Optional<World> getWorld();
 
     /**
      * Gets the unique identifier of this world.
