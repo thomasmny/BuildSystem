@@ -109,7 +109,6 @@ public class BuildSystemPlugin extends JavaPlugin {
         performUpdateCheck();
 
         this.api = new BuildSystemApi(this);
-        this.api.register();
         getServer().getServicesManager().register(BuildSystem.class, api, this, ServicePriority.Normal);
 
         Bukkit.getOnlinePlayers().forEach(pl -> {
@@ -158,7 +157,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         }
 
         this.integrations.deactivate();
-        this.api.unregister();
+        getServer().getServicesManager().unregister(BuildSystem.class, api);
 
         Bukkit.getConsoleSender()
                 .sendMessage("%sBuildSystem » Plugin %sdisabled%s!"

@@ -323,7 +323,6 @@ public final class BuildWorldImpl implements BuildWorld {
         return loaded;
     }
 
-    @Override
     public void setLoaded(boolean loaded) {
         this.loaded = loaded;
     }
