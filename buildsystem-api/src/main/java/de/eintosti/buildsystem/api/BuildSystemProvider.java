@@ -17,15 +17,16 @@
  */
 package de.eintosti.buildsystem.api;
 
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Static accessor for the {@link BuildSystem} API instance.
  *
- * <p>Use {@link #get()} to retrieve the active API once BuildSystem has enabled. If you prefer dependency-injection
- * style, retrieve the same instance from Bukkit's {@link org.bukkit.plugin.ServicesManager} instead — both paths return
- * the same object.
+ * <p>Use {@link #get()} to retrieve the active API once BuildSystem has enabled. This is a convenience shorthand around
+ * Bukkit's {@link org.bukkit.plugin.ServicesManager}, where the BuildSystem plugin registers itself during
+ * {@code onEnable}; resolving the service directly returns the same object.
  *
  * <h2>Lifecycle</h2>
  *
@@ -39,8 +40,6 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class BuildSystemProvider {
 
-    private static @Nullable BuildSystem instance = null;
-
     private BuildSystemProvider() {
         throw new AssertionError("This class is not meant to be instantiated");
     }
@@ -52,28 +51,11 @@ public class BuildSystemProvider {
      * @throws IllegalStateException if BuildSystem has not finished enabling yet, or has already disabled
      */
     public static BuildSystem get() {
-        BuildSystem instance = BuildSystemProvider.instance;
-        if (instance == null) {
+        RegisteredServiceProvider<BuildSystem> registration =
+                Bukkit.getServicesManager().getRegistration(BuildSystem.class);
+        if (registration == null) {
             throw new IllegalStateException("BuildSystem has not loaded yet!");
         }
-        return instance;
-    }
-
-    /**
-     * Binds the active API instance. Called internally by the BuildSystem plugin during {@code onEnable} — other
-     * plugins must <strong>not</strong> call this method.
-     *
-     * @param instance The API instance to publish
-     */
-    public static void register(BuildSystem instance) {
-        BuildSystemProvider.instance = instance;
-    }
-
-    /**
-     * Clears the active API instance. Called internally by the BuildSystem plugin during {@code onDisable} — other
-     * plugins must <strong>not</strong> call this method.
-     */
-    public static void unregister() {
-        BuildSystemProvider.instance = null;
+        return registration.getProvider();
     }
 }

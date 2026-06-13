@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem;
 
 import de.eintosti.buildsystem.api.BuildSystem;
-import de.eintosti.buildsystem.api.BuildSystemProvider;
 import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.world.WorldService;
 import org.jspecify.annotations.NullMarked;
@@ -40,13 +39,5 @@ public class BuildSystemApi implements BuildSystem {
     @Override
     public PlayerService getPlayerService() {
         return plugin.getPlayerService();
-    }
-
-    public void register() {
-        BuildSystemProvider.register(this);
-    }
-
-    public void unregister() {
-        BuildSystemProvider.unregister();
     }
 }
