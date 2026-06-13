@@ -50,7 +50,7 @@ public class BlockPhysicsListener implements Listener {
 
     private boolean physicsAllowed(World world) {
         BuildWorld buildWorld = worldStorage.getBuildWorld(world);
-        return buildWorld == null || buildWorld.getData().physics().get();
+        return buildWorld == null || buildWorld.getData().isPhysics();
     }
 
     @EventHandler

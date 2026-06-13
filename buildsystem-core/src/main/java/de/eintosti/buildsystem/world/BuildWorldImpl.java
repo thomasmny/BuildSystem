@@ -181,12 +181,12 @@ public final class BuildWorldImpl implements BuildWorld {
 
     @Override
     public XMaterial getIcon() {
-        return this.worldData.material().get();
+        return this.worldData.getMaterial();
     }
 
     @Override
     public void setIcon(XMaterial material) {
-        this.worldData.material().set(material);
+        this.worldData.setMaterial(material);
     }
 
     @Override
@@ -200,29 +200,16 @@ public final class BuildWorldImpl implements BuildWorld {
         Map.Entry<String, Object>[] placeholders = List.of(
                         Map.entry(
                                 "%status%",
-                                plugin.getMessages()
-                                        .getString(
-                                                Messages.getMessageKey(
-                                                        worldData.status().get()),
-                                                player)),
-                        Map.entry("%project%", worldData.project().get()),
-                        Map.entry("%permission%", worldData.permission().get()),
+                                plugin.getMessages().getString(Messages.getMessageKey(worldData.getStatus()), player)),
+                        Map.entry("%project%", worldData.getProject()),
+                        Map.entry("%permission%", worldData.getPermission()),
                         Map.entry(
                                 "%creator%",
                                 builders.hasCreator() ? builders.getCreator().getName() : "-"),
                         Map.entry("%creation%", plugin.getMessages().formatDate(getCreation())),
-                        Map.entry(
-                                "%lastedited%",
-                                plugin.getMessages()
-                                        .formatDate(worldData.lastEdited().get())),
-                        Map.entry(
-                                "%lastloaded%",
-                                plugin.getMessages()
-                                        .formatDate(worldData.lastLoaded().get())),
-                        Map.entry(
-                                "%lastunloaded%",
-                                plugin.getMessages()
-                                        .formatDate(worldData.lastUnloaded().get())))
+                        Map.entry("%lastedited%", plugin.getMessages().formatDate(worldData.getLastEdited())),
+                        Map.entry("%lastloaded%", plugin.getMessages().formatDate(worldData.getLastLoaded())),
+                        Map.entry("%lastunloaded%", plugin.getMessages().formatDate(worldData.getLastUnloaded())))
                 .toArray(Map.Entry[]::new);
 
         List<String> messageList = getPermissions().canPerformCommand(player, WorldsArgument.EDIT.getPermission())
@@ -285,13 +272,13 @@ public final class BuildWorldImpl implements BuildWorld {
     @Override
     public Difficulty cycleDifficulty() {
         Difficulty newDifficulty =
-                switch (worldData.difficulty().get()) {
+                switch (worldData.getDifficulty()) {
                     case PEACEFUL -> Difficulty.EASY;
                     case EASY -> Difficulty.NORMAL;
                     case NORMAL -> Difficulty.HARD;
                     case HARD -> Difficulty.PEACEFUL;
                 };
-        worldData.difficulty().set(newDifficulty);
+        worldData.setDifficulty(newDifficulty);
         return newDifficulty;
     }
 

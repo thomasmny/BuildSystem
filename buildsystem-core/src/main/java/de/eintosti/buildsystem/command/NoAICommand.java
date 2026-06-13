@@ -81,15 +81,15 @@ public class NoAICommand extends CommandBase {
         }
 
         WorldData worldData = buildWorld.getData();
-        if (worldData.mobAi().get()) {
-            worldData.mobAi().set(false);
+        if (worldData.isMobAi()) {
+            worldData.setMobAi(false);
             messages.sendMessage(player, "noai_activated", Map.entry("%world%", buildWorld.getName()));
         } else {
-            worldData.mobAi().set(true);
+            worldData.setMobAi(true);
             messages.sendMessage(player, "noai_deactivated", Map.entry("%world%", buildWorld.getName()));
         }
 
-        boolean hasAi = worldData.mobAi().get();
+        boolean hasAi = worldData.isMobAi();
         world.getLivingEntities().forEach(entity -> entity.setAI(hasAi));
     }
 }

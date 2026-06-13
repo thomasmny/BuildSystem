@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.world.data.type;
 
 import de.eintosti.buildsystem.api.data.Capability;
 import de.eintosti.buildsystem.api.data.Overridable;
-import de.eintosti.buildsystem.api.data.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -27,12 +26,13 @@ import java.util.function.Function;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * A single, concrete implementation of {@link Type} that uses a composition-based {@link Capability} model.
+ * A single, concrete implementation of {@link PersistentProperty} that uses a composition-based {@link Capability}
+ * model.
  *
  * @param <T> The type of the value held.
  */
 @NullMarked
-public class ConfigurableType<T> implements Type<T> {
+public class ConfigurableProperty<T> implements PersistentProperty<T> {
 
     private T value;
     private Function<T, Object> configFormatter = (value) -> (Object) value;
@@ -40,37 +40,38 @@ public class ConfigurableType<T> implements Type<T> {
     private final Map<Class<? extends Capability>, Capability> capabilities = new HashMap<>();
 
     /**
-     * Creates a simple type.
+     * Creates a simple property.
      */
-    public ConfigurableType(T defaultValue) {
+    public ConfigurableProperty(T defaultValue) {
         this.value = defaultValue;
     }
 
     /**
-     * Sets a custom config formatter for this type.
+     * Sets a custom config formatter for this property.
      *
      * @param configFormatter A function that formats the value for config storage
      * @return This object, for fluent chaining
      */
-    public ConfigurableType<T> withConfigFormatter(Function<T, Object> configFormatter) {
+    public ConfigurableProperty<T> withConfigFormatter(Function<T, Object> configFormatter) {
         this.configFormatter = configFormatter;
         return this;
     }
 
     /**
-     * Attaches a new capability to this type.
+     * Attaches a new capability to this property.
      *
      * @param capabilityType The class of the capability
      * @param capabilityInstance The instance of the capability
      * @return This object, for fluent chaining
      */
-    public <C extends Capability> ConfigurableType<T> withCapability(Class<C> capabilityType, C capabilityInstance) {
+    public <C extends Capability> ConfigurableProperty<T> withCapability(
+            Class<C> capabilityType, C capabilityInstance) {
         this.capabilities.put(capabilityType, capabilityInstance);
         return this;
     }
 
     /**
-     * Checks if this type has a specific capability.
+     * Checks if this property has a specific capability.
      *
      * @param capability The class of the capability
      * @return {@code true} if the capability is present, {@code false} otherwise
@@ -90,7 +91,7 @@ public class ConfigurableType<T> implements Type<T> {
     }
 
     /**
-     * Gets the effective value for this type, taking into account any active {@link Overridable} capability.
+     * Gets the effective value for this property, taking into account any active {@link Overridable} capability.
      *
      * @return The current value
      */
@@ -105,7 +106,7 @@ public class ConfigurableType<T> implements Type<T> {
     }
 
     /**
-     * Sets the base value for this type.
+     * Sets the base value for this property.
      *
      * <p>Note: This sets the underlying value. If an {@link Overridable} capability is active, {@link #get()} will
      * still return the overridden value.

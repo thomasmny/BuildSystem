@@ -17,7 +17,7 @@
  */
 package de.eintosti.buildsystem.protection;
 
-import de.eintosti.buildsystem.api.data.Type;
+import de.eintosti.buildsystem.api.data.Property;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
@@ -40,7 +40,7 @@ public final class WorldProtectionPolicy {
             return Denial.NONE;
         }
 
-        if (world.getData().status().get() == BuildWorldStatus.ARCHIVE) {
+        if (world.getData().getStatus() == BuildWorldStatus.ARCHIVE) {
             return Denial.ARCHIVED;
         }
 
@@ -58,14 +58,14 @@ public final class WorldProtectionPolicy {
             return Denial.NONE;
         }
 
-        if (world.getData().buildersEnabled().get() && !builders.isBuilder(player)) {
+        if (world.getData().isBuildersEnabled() && !builders.isBuilder(player)) {
             return Denial.NOT_A_BUILDER;
         }
 
         return Denial.NONE;
     }
 
-    public Denial checkSetting(Player player, BuildWorld world, Type<Boolean> setting) {
+    public Denial checkSetting(Player player, BuildWorld world, Property<Boolean> setting) {
         if (world.getPermissions().canBypassBuildRestriction(player)) {
             return Denial.NONE;
         }
@@ -90,7 +90,7 @@ public final class WorldProtectionPolicy {
         return checkBuilders(player, world);
     }
 
-    public Denial mayModify(Player player, BuildWorld world, Type<Boolean> setting) {
+    public Denial mayModify(Player player, BuildWorld world, Property<Boolean> setting) {
         if (world.getPermissions().canBypassBuildRestriction(player)) {
             return Denial.NONE;
         }

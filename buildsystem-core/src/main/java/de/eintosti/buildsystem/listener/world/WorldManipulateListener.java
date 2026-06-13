@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.listener.world;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.api.data.Type;
+import de.eintosti.buildsystem.api.data.Property;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
@@ -97,7 +97,7 @@ public class WorldManipulateListener implements Listener {
 
         dispatcher.tryDispatchManipulationEvent(player, event);
 
-        if (!buildWorld.getData().physics().get() && event.getClickedBlock() != null) {
+        if (!buildWorld.getData().isPhysics() && event.getClickedBlock() != null) {
             if (event.getAction() == Action.PHYSICAL && event.getClickedBlock().getType() == XMaterial.FARMLAND.get()) {
                 event.setCancelled(true);
             }
@@ -115,18 +115,18 @@ public class WorldManipulateListener implements Listener {
         WorldData worldData = buildWorld.getData();
         Cancellable parentEvent = event.getParentEvent();
 
-        Type<Boolean> setting = worldSettingFor(parentEvent, worldData);
+        Property<Boolean> setting = worldSettingFor(parentEvent, worldData);
         if (!buildWorld.getPermissions().canModify(player, setting)) {
             parentEvent.setCancelled(true);
             denyPlayerInteraction(event);
             return;
         }
 
-        worldData.lastEdited().set(System.currentTimeMillis());
+        worldData.setLastEdited(System.currentTimeMillis());
         updateStatus(worldData, player);
     }
 
-    private Type<Boolean> worldSettingFor(Cancellable event, WorldData data) {
+    private Property<Boolean> worldSettingFor(Cancellable event, WorldData data) {
         return switch (event) {
             case BlockBreakEvent ignored -> data.blockBreaking();
             case BlockPlaceEvent ignored -> data.blockPlacement();
@@ -142,8 +142,8 @@ public class WorldManipulateListener implements Listener {
     }
 
     private void updateStatus(WorldData worldData, Player player) {
-        if (worldData.status().get() == BuildWorldStatus.NOT_STARTED) {
-            worldData.status().set(BuildWorldStatus.IN_PROGRESS);
+        if (worldData.getStatus() == BuildWorldStatus.NOT_STARTED) {
+            worldData.setStatus(BuildWorldStatus.IN_PROGRESS);
             plugin.getSettingsService().forceUpdateSidebar(player);
         }
     }

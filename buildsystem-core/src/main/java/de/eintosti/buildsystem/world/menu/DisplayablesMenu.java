@@ -188,10 +188,10 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
 
     private boolean isWorldValidForDisplay(BuildWorld buildWorld) {
         WorldData worldData = buildWorld.getData();
-        if (!this.worldStorage.isCorrectVisibility(worldData.privateWorld().get(), this.requiredVisibility)) {
+        if (!this.worldStorage.isCorrectVisibility(worldData.isPrivateWorld(), this.requiredVisibility)) {
             return false;
         }
-        if (!this.validStatuses.contains(worldData.status().get())) {
+        if (!this.validStatuses.contains(worldData.getStatus())) {
             return false;
         }
         if (!buildWorld.getPermissions().canEnter(this.player)) {

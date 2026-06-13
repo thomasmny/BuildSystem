@@ -49,7 +49,7 @@ public class SetProjectSubCommand extends AbstractSubCommand {
 
     public void getProjectInput(Player player, BuildWorld buildWorld, boolean closeInventory) {
         new PlayerChatInput(plugin, player, "enter_world_project", input -> {
-            buildWorld.getData().project().set(input.trim());
+            buildWorld.getData().setProject(input.trim());
             plugin.getSettingsService().forceUpdateSidebar(buildWorld);
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);

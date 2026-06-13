@@ -81,11 +81,11 @@ public class ExplosionsCommand extends CommandBase {
         }
 
         WorldData worldData = buildWorld.getData();
-        if (!worldData.explosions().get()) {
-            worldData.explosions().set(true);
+        if (!worldData.isExplosions()) {
+            worldData.setExplosions(true);
             messages.sendMessage(player, "explosions_activated", Map.entry("%world%", buildWorld.getName()));
         } else {
-            worldData.explosions().set(false);
+            worldData.setExplosions(false);
             messages.sendMessage(player, "explosions_deactivated", Map.entry("%world%", buildWorld.getName()));
         }
     }

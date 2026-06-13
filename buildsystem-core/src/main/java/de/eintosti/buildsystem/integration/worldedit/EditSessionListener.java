@@ -67,7 +67,7 @@ public class EditSessionListener implements Listener {
         }
 
         if (buildWorld.getPermissions().hasAdminPermission(player)) {
-            buildWorld.getData().lastEdited().set(System.currentTimeMillis());
+            buildWorld.getData().setLastEdited(System.currentTimeMillis());
             return;
         }
 
@@ -81,6 +81,6 @@ public class EditSessionListener implements Listener {
             return;
         }
 
-        buildWorld.getData().lastEdited().set(System.currentTimeMillis());
+        buildWorld.getData().setLastEdited(System.currentTimeMillis());
     }
 }

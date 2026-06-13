@@ -49,7 +49,7 @@ public class SetPermissionSubCommand extends AbstractSubCommand {
 
     public void getPermissionInput(Player player, BuildWorld buildWorld, boolean closeInventory) {
         new PlayerChatInput(plugin, player, "enter_world_permission", input -> {
-            buildWorld.getData().permission().set(input.trim());
+            buildWorld.getData().setPermission(input.trim());
             plugin.getSettingsService().forceUpdateSidebar(buildWorld);
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);

@@ -23,7 +23,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A {@link Capability} that marks a {@link Type} as being overridable by an external source.
+ * A {@link Capability} that marks a {@link Property} as being overridable by an external source.
  *
  * @param <T> The type of the value being overridden
  * @param isEnabled A supplier that returns {@code true} if the override is active

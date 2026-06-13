@@ -21,21 +21,21 @@ import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * A generic interface representing a configurable data type.
+ * A generic interface representing a single configurable world property.
  *
- * @param <T> The type of the value held by this data point
+ * @param <T> The type of the value held by this property
  */
 @NullMarked
-public interface Type<T> {
+public interface Property<T> {
 
     /**
-     * An immutable implementation of the {@link Type} interface using a Java Record. This class holds a final,
+     * An immutable implementation of the {@link Property} interface using a Java Record. This class holds a final,
      * read-only value.
      *
      * @param <T> The type of the value held
      * @param value The immutable value
      */
-    record ImmutableType<T>(T value) implements Type<T> {
+    record Immutable<T>(T value) implements Property<T> {
 
         /**
          * Gets the immutable value.
@@ -48,52 +48,34 @@ public interface Type<T> {
         }
 
         /**
-         * Throws {@link UnsupportedOperationException} as this type is immutable.
+         * Throws {@link UnsupportedOperationException} as this property is immutable.
          *
          * @param value The value to set (which is ignored)
-         * @throws UnsupportedOperationException Always, as this type cannot be modified
+         * @throws UnsupportedOperationException Always, as this property cannot be modified
          */
         @Contract("_ -> fail")
         @Override
         public void set(T value) {
-            throw new UnsupportedOperationException("This Type is immutable and cannot be modified.");
-        }
-
-        /**
-         * Gets the immutable value formatted for storage.
-         *
-         * @return The immutable value
-         */
-        @Override
-        public Object getConfigFormat() {
-            return value;
+            throw new UnsupportedOperationException("This property is immutable and cannot be modified.");
         }
     }
 
     /**
-     * An immutable {@link Type} representing the boolean value {@code true}.
+     * An immutable {@link Property} representing the boolean value {@code true}.
      */
-    Type<Boolean> TRUE = new ImmutableType<>(true);
+    Property<Boolean> TRUE = new Immutable<>(true);
 
     /**
-     * Gets the current value of this data point.
+     * Gets the current value of this property.
      *
      * @return The current value
      */
     T get();
 
     /**
-     * Sets the value of this data point.
+     * Sets the value of this property.
      *
      * @param value The new value to set
      */
     void set(T value);
-
-    /**
-     * Gets the value of this data point formatted for storage in a configuration file. This might involve converting
-     * complex objects into simpler types (e.g., enums to strings).
-     *
-     * @return The value formatted for a config file
-     */
-    Object getConfigFormat();
 }

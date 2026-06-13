@@ -43,7 +43,7 @@ public class FoodLevelChangeListener implements Listener {
         }
 
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
-        if (buildWorld != null && buildWorld.getData().status().get() == BuildWorldStatus.ARCHIVE) {
+        if (buildWorld != null && buildWorld.getData().getStatus() == BuildWorldStatus.ARCHIVE) {
             event.setCancelled(true);
         }
     }

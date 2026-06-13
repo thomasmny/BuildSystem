@@ -39,7 +39,7 @@ final class WorldsCompletions {
             Player player, WorldStorage worldStorage, @Nullable String commandPermission, String input) {
         List<String> result = new ArrayList<>();
         for (BuildWorld world : worldStorage.getBuildWorlds()) {
-            String worldPerm = world.getData().permission().get();
+            String worldPerm = world.getData().getPermission();
             if ((player.hasPermission(worldPerm) || worldPerm.equalsIgnoreCase("-"))
                     && world.getPermissions().canPerformCommand(player, commandPermission)) {
                 addIfStartsWith(input, world.getName(), result);
