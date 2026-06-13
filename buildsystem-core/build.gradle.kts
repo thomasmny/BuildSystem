@@ -7,6 +7,7 @@ plugins {
     id("java-library")
     id("com.gradleup.shadow") version "9.4.2"
     id("de.eldoria.plugin-yml.bukkit") version "0.9.0"
+    id("xyz.jpenilla.run-paper") version "2.3.1"
 }
 
 project.description = "Core"
@@ -75,8 +76,14 @@ tasks.named("assemble") {
 }
 
 tasks.named<ShadowJar>("shadowJar") {
-    minimize()
+    minimize {
+        exclude(dependency("software.amazon.awssdk:.*:.*"))
+        exclude(dependency("org.apache.sshd:.*:.*"))
+        exclude(dependency("org.bouncycastle:.*:.*"))
+        exclude(dependency("org.bstats:.*:.*"))
+    }
     archiveFileName.set("${rootProject.name}-${project.version}.jar")
+    destinationDirectory.set(rootProject.layout.buildDirectory.dir("libs"))
 
     val shadePath = "de.eintosti.buildsystem.external"
     relocate("com.cryptomorin.xseries", "$shadePath.xseries")
@@ -95,6 +102,14 @@ tasks.named<ShadowJar>("shadowJar") {
     relocate("org.slf4j", "$shadePath.slf4j")
     relocate("software.amazon.awssdk", "$shadePath.awssdk")
     relocate("software.amazon.eventstream", "$shadePath.awssdk.eventstream")
+}
+
+tasks.runServer {
+    minecraftVersion("26.1.2")
+}
+
+tasks.named<Jar>("jar") {
+    archiveClassifier.set("unshaded")
 }
 
 tasks.processResources {

@@ -147,10 +147,12 @@ Build requires **Java 25**.
 
 ### Then you will find...
 
-* the **BuildSystem** plugin jar `BuildSystem-<identifier>` in **buildsystem-core/build/libs**
+* the **BuildSystem** plugin jar `BuildSystem-<version>` in **build/libs** (the repo root)
 
 ### Other commands
 
+* `./gradlew runServer` will download a Paper server and start it with the freshly-built plugin for
+  local testing.
 * `gradlew idea` will generate an [IntelliJ IDEA](https://www.jetbrains.com/idea/) module for each
   folder.
 * `gradlew eclipse` will generate an [Eclipse](https://www.eclipse.org/downloads/) project for each
