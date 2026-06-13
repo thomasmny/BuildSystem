@@ -10,7 +10,6 @@ package de.eintosti.buildsystem.world.backup;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.api.data.Property;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
@@ -154,7 +153,7 @@ public class BackupService {
         if (autoBackup.onlyActiveWorlds()) {
             for (Player pl : Bukkit.getOnlinePlayers()) {
                 BuildWorld buildWorld = worldStorage.getBuildWorld(pl.getWorld().getName());
-                if (buildWorld != null && buildWorld.getPermissions().canModify(pl, Property.TRUE)) {
+                if (buildWorld != null && buildWorld.getPermissions().canModify(pl)) {
                     worlds.add(buildWorld);
                 }
             }

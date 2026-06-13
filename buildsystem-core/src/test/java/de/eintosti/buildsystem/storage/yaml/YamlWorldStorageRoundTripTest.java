@@ -116,13 +116,13 @@ class YamlWorldStorageRoundTripTest {
         newStorage().save(sampleWorld(UUID.randomUUID(), "DataWorld")).join();
 
         BuildWorld world = newStorage().load().join().iterator().next();
-        assertEquals(BuildWorldStatus.FINISHED, world.getData().status().get());
-        assertEquals("MyProject", world.getData().project().get());
-        assertEquals("buildsystem.test", world.getData().permission().get());
-        assertEquals(Difficulty.NORMAL, world.getData().difficulty().get());
-        assertTrue(world.getData().privateWorld().get());
-        assertTrue(world.getData().blockBreaking().get());
-        assertEquals(42, world.getData().timeSinceBackup().get());
+        assertEquals(BuildWorldStatus.FINISHED, world.getData().getStatus());
+        assertEquals("MyProject", world.getData().getProject());
+        assertEquals("buildsystem.test", world.getData().getPermission());
+        assertEquals(Difficulty.NORMAL, world.getData().getDifficulty());
+        assertTrue(world.getData().isPrivateWorld());
+        assertTrue(world.getData().isBlockBreaking());
+        assertEquals(42, world.getData().getTimeSinceBackup());
     }
 
     @Test

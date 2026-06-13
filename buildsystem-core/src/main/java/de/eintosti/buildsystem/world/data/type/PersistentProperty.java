@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.data.type;
 
-import de.eintosti.buildsystem.api.data.Property;
 import org.jspecify.annotations.NullMarked;
 
 /**

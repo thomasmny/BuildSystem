@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.api.world.access;
 
-import de.eintosti.buildsystem.api.data.Property;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
@@ -73,11 +72,27 @@ public interface WorldPermissions {
      *   <li>They have the bypass permission for the check
      * </ul>
      *
+     * <p>This overload performs the world-level check only (archive and builder rules), without any
+     * setting-specific gate.
+     *
      * @param player The player attempting to modify the world
-     * @param check The specific data property representing the modification to be checked
      * @return {@code true} if the player is allowed to modify the world, {@code false} otherwise
+     * @since TODO
      */
-    boolean canModify(Player player, Property<Boolean> check);
+    boolean canModify(Player player);
+
+    /**
+     * Checks if a {@link Player} is allowed to perform a modification gated by a specific {@link WorldSetting}.
+     *
+     * <p>In addition to the world-level rules of {@link #canModify(Player)}, the player is denied when the setting is
+     * enabled and they lack the setting's {@link WorldSetting#getBypassPermission() bypass permission}.
+     *
+     * @param player The player attempting to modify the world
+     * @param setting The world setting gating the modification
+     * @return {@code true} if the player is allowed to modify the world, {@code false} otherwise
+     * @since TODO
+     */
+    boolean canModify(Player player, WorldSetting setting);
 
     /**
      * Checks if the given {@link Player} is permitted to execute a specific command within the context of the current

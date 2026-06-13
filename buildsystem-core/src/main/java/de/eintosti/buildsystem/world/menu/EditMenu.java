@@ -24,7 +24,6 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.api.data.Property;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
@@ -40,7 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -93,7 +93,8 @@ public class EditMenu extends Menu {
                             "buildsystem.edit.pin",
                             "worldeditor_pin_item",
                             "worldeditor_pin_lore",
-                            WorldData::pinned)),
+                            WorldData::isPinned,
+                            WorldData::setPinned)),
             entry(
                     20,
                     new Toggle(
@@ -101,7 +102,8 @@ public class EditMenu extends Menu {
                             "buildsystem.edit.breaking",
                             "worldeditor_blockbreaking_item",
                             "worldeditor_blockbreaking_lore",
-                            WorldData::blockBreaking)),
+                            WorldData::isBlockBreaking,
+                            WorldData::setBlockBreaking)),
             entry(
                     21,
                     new Toggle(
@@ -109,7 +111,8 @@ public class EditMenu extends Menu {
                             "buildsystem.edit.placement",
                             "worldeditor_blockplacement_item",
                             "worldeditor_blockplacement_lore",
-                            WorldData::blockPlacement)),
+                            WorldData::isBlockPlacement,
+                            WorldData::setBlockPlacement)),
             entry(
                     22,
                     new Toggle(
@@ -117,7 +120,8 @@ public class EditMenu extends Menu {
                             "buildsystem.edit.physics",
                             "worldeditor_physics_item",
                             "worldeditor_physics_lore",
-                            WorldData::physics)),
+                            WorldData::isPhysics,
+                            WorldData::setPhysics)),
             entry(
                     24,
                     new Toggle(
@@ -125,7 +129,8 @@ public class EditMenu extends Menu {
                             "buildsystem.edit.explosions",
                             "worldeditor_explosions_item",
                             "worldeditor_explosions_lore",
-                            WorldData::explosions)),
+                            WorldData::isExplosions,
+                            WorldData::setExplosions)),
             entry(
                     31,
                     new Toggle(
@@ -133,7 +138,8 @@ public class EditMenu extends Menu {
                             "buildsystem.edit.mobai",
                             "worldeditor_mobai_item",
                             "worldeditor_mobai_lore",
-                            WorldData::mobAi)),
+                            WorldData::isMobAi,
+                            WorldData::setMobAi)),
             entry(
                     33,
                     new Toggle(
@@ -141,7 +147,8 @@ public class EditMenu extends Menu {
                             "buildsystem.edit.interactions",
                             "worldeditor_blockinteractions_item",
                             "worldeditor_blockinteractions_lore",
-                            WorldData::blockInteractions)));
+                            WorldData::isBlockInteractions,
+                            WorldData::setBlockInteractions)));
 
     private record Toggle(
             XMaterial material,
@@ -149,7 +156,8 @@ public class EditMenu extends Menu {
             String permission,
             String itemKey,
             String loreKey,
-            Function<WorldData, Property<Boolean>> data) {
+            Predicate<WorldData> getter,
+            BiConsumer<WorldData, Boolean> setter) {
 
         /**
          * Creates a toggle whose icon is the same whether the setting is enabled or not.
@@ -159,8 +167,9 @@ public class EditMenu extends Menu {
                 String permission,
                 String itemKey,
                 String loreKey,
-                Function<WorldData, Property<Boolean>> data) {
-            this(material, material, permission, itemKey, loreKey, data);
+                Predicate<WorldData> getter,
+                BiConsumer<WorldData, Boolean> setter) {
+            this(material, material, permission, itemKey, loreKey, getter, setter);
         }
 
         XMaterial iconFor(boolean enabled) {
@@ -200,7 +209,7 @@ public class EditMenu extends Menu {
     private void addToggleItems(Player player, Inventory inventory) {
         WorldData worldData = buildWorld.getData();
         TOGGLES.forEach((slot, toggle) -> {
-            boolean enabled = toggle.data().apply(worldData).get();
+            boolean enabled = toggle.getter().test(worldData);
             plugin.getMenuItems()
                     .addToggleItem(
                             player,
@@ -458,8 +467,8 @@ public class EditMenu extends Menu {
         }
 
         if (requirePermission(player, toggle.permission())) {
-            Property<Boolean> data = toggle.data().apply(buildWorld.getData());
-            data.set(!data.get());
+            WorldData worldData = buildWorld.getData();
+            toggle.setter().accept(worldData, !toggle.getter().test(worldData));
             reopen(player);
         }
         return true;

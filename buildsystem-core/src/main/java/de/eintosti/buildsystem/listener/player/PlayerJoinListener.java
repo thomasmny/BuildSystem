@@ -89,13 +89,13 @@ public class PlayerJoinListener implements Listener {
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (buildWorld != null) {
             WorldData worldData = buildWorld.getData();
-            if (!worldData.physics().get() && player.hasPermission("buildsystem.physics.message")) {
+            if (!worldData.isPhysics() && player.hasPermission("buildsystem.physics.message")) {
                 plugin.getMessages()
                         .sendMessage(player, "physics_deactivated_in_world", Map.entry("%world%", worldName));
             }
 
             if (plugin.getConfigService().current().settings().archive().vanish()
-                    && worldData.status().get() == BuildWorldStatus.ARCHIVE) {
+                    && worldData.getStatus() == BuildWorldStatus.ARCHIVE) {
                 player.addPotionEffect(
                         new PotionEffect(XPotion.INVISIBILITY.get(), PotionEffect.INFINITE_DURATION, 0, false, false),
                         false);

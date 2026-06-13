@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.api.data;
+package de.eintosti.buildsystem.world.data.type;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;

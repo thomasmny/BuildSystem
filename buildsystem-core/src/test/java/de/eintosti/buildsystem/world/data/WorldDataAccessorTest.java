@@ -18,6 +18,8 @@
 package de.eintosti.buildsystem.world.data;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import org.jspecify.annotations.NullMarked;
@@ -31,34 +33,24 @@ class WorldDataAccessorTest {
     }
 
     @Test
-    void flatSetter_updatesUnderlyingProperty() {
+    void valueAccessor_roundTrips() {
         WorldDataImpl data = worldData();
 
         data.setStatus(BuildWorldStatus.FINISHED);
-
         assertEquals(BuildWorldStatus.FINISHED, data.getStatus());
-        assertEquals(BuildWorldStatus.FINISHED, data.status().get());
-    }
 
-    @Test
-    void propertySetter_reflectsInFlatGetter() {
-        WorldDataImpl data = worldData();
-
-        data.status().set(BuildWorldStatus.ARCHIVE);
-
+        data.setStatus(BuildWorldStatus.ARCHIVE);
         assertEquals(BuildWorldStatus.ARCHIVE, data.getStatus());
-        assertEquals(BuildWorldStatus.ARCHIVE, data.status().get());
     }
 
     @Test
-    void booleanFlatAccessor_staysInSyncWithProperty() {
+    void booleanAccessor_roundTrips() {
         WorldDataImpl data = worldData();
 
         data.setPhysics(false);
-        assertEquals(false, data.isPhysics());
-        assertEquals(false, data.physics().get());
+        assertFalse(data.isPhysics());
 
-        data.physics().set(true);
-        assertEquals(true, data.isPhysics());
+        data.setPhysics(true);
+        assertTrue(data.isPhysics());
     }
 }

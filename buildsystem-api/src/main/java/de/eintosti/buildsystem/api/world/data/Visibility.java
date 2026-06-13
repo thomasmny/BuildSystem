@@ -50,7 +50,7 @@ public enum Visibility {
      * Returns the appropriate {@link Visibility} enum based on whether a world is private.
      *
      * @param isPrivateWorld A boolean indicating if the world is private
-     * @return {@link #PRIVATE} if {@link WorldData#privateWorld()} is true, otherwise {@link #PUBLIC}
+     * @return {@link #PRIVATE} if {@link WorldData#isPrivateWorld()} is true, otherwise {@link #PUBLIC}
      */
     public static Visibility matchVisibility(boolean isPrivateWorld) {
         return isPrivateWorld ? PRIVATE : PUBLIC;

@@ -97,7 +97,7 @@ public enum WorldSort {
      */
     private static String getProjectSortKey(Displayable displayable) {
         return switch (displayable) {
-            case BuildWorld world -> world.getData().project().get().toLowerCase(Locale.ROOT);
+            case BuildWorld world -> world.getData().getProject().toLowerCase(Locale.ROOT);
             case Folder folder -> folder.getProject().toLowerCase(Locale.ROOT);
             default -> "";
         };
@@ -112,7 +112,7 @@ public enum WorldSort {
      */
     private static int getStatusSortKey(Displayable displayable) {
         if (displayable instanceof BuildWorld buildWorld) {
-            return buildWorld.getData().status().get().getStage();
+            return buildWorld.getData().getStatus().getStage();
         }
         return BuildWorldStatus.FINISHED.getStage();
     }

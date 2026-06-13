@@ -17,9 +17,6 @@
  */
 package de.eintosti.buildsystem.world.data.type;
 
-import de.eintosti.buildsystem.api.data.Capability;
-import de.eintosti.buildsystem.api.data.Overridable;
-import de.eintosti.buildsystem.api.data.Property;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
