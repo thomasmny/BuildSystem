@@ -88,9 +88,18 @@ public class WorldImporterImpl extends AbstractWorldCreator implements WorldImpo
     }
 
     @Override
+    protected boolean isImport() {
+        return true;
+    }
+
+    @Override
     public @Nullable BuildWorld build() {
         if (isDataVersionTooHigh()) {
             notifyAudience("worlds_import_newer_version", Map.entry("%world%", worldName));
+            return null;
+        }
+
+        if (isCreationCancelled()) {
             return null;
         }
 

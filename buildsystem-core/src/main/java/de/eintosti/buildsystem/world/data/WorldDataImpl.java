@@ -28,6 +28,7 @@ import de.eintosti.buildsystem.world.data.type.ConfigurableType;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import org.bukkit.Bukkit;
@@ -124,6 +125,11 @@ public class WorldDataImpl implements WorldData {
 
     public void setFolderResolver(Supplier<@Nullable Folder> resolver) {
         this.folderResolver = resolver;
+    }
+
+    @SuppressWarnings("unchecked")
+    public void setStatusChangeListener(BiConsumer<BuildWorldStatus, BuildWorldStatus> listener) {
+        ((ConfigurableType<BuildWorldStatus>) this.status).setChangeListener(listener);
     }
 
     private @Nullable Folder getAssignedFolder() {

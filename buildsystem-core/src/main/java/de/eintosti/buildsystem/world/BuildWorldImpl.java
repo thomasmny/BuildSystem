@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.world;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.event.world.BuildWorldStatusChangeEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.builder.Builder;
@@ -149,6 +150,14 @@ public final class BuildWorldImpl implements BuildWorld {
         this.folder = folder;
 
         this.worldData.setFolderResolver(this::getFolder);
+        this.worldData.setStatusChangeListener((previousStatus, newStatus) -> {
+            // Guard: unit tests construct BuildWorldImpl without a running server
+            if (Bukkit.getServer() != null) {
+                Bukkit.getServer()
+                        .getPluginManager()
+                        .callEvent(new BuildWorldStatusChangeEvent(this, previousStatus, newStatus));
+            }
+        });
         this.worldLoader = WorldLoaderImpl.of(plugin, this);
         this.worldUnloader = WorldUnloaderImpl.of(plugin, this);
         this.worldUnloader.manageUnload();

@@ -45,7 +45,7 @@ import org.jspecify.annotations.Nullable;
  * <p>To adopt an existing world directory instead of generating a new one, use
  * {@link de.eintosti.buildsystem.api.world.WorldService#importWorld(String)} and its {@link WorldImporter}.
  *
- * @since 3.1.0
+ * @since TODO
  */
 @NullMarked
 public interface WorldBuilder {

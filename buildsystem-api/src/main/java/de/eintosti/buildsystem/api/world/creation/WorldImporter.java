@@ -42,7 +42,7 @@ import org.jspecify.annotations.Nullable;
  * <p>To generate a fresh world instead, use {@link de.eintosti.buildsystem.api.world.WorldService#newWorld(String)} and
  * its {@link WorldBuilder}.
  *
- * @since 3.1.0
+ * @since TODO
  */
 @NullMarked
 public interface WorldImporter {
