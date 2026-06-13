@@ -40,6 +40,7 @@ public enum WorldsArgument implements Argument {
     PUBLIC("public", "buildsystem.navigator"),
     REMOVE_BUILDER("removeBuilder", "buildsystem.removebuilder"),
     RENAME("rename", "buildsystem.rename"),
+    SAVE_TEMPLATE("saveTemplate", "buildsystem.savetemplate"),
     SET_CREATOR("setCreator", "buildsystem.setcreator"),
     SET_ITEM("setItem", "buildsystem.setitem"),
     SET_PERMISSION("setPermission", "buildsystem.setpermission"),
