@@ -15,32 +15,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.api.exception;
+package de.eintosti.buildsystem.api.event.world;
+
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import org.jetbrains.annotations.ApiStatus.Internal;
+import org.jspecify.annotations.NullMarked;
 
 /**
- * Thrown when an error occurs during the deletion of a world.
+ * Called when a {@link BuildWorld} is removed from BuildSystem's registry without its directory being deleted.
  *
- * @since 3.0.0
+ * <p>This event is also fired as the first stage of a deletion, followed by {@link BuildWorldPostDeleteEvent}.
+ *
+ * @since TODO
  */
-public class WorldDeletionException extends WorldException {
+@NullMarked
+public class BuildWorldUnimportEvent extends BuildWorldEvent {
 
     /**
-     * Constructs a new {@link WorldDeletionException} with the specified message.
+     * Constructs a new {@link BuildWorldUnimportEvent}.
      *
-     * @param message The detail message
-     * @since TODO
+     * @param buildWorld The {@link BuildWorld} that has been unimported
      */
-    public WorldDeletionException(String message) {
-        super(message);
-    }
-
-    /**
-     * Constructs a new {@link WorldDeletionException} with the specified message and cause.
-     *
-     * @param message The detail message
-     * @param cause The cause of the exception
-     */
-    public WorldDeletionException(String message, Throwable cause) {
-        super(message, cause);
+    @Internal
+    public BuildWorldUnimportEvent(BuildWorld buildWorld) {
+        super(buildWorld);
     }
 }

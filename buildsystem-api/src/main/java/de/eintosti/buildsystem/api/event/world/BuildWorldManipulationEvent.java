@@ -15,14 +15,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.event.world;
+package de.eintosti.buildsystem.api.event.world;
 
-import de.eintosti.buildsystem.api.event.world.BuildWorldEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.listener.world.WorldManipulateListener;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -41,7 +40,7 @@ import org.jspecify.annotations.NullMarked;
  * <p>Expect the manipulation event to be canceled at {@link org.bukkit.event.EventPriority#LOW} if the player is not
  * allowed to interact with the world.
  *
- * @see WorldManipulateListener
+ * @since TODO
  */
 @NullMarked
 public class BuildWorldManipulationEvent extends BuildWorldEvent implements Cancellable {
@@ -51,6 +50,7 @@ public class BuildWorldManipulationEvent extends BuildWorldEvent implements Canc
     private final Cancellable parentEvent;
     private final Player player;
 
+    @Internal
     public BuildWorldManipulationEvent(Cancellable parentEvent, Player player, BuildWorld buildWorld) {
         super(buildWorld);
         this.parentEvent = parentEvent;

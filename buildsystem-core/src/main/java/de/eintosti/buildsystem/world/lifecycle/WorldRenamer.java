@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.world.lifecycle;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.event.world.BuildWorldRenameEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.FileUtils;
@@ -140,6 +141,9 @@ public class WorldRenamer {
             List<@Nullable Player> removedPlayers) {
         worldStorage.rename(buildWorld, oldName, sanitizedNewName);
         buildWorld.setName(sanitizedNewName);
+        Bukkit.getServer()
+                .getPluginManager()
+                .callEvent(new BuildWorldRenameEvent(buildWorld, oldName, sanitizedNewName));
         worldStorage.save(buildWorld).whenComplete((result, throwable) -> {
             if (throwable != null) {
                 plugin.getLogger()

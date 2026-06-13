@@ -18,6 +18,8 @@
 package de.eintosti.buildsystem.world.creation;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.event.world.BuildWorldCreateEvent;
+import de.eintosti.buildsystem.api.event.world.BuildWorldPostCreateEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
@@ -26,6 +28,7 @@ import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import java.util.Map;
+import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -70,6 +73,22 @@ abstract class AbstractWorldCreator {
                 plugin.getConfigService().current().world().defaults().worldBorderSize();
     }
 
+    /**
+     * Whether this creator imports an existing directory ({@code true}) or generates a new world ({@code false}).
+     */
+    protected abstract boolean isImport();
+
+    /**
+     * Fires the cancellable {@link BuildWorldCreateEvent}. Call before any world directory is created or copied.
+     *
+     * @return {@code true} if a listener cancelled creation (callers must abort and return {@code null})
+     */
+    protected boolean isCreationCancelled() {
+        BuildWorldCreateEvent event = new BuildWorldCreateEvent(worldName, worldType, creator, isImport());
+        Bukkit.getServer().getPluginManager().callEvent(event);
+        return event.isCancelled();
+    }
+
     protected BuildWorld createAndRegisterBuildWorld() {
         BuildWorldImpl bw = new BuildWorldImpl(
                 plugin, worldName, creator, worldType, creationDate, privateWorld, customGenerator, folder);
@@ -80,6 +99,7 @@ abstract class AbstractWorldCreator {
 
         bw.getData().lastLoaded().set(System.currentTimeMillis());
         worldStorage.addBuildWorld(bw);
+        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostCreateEvent(bw, isImport()));
         return bw;
     }
 

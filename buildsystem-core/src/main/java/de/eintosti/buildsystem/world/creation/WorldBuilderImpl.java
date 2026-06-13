@@ -126,9 +126,18 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
     }
 
     @Override
+    protected boolean isImport() {
+        return false;
+    }
+
+    @Override
     public @Nullable BuildWorld build() {
         if (worldStorage.worldAndFolderExist(worldName)) {
             notifyAudience("worlds_world_exists");
+            return null;
+        }
+
+        if (isCreationCancelled()) {
             return null;
         }
 

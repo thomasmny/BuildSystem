@@ -15,32 +15,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.api.exception;
+package de.eintosti.buildsystem.api.event.world;
+
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import org.jetbrains.annotations.ApiStatus.Internal;
+import org.jspecify.annotations.NullMarked;
 
 /**
- * Thrown when an error occurs during the deletion of a world.
+ * Called on the main thread after a {@link BuildWorld}'s directory has been deleted.
  *
- * @since 3.0.0
+ * <p>At this point the {@link BuildWorld} object is no longer registered and must only be used for reading.
+ *
+ * @since TODO
  */
-public class WorldDeletionException extends WorldException {
+@NullMarked
+public class BuildWorldPostDeleteEvent extends BuildWorldEvent {
 
     /**
-     * Constructs a new {@link WorldDeletionException} with the specified message.
+     * Constructs a new {@link BuildWorldPostDeleteEvent}.
      *
-     * @param message The detail message
-     * @since TODO
+     * @param buildWorld The {@link BuildWorld} that has been deleted
      */
-    public WorldDeletionException(String message) {
-        super(message);
-    }
-
-    /**
-     * Constructs a new {@link WorldDeletionException} with the specified message and cause.
-     *
-     * @param message The detail message
-     * @param cause The cause of the exception
-     */
-    public WorldDeletionException(String message, Throwable cause) {
-        super(message, cause);
+    @Internal
+    public BuildWorldPostDeleteEvent(BuildWorld buildWorld) {
+        super(buildWorld);
     }
 }

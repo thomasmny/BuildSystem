@@ -60,7 +60,7 @@ public interface WorldService {
      *
      * @param name The name of the world to create
      * @return A new {@link WorldBuilder} for the specified world name
-     * @since 3.1.0
+     * @since TODO
      */
     WorldBuilder newWorld(String name);
 
@@ -70,7 +70,7 @@ public interface WorldService {
      *
      * @param name The name of the existing world directory to import
      * @return A new {@link WorldImporter} for the specified world name
-     * @since 3.1.0
+     * @since TODO
      */
     WorldImporter importWorld(String name);
 
@@ -88,7 +88,7 @@ public interface WorldService {
      *     an {@link IllegalStateException} if a bulk import is already running
      * @apiNote Each individual import goes through Bukkit's main-thread world machinery; the spreading is handled
      *     internally. Safe to call from the main thread.
-     * @since 3.1.0
+     * @since TODO
      */
     CompletableFuture<Integer> importWorlds();
 

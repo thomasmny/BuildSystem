@@ -22,9 +22,12 @@ import de.eintosti.buildsystem.api.data.Overridable;
 import de.eintosti.buildsystem.api.data.Type;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A single, concrete implementation of {@link Type} that uses a composition-based {@link Capability} model.
@@ -36,6 +39,7 @@ public class ConfigurableType<T> implements Type<T> {
 
     private T value;
     private Function<T, Object> configFormatter = (value) -> (Object) value;
+    private @Nullable BiConsumer<T, T> changeListener;
 
     private final Map<Class<? extends Capability>, Capability> capabilities = new HashMap<>();
 
@@ -105,16 +109,33 @@ public class ConfigurableType<T> implements Type<T> {
     }
 
     /**
+     * Registers a listener that is notified whenever {@link #set(Object)} changes this type's base value.
+     *
+     * @param changeListener A consumer receiving {@code (oldValue, newValue)}, or {@code null} to deregister
+     */
+    public void setChangeListener(@Nullable BiConsumer<T, T> changeListener) {
+        this.changeListener = changeListener;
+    }
+
+    /**
      * Sets the base value for this type.
      *
      * <p>Note: This sets the underlying value. If an {@link Overridable} capability is active, {@link #get()} will
      * still return the overridden value.
      *
+     * <p>If a change listener has been registered via {@link #setChangeListener(BiConsumer)}, it is notified with the
+     * old and new values whenever the value actually changes.
+     *
      * @param value The new base value
      */
     @Override
     public void set(T value) {
+        T oldValue = this.value;
         this.value = value;
+        BiConsumer<T, T> listener = this.changeListener;
+        if (listener != null && !Objects.equals(oldValue, value)) {
+            listener.accept(oldValue, value);
+        }
     }
 
     @Override

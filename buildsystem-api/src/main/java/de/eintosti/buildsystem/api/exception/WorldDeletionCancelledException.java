@@ -17,30 +17,21 @@
  */
 package de.eintosti.buildsystem.api.exception;
 
+import de.eintosti.buildsystem.api.event.world.BuildWorldDeleteEvent;
+
 /**
- * Thrown when an error occurs during the deletion of a world.
+ * Thrown when a {@link BuildWorldDeleteEvent} listener cancelled the deletion of a world.
  *
- * @since 3.0.0
+ * @since TODO
  */
-public class WorldDeletionException extends WorldException {
+public class WorldDeletionCancelledException extends WorldDeletionException {
 
     /**
-     * Constructs a new {@link WorldDeletionException} with the specified message.
+     * Constructs a new {@link WorldDeletionCancelledException} with the specified message.
      *
      * @param message The detail message
-     * @since TODO
      */
-    public WorldDeletionException(String message) {
+    public WorldDeletionCancelledException(String message) {
         super(message);
-    }
-
-    /**
-     * Constructs a new {@link WorldDeletionException} with the specified message and cause.
-     *
-     * @param message The detail message
-     * @param cause The cause of the exception
-     */
-    public WorldDeletionException(String message, Throwable cause) {
-        super(message, cause);
     }
 }

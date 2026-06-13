@@ -19,6 +19,10 @@ package de.eintosti.buildsystem.world;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.event.world.BuildWorldDeleteEvent;
+import de.eintosti.buildsystem.api.event.world.BuildWorldPostDeleteEvent;
+import de.eintosti.buildsystem.api.event.world.BuildWorldUnimportEvent;
+import de.eintosti.buildsystem.api.exception.WorldDeletionCancelledException;
 import de.eintosti.buildsystem.api.exception.WorldDeletionException;
 import de.eintosti.buildsystem.api.exception.WorldDirectoryNotFoundException;
 import de.eintosti.buildsystem.api.exception.WorldNotFoundException;
@@ -59,6 +63,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -454,6 +459,7 @@ public class WorldServiceImpl implements WorldService {
     public CompletableFuture<Void> unimportWorld(BuildWorld buildWorld, boolean save) {
         buildWorld.getUnloader().forceUnload(save);
         this.worldStorage.removeBuildWorld(buildWorld);
+        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldUnimportEvent(buildWorld));
         removePlayersFromWorld(buildWorld.getName(), "worlds_unimport_players_world");
         return this.worldStorage.delete(buildWorld);
     }
@@ -470,6 +476,9 @@ public class WorldServiceImpl implements WorldService {
                             plugin.getMessages().sendMessage(player, "worlds_delete_unknown_world");
                         case WorldDirectoryNotFoundException ignored ->
                             plugin.getMessages().sendMessage(player, "worlds_delete_unknown_directory");
+                        case WorldDeletionCancelledException ignored -> {
+                            // The cancelling listener is responsible for messaging the player.
+                        }
                         default -> {
                             plugin.getMessages()
                                     .sendMessage(player, "worlds_delete_error", Map.entry("%world%", worldName));
@@ -497,8 +506,19 @@ public class WorldServiceImpl implements WorldService {
                     new WorldDirectoryNotFoundException(worldName, deleteFolder.getAbsolutePath()));
         }
 
+        BuildWorldDeleteEvent deleteEvent = new BuildWorldDeleteEvent(buildWorld);
+        Bukkit.getServer().getPluginManager().callEvent(deleteEvent);
+        if (deleteEvent.isCancelled()) {
+            return CompletableFuture.failedFuture(new WorldDeletionCancelledException(
+                    "Deletion of world '" + worldName + "' was cancelled by an event listener"));
+        }
+
         buildWorld.setFolder(null);
         removePlayersFromWorld(worldName, "worlds_delete_players_world");
+
+        // Resolve the scheduler on the calling (main) thread so the async stage below does not touch
+        // Bukkit statics from a pool thread.
+        BukkitScheduler scheduler = Bukkit.getScheduler();
 
         // Registry removal and metadata persistence are awaited before folder deletion
         // so a crash mid-delete leaves an orphaned folder (re-importable) rather than
@@ -510,6 +530,9 @@ public class WorldServiceImpl implements WorldService {
                 throw new CompletionException(new WorldDeletionException(
                         "An unexpected error occurred during directory deletion for world: " + worldName, e));
             }
+            scheduler.runTask(
+                    plugin,
+                    () -> Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostDeleteEvent(buildWorld)));
         });
     }
 

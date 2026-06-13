@@ -40,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.Server;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -133,9 +134,13 @@ class WorldServiceImplDeleteTest {
         Files.writeString(worldDirectory.resolve("level.dat"), "level");
 
         Server server = mock(Server.class, RETURNS_DEEP_STUBS);
+        // The post-delete event is deferred to the main thread via the scheduler; the real scheduler is not
+        // available under test, so a mock that drops the task mirrors the scheduling without firing the event.
+        BukkitScheduler scheduler = mock(BukkitScheduler.class);
         try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
             bukkit.when(Bukkit::getWorldContainer).thenReturn(worldContainer.toFile());
             bukkit.when(Bukkit::getServer).thenReturn(server);
+            bukkit.when(Bukkit::getScheduler).thenReturn(scheduler);
             bukkit.when(() -> Bukkit.getWorld("doomed")).thenReturn(null);
 
             worldService.deleteWorld(buildWorld).get(10, TimeUnit.SECONDS);
