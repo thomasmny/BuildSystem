@@ -59,6 +59,7 @@ public class WorldDataImpl implements WorldData {
     private final Type<Boolean> explosions;
     private final Type<Boolean> mobAi;
     private final Type<Boolean> physics;
+    private final Type<Boolean> pinned;
     private final Type<Boolean> privateWorld;
 
     private final Type<Integer> timeSinceBackup;
@@ -112,6 +113,7 @@ public class WorldDataImpl implements WorldData {
         this.explosions = register("explosions", new ConfigurableType<>(builder.explosions));
         this.mobAi = register("mob-ai", new ConfigurableType<>(builder.mobAi));
         this.physics = register("physics", new ConfigurableType<>(builder.physics));
+        this.pinned = register("pinned", new ConfigurableType<>(builder.pinned));
         this.privateWorld = register("private", new ConfigurableType<>(builder.privateWorld));
 
         this.timeSinceBackup = register("time-since-backup", new ConfigurableType<>(builder.timeSinceBackup));
@@ -217,6 +219,11 @@ public class WorldDataImpl implements WorldData {
     }
 
     @Override
+    public Type<Boolean> pinned() {
+        return pinned;
+    }
+
+    @Override
     public Type<Boolean> privateWorld() {
         return privateWorld;
     }
@@ -267,6 +274,7 @@ public class WorldDataImpl implements WorldData {
         private boolean explosions = true;
         private boolean mobAi = true;
         private boolean physics = true;
+        private boolean pinned = false;
         private boolean privateWorld = false;
         private int timeSinceBackup = 0;
         private long lastEdited = -1L;
@@ -355,6 +363,11 @@ public class WorldDataImpl implements WorldData {
 
         public WorldDataBuilder withPhysics(boolean physics) {
             this.physics = physics;
+            return this;
+        }
+
+        public WorldDataBuilder withPinned(boolean pinned) {
+            this.pinned = pinned;
             return this;
         }
 

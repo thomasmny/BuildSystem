@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.display.WorldDisplay;
+import de.eintosti.buildsystem.world.display.DisplayOrdering;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import org.bukkit.entity.Player;
@@ -75,7 +76,8 @@ public class FolderContentMenu extends DisplayablesMenu {
         List<Displayable> displayables = new ArrayList<>();
         displayables.addAll(folders);
         displayables.addAll(buildWorlds);
-        displayables.sort(worldDisplay.getWorldSort().getComparator());
+        displayables.sort(
+                DisplayOrdering.withPriorities(worldDisplay.getWorldSort().getComparator()));
         return displayables;
     }
 
