@@ -62,20 +62,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     public static final int METRICS_ID = 7427;
     public static final String ADMIN_PERMISSION = "buildsystem.admin";
 
-    private ConfigService configService;
-    private Messages messages;
-
-    private NavigatorService navigatorService;
-    private CustomBlockManager customBlockManager;
-    private PlayerServiceImpl playerService;
-    private PlayerLookupService playerLookupService;
-    private NoClipService noClipService;
-    private SettingsService settingsService;
-    private SpawnService spawnService;
-    private WorldServiceImpl worldService;
-    private BackupService backupService;
-    private CustomizableIcons customizableIcons;
-    private MenuItems menuItems;
+    private Services services;
 
     private UpdateChecker updateChecker;
 
@@ -87,20 +74,21 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        this.configService = new ConfigService(this);
+        this.services = new Services(this);
+
+        ConfigService configService = this.services.createConfigService();
         new ConfigMigrationManager(this).migrate();
         this.getConfig().options().copyDefaults(true);
         this.saveConfig();
-        this.configService.load();
+        configService.load();
 
-        this.messages = new Messages(this, configService);
-        this.messages.load();
+        this.services.createMessages().load();
         createTemplateFolder();
     }
 
     @Override
     public void onEnable() {
-        initClasses();
+        this.services.initClasses();
 
         new CommandRegistrar(this).registerAll();
         new ListenerRegistrar(this).registerAll();
@@ -112,10 +100,10 @@ public class BuildSystemPlugin extends JavaPlugin {
         getServer().getServicesManager().register(BuildSystem.class, api, this, ServicePriority.Normal);
 
         Bukkit.getOnlinePlayers().forEach(pl -> {
-            BuildPlayer buildPlayer = playerService.getPlayerStorage().createBuildPlayer(pl);
+            BuildPlayer buildPlayer = getPlayerService().getPlayerStorage().createBuildPlayer(pl);
             Settings settings = buildPlayer.getSettings();
-            noClipService.startNoClip(pl, settings);
-            settingsService.displayScoreboard(pl);
+            getNoClipService().startNoClip(pl, settings);
+            getSettingsService().displayScoreboard(pl);
         });
 
         registerStats();
@@ -132,17 +120,17 @@ public class BuildSystemPlugin extends JavaPlugin {
     public void onDisable() {
         Bukkit.getOnlinePlayers().forEach(pl -> {
             BuildPlayerImpl buildPlayer =
-                    BuildPlayerImpl.of(playerService.getPlayerStorage().getBuildPlayer(pl));
+                    BuildPlayerImpl.of(getPlayerService().getPlayerStorage().getBuildPlayer(pl));
             buildPlayer.getCachedValues().resetCachedValues(pl);
             buildPlayer.setLogoutLocation(new LogoutLocation(pl.getWorld().getName(), pl.getLocation()));
 
-            settingsService.hideScoreboard(pl);
-            noClipService.stopNoClip(pl.getUniqueId());
-            navigatorService.closeNewNavigator(pl);
+            getSettingsService().hideScoreboard(pl);
+            getNoClipService().stopNoClip(pl.getUniqueId());
+            getNavigatorService().closeNewNavigator(pl);
         });
 
-        this.backupService.close();
-        worldService.cancelAllUnloadTasks();
+        getBackupService().close();
+        getWorldService().cancelAllUnloadTasks();
 
         reloadConfigData(false);
         saveConfig();
@@ -164,48 +152,34 @@ public class BuildSystemPlugin extends JavaPlugin {
                         .formatted(ChatColor.RESET, ChatColor.RED, ChatColor.RESET));
     }
 
-    private void initClasses() {
-        this.customizableIcons = new CustomizableIcons(this);
-
-        this.customBlockManager = new CustomBlockManager(this);
-        this.playerLookupService = new PlayerLookupService(this);
-        (this.playerService = new PlayerServiceImpl(this)).init();
-        this.navigatorService = new NavigatorService(this);
-        this.noClipService = new NoClipService(this);
-        (this.worldService = new WorldServiceImpl(this)).init();
-        this.backupService = new BackupService(this);
-        this.settingsService = new SettingsService(this);
-        this.spawnService = new SpawnService(this);
-        this.menuItems = new MenuItems(this, configService, messages, settingsService);
-    }
-
     private void registerStats() {
         Metrics metrics = new Metrics(this, METRICS_ID);
         metrics.addCustomChart(new SimplePie(
                 "archive_vanish",
                 () -> String.valueOf(
-                        configService.current().settings().archive().vanish())));
+                        getConfigService().current().settings().archive().vanish())));
         metrics.addCustomChart(new SimplePie(
                 "block_world_edit",
                 () -> String.valueOf(
-                        configService.current().settings().builder().blockWorldEditNonBuilder())));
+                        getConfigService().current().settings().builder().blockWorldEditNonBuilder())));
         metrics.addCustomChart(new SimplePie(
                 "join_quit_messages",
-                () -> String.valueOf(configService.current().settings().joinQuitMessages())));
+                () -> String.valueOf(getConfigService().current().settings().joinQuitMessages())));
         metrics.addCustomChart(new SimplePie(
                 "lock_weather",
-                () -> String.valueOf(configService.current().world().lockWeather())));
+                () -> String.valueOf(getConfigService().current().world().lockWeather())));
         metrics.addCustomChart(new SimplePie(
                 "scoreboard",
-                () -> String.valueOf(configService.current().settings().scoreboard())));
+                () -> String.valueOf(getConfigService().current().settings().scoreboard())));
         metrics.addCustomChart(new SimplePie(
                 "update_checker",
-                () -> String.valueOf(configService.current().settings().updateChecker())));
+                () -> String.valueOf(getConfigService().current().settings().updateChecker())));
         metrics.addCustomChart(new SimplePie(
                 "unload_worlds",
-                () -> String.valueOf(configService.current().world().unload().enabled())));
+                () -> String.valueOf(
+                        getConfigService().current().world().unload().enabled())));
         metrics.addCustomChart(new AdvancedPie("navigator_type", () -> {
-            Map<NavigatorType, Long> countsByType = playerService.getPlayerStorage().getBuildPlayers().stream()
+            Map<NavigatorType, Long> countsByType = getPlayerService().getPlayerStorage().getBuildPlayers().stream()
                     .collect(Collectors.groupingBy(
                             buildPlayer -> buildPlayer.getSettings().getNavigatorType(), Collectors.counting()));
             int oldCount = countsByType.getOrDefault(NavigatorType.OLD, 0L).intValue();
@@ -214,10 +188,10 @@ public class BuildSystemPlugin extends JavaPlugin {
         }));
         metrics.addCustomChart(new SimplePie(
                 "folder_override_permissions",
-                () -> String.valueOf(configService.current().folder().overridePermissions())));
+                () -> String.valueOf(getConfigService().current().folder().overridePermissions())));
         metrics.addCustomChart(new SimplePie(
                 "folder_override_projects",
-                () -> String.valueOf(configService.current().folder().overrideProjects())));
+                () -> String.valueOf(getConfigService().current().folder().overrideProjects())));
     }
 
     public UpdateChecker getUpdateChecker() {
@@ -226,7 +200,7 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     private void performUpdateCheck() {
         this.updateChecker = new UpdateChecker(this, SPIGOT_ID);
-        if (!configService.current().settings().updateChecker()) {
+        if (!getConfigService().current().settings().updateChecker()) {
             return;
         }
 
@@ -260,9 +234,9 @@ public class BuildSystemPlugin extends JavaPlugin {
     }
 
     private CompletableFuture<Void> saveBuildConfig() {
-        CompletableFuture<Void> worldSave = worldService.save();
-        CompletableFuture<Void> playerSave = playerService.save();
-        CompletableFuture<Void> spawnSave = spawnService.save();
+        CompletableFuture<Void> worldSave = getWorldService().save();
+        CompletableFuture<Void> playerSave = getPlayerService().save();
+        CompletableFuture<Void> spawnSave = getSpawnService().save();
         return CompletableFuture.allOf(worldSave, playerSave, spawnSave);
     }
 
@@ -277,15 +251,15 @@ public class BuildSystemPlugin extends JavaPlugin {
         }
 
         reloadConfig();
-        configService.load();
+        getConfigService().load();
         if (isEnabled()) {
-            backupService.reload();
+            getBackupService().reload();
         }
 
         if (init) {
-            worldService.remanageAllUnloadTasks();
+            getWorldService().remanageAllUnloadTasks();
 
-            if (configService.current().settings().scoreboard()) {
+            if (getConfigService().current().settings().scoreboard()) {
                 getSettingsService().displayScoreboard();
             } else {
                 getSettingsService().hideScoreboards();
@@ -294,54 +268,54 @@ public class BuildSystemPlugin extends JavaPlugin {
     }
 
     public NavigatorService getNavigatorService() {
-        return navigatorService;
+        return services.navigator();
     }
 
     public CustomBlockManager getCustomBlockManager() {
-        return customBlockManager;
+        return services.customBlockManager();
     }
 
     public PlayerServiceImpl getPlayerService() {
-        return playerService;
+        return services.player();
     }
 
     public PlayerLookupService getPlayerLookupService() {
-        return playerLookupService;
+        return services.playerLookup();
     }
 
     public NoClipService getNoClipService() {
-        return noClipService;
+        return services.noClip();
     }
 
     public SettingsService getSettingsService() {
-        return settingsService;
+        return services.settings();
     }
 
     public SpawnService getSpawnService() {
-        return spawnService;
+        return services.spawn();
     }
 
     public WorldServiceImpl getWorldService() {
-        return worldService;
+        return services.world();
     }
 
     public BackupService getBackupService() {
-        return backupService;
+        return services.backup();
     }
 
     public ConfigService getConfigService() {
-        return configService;
+        return services.config();
     }
 
     public Messages getMessages() {
-        return messages;
+        return services.messages();
     }
 
     public CustomizableIcons getCustomizableIcons() {
-        return customizableIcons;
+        return services.customizableIcons();
     }
 
     public MenuItems getMenuItems() {
-        return menuItems;
+        return services.menuItems();
     }
 }
