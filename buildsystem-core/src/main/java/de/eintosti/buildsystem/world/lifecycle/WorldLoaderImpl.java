@@ -20,8 +20,8 @@ package de.eintosti.buildsystem.world.lifecycle;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.event.world.BuildWorldLoadEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostLoadEvent;
-import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldLoader;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
 import java.util.Map;
 import org.bukkit.Bukkit;
@@ -34,15 +34,15 @@ import org.jspecify.annotations.NullMarked;
 public class WorldLoaderImpl implements WorldLoader {
 
     private final BuildSystemPlugin plugin;
-    private final BuildWorld buildWorld;
+    private final BuildWorldImpl buildWorld;
 
-    private WorldLoaderImpl(BuildSystemPlugin plugin, BuildWorld buildWorld) {
+    private WorldLoaderImpl(BuildSystemPlugin plugin, BuildWorldImpl buildWorld) {
         this.plugin = plugin;
         this.buildWorld = buildWorld;
     }
 
     @Contract("_, _ -> new")
-    public static WorldLoaderImpl of(BuildSystemPlugin plugin, BuildWorld buildWorld) {
+    public static WorldLoaderImpl of(BuildSystemPlugin plugin, BuildWorldImpl buildWorld) {
         return new WorldLoaderImpl(plugin, buildWorld);
     }
 

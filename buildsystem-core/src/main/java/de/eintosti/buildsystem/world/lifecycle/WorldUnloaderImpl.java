@@ -20,8 +20,8 @@ package de.eintosti.buildsystem.world.lifecycle;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostUnloadEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldUnloadEvent;
-import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldUnloader;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
 import java.util.Arrays;
 import java.util.Objects;
 import org.bukkit.Bukkit;
@@ -37,13 +37,13 @@ import org.jspecify.annotations.Nullable;
 public class WorldUnloaderImpl implements WorldUnloader {
 
     private final BuildSystemPlugin plugin;
-    private final BuildWorld buildWorld;
+    private final BuildWorldImpl buildWorld;
 
     private final long secondsUntilUnload;
 
     private @Nullable BukkitTask unloadTask;
 
-    private WorldUnloaderImpl(BuildSystemPlugin plugin, BuildWorld buildWorld) {
+    private WorldUnloaderImpl(BuildSystemPlugin plugin, BuildWorldImpl buildWorld) {
         this.plugin = plugin;
         this.buildWorld = buildWorld;
 
@@ -81,7 +81,7 @@ public class WorldUnloaderImpl implements WorldUnloader {
     }
 
     @Contract("_, _ -> new")
-    public static WorldUnloaderImpl of(BuildSystemPlugin plugin, BuildWorld buildWorld) {
+    public static WorldUnloaderImpl of(BuildSystemPlugin plugin, BuildWorldImpl buildWorld) {
         return new WorldUnloaderImpl(plugin, buildWorld);
     }
 

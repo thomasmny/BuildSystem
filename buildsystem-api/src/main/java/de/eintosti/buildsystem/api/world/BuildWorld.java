@@ -123,13 +123,6 @@ public interface BuildWorld extends Displayable {
     boolean isLoaded();
 
     /**
-     * Sets whether this world is currently loaded into server memory.
-     *
-     * @param loaded {@code true} if this world is to be loaded, {@code false} if it should be unloaded
-     */
-    void setLoaded(boolean loaded);
-
-    /**
      * Gets the {@link WorldLoader} utility used to manage loading operations for this world.
      *
      * @return The {@link WorldLoader} instance
