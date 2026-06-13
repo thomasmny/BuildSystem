@@ -2,7 +2,7 @@
 # Platform expectations
 spigot = "26.1.2-R0.1-SNAPSHOT"
 # Test
-junit = "5.13.4"
+junit = "5.14.4"
 mockito = "5.20.0"
 paperlib = "1.0.8"
 
