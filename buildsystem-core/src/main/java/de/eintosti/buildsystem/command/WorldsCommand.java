@@ -52,6 +52,7 @@ public class WorldsCommand extends CommandBase {
                         new RemoveBuilderSubCommand(plugin),
                         new RemoveSpawnSubCommand(plugin),
                         new RenameSubCommand(plugin),
+                        new SaveTemplateSubCommand(plugin),
                         new SetCreatorSubCommand(plugin),
                         new SetItemSubCommand(plugin),
                         new SetPermissionSubCommand(plugin),

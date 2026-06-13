@@ -109,6 +109,12 @@ public class HelpSubCommand extends PagedCommand implements SubCommand {
                         "buildsystem.setproject"),
                 createComponent(
                         player,
+                        "/worlds saveTemplate <world> [template]",
+                        "worlds_help_savetemplate",
+                        "/worlds saveTemplate ",
+                        "buildsystem.savetemplate"),
+                createComponent(
+                        player,
                         "/worlds setPermission <world>",
                         "worlds_help_setpermission",
                         "/worlds setPermission ",
