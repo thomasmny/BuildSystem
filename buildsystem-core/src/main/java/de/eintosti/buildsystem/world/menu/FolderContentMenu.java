@@ -75,7 +75,7 @@ public class FolderContentMenu extends DisplayablesMenu {
         List<Displayable> displayables = new ArrayList<>();
         displayables.addAll(folders);
         displayables.addAll(buildWorlds);
-        displayables.sort(worldDisplay.getWorldSort().getComparator());
+        displayables.sort(worldDisplay.getWorldSort().getPinnedComparator());
         return displayables;
     }
 

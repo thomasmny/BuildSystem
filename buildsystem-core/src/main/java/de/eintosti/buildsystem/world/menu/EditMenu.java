@@ -74,6 +74,14 @@ public class EditMenu extends Menu {
      */
     private static final Map<Integer, Toggle> TOGGLES = Map.ofEntries(
             entry(
+                    19,
+                    new Toggle(
+                            XMaterial.NETHER_STAR,
+                            "buildsystem.edit.pin",
+                            "worldeditor_pin_item",
+                            "worldeditor_pin_lore",
+                            WorldData::pinned)),
+            entry(
                     20,
                     new Toggle(
                             XMaterial.OAK_PLANKS,

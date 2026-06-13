@@ -161,7 +161,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         List<Displayable> displayables = new ArrayList<>();
         displayables.addAll(folders);
         displayables.addAll(standaloneWorlds);
-        displayables.sort(worldDisplay.getWorldSort().getComparator());
+        displayables.sort(worldDisplay.getWorldSort().getPinnedComparator());
         return displayables;
     }
 

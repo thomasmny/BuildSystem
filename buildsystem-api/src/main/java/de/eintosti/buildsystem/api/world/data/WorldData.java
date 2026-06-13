@@ -145,6 +145,15 @@ public interface WorldData {
     Type<Boolean> physics();
 
     /**
+     * Retrieves a {@link Type} object indicating whether this world is pinned to the top of the navigator, ahead of
+     * unpinned worlds regardless of the active sort order.
+     *
+     * @return A {@link Type} containing a boolean: {@code true} if pinned, otherwise {@code false}
+     * @since TODO
+     */
+    Type<Boolean> pinned();
+
+    /**
      * Retrieves a {@link Type} object indicating whether the {@link BuildWorld} is set to private visibility. A private
      * world is typically only accessible to its creator and designated builders.
      *

@@ -562,6 +562,11 @@ worldeditor_physics_lore:
   - "&7&oToggle whether or not block"
   - "&7&ophysics are activated."
 
+worldeditor_pin_item: "&bPinned"
+worldeditor_pin_lore:
+  - "&7&oToggle whether or not the world"
+  - "&7&ois pinned to the top of the navigator."
+
 worldeditor_time_item: "&bTime"
 worldeditor_time_lore:
   - "&7&oAlter the time of day"

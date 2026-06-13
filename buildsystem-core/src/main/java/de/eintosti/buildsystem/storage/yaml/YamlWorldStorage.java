@@ -195,6 +195,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
                 .withExplosions(config.getBoolean(path + ".explosions"))
                 .withMobAi(config.getBoolean(path + ".mob-ai"))
                 .withPhysics(config.getBoolean(path + ".physics"))
+                .withPinned(config.getBoolean(path + ".pinned", false))
                 .withPrivateWorld(config.getBoolean(path + ".private"))
                 .withTimeSinceBackup(config.getInt(path + ".time-since-backup", 0))
                 .withLastLoaded(config.getLong(path + ".last-loaded"))
