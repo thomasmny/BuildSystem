@@ -260,9 +260,7 @@ public class SettingsMenu extends Menu {
             return;
         }
 
-        boolean perOptionPermissions =
-                plugin.getConfigService().current().settings().perOptionPermissions();
-        if (perOptionPermissions && !player.hasPermission("buildsystem.setting." + toggle.node())) {
+        if (!player.hasPermission("buildsystem.setting." + toggle.node())) {
             messages.sendPermissionError(player);
             XSound.ENTITY_ITEM_BREAK.play(player);
             return;

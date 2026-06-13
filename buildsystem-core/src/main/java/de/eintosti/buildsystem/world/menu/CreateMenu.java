@@ -147,10 +147,6 @@ public class CreateMenu extends PaginatedMenu {
                 "buildsystem.create.type." + worldType.name().toLowerCase(Locale.ROOT));
     }
 
-    private boolean restrictTemplateAccess() {
-        return plugin.getConfigService().current().settings().restrictTemplateAccess();
-    }
-
     private void populateGenerator(Player player) {
         plugin.getMenuItems().addGlassPane(player, getInventory(), 29);
         plugin.getMenuItems().addGlassPane(player, getInventory(), 30);
@@ -263,14 +259,16 @@ public class CreateMenu extends PaginatedMenu {
 
                 XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
                 switch (xMaterial) {
-                    case FILLED_MAP:
-                        if (restrictTemplateAccess()) {
-                            String rawTemplateName = this.templateSlots.get(slot);
-                            if (rawTemplateName == null
-                                    || !player.hasPermission("buildsystem.create.template." + rawTemplateName)) {
-                                XSound.ENTITY_ITEM_BREAK.play(player);
-                                return;
-                            }
+                    case FILLED_MAP: {
+                        // Template names are dynamic and cannot be pre-registered in plugin.yml, so default-allow is
+                        // emulated: a template is permitted unless an admin has explicitly denied its specific node.
+                        String rawTemplateName = this.templateSlots.get(slot);
+                        String templateNode = "buildsystem.create.template." + rawTemplateName;
+                        boolean allowed = rawTemplateName != null
+                                && (!player.isPermissionSet(templateNode) || player.hasPermission(templateNode));
+                        if (!allowed) {
+                            XSound.ENTITY_ITEM_BREAK.play(player);
+                            return;
                         }
                         this.worldService.startWorldNameInput(
                                 player,
@@ -279,6 +277,7 @@ public class CreateMenu extends PaginatedMenu {
                                 this.createPrivateWorld,
                                 this.folder);
                         break;
+                    }
                     case PLAYER_HEAD:
                         if (slot == 28) {
                             if (!previousPage(player, MAX_TEMPLATES)) {

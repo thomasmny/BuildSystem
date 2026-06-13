@@ -4,13 +4,9 @@
 settings:
   update-checker: true
   scoreboard: true
-  per-option-permissions: false
   # When non-empty, only the listed permission strings (plus "-" to clear) may be set
   # via /worlds setPermission. Empty list means no restriction.
   world-permission-whitelist: []
-  # When true, selecting a template requires buildsystem.create.template.<name> and using
-  # a custom generator requires buildsystem.create.generator.<name>.
-  restrict-template-access: false
   spawn-teleport-message: false
   join-quit-messages: true
   date-format: "dd/MM/yyyy"
