@@ -26,6 +26,7 @@ import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.data.Property;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.command.subcommand.worlds.SetPermissionSubCommand;
@@ -50,8 +51,20 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class EditMenu extends Menu {
 
+    private static final int SLOT_WORLD_INFO = 3;
+    private static final int SLOT_PIN = 5;
+    private static final int SLOT_TIME = 23;
+    private static final int SLOT_BUTCHER = 29;
+    private static final int SLOT_BUILDERS = 30;
+    private static final int SLOT_VISIBILITY = 32;
+    private static final int SLOT_GAMERULES = 38;
+    private static final int SLOT_DIFFICULTY = 39;
+    private static final int SLOT_STATUS = 40;
+    private static final int SLOT_PROJECT = 41;
+    private static final int SLOT_PERMISSION = 42;
+
     /**
-     * A set of entities which are ignored when the butcher item is used.
+     * Entities which are ignored when the butcher item is used.
      */
     private static final Set<XEntityType> IGNORED_ENTITIES = Sets.newHashSet(
             XEntityType.ARMOR_STAND,
@@ -68,15 +81,15 @@ public class EditMenu extends Menu {
             XEntityType.PLAYER);
 
     /**
-     * Slots whose only action is "check permission, flip a boolean world setting, re-open". They are rendered as toggle
-     * items and handled uniformly; heterogeneous slots (sub-menus, time, butcher, difficulty) are populated and handled
-     * individually.
+     * Slots whose only action is "check permission, flip a boolean world setting, re-open". They are rendered and
+     * handled uniformly; heterogeneous slots (sub-menus, time, butcher, difficulty) are handled individually.
      */
     private static final Map<Integer, Toggle> TOGGLES = Map.ofEntries(
             entry(
-                    19,
+                    SLOT_PIN,
                     new Toggle(
-                            XMaterial.NETHER_STAR,
+                            XMaterial.ITEM_FRAME,
+                            XMaterial.GLOW_ITEM_FRAME,
                             "buildsystem.edit.pin",
                             "worldeditor_pin_item",
                             "worldeditor_pin_lore",
@@ -132,10 +145,28 @@ public class EditMenu extends Menu {
 
     private record Toggle(
             XMaterial material,
+            XMaterial enabledMaterial,
             String permission,
             String itemKey,
             String loreKey,
-            Function<WorldData, Property<Boolean>> data) {}
+            Function<WorldData, Property<Boolean>> data) {
+
+        /**
+         * Creates a toggle whose icon is the same whether the setting is enabled or not.
+         */
+        Toggle(
+                XMaterial material,
+                String permission,
+                String itemKey,
+                String loreKey,
+                Function<WorldData, Property<Boolean>> data) {
+            this(material, material, permission, itemKey, loreKey, data);
+        }
+
+        XMaterial iconFor(boolean enabled) {
+            return enabled ? enabledMaterial : material;
+        }
+    }
 
     private final BuildSystemPlugin plugin;
     private final PlayerServiceImpl playerManager;
@@ -151,116 +182,82 @@ public class EditMenu extends Menu {
     @Override
     protected void populate(Player player) {
         Inventory inv = getInventory();
-        WorldData worldData = buildWorld.getData();
-
         plugin.getMenuItems().fillAll(player, inv);
+
         addBuildWorldInfoItem(player, inv);
-
-        TOGGLES.forEach((slot, toggle) -> plugin.getMenuItems()
-                .addToggleItem(
-                        player,
-                        inv,
-                        slot,
-                        toggle.material(),
-                        toggle.data().apply(worldData).get(),
-                        toggle.itemKey(),
-                        toggle.loreKey()));
-
+        addToggleItems(player, inv);
         addTimeItem(player, inv);
-        inv.setItem(
-                29,
-                InventoryUtils.createItem(
-                        XMaterial.DIAMOND_SWORD,
-                        messages.getString("worldeditor_butcher_item", player),
-                        messages.getStringList("worldeditor_butcher_lore", player)));
+        addButcherItem(player, inv);
         addBuildersItem(player, inv);
         addVisibilityItem(player, inv);
-        inv.setItem(
-                38,
-                InventoryUtils.createItem(
-                        XMaterial.FILLED_MAP,
-                        messages.getString("worldeditor_gamerules_item", player),
-                        messages.getStringList("worldeditor_gamerules_lore", player)));
+        addGameRulesItem(player, inv);
         addDifficultyItem(player, inv);
-        inv.setItem(
-                40,
-                InventoryUtils.createItem(
-                        plugin.getCustomizableIcons().getIcon(worldData.status().get()),
-                        messages.getString("worldeditor_status_item", player),
-                        messages.getStringList(
-                                "worldeditor_status_lore",
-                                player,
-                                Map.entry(
-                                        "%status%",
-                                        messages.getString(
-                                                Messages.getMessageKey(buildWorld
-                                                        .getData()
-                                                        .status()
-                                                        .get()),
-                                                player)))));
-        inv.setItem(
-                41,
-                InventoryUtils.createItem(
-                        XMaterial.ANVIL,
-                        messages.getString("worldeditor_project_item", player),
-                        messages.getStringList(
-                                "worldeditor_project_lore",
-                                player,
-                                Map.entry("%project%", buildWorld.getData().getProject()))));
-        inv.setItem(
-                42,
-                InventoryUtils.createItem(
-                        XMaterial.PAPER,
-                        messages.getString("worldeditor_permission_item", player),
-                        messages.getStringList(
-                                "worldeditor_permission_lore",
-                                player,
-                                Map.entry("%permission%", buildWorld.getData().getPermission()))));
+        addStatusItem(player, inv);
+        addProjectItem(player, inv);
+        addPermissionItem(player, inv);
+    }
+
+    private void addToggleItems(Player player, Inventory inventory) {
+        WorldData worldData = buildWorld.getData();
+        TOGGLES.forEach((slot, toggle) -> {
+            boolean enabled = toggle.data().apply(worldData).get();
+            plugin.getMenuItems()
+                    .addToggleItem(
+                            player,
+                            inventory,
+                            slot,
+                            toggle.iconFor(enabled),
+                            enabled,
+                            toggle.itemKey(),
+                            toggle.loreKey());
+        });
     }
 
     private void addBuildWorldInfoItem(Player player, Inventory inventory) {
-        String worldName = buildWorld.getName();
-        String displayName = messages.getString("worldeditor_world_item", player, Map.entry("%world%", worldName));
+        String displayName =
+                messages.getString("worldeditor_world_item", player, Map.entry("%world%", buildWorld.getName()));
         XMaterial material = buildWorld.getData().getMaterial();
 
         if (material == XMaterial.PLAYER_HEAD) {
-            plugin.getMenuItems().addWorldItem(inventory, 4, buildWorld, displayName, new ArrayList<>());
+            plugin.getMenuItems().addWorldItem(inventory, SLOT_WORLD_INFO, buildWorld, displayName, new ArrayList<>());
         } else {
-            inventory.setItem(4, InventoryUtils.createItem(material, displayName));
+            inventory.setItem(SLOT_WORLD_INFO, InventoryUtils.createItem(material, displayName));
         }
     }
 
     private void addTimeItem(Player player, Inventory inventory) {
-        XMaterial xMaterial;
+        XMaterial material;
         String value;
         switch (getWorldTime()) {
             case NIGHT -> {
-                xMaterial = XMaterial.BLUE_STAINED_GLASS;
+                material = XMaterial.BLUE_STAINED_GLASS;
                 value = messages.getString("worldeditor_time_lore_night", player);
             }
             case NOON -> {
-                xMaterial = XMaterial.YELLOW_STAINED_GLASS;
+                material = XMaterial.YELLOW_STAINED_GLASS;
                 value = messages.getString("worldeditor_time_lore_noon", player);
             }
             default -> {
-                xMaterial = XMaterial.ORANGE_STAINED_GLASS;
+                material = XMaterial.ORANGE_STAINED_GLASS;
                 value = messages.getString("worldeditor_time_lore_sunrise", player);
             }
         }
 
         inventory.setItem(
-                23,
+                SLOT_TIME,
                 InventoryUtils.createItem(
-                        xMaterial,
+                        material,
                         messages.getString("worldeditor_time_item", player),
                         messages.getStringList("worldeditor_time_lore", player, Map.entry("%time%", value))));
     }
 
-    private TimeOfDay getWorldTime() {
-        int worldTime = (int) buildWorld.getWorld().orElseThrow().getTime();
-        int noonTime =
-                plugin.getConfigService().current().world().defaults().time().noon();
-        return TimeOfDay.fromTicks(worldTime, noonTime);
+    private void addButcherItem(Player player, Inventory inventory) {
+        inventory.setItem(
+                SLOT_BUTCHER,
+                InventoryUtils.createItem(
+                        XMaterial.DIAMOND_SWORD,
+                        messages.getString("worldeditor_butcher_item", player),
+                        messages.getStringList("worldeditor_butcher_lore", player)));
     }
 
     private void addBuildersItem(Player player, Inventory inventory) {
@@ -269,14 +266,14 @@ public class EditMenu extends Menu {
                     .addToggleItem(
                             player,
                             inventory,
-                            30,
+                            SLOT_BUILDERS,
                             XMaterial.IRON_PICKAXE,
                             buildWorld.getData().isBuildersEnabled(),
                             "worldeditor_builders_item",
                             "worldeditor_builders_lore");
         } else {
             inventory.setItem(
-                    30,
+                    SLOT_BUILDERS,
                     InventoryUtils.createItem(
                             XMaterial.BARRIER,
                             messages.getString("worldeditor_builders_not_creator_item", player),
@@ -285,25 +282,30 @@ public class EditMenu extends Menu {
     }
 
     private void addVisibilityItem(Player player, Inventory inventory) {
-        int slot = 32;
         String displayName = messages.getString("worldeditor_visibility_item", player);
         boolean isPrivate = buildWorld.getData().isPrivateWorld();
 
         if (!playerManager.canCreateWorld(player, Visibility.matchVisibility(isPrivate))) {
             inventory.setItem(
-                    slot, InventoryUtils.createItem(XMaterial.BARRIER, "§c§m" + ChatColor.stripColor(displayName)));
+                    SLOT_VISIBILITY,
+                    InventoryUtils.createItem(XMaterial.BARRIER, "§c§m" + ChatColor.stripColor(displayName)));
             return;
         }
 
-        XMaterial xMaterial = XMaterial.ENDER_EYE;
-        List<String> lore = messages.getStringList("worldeditor_visibility_lore_public", player);
+        XMaterial material = isPrivate ? XMaterial.ENDER_PEARL : XMaterial.ENDER_EYE;
+        List<String> lore = messages.getStringList(
+                isPrivate ? "worldeditor_visibility_lore_private" : "worldeditor_visibility_lore_public", player);
 
-        if (isPrivate) {
-            xMaterial = XMaterial.ENDER_PEARL;
-            lore = messages.getStringList("worldeditor_visibility_lore_private", player);
-        }
+        inventory.setItem(SLOT_VISIBILITY, InventoryUtils.createItem(material, displayName, lore));
+    }
 
-        inventory.setItem(slot, InventoryUtils.createItem(xMaterial, displayName, lore));
+    private void addGameRulesItem(Player player, Inventory inventory) {
+        inventory.setItem(
+                SLOT_GAMERULES,
+                InventoryUtils.createItem(
+                        XMaterial.FILLED_MAP,
+                        messages.getString("worldeditor_gamerules_item", player),
+                        messages.getStringList("worldeditor_gamerules_lore", player)));
     }
 
     private void addDifficultyItem(Player player, Inventory inventory) {
@@ -316,17 +318,54 @@ public class EditMenu extends Menu {
                 };
 
         inventory.setItem(
-                39,
+                SLOT_DIFFICULTY,
                 InventoryUtils.createItem(
                         material,
                         messages.getString("worldeditor_difficulty_item", player),
                         messages.getStringList(
                                 "worldeditor_difficulty_lore",
                                 player,
-                                Map.entry("%difficulty%", getDifficultyName(buildWorld, player)))));
+                                Map.entry("%difficulty%", getDifficultyName(player)))));
     }
 
-    private String getDifficultyName(BuildWorld buildWorld, Player player) {
+    private void addStatusItem(Player player, Inventory inventory) {
+        BuildWorldStatus status = buildWorld.getData().getStatus();
+        inventory.setItem(
+                SLOT_STATUS,
+                InventoryUtils.createItem(
+                        plugin.getCustomizableIcons().getIcon(status),
+                        messages.getString("worldeditor_status_item", player),
+                        messages.getStringList(
+                                "worldeditor_status_lore",
+                                player,
+                                Map.entry("%status%", messages.getString(Messages.getMessageKey(status), player)))));
+    }
+
+    private void addProjectItem(Player player, Inventory inventory) {
+        inventory.setItem(
+                SLOT_PROJECT,
+                InventoryUtils.createItem(
+                        XMaterial.ANVIL,
+                        messages.getString("worldeditor_project_item", player),
+                        messages.getStringList(
+                                "worldeditor_project_lore",
+                                player,
+                                Map.entry("%project%", buildWorld.getData().getProject()))));
+    }
+
+    private void addPermissionItem(Player player, Inventory inventory) {
+        inventory.setItem(
+                SLOT_PERMISSION,
+                InventoryUtils.createItem(
+                        XMaterial.PAPER,
+                        messages.getString("worldeditor_permission_item", player),
+                        messages.getStringList(
+                                "worldeditor_permission_lore",
+                                player,
+                                Map.entry("%permission%", buildWorld.getData().getPermission()))));
+    }
+
+    private String getDifficultyName(Player player) {
         return switch (buildWorld.getData().getDifficulty()) {
             case PEACEFUL -> messages.getString("difficulty_peaceful", player);
             case EASY -> messages.getString("difficulty_easy", player);
@@ -344,81 +383,60 @@ public class EditMenu extends Menu {
 
         event.setCancelled(true);
         Player player = (Player) event.getWhoClicked();
-        WorldData worldData = buildWorld.getData();
 
-        Toggle toggle = TOGGLES.get(event.getSlot());
-        if (toggle != null) {
-            if (requirePermission(player, toggle.permission())) {
-                Property<Boolean> data = toggle.data().apply(worldData);
-                data.set(!data.get());
-                reopen(player);
-            }
+        if (handleToggleClick(event.getSlot(), player)) {
             return;
         }
 
         switch (event.getSlot()) {
-            case 23 -> {
+            case SLOT_TIME -> {
                 if (requirePermission(player, "buildsystem.edit.time")) {
                     changeTime(player);
                 }
             }
-            case 29 -> {
+            case SLOT_BUTCHER -> {
                 if (requirePermission(player, "buildsystem.edit.entities")) {
                     removeEntities(player);
                 }
+                return;
             }
-            case 30 -> {
-                if (itemStack.getType() == XMaterial.BARRIER.get()) {
-                    XSound.ENTITY_ITEM_BREAK.play(player);
+            case SLOT_BUILDERS -> {
+                if (handleBuildersClick(player, itemStack, event.isRightClick())) {
                     return;
-                }
-                if (!requirePermission(player, "buildsystem.edit.builders")) {
-                    return;
-                }
-                if (event.isRightClick()) {
-                    XSound.BLOCK_CHEST_OPEN.play(player);
-                    new BuilderMenu(plugin, buildWorld, player).open(player);
-                    return;
-                }
-                worldData.setBuildersEnabled(!worldData.isBuildersEnabled());
-            }
-            case 32 -> {
-                if (itemStack.getType() == XMaterial.BARRIER.get()) {
-                    XSound.ENTITY_ITEM_BREAK.play(player);
-                    return;
-                }
-                if (requirePermission(player, "buildsystem.edit.visibility")) {
-                    worldData.privateWorld().set(!worldData.privateWorld().get());
                 }
             }
-            case 38 -> {
+            case SLOT_VISIBILITY -> {
+                if (handleVisibilityClick(player, itemStack)) {
+                    return;
+                }
+            }
+            case SLOT_GAMERULES -> {
                 if (requirePermission(player, "buildsystem.edit.gamerules")) {
                     XSound.BLOCK_CHEST_OPEN.play(player);
                     new GameRulesMenu(plugin, buildWorld, player).open(player);
                 }
                 return;
             }
-            case 39 -> {
+            case SLOT_DIFFICULTY -> {
                 if (requirePermission(player, "buildsystem.edit.difficulty")) {
-                    Difficulty newDifficulty = buildWorld.cycleDifficulty();
-                    buildWorld.getWorld().orElseThrow().setDifficulty(newDifficulty);
+                    cycleDifficulty();
                 }
             }
-            case 40 -> {
+            case SLOT_STATUS -> {
                 if (requirePermission(player, "buildsystem.edit.status")) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     new StatusMenu(plugin, buildWorld, player).open(player);
                 }
                 return;
             }
-            case 41 -> {
+            case SLOT_PROJECT -> {
                 if (requirePermission(player, "buildsystem.edit.project")) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     new SetProjectSubCommand(plugin).getProjectInput(player, buildWorld, false);
                 }
                 return;
             }
-            case 42 -> {
+            case SLOT_PERMISSION -> {
                 if (requirePermission(player, "buildsystem.edit.permission")) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     new SetPermissionSubCommand(plugin).getPermissionInput(player, buildWorld, false);
@@ -433,38 +451,77 @@ public class EditMenu extends Menu {
         reopen(player);
     }
 
+    private boolean handleToggleClick(int slot, Player player) {
+        Toggle toggle = TOGGLES.get(slot);
+        if (toggle == null) {
+            return false;
+        }
+
+        if (requirePermission(player, toggle.permission())) {
+            Property<Boolean> data = toggle.data().apply(buildWorld.getData());
+            data.set(!data.get());
+            reopen(player);
+        }
+        return true;
+    }
+
+    private boolean handleBuildersClick(Player player, ItemStack itemStack, boolean rightClick) {
+        if (itemStack.getType() == XMaterial.BARRIER.get()) {
+            XSound.ENTITY_ITEM_BREAK.play(player);
+            return true;
+        }
+        if (!requirePermission(player, "buildsystem.edit.builders")) {
+            return true;
+        }
+        if (rightClick) {
+            XSound.BLOCK_CHEST_OPEN.play(player);
+            new BuilderMenu(plugin, buildWorld, player).open(player);
+            return true;
+        }
+
+        WorldData worldData = buildWorld.getData();
+        worldData.setBuildersEnabled(!worldData.isBuildersEnabled());
+        return false;
+    }
+
+    private boolean handleVisibilityClick(Player player, ItemStack itemStack) {
+        if (itemStack.getType() == XMaterial.BARRIER.get()) {
+            XSound.ENTITY_ITEM_BREAK.play(player);
+            return true;
+        }
+        if (requirePermission(player, "buildsystem.edit.visibility")) {
+            WorldData worldData = buildWorld.getData();
+            worldData.setPrivateWorld(!worldData.isPrivateWorld());
+        }
+        return false;
+    }
+
+    private void cycleDifficulty() {
+        Difficulty difficulty = buildWorld.cycleDifficulty();
+        buildWorld.getWorld().orElseThrow().setDifficulty(difficulty);
+    }
+
     private void reopen(Player player) {
         XSound.ENTITY_CHICKEN_EGG.play(player);
         new EditMenu(plugin, buildWorld, player).open(player);
     }
 
     private void changeTime(Player player) {
+        var defaultTime = plugin.getConfigService().current().world().defaults().time();
         int time =
                 switch (getWorldTime()) {
-                    case SUNRISE ->
-                        plugin.getConfigService()
-                                .current()
-                                .world()
-                                .defaults()
-                                .time()
-                                .noon();
-                    case NOON ->
-                        plugin.getConfigService()
-                                .current()
-                                .world()
-                                .defaults()
-                                .time()
-                                .night();
-                    case NIGHT ->
-                        plugin.getConfigService()
-                                .current()
-                                .world()
-                                .defaults()
-                                .time()
-                                .sunrise();
+                    case SUNRISE -> defaultTime.noon();
+                    case NOON -> defaultTime.night();
+                    case NIGHT -> defaultTime.sunrise();
                 };
         buildWorld.getWorld().orElseThrow().setTime(time);
-        new EditMenu(plugin, buildWorld, player).open(player);
+    }
+
+    private TimeOfDay getWorldTime() {
+        int worldTime = (int) buildWorld.getWorld().orElseThrow().getTime();
+        int noonTime =
+                plugin.getConfigService().current().world().defaults().time().noon();
+        return TimeOfDay.fromTicks(worldTime, noonTime);
     }
 
     private void removeEntities(Player player) {
@@ -486,7 +543,7 @@ public class EditMenu extends Menu {
     }
 
     /**
-     * Which third of the Minecraft day the world clock currently sits in. Used only to drive the editor's time button.
+     * Which third of the Minecraft day the world clock currently sits in. Drives the editor's time button.
      */
     public enum TimeOfDay {
         SUNRISE,
