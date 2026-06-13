@@ -247,9 +247,11 @@ public class WorldServiceImpl implements WorldService {
     private void startCustomGeneratorInput(
             Player player, String worldName, @Nullable String template, boolean privateWorld, @Nullable Folder folder) {
         new PlayerChatInput(plugin, player, "enter_generator_name", input -> {
-            boolean restrictTemplateAccess =
-                    plugin.getConfigService().current().settings().restrictTemplateAccess();
-            if (restrictTemplateAccess && !player.hasPermission("buildsystem.create.generator." + input.trim())) {
+            // Generator names are dynamic and cannot be pre-registered in plugin.yml, so default-allow is emulated: a
+            // generator is permitted unless an admin has explicitly denied its specific node.
+            String generatorNode = "buildsystem.create.generator." + input.trim();
+            boolean allowed = !player.isPermissionSet(generatorNode) || player.hasPermission(generatorNode);
+            if (!allowed) {
                 plugin.getMessages().sendPermissionError(player);
                 XSound.ENTITY_ITEM_BREAK.play(player);
                 return;

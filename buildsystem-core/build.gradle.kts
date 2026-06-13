@@ -218,6 +218,33 @@ bukkit {
             description = "Permission for creating world types."
             default = BukkitPluginDescription.Permission.Default.TRUE
         }
+        register("buildsystem.create.template") {
+            description = "Select a template when creating a world. Template names are dynamic; deny buildsystem.create.template.<name> to restrict a specific template."
+            default = BukkitPluginDescription.Permission.Default.TRUE
+        }
+        register("buildsystem.create.generator") {
+            description = "Use a custom generator when creating a world. Generator names are dynamic; deny buildsystem.create.generator.<name> to restrict a specific generator."
+            default = BukkitPluginDescription.Permission.Default.TRUE
+        }
+        register("buildsystem.setting") {
+            children = listOf(
+                "buildsystem.setting.clear-inventory",
+                "buildsystem.setting.disable-interact",
+                "buildsystem.setting.hide-players",
+                "buildsystem.setting.instant-place-signs",
+                "buildsystem.setting.keep-navigator",
+                "buildsystem.setting.navigator-type",
+                "buildsystem.setting.night-vision",
+                "buildsystem.setting.no-clip",
+                "buildsystem.setting.open-trapdoors",
+                "buildsystem.setting.place-plants",
+                "buildsystem.setting.scoreboard",
+                "buildsystem.setting.slab-breaking",
+                "buildsystem.setting.spawn-teleport"
+            )
+            description = "Permission for toggling /settings options."
+            default = BukkitPluginDescription.Permission.Default.TRUE
+        }
         register("buildsystem.setstatus") {
             children = listOf(
                 "buildsystem.setstatus.hidden",
