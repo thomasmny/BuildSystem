@@ -61,6 +61,18 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     private static final int FIRST_WORD_SLOT = 9;
     private static final int LAST_WORLD_SLOT = 44;
 
+    private static final int SLOT_NO_WORLDS = 22;
+    private static final int SLOT_WORLD_SORT = 45;
+    private static final int SLOT_WORLD_FILTER = 46;
+    private static final int SLOT_CREATE_WORLD = 48;
+    private static final int FIRST_CREATE_FOLDER_SLOT = 49;
+    private static final int LAST_CREATE_FOLDER_SLOT = 50;
+    private static final int SLOT_BACK = 51;
+    private static final int SLOT_PREVIOUS_PAGE = 52;
+    private static final int SLOT_NEXT_PAGE = 53;
+    private static final int FIRST_BOTTOM_BAR_SLOT = 45;
+    private static final int LAST_BOTTOM_BAR_SLOT = 53;
+
     private static final String PREVIOUS_PAGE_SKULL_PROFILE =
             "86971dd881dbaf4fd6bcaa93614493c612f869641ed59d1c9363a3666a5fa6";
     private static final String NEXT_PAGE_SKULL_PROFILE =
@@ -119,12 +131,12 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         addWorldFilterItem(inv);
         addExtraItems(inv, player);
         inv.setItem(
-                52,
+                SLOT_PREVIOUS_PAGE,
                 InventoryUtils.createSkull(
                         plugin.getMessages().getString("gui_previous_page", player),
                         Profileable.detect(PREVIOUS_PAGE_SKULL_PROFILE)));
         inv.setItem(
-                53,
+                SLOT_NEXT_PAGE,
                 InventoryUtils.createSkull(
                         plugin.getMessages().getString("gui_next_page", player),
                         Profileable.detect(NEXT_PAGE_SKULL_PROFILE)));
@@ -134,7 +146,9 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         }
 
         if (cachedDisplayables.isEmpty() && noWorldsMessage != null) {
-            inv.setItem(22, InventoryUtils.createSkull(noWorldsMessage, Profileable.detect(NO_WORLDS_SKULL_PROFILE)));
+            inv.setItem(
+                    SLOT_NO_WORLDS,
+                    InventoryUtils.createSkull(noWorldsMessage, Profileable.detect(NO_WORLDS_SKULL_PROFILE)));
             return;
         }
 
@@ -190,10 +204,10 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
 
     private boolean isWorldValidForDisplay(BuildWorld buildWorld) {
         WorldData worldData = buildWorld.getData();
-        if (!this.worldStorage.isCorrectVisibility(worldData.privateWorld().get(), this.requiredVisibility)) {
+        if (!this.worldStorage.isCorrectVisibility(worldData.isPrivateWorld(), this.requiredVisibility)) {
             return false;
         }
-        if (!this.validStatuses.contains(worldData.status().get())) {
+        if (!this.validStatuses.contains(worldData.getStatus())) {
             return false;
         }
         if (!buildWorld.getPermissions().canEnter(this.player)) {
@@ -219,7 +233,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                 };
 
         inventory.setItem(
-                45,
+                SLOT_WORLD_SORT,
                 InventoryUtils.createItem(
                         XMaterial.BOOK,
                         plugin.getMessages().getString("world_sort_title", player),
@@ -243,7 +257,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         lore.addAll(plugin.getMessages().getStringList("world_filter_lore", player));
 
         inventory.setItem(
-                46,
+                SLOT_WORLD_FILTER,
                 InventoryUtils.createItem(
                         XMaterial.HOPPER, plugin.getMessages().getString("world_filter_title", player), lore));
     }
@@ -261,14 +275,14 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         WorldDisplay worldDisplay = settings.getWorldDisplay();
 
         switch (event.getSlot()) {
-            case 45 -> {
+            case SLOT_WORLD_SORT -> {
                 WorldSort currentSort = worldDisplay.getWorldSort();
                 worldDisplay.setWorldSort(event.isLeftClick() ? currentSort.getNext() : currentSort.getPrevious());
                 resetPage();
                 open(player);
             }
-            case 46 -> handleFilterClick(event, worldDisplay);
-            case 48 -> {
+            case SLOT_WORLD_FILTER -> handleFilterClick(event, worldDisplay);
+            case SLOT_CREATE_WORLD -> {
                 if (itemStack.getType() == XMaterial.PLAYER_HEAD.get()) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     beginWorldCreation();
@@ -276,7 +290,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                 }
                 goBack(player, itemStack);
             }
-            case 49, 50 -> {
+            case FIRST_CREATE_FOLDER_SLOT, LAST_CREATE_FOLDER_SLOT -> {
                 if (itemStack.getType() == XMaterial.PLAYER_HEAD.get()) {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     beginFolderCreation(player);
@@ -284,13 +298,13 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                 }
                 goBack(player, itemStack);
             }
-            case 51 -> goBack(player, itemStack);
-            case 52 -> {
+            case SLOT_BACK -> goBack(player, itemStack);
+            case SLOT_PREVIOUS_PAGE -> {
                 if (previousPage(player, MAX_WORLDS_PER_PAGE)) {
                     populate(player);
                 }
             }
-            case 53 -> {
+            case SLOT_NEXT_PAGE -> {
                 if (nextPage(player, MAX_WORLDS_PER_PAGE)) {
                     populate(player);
                 }
@@ -298,7 +312,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
             default -> {
                 if (event.getSlot() >= FIRST_WORD_SLOT && event.getSlot() <= LAST_WORLD_SLOT) {
                     handleDisplayableItemClick(event, itemStack);
-                } else if (event.getSlot() >= 45 && event.getSlot() <= 53) {
+                } else if (event.getSlot() >= FIRST_BOTTOM_BAR_SLOT && event.getSlot() <= LAST_BOTTOM_BAR_SLOT) {
                     goBack(player, itemStack);
                 }
             }
