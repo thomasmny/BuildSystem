@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.AdvancedPie;
@@ -86,20 +87,23 @@ public class BuildSystemPlugin extends JavaPlugin {
     private BukkitTask configSaveTask;
 
     @Override
-    public void onLoad() {
-        this.configService = new ConfigService(this);
-        new ConfigMigrationManager(this).migrate();
-        this.getConfig().options().copyDefaults(true);
-        this.saveConfig();
-        this.configService.load();
-
-        this.messages = new Messages(this, configService);
-        this.messages.load();
-        createTemplateFolder();
-    }
-
-    @Override
     public void onEnable() {
+        try {
+            this.configService = new ConfigService(this);
+            new ConfigMigrationManager(this).migrate();
+            this.getConfig().options().copyDefaults(true);
+            this.saveConfig();
+            this.configService.load();
+
+            this.messages = new Messages(this, configService);
+            this.messages.load();
+            createTemplateFolder();
+        } catch (Exception ex) {
+            getLogger().log(Level.SEVERE, "Failed to initialize BuildSystem; disabling.", ex);
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
         initClasses();
 
         new CommandRegistrar(this).registerAll();
