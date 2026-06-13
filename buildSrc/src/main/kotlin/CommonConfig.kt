@@ -25,7 +25,6 @@ fun Project.applyCommonConfiguration() {
             name = "OSS Sonatype Snapshots"
             url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
         }
-        mavenLocal()
     }
 
     plugins.withId("java") {

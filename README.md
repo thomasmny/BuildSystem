@@ -110,6 +110,25 @@ dependencies {
 }
 ```
 
+Full reference documentation is published
+at [javadoc.io](https://javadoc.io/doc/de.eintosti/buildsystem-api).
+
+### Usage
+
+Obtain the API instance through Bukkit's `ServicesManager`:
+
+```java
+BuildSystem api = getServer().getServicesManager()
+        .getRegistration(BuildSystem.class)
+        .getProvider();
+```
+
+Alternatively, use the static shorthand `BuildSystemProvider.get()`.
+
+The main entry points are `WorldService` (creating, importing and looking up worlds) and `PlayerService`
+(per-player settings). Unless a method's documentation states otherwise, all API calls must be made from the server
+main thread; methods that perform I/O return a `CompletableFuture` and document which thread it completes on.
+
 ## Contributing
 
 Build requires **Java 25**.
