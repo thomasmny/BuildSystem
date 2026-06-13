@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.api.world.builder;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.creation.WorldBuilder;
 import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
@@ -25,12 +26,15 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A {@link Builder} represents a player allowed to build in a {@link BuildWorld}.
+ * A {@link Builder} represents a player trusted to modify a {@link BuildWorld}.
+ *
+ * <p>Not to be confused with {@link WorldBuilder}, the fluent API for <em>creating</em> worlds — a {@code Builder} is a
+ * person, whereas a {@code WorldBuilder} configures and builds a new world.
  *
  * @since 3.0.0
  */
 @NullMarked
-public sealed interface Builder permits BuilderImpl {
+public sealed interface Builder permits Builder.BuilderImpl {
 
     /**
      * Creates a new {@link Builder} instance with the given uuid and name.
@@ -99,4 +103,43 @@ public sealed interface Builder permits BuilderImpl {
      * @param name The name to change to
      */
     void setName(String name);
+
+    /**
+     * Default {@link Builder} implementation.
+     *
+     * <p>Holds the builder's uuid and a mutable name. Nested in the sealed interface so the implementation type stays
+     * off the public package surface while still satisfying the {@code permits} clause.
+     */
+    final class BuilderImpl implements Builder {
+
+        static final String SEPARATOR = ",";
+
+        private final UUID uuid;
+        private String name;
+
+        BuilderImpl(UUID uuid, String name) {
+            this.uuid = uuid;
+            this.name = name;
+        }
+
+        @Override
+        public UUID getUniqueId() {
+            return uuid;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return this.uuid + SEPARATOR + this.name;
+        }
+    }
 }
