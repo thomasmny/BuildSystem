@@ -3,7 +3,7 @@
 spigot = "26.1.2-R0.1-SNAPSHOT"
 # Test
 junit = "5.14.4"
-mockito = "5.20.0"
+mockito = "5.23.0"
 paperlib = "1.0.8"
 
 # Plugins
