@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.config;
 
+import com.cryptomorin.xseries.XGameRule;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
@@ -26,7 +27,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
-import org.bukkit.GameRule;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jspecify.annotations.NullMarked;
@@ -239,8 +239,8 @@ public class ConfigService {
                 .map(entry -> {
                     String key = entry.getKey();
                     Object value = entry.getValue();
-                    GameRule<?> rule = GameRule.getByName(key);
-                    if (rule == null) {
+                    XGameRule<?> rule = XGameRule.of(key).orElse(null);
+                    if (rule == null || !rule.isSupported()) {
                         logger.warning("Could not parse game rule '%s' with value '%s'".formatted(key, value));
                         return null;
                     }
@@ -253,7 +253,7 @@ public class ConfigService {
                                 yield null;
                             }
                             //noinspection unchecked - Type is checked above with rule.getType()
-                            yield (GameRuleEntry<?>) new GameRuleEntry<>((GameRule<Boolean>) rule, booleanValue);
+                            yield (GameRuleEntry<?>) new GameRuleEntry<>((XGameRule<Boolean>) rule, booleanValue);
                         }
                         case Integer integerValue -> {
                             if (rule.getType() != Integer.class) {
@@ -263,7 +263,7 @@ public class ConfigService {
                                 yield null;
                             }
                             //noinspection unchecked - Type is checked above with rule.getType()
-                            yield (GameRuleEntry<?>) new GameRuleEntry<>((GameRule<Integer>) rule, integerValue);
+                            yield (GameRuleEntry<?>) new GameRuleEntry<>((XGameRule<Integer>) rule, integerValue);
                         }
                         default -> {
                             logger.warning("Invalid game rule value type. Must be of type Boolean or Integer. Found %s"

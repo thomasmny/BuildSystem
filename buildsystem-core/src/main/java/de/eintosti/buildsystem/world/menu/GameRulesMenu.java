@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
+import com.cryptomorin.xseries.XGameRule;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
@@ -29,7 +30,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import org.bukkit.ChatColor;
-import org.bukkit.GameRule;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -107,8 +107,8 @@ public class GameRulesMenu extends PaginatedMenu {
     }
 
     private void addGameRuleItem(int slot, World world, String gameRuleName, Player player) {
-        GameRule<?> gameRule = GameRule.getByName(gameRuleName);
-        if (gameRule == null) {
+        XGameRule<?> gameRule = XGameRule.of(gameRuleName).orElse(null);
+        if (gameRule == null || !gameRule.isSupported()) {
             plugin.getLogger()
                     .severe("GameRule '" + gameRuleName + "' does not exist in world '" + world.getName() + "'.");
             return;
@@ -117,7 +117,7 @@ public class GameRulesMenu extends PaginatedMenu {
         ItemStack itemStack = new ItemStack(isEnabled(world, gameRule) ? Material.FILLED_MAP : Material.MAP);
         ItemMeta itemMeta = itemStack.getItemMeta();
 
-        itemMeta.setDisplayName(ChatColor.YELLOW + gameRule.getName());
+        itemMeta.setDisplayName(ChatColor.YELLOW + gameRule.name());
         itemMeta.setLore(getLore(world, gameRule, player));
         itemMeta.addItemFlags(ItemFlag.values());
         itemStack.setItemMeta(itemMeta);
@@ -125,7 +125,7 @@ public class GameRulesMenu extends PaginatedMenu {
         getInventory().setItem(slot, itemStack);
     }
 
-    private List<String> getLore(World world, GameRule<?> gameRule, Player player) {
+    private List<String> getLore(World world, XGameRule<?> gameRule, Player player) {
         List<String> lore;
         if (isOfType(gameRule, Boolean.class)) {
             lore = isEnabled(world, gameRule)
@@ -133,8 +133,7 @@ public class GameRulesMenu extends PaginatedMenu {
                     : messages.getStringList("worldeditor_gamerules_boolean_disabled", player);
         } else {
             lore = messages.getStringList("worldeditor_gamerules_integer", player).stream()
-                    .map(line -> line.replace(
-                            "%value%", world.getGameRuleValue(gameRule).toString()))
+                    .map(line -> line.replace("%value%", String.valueOf(gameRule.getValue(world))))
                     .toList();
         }
         return lore;
@@ -203,33 +202,33 @@ public class GameRulesMenu extends PaginatedMenu {
         }
 
         String rawName = ChatColor.stripColor(itemMeta.getDisplayName());
-        GameRule<?> gameRule = GameRule.getByName(rawName);
-        if (gameRule == null) {
+        XGameRule<?> gameRule = XGameRule.of(rawName).orElse(null);
+        if (gameRule == null || !gameRule.isSupported()) {
             plugin.getLogger()
                     .warning("GameRule '%s' does not exist in world '%s'.".formatted(rawName, world.getName()));
             return;
         }
 
         if (isOfType(gameRule, Boolean.class)) {
-            GameRule<Boolean> booleanRule = castRule(gameRule, Boolean.class);
-            boolean currentValue = Boolean.TRUE.equals(world.getGameRuleValue(booleanRule));
-            world.setGameRule(booleanRule, !currentValue);
+            XGameRule<Boolean> booleanRule = castRule(gameRule, Boolean.class);
+            boolean currentValue = Boolean.TRUE.equals(booleanRule.getValue(world));
+            booleanRule.setValue(world, !currentValue);
         } else if (isOfType(gameRule, Integer.class)) {
-            GameRule<Integer> integerRule = castRule(gameRule, Integer.class);
-            int value = world.getGameRuleValue(integerRule);
+            XGameRule<Integer> integerRule = castRule(gameRule, Integer.class);
+            int value = integerRule.getValue(world);
             int delta = event.isShiftClick()
                     ? (event.isRightClick() ? 10 : event.isLeftClick() ? -10 : 0)
                     : (event.isRightClick() ? 1 : event.isLeftClick() ? -1 : 0);
-            world.setGameRule(integerRule, value + delta);
+            integerRule.setValue(world, value + delta);
         } else {
             plugin.getLogger()
                     .warning("GameRule '%s' is not a boolean or integer type and cannot be modified."
-                            .formatted(gameRule.getName()));
+                            .formatted(gameRule.name()));
         }
     }
 
     /**
-     * Casts a {@link GameRule} to the specified type if it matches.
+     * Casts an {@link XGameRule} to the specified type if it matches.
      *
      * @param rule The game rule to cast
      * @param type The type to cast the game rule to
@@ -238,24 +237,24 @@ public class GameRulesMenu extends PaginatedMenu {
      */
     @SuppressWarnings("unchecked")
     @Nullable @Contract("_, _ -> _")
-    private static <T> GameRule<T> castRule(GameRule<?> rule, Class<T> type) {
-        return type.equals(rule.getType()) ? (GameRule<T>) rule : null;
+    private static <T> XGameRule<T> castRule(XGameRule<?> rule, Class<T> type) {
+        return type.equals(rule.getType()) ? (XGameRule<T>) rule : null;
     }
 
     /**
-     * Gets whether the given {@link GameRule} is of the given type.
+     * Gets whether the given {@link XGameRule} is of the given type.
      *
      * @param gameRule The game rule to check
      * @param type The type to check against
      * @param <T> The type to check against
      * @return {@code true} if the game rule is of the given type, {@code false} otherwise
      */
-    private static <T> boolean isOfType(@Nullable GameRule<?> gameRule, Class<T> type) {
+    private static <T> boolean isOfType(@Nullable XGameRule<?> gameRule, Class<T> type) {
         return gameRule != null && Objects.equals(gameRule.getType(), type);
     }
 
     /**
-     * Checks if the {@link GameRule} is enabled in the given {@link World}.
+     * Checks if the {@link XGameRule} is enabled in the given {@link World}.
      *
      * <p>If a game rule is not a boolean type, it is considered enabled by default.
      *
@@ -263,10 +262,10 @@ public class GameRulesMenu extends PaginatedMenu {
      * @param gameRule The game rule to check
      * @return {@code true} if the game rule is enabled, {@code false} otherwise
      */
-    private boolean isEnabled(World world, GameRule<?> gameRule) {
-        GameRule<Boolean> booleanGameRule = castRule(gameRule, Boolean.class);
+    private boolean isEnabled(World world, XGameRule<?> gameRule) {
+        XGameRule<Boolean> booleanGameRule = castRule(gameRule, Boolean.class);
         if (booleanGameRule != null) {
-            return Boolean.TRUE.equals(world.getGameRuleValue(booleanGameRule));
+            return Boolean.TRUE.equals(booleanGameRule.getValue(world));
         }
         return true;
     }
