@@ -147,25 +147,6 @@ public enum WorldSort {
     }
 
     /**
-     * Returns this sort's comparator wrapped so that pinned {@link BuildWorld}s are ordered ahead of unpinned ones;
-     * within each group the normal ordering of this sort applies. Non-world {@link Displayable}s (e.g. {@link Folder}s)
-     * are treated as unpinned.
-     *
-     * @return A pin-aware comparator
-     * @since TODO
-     */
-    public Comparator<Displayable> getPinnedComparator() {
-        Comparator<Displayable> byPinned =
-                Comparator.comparing(WorldSort::isPinned).reversed();
-        return byPinned.thenComparing(this.comparator);
-    }
-
-    private static boolean isPinned(Displayable displayable) {
-        return displayable instanceof BuildWorld world
-                && world.getData().pinned().get();
-    }
-
-    /**
      * The order in which the navigator cycles through sort options. Differs from the declaration order, which is
      * dictated by comparator initialization (a reversed comparator must be declared after its base).
      */

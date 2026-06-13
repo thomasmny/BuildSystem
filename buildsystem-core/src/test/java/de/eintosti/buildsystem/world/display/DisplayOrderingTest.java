@@ -33,7 +33,7 @@ import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
 @NullMarked
-class WorldSortPinningTest {
+class DisplayOrderingTest {
 
     @SuppressWarnings("unchecked")
     private static BuildWorld world(String name, boolean pinned) {
@@ -66,8 +66,9 @@ class WorldSortPinningTest {
         BuildWorld plainD = world("delta", false);
         BuildWorld plainC = world("charlie", false);
 
-        List<String> result =
-                sortedNames(List.of(plainD, pinnedB, plainC, pinnedA), WorldSort.NAME_A_TO_Z.getPinnedComparator());
+        List<String> result = sortedNames(
+                List.of(plainD, pinnedB, plainC, pinnedA),
+                DisplayOrdering.withPriorities(WorldSort.NAME_A_TO_Z.getComparator()));
 
         assertEquals(List.of("alpha", "bravo", "charlie", "delta"), result);
     }
@@ -78,8 +79,9 @@ class WorldSortPinningTest {
         Folder folder = folder("aaa-folder");
         BuildWorld unpinned = world("zulu", false);
 
-        List<String> result =
-                sortedNames(List.of(folder, unpinned, pinned), WorldSort.NAME_A_TO_Z.getPinnedComparator());
+        List<String> result = sortedNames(
+                List.of(folder, unpinned, pinned),
+                DisplayOrdering.withPriorities(WorldSort.NAME_A_TO_Z.getComparator()));
 
         // The pinned world floats to the top even though the folder name sorts first alphabetically.
         assertEquals("alpha", result.get(0));
@@ -93,8 +95,9 @@ class WorldSortPinningTest {
         BuildWorld plainC = world("charlie", false);
         BuildWorld plainD = world("delta", false);
 
-        List<String> result =
-                sortedNames(List.of(plainC, pinnedA, plainD, pinnedB), WorldSort.NAME_Z_TO_A.getPinnedComparator());
+        List<String> result = sortedNames(
+                List.of(plainC, pinnedA, plainD, pinnedB),
+                DisplayOrdering.withPriorities(WorldSort.NAME_Z_TO_A.getComparator()));
 
         // Pinned group first (descending), then unpinned group (descending).
         assertEquals(List.of("bravo", "alpha", "delta", "charlie"), result);

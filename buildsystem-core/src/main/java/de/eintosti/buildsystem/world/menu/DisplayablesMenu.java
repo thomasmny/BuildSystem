@@ -39,6 +39,7 @@ import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import de.eintosti.buildsystem.world.display.DisplayOrdering;
 import de.eintosti.buildsystem.world.menu.CreateMenu.Page;
 import java.util.*;
 import org.bukkit.Bukkit;
@@ -161,7 +162,8 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         List<Displayable> displayables = new ArrayList<>();
         displayables.addAll(folders);
         displayables.addAll(standaloneWorlds);
-        displayables.sort(worldDisplay.getWorldSort().getPinnedComparator());
+        displayables.sort(
+                DisplayOrdering.withPriorities(worldDisplay.getWorldSort().getComparator()));
         return displayables;
     }
 
