@@ -49,7 +49,23 @@ public class SetPermissionSubCommand extends AbstractSubCommand {
 
     public void getPermissionInput(Player player, BuildWorld buildWorld, boolean closeInventory) {
         new PlayerChatInput(plugin, player, "enter_world_permission", input -> {
-            buildWorld.getData().permission().set(input.trim());
+            String permission = input.trim();
+
+            List<String> whitelist =
+                    plugin.getConfigService().current().settings().worldPermissionWhitelist();
+            if (!isPermissionAllowed(permission, whitelist)) {
+                XSound.ENTITY_ITEM_BREAK.play(player);
+                messages.sendMessage(player, "worlds_setpermission_not_allowed");
+
+                if (closeInventory) {
+                    player.closeInventory();
+                } else {
+                    new EditMenu(plugin, buildWorld, player).open(player);
+                }
+                return;
+            }
+
+            buildWorld.getData().permission().set(permission);
             plugin.getSettingsService().forceUpdateSidebar(buildWorld);
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
@@ -61,6 +77,20 @@ public class SetPermissionSubCommand extends AbstractSubCommand {
                 new EditMenu(plugin, buildWorld, player).open(player);
             }
         });
+    }
+
+    /**
+     * Determines whether a permission lock may be set via {@code /worlds setPermission}.
+     *
+     * <p>An empty whitelist imposes no restriction (today's behavior). When the whitelist is non-empty, only listed
+     * values and the {@code "-"} sentinel (which clears the permission) are allowed.
+     *
+     * @param input The trimmed permission input
+     * @param whitelist The configured whitelist of permitted permission strings
+     * @return {@code true} if the permission may be set, {@code false} otherwise
+     */
+    static boolean isPermissionAllowed(String input, List<String> whitelist) {
+        return whitelist.isEmpty() || input.equals("-") || whitelist.contains(input);
     }
 
     @Override

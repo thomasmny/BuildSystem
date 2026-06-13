@@ -62,10 +62,16 @@ public class SettingsMenu extends Menu {
      * any side effects) and returns {@code false} when the click is rejected, in which case the menu is not reopened.
      */
     private record Toggle(
-            XMaterial material, boolean enabled, String itemKey, String loreKey, BooleanSupplier onToggle) {
+            XMaterial material,
+            boolean enabled,
+            String itemKey,
+            String loreKey,
+            String node,
+            BooleanSupplier onToggle) {
 
-        static Toggle of(XMaterial material, boolean enabled, String itemKey, String loreKey, Runnable flip) {
-            return new Toggle(material, enabled, itemKey, loreKey, () -> {
+        static Toggle of(
+                XMaterial material, boolean enabled, String itemKey, String loreKey, String node, Runnable flip) {
+            return new Toggle(material, enabled, itemKey, loreKey, node, () -> {
                 flip.run();
                 return true;
             });
@@ -83,6 +89,7 @@ public class SettingsMenu extends Menu {
                                 settings.isClearInventory(),
                                 "settings_clear_inventory_item",
                                 "settings_clear_inventory_lore",
+                                "clear-inventory",
                                 () -> settings.setClearInventory(!settings.isClearInventory()))),
                 entry(
                         13,
@@ -91,6 +98,7 @@ public class SettingsMenu extends Menu {
                                 settings.isDisableInteract(),
                                 "settings_disableinteract_item",
                                 "settings_disableinteract_lore",
+                                "disable-interact",
                                 () -> settings.setDisableInteract(!settings.isDisableInteract()))),
                 entry(
                         14,
@@ -99,6 +107,7 @@ public class SettingsMenu extends Menu {
                                 settings.isHidePlayers(),
                                 "settings_hideplayers_item",
                                 "settings_hideplayers_lore",
+                                "hide-players",
                                 () -> {
                                     settings.setHidePlayers(!settings.isHidePlayers());
                                     toggleHidePlayers(player, settings);
@@ -110,6 +119,7 @@ public class SettingsMenu extends Menu {
                                 settings.isInstantPlaceSigns(),
                                 "settings_instantplacesigns_item",
                                 "settings_instantplacesigns_lore",
+                                "instant-place-signs",
                                 () -> settings.setInstantPlaceSigns(!settings.isInstantPlaceSigns()))),
                 entry(
                         20,
@@ -118,6 +128,7 @@ public class SettingsMenu extends Menu {
                                 settings.isKeepNavigator(),
                                 "settings_keep_navigator_item",
                                 "settings_keep_navigator_lore",
+                                "keep-navigator",
                                 () -> settings.setKeepNavigator(!settings.isKeepNavigator()))),
                 entry(
                         21,
@@ -130,6 +141,7 @@ public class SettingsMenu extends Menu {
                                 settings.getNavigatorType() == NavigatorType.NEW,
                                 "settings_new_navigator_item",
                                 "settings_new_navigator_lore",
+                                "navigator-type",
                                 () -> toggleNavigatorType(player, settings))),
                 entry(
                         22,
@@ -138,6 +150,7 @@ public class SettingsMenu extends Menu {
                                 settings.isNightVision(),
                                 "settings_nightvision_item",
                                 "settings_nightvision_lore",
+                                "night-vision",
                                 () -> toggleNightVision(player, settings))),
                 entry(
                         23,
@@ -146,6 +159,7 @@ public class SettingsMenu extends Menu {
                                 settings.isNoClip(),
                                 "settings_no_clip_item",
                                 "settings_no_clip_lore",
+                                "no-clip",
                                 () -> toggleNoClip(player, settings))),
                 entry(
                         24,
@@ -154,6 +168,7 @@ public class SettingsMenu extends Menu {
                                 settings.isOpenTrapDoors(),
                                 "settings_open_trapdoors_item",
                                 "settings_open_trapdoors_lore",
+                                "open-trapdoors",
                                 () -> settings.setOpenTrapDoors(!settings.isOpenTrapDoors()))),
                 entry(
                         29,
@@ -162,6 +177,7 @@ public class SettingsMenu extends Menu {
                                 settings.isPlacePlants(),
                                 "settings_placeplants_item",
                                 "settings_placeplants_lore",
+                                "place-plants",
                                 () -> settings.setPlacePlants(!settings.isPlacePlants()))),
                 entry(
                         30,
@@ -170,6 +186,7 @@ public class SettingsMenu extends Menu {
                                 settings.isScoreboard(),
                                 scoreboardEnabled ? "settings_scoreboard_item" : "settings_scoreboard_disabled_item",
                                 scoreboardEnabled ? "settings_scoreboard_lore" : "settings_scoreboard_disabled_lore",
+                                "scoreboard",
                                 () -> toggleScoreboard(player, settings, scoreboardEnabled))),
                 entry(
                         31,
@@ -178,6 +195,7 @@ public class SettingsMenu extends Menu {
                                 settings.isSlabBreaking(),
                                 "settings_slab_breaking_item",
                                 "settings_slab_breaking_lore",
+                                "slab-breaking",
                                 () -> settings.setSlabBreaking(!settings.isSlabBreaking()))),
                 entry(
                         32,
@@ -186,6 +204,7 @@ public class SettingsMenu extends Menu {
                                 settings.isSpawnTeleport(),
                                 "settings_spawnteleport_item",
                                 "settings_spawnteleport_lore",
+                                "spawn-teleport",
                                 () -> settings.setSpawnTeleport(!settings.isSpawnTeleport()))));
     }
 
@@ -238,6 +257,14 @@ public class SettingsMenu extends Menu {
         Settings settings = settingsManager.getSettings(player);
         Toggle toggle = toggles(player, settings).get(event.getSlot());
         if (toggle == null) {
+            return;
+        }
+
+        boolean perOptionPermissions =
+                plugin.getConfigService().current().settings().perOptionPermissions();
+        if (perOptionPermissions && !player.hasPermission("buildsystem.setting." + toggle.node())) {
+            messages.sendPermissionError(player);
+            XSound.ENTITY_ITEM_BREAK.play(player);
             return;
         }
 
