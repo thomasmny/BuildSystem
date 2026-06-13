@@ -34,6 +34,7 @@ import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlFolderStorage;
@@ -176,8 +177,8 @@ public class WorldServiceImpl implements WorldService {
     }
 
     @Override
-    public CompletableFuture<Void> unimportWorld(BuildWorld buildWorld, boolean save) {
-        buildWorld.getUnloader().forceUnload(save);
+    public CompletableFuture<Void> unimportWorld(BuildWorld buildWorld, SaveBehavior saveBehavior) {
+        buildWorld.getUnloader().forceUnload(saveBehavior);
         this.worldStorage.removeBuildWorld(buildWorld);
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldUnimportEvent(buildWorld));
         removePlayersFromWorld(buildWorld.getName(), "worlds_unimport_players_world");
@@ -243,7 +244,7 @@ public class WorldServiceImpl implements WorldService {
         // Registry removal and metadata persistence are awaited before folder deletion
         // so a crash mid-delete leaves an orphaned folder (re-importable) rather than
         // an orphaned registry entry pointing at a deleted folder.
-        return unimportWorld(buildWorld, false).thenRunAsync(() -> {
+        return unimportWorld(buildWorld, SaveBehavior.DISCARD).thenRunAsync(() -> {
             try {
                 FileUtils.deleteDirectory(deleteFolder);
             } catch (IOException e) {

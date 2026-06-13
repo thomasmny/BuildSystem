@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import java.util.List;
@@ -42,7 +43,7 @@ public class UnimportSubCommand extends AbstractSubCommand {
         }
 
         plugin.getWorldService()
-                .unimportWorld(buildWorld, true)
+                .unimportWorld(buildWorld, SaveBehavior.SAVE)
                 .thenRun(() -> messages.sendMessage(
                         player, "worlds_unimport_finished", Map.entry("%world%", buildWorld.getName())));
     }

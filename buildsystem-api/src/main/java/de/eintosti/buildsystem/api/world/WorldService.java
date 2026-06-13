@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.creation.WorldBuilder;
 import de.eintosti.buildsystem.api.world.creation.WorldImporter;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
 import java.util.concurrent.CompletableFuture;
 import org.jspecify.annotations.NullMarked;
 
@@ -97,14 +98,14 @@ public interface WorldService {
      * does not delete the world's directory.
      *
      * @param buildWorld The world to unimport
-     * @param save Whether to save the world before unloading
+     * @param saveBehavior Whether to save the world before unloading
      * @return A future that completes when the unimport operation is finished
      */
-    CompletableFuture<Void> unimportWorld(BuildWorld buildWorld, boolean save);
+    CompletableFuture<Void> unimportWorld(BuildWorld buildWorld, SaveBehavior saveBehavior);
 
     /**
-     * Delete an existing {@link BuildWorld}. In comparison to {@link #unimportWorld(BuildWorld, boolean)}, deleting a
-     * world deletes the world's directory.
+     * Delete an existing {@link BuildWorld}. In comparison to {@link #unimportWorld(BuildWorld, SaveBehavior)}, deleting
+     * a world deletes the world's directory.
      *
      * @param buildWorld The world to be deleted
      * @return A future that completes when the delete operation is finished

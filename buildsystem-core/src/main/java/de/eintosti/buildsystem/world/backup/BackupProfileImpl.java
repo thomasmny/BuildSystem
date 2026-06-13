@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
 import de.eintosti.buildsystem.api.world.backup.BackupStorage;
+import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringUtils;
@@ -140,7 +141,7 @@ public class BackupProfileImpl implements BackupProfile {
         Location spawn = spawnService.getSpawn();
         boolean isSpawn = spawn != null && Objects.equals(spawn.getWorld(), world);
 
-        this.buildWorld.getUnloader().forceUnload(false);
+        this.buildWorld.getUnloader().forceUnload(SaveBehavior.DISCARD);
         try {
             FileUtils.deleteDirectory(new File(Bukkit.getWorldContainer(), worldName));
         } catch (IOException e) {
