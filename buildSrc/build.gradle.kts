@@ -18,9 +18,3 @@ val properties = Properties().also { props ->
 dependencies {
     implementation(gradleApi())
 }
-
-kotlin {
-    jvmToolchain {
-        this.languageVersion.set(JavaLanguageVersion.of(25))
-    }
-}
