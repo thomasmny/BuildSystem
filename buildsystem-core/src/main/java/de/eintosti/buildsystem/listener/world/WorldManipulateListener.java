@@ -19,9 +19,9 @@ package de.eintosti.buildsystem.listener.world;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.api.data.Property;
 import de.eintosti.buildsystem.api.event.world.BuildWorldManipulationEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.access.WorldSetting;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.event.EventDispatcher;
@@ -115,7 +115,7 @@ public class WorldManipulateListener implements Listener {
         WorldData worldData = buildWorld.getData();
         Cancellable parentEvent = event.getParentEvent();
 
-        Property<Boolean> setting = worldSettingFor(parentEvent, worldData);
+        WorldSetting setting = worldSettingFor(parentEvent);
         if (!buildWorld.getPermissions().canModify(player, setting)) {
             parentEvent.setCancelled(true);
             denyPlayerInteraction(event);
@@ -126,11 +126,11 @@ public class WorldManipulateListener implements Listener {
         updateStatus(worldData, player);
     }
 
-    private Property<Boolean> worldSettingFor(Cancellable event, WorldData data) {
+    private WorldSetting worldSettingFor(Cancellable event) {
         return switch (event) {
-            case BlockBreakEvent ignored -> data.blockBreaking();
-            case BlockPlaceEvent ignored -> data.blockPlacement();
-            default -> data.blockInteractions();
+            case BlockBreakEvent ignored -> WorldSetting.BLOCK_BREAKING;
+            case BlockPlaceEvent ignored -> WorldSetting.BLOCK_PLACEMENT;
+            default -> WorldSetting.BLOCK_INTERACTIONS;
         };
     }
 

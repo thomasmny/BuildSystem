@@ -18,14 +18,14 @@
 package de.eintosti.buildsystem.world.data;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.api.data.Bypassable;
-import de.eintosti.buildsystem.api.data.Overridable;
-import de.eintosti.buildsystem.api.data.Property;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.world.data.type.Bypassable;
 import de.eintosti.buildsystem.world.data.type.ConfigurableProperty;
+import de.eintosti.buildsystem.world.data.type.Overridable;
 import de.eintosti.buildsystem.world.data.type.PersistentProperty;
+import de.eintosti.buildsystem.world.data.type.Property;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -144,13 +144,18 @@ public class WorldDataImpl implements WorldData {
     }
 
     @Override
-    public Property<String> customSpawn() {
-        return customSpawn;
+    public String getCustomSpawn() {
+        return customSpawn.get();
+    }
+
+    @Override
+    public void setCustomSpawn(String customSpawn) {
+        this.customSpawn.set(customSpawn);
     }
 
     @Override
     public @Nullable Location getCustomSpawnLocation() {
-        String customSpawn = customSpawn().get();
+        String customSpawn = this.customSpawn.get();
         if (customSpawn.isBlank()) {
             return null;
         }
@@ -166,93 +171,183 @@ public class WorldDataImpl implements WorldData {
     }
 
     @Override
-    public Property<String> permission() {
-        return permission;
+    public String getPermission() {
+        return permission.get();
     }
 
     @Override
-    public Property<String> project() {
-        return project;
+    public void setPermission(String permission) {
+        this.permission.set(permission);
     }
 
     @Override
-    public Property<Difficulty> difficulty() {
-        return difficulty;
+    public String getProject() {
+        return project.get();
     }
 
     @Override
-    public Property<XMaterial> material() {
-        return material;
+    public void setProject(String project) {
+        this.project.set(project);
     }
 
     @Override
-    public Property<BuildWorldStatus> status() {
-        return status;
+    public Difficulty getDifficulty() {
+        return difficulty.get();
     }
 
     @Override
-    public Property<Boolean> blockBreaking() {
-        return blockBreaking;
+    public void setDifficulty(Difficulty difficulty) {
+        this.difficulty.set(difficulty);
     }
 
     @Override
-    public Property<Boolean> blockInteractions() {
-        return blockInteractions;
+    public XMaterial getMaterial() {
+        return material.get();
     }
 
     @Override
-    public Property<Boolean> blockPlacement() {
-        return blockPlacement;
+    public void setMaterial(XMaterial material) {
+        this.material.set(material);
     }
 
     @Override
-    public Property<Boolean> buildersEnabled() {
-        return buildersEnabled;
+    public BuildWorldStatus getStatus() {
+        return status.get();
     }
 
     @Override
-    public Property<Boolean> explosions() {
-        return explosions;
+    public void setStatus(BuildWorldStatus status) {
+        this.status.set(status);
     }
 
     @Override
-    public Property<Boolean> mobAi() {
-        return mobAi;
+    public boolean isBlockBreaking() {
+        return blockBreaking.get();
     }
 
     @Override
-    public Property<Boolean> physics() {
-        return physics;
+    public void setBlockBreaking(boolean blockBreaking) {
+        this.blockBreaking.set(blockBreaking);
     }
 
     @Override
-    public Property<Boolean> pinned() {
-        return pinned;
+    public boolean isBlockInteractions() {
+        return blockInteractions.get();
     }
 
     @Override
-    public Property<Boolean> privateWorld() {
-        return privateWorld;
+    public void setBlockInteractions(boolean blockInteractions) {
+        this.blockInteractions.set(blockInteractions);
     }
 
     @Override
-    public Property<Integer> timeSinceBackup() {
-        return timeSinceBackup;
+    public boolean isBlockPlacement() {
+        return blockPlacement.get();
     }
 
     @Override
-    public Property<Long> lastEdited() {
-        return lastEdited;
+    public void setBlockPlacement(boolean blockPlacement) {
+        this.blockPlacement.set(blockPlacement);
     }
 
     @Override
-    public Property<Long> lastLoaded() {
-        return lastLoaded;
+    public boolean isBuildersEnabled() {
+        return buildersEnabled.get();
     }
 
     @Override
-    public Property<Long> lastUnloaded() {
-        return lastUnloaded;
+    public void setBuildersEnabled(boolean buildersEnabled) {
+        this.buildersEnabled.set(buildersEnabled);
+    }
+
+    @Override
+    public boolean isExplosions() {
+        return explosions.get();
+    }
+
+    @Override
+    public void setExplosions(boolean explosions) {
+        this.explosions.set(explosions);
+    }
+
+    @Override
+    public boolean isMobAi() {
+        return mobAi.get();
+    }
+
+    @Override
+    public void setMobAi(boolean mobAi) {
+        this.mobAi.set(mobAi);
+    }
+
+    @Override
+    public boolean isPhysics() {
+        return physics.get();
+    }
+
+    @Override
+    public void setPhysics(boolean physics) {
+        this.physics.set(physics);
+    }
+
+    @Override
+    public boolean isPinned() {
+        return pinned.get();
+    }
+
+    @Override
+    public void setPinned(boolean pinned) {
+        this.pinned.set(pinned);
+    }
+
+    @Override
+    public boolean isPrivateWorld() {
+        return privateWorld.get();
+    }
+
+    @Override
+    public void setPrivateWorld(boolean privateWorld) {
+        this.privateWorld.set(privateWorld);
+    }
+
+    @Override
+    public int getTimeSinceBackup() {
+        return timeSinceBackup.get();
+    }
+
+    @Override
+    public void setTimeSinceBackup(int timeSinceBackup) {
+        this.timeSinceBackup.set(timeSinceBackup);
+    }
+
+    @Override
+    public long getLastEdited() {
+        return lastEdited.get();
+    }
+
+    @Override
+    public void setLastEdited(long lastEdited) {
+        this.lastEdited.set(lastEdited);
+    }
+
+    @Override
+    public long getLastLoaded() {
+        return lastLoaded.get();
+    }
+
+    @Override
+    public void setLastLoaded(long lastLoaded) {
+        this.lastLoaded.set(lastLoaded);
+    }
+
+    @Override
+    public long getLastUnloaded() {
+        return lastUnloaded.get();
+    }
+
+    @Override
+    public void setLastUnloaded(long lastUnloaded) {
+        this.lastUnloaded.set(lastUnloaded);
     }
 
     public void setWorldName(String worldName) {

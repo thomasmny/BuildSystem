@@ -17,8 +17,8 @@
  */
 package de.eintosti.buildsystem.protection;
 
-import de.eintosti.buildsystem.api.data.Property;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.access.WorldSetting;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import org.bukkit.entity.Player;
@@ -65,12 +65,12 @@ public final class WorldProtectionPolicy {
         return Denial.NONE;
     }
 
-    public Denial checkSetting(Player player, BuildWorld world, Property<Boolean> setting) {
+    public Denial checkSetting(Player player, BuildWorld world, WorldSetting setting) {
         if (world.getPermissions().canBypassBuildRestriction(player)) {
             return Denial.NONE;
         }
 
-        if (!setting.get()) {
+        if (!setting.isEnabled(world.getData())) {
             return Denial.SETTING_DISABLED;
         }
 
@@ -90,7 +90,7 @@ public final class WorldProtectionPolicy {
         return checkBuilders(player, world);
     }
 
-    public Denial mayModify(Player player, BuildWorld world, Property<Boolean> setting) {
+    public Denial mayModify(Player player, BuildWorld world, WorldSetting setting) {
         if (world.getPermissions().canBypassBuildRestriction(player)) {
             return Denial.NONE;
         }

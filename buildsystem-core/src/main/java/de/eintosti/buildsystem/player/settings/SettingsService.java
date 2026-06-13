@@ -132,16 +132,14 @@ public class SettingsService {
             WorldData worldData = buildWorld.getData();
             Builders builders = buildWorld.getBuilders();
 
-            status = plugin.getMessages()
-                    .getString(Messages.getMessageKey(worldData.status().get()), player);
-            permission = worldData.permission().get();
-            project = worldData.project().get();
+            status = plugin.getMessages().getString(Messages.getMessageKey(worldData.getStatus()), player);
+            permission = worldData.getPermission();
+            project = worldData.getProject();
             creator = builders.hasCreator() ? builders.getCreator().getName() : "-";
             creation = plugin.getMessages().formatDate(buildWorld.getCreation());
-            lastEdited = plugin.getMessages().formatDate(worldData.lastEdited().get());
-            lastLoaded = plugin.getMessages().formatDate(worldData.lastLoaded().get());
-            lastUnloaded =
-                    plugin.getMessages().formatDate(worldData.lastUnloaded().get());
+            lastEdited = plugin.getMessages().formatDate(worldData.getLastEdited());
+            lastLoaded = plugin.getMessages().formatDate(worldData.getLastLoaded());
+            lastUnloaded = plugin.getMessages().formatDate(worldData.getLastUnloaded());
         }
 
         return new Map.Entry[] {

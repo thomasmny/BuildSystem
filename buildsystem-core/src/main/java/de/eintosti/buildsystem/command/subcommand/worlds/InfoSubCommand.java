@@ -55,34 +55,25 @@ public class InfoSubCommand extends AbstractSubCommand {
                 Map.entry("%world%", buildWorld.getName()),
                 Map.entry("%uuid%", buildWorld.getUniqueId().toString()),
                 Map.entry("%creator%", getCreator(builders)),
-                Map.entry("%item%", worldData.material().get().name()),
+                Map.entry("%item%", worldData.getMaterial().name()),
                 Map.entry("%type%", messages.getString(Messages.getMessageKey(buildWorld.getType()), player)),
-                Map.entry("%private%", worldData.privateWorld().get()),
-                Map.entry("%builders_enabled%", worldData.buildersEnabled().get()),
+                Map.entry("%private%", worldData.isPrivateWorld()),
+                Map.entry("%builders_enabled%", worldData.isBuildersEnabled()),
                 Map.entry("%builders%", builders.asPlaceholder(player)),
-                Map.entry("%block_breaking%", worldData.blockBreaking().get()),
-                Map.entry("%block_placement%", worldData.blockPlacement().get()),
-                Map.entry(
-                        "%status%",
-                        messages.getString(
-                                Messages.getMessageKey(worldData.status().get()), player)),
-                Map.entry("%project%", worldData.project().get()),
-                Map.entry("%permission%", worldData.permission().get()),
+                Map.entry("%block_breaking%", worldData.isBlockBreaking()),
+                Map.entry("%block_placement%", worldData.isBlockPlacement()),
+                Map.entry("%status%", messages.getString(Messages.getMessageKey(worldData.getStatus()), player)),
+                Map.entry("%project%", worldData.getProject()),
+                Map.entry("%permission%", worldData.getPermission()),
                 Map.entry("%time%", buildWorld.getWorldTime()),
                 Map.entry("%creation%", messages.formatDate(buildWorld.getCreation())),
-                Map.entry("%physics%", worldData.physics().get()),
-                Map.entry("%explosions%", worldData.explosions().get()),
-                Map.entry("%mobai%", worldData.mobAi().get()),
+                Map.entry("%physics%", worldData.isPhysics()),
+                Map.entry("%explosions%", worldData.isExplosions()),
+                Map.entry("%mobai%", worldData.isMobAi()),
                 Map.entry("%custom_spawn%", getCustomSpawn(buildWorld)),
-                Map.entry(
-                        "%lastedited%",
-                        messages.formatDate(worldData.lastEdited().get())),
-                Map.entry(
-                        "%lastloaded%",
-                        messages.formatDate(worldData.lastLoaded().get())),
-                Map.entry(
-                        "%lastunloaded%",
-                        messages.formatDate(worldData.lastUnloaded().get())));
+                Map.entry("%lastedited%", messages.formatDate(worldData.getLastEdited())),
+                Map.entry("%lastloaded%", messages.formatDate(worldData.getLastLoaded())),
+                Map.entry("%lastunloaded%", messages.formatDate(worldData.getLastUnloaded())));
     }
 
     private String getCreator(Builders builders) {

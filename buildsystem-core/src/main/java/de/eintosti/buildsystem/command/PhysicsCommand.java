@@ -91,11 +91,11 @@ public class PhysicsCommand extends CommandBase {
         }
 
         WorldData worldData = buildWorld.getData();
-        if (!worldData.physics().get()) {
-            worldData.physics().set(true);
+        if (!worldData.isPhysics()) {
+            worldData.setPhysics(true);
             messages.sendMessage(player, "physics_activated", Map.entry("%world%", buildWorld.getName()));
         } else {
-            worldData.physics().set(false);
+            worldData.setPhysics(false);
             messages.sendMessage(player, "physics_deactivated", Map.entry("%world%", buildWorld.getName()));
         }
     }

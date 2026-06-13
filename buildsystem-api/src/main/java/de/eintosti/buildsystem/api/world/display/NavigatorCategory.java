@@ -51,7 +51,7 @@ public enum NavigatorCategory {
      * Represents the category for private worlds. This navigator inventory contains {@link BuildWorld}s that are set as
      * private. These worlds can typically only be modified by their creator and explicitly added {@link Builder}s.
      *
-     * @see WorldData#privateWorld()
+     * @see WorldData#isPrivateWorld()
      */
     PRIVATE;
 
@@ -66,9 +66,9 @@ public enum NavigatorCategory {
      */
     public static NavigatorCategory of(BuildWorld buildWorld) {
         WorldData worldData = buildWorld.getData();
-        if (worldData.privateWorld().get()) {
+        if (worldData.isPrivateWorld()) {
             return PRIVATE;
-        } else if (worldData.status().get() == BuildWorldStatus.ARCHIVE) {
+        } else if (worldData.getStatus() == BuildWorldStatus.ARCHIVE) {
             return ARCHIVE;
         } else {
             return PUBLIC;

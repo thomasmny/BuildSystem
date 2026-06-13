@@ -64,7 +64,7 @@ public interface BuildWorld extends Displayable {
 
     /**
      * Gets the {@link Profileable} representation of this build world which is applied when
-     * {@link WorldData#material()} is set to {@link Material#PLAYER_HEAD}.
+     * {@link WorldData#getMaterial()} is set to {@link Material#PLAYER_HEAD}.
      *
      * @return The {@link Profileable} representation of this build world
      */

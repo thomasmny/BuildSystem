@@ -51,8 +51,7 @@ public class SetSpawnSubCommand extends AbstractSubCommand {
         Location playerLocation = player.getLocation();
         buildWorld
                 .getData()
-                .customSpawn()
-                .set("%s;%s;%s;%s;%s"
+                .setCustomSpawn("%s;%s;%s;%s;%s"
                         .formatted(
                                 playerLocation.getX(),
                                 playerLocation.getY(),

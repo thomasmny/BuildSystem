@@ -21,9 +21,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.eintosti.buildsystem.api.data.Property;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldPermissions;
+import de.eintosti.buildsystem.api.world.access.WorldSetting;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
@@ -135,14 +135,14 @@ class WorldProtectionPolicyTest {
 
     @Test
     void settingDisabled_returnsSettingDisabled() {
-        Property<Boolean> setting = mockProperty(false);
-        assertEquals(Denial.SETTING_DISABLED, policy.checkSetting(player, world, setting));
+        when(data.isBlockPlacement()).thenReturn(false);
+        assertEquals(Denial.SETTING_DISABLED, policy.checkSetting(player, world, WorldSetting.BLOCK_PLACEMENT));
     }
 
     @Test
     void settingEnabled_returnsNone() {
-        Property<Boolean> setting = mockProperty(true);
-        assertEquals(Denial.NONE, policy.checkSetting(player, world, setting));
+        when(data.isBlockPlacement()).thenReturn(true);
+        assertEquals(Denial.NONE, policy.checkSetting(player, world, WorldSetting.BLOCK_PLACEMENT));
     }
 
     @Test
@@ -156,29 +156,22 @@ class WorldProtectionPolicyTest {
 
     @Test
     void mayModify_withSetting_settingDisabled_winsOverBuilders() {
-        Property<Boolean> setting = mockProperty(false);
+        when(data.isBlockPlacement()).thenReturn(false);
         when(data.isBuildersEnabled()).thenReturn(true);
 
-        assertEquals(Denial.SETTING_DISABLED, policy.mayModify(player, world, setting));
+        assertEquals(Denial.SETTING_DISABLED, policy.mayModify(player, world, WorldSetting.BLOCK_PLACEMENT));
     }
 
     @Test
     void mayModify_withSetting_archiveWinsOverSetting() {
         when(data.getStatus()).thenReturn(BuildWorldStatus.ARCHIVE);
-        Property<Boolean> setting = mockProperty(false);
+        when(data.isBlockPlacement()).thenReturn(false);
 
-        assertEquals(Denial.ARCHIVED, policy.mayModify(player, world, setting));
+        assertEquals(Denial.ARCHIVED, policy.mayModify(player, world, WorldSetting.BLOCK_PLACEMENT));
     }
 
     @Test
     void mayModify_allClear_returnsNone() {
         assertEquals(Denial.NONE, policy.mayModify(player, world));
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <T> Property<T> mockProperty(T value) {
-        Property<T> property = mock(Property.class);
-        when(property.get()).thenReturn(value);
-        return property;
     }
 }
