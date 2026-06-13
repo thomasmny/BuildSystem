@@ -44,7 +44,7 @@ public class EntitySpawnListener implements Listener {
         }
 
         BuildWorld buildWorld = worldStorage.getBuildWorld(bukkitWorld.getName());
-        if (buildWorld == null || buildWorld.getData().mobAi().get()) {
+        if (buildWorld == null || buildWorld.getData().isMobAi()) {
             return;
         }
 

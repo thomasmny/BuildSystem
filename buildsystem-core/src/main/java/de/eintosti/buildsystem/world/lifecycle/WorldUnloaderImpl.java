@@ -151,7 +151,7 @@ public class WorldUnloaderImpl implements WorldUnloader {
             return;
         }
 
-        this.buildWorld.getData().lastUnloaded().set(System.currentTimeMillis());
+        this.buildWorld.getData().setLastUnloaded(System.currentTimeMillis());
         this.buildWorld.setLoaded(false);
         this.unloadTask = null;
 

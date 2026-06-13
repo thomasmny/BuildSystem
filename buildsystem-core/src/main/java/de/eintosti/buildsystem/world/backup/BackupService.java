@@ -10,11 +10,12 @@ package de.eintosti.buildsystem.world.backup;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.api.data.Type;
+import de.eintosti.buildsystem.api.data.Property;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
 import de.eintosti.buildsystem.api.world.backup.BackupStorage;
+import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.world.backup.storage.LocalBackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.S3BackupStorage;
@@ -153,7 +154,7 @@ public class BackupService {
         if (autoBackup.onlyActiveWorlds()) {
             for (Player pl : Bukkit.getOnlinePlayers()) {
                 BuildWorld buildWorld = worldStorage.getBuildWorld(pl.getWorld().getName());
-                if (buildWorld != null && buildWorld.getPermissions().canModify(pl, Type.TRUE)) {
+                if (buildWorld != null && buildWorld.getPermissions().canModify(pl, Property.TRUE)) {
                     worlds.add(buildWorld);
                 }
             }
@@ -162,12 +163,12 @@ public class BackupService {
         }
 
         worlds.forEach(buildWorld -> {
-            Type<Integer> timeSinceBackup = buildWorld.getData().timeSinceBackup();
-            timeSinceBackup.set((int) (timeSinceBackup.get() + UPDATE_PERIOD));
+            WorldData worldData = buildWorld.getData();
+            worldData.setTimeSinceBackup((int) (worldData.getTimeSinceBackup() + UPDATE_PERIOD));
 
-            if (timeSinceBackup.get() > autoBackup.interval()) {
+            if (worldData.getTimeSinceBackup() > autoBackup.interval()) {
                 getProfile(buildWorld).createBackup();
-                timeSinceBackup.set(0);
+                worldData.setTimeSinceBackup(0);
             }
         });
     }

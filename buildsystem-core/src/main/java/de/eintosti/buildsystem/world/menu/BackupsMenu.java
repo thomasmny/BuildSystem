@@ -130,7 +130,7 @@ public class BackupsMenu extends Menu {
                 .backup()
                 .autoBackup()
                 .interval();
-        int timeSinceBackup = buildWorld.getData().timeSinceBackup().get();
+        int timeSinceBackup = buildWorld.getData().getTimeSinceBackup();
 
         int secondsRemaining = Math.max(0, timeUntilBackup - timeSinceBackup);
         return "%02d:%02d".formatted(secondsRemaining / 60, secondsRemaining % 60);

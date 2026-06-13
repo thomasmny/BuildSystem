@@ -171,7 +171,7 @@ public class WorldServiceImpl implements WorldService {
             return LoadResult.FAILED;
         }
 
-        buildWorld.getData().lastLoaded().set(System.currentTimeMillis());
+        buildWorld.getData().setLastLoaded(System.currentTimeMillis());
         plugin.getLogger().info("✔ World loaded: " + worldName);
         return LoadResult.LOADED;
     }

@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.eintosti.buildsystem.api.data.Type;
+import de.eintosti.buildsystem.api.data.Property;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.builder.Builders;
@@ -60,10 +60,8 @@ class WorldProtectionPolicyTest {
         when(permissions.canBypassBuildRestriction(player)).thenReturn(false);
         when(player.hasPermission("buildsystem.bypass.archive")).thenReturn(false);
         when(player.hasPermission("buildsystem.bypass.builders")).thenReturn(false);
-        Type<BuildWorldStatus> status = mockType(BuildWorldStatus.NOT_STARTED);
-        when(data.status()).thenReturn(status);
-        Type<Boolean> buildersEnabled = mockType(false);
-        when(data.buildersEnabled()).thenReturn(buildersEnabled);
+        when(data.getStatus()).thenReturn(BuildWorldStatus.NOT_STARTED);
+        when(data.isBuildersEnabled()).thenReturn(false);
         when(builders.isCreator(player)).thenReturn(false);
         when(builders.isBuilder(player)).thenReturn(false);
     }
@@ -71,10 +69,8 @@ class WorldProtectionPolicyTest {
     @Test
     void bypass_shortCircuitsEverything() {
         when(permissions.canBypassBuildRestriction(player)).thenReturn(true);
-        Type<BuildWorldStatus> archived = mockType(BuildWorldStatus.ARCHIVE);
-        when(data.status()).thenReturn(archived);
-        Type<Boolean> buildersEnabled = mockType(true);
-        when(data.buildersEnabled()).thenReturn(buildersEnabled);
+        when(data.getStatus()).thenReturn(BuildWorldStatus.ARCHIVE);
+        when(data.isBuildersEnabled()).thenReturn(true);
 
         assertEquals(Denial.NONE, policy.checkArchive(player, world));
         assertEquals(Denial.NONE, policy.checkBuilders(player, world));
@@ -84,16 +80,14 @@ class WorldProtectionPolicyTest {
     @Test
     void archiveBypassPermission_shortCircuitsArchiveCheck() {
         when(player.hasPermission("buildsystem.bypass.archive")).thenReturn(true);
-        Type<BuildWorldStatus> archived = mockType(BuildWorldStatus.ARCHIVE);
-        when(data.status()).thenReturn(archived);
+        when(data.getStatus()).thenReturn(BuildWorldStatus.ARCHIVE);
 
         assertEquals(Denial.NONE, policy.checkArchive(player, world));
     }
 
     @Test
     void archivedWorld_noBypass_returnsArchived() {
-        Type<BuildWorldStatus> archived = mockType(BuildWorldStatus.ARCHIVE);
-        when(data.status()).thenReturn(archived);
+        when(data.getStatus()).thenReturn(BuildWorldStatus.ARCHIVE);
 
         assertEquals(Denial.ARCHIVED, policy.checkArchive(player, world));
     }
@@ -105,16 +99,14 @@ class WorldProtectionPolicyTest {
 
     @Test
     void buildersEnabled_nonBuilder_notCreator_returnsNotABuilder() {
-        Type<Boolean> buildersEnabled = mockType(true);
-        when(data.buildersEnabled()).thenReturn(buildersEnabled);
+        when(data.isBuildersEnabled()).thenReturn(true);
 
         assertEquals(Denial.NOT_A_BUILDER, policy.checkBuilders(player, world));
     }
 
     @Test
     void buildersEnabled_isCreator_returnsNone() {
-        Type<Boolean> buildersEnabled = mockType(true);
-        when(data.buildersEnabled()).thenReturn(buildersEnabled);
+        when(data.isBuildersEnabled()).thenReturn(true);
         when(builders.isCreator(player)).thenReturn(true);
 
         assertEquals(Denial.NONE, policy.checkBuilders(player, world));
@@ -122,8 +114,7 @@ class WorldProtectionPolicyTest {
 
     @Test
     void buildersEnabled_isBuilder_returnsNone() {
-        Type<Boolean> buildersEnabled = mockType(true);
-        when(data.buildersEnabled()).thenReturn(buildersEnabled);
+        when(data.isBuildersEnabled()).thenReturn(true);
         when(builders.isBuilder(player)).thenReturn(true);
 
         assertEquals(Denial.NONE, policy.checkBuilders(player, world));
@@ -137,30 +128,27 @@ class WorldProtectionPolicyTest {
     @Test
     void buildersPermission_shortCircuitsBuildersCheck() {
         when(player.hasPermission("buildsystem.bypass.builders")).thenReturn(true);
-        Type<Boolean> buildersEnabled = mockType(true);
-        when(data.buildersEnabled()).thenReturn(buildersEnabled);
+        when(data.isBuildersEnabled()).thenReturn(true);
 
         assertEquals(Denial.NONE, policy.checkBuilders(player, world));
     }
 
     @Test
     void settingDisabled_returnsSettingDisabled() {
-        Type<Boolean> setting = mockType(false);
+        Property<Boolean> setting = mockProperty(false);
         assertEquals(Denial.SETTING_DISABLED, policy.checkSetting(player, world, setting));
     }
 
     @Test
     void settingEnabled_returnsNone() {
-        Type<Boolean> setting = mockType(true);
+        Property<Boolean> setting = mockProperty(true);
         assertEquals(Denial.NONE, policy.checkSetting(player, world, setting));
     }
 
     @Test
     void mayModify_archive_winsOverBuilders() {
-        Type<BuildWorldStatus> archived = mockType(BuildWorldStatus.ARCHIVE);
-        when(data.status()).thenReturn(archived);
-        Type<Boolean> buildersEnabled = mockType(true);
-        when(data.buildersEnabled()).thenReturn(buildersEnabled);
+        when(data.getStatus()).thenReturn(BuildWorldStatus.ARCHIVE);
+        when(data.isBuildersEnabled()).thenReturn(true);
 
         // Archive denial takes precedence over builder denial
         assertEquals(Denial.ARCHIVED, policy.mayModify(player, world));
@@ -168,18 +156,16 @@ class WorldProtectionPolicyTest {
 
     @Test
     void mayModify_withSetting_settingDisabled_winsOverBuilders() {
-        Type<Boolean> setting = mockType(false);
-        Type<Boolean> buildersEnabled = mockType(true);
-        when(data.buildersEnabled()).thenReturn(buildersEnabled);
+        Property<Boolean> setting = mockProperty(false);
+        when(data.isBuildersEnabled()).thenReturn(true);
 
         assertEquals(Denial.SETTING_DISABLED, policy.mayModify(player, world, setting));
     }
 
     @Test
     void mayModify_withSetting_archiveWinsOverSetting() {
-        Type<BuildWorldStatus> archived = mockType(BuildWorldStatus.ARCHIVE);
-        when(data.status()).thenReturn(archived);
-        Type<Boolean> setting = mockType(false);
+        when(data.getStatus()).thenReturn(BuildWorldStatus.ARCHIVE);
+        Property<Boolean> setting = mockProperty(false);
 
         assertEquals(Denial.ARCHIVED, policy.mayModify(player, world, setting));
     }
@@ -190,9 +176,9 @@ class WorldProtectionPolicyTest {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> Type<T> mockType(T value) {
-        Type<T> t = mock(Type.class);
-        when(t.get()).thenReturn(value);
-        return t;
+    private static <T> Property<T> mockProperty(T value) {
+        Property<T> property = mock(Property.class);
+        when(property.get()).thenReturn(value);
+        return property;
     }
 }

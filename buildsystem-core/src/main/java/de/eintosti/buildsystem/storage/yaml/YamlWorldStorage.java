@@ -24,7 +24,6 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
-import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
@@ -95,7 +94,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
             world.put("creator", builders.getCreator().toString());
         }
         world.put("type", buildWorld.getType().name());
-        world.put("data", serializeWorldData(buildWorld.getData()));
+        world.put("data", serializeWorldData((WorldDataImpl) buildWorld.getData()));
         world.put("date", buildWorld.getCreation());
         world.put("builders", serializeBuilders(builders.getAllBuilders()));
         if (buildWorld.getCustomGenerator() != null) {
@@ -105,7 +104,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
         return world;
     }
 
-    private Map<String, Object> serializeWorldData(WorldData worldData) {
+    private Map<String, Object> serializeWorldData(WorldDataImpl worldData) {
         return worldData.getAllData().entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey, entry -> entry.getValue().getConfigFormat()));

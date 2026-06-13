@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.world.display;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import de.eintosti.buildsystem.api.data.Type;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.display.Displayable;
@@ -35,15 +34,12 @@ import org.junit.jupiter.api.Test;
 @NullMarked
 class DisplayOrderingTest {
 
-    @SuppressWarnings("unchecked")
     private static BuildWorld world(String name, boolean pinned) {
         BuildWorld world = mock(BuildWorld.class);
         WorldData data = mock(WorldData.class);
-        Type<Boolean> pinnedType = mock(Type.class);
         when(world.getName()).thenReturn(name);
         when(world.getData()).thenReturn(data);
-        when(data.pinned()).thenReturn(pinnedType);
-        when(pinnedType.get()).thenReturn(pinned);
+        when(data.isPinned()).thenReturn(pinned);
         return world;
     }
 

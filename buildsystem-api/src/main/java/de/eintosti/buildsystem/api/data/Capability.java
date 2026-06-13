@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.api.data;
 
 /**
- * A marker interface for a "capability" or "attachment" that can be added to a {@link Type}.
+ * A marker interface for a "capability" or "attachment" that can be added to a {@link Property}.
  *
  * @since 3.0.1
  */

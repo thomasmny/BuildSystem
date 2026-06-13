@@ -110,7 +110,7 @@ public final class MenuItems {
      */
     public void addWorldItem(
             Inventory inventory, int slot, BuildWorld buildWorld, String displayName, List<String> lore) {
-        XMaterial material = buildWorld.getData().material().get();
+        XMaterial material = buildWorld.getData().getMaterial();
         if (material != XMaterial.PLAYER_HEAD) {
             inventory.setItem(slot, InventoryUtils.createItem(material, displayName, lore));
             return;
@@ -122,7 +122,7 @@ public final class MenuItems {
 
         XSkull.createItem()
                 .profile(
-                        buildWorld.getData().privateWorld().get()
+                        buildWorld.getData().isPrivateWorld()
                                 ? buildWorld.asProfilable()
                                 : Profileable.username(buildWorld.getName()))
                 .fallback(buildWorld.asProfilable())

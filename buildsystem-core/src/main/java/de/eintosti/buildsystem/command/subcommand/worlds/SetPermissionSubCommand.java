@@ -65,7 +65,7 @@ public class SetPermissionSubCommand extends AbstractSubCommand {
                 return;
             }
 
-            buildWorld.getData().permission().set(permission);
+            buildWorld.getData().setPermission(permission);
             plugin.getSettingsService().forceUpdateSidebar(buildWorld);
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
