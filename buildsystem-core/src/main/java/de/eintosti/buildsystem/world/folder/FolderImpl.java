@@ -196,29 +196,28 @@ public class FolderImpl implements Folder {
 
     @Override
     public void addWorld(BuildWorld buildWorld) {
-        if (containsWorld(buildWorld)) {
-            return;
+        if (!this.worlds.contains(buildWorld.getUniqueId())) {
+            this.worlds.add(buildWorld.getUniqueId());
         }
-        this.worlds.add(buildWorld.getUniqueId());
-        buildWorld.setFolder(this);
+        // BuildWorld owns the back-reference; only update it when it is not already pointing here, which also
+        // terminates the addWorld <-> setFolder handshake.
+        if (buildWorld.getFolder() != this) {
+            buildWorld.setFolder(this);
+        }
     }
 
     @Override
     public void removeWorld(BuildWorld buildWorld) {
-        removeWorld(buildWorld.getUniqueId());
+        this.worlds.remove(buildWorld.getUniqueId());
+        if (buildWorld.getFolder() == this) {
+            buildWorld.setFolder(null);
+        }
     }
 
     @Override
     public void removeWorld(UUID uuid) {
-        if (!containsWorld(uuid)) {
-            return;
-        }
-
+        // Pure list cleanup for a world that no longer exists (no back-reference to clear).
         this.worlds.remove(uuid);
-        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(uuid);
-        if (buildWorld != null) {
-            buildWorld.setFolder(null);
-        }
     }
 
     @Override
