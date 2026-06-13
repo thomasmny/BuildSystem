@@ -153,10 +153,8 @@ Build requires **Java 25**.
 
 * `./gradlew runServer` will download a Paper server and start it with the freshly-built plugin for
   local testing.
-* `gradlew idea` will generate an [IntelliJ IDEA](https://www.jetbrains.com/idea/) module for each
+* `./gradlew idea` will generate an [IntelliJ IDEA](https://www.jetbrains.com/idea/) module for each
   folder.
-* `gradlew eclipse` will generate an [Eclipse](https://www.eclipse.org/downloads/) project for each
-  folder. _(Possibly broken!)_
 
 ### PR Policy
 
