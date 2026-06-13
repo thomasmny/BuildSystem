@@ -19,7 +19,6 @@ package de.eintosti.buildsystem;
 
 import de.eintosti.buildsystem.api.BuildSystem;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
-import de.eintosti.buildsystem.api.player.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.command.CommandRegistrar;
 import de.eintosti.buildsystem.config.ConfigService;
@@ -42,13 +41,8 @@ import de.eintosti.buildsystem.world.backup.BackupService;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.io.File;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.stream.Collectors;
-import org.bstats.bukkit.Metrics;
-import org.bstats.charts.AdvancedPie;
-import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -106,7 +100,7 @@ public class BuildSystemPlugin extends JavaPlugin {
             getSettingsService().displayScoreboard(pl);
         });
 
-        registerStats();
+        new BuildSystemMetrics(this).register();
 
         this.configSaveTask = Bukkit.getScheduler()
                 .runTaskTimerAsynchronously(this, this::saveBuildConfig, 6000L, 6000L); // Every 5 minutes
@@ -150,48 +144,6 @@ public class BuildSystemPlugin extends JavaPlugin {
         Bukkit.getConsoleSender()
                 .sendMessage("%sBuildSystem » Plugin %sdisabled%s!"
                         .formatted(ChatColor.RESET, ChatColor.RED, ChatColor.RESET));
-    }
-
-    private void registerStats() {
-        Metrics metrics = new Metrics(this, METRICS_ID);
-        metrics.addCustomChart(new SimplePie(
-                "archive_vanish",
-                () -> String.valueOf(
-                        getConfigService().current().settings().archive().vanish())));
-        metrics.addCustomChart(new SimplePie(
-                "block_world_edit",
-                () -> String.valueOf(
-                        getConfigService().current().settings().builder().blockWorldEditNonBuilder())));
-        metrics.addCustomChart(new SimplePie(
-                "join_quit_messages",
-                () -> String.valueOf(getConfigService().current().settings().joinQuitMessages())));
-        metrics.addCustomChart(new SimplePie(
-                "lock_weather",
-                () -> String.valueOf(getConfigService().current().world().lockWeather())));
-        metrics.addCustomChart(new SimplePie(
-                "scoreboard",
-                () -> String.valueOf(getConfigService().current().settings().scoreboard())));
-        metrics.addCustomChart(new SimplePie(
-                "update_checker",
-                () -> String.valueOf(getConfigService().current().settings().updateChecker())));
-        metrics.addCustomChart(new SimplePie(
-                "unload_worlds",
-                () -> String.valueOf(
-                        getConfigService().current().world().unload().enabled())));
-        metrics.addCustomChart(new AdvancedPie("navigator_type", () -> {
-            Map<NavigatorType, Long> countsByType = getPlayerService().getPlayerStorage().getBuildPlayers().stream()
-                    .collect(Collectors.groupingBy(
-                            buildPlayer -> buildPlayer.getSettings().getNavigatorType(), Collectors.counting()));
-            int oldCount = countsByType.getOrDefault(NavigatorType.OLD, 0L).intValue();
-            int newCount = countsByType.getOrDefault(NavigatorType.NEW, 0L).intValue();
-            return Map.of("Old", oldCount, "New", newCount);
-        }));
-        metrics.addCustomChart(new SimplePie(
-                "folder_override_permissions",
-                () -> String.valueOf(getConfigService().current().folder().overridePermissions())));
-        metrics.addCustomChart(new SimplePie(
-                "folder_override_projects",
-                () -> String.valueOf(getConfigService().current().folder().overrideProjects())));
     }
 
     public UpdateChecker getUpdateChecker() {
