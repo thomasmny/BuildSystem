@@ -68,10 +68,7 @@ public class BackupProfileImpl implements BackupProfile {
 
     @Override
     public CompletableFuture<Backup> createBackup() {
-        World world = this.buildWorld.getWorld();
-        if (world != null) {
-            world.save();
-        }
+        this.buildWorld.getWorld().ifPresent(World::save);
 
         CompletableFuture<Backup> resultFuture = new CompletableFuture<>();
         this.listBackups()
@@ -121,11 +118,12 @@ public class BackupProfileImpl implements BackupProfile {
     @Override
     public CompletableFuture<Void> restoreBackup(Backup backup, Player player) {
         String worldName = this.buildWorld.getName();
-        World world = this.buildWorld.getWorld();
-        if (world == null) {
+        Optional<World> optionalWorld = this.buildWorld.getWorld();
+        if (optionalWorld.isEmpty()) {
             plugin.getMessages().sendMessage(player, "worlds_backup_unknown_world");
             return CompletableFuture.completedFuture(null);
         }
+        World world = optionalWorld.get();
 
         List<@Nullable Player> removedPlayers =
                 plugin.getWorldService().removePlayersFromWorld(worldName, "worlds_backup_restoration_in_progress");

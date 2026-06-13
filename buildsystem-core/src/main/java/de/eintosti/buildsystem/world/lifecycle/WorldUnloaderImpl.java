@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.api.world.lifecycle.WorldUnloader;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -92,7 +93,7 @@ public class WorldUnloaderImpl implements WorldUnloader {
             return;
         }
 
-        buildWorld.setLoaded(buildWorld.getWorld() != null);
+        buildWorld.setLoaded(buildWorld.getWorld().isPresent());
         startUnloadTask();
     }
 
@@ -120,10 +121,11 @@ public class WorldUnloaderImpl implements WorldUnloader {
 
     @Override
     public void unload() {
-        World bukkitWorld = buildWorld.getWorld();
-        if (bukkitWorld == null) {
+        Optional<World> optionalWorld = buildWorld.getWorld();
+        if (optionalWorld.isEmpty()) {
             return;
         }
+        World bukkitWorld = optionalWorld.get();
 
         if (!bukkitWorld.getPlayers().isEmpty()) {
             resetUnloadTask();
@@ -155,10 +157,11 @@ public class WorldUnloaderImpl implements WorldUnloader {
         this.buildWorld.setLoaded(false);
         this.unloadTask = null;
 
-        World bukkitWorld = this.buildWorld.getWorld();
-        if (bukkitWorld == null) {
+        Optional<World> optionalWorld = this.buildWorld.getWorld();
+        if (optionalWorld.isEmpty()) {
             return;
         }
+        World bukkitWorld = optionalWorld.get();
 
         if (save) {
             Arrays.stream(bukkitWorld.getLoadedChunks()).forEach(Chunk::unload);

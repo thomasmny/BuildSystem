@@ -257,7 +257,7 @@ public class EditMenu extends Menu {
     }
 
     private TimeOfDay getWorldTime() {
-        int worldTime = (int) buildWorld.getWorld().getTime();
+        int worldTime = (int) buildWorld.getWorld().orElseThrow().getTime();
         int noonTime =
                 plugin.getConfigService().current().world().defaults().time().noon();
         return TimeOfDay.fromTicks(worldTime, noonTime);
@@ -401,7 +401,7 @@ public class EditMenu extends Menu {
             case 39 -> {
                 if (requirePermission(player, "buildsystem.edit.difficulty")) {
                     Difficulty newDifficulty = buildWorld.cycleDifficulty();
-                    buildWorld.getWorld().setDifficulty(newDifficulty);
+                    buildWorld.getWorld().orElseThrow().setDifficulty(newDifficulty);
                 }
             }
             case 40 -> {
@@ -463,7 +463,7 @@ public class EditMenu extends Menu {
                                 .time()
                                 .sunrise();
                 };
-        buildWorld.getWorld().setTime(time);
+        buildWorld.getWorld().orElseThrow().setTime(time);
         new EditMenu(plugin, buildWorld, player).open(player);
     }
 

@@ -75,10 +75,7 @@ public class SaveTemplateSubCommand extends AbstractSubCommand {
             return;
         }
 
-        World world = buildWorld.getWorld();
-        if (world != null) {
-            world.save();
-        }
+        buildWorld.getWorld().ifPresent(World::save);
         messages.sendMessage(
                 player,
                 "worlds_savetemplate_started",

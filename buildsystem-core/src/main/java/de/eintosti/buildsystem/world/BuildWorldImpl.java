@@ -166,10 +166,10 @@ public final class BuildWorldImpl implements BuildWorld {
     /**
      * Gets the Bukkit {@link World} associated with this {@link BuildWorld}.
      *
-     * @return The Bukkit world, or {@code null} if not loaded
+     * @return An {@link Optional} containing the Bukkit world, or {@link Optional#empty()} if not loaded
      */
-    public @Nullable World getWorld() {
-        return Bukkit.getWorld(name);
+    public Optional<World> getWorld() {
+        return Optional.ofNullable(Bukkit.getWorld(name));
     }
 
     @Override
@@ -311,11 +311,7 @@ public final class BuildWorldImpl implements BuildWorld {
 
     @Override
     public String getWorldTime() {
-        World bukkitWorld = getWorld();
-        if (bukkitWorld == null) {
-            return "?";
-        }
-        return String.valueOf(bukkitWorld.getTime());
+        return getWorld().map(World::getTime).map(String::valueOf).orElse("?");
     }
 
     @Override
