@@ -17,13 +17,13 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import org.bukkit.GameRule;
+import com.cryptomorin.xseries.XGameRule;
 
 /**
- * Represents a game rule entry consisting of a {@link GameRule} and its value.
+ * Represents a game rule entry consisting of an {@link XGameRule} and its value.
  *
  * @param rule The game rule
  * @param value The value of the game rule
  * @param <T> The type of the game rule value; must be either {@link Boolean} or {@link Integer}
  */
-public record GameRuleEntry<T>(GameRule<T> rule, T value) {}
+public record GameRuleEntry<T>(XGameRule<T> rule, T value) {}

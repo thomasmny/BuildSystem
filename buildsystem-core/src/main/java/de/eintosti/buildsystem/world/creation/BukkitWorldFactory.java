@@ -199,7 +199,7 @@ public class BukkitWorldFactory {
     }
 
     private static <T> void applyGameRule(World world, GameRuleEntry<T> entry) {
-        world.setGameRule(entry.rule(), entry.value());
+        entry.rule().setValue(world, entry.value());
     }
 
     private static void applyPostGenerationSettings(World bukkitWorld, BuildWorldType worldType) {
