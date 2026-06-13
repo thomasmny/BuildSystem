@@ -22,20 +22,12 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.util.color.ColorAPI;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Function;
-import java.util.logging.Level;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
@@ -44,14 +36,13 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class Messages {
 
-    private final BuildSystemPlugin plugin;
     private final ConfigService configService;
-    private volatile Map<String, String> messages = Map.of();
+    private final MessageStore store;
     private volatile @Nullable TextResolver placeholderResolver;
 
     public Messages(BuildSystemPlugin plugin, ConfigService configService) {
-        this.plugin = plugin;
         this.configService = configService;
+        this.store = new MessageStore(plugin);
     }
 
     /**
@@ -65,70 +56,11 @@ public final class Messages {
     }
 
     public void load() {
-        // 1. If user file doesn't exist, save the bundled default
-        File file = new File(plugin.getDataFolder(), "messages.yml");
-        if (!file.exists()) {
-            plugin.saveResource("messages.yml", false);
-        }
-
-        // 2. Load user file and bundled defaults
-        YamlConfiguration userConfig = YamlConfiguration.loadConfiguration(file);
-        java.io.InputStream defaultStream = plugin.getResource("messages.yml");
-        if (defaultStream != null) {
-            YamlConfiguration defaults =
-                    YamlConfiguration.loadConfiguration(new InputStreamReader(defaultStream, StandardCharsets.UTF_8));
-            // 3. Copy missing keys from bundled defaults to user file
-            boolean changed = false;
-            for (String key : defaults.getKeys(false)) {
-                if (!userConfig.contains(key)) {
-                    userConfig.set(key, defaults.get(key));
-                    changed = true;
-                }
-            }
-            if (changed) {
-                try {
-                    userConfig.save(file);
-                } catch (IOException e) {
-                    plugin.getLogger().log(Level.SEVERE, "Could not save messages.yml", e);
-                }
-            }
-        }
-
-        // 4. Build messages map
-        Map<String, String> map = new HashMap<>();
-        ConfigurationSection section = userConfig.getConfigurationSection("");
-        if (section != null) {
-            section.getKeys(false).forEach(key -> {
-                if (!userConfig.contains(key)) {
-                    Bukkit.getConsoleSender()
-                            .sendMessage(ChatColor.RED + "[BuildSystem] Could not find message with key: " + key);
-                    return;
-                }
-                if (userConfig.isList(key)) {
-                    map.put(key, String.join("\n", userConfig.getStringList(key)));
-                } else {
-                    map.put(
-                            key,
-                            Objects.requireNonNull(
-                                    userConfig.getString(key), "Message key '%s' is null".formatted(key)));
-                }
-            });
-        }
-        this.messages = Map.copyOf(map);
+        store.load();
     }
 
     public void reload() {
-        load();
-    }
-
-    private String getPrefix() {
-        return messages.getOrDefault("prefix", "");
-    }
-
-    private void checkIfKeyPresent(String key) {
-        if (!messages.containsKey(key)) {
-            plugin.getLogger().warning("Could not find message with key: " + key);
-        }
+        store.reload();
     }
 
     public void sendPermissionError(CommandSender sender) {
@@ -145,8 +77,7 @@ public final class Messages {
 
     @SafeVarargs
     public final String getString(String key, CommandSender sender, Entry<String, Object>... placeholders) {
-        checkIfKeyPresent(key);
-        String message = messages.getOrDefault(key, "").replace("%prefix%", getPrefix());
+        String message = store.getRaw(key);
         String result = Placeholders.apply(message, placeholders);
         Player player = sender instanceof Player p ? p : null;
         return ColorAPI.process(applyResolver(this.placeholderResolver, player, result));
@@ -177,7 +108,7 @@ public final class Messages {
     @Unmodifiable
     public List<String> getStringList(
             String key, @Nullable Player player, Function<String, Entry<String, Object>[]> placeholders) {
-        String message = messages.getOrDefault(key, "").replace("%prefix%", getPrefix());
+        String message = store.getRawUnchecked(key);
         TextResolver resolver = this.placeholderResolver;
         return Arrays.stream(message.split("\n"))
                 .map(line -> Placeholders.apply(line, placeholders.apply(line)))
