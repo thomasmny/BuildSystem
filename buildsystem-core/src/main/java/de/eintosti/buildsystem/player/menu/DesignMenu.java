@@ -24,6 +24,8 @@ import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.Menu;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemFlag;
@@ -33,6 +35,35 @@ import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class DesignMenu extends Menu {
+
+    /**
+     * The colors selectable in the design menu, keyed by the slot they occupy. {@link LinkedHashMap} keeps insertion
+     * order so the rendered layout is stable.
+     */
+    private static final Map<Integer, ColorEntry> COLOR_SLOTS = buildColorSlots();
+
+    private static Map<Integer, ColorEntry> buildColorSlots() {
+        Map<Integer, ColorEntry> slots = new LinkedHashMap<>();
+        slots.put(10, new ColorEntry(XMaterial.RED_STAINED_GLASS, "design_red", DesignColor.RED));
+        slots.put(11, new ColorEntry(XMaterial.ORANGE_STAINED_GLASS, "design_orange", DesignColor.ORANGE));
+        slots.put(12, new ColorEntry(XMaterial.YELLOW_STAINED_GLASS, "design_yellow", DesignColor.YELLOW));
+        slots.put(13, new ColorEntry(XMaterial.PINK_STAINED_GLASS, "design_pink", DesignColor.PINK));
+        slots.put(14, new ColorEntry(XMaterial.MAGENTA_STAINED_GLASS, "design_magenta", DesignColor.MAGENTA));
+        slots.put(15, new ColorEntry(XMaterial.PURPLE_STAINED_GLASS, "design_purple", DesignColor.PURPLE));
+        slots.put(16, new ColorEntry(XMaterial.BROWN_STAINED_GLASS, "design_brown", DesignColor.BROWN));
+        slots.put(18, new ColorEntry(XMaterial.LIME_STAINED_GLASS, "design_lime", DesignColor.LIME));
+        slots.put(19, new ColorEntry(XMaterial.GREEN_STAINED_GLASS, "design_green", DesignColor.GREEN));
+        slots.put(20, new ColorEntry(XMaterial.BLUE_STAINED_GLASS, "design_blue", DesignColor.BLUE));
+        slots.put(21, new ColorEntry(XMaterial.CYAN_STAINED_GLASS, "design_aqua", DesignColor.CYAN));
+        slots.put(22, new ColorEntry(XMaterial.LIGHT_BLUE_STAINED_GLASS, "design_light_blue", DesignColor.LIGHT_BLUE));
+        slots.put(23, new ColorEntry(XMaterial.WHITE_STAINED_GLASS, "design_white", DesignColor.WHITE));
+        slots.put(24, new ColorEntry(XMaterial.LIGHT_GRAY_STAINED_GLASS, "design_grey", DesignColor.LIGHT_GRAY));
+        slots.put(25, new ColorEntry(XMaterial.GRAY_STAINED_GLASS, "design_dark_grey", DesignColor.GRAY));
+        slots.put(26, new ColorEntry(XMaterial.BLACK_STAINED_GLASS, "design_black", DesignColor.BLACK));
+        return slots;
+    }
+
+    private record ColorEntry(XMaterial material, String messageKey, DesignColor color) {}
 
     private final BuildSystemPlugin plugin;
 
@@ -46,23 +77,8 @@ public class DesignMenu extends Menu {
         plugin.getMenuItems().fillRange(player, getInventory(), 0, 9);
         plugin.getMenuItems().fillRange(player, getInventory(), 27, 36);
 
-        setItem(player, 10, XMaterial.RED_STAINED_GLASS, "design_red", DesignColor.RED);
-        setItem(player, 11, XMaterial.ORANGE_STAINED_GLASS, "design_orange", DesignColor.ORANGE);
-        setItem(player, 12, XMaterial.YELLOW_STAINED_GLASS, "design_yellow", DesignColor.YELLOW);
-        setItem(player, 13, XMaterial.PINK_STAINED_GLASS, "design_pink", DesignColor.PINK);
-        setItem(player, 14, XMaterial.MAGENTA_STAINED_GLASS, "design_magenta", DesignColor.MAGENTA);
-        setItem(player, 15, XMaterial.PURPLE_STAINED_GLASS, "design_purple", DesignColor.PURPLE);
-        setItem(player, 16, XMaterial.BROWN_STAINED_GLASS, "design_brown", DesignColor.BROWN);
-
-        setItem(player, 18, XMaterial.LIME_STAINED_GLASS, "design_lime", DesignColor.LIME);
-        setItem(player, 19, XMaterial.GREEN_STAINED_GLASS, "design_green", DesignColor.GREEN);
-        setItem(player, 20, XMaterial.BLUE_STAINED_GLASS, "design_blue", DesignColor.BLUE);
-        setItem(player, 21, XMaterial.CYAN_STAINED_GLASS, "design_aqua", DesignColor.CYAN);
-        setItem(player, 22, XMaterial.LIGHT_BLUE_STAINED_GLASS, "design_light_blue", DesignColor.LIGHT_BLUE);
-        setItem(player, 23, XMaterial.WHITE_STAINED_GLASS, "design_white", DesignColor.WHITE);
-        setItem(player, 24, XMaterial.LIGHT_GRAY_STAINED_GLASS, "design_grey", DesignColor.LIGHT_GRAY);
-        setItem(player, 25, XMaterial.GRAY_STAINED_GLASS, "design_dark_grey", DesignColor.GRAY);
-        setItem(player, 26, XMaterial.BLACK_STAINED_GLASS, "design_black", DesignColor.BLACK);
+        COLOR_SLOTS.forEach(
+                (slot, entry) -> setItem(player, slot, entry.material(), entry.messageKey(), entry.color()));
     }
 
     private void setItem(Player player, int position, XMaterial material, String key, DesignColor color) {
@@ -99,57 +115,10 @@ public class DesignMenu extends Menu {
             return;
         }
 
-        Settings settings = plugin.getSettingsService().getSettings(player);
-
-        switch (event.getSlot()) {
-            case 10:
-                settings.setDesignColor(DesignColor.RED);
-                break;
-            case 11:
-                settings.setDesignColor(DesignColor.ORANGE);
-                break;
-            case 12:
-                settings.setDesignColor(DesignColor.YELLOW);
-                break;
-            case 13:
-                settings.setDesignColor(DesignColor.PINK);
-                break;
-            case 14:
-                settings.setDesignColor(DesignColor.MAGENTA);
-                break;
-            case 15:
-                settings.setDesignColor(DesignColor.PURPLE);
-                break;
-            case 16:
-                settings.setDesignColor(DesignColor.BROWN);
-                break;
-            case 18:
-                settings.setDesignColor(DesignColor.LIME);
-                break;
-            case 19:
-                settings.setDesignColor(DesignColor.GREEN);
-                break;
-            case 20:
-                settings.setDesignColor(DesignColor.BLUE);
-                break;
-            case 21:
-                settings.setDesignColor(DesignColor.CYAN);
-                break;
-            case 22:
-                settings.setDesignColor(DesignColor.LIGHT_BLUE);
-                break;
-            case 23:
-                settings.setDesignColor(DesignColor.WHITE);
-                break;
-            case 24:
-                settings.setDesignColor(DesignColor.LIGHT_GRAY);
-                break;
-            case 25:
-                settings.setDesignColor(DesignColor.GRAY);
-                break;
-            case 26:
-                settings.setDesignColor(DesignColor.BLACK);
-                break;
+        ColorEntry entry = COLOR_SLOTS.get(event.getSlot());
+        if (entry != null) {
+            Settings settings = plugin.getSettingsService().getSettings(player);
+            settings.setDesignColor(entry.color());
         }
 
         new DesignMenu(plugin, player).open(player);
