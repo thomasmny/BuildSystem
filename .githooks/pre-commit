@@ -1,0 +1,26 @@
+#!/bin/sh
+#
+# Auto-apply Spotless formatting before each commit.
+# Re-stages only files that were already staged AND modified by Spotless,
+# so unrelated working-tree changes are never swept into the commit.
+
+set -e
+
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
+
+# Snapshot the set of staged files (NUL-delimited to survive odd paths).
+staged=$(git diff --cached --name-only -z)
+[ -z "$staged" ] && exit 0
+
+echo "Running spotlessApply..."
+./gradlew spotlessApply --quiet
+
+# Re-stage any previously-staged file that Spotless reformatted.
+printf '%s' "$staged" | while IFS= read -r -d '' f; do
+  if [ -f "$f" ] && ! git diff --quiet -- "$f"; then
+    git add -- "$f"
+  fi
+done
+
+exit 0

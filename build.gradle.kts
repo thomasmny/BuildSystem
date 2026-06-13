@@ -12,6 +12,21 @@ nexusPublishing {
     }
 }
 
+// Point Git at the versioned hooks directory so the Spotless pre-commit hook
+// is active in every clone. Runs once per configuration if not already set.
+if (file(".git").exists()) {
+    val hooksPath = providers.exec {
+        commandLine("git", "config", "--get", "core.hooksPath")
+        isIgnoreExitValue = true
+    }.standardOutput.asText.get().trim()
+    if (hooksPath != ".githooks") {
+        providers.exec {
+            commandLine("git", "config", "core.hooksPath", ".githooks")
+        }.result.get()
+        logger.lifecycle("Configured git core.hooksPath = .githooks")
+    }
+}
+
 subprojects {
     plugins.withId("java") {
         pluginManager.apply("com.diffplug.spotless")
