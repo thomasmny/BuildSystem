@@ -150,6 +150,8 @@ public class ConfigService {
                 config.getBoolean("settings.update-checker", true),
                 config.getBoolean("settings.scoreboard", true),
                 config.getBoolean("settings.per-option-permissions", false),
+                config.getStringList("settings.world-permission-whitelist"),
+                config.getBoolean("settings.restrict-template-access", false),
                 config.getBoolean("settings.spawn-teleport-message", false),
                 config.getBoolean("settings.join-quit-messages", true),
                 Objects.requireNonNullElse(config.getString("settings.date-format"), "dd/MM/yyyy"),

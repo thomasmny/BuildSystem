@@ -33,6 +33,8 @@ public record PluginConfig(Settings settings, World world, Folder folder) {
             boolean updateChecker,
             boolean scoreboard,
             boolean perOptionPermissions,
+            List<String> worldPermissionWhitelist,
+            boolean restrictTemplateAccess,
             boolean spawnTeleportMessage,
             boolean joinQuitMessages,
             String dateFormat,

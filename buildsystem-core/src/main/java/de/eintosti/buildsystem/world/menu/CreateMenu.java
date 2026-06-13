@@ -32,6 +32,7 @@ import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import org.bukkit.ChatColor;
@@ -56,6 +57,10 @@ public class CreateMenu extends PaginatedMenu {
     private int numTemplates = 0;
 
     private File @Nullable [] templateFiles;
+
+    // Maps the slot a template item occupies on the current page to its raw directory name, so click handling can
+    // resolve the unformatted template name for permission checks without parsing the display string.
+    private final Map<Integer, String> templateSlots = new HashMap<>();
 
     public CreateMenu(
             BuildSystemPlugin plugin, Page initialPage, Visibility visibility, @Nullable Folder folder, Player player) {
@@ -142,6 +147,10 @@ public class CreateMenu extends PaginatedMenu {
                 "buildsystem.create.type." + worldType.name().toLowerCase(Locale.ROOT));
     }
 
+    private boolean restrictTemplateAccess() {
+        return plugin.getConfigService().current().settings().restrictTemplateAccess();
+    }
+
     private void populateGenerator(Player player) {
         plugin.getMenuItems().addGlassPane(player, getInventory(), 29);
         plugin.getMenuItems().addGlassPane(player, getInventory(), 30);
@@ -194,17 +203,19 @@ public class CreateMenu extends PaginatedMenu {
             return;
         }
 
+        this.templateSlots.clear();
         int startIndex = page() * MAX_TEMPLATES;
         for (int i = 0; i < MAX_TEMPLATES && startIndex + i < templateFiles.length; i++) {
+            String rawTemplateName = templateFiles[startIndex + i].getName();
+            int slot = 29 + i;
+            this.templateSlots.put(slot, rawTemplateName);
             getInventory()
                     .setItem(
-                            29 + i,
+                            slot,
                             InventoryUtils.createItem(
                                     XMaterial.FILLED_MAP,
                                     messages.getString(
-                                            "create_template",
-                                            player,
-                                            Map.entry("%template%", templateFiles[startIndex + i].getName()))));
+                                            "create_template", player, Map.entry("%template%", rawTemplateName))));
         }
     }
 
@@ -253,6 +264,14 @@ public class CreateMenu extends PaginatedMenu {
                 XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
                 switch (xMaterial) {
                     case FILLED_MAP:
+                        if (restrictTemplateAccess()) {
+                            String rawTemplateName = this.templateSlots.get(slot);
+                            if (rawTemplateName == null
+                                    || !player.hasPermission("buildsystem.create.template." + rawTemplateName)) {
+                                XSound.ENTITY_ITEM_BREAK.play(player);
+                                return;
+                            }
+                        }
                         this.worldService.startWorldNameInput(
                                 player,
                                 BuildWorldType.TEMPLATE,

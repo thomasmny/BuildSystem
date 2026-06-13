@@ -242,6 +242,14 @@ public class WorldServiceImpl implements WorldService {
     private void startCustomGeneratorInput(
             Player player, String worldName, @Nullable String template, boolean privateWorld, @Nullable Folder folder) {
         new PlayerChatInput(plugin, player, "enter_generator_name", input -> {
+            boolean restrictTemplateAccess =
+                    plugin.getConfigService().current().settings().restrictTemplateAccess();
+            if (restrictTemplateAccess && !player.hasPermission("buildsystem.create.generator." + input.trim())) {
+                plugin.getMessages().sendPermissionError(player);
+                XSound.ENTITY_ITEM_BREAK.play(player);
+                return;
+            }
+
             CustomGenerator customGenerator = CustomGeneratorImpl.of(input, worldName);
             if (customGenerator == null) {
                 plugin.getMessages().sendMessage(player, "worlds_import_unknown_generator");

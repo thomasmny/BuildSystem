@@ -35,6 +35,26 @@ class MigrationV3ToV4Test {
     }
 
     @Test
+    void migrate_worldPermissionWhitelist_addedWithDefaultEmpty() {
+        YamlConfiguration config = new YamlConfiguration();
+
+        new MigrationV3ToV4().migrate(config);
+
+        assertTrue(config.contains("settings.world-permission-whitelist"));
+        assertTrue(config.getStringList("settings.world-permission-whitelist").isEmpty());
+    }
+
+    @Test
+    void migrate_restrictTemplateAccess_addedWithDefaultFalse() {
+        YamlConfiguration config = new YamlConfiguration();
+
+        new MigrationV3ToV4().migrate(config);
+
+        assertTrue(config.contains("settings.restrict-template-access"));
+        assertFalse(config.getBoolean("settings.restrict-template-access"));
+    }
+
+    @Test
     void migrate_existingKeys_preserved() {
         YamlConfiguration config = new YamlConfiguration();
         config.set("settings.scoreboard", false);
@@ -45,6 +65,20 @@ class MigrationV3ToV4Test {
         assertFalse(config.getBoolean("settings.scoreboard"));
         assertEquals("yyyy-MM-dd", config.getString("settings.date-format"));
         assertFalse(config.getBoolean("settings.per-option-permissions"));
+        assertTrue(config.getStringList("settings.world-permission-whitelist").isEmpty());
+        assertFalse(config.getBoolean("settings.restrict-template-access"));
+    }
+
+    @Test
+    void migrate_existingNewKeys_notOverwritten() {
+        YamlConfiguration config = new YamlConfiguration();
+        config.set("settings.world-permission-whitelist", java.util.List.of("worlds.lobby"));
+        config.set("settings.restrict-template-access", true);
+
+        new MigrationV3ToV4().migrate(config);
+
+        assertEquals(java.util.List.of("worlds.lobby"), config.getStringList("settings.world-permission-whitelist"));
+        assertTrue(config.getBoolean("settings.restrict-template-access"));
     }
 
     @Test

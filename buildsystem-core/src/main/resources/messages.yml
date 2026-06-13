@@ -338,6 +338,7 @@ worlds_setpermission_usage: "%prefix% &7Usage: &b/worlds setPermission <world>"
 worlds_setpermission_unknown_world: "%prefix% &cUnknown world."
 worlds_setpermission_error: "%prefix% &cPlease try again."
 worlds_setpermission_set: "%prefix% &b%world%&7's permission was successfully changed."
+worlds_setpermission_not_allowed: "%prefix% &cThat permission is not allowed."
 
 worlds_setspawn_world_not_imported: "%prefix% &cWorld must be imported: /worlds import <world>"
 worlds_setspawn_world_spawn_set: "%prefix% &b%world%&7's spawnpoint was set."

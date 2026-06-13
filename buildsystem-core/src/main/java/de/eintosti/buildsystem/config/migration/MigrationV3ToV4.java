@@ -17,15 +17,20 @@
  */
 package de.eintosti.buildsystem.config.migration;
 
+import java.util.List;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Migrates config from v3 to v4: introduces per-option {@code /settings} permission checks.
+ * Migrates config from v3 to v4: introduces additional permission-granularity controls.
  *
  * <ul>
  *   <li>Adds {@code settings.per-option-permissions} (default {@code false}) so existing servers keep today's behavior
  *       until an admin opts in.
+ *   <li>Adds {@code settings.world-permission-whitelist} (default empty list) so by default any permission lock may be
+ *       set via {@code /worlds setPermission}.
+ *   <li>Adds {@code settings.restrict-template-access} (default {@code false}) so template and generator use is
+ *       unrestricted until an admin opts in.
  * </ul>
  */
 @NullMarked
@@ -34,6 +39,8 @@ public class MigrationV3ToV4 implements Migration {
     @Override
     public void migrate(FileConfiguration config) {
         addIfMissing(config, "settings.per-option-permissions", false);
+        addIfMissing(config, "settings.world-permission-whitelist", List.of());
+        addIfMissing(config, "settings.restrict-template-access", false);
     }
 
     private static void addIfMissing(FileConfiguration config, String path, Object value) {
