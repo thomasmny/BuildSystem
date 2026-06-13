@@ -47,6 +47,13 @@ public class CreateMenu extends PaginatedMenu {
 
     private static final int MAX_TEMPLATES = 5;
 
+    private static final int FIRST_PREDEFINED_SLOT = 29;
+    private static final int LAST_PREDEFINED_SLOT = 33;
+    private static final int SLOT_GENERATOR_CREATE = 31;
+    private static final int SLOT_TEMPLATE_PREVIOUS_PAGE = 28;
+    private static final int SLOT_TEMPLATE_NEXT_PAGE = 34;
+    private static final int FIRST_TEMPLATE_SLOT = 29;
+
     private final BuildSystemPlugin plugin;
     private final WorldServiceImpl worldService;
     private final Page currentPage;
@@ -148,13 +155,14 @@ public class CreateMenu extends PaginatedMenu {
     }
 
     private void populateGenerator(Player player) {
-        plugin.getMenuItems().addGlassPane(player, getInventory(), 29);
-        plugin.getMenuItems().addGlassPane(player, getInventory(), 30);
-        plugin.getMenuItems().addGlassPane(player, getInventory(), 32);
-        plugin.getMenuItems().addGlassPane(player, getInventory(), 33);
+        for (int slot = FIRST_PREDEFINED_SLOT; slot <= LAST_PREDEFINED_SLOT; slot++) {
+            if (slot != SLOT_GENERATOR_CREATE) {
+                plugin.getMenuItems().addGlassPane(player, getInventory(), slot);
+            }
+        }
         getInventory()
                 .setItem(
-                        31,
+                        SLOT_GENERATOR_CREATE,
                         InventoryUtils.createSkull(
                                 messages.getString("create_generators_create_world", player),
                                 Profileable.detect(SkullTextures.ADD_ITEM)));
@@ -163,13 +171,13 @@ public class CreateMenu extends PaginatedMenu {
     private void populateTemplates(Player player) {
         getInventory()
                 .setItem(
-                        28,
+                        SLOT_TEMPLATE_PREVIOUS_PAGE,
                         InventoryUtils.createSkull(
                                 messages.getString("gui_previous_page", player),
                                 Profileable.detect(SkullTextures.PREVIOUS_PAGE)));
         getInventory()
                 .setItem(
-                        34,
+                        SLOT_TEMPLATE_NEXT_PAGE,
                         InventoryUtils.createSkull(
                                 messages.getString("gui_next_page", player),
                                 Profileable.detect(SkullTextures.NEXT_PAGE)));
@@ -184,12 +192,12 @@ public class CreateMenu extends PaginatedMenu {
 
         this.numTemplates = templateFiles != null ? templateFiles.length : 0;
 
-        plugin.getMenuItems().fillRange(player, getInventory(), 29, 34);
+        plugin.getMenuItems().fillRange(player, getInventory(), FIRST_TEMPLATE_SLOT, SLOT_TEMPLATE_NEXT_PAGE);
 
         if (numTemplates == 0) {
             ItemStack barrier =
                     InventoryUtils.createItem(XMaterial.BARRIER, messages.getString("create_no_templates", player));
-            for (int i = 29; i <= 33; i++) {
+            for (int i = FIRST_PREDEFINED_SLOT; i <= LAST_PREDEFINED_SLOT; i++) {
                 getInventory().setItem(i, barrier);
             }
             return;
@@ -203,7 +211,7 @@ public class CreateMenu extends PaginatedMenu {
         int startIndex = page() * MAX_TEMPLATES;
         for (int i = 0; i < MAX_TEMPLATES && startIndex + i < templateFiles.length; i++) {
             String rawTemplateName = templateFiles[startIndex + i].getName();
-            int slot = 29 + i;
+            int slot = FIRST_TEMPLATE_SLOT + i;
             this.templateSlots.put(slot, rawTemplateName);
             getInventory()
                     .setItem(
@@ -243,7 +251,7 @@ public class CreateMenu extends PaginatedMenu {
             }
 
             case GENERATOR: {
-                if (slot == 31) {
+                if (slot == SLOT_GENERATOR_CREATE) {
                     worldService.startWorldNameInput(
                             player, BuildWorldType.CUSTOM, null, this.createPrivateWorld, this.folder);
                     XSound.ENTITY_CHICKEN_EGG.play(player);
@@ -279,11 +287,11 @@ public class CreateMenu extends PaginatedMenu {
                         break;
                     }
                     case PLAYER_HEAD:
-                        if (slot == 28) {
+                        if (slot == SLOT_TEMPLATE_PREVIOUS_PAGE) {
                             if (!previousPage(player, MAX_TEMPLATES)) {
                                 return;
                             }
-                        } else if (slot == 34) {
+                        } else if (slot == SLOT_TEMPLATE_NEXT_PAGE) {
                             if (!nextPage(player, MAX_TEMPLATES)) {
                                 return;
                             }

@@ -32,6 +32,18 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class SpeedMenu extends Menu {
 
+    private static final int SLOT_SPEED_1 = 11;
+    private static final int SLOT_SPEED_2 = 12;
+    private static final int SLOT_SPEED_3 = 13;
+    private static final int SLOT_SPEED_4 = 14;
+    private static final int SLOT_SPEED_5 = 15;
+
+    private static final String SKULL_SPEED_1 = "71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530";
+    private static final String SKULL_SPEED_2 = "4cd9eeee883468881d83848a46bf3012485c23f75753b8fbe8487341419847";
+    private static final String SKULL_SPEED_3 = "1d4eae13933860a6df5e8e955693b95a8c3b15c36b8b587532ac0996bc37e5";
+    private static final String SKULL_SPEED_4 = "d2e78fb22424232dc27b81fbcb47fd24c1acf76098753f2d9c28598287db5";
+    private static final String SKULL_SPEED_5 = "6d57e3bc88a65730e31a14e3f41e038a5ecf0891a6c243643b8e5476ae2";
+
     private final SettingsService settingsService;
 
     public SpeedMenu(BuildSystemPlugin plugin, Player player) {
@@ -46,40 +58,19 @@ public class SpeedMenu extends Menu {
                     .setItem(i, ItemBuilder.glassPane(player, settingsService).build());
         }
 
+        addSpeedItem(player, SLOT_SPEED_1, SKULL_SPEED_1, "speed_1");
+        addSpeedItem(player, SLOT_SPEED_2, SKULL_SPEED_2, "speed_2");
+        addSpeedItem(player, SLOT_SPEED_3, SKULL_SPEED_3, "speed_3");
+        addSpeedItem(player, SLOT_SPEED_4, SKULL_SPEED_4, "speed_4");
+        addSpeedItem(player, SLOT_SPEED_5, SKULL_SPEED_5, "speed_5");
+    }
+
+    private void addSpeedItem(Player player, int slot, String skullTexture, String nameKey) {
         getInventory()
                 .setItem(
-                        11,
-                        ItemBuilder.skull(Profileable.detect(
-                                        "71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530"))
-                                .name(messages.getString("speed_1", player))
-                                .build());
-        getInventory()
-                .setItem(
-                        12,
-                        ItemBuilder.skull(Profileable.detect(
-                                        "4cd9eeee883468881d83848a46bf3012485c23f75753b8fbe8487341419847"))
-                                .name(messages.getString("speed_2", player))
-                                .build());
-        getInventory()
-                .setItem(
-                        13,
-                        ItemBuilder.skull(Profileable.detect(
-                                        "1d4eae13933860a6df5e8e955693b95a8c3b15c36b8b587532ac0996bc37e5"))
-                                .name(messages.getString("speed_3", player))
-                                .build());
-        getInventory()
-                .setItem(
-                        14,
-                        ItemBuilder.skull(Profileable.detect(
-                                        "d2e78fb22424232dc27b81fbcb47fd24c1acf76098753f2d9c28598287db5"))
-                                .name(messages.getString("speed_4", player))
-                                .build());
-        getInventory()
-                .setItem(
-                        15,
-                        ItemBuilder.skull(Profileable.detect(
-                                        "6d57e3bc88a65730e31a14e3f41e038a5ecf0891a6c243643b8e5476ae2"))
-                                .name(messages.getString("speed_5", player))
+                        slot,
+                        ItemBuilder.skull(Profileable.detect(skullTexture))
+                                .name(messages.getString(nameKey, player))
                                 .build());
     }
 
@@ -98,11 +89,11 @@ public class SpeedMenu extends Menu {
         }
 
         switch (event.getSlot()) {
-            case 11 -> setSpeed(player, 0.2f, 1);
-            case 12 -> setSpeed(player, 0.4f, 2);
-            case 13 -> setSpeed(player, 0.6f, 3);
-            case 14 -> setSpeed(player, 0.8f, 4);
-            case 15 -> setSpeed(player, 1.0f, 5);
+            case SLOT_SPEED_1 -> setSpeed(player, 0.2f, 1);
+            case SLOT_SPEED_2 -> setSpeed(player, 0.4f, 2);
+            case SLOT_SPEED_3 -> setSpeed(player, 0.6f, 3);
+            case SLOT_SPEED_4 -> setSpeed(player, 0.8f, 4);
+            case SLOT_SPEED_5 -> setSpeed(player, 1.0f, 5);
             default -> {
                 return;
             }

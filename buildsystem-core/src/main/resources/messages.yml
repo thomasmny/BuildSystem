@@ -400,6 +400,7 @@ world_navigator_no_worlds: "&c&nNo worlds available"
 world_navigator_create_world: "&bCreate a Public World"
 world_navigator_create_folder: "&bCreate a Folder"
 world_item_title: "&3&l%world%"
+world_item_pinned_prefix: "📌 "
 world_item_lore_normal:
   - "&7Status&8: %status%"
   - ""

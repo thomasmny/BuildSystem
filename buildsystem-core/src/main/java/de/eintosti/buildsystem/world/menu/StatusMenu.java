@@ -34,9 +34,17 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class StatusMenu extends Menu {
+
+    private static final int SLOT_NOT_STARTED = 10;
+    private static final int SLOT_IN_PROGRESS = 11;
+    private static final int SLOT_ALMOST_FINISHED = 12;
+    private static final int SLOT_FINISHED = 13;
+    private static final int SLOT_ARCHIVE = 14;
+    private static final int SLOT_HIDDEN = 16;
 
     private final BuildSystemPlugin plugin;
     private final BuildWorld buildWorld;
@@ -64,12 +72,12 @@ public class StatusMenu extends Menu {
         plugin.getMenuItems().fillRange(player, getInventory(), 0, 10);
         plugin.getMenuItems().fillRange(player, getInventory(), 17, 27);
 
-        addStatusItem(player, 10, BuildWorldStatus.NOT_STARTED);
-        addStatusItem(player, 11, BuildWorldStatus.IN_PROGRESS);
-        addStatusItem(player, 12, BuildWorldStatus.ALMOST_FINISHED);
-        addStatusItem(player, 13, BuildWorldStatus.FINISHED);
-        addStatusItem(player, 14, BuildWorldStatus.ARCHIVE);
-        addStatusItem(player, 16, BuildWorldStatus.HIDDEN);
+        addStatusItem(player, SLOT_NOT_STARTED, BuildWorldStatus.NOT_STARTED);
+        addStatusItem(player, SLOT_IN_PROGRESS, BuildWorldStatus.IN_PROGRESS);
+        addStatusItem(player, SLOT_ALMOST_FINISHED, BuildWorldStatus.ALMOST_FINISHED);
+        addStatusItem(player, SLOT_FINISHED, BuildWorldStatus.FINISHED);
+        addStatusItem(player, SLOT_ARCHIVE, BuildWorldStatus.ARCHIVE);
+        addStatusItem(player, SLOT_HIDDEN, BuildWorldStatus.HIDDEN);
     }
 
     /**
@@ -111,14 +119,13 @@ public class StatusMenu extends Menu {
         event.setCancelled(true);
         Player player = (Player) event.getWhoClicked();
 
-        int slot = event.getSlot();
-        if (slot < 10 || slot > 14 && slot != 16) {
+        BuildWorldStatus status = getStatusFromSlot(event.getSlot());
+        if (status == null) {
             XSound.BLOCK_CHEST_OPEN.play(player);
             new EditMenu(plugin, buildWorld, player).open(player);
             return;
         }
 
-        BuildWorldStatus status = getStatusFromSlot(slot);
         if (!player.hasPermission(status.getPermission())) {
             XSound.ENTITY_ITEM_BREAK.play(player);
             return;
@@ -136,15 +143,15 @@ public class StatusMenu extends Menu {
                 Map.entry("%status%", messages.getString(Messages.getMessageKey(status), player)));
     }
 
-    private BuildWorldStatus getStatusFromSlot(int slot) {
+    private @Nullable BuildWorldStatus getStatusFromSlot(int slot) {
         return switch (slot) {
-            case 10 -> BuildWorldStatus.NOT_STARTED;
-            case 11 -> BuildWorldStatus.IN_PROGRESS;
-            case 12 -> BuildWorldStatus.ALMOST_FINISHED;
-            case 13 -> BuildWorldStatus.FINISHED;
-            case 14 -> BuildWorldStatus.ARCHIVE;
-            case 16 -> BuildWorldStatus.HIDDEN;
-            default -> throw new IllegalArgumentException("Slot " + slot + " does not correspond to status");
+            case SLOT_NOT_STARTED -> BuildWorldStatus.NOT_STARTED;
+            case SLOT_IN_PROGRESS -> BuildWorldStatus.IN_PROGRESS;
+            case SLOT_ALMOST_FINISHED -> BuildWorldStatus.ALMOST_FINISHED;
+            case SLOT_FINISHED -> BuildWorldStatus.FINISHED;
+            case SLOT_ARCHIVE -> BuildWorldStatus.ARCHIVE;
+            case SLOT_HIDDEN -> BuildWorldStatus.HIDDEN;
+            default -> null;
         };
     }
 }

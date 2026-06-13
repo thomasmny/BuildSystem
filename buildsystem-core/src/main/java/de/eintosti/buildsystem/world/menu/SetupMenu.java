@@ -43,6 +43,17 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class SetupMenu extends Menu {
 
+    private static final int SLOT_DEFAULT_HEADER = 10;
+    private static final int SLOT_STATUS_HEADER = 19;
+
+    private static final int FIRST_CREATE_SLOT = 11;
+    private static final int LAST_CREATE_SLOT = 15;
+    private static final int FIRST_STATUS_SLOT = 20;
+    private static final int LAST_STATUS_SLOT = 25;
+
+    private static final int FIRST_PLAYER_SLOT = 36;
+    private static final int LAST_PLAYER_SLOT = 80;
+
     private static final Map<BuildWorldType, Integer> CREATE_ITEM_SLOTS = Map.ofEntries(
             entry(BuildWorldType.NORMAL, 11),
             entry(BuildWorldType.FLAT, 12),
@@ -51,6 +62,14 @@ public class SetupMenu extends Menu {
             entry(BuildWorldType.VOID, 15),
             entry(BuildWorldType.IMPORTED, 16));
 
+    private static final Map<BuildWorldType, String> CREATE_ITEM_KEYS = Map.ofEntries(
+            entry(BuildWorldType.NORMAL, "setup_normal_world"),
+            entry(BuildWorldType.FLAT, "setup_flat_world"),
+            entry(BuildWorldType.NETHER, "setup_nether_world"),
+            entry(BuildWorldType.END, "setup_end_world"),
+            entry(BuildWorldType.VOID, "setup_void_world"),
+            entry(BuildWorldType.IMPORTED, "setup_imported_world"));
+
     private static final Map<BuildWorldStatus, Integer> STATUS_ITEM_SLOTS = Map.ofEntries(
             entry(BuildWorldStatus.NOT_STARTED, 20),
             entry(BuildWorldStatus.IN_PROGRESS, 21),
@@ -58,6 +77,14 @@ public class SetupMenu extends Menu {
             entry(BuildWorldStatus.FINISHED, 23),
             entry(BuildWorldStatus.ARCHIVE, 24),
             entry(BuildWorldStatus.HIDDEN, 25));
+
+    private static final Map<BuildWorldStatus, String> STATUS_ITEM_KEYS = Map.ofEntries(
+            entry(BuildWorldStatus.NOT_STARTED, "status_not_started"),
+            entry(BuildWorldStatus.IN_PROGRESS, "status_in_progress"),
+            entry(BuildWorldStatus.ALMOST_FINISHED, "status_almost_finished"),
+            entry(BuildWorldStatus.FINISHED, "status_finished"),
+            entry(BuildWorldStatus.ARCHIVE, "status_archive"),
+            entry(BuildWorldStatus.HIDDEN, "status_hidden"));
 
     private final BuildSystemPlugin plugin;
     private final CustomizableIcons icons;
@@ -73,69 +100,46 @@ public class SetupMenu extends Menu {
         Inventory inv = getInventory();
         plugin.getMenuItems().fillAll(player, inv);
 
+        addSectionHeaders(inv, player);
+        addIconItems(inv, player, CREATE_ITEM_SLOTS, CREATE_ITEM_KEYS);
+        addIconItems(inv, player, STATUS_ITEM_SLOTS, STATUS_ITEM_KEYS);
+    }
+
+    private void addSectionHeaders(Inventory inv, Player player) {
         inv.setItem(
-                10,
+                SLOT_DEFAULT_HEADER,
                 InventoryUtils.createSkull(
                         messages.getString("setup_default_item_name", player),
                         Profileable.detect(SkullTextures.NEXT_PAGE),
                         messages.getStringList("setup_default_item_lore", player)));
         inv.setItem(
-                19,
+                SLOT_STATUS_HEADER,
                 InventoryUtils.createSkull(
                         messages.getString("setup_status_item_name", player),
                         Profileable.detect(SkullTextures.NEXT_PAGE),
                         messages.getStringList("setup_status_item_name_lore", player)));
+    }
 
-        inv.setItem(
-                11,
-                InventoryUtils.createItem(
-                        icons.getIcon(BuildWorldType.NORMAL), messages.getString("setup_normal_world", player)));
-        inv.setItem(
-                12,
-                InventoryUtils.createItem(
-                        icons.getIcon(BuildWorldType.FLAT), messages.getString("setup_flat_world", player)));
-        inv.setItem(
-                13,
-                InventoryUtils.createItem(
-                        icons.getIcon(BuildWorldType.NETHER), messages.getString("setup_nether_world", player)));
-        inv.setItem(
-                14,
-                InventoryUtils.createItem(
-                        icons.getIcon(BuildWorldType.END), messages.getString("setup_end_world", player)));
-        inv.setItem(
-                15,
-                InventoryUtils.createItem(
-                        icons.getIcon(BuildWorldType.VOID), messages.getString("setup_void_world", player)));
-        inv.setItem(
-                16,
-                InventoryUtils.createItem(
-                        icons.getIcon(BuildWorldType.IMPORTED), messages.getString("setup_imported_world", player)));
+    /**
+     * Renders the configurable icon for each enum constant at its mapped slot.
+     *
+     * @param inv The inventory to populate
+     * @param player The viewing player
+     * @param slots The slot each enum constant occupies
+     * @param keys The message key for each enum constant's display name
+     * @param <T> The enum type (e.g. {@link BuildWorldType}, {@link BuildWorldStatus})
+     */
+    private <T extends Enum<T>> void addIconItems(
+            Inventory inv, Player player, Map<T, Integer> slots, Map<T, String> keys) {
+        slots.forEach((constant, slot) -> inv.setItem(
+                slot, InventoryUtils.createItem(getIcon(constant), messages.getString(keys.get(constant), player))));
+    }
 
-        inv.setItem(
-                20,
-                InventoryUtils.createItem(
-                        icons.getIcon(BuildWorldStatus.NOT_STARTED), messages.getString("status_not_started", player)));
-        inv.setItem(
-                21,
-                InventoryUtils.createItem(
-                        icons.getIcon(BuildWorldStatus.IN_PROGRESS), messages.getString("status_in_progress", player)));
-        inv.setItem(
-                22,
-                InventoryUtils.createItem(
-                        icons.getIcon(BuildWorldStatus.ALMOST_FINISHED),
-                        messages.getString("status_almost_finished", player)));
-        inv.setItem(
-                23,
-                InventoryUtils.createItem(
-                        icons.getIcon(BuildWorldStatus.FINISHED), messages.getString("status_finished", player)));
-        inv.setItem(
-                24,
-                InventoryUtils.createItem(
-                        icons.getIcon(BuildWorldStatus.ARCHIVE), messages.getString("status_archive", player)));
-        inv.setItem(
-                25,
-                InventoryUtils.createItem(
-                        icons.getIcon(BuildWorldStatus.HIDDEN), messages.getString("status_hidden", player)));
+    private XMaterial getIcon(Enum<?> constant) {
+        if (constant instanceof BuildWorldType type) {
+            return icons.getIcon(type);
+        }
+        return icons.getIcon((BuildWorldStatus) constant);
     }
 
     @Override
@@ -155,18 +159,19 @@ public class SetupMenu extends Menu {
                 }
 
                 int slot = event.getRawSlot();
-                event.setCancelled(slot < 36 || slot > 80);
+                event.setCancelled(slot < FIRST_PLAYER_SLOT || slot > LAST_PLAYER_SLOT);
 
                 if (action != InventoryAction.SWAP_WITH_CURSOR) {
                     return;
                 }
 
-                if (!(slot >= 36 && slot <= 80)) {
-                    if ((slot >= 11 && slot <= 15) || (slot >= 20 && slot <= 25)) {
-                        ItemStack itemStack = event.getCursor();
-                        event.setCurrentItem(itemStack);
-                        event.getWhoClicked().setItemOnCursor(null);
-                    }
+                boolean inPlayerInventory = slot >= FIRST_PLAYER_SLOT && slot <= LAST_PLAYER_SLOT;
+                boolean isIconSlot = (slot >= FIRST_CREATE_SLOT && slot <= LAST_CREATE_SLOT)
+                        || (slot >= FIRST_STATUS_SLOT && slot <= LAST_STATUS_SLOT);
+                if (!inPlayerInventory && isIconSlot) {
+                    ItemStack itemStack = event.getCursor();
+                    event.setCurrentItem(itemStack);
+                    event.getWhoClicked().setItemOnCursor(null);
                 }
             }
             default -> event.setCancelled(true);

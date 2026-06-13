@@ -48,6 +48,10 @@ public class GameRulesMenu extends PaginatedMenu {
     private static final int[] SLOTS = {11, 12, 13, 14, 15, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33};
     private static final int ITEMS_PER_PAGE = SLOTS.length;
 
+    private static final int MENU_SIZE = 45;
+    private static final int SLOT_PREVIOUS_PAGE = 36;
+    private static final int SLOT_NEXT_PAGE = 44;
+
     private final BuildSystemPlugin plugin;
     private final BuildWorld buildWorld;
 
@@ -72,38 +76,45 @@ public class GameRulesMenu extends PaginatedMenu {
         }
         World world = optionalWorld.get();
 
-        for (int i = 0; i < 45; i++) {
+        for (int i = 0; i < MENU_SIZE; i++) {
             if (!isValidSlot(i)) {
                 plugin.getMenuItems().addGlassPane(player, getInventory(), i);
             }
         }
 
-        if (totalPages(ITEMS_PER_PAGE) > 1 && page() > 0) {
-            getInventory()
-                    .setItem(
-                            36,
-                            InventoryUtils.createSkull(
-                                    messages.getString("gui_previous_page", player),
-                                    Profileable.detect(SkullTextures.PREVIOUS_PAGE)));
-        } else {
-            plugin.getMenuItems().addGlassPane(player, getInventory(), 36);
-        }
-
-        if (totalPages(ITEMS_PER_PAGE) > 1 && page() < totalPages(ITEMS_PER_PAGE) - 1) {
-            getInventory()
-                    .setItem(
-                            44,
-                            InventoryUtils.createSkull(
-                                    messages.getString("gui_next_page", player),
-                                    Profileable.detect(SkullTextures.NEXT_PAGE)));
-        } else {
-            plugin.getMenuItems().addGlassPane(player, getInventory(), 44);
-        }
+        addPageNavItem(player, SLOT_PREVIOUS_PAGE, page() > 0, "gui_previous_page", SkullTextures.PREVIOUS_PAGE);
+        addPageNavItem(
+                player,
+                SLOT_NEXT_PAGE,
+                page() < totalPages(ITEMS_PER_PAGE) - 1,
+                "gui_next_page",
+                SkullTextures.NEXT_PAGE);
 
         String[] allGameRules = world.getGameRules();
         int startIndex = page() * ITEMS_PER_PAGE;
         for (int i = 0; i < SLOTS.length && startIndex + i < allGameRules.length; i++) {
             addGameRuleItem(SLOTS[i], world, allGameRules[startIndex + i], player);
+        }
+    }
+
+    /**
+     * Renders a page-navigation skull when more pages exist in the given direction, otherwise a filler glass pane.
+     *
+     * @param player The viewing player
+     * @param slot The slot to render into
+     * @param hasMorePages Whether a page exists in this direction (and there is more than one page)
+     * @param nameKey The message key for the skull's display name
+     * @param skullTexture The skull texture to use
+     */
+    private void addPageNavItem(Player player, int slot, boolean hasMorePages, String nameKey, String skullTexture) {
+        if (totalPages(ITEMS_PER_PAGE) > 1 && hasMorePages) {
+            getInventory()
+                    .setItem(
+                            slot,
+                            InventoryUtils.createSkull(
+                                    messages.getString(nameKey, player), Profileable.detect(skullTexture)));
+        } else {
+            plugin.getMenuItems().addGlassPane(player, getInventory(), slot);
         }
     }
 
@@ -158,9 +169,9 @@ public class GameRulesMenu extends PaginatedMenu {
             case PLAYER_HEAD:
                 boolean pageChanged = false;
                 int slot = event.getSlot();
-                if (slot == 36) {
+                if (slot == SLOT_PREVIOUS_PAGE) {
                     pageChanged = previousPage(player, ITEMS_PER_PAGE);
-                } else if (slot == 44) {
+                } else if (slot == SLOT_NEXT_PAGE) {
                     pageChanged = nextPage(player, ITEMS_PER_PAGE);
                 }
                 if (!pageChanged) {

@@ -30,7 +30,6 @@ import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.Bukkit;
@@ -48,6 +47,12 @@ import org.jspecify.annotations.NullMarked;
 public class BuilderMenu extends PaginatedMenu {
 
     private static final int MAX_BUILDERS_PER_PAGE = 9;
+
+    private static final int SLOT_CREATOR_INFO = 4;
+    private static final int FIRST_BUILDER_SLOT = 9;
+    private static final int SLOT_PREVIOUS_PAGE = 18;
+    private static final int SLOT_ADD_BUILDER = 22;
+    private static final int SLOT_NEXT_PAGE = 26;
 
     private final BuildSystemPlugin plugin;
     private final BuildWorld buildWorld;
@@ -76,23 +81,22 @@ public class BuilderMenu extends PaginatedMenu {
         addBuilderAddItem(inv, player);
 
         inv.setItem(
-                18,
+                SLOT_PREVIOUS_PAGE,
                 InventoryUtils.createSkull(
                         messages.getString("gui_previous_page", player),
                         Profileable.detect(SkullTextures.PREVIOUS_PAGE)));
         inv.setItem(
-                26,
+                SLOT_NEXT_PAGE,
                 InventoryUtils.createSkull(
                         messages.getString("gui_next_page", player), Profileable.detect(SkullTextures.NEXT_PAGE)));
 
         // Clear builder slots from previous state
-        plugin.getMenuItems().fillRange(player, inv, 9, 18);
+        plugin.getMenuItems().fillRange(player, inv, FIRST_BUILDER_SLOT, FIRST_BUILDER_SLOT + MAX_BUILDERS_PER_PAGE);
 
-        Collection<Builder> allBuilders = buildWorld.getBuilders().getAllBuilders();
-        List<Builder> builderList = new ArrayList<>(allBuilders);
+        List<Builder> builderList = new ArrayList<>(buildWorld.getBuilders().getAllBuilders());
         int startIndex = page() * MAX_BUILDERS_PER_PAGE;
         for (int i = 0; i < MAX_BUILDERS_PER_PAGE && startIndex + i < builderList.size(); i++) {
-            inv.setItem(9 + i, createBuilderItem(builderList.get(startIndex + i), player));
+            inv.setItem(FIRST_BUILDER_SLOT + i, createBuilderItem(builderList.get(startIndex + i), player));
         }
     }
 
@@ -110,7 +114,7 @@ public class BuilderMenu extends PaginatedMenu {
                     messages.getString(
                             "worldeditor_builders_creator_lore", player, Map.entry("%creator%", creator.getName())));
         }
-        inventory.setItem(4, creatorInfoItem);
+        inventory.setItem(SLOT_CREATOR_INFO, creatorInfoItem);
     }
 
     private void addBuilderAddItem(Inventory inventory, Player player) {
@@ -122,7 +126,7 @@ public class BuilderMenu extends PaginatedMenu {
         } else {
             builderAddItem = plugin.getMenuItems().getColoredGlassPane(player).parseItem();
         }
-        inventory.setItem(22, builderAddItem);
+        inventory.setItem(SLOT_ADD_BUILDER, builderAddItem);
     }
 
     private ItemStack createBuilderItem(Builder builder, Player player) {
@@ -157,24 +161,24 @@ public class BuilderMenu extends PaginatedMenu {
 
         int slot = event.getSlot();
         switch (slot) {
-            case 18:
+            case SLOT_PREVIOUS_PAGE:
                 if (!previousPage(player, MAX_BUILDERS_PER_PAGE)) {
                     return;
                 }
                 populate(player);
                 return;
-            case 22:
+            case SLOT_ADD_BUILDER:
                 XSound.ENTITY_CHICKEN_EGG.play(player);
                 new AddBuilderSubCommand(plugin).getAddBuilderInput(player, buildWorld, false);
                 return;
-            case 26:
+            case SLOT_NEXT_PAGE:
                 if (!nextPage(player, MAX_BUILDERS_PER_PAGE)) {
                     return;
                 }
                 populate(player);
                 return;
             default:
-                if (slot == 4 || !event.isShiftClick()) {
+                if (slot == SLOT_CREATOR_INFO || !event.isShiftClick()) {
                     return;
                 }
                 removeBuilderByItem(player, itemStack);

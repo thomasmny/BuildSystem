@@ -39,7 +39,9 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class BackupsMenu extends Menu {
 
+    private static final int SLOT_INFO = 4;
     private static final int FIRST_BACKUP_SLOT = 9;
+    private static final int MAX_BACKUPS = 18;
 
     private final BuildSystemPlugin plugin;
     private final BackupService backupService;
@@ -59,22 +61,14 @@ public class BackupsMenu extends Menu {
 
         getInventory()
                 .setItem(
-                        4,
+                        SLOT_INFO,
                         InventoryUtils.createItem(
                                 XMaterial.OAK_HANGING_SIGN,
                                 messages.getString("backups_information_name", player),
                                 messages.getStringList(
                                         "backups_information_lore",
                                         player,
-                                        Map.entry(
-                                                "%interval%",
-                                                plugin.getConfigService()
-                                                                .current()
-                                                                .world()
-                                                                .backup()
-                                                                .autoBackup()
-                                                                .interval()
-                                                        / 60),
+                                        Map.entry("%interval%", getBackupIntervalSeconds() / 60),
                                         Map.entry("%remaining%", getDurationUntilBackup()))));
 
         plugin.getMenuItems().fillRange(player, getInventory(), 27, 36);
@@ -123,16 +117,13 @@ public class BackupsMenu extends Menu {
                 });
     }
 
-    private String getDurationUntilBackup() {
-        int timeUntilBackup = plugin.getConfigService()
-                .current()
-                .world()
-                .backup()
-                .autoBackup()
-                .interval();
-        int timeSinceBackup = buildWorld.getData().getTimeSinceBackup();
+    private int getBackupIntervalSeconds() {
+        return plugin.getConfigService().current().world().backup().autoBackup().interval();
+    }
 
-        int secondsRemaining = Math.max(0, timeUntilBackup - timeSinceBackup);
+    private String getDurationUntilBackup() {
+        int timeSinceBackup = buildWorld.getData().getTimeSinceBackup();
+        int secondsRemaining = Math.max(0, getBackupIntervalSeconds() - timeSinceBackup);
         return "%02d:%02d".formatted(secondsRemaining / 60, secondsRemaining % 60);
     }
 
@@ -149,7 +140,7 @@ public class BackupsMenu extends Menu {
         int slot = event.getSlot();
         int backupIndex = slot - FIRST_BACKUP_SLOT;
         if (slot >= FIRST_BACKUP_SLOT
-                && slot < FIRST_BACKUP_SLOT + 18
+                && slot < FIRST_BACKUP_SLOT + MAX_BACKUPS
                 && backupIndex < backups.size()
                 && itemStack.getType() == XMaterial.GRASS_BLOCK.get()) {
             Backup backup = backups.get(backupIndex);

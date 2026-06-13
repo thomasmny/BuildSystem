@@ -200,7 +200,11 @@ public final class BuildWorldImpl implements BuildWorld {
 
     @Override
     public String getDisplayName(Player player) {
-        return plugin.getMessages().getString("world_item_title", player, Map.entry("%world%", this.name));
+        String title = plugin.getMessages().getString("world_item_title", player, Map.entry("%world%", this.name));
+        if (this.worldData.pinned().get()) {
+            return plugin.getMessages().getString("world_item_pinned_prefix", player) + title;
+        }
+        return title;
     }
 
     @Override
