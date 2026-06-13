@@ -19,13 +19,13 @@ package de.eintosti.buildsystem.world.lifecycle;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.data.Bypassable;
-import de.eintosti.buildsystem.api.data.Type;
+import de.eintosti.buildsystem.api.data.Property;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
-import de.eintosti.buildsystem.world.data.type.ConfigurableType;
+import de.eintosti.buildsystem.world.data.type.ConfigurableProperty;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
@@ -63,7 +63,7 @@ public class WorldPermissionsImpl implements WorldPermissions {
             return true;
         }
 
-        String permission = buildWorld.getData().permission().get();
+        String permission = buildWorld.getData().getPermission();
         if (permission.equals("-")) {
             return true;
         }
@@ -72,7 +72,7 @@ public class WorldPermissionsImpl implements WorldPermissions {
     }
 
     @Override
-    public boolean canModify(Player player, Type<Boolean> check) {
+    public boolean canModify(Player player, Property<Boolean> check) {
         if (buildWorld == null) {
             return true;
         }
@@ -81,7 +81,7 @@ public class WorldPermissionsImpl implements WorldPermissions {
             return true;
         }
 
-        if (buildWorld.getData().status().get() == BuildWorldStatus.ARCHIVE
+        if (buildWorld.getData().getStatus() == BuildWorldStatus.ARCHIVE
                 && !player.hasPermission("buildsystem.bypass.archive")) {
             return false;
         }
@@ -98,22 +98,22 @@ public class WorldPermissionsImpl implements WorldPermissions {
         return builders.isCreator(player)
                 || builders.isBuilder(player)
                 || player.hasPermission("buildsystem.bypass.builders")
-                || !buildWorld.getData().buildersEnabled().get();
+                || !buildWorld.getData().isBuildersEnabled();
     }
 
     /**
      * Checks if the player has the bypass permission for the given check.
      *
      * @param player The player to check
-     * @param check The specific data type representing the modification to be checked
+     * @param check The specific data property representing the modification to be checked
      * @return {@code true} if the player can bypass the modification, otherwise {@code false}
      */
-    private boolean canBypassModification(Player player, Type<Boolean> check) {
-        if (!(check instanceof ConfigurableType<Boolean> configurableType)) {
+    private boolean canBypassModification(Player player, Property<Boolean> check) {
+        if (!(check instanceof ConfigurableProperty<Boolean> configurableProperty)) {
             return false;
         }
 
-        return configurableType
+        return configurableProperty
                 .getCapability(Bypassable.class)
                 .map(bypassable -> player.hasPermission(bypassable.permission()))
                 .orElse(false);

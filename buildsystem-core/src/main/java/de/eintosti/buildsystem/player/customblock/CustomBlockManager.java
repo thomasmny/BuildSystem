@@ -75,15 +75,15 @@ public class CustomBlockManager implements Listener {
         }
 
         boolean hadToDisablePhysics = false;
-        if (isBuildWorld && !buildWorld.getData().physics().get()) {
+        if (isBuildWorld && !buildWorld.getData().isPhysics()) {
             hadToDisablePhysics = true;
-            buildWorld.getData().physics().set(true);
+            buildWorld.getData().setPhysics(true);
         }
 
         setBlock(event, customBlock);
 
         if (isBuildWorld && hadToDisablePhysics) {
-            buildWorld.getData().physics().set(false);
+            buildWorld.getData().setPhysics(false);
         }
     }
 

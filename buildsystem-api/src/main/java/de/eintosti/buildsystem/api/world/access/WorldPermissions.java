@@ -17,7 +17,7 @@
  */
 package de.eintosti.buildsystem.api.world.access;
 
-import de.eintosti.buildsystem.api.data.Type;
+import de.eintosti.buildsystem.api.data.Property;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
@@ -74,10 +74,10 @@ public interface WorldPermissions {
      * </ul>
      *
      * @param player The player attempting to modify the world
-     * @param check The specific data type representing the modification to be checked
+     * @param check The specific data property representing the modification to be checked
      * @return {@code true} if the player is allowed to modify the world, {@code false} otherwise
      */
-    boolean canModify(Player player, Type<Boolean> check);
+    boolean canModify(Player player, Property<Boolean> check);
 
     /**
      * Checks if the given {@link Player} is permitted to execute a specific command within the context of the current

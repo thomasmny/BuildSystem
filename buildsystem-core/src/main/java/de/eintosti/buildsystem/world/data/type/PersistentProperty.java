@@ -15,15 +15,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.api.data;
+package de.eintosti.buildsystem.world.data.type;
 
+import de.eintosti.buildsystem.api.data.Property;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * A {@link Capability} that marks a {@link Property} as being bypassable with a specific permission.
+ * A {@link Property} that can be serialized to a configuration file.
  *
- * @param permission The permission node required to bypass this type
- * @since 3.0.1
+ * @param <T> The type of the value held
  */
 @NullMarked
-public record Bypassable(String permission) implements Capability {}
+public interface PersistentProperty<T> extends Property<T> {
+
+    /**
+     * Gets the value of this data point formatted for storage in a configuration file. This might involve converting
+     * complex objects into simpler types (e.g., enums to strings).
+     *
+     * @return The value formatted for a config file
+     */
+    Object getConfigFormat();
+}

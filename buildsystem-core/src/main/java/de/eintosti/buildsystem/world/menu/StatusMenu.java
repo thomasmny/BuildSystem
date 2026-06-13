@@ -94,7 +94,7 @@ public class StatusMenu extends Menu {
         itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         itemStack.setItemMeta(itemMeta);
 
-        if (buildWorld.getData().status().get() == status) {
+        if (buildWorld.getData().getStatus() == status) {
             itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.get(), 1);
         }
 
@@ -125,7 +125,7 @@ public class StatusMenu extends Menu {
         }
 
         player.closeInventory();
-        buildWorld.getData().status().set(status);
+        buildWorld.getData().setStatus(status);
         plugin.getSettingsService().forceUpdateSidebar(buildWorld);
 
         XSound.ENTITY_CHICKEN_EGG.play(player);

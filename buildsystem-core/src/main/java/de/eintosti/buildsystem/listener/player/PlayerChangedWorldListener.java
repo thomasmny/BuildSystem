@@ -74,7 +74,7 @@ public class PlayerChangedWorldListener implements Listener {
 
         BuildWorld newWorld = worldStorage.getBuildWorld(worldName);
         if (newWorld != null
-                && !newWorld.getData().physics().get()
+                && !newWorld.getData().isPhysics()
                 && player.hasPermission("buildsystem.physics.message")) {
             plugin.getMessages()
                     .sendMessage(player, "physics_deactivated_in_world", Map.entry("%world%", newWorld.getName()));
@@ -112,7 +112,7 @@ public class PlayerChangedWorldListener implements Listener {
     private void setGoldBlock(@Nullable BuildWorld buildWorld) {
         if (buildWorld == null
                 || buildWorld.getType() != BuildWorldType.VOID
-                || buildWorld.getData().status().get() != BuildWorldStatus.NOT_STARTED) {
+                || buildWorld.getData().getStatus() != BuildWorldStatus.NOT_STARTED) {
             return;
         }
 
@@ -136,7 +136,7 @@ public class PlayerChangedWorldListener implements Listener {
                 .getCachedValues();
         cachedValues.resetArchiveStateIfPresent(player);
 
-        if (buildWorld.getData().status().get() == BuildWorldStatus.ARCHIVE) {
+        if (buildWorld.getData().getStatus() == BuildWorldStatus.ARCHIVE) {
             cachedValues.saveArchiveState(player);
 
             removeArmorContent(player);

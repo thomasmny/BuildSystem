@@ -97,7 +97,7 @@ abstract class AbstractWorldCreator {
             folder.addWorld(bw);
         }
 
-        bw.getData().lastLoaded().set(System.currentTimeMillis());
+        bw.getData().setLastLoaded(System.currentTimeMillis());
         worldStorage.addBuildWorld(bw);
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostCreateEvent(bw, isImport()));
         return bw;

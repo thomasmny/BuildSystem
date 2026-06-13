@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.eintosti.buildsystem.api.data.Type;
 import de.eintosti.buildsystem.api.player.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -119,11 +118,8 @@ class PlaceholderApiExpansionTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     void world_permission_returnsValue() {
-        Type<String> attr = mock(Type.class);
-        when(worldData.permission()).thenReturn(attr);
-        when(attr.get()).thenReturn("buildsystem.world.test");
+        when(worldData.getPermission()).thenReturn("buildsystem.world.test");
         assertEquals("buildsystem.world.test", expansion.onPlaceholderRequest(player, "permission"));
     }
 

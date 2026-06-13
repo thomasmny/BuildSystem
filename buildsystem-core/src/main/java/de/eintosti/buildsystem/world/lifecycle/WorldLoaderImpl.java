@@ -84,7 +84,7 @@ public class WorldLoaderImpl implements WorldLoader {
             return;
         }
 
-        this.buildWorld.getData().lastLoaded().set(System.currentTimeMillis());
+        this.buildWorld.getData().setLastLoaded(System.currentTimeMillis());
         this.buildWorld.setLoaded(true);
 
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostLoadEvent(this.buildWorld));

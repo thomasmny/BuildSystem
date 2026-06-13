@@ -57,7 +57,7 @@ public class PhysicsCommand extends CommandBase {
                 if (args[0].equalsIgnoreCase("all") && !worldStorage.worldExists("all")) {
                     worldStorage
                             .getBuildWorlds()
-                            .forEach(world -> world.getData().physics().set(true));
+                            .forEach(world -> world.getData().setPhysics(true));
                     messages.sendMessage(player, "physics_activated_all");
                 } else {
                     togglePhysics(player, Bukkit.getWorld(args[0]));

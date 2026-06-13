@@ -19,26 +19,26 @@ package de.eintosti.buildsystem.world.data;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import de.eintosti.buildsystem.world.data.type.ConfigurableType;
+import de.eintosti.buildsystem.world.data.type.ConfigurableProperty;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
 @NullMarked
-class ConfigurableTypeChangeListenerTest {
+class ConfigurablePropertyChangeListenerTest {
 
     @Test
     void set_changesValue_notifiesListener() {
-        ConfigurableType<String> type = new ConfigurableType<>("old");
+        ConfigurableProperty<String> property = new ConfigurableProperty<>("old");
         AtomicInteger invocations = new AtomicInteger();
         String[] observed = new String[2];
-        type.setChangeListener((oldValue, newValue) -> {
+        property.setChangeListener((oldValue, newValue) -> {
             invocations.incrementAndGet();
             observed[0] = oldValue;
             observed[1] = newValue;
         });
 
-        type.set("new");
+        property.set("new");
 
         assertEquals(1, invocations.get());
         assertEquals("old", observed[0]);
@@ -47,32 +47,32 @@ class ConfigurableTypeChangeListenerTest {
 
     @Test
     void set_sameValue_doesNotNotifyListener() {
-        ConfigurableType<String> type = new ConfigurableType<>("same");
+        ConfigurableProperty<String> property = new ConfigurableProperty<>("same");
         AtomicInteger invocations = new AtomicInteger();
-        type.setChangeListener((oldValue, newValue) -> invocations.incrementAndGet());
+        property.setChangeListener((oldValue, newValue) -> invocations.incrementAndGet());
 
-        type.set("same");
+        property.set("same");
 
         assertEquals(0, invocations.get());
     }
 
     @Test
     void set_withoutListener_doesNotThrow() {
-        ConfigurableType<String> type = new ConfigurableType<>("old");
-        type.set("new");
-        assertEquals("new", type.get());
+        ConfigurableProperty<String> property = new ConfigurableProperty<>("old");
+        property.set("new");
+        assertEquals("new", property.get());
     }
 
     @Test
     void setChangeListener_null_deregistersListener() {
-        ConfigurableType<String> type = new ConfigurableType<>("old");
+        ConfigurableProperty<String> property = new ConfigurableProperty<>("old");
         AtomicInteger invocations = new AtomicInteger();
-        type.setChangeListener((oldValue, newValue) -> invocations.incrementAndGet());
-        type.setChangeListener(null);
+        property.setChangeListener((oldValue, newValue) -> invocations.incrementAndGet());
+        property.setChangeListener(null);
 
-        type.set("new");
+        property.set("new");
 
         assertEquals(0, invocations.get());
-        assertEquals("new", type.get());
+        assertEquals("new", property.get());
     }
 }

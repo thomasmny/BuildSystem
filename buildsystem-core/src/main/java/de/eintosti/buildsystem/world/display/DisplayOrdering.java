@@ -50,7 +50,6 @@ public final class DisplayOrdering {
     }
 
     private static boolean isPinned(Displayable displayable) {
-        return displayable instanceof BuildWorld world
-                && world.getData().pinned().get();
+        return displayable instanceof BuildWorld world && world.getData().isPinned();
     }
 }

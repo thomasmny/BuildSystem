@@ -142,28 +142,27 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
         Builders builders = buildWorld.getBuilders();
         WorldData worldData = buildWorld.getData();
         return switch (identifier.toLowerCase(Locale.ROOT)) {
-            case "blockbreaking" -> String.valueOf(worldData.blockBreaking().get());
-            case "blockplacement" -> String.valueOf(worldData.blockPlacement().get());
+            case "blockbreaking" -> String.valueOf(worldData.isBlockBreaking());
+            case "blockplacement" -> String.valueOf(worldData.isBlockPlacement());
             case "builders" -> builders.asPlaceholder(player);
-            case "buildersenabled" -> String.valueOf(worldData.buildersEnabled().get());
+            case "buildersenabled" -> String.valueOf(worldData.isBuildersEnabled());
             case "creation" -> messages.formatDate(buildWorld.getCreation());
             case "creator" -> builders.hasCreator() ? builders.getCreator().getName() : "-";
             case "creatorid" ->
                 builders.hasCreator() ? String.valueOf(builders.getCreator().getUniqueId()) : "-";
-            case "explosions" -> String.valueOf(worldData.explosions().get());
-            case "lastedited" -> messages.formatDate(worldData.lastEdited().get());
-            case "lastloaded" -> messages.formatDate(worldData.lastLoaded().get());
-            case "lastunloaded" -> messages.formatDate(worldData.lastUnloaded().get());
+            case "explosions" -> String.valueOf(worldData.isExplosions());
+            case "lastedited" -> messages.formatDate(worldData.getLastEdited());
+            case "lastloaded" -> messages.formatDate(worldData.getLastLoaded());
+            case "lastunloaded" -> messages.formatDate(worldData.getLastUnloaded());
             case "loaded" -> String.valueOf(buildWorld.isLoaded());
-            case "material" -> worldData.material().get().name();
-            case "mobai" -> String.valueOf(worldData.mobAi().get());
-            case "permission" -> worldData.permission().get();
-            case "private" -> String.valueOf(worldData.privateWorld().get());
-            case "project" -> worldData.project().get();
-            case "physics" -> String.valueOf(worldData.physics().get());
-            case "spawn" -> worldData.customSpawn().get();
-            case "status" ->
-                messages.getString(Messages.getMessageKey(worldData.status().get()), player);
+            case "material" -> worldData.getMaterial().name();
+            case "mobai" -> String.valueOf(worldData.isMobAi());
+            case "permission" -> worldData.getPermission();
+            case "private" -> String.valueOf(worldData.isPrivateWorld());
+            case "project" -> worldData.getProject();
+            case "physics" -> String.valueOf(worldData.isPhysics());
+            case "spawn" -> worldData.getCustomSpawn();
+            case "status" -> messages.getString(Messages.getMessageKey(worldData.getStatus()), player);
             case "time" -> buildWorld.getWorldTime();
             case "type" -> messages.getString(Messages.getMessageKey(buildWorld.getType()), player);
             case "world" -> buildWorld.getName();

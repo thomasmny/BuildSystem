@@ -50,7 +50,7 @@ public class SetItemSubCommand extends AbstractSubCommand {
             return;
         }
 
-        buildWorld.getData().material().set(XMaterial.matchXMaterial(itemStack));
+        buildWorld.getData().setMaterial(XMaterial.matchXMaterial(itemStack));
         messages.sendMessage(player, "worlds_setitem_set", Map.entry("%world%", buildWorld.getName()));
     }
 

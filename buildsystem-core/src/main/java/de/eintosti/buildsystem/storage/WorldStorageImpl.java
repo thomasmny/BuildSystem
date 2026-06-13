@@ -130,8 +130,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
     @Unmodifiable
     public List<BuildWorld> getBuildWorldsCreatedByPlayer(Player player, Visibility visibility) {
         return getBuildWorldsCreatedByPlayer(player).stream()
-                .filter(buildWorld ->
-                        isCorrectVisibility(buildWorld.getData().privateWorld().get(), visibility))
+                .filter(buildWorld -> isCorrectVisibility(buildWorld.getData().isPrivateWorld(), visibility))
                 .toList();
     }
 

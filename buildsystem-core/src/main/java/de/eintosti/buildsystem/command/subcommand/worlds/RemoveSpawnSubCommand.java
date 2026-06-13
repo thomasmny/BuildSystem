@@ -47,7 +47,7 @@ public class RemoveSpawnSubCommand extends AbstractSubCommand {
             return;
         }
 
-        buildWorld.getData().customSpawn().set("");
+        buildWorld.getData().setCustomSpawn("");
         messages.sendMessage(
                 player, "worlds_removespawn_world_spawn_removed", Map.entry("%world%", buildWorld.getName()));
     }

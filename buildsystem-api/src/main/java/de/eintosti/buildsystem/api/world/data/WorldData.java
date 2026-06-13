@@ -18,10 +18,9 @@
 package de.eintosti.buildsystem.api.world.data;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.api.data.Type;
+import de.eintosti.buildsystem.api.data.Property;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
-import java.util.Map;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
 import org.jspecify.annotations.NullMarked;
@@ -37,13 +36,33 @@ import org.jspecify.annotations.Nullable;
 public interface WorldData {
 
     /**
-     * Retrieves a {@link Type} object representing the custom spawn location of the {@link BuildWorld}. The value is
+     * Retrieves a {@link Property} object representing the custom spawn location of the {@link BuildWorld}. The value is
      * stored as a string in the format {@code x;y;z;yaw;pitch}.
      *
-     * @return A {@link Type} containing the custom spawn string
+     * @return A {@link Property} containing the custom spawn string
      * @see #getCustomSpawnLocation()
      */
-    Type<String> customSpawn();
+    Property<String> customSpawn();
+
+    /**
+     * Gets the custom spawn of the {@link BuildWorld} as a string in the format {@code x;y;z;yaw;pitch}.
+     *
+     * @return The custom spawn string
+     * @since TODO
+     */
+    default String getCustomSpawn() {
+        return customSpawn().get();
+    }
+
+    /**
+     * Sets the custom spawn of the {@link BuildWorld} as a string in the format {@code x;y;z;yaw;pitch}.
+     *
+     * @param customSpawn The custom spawn string
+     * @since TODO
+     */
+    default void setCustomSpawn(String customSpawn) {
+        customSpawn().set(customSpawn);
+    }
 
     /**
      * Gets the {@link BuildWorld}'s custom spawn as a {@link Location} object.
@@ -53,150 +72,502 @@ public interface WorldData {
     @Nullable Location getCustomSpawnLocation();
 
     /**
-     * Retrieves a {@link Type} object representing the permission required to enter the {@link BuildWorld}. Returns "-"
-     * if no specific permission is required.
+     * Retrieves a {@link Property} object representing the permission required to enter the {@link BuildWorld}. Returns
+     * "-" if no specific permission is required.
      *
-     * @return A {@link Type} containing the permission string
+     * @return A {@link Property} containing the permission string
      */
-    Type<String> permission();
+    Property<String> permission();
 
     /**
-     * Retrieves a {@link Type} object representing the project description of the {@link BuildWorld}. This typically
-     * provides a brief overview or purpose of the world.
+     * Gets the permission required to enter the {@link BuildWorld}.
      *
-     * @return A {@link Type} containing the project description string
-     */
-    Type<String> project();
-
-    /**
-     * Retrieves a {@link Type} object representing the {@link Difficulty} of the {@link BuildWorld}.
-     *
-     * @return A {@link Type} containing the world's difficulty setting
-     */
-    Type<Difficulty> difficulty();
-
-    /**
-     * Retrieves a {@link Type} object representing the {@link XMaterial} used to display the {@link BuildWorld} in the
-     * navigator menus.
-     *
-     * @return A {@link Type} containing the material used for display
-     */
-    Type<XMaterial> material();
-
-    /**
-     * Retrieves a {@link Type} object representing the current {@link BuildWorldStatus} of the world. This indicates
-     * the building progression or state of the world.
-     *
-     * @return A {@link Type} containing the current build status
-     */
-    Type<BuildWorldStatus> status();
-
-    /**
-     * Retrieves a {@link Type} object indicating whether block breaking is allowed in the {@link BuildWorld}.
-     *
-     * @return A {@link Type} containing a boolean: {@code true} if allowed, otherwise {@code false}
-     */
-    Type<Boolean> blockBreaking();
-
-    /**
-     * Retrieves a {@link Type} object indicating whether block interactions (e.g., opening doors, chests) are enabled
-     * in the {@link BuildWorld}.
-     *
-     * @return A {@link Type} containing a boolean: {@code true} if enabled, otherwise {@code false}
-     */
-    Type<Boolean> blockInteractions();
-
-    /**
-     * Retrieves a {@link Type} object indicating whether block placement is allowed in the {@link BuildWorld}.
-     *
-     * @return A {@link Type} containing a boolean: {@code true} if allowed, otherwise {@code false}
-     */
-    Type<Boolean> blockPlacement();
-
-    /**
-     * Retrieves a {@link Type} object indicating whether the "builders feature" is enabled in the {@link BuildWorld}.
-     * When enabled, only designated builders can modify the world.
-     *
-     * @return A {@link Type} containing a boolean: {@code true} if enabled, otherwise {@code false}
-     */
-    Type<Boolean> buildersEnabled();
-
-    /**
-     * Retrieves a {@link Type} object indicating whether explosions are enabled in the {@link BuildWorld}.
-     *
-     * @return A {@link Type} containing a boolean: {@code true} if enabled, otherwise {@code false}
-     */
-    Type<Boolean> explosions();
-
-    /**
-     * Retrieves a {@link Type} object indicating whether entities in the {@link BuildWorld} have artificial
-     * intelligence.
-     *
-     * @return A {@link Type} containing a boolean: {@code true} if enabled, otherwise {@code false}
-     */
-    Type<Boolean> mobAi();
-
-    /**
-     * Retrieves a {@link Type} object indicating whether physics (e.g., gravity, fluid flow) is applied to blocks in
-     * the {@link BuildWorld}.
-     *
-     * @return A {@link Type} containing a boolean: {@code true} if enabled, otherwise {@code false}
-     */
-    Type<Boolean> physics();
-
-    /**
-     * Retrieves a {@link Type} object indicating whether this world is pinned to the top of the navigator, ahead of
-     * unpinned worlds regardless of the active sort order.
-     *
-     * @return A {@link Type} containing a boolean: {@code true} if pinned, otherwise {@code false}
+     * @return The permission string
      * @since TODO
      */
-    Type<Boolean> pinned();
+    default String getPermission() {
+        return permission().get();
+    }
 
     /**
-     * Retrieves a {@link Type} object indicating whether the {@link BuildWorld} is set to private visibility. A private
-     * world is typically only accessible to its creator and designated builders.
+     * Sets the permission required to enter the {@link BuildWorld}.
      *
-     * @return A {@link Type} containing a boolean: {@code true} if private, otherwise {@code false}
+     * @param permission The permission string
+     * @since TODO
      */
-    Type<Boolean> privateWorld();
+    default void setPermission(String permission) {
+        permission().set(permission);
+    }
+
+    /**
+     * Retrieves a {@link Property} object representing the project description of the {@link BuildWorld}. This typically
+     * provides a brief overview or purpose of the world.
+     *
+     * @return A {@link Property} containing the project description string
+     */
+    Property<String> project();
+
+    /**
+     * Gets the project description of the {@link BuildWorld}.
+     *
+     * @return The project description string
+     * @since TODO
+     */
+    default String getProject() {
+        return project().get();
+    }
+
+    /**
+     * Sets the project description of the {@link BuildWorld}.
+     *
+     * @param project The project description string
+     * @since TODO
+     */
+    default void setProject(String project) {
+        project().set(project);
+    }
+
+    /**
+     * Retrieves a {@link Property} object representing the {@link Difficulty} of the {@link BuildWorld}.
+     *
+     * @return A {@link Property} containing the world's difficulty setting
+     */
+    Property<Difficulty> difficulty();
+
+    /**
+     * Gets the {@link Difficulty} of the {@link BuildWorld}.
+     *
+     * @return The world's difficulty setting
+     * @since TODO
+     */
+    default Difficulty getDifficulty() {
+        return difficulty().get();
+    }
+
+    /**
+     * Sets the {@link Difficulty} of the {@link BuildWorld}.
+     *
+     * @param difficulty The world's difficulty setting
+     * @since TODO
+     */
+    default void setDifficulty(Difficulty difficulty) {
+        difficulty().set(difficulty);
+    }
+
+    /**
+     * Retrieves a {@link Property} object representing the {@link XMaterial} used to display the {@link BuildWorld} in
+     * the navigator menus.
+     *
+     * @return A {@link Property} containing the material used for display
+     */
+    Property<XMaterial> material();
+
+    /**
+     * Gets the {@link XMaterial} used to display the {@link BuildWorld} in the navigator menus.
+     *
+     * @return The material used for display
+     * @since TODO
+     */
+    default XMaterial getMaterial() {
+        return material().get();
+    }
+
+    /**
+     * Sets the {@link XMaterial} used to display the {@link BuildWorld} in the navigator menus.
+     *
+     * @param material The material used for display
+     * @since TODO
+     */
+    default void setMaterial(XMaterial material) {
+        material().set(material);
+    }
+
+    /**
+     * Retrieves a {@link Property} object representing the current {@link BuildWorldStatus} of the world. This indicates
+     * the building progression or state of the world.
+     *
+     * @return A {@link Property} containing the current build status
+     */
+    Property<BuildWorldStatus> status();
+
+    /**
+     * Gets the current {@link BuildWorldStatus} of the {@link BuildWorld}.
+     *
+     * @return The current build status
+     * @since TODO
+     */
+    default BuildWorldStatus getStatus() {
+        return status().get();
+    }
+
+    /**
+     * Sets the current {@link BuildWorldStatus} of the {@link BuildWorld}.
+     *
+     * @param status The current build status
+     * @since TODO
+     */
+    default void setStatus(BuildWorldStatus status) {
+        status().set(status);
+    }
+
+    /**
+     * Retrieves a {@link Property} object indicating whether block breaking is allowed in the {@link BuildWorld}.
+     *
+     * @return A {@link Property} containing a boolean: {@code true} if allowed, otherwise {@code false}
+     */
+    Property<Boolean> blockBreaking();
+
+    /**
+     * Gets whether block breaking is allowed in the {@link BuildWorld}.
+     *
+     * @return {@code true} if allowed, otherwise {@code false}
+     * @since TODO
+     */
+    default boolean isBlockBreaking() {
+        return blockBreaking().get();
+    }
+
+    /**
+     * Sets whether block breaking is allowed in the {@link BuildWorld}.
+     *
+     * @param blockBreaking {@code true} if allowed, otherwise {@code false}
+     * @since TODO
+     */
+    default void setBlockBreaking(boolean blockBreaking) {
+        blockBreaking().set(blockBreaking);
+    }
+
+    /**
+     * Retrieves a {@link Property} object indicating whether block interactions (e.g., opening doors, chests) are
+     * enabled in the {@link BuildWorld}.
+     *
+     * @return A {@link Property} containing a boolean: {@code true} if enabled, otherwise {@code false}
+     */
+    Property<Boolean> blockInteractions();
+
+    /**
+     * Gets whether block interactions are enabled in the {@link BuildWorld}.
+     *
+     * @return {@code true} if enabled, otherwise {@code false}
+     * @since TODO
+     */
+    default boolean isBlockInteractions() {
+        return blockInteractions().get();
+    }
+
+    /**
+     * Sets whether block interactions are enabled in the {@link BuildWorld}.
+     *
+     * @param blockInteractions {@code true} if enabled, otherwise {@code false}
+     * @since TODO
+     */
+    default void setBlockInteractions(boolean blockInteractions) {
+        blockInteractions().set(blockInteractions);
+    }
+
+    /**
+     * Retrieves a {@link Property} object indicating whether block placement is allowed in the {@link BuildWorld}.
+     *
+     * @return A {@link Property} containing a boolean: {@code true} if allowed, otherwise {@code false}
+     */
+    Property<Boolean> blockPlacement();
+
+    /**
+     * Gets whether block placement is allowed in the {@link BuildWorld}.
+     *
+     * @return {@code true} if allowed, otherwise {@code false}
+     * @since TODO
+     */
+    default boolean isBlockPlacement() {
+        return blockPlacement().get();
+    }
+
+    /**
+     * Sets whether block placement is allowed in the {@link BuildWorld}.
+     *
+     * @param blockPlacement {@code true} if allowed, otherwise {@code false}
+     * @since TODO
+     */
+    default void setBlockPlacement(boolean blockPlacement) {
+        blockPlacement().set(blockPlacement);
+    }
+
+    /**
+     * Retrieves a {@link Property} object indicating whether the "builders feature" is enabled in the
+     * {@link BuildWorld}. When enabled, only designated builders can modify the world.
+     *
+     * @return A {@link Property} containing a boolean: {@code true} if enabled, otherwise {@code false}
+     */
+    Property<Boolean> buildersEnabled();
+
+    /**
+     * Gets whether the "builders feature" is enabled in the {@link BuildWorld}.
+     *
+     * @return {@code true} if enabled, otherwise {@code false}
+     * @since TODO
+     */
+    default boolean isBuildersEnabled() {
+        return buildersEnabled().get();
+    }
+
+    /**
+     * Sets whether the "builders feature" is enabled in the {@link BuildWorld}.
+     *
+     * @param buildersEnabled {@code true} if enabled, otherwise {@code false}
+     * @since TODO
+     */
+    default void setBuildersEnabled(boolean buildersEnabled) {
+        buildersEnabled().set(buildersEnabled);
+    }
+
+    /**
+     * Retrieves a {@link Property} object indicating whether explosions are enabled in the {@link BuildWorld}.
+     *
+     * @return A {@link Property} containing a boolean: {@code true} if enabled, otherwise {@code false}
+     */
+    Property<Boolean> explosions();
+
+    /**
+     * Gets whether explosions are enabled in the {@link BuildWorld}.
+     *
+     * @return {@code true} if enabled, otherwise {@code false}
+     * @since TODO
+     */
+    default boolean isExplosions() {
+        return explosions().get();
+    }
+
+    /**
+     * Sets whether explosions are enabled in the {@link BuildWorld}.
+     *
+     * @param explosions {@code true} if enabled, otherwise {@code false}
+     * @since TODO
+     */
+    default void setExplosions(boolean explosions) {
+        explosions().set(explosions);
+    }
+
+    /**
+     * Retrieves a {@link Property} object indicating whether entities in the {@link BuildWorld} have artificial
+     * intelligence.
+     *
+     * @return A {@link Property} containing a boolean: {@code true} if enabled, otherwise {@code false}
+     */
+    Property<Boolean> mobAi();
+
+    /**
+     * Gets whether entities in the {@link BuildWorld} have artificial intelligence.
+     *
+     * @return {@code true} if enabled, otherwise {@code false}
+     * @since TODO
+     */
+    default boolean isMobAi() {
+        return mobAi().get();
+    }
+
+    /**
+     * Sets whether entities in the {@link BuildWorld} have artificial intelligence.
+     *
+     * @param mobAi {@code true} if enabled, otherwise {@code false}
+     * @since TODO
+     */
+    default void setMobAi(boolean mobAi) {
+        mobAi().set(mobAi);
+    }
+
+    /**
+     * Retrieves a {@link Property} object indicating whether physics (e.g., gravity, fluid flow) is applied to blocks in
+     * the {@link BuildWorld}.
+     *
+     * @return A {@link Property} containing a boolean: {@code true} if enabled, otherwise {@code false}
+     */
+    Property<Boolean> physics();
+
+    /**
+     * Gets whether physics is applied to blocks in the {@link BuildWorld}.
+     *
+     * @return {@code true} if enabled, otherwise {@code false}
+     * @since TODO
+     */
+    default boolean isPhysics() {
+        return physics().get();
+    }
+
+    /**
+     * Sets whether physics is applied to blocks in the {@link BuildWorld}.
+     *
+     * @param physics {@code true} if enabled, otherwise {@code false}
+     * @since TODO
+     */
+    default void setPhysics(boolean physics) {
+        physics().set(physics);
+    }
+
+    /**
+     * Retrieves a {@link Property} object indicating whether this world is pinned to the top of the navigator, ahead of
+     * unpinned worlds regardless of the active sort order.
+     *
+     * @return A {@link Property} containing a boolean: {@code true} if pinned, otherwise {@code false}
+     * @since TODO
+     */
+    Property<Boolean> pinned();
+
+    /**
+     * Gets whether this world is pinned to the top of the navigator.
+     *
+     * @return {@code true} if pinned, otherwise {@code false}
+     * @since TODO
+     */
+    default boolean isPinned() {
+        return pinned().get();
+    }
+
+    /**
+     * Sets whether this world is pinned to the top of the navigator.
+     *
+     * @param pinned {@code true} if pinned, otherwise {@code false}
+     * @since TODO
+     */
+    default void setPinned(boolean pinned) {
+        pinned().set(pinned);
+    }
+
+    /**
+     * Retrieves a {@link Property} object indicating whether the {@link BuildWorld} is set to private visibility. A
+     * private world is typically only accessible to its creator and designated builders.
+     *
+     * @return A {@link Property} containing a boolean: {@code true} if private, otherwise {@code false}
+     */
+    Property<Boolean> privateWorld();
+
+    /**
+     * Gets whether the {@link BuildWorld} is set to private visibility.
+     *
+     * @return {@code true} if private, otherwise {@code false}
+     * @since TODO
+     */
+    default boolean isPrivateWorld() {
+        return privateWorld().get();
+    }
+
+    /**
+     * Sets whether the {@link BuildWorld} is set to private visibility.
+     *
+     * @param privateWorld {@code true} if private, otherwise {@code false}
+     * @since TODO
+     */
+    default void setPrivateWorld(boolean privateWorld) {
+        privateWorld().set(privateWorld);
+    }
 
     /**
      * Gets the number of seconds that have passed since that last {@link Backup} of the {@link BuildWorld} was created.
      *
      * @return The number of seconds since the last backup
      */
-    Type<Integer> timeSinceBackup();
+    Property<Integer> timeSinceBackup();
 
     /**
-     * Retrieves a {@link Type} object representing the timestamp (in milliseconds since epoch) of the last time the
+     * Gets the number of seconds that have passed since the last {@link Backup} of the {@link BuildWorld} was created.
+     *
+     * @return The number of seconds since the last backup
+     * @since TODO
+     */
+    default int getTimeSinceBackup() {
+        return timeSinceBackup().get();
+    }
+
+    /**
+     * Sets the number of seconds that have passed since the last {@link Backup} of the {@link BuildWorld} was created.
+     *
+     * @param timeSinceBackup The number of seconds since the last backup
+     * @since TODO
+     */
+    default void setTimeSinceBackup(int timeSinceBackup) {
+        timeSinceBackup().set(timeSinceBackup);
+    }
+
+    /**
+     * Retrieves a {@link Property} object representing the timestamp (in milliseconds since epoch) of the last time the
      * {@link BuildWorld} was edited.
      *
-     * @return A {@link Type} containing the last edited timestamp
+     * @return A {@link Property} containing the last edited timestamp
      */
-    Type<Long> lastEdited();
+    Property<Long> lastEdited();
 
     /**
-     * Retrieves a {@link Type} object representing the timestamp (in milliseconds since epoch) of the last time the
+     * Gets the timestamp (in milliseconds since epoch) of the last time the {@link BuildWorld} was edited.
+     *
+     * @return The last edited timestamp
+     * @since TODO
+     */
+    default long getLastEdited() {
+        return lastEdited().get();
+    }
+
+    /**
+     * Sets the timestamp (in milliseconds since epoch) of the last time the {@link BuildWorld} was edited.
+     *
+     * @param lastEdited The last edited timestamp
+     * @since TODO
+     */
+    default void setLastEdited(long lastEdited) {
+        lastEdited().set(lastEdited);
+    }
+
+    /**
+     * Retrieves a {@link Property} object representing the timestamp (in milliseconds since epoch) of the last time the
      * {@link BuildWorld} was loaded.
      *
-     * @return A {@link Type} containing the last loaded timestamp
+     * @return A {@link Property} containing the last loaded timestamp
      */
-    Type<Long> lastLoaded();
+    Property<Long> lastLoaded();
 
     /**
-     * Retrieves a {@link Type} object representing the timestamp (in milliseconds since epoch) of the last time the
+     * Gets the timestamp (in milliseconds since epoch) of the last time the {@link BuildWorld} was loaded.
+     *
+     * @return The last loaded timestamp
+     * @since TODO
+     */
+    default long getLastLoaded() {
+        return lastLoaded().get();
+    }
+
+    /**
+     * Sets the timestamp (in milliseconds since epoch) of the last time the {@link BuildWorld} was loaded.
+     *
+     * @param lastLoaded The last loaded timestamp
+     * @since TODO
+     */
+    default void setLastLoaded(long lastLoaded) {
+        lastLoaded().set(lastLoaded);
+    }
+
+    /**
+     * Retrieves a {@link Property} object representing the timestamp (in milliseconds since epoch) of the last time the
      * {@link BuildWorld} was unloaded.
      *
-     * @return A {@link Type} containing the last unloaded timestamp
+     * @return A {@link Property} containing the last unloaded timestamp
      */
-    Type<Long> lastUnloaded();
+    Property<Long> lastUnloaded();
 
     /**
-     * Gets a map of all configurable data points for the {@link BuildWorld}.
+     * Gets the timestamp (in milliseconds since epoch) of the last time the {@link BuildWorld} was unloaded.
      *
-     * @return An unmodifiable map where keys are data point names and values are their corresponding {@link Type}
-     *     objects
+     * @return The last unloaded timestamp
+     * @since TODO
      */
-    Map<String, Type<?>> getAllData();
+    default long getLastUnloaded() {
+        return lastUnloaded().get();
+    }
+
+    /**
+     * Sets the timestamp (in milliseconds since epoch) of the last time the {@link BuildWorld} was unloaded.
+     *
+     * @param lastUnloaded The last unloaded timestamp
+     * @since TODO
+     */
+    default void setLastUnloaded(long lastUnloaded) {
+        lastUnloaded().set(lastUnloaded);
+    }
 }

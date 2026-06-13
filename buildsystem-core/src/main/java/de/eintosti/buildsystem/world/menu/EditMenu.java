@@ -24,7 +24,7 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.api.data.Type;
+import de.eintosti.buildsystem.api.data.Property;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
@@ -135,7 +135,7 @@ public class EditMenu extends Menu {
             String permission,
             String itemKey,
             String loreKey,
-            Function<WorldData, Type<Boolean>> data) {}
+            Function<WorldData, Property<Boolean>> data) {}
 
     private final BuildSystemPlugin plugin;
     private final PlayerServiceImpl playerManager;
@@ -206,9 +206,7 @@ public class EditMenu extends Menu {
                         messages.getStringList(
                                 "worldeditor_project_lore",
                                 player,
-                                Map.entry(
-                                        "%project%",
-                                        buildWorld.getData().project().get()))));
+                                Map.entry("%project%", buildWorld.getData().getProject()))));
         inv.setItem(
                 42,
                 InventoryUtils.createItem(
@@ -217,15 +215,13 @@ public class EditMenu extends Menu {
                         messages.getStringList(
                                 "worldeditor_permission_lore",
                                 player,
-                                Map.entry(
-                                        "%permission%",
-                                        buildWorld.getData().permission().get()))));
+                                Map.entry("%permission%", buildWorld.getData().getPermission()))));
     }
 
     private void addBuildWorldInfoItem(Player player, Inventory inventory) {
         String worldName = buildWorld.getName();
         String displayName = messages.getString("worldeditor_world_item", player, Map.entry("%world%", worldName));
-        XMaterial material = buildWorld.getData().material().get();
+        XMaterial material = buildWorld.getData().getMaterial();
 
         if (material == XMaterial.PLAYER_HEAD) {
             plugin.getMenuItems().addWorldItem(inventory, 4, buildWorld, displayName, new ArrayList<>());
@@ -275,7 +271,7 @@ public class EditMenu extends Menu {
                             inventory,
                             30,
                             XMaterial.IRON_PICKAXE,
-                            buildWorld.getData().buildersEnabled().get(),
+                            buildWorld.getData().isBuildersEnabled(),
                             "worldeditor_builders_item",
                             "worldeditor_builders_lore");
         } else {
@@ -291,7 +287,7 @@ public class EditMenu extends Menu {
     private void addVisibilityItem(Player player, Inventory inventory) {
         int slot = 32;
         String displayName = messages.getString("worldeditor_visibility_item", player);
-        boolean isPrivate = buildWorld.getData().privateWorld().get();
+        boolean isPrivate = buildWorld.getData().isPrivateWorld();
 
         if (!playerManager.canCreateWorld(player, Visibility.matchVisibility(isPrivate))) {
             inventory.setItem(
@@ -312,7 +308,7 @@ public class EditMenu extends Menu {
 
     private void addDifficultyItem(Player player, Inventory inventory) {
         XMaterial material =
-                switch (buildWorld.getData().difficulty().get()) {
+                switch (buildWorld.getData().getDifficulty()) {
                     case EASY -> XMaterial.GOLDEN_HELMET;
                     case NORMAL -> XMaterial.IRON_HELMET;
                     case HARD -> XMaterial.DIAMOND_HELMET;
@@ -331,7 +327,7 @@ public class EditMenu extends Menu {
     }
 
     private String getDifficultyName(BuildWorld buildWorld, Player player) {
-        return switch (buildWorld.getData().difficulty().get()) {
+        return switch (buildWorld.getData().getDifficulty()) {
             case PEACEFUL -> messages.getString("difficulty_peaceful", player);
             case EASY -> messages.getString("difficulty_easy", player);
             case NORMAL -> messages.getString("difficulty_normal", player);
@@ -353,7 +349,7 @@ public class EditMenu extends Menu {
         Toggle toggle = TOGGLES.get(event.getSlot());
         if (toggle != null) {
             if (requirePermission(player, toggle.permission())) {
-                Type<Boolean> data = toggle.data().apply(worldData);
+                Property<Boolean> data = toggle.data().apply(worldData);
                 data.set(!data.get());
                 reopen(player);
             }
@@ -384,7 +380,7 @@ public class EditMenu extends Menu {
                     new BuilderMenu(plugin, buildWorld, player).open(player);
                     return;
                 }
-                worldData.buildersEnabled().set(!worldData.buildersEnabled().get());
+                worldData.setBuildersEnabled(!worldData.isBuildersEnabled());
             }
             case 32 -> {
                 if (itemStack.getType() == XMaterial.BARRIER.get()) {
