@@ -20,33 +20,33 @@ package de.eintosti.buildsystem.world.backup.storage;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
-import de.eintosti.buildsystem.api.world.backup.BackupStorage;
-import de.eintosti.buildsystem.config.Config;
+import de.eintosti.buildsystem.api.world.backup.BackupProfile;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.backup.BackupImpl;
-import de.eintosti.buildsystem.world.backup.BackupService;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.function.Function;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class LocalBackupStorage implements BackupStorage {
+public class LocalBackupStorage extends AbstractBackupStorage {
 
-    private final BuildSystemPlugin plugin;
     private final Path backupPath;
+    private final Function<BuildWorld, BackupProfile> profileProvider;
 
-    public LocalBackupStorage(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-
+    public LocalBackupStorage(BuildSystemPlugin plugin, Executor executor) {
+        super(plugin, executor);
+        this.profileProvider = bw -> plugin.getBackupService().getProfile(bw);
         this.backupPath = plugin.getDataFolder().toPath().resolve("backups");
         if (!Files.exists(backupPath)) {
             try {
@@ -57,46 +57,58 @@ public class LocalBackupStorage implements BackupStorage {
         }
     }
 
+    /**
+     * Package-private constructor for unit tests (no BuildSystemPlugin required).
+     */
+    LocalBackupStorage(
+            Logger logger, Executor executor, Path backupRoot, Function<BuildWorld, BackupProfile> profileProvider) {
+        super(logger, executor);
+        this.profileProvider = profileProvider;
+        this.backupPath = backupRoot;
+    }
+
     @Override
-    public CompletableFuture<List<Backup>> listBackups(BuildWorld buildWorld) {
-        return CompletableFuture.supplyAsync(() -> {
-            List<Backup> backups = new ArrayList<>(Config.World.Backup.maxBackupsPerWorld);
+    protected List<Backup> doListBackups(BuildWorld buildWorld) throws IOException {
+        Path dir = getBackupDirectory(buildWorld);
+        if (!Files.exists(dir)) {
+            return new ArrayList<>();
+        }
+        List<Backup> backups = new ArrayList<>();
+        try (Stream<Path> walk = Files.walk(dir)) {
+            walk.filter(LocalBackupStorage::isZip).forEach(path -> {
+                long creationTime = creationTimeOf(path);
+                backups.add(new BackupImpl(
+                        profileProvider.apply(buildWorld),
+                        creationTime,
+                        path.toAbsolutePath().toString()));
+            });
+        }
+        return backups;
+    }
 
-            try (Stream<Path> walk = Files.walk(getBackupDirectory(buildWorld))) {
-                walk.filter(LocalBackupStorage::isValidFile).forEach(path -> backups.add(
-                        new BackupImpl(
-                                plugin.getBackupService().getProfile(buildWorld),
-                                FileUtils.getDirectoryCreation(path.toFile()),
-                                path.toAbsolutePath().toString()
-                        )
-                ));
-            } catch (IOException e) {
-                plugin.getLogger().log(Level.SEVERE, "Error while listing backups", e);
-                return Collections.emptyList();
-            }
-
-            backups.sort(Comparator.comparingLong(Backup::creationTime).reversed());
-            return backups;
-        }, BackupService.BACKUP_EXECUTOR);
+    private long creationTimeOf(Path path) {
+        try {
+            return Files.readAttributes(path, BasicFileAttributes.class)
+                    .creationTime()
+                    .toMillis();
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Failed to read attributes from " + path, e);
+            return System.currentTimeMillis();
+        }
     }
 
     @Override
     public CompletableFuture<Backup> storeBackup(BuildWorld buildWorld) {
-        return CompletableFuture.supplyAsync(() -> {
+        return supply("store backup for " + buildWorld.getName(), () -> {
             long timestamp = System.currentTimeMillis();
-            File storage = new File(getBackupDirectory(buildWorld).toFile(), getBackupName(timestamp));
+            File storage = new File(getBackupDirectory(buildWorld).toFile(), backupName(timestamp));
             File zip = FileUtils.zipWorld(storage, buildWorld);
             if (zip == null) {
-                throw new RuntimeException("Failed to complete the backup for " + buildWorld.getName());
+                throw new IOException("Failed to complete the backup for " + buildWorld.getName());
             }
-
-            plugin.getLogger().info("Backed up world '%s'. Took %sms".formatted(buildWorld.getName(), (System.currentTimeMillis() - timestamp)));
-            return new BackupImpl(
-                    plugin.getBackupService().getProfile(buildWorld),
-                    timestamp,
-                    zip.getAbsolutePath()
-            );
-        }, BackupService.BACKUP_EXECUTOR);
+            logDuration(buildWorld, timestamp);
+            return new BackupImpl(profileProvider.apply(buildWorld), timestamp, zip.getAbsolutePath());
+        });
     }
 
     @Override
@@ -105,32 +117,20 @@ public class LocalBackupStorage implements BackupStorage {
     }
 
     @Override
-    public CompletableFuture<Void> deleteBackup(Backup backup) {
-        return CompletableFuture.runAsync(() -> {
-            File file = new File(backup.key());
-            try {
-                Files.deleteIfExists(file.toPath());
-            } catch (IOException e) {
-                throw new RuntimeException("Unable to delete backup " + backup.key(), e);
-            }
-        }, BackupService.BACKUP_EXECUTOR);
+    protected void doDeleteBackup(Backup backup) throws IOException {
+        Files.deleteIfExists(Path.of(backup.key()));
     }
 
     @Override
     public void close() {
-        // Nothing to do for local storage
+        // Nothing to release for local storage
     }
 
-    /**
-     * Gets the directory containing the backups for this profile. This directory may not exist.
-     *
-     * @return Folder that contains the backups for this profile
-     */
     public Path getBackupDirectory(BuildWorld buildWorld) {
-        return FileUtils.resolve(this.backupPath, buildWorld.getUniqueId().toString());
+        return this.backupPath.resolve(buildWorld.getUniqueId().toString());
     }
 
-    private static boolean isValidFile(Path path) {
+    private static boolean isZip(Path path) {
         return path.getFileName().toString().endsWith(".zip");
     }
 }

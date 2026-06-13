@@ -26,23 +26,13 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.util.UUIDFetcher;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -60,11 +50,13 @@ public class YamlWorldStorage extends WorldStorageImpl {
 
     private static final String WORLDS_KEY = "worlds";
 
+    private final BuildSystemPlugin plugin;
     private final File file;
     private final FileConfiguration config;
 
-    public YamlWorldStorage(BuildSystemPlugin plugin, WorldServiceImpl worldService) {
-        super(plugin, worldService);
+    public YamlWorldStorage(BuildSystemPlugin plugin) {
+        super(plugin.getLogger());
+        this.plugin = plugin;
         this.file = new File(plugin.getDataFolder(), "worlds.yml");
         this.config = YamlConfiguration.loadConfiguration(file);
     }
@@ -80,7 +72,8 @@ public class YamlWorldStorage extends WorldStorageImpl {
     @Override
     public CompletableFuture<Void> save(Collection<BuildWorld> buildWorlds) {
         return CompletableFuture.runAsync(() -> {
-            buildWorlds.forEach(buildWorld -> config.set(WORLDS_KEY + "." + buildWorld.getName(), serializeWorld(buildWorld)));
+            buildWorlds.forEach(
+                    buildWorld -> config.set(WORLDS_KEY + "." + buildWorld.getName(), serializeWorld(buildWorld)));
             saveFile();
         });
     }
@@ -113,7 +106,9 @@ public class YamlWorldStorage extends WorldStorageImpl {
     }
 
     private Map<String, Object> serializeWorldData(WorldData worldData) {
-        return worldData.getAllData().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getConfigFormat()));
+        return worldData.getAllData().entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey, entry -> entry.getValue().getConfigFormat()));
     }
 
     private String serializeBuilders(Collection<Builder> builders) {
@@ -126,11 +121,8 @@ public class YamlWorldStorage extends WorldStorageImpl {
 
     @Override
     public CompletableFuture<Collection<BuildWorld>> load() {
-        return CompletableFuture.supplyAsync(() ->
-                loadWorldKeys().stream()
-                        .map(this::loadWorld)
-                        .collect(Collectors.toCollection(ArrayList::new))
-        );
+        return CompletableFuture.supplyAsync(
+                () -> loadWorldKeys().stream().map(this::loadWorld).collect(Collectors.toCollection(ArrayList::new)));
     }
 
     private Set<String> loadWorldKeys() {
@@ -158,22 +150,21 @@ public class YamlWorldStorage extends WorldStorageImpl {
     private BuildWorldImpl loadWorld(String worldName) {
         UUID uuid = config.isString("worlds." + worldName + ".uuid")
                 ? UUID.fromString(config.getString("worlds." + worldName + ".uuid"))
-                : UUID.randomUUID(); // Generate a new UUID if not present
+                : UUID.randomUUID();
         Builder creator = parseCreator(worldName);
         BuildWorldType worldType = config.isString("worlds." + worldName + ".type")
                 ? BuildWorldType.valueOf(config.getString("worlds." + worldName + ".type"))
                 : BuildWorldType.UNKNOWN;
         WorldDataImpl worldData = parseWorldData(worldName);
-        long creationDate = config.isLong("worlds." + worldName + ".date")
-                ? config.getLong("worlds." + worldName + ".date")
-                : -1;
+        long creationDate =
+                config.isLong("worlds." + worldName + ".date") ? config.getLong("worlds." + worldName + ".date") : -1;
         List<Builder> builders = parseBuilders(worldName);
         String generatorName = config.getString("worlds." + worldName + ".chunk-generator");
-        CustomGeneratorImpl customGenerator = generatorName != null
-                ? CustomGeneratorImpl.of(generatorName, worldName)
-                : null;
+        CustomGeneratorImpl customGenerator =
+                generatorName != null ? CustomGeneratorImpl.of(generatorName, worldName) : null;
 
         return new BuildWorldImpl(
+                plugin,
                 uuid,
                 worldName,
                 worldType,
@@ -183,7 +174,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
                 creationDate,
                 customGenerator,
                 null // The folder will be set later
-        );
+                );
     }
 
     @Contract("_ -> new")
@@ -193,7 +184,8 @@ public class YamlWorldStorage extends WorldStorageImpl {
                 .withCustomSpawn(config.getString(WORLDS_KEY + "." + worldName + ".spawn", ""))
                 .withPermission(config.getString(path + ".permission", "-"))
                 .withProject(config.getString(path + ".project", "-"))
-                .withDifficulty(Difficulty.valueOf(config.getString(path + ".difficulty", "PEACEFUL").toUpperCase(Locale.ROOT)))
+                .withDifficulty(Difficulty.valueOf(
+                        config.getString(path + ".difficulty", "PEACEFUL").toUpperCase(Locale.ROOT)))
                 .withMaterial(parseMaterial(path + ".material", worldName))
                 .withStatus(BuildWorldStatus.valueOf(config.getString(path + ".status")))
                 .withBlockBreaking(config.getBoolean(path + ".block-breaking"))
@@ -208,6 +200,10 @@ public class YamlWorldStorage extends WorldStorageImpl {
                 .withLastLoaded(config.getLong(path + ".last-loaded"))
                 .withLastUnloaded(config.getLong(path + ".last-unloaded"))
                 .withLastEdited(config.getLong(path + ".last-edited"))
+                .withPermissionOverrideEnabled(
+                        () -> plugin.getConfigService().current().folder().overridePermissions())
+                .withProjectOverrideEnabled(
+                        () -> plugin.getConfigService().current().folder().overrideProjects())
                 .build();
     }
 
@@ -228,8 +224,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
         }
     }
 
-    @Nullable
-    private Builder parseCreator(String worldName) {
+    private @Nullable Builder parseCreator(String worldName) {
         final String creator = config.getString(WORLDS_KEY + "." + worldName + ".creator");
 
         // Previously, creator name & id were stored separately
@@ -244,7 +239,8 @@ public class YamlWorldStorage extends WorldStorageImpl {
                 return Builder.of(UUID.fromString(oldCreatorId), creator);
             }
 
-            UUID creatorId = UUIDFetcher.getUUID(creator);
+            // Runs inside load()'s supplyAsync, so this off-main blocking lookup is safe.
+            UUID creatorId = plugin.getPlayerLookupService().lookupUniqueIdBlocking(creator);
             if (creatorId == null) {
                 return null;
             }
@@ -265,7 +261,9 @@ public class YamlWorldStorage extends WorldStorageImpl {
                 for (String serializedBuilder : splitBuilders) {
                     Builder builder = Builder.deserialize(serializedBuilder);
                     if (builder == null) {
-                        plugin.getLogger().warning("Could not deserialize builder: " + serializedBuilder + " for world: " + worldName);
+                        plugin.getLogger()
+                                .warning("Could not deserialize builder: " + serializedBuilder + " for world: "
+                                        + worldName);
                         continue;
                     }
                     builders.add(builder);

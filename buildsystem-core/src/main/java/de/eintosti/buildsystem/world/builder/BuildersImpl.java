@@ -17,15 +17,10 @@
  */
 package de.eintosti.buildsystem.world.builder;
 
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import de.eintosti.buildsystem.i18n.Messages;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.bukkit.entity.Player;
@@ -36,18 +31,19 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class BuildersImpl implements Builders {
 
-    @Nullable
-    private Builder creator;
+    private final Messages messages;
+
+    private @Nullable Builder creator;
     private final Map<UUID, Builder> buildersByUuid;
 
-    public BuildersImpl(@Nullable Builder creator, List<Builder> builders) {
+    public BuildersImpl(Messages messages, @Nullable Builder creator, List<Builder> builders) {
+        this.messages = messages;
         this.creator = creator;
         this.buildersByUuid = builders.stream().collect(Collectors.toMap(Builder::getUniqueId, Function.identity()));
     }
 
     @Override
-    @Nullable
-    public Builder getCreator() {
+    public @Nullable Builder getCreator() {
         return creator;
     }
 
@@ -63,7 +59,7 @@ public class BuildersImpl implements Builders {
 
     @Override
     public boolean isCreator(Player player) {
-        return hasCreator() && player.getUniqueId().equals(creator.getUniqueId());
+        return creator != null && player.getUniqueId().equals(creator.getUniqueId());
     }
 
     @Override
@@ -72,17 +68,14 @@ public class BuildersImpl implements Builders {
     }
 
     @Override
-    @Nullable
-    public Builder getBuilder(UUID uuid) {
+    public @Nullable Builder getBuilder(UUID uuid) {
         return buildersByUuid.get(uuid);
     }
 
     @Override
     @Unmodifiable
     public List<String> getBuilderNames() {
-        return getAllBuilders().stream()
-                .map(Builder::getName)
-                .toList();
+        return getAllBuilders().stream().map(Builder::getName).toList();
     }
 
     @Override
@@ -112,7 +105,7 @@ public class BuildersImpl implements Builders {
 
     @Override
     public String asPlaceholder(Player player) {
-        String template = Messages.getString("world_item_builders_builder_template", player);
+        String template = messages.getString("world_item_builders_builder_template", player);
         List<String> builderNames = getBuilderNames();
 
         String string = "";
@@ -131,12 +124,12 @@ public class BuildersImpl implements Builders {
     /**
      * Formats the builders for the lore of the world item.
      *
-     * @param player          The player to display the lore to
+     * @param player The player to display the lore to
      * @param buildersPerLine The number of builders to display per line
      * @return A list of formatted builder lines, each containing up to 3 builders
      */
     public List<String> formatBuildersForLore(Player player, int buildersPerLine) {
-        String template = Messages.getString("world_item_builders_builder_template", player); // e.g., "&b%builder%&7, "
+        String template = messages.getString("world_item_builders_builder_template", player); // e.g., "&b%builder%&7, "
 
         String[] templateParts = template.split("%builder%");
         String prefix = templateParts.length > 0 ? templateParts[0] : "";
@@ -166,7 +159,7 @@ public class BuildersImpl implements Builders {
 
             if (isLastBuilderInLine || isLastOverallBuilder) {
                 loreLines.add(String.join("", currentLineBuilders).trim());
-                currentLineBuilders.clear(); // Clear for the next line
+                currentLineBuilders.clear();
             }
         }
 

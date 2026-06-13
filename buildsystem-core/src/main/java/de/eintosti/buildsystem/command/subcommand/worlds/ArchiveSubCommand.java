@@ -18,31 +18,27 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
-import de.eintosti.buildsystem.world.navigator.inventory.ArchivedWorldsInventory;
+import de.eintosti.buildsystem.world.menu.ArchivedWorldsMenu;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class ArchiveSubCommand implements SubCommand {
-
-    private final BuildSystemPlugin plugin;
+public class ArchiveSubCommand extends AbstractSubCommand {
 
     public ArchiveSubCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
     }
 
     @Override
-    public void execute(Player player, String[] args) {
+    public void execute(Player player, String worldName, String[] args) {
         if (!hasPermission(player)) {
-            Messages.sendPermissionError(player);
+            messages.sendPermissionError(player);
             return;
         }
 
-        new ArchivedWorldsInventory(plugin, player).openInventory();
+        new ArchivedWorldsMenu(plugin, player).open(player);
     }
 
     @Override

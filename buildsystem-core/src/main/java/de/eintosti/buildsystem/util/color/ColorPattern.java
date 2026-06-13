@@ -26,7 +26,8 @@ import org.jspecify.annotations.NullMarked;
 public interface ColorPattern {
 
     /**
-     * Applies this pattern to the provided String. Output might be the same as the input if this pattern is not present.
+     * Applies this pattern to the provided String. Output might be the same as the input if this pattern is not
+     * present.
      *
      * @param string The String to which this pattern should be applied to
      * @return The new String with the applied pattern

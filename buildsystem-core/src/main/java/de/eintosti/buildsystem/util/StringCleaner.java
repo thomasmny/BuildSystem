@@ -17,7 +17,8 @@
  */
 package de.eintosti.buildsystem.util;
 
-import de.eintosti.buildsystem.config.Config.World;
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -25,46 +26,44 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class StringCleaner {
 
-    public static final String INVALID_NAME_CHARACTERS = "[^A-Za-z\\d/_-]";
+    public static final String INVALID_NAME_CHARACTERS = "[^A-Za-z\\d_-]";
+    public static final String DEFAULT_INVALID_CHARACTERS = "^\b$";
 
-    private StringCleaner() {
-    }
+    private StringCleaner() {}
 
-    /**
-     * Checks if the input string contains any invalid characters as defined by {@link #INVALID_NAME_CHARACTERS} and {@link World#invalidCharacters}.
-     *
-     * @param input The input string to check
-     * @return {@code true} if the input contains invalid characters, {@code false} otherwise
-     */
-    public static boolean hasInvalidNameCharacters(String input) {
-        return Arrays.stream(input.split("")).anyMatch(c -> c.matches(INVALID_NAME_CHARACTERS) || c.matches(World.invalidCharacters));
-    }
-
-    /**
-     * Finds the first invalid character in the input string based on the defined invalid characters.
-     *
-     * @param input The input string to check for invalid characters
-     * @return The first invalid character found, or {@code null} if no invalid characters are present
-     */
-    @Nullable
-    public static String firstInvalidChar(String input) {
+    public static boolean hasInvalidNameCharacters(String input, String configuredPattern) {
         return Arrays.stream(input.split(""))
-                .filter(c -> c.matches(INVALID_NAME_CHARACTERS) || c.matches(World.invalidCharacters))
+                .anyMatch(c -> c.matches(INVALID_NAME_CHARACTERS) || c.matches(configuredPattern));
+    }
+
+    public static @Nullable String firstInvalidChar(String input, String configuredPattern) {
+        return Arrays.stream(input.split(""))
+                .filter(c -> c.matches(INVALID_NAME_CHARACTERS) || c.matches(configuredPattern))
                 .findFirst()
                 .orElse(null);
     }
 
-    /**
-     * Sanitizes the input string by removing invalid characters, replacing spaces with underscores, and trimming whitespace.
-     *
-     * @param input The input string to sanitize
-     * @return A sanitized version of the input string
-     */
-    public static String sanitize(String input) {
-        return input
-                .replaceAll(INVALID_NAME_CHARACTERS, "")
-                .replaceAll(World.invalidCharacters, "")
+    public static String sanitize(String input, String configuredPattern) {
+        return input.replaceAll(INVALID_NAME_CHARACTERS, "")
+                .replaceAll(configuredPattern, "")
                 .replace(" ", "_")
                 .trim();
+    }
+
+    /**
+     * Checks whether a resolved file escapes a given base directory.
+     *
+     * @param base the expected parent directory
+     * @param resolved the file to check (must already be constructed from base + user input)
+     * @return {@code true} if the resolved file is NOT under base (i.e., an escape attempt)
+     */
+    public static boolean isPathEscape(File base, File resolved) {
+        try {
+            return !resolved.getCanonicalPath().startsWith(base.getCanonicalPath() + File.separator)
+                    && !resolved.getCanonicalFile().equals(base.getCanonicalFile());
+        } catch (IOException e) {
+            // If we can't resolve canonical paths, assume escape
+            return true;
+        }
     }
 }

@@ -18,16 +18,16 @@
 package de.eintosti.buildsystem.api.world;
 
 import com.cryptomorin.xseries.profiles.objects.Profileable;
+import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.api.world.util.WorldLoader;
-import de.eintosti.buildsystem.api.world.util.WorldPermissions;
-import de.eintosti.buildsystem.api.world.util.WorldTeleporter;
-import de.eintosti.buildsystem.api.world.util.WorldUnloader;
+import de.eintosti.buildsystem.api.world.lifecycle.WorldLoader;
+import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
+import de.eintosti.buildsystem.api.world.lifecycle.WorldUnloader;
 import java.util.UUID;
 import org.bukkit.Difficulty;
 import org.bukkit.Material;
@@ -36,8 +36,8 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Represents a world managed by the BuildSystem plugin, extending the {@link Displayable} interface. This interface provides comprehensive access to world-specific properties,
- * data, and utility methods.
+ * Represents a world managed by the BuildSystem plugin, extending the {@link Displayable} interface. This interface
+ * provides comprehensive access to world-specific properties, data, and utility methods.
  *
  * @since 3.0.0
  */
@@ -49,27 +49,20 @@ public interface BuildWorld extends Displayable {
      *
      * @return The Bukkit world, or {@code null} if not loaded
      */
-    @Nullable
-    World getWorld();
+    @Nullable World getWorld();
 
     /**
      * Gets the unique identifier of this world.
-     * <p>
-     * Not equivalent to {@link World#getUID()}.
+     *
+     * <p>Not equivalent to {@link World#getUID()}.
      *
      * @return The uuid of this world
      */
     UUID getUniqueId();
 
     /**
-     * Sets the name of this world.
-     *
-     * @param name The name of the world
-     */
-    void setName(String name);
-
-    /**
-     * Gets the {@link Profileable} representation of this build world which is applied when {@link WorldData#material()} is set to {@link Material#PLAYER_HEAD}.
+     * Gets the {@link Profileable} representation of this build world which is applied when
+     * {@link WorldData#material()} is set to {@link Material#PLAYER_HEAD}.
      *
      * @return The {@link Profileable} representation of this build world
      */
@@ -91,18 +84,18 @@ public interface BuildWorld extends Displayable {
 
     /**
      * Gets the custom chunk generator used to generate this world.
-     * <p>
-     * Only set when the world type is {@link BuildWorldType#CUSTOM} or {@link BuildWorldType#IMPORTED}.
+     *
+     * <p>Only set when the world type is {@link BuildWorldType#CUSTOM} or {@link BuildWorldType#IMPORTED}.
      *
      * @return The custom chunk generator used to generate this world, or {@code null} if not set
      */
-    @Nullable
-    CustomGenerator getCustomGenerator();
+    @Nullable CustomGenerator getCustomGenerator();
 
     /**
      * Cycles to the next {@link Difficulty} for this world.
-     * <p>
-     * The cycle order is: {@link Difficulty#PEACEFUL} -> {@link Difficulty#EASY} -> {@link Difficulty#NORMAL} -> {@link Difficulty#HARD} -> {@link Difficulty#PEACEFUL}.
+     *
+     * <p>The cycle order is: {@link Difficulty#PEACEFUL} -> {@link Difficulty#EASY} -> {@link Difficulty#NORMAL} ->
+     * {@link Difficulty#HARD} -> {@link Difficulty#PEACEFUL}.
      *
      * @return The new difficulty after cycling
      */
@@ -169,8 +162,7 @@ public interface BuildWorld extends Displayable {
      *
      * @return The folder this world is assigned to, or {@code null} if not assigned
      */
-    @Nullable
-    Folder getFolder();
+    @Nullable Folder getFolder();
 
     /**
      * Checks whether this world is assigned to a {@link Folder}.

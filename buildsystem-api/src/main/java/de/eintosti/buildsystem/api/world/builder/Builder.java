@@ -57,14 +57,13 @@ public sealed interface Builder permits BuilderImpl {
 
     /**
      * Creates a new {@link Builder} instance using a serialized string.
-     * <p>
-     * The format of the string must be {@code <uuid>,<name>}.
+     *
+     * <p>The format of the string must be {@code <uuid>,<name>}.
      *
      * @param serialized The serialized builder
      * @return The builder if all the input is valid, otherwise {@code null}
      */
-    @Nullable
-    static Builder deserialize(@Nullable String serialized) {
+    static @Nullable Builder deserialize(@Nullable String serialized) {
         if (serialized == null || serialized.equals("-")) {
             return null;
         }
@@ -79,8 +78,8 @@ public sealed interface Builder permits BuilderImpl {
 
     /**
      * Returns a unique and persistent id for the builder.
-     * <p>
-     * Should be equal to the corresponding {@link Player}'s unique id.
+     *
+     * <p>Should be equal to the corresponding {@link Player}'s unique id.
      *
      * @return The uuid
      * @see Player#getUniqueId()

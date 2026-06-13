@@ -18,23 +18,18 @@
 package de.eintosti.buildsystem.world.data;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.data.Bypassable;
 import de.eintosti.buildsystem.api.data.Overridable;
 import de.eintosti.buildsystem.api.data.Type;
-import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.WorldService;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.config.Config;
-import de.eintosti.buildsystem.config.Config.World.Default;
-import de.eintosti.buildsystem.config.Config.World.Default.Settings;
-import de.eintosti.buildsystem.config.Config.World.Default.Settings.BuildersEnabled;
 import de.eintosti.buildsystem.world.data.type.ConfigurableType;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
@@ -46,6 +41,8 @@ public class WorldDataImpl implements WorldData {
 
     private final Map<String, Type<?>> data = new HashMap<>();
     private String worldName;
+
+    private @Nullable Supplier<@Nullable Folder> folderResolver;
 
     private final Type<String> customSpawn;
     private final Type<String> permission;
@@ -73,46 +70,44 @@ public class WorldDataImpl implements WorldData {
         this.worldName = builder.worldName;
 
         this.customSpawn = register("spawn", new ConfigurableType<>(builder.customSpawn));
-        this.permission = register("permission", new ConfigurableType<>(builder.permission)
-                .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.permission"))
-                .withCapability(Overridable.class, new Overridable<>(
-                        () -> Config.Folder.overridePermissions,
-                        () -> {
+        this.permission = register(
+                "permission",
+                new ConfigurableType<>(builder.permission)
+                        .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.permission"))
+                        .withCapability(Overridable.class, new Overridable<>(builder.permissionOverrideEnabled, () -> {
                             Folder folder = getAssignedFolder();
                             return (folder != null) ? folder.getPermission() : null;
-                        }
-                ))
-        );
-        this.project = register("project", new ConfigurableType<>(builder.project)
-                .withCapability(Overridable.class, new Overridable<>(
-                        () -> Config.Folder.overrideProjects,
-                        () -> {
+                        })));
+        this.project = register(
+                "project",
+                new ConfigurableType<>(builder.project)
+                        .withCapability(Overridable.class, new Overridable<>(builder.projectOverrideEnabled, () -> {
                             Folder folder = getAssignedFolder();
                             return (folder != null) ? folder.getProject() : null;
-                        }
-                ))
-        );
+                        })));
 
-        this.difficulty = register("difficulty", new ConfigurableType<>(builder.difficulty)
-                .withConfigFormatter(Difficulty::name)
-        );
-        this.material = register("material", new ConfigurableType<>(builder.material)
-                .withConfigFormatter(XMaterial::name)
-        );
-        this.status = register("status", new ConfigurableType<>(builder.status)
-                .withConfigFormatter(BuildWorldStatus::name)
-                .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.archive"))
-        );
+        this.difficulty = register(
+                "difficulty", new ConfigurableType<>(builder.difficulty).withConfigFormatter(Difficulty::name));
+        this.material =
+                register("material", new ConfigurableType<>(builder.material).withConfigFormatter(XMaterial::name));
+        this.status = register(
+                "status",
+                new ConfigurableType<>(builder.status)
+                        .withConfigFormatter(BuildWorldStatus::name)
+                        .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.archive")));
 
-        this.blockBreaking = register("block-breaking", new ConfigurableType<>(builder.blockBreaking)
-                .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.settings"))
-        );
-        this.blockInteractions = register("block-interactions", new ConfigurableType<>(builder.blockInteractions)
-                .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.settings"))
-        );
-        this.blockPlacement = register("block-placement", new ConfigurableType<>(builder.blockPlacement)
-                .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.settings"))
-        );
+        this.blockBreaking = register(
+                "block-breaking",
+                new ConfigurableType<>(builder.blockBreaking)
+                        .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.settings")));
+        this.blockInteractions = register(
+                "block-interactions",
+                new ConfigurableType<>(builder.blockInteractions)
+                        .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.settings")));
+        this.blockPlacement = register(
+                "block-placement",
+                new ConfigurableType<>(builder.blockPlacement)
+                        .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.settings")));
         this.buildersEnabled = register("builders-enabled", new ConfigurableType<>(builder.buildersEnabled));
         this.explosions = register("explosions", new ConfigurableType<>(builder.explosions));
         this.mobAi = register("mob-ai", new ConfigurableType<>(builder.mobAi));
@@ -125,19 +120,13 @@ public class WorldDataImpl implements WorldData {
         this.lastUnloaded = register("last-unloaded", new ConfigurableType<>(builder.lastUnloaded));
     }
 
-    /**
-     * Gets the {@link Folder} assigned to this world, if any.
-     *
-     * @return The assigned folder, or {@code null} if not found or not loaded
-     */
-    @Nullable
-    private Folder getAssignedFolder() {
-        WorldService worldService = BuildSystemPlugin.get().getWorldService();
-        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(this.worldName);
-        if (buildWorld != null) {
-            return buildWorld.getFolder();
-        }
-        return null;
+    public void setFolderResolver(Supplier<@Nullable Folder> resolver) {
+        this.folderResolver = resolver;
+    }
+
+    private @Nullable Folder getAssignedFolder() {
+        Supplier<@Nullable Folder> resolver = this.folderResolver;
+        return resolver != null ? resolver.get() : null;
     }
 
     private <T> ConfigurableType<T> register(String key, ConfigurableType<T> type) {
@@ -151,8 +140,7 @@ public class WorldDataImpl implements WorldData {
     }
 
     @Override
-    @Nullable
-    public Location getCustomSpawnLocation() {
+    public @Nullable Location getCustomSpawnLocation() {
         String customSpawn = customSpawn().get();
         if (customSpawn.isBlank()) {
             return null;
@@ -165,8 +153,7 @@ public class WorldDataImpl implements WorldData {
                 Double.parseDouble(spawnString[1]),
                 Double.parseDouble(spawnString[2]),
                 Float.parseFloat(spawnString[3]),
-                Float.parseFloat(spawnString[4])
-        );
+                Float.parseFloat(spawnString[4]));
     }
 
     @Override
@@ -270,21 +257,23 @@ public class WorldDataImpl implements WorldData {
         private String customSpawn = "";
         private String permission = "-";
         private String project = "-";
-        private Difficulty difficulty = Default.difficulty;
+        private Difficulty difficulty = Difficulty.PEACEFUL;
         private XMaterial material = XMaterial.GRASS_BLOCK;
         private BuildWorldStatus status = BuildWorldStatus.NOT_STARTED;
-        private boolean blockBreaking = Settings.blockBreaking;
-        private boolean blockInteractions = Settings.blockInteractions;
-        private boolean blockPlacement = Settings.blockPlacement;
-        private boolean buildersEnabled = BuildersEnabled.publicBuilders;
-        private boolean explosions = Settings.explosions;
-        private boolean mobAi = Settings.mobAi;
-        private boolean physics = Settings.physics;
+        private boolean blockBreaking = true;
+        private boolean blockInteractions = true;
+        private boolean blockPlacement = true;
+        private boolean buildersEnabled = false;
+        private boolean explosions = true;
+        private boolean mobAi = true;
+        private boolean physics = true;
         private boolean privateWorld = false;
         private int timeSinceBackup = 0;
         private long lastEdited = -1L;
         private long lastLoaded = -1L;
         private long lastUnloaded = -1L;
+        BooleanSupplier permissionOverrideEnabled = () -> false;
+        BooleanSupplier projectOverrideEnabled = () -> false;
 
         /**
          * Creates a new builder for {@link WorldData}.
@@ -391,6 +380,16 @@ public class WorldDataImpl implements WorldData {
 
         public WorldDataBuilder withLastUnloaded(long lastUnloaded) {
             this.lastUnloaded = lastUnloaded;
+            return this;
+        }
+
+        public WorldDataBuilder withPermissionOverrideEnabled(BooleanSupplier supplier) {
+            this.permissionOverrideEnabled = supplier;
+            return this;
+        }
+
+        public WorldDataBuilder withProjectOverrideEnabled(BooleanSupplier supplier) {
+            this.projectOverrideEnabled = supplier;
             return this;
         }
     }

@@ -25,15 +25,10 @@ import org.jspecify.annotations.Nullable;
 /**
  * A {@link Capability} that marks a {@link Type} as being overridable by an external source.
  *
- * @param <T>       The type of the value being overridden
+ * @param <T> The type of the value being overridden
  * @param isEnabled A supplier that returns {@code true} if the override is active
- * @param provider  A supplier that returns the override value or {@code null} if no override is set
+ * @param provider A supplier that returns the override value or {@code null} if no override is set
  * @since 3.0.1
  */
 @NullMarked
-public record Overridable<T>(
-        BooleanSupplier isEnabled,
-        Supplier<@Nullable T> provider
-) implements Capability {
-
-}
+public record Overridable<T>(BooleanSupplier isEnabled, Supplier<@Nullable T> provider) implements Capability {}

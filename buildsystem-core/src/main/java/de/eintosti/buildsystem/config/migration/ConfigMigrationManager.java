@@ -18,19 +18,20 @@
 package de.eintosti.buildsystem.config.migration;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.config.Config;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Manages the migration of configurations. It holds a registry of available migration steps and applies them sequentially.
+ * Manages the migration of configurations. It holds a registry of available migration steps and applies them
+ * sequentially.
  */
 @NullMarked
 public class ConfigMigrationManager {
 
-    public static final int LATEST_VERSION = 2;
+    public static final int LATEST_VERSION = 3;
 
     private final BuildSystemPlugin plugin;
     private final Map<Integer, Migration> migrations;
@@ -45,13 +46,15 @@ public class ConfigMigrationManager {
         this.migrations = new HashMap<>();
 
         registerMigration(1, new MigrationV1ToV2());
+        registerMigration(2, new MigrationV2ToV3());
     }
 
     /**
      * Registers a {@link Migration} step.
      *
-     * @param fromVersion The version from which this migration applies. For example, {@link MigrationV1ToV2} is registered with {@code fromVersion = 1}
-     * @param migration   The migration instance
+     * @param fromVersion The version from which this migration applies. For example, {@link MigrationV1ToV2} is
+     *     registered with {@code fromVersion = 1}
+     * @param migration The migration instance
      */
     public void registerMigration(int fromVersion, Migration migration) {
         this.migrations.put(fromVersion, migration);
@@ -65,18 +68,21 @@ public class ConfigMigrationManager {
     public void migrate() {
         Logger logger = plugin.getLogger();
 
-        while (Config.getVersion() < LATEST_VERSION) {
-            int currentVersion = Config.getVersion();
+        while (plugin.getConfig().getInt("version", 1) < LATEST_VERSION) {
+            int currentVersion = plugin.getConfig().getInt("version", 1);
             Migration migration = migrations.get(currentVersion);
             if (migration == null) {
-                throw new IllegalStateException("Missing migration from version " + currentVersion + " to " + (currentVersion + 1));
+                throw new IllegalStateException(
+                        "Missing migration from version " + currentVersion + " to " + (currentVersion + 1));
             }
 
             logger.info("Migrating from version " + currentVersion + " to " + (currentVersion + 1) + "...");
-            migration.migrate(Config.getConfig());
-            Config.setVersion(currentVersion + 1);
+            migration.migrate(plugin.getConfig());
+            plugin.getConfig().set("version", currentVersion + 1);
+            plugin.getConfig().setComments("version", List.of("Internal, do not change manually!"));
+            plugin.saveConfig();
         }
 
-        logger.info("Config is at the latest version: " + Config.getVersion());
+        logger.info("Config is at the latest version: " + plugin.getConfig().getInt("version", 1));
     }
 }

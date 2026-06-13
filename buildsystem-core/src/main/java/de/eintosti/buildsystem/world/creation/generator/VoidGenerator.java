@@ -37,16 +37,13 @@ public class VoidGenerator extends ChunkGenerator {
     }
 
     @Override
-    public void generateNoise(WorldInfo worldInfo, Random random, int chunkX, int chunkZ, ChunkData chunkData) {
-    }
+    public void generateNoise(WorldInfo worldInfo, Random random, int chunkX, int chunkZ, ChunkData chunkData) {}
 
     @Override
-    public void generateSurface(WorldInfo worldInfo, Random random, int x, int z, ChunkData chunkData) {
-    }
+    public void generateSurface(WorldInfo worldInfo, Random random, int x, int z, ChunkData chunkData) {}
 
     @Override
-    public void generateCaves(WorldInfo worldInfo, Random random, int chunkX, int chunkZ, ChunkData chunkData) {
-    }
+    public void generateCaves(WorldInfo worldInfo, Random random, int chunkX, int chunkZ, ChunkData chunkData) {}
 
     @Override
     @Contract("_ -> new")

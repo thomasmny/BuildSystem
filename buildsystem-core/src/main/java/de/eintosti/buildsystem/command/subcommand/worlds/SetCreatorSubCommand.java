@@ -19,65 +19,69 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
-import de.eintosti.buildsystem.util.PlayerChatInput;
-import de.eintosti.buildsystem.util.UUIDFetcher;
-import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
+import de.eintosti.buildsystem.menu.PlayerChatInput;
+import java.util.List;
 import java.util.Map;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class SetCreatorSubCommand implements SubCommand {
+public class SetCreatorSubCommand extends AbstractSubCommand {
 
-    private final BuildSystemPlugin plugin;
-
-    @Nullable
-    private final BuildWorld buildWorld;
-
-    public SetCreatorSubCommand(BuildSystemPlugin plugin, String worldName) {
-        this.plugin = plugin;
-        this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
+    public SetCreatorSubCommand(BuildSystemPlugin plugin) {
+        super(plugin);
     }
 
     @Override
-    public void execute(Player player, String[] args) {
-        if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
-            Messages.sendPermissionError(player);
-            return;
-        }
-
-        if (args.length > 2) {
-            Messages.sendMessage(player, "worlds_setcreator_usage");
-            return;
-        }
-
+    public void execute(Player player, String worldName, String[] args) {
+        BuildWorld buildWorld = requireWorld(player, worldName, args, 2, "worlds_setcreator");
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_setcreator_unknown_world");
             return;
         }
 
         new PlayerChatInput(plugin, player, "enter_world_creator", input -> {
             String creatorName = input.trim();
-            Builder creator = null;
-            if (!creatorName.equalsIgnoreCase("-")) {
-                creator = Builder.of(UUIDFetcher.getUUID(creatorName), creatorName);
+            if (creatorName.equalsIgnoreCase("-")) {
+                applyCreator(player, buildWorld, null);
+                return;
             }
-            buildWorld.getBuilders().setCreator(creator);
 
-            plugin.getPlayerService().forceUpdateSidebar(buildWorld);
-            XSound.ENTITY_PLAYER_LEVELUP.play(player);
-            Messages.sendMessage(player, "worlds_setcreator_set",
-                    Map.entry("%world%", buildWorld.getName())
-            );
-            player.closeInventory();
+            plugin.getPlayerLookupService()
+                    .lookupUniqueId(creatorName)
+                    .thenAccept(creatorId -> Bukkit.getScheduler().runTask(plugin, () -> {
+                        if (creatorId == null) {
+                            messages.sendMessage(player, "worlds_setcreator_player_not_found");
+                            player.closeInventory();
+                            return;
+                        }
+                        applyCreator(player, buildWorld, Builder.of(creatorId, creatorName));
+                    }));
         });
+    }
+
+    private void applyCreator(Player player, BuildWorld buildWorld, @Nullable Builder creator) {
+        buildWorld.getBuilders().setCreator(creator);
+
+        plugin.getSettingsService().forceUpdateSidebar(buildWorld);
+        XSound.ENTITY_PLAYER_LEVELUP.play(player);
+        messages.sendMessage(player, "worlds_setcreator_set", Map.entry("%world%", buildWorld.getName()));
+        player.closeInventory();
+    }
+
+    @Override
+    public List<String> complete(Player player, String[] args) {
+        if (args.length != 2) {
+            return List.of();
+        }
+        WorldStorage ws = plugin.getWorldService().getWorldStorage();
+        return WorldsCompletions.permittedWorldNames(player, ws, getArgument().getPermission(), args[1]);
     }
 
     @Override

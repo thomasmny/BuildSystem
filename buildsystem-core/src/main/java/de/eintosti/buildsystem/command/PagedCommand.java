@@ -17,7 +17,7 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,13 +31,14 @@ import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public abstract class PagedCommand {
+public abstract class PagedCommand extends CommandBase {
 
     private static final int MAX_COMMANDS_PER_PAGE = 7;
 
     private final String title, permissionTemplate;
 
-    public PagedCommand(String title, String permissionTemplate) {
+    protected PagedCommand(BuildSystemPlugin plugin, String title, String permissionTemplate) {
+        super(plugin, true);
         this.title = title;
         this.permissionTemplate = permissionTemplate;
     }
@@ -48,11 +49,12 @@ public abstract class PagedCommand {
 
         List<TextComponent> page = createPage(commands, numPages, pageNum);
         page.add(0, new TextComponent("§7§m----------------------------------------------------"));
-        page.add(1, new TextComponent(Messages.getString(this.title, player)
-                .replace("%page%", String.valueOf(pageNum))
-                .replace("%max%", String.valueOf(numPages))
-                .concat("\n"))
-        );
+        page.add(
+                1,
+                new TextComponent(messages.getString(this.title, player)
+                        .replace("%page%", String.valueOf(pageNum))
+                        .replace("%max%", String.valueOf(numPages))
+                        .concat("\n")));
         page.add(new TextComponent("§7§m----------------------------------------------------"));
         page.forEach(line -> player.spigot().sendMessage(line));
     }
@@ -79,18 +81,19 @@ public abstract class PagedCommand {
     protected abstract List<TextComponent> getCommands(Player player);
 
     @Contract("_, _, _, _, _-> new")
-    protected TextComponent createComponent(Player player, String command, String commandDescriptionKey, String suggest, String permission) {
+    protected TextComponent createComponent(
+            Player player, String command, String commandDescriptionKey, String suggest, String permission) {
         if (command.isEmpty()) {
             return new TextComponent();
         }
 
         TextComponent commandComponent = new TextComponent("§b" + command);
-        TextComponent textComponent = new TextComponent(" §8» " + Messages.getString(commandDescriptionKey, player));
+        TextComponent textComponent = new TextComponent(" §8» " + messages.getString(commandDescriptionKey, player));
 
         commandComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, suggest));
-        commandComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new Text(Messages.getString(this.permissionTemplate, player, Map.entry("%permission%", permission)))
-        ));
+        commandComponent.setHoverEvent(new HoverEvent(
+                HoverEvent.Action.SHOW_TEXT,
+                new Text(messages.getString(this.permissionTemplate, player, Map.entry("%permission%", permission)))));
         commandComponent.addExtra(textComponent);
         return commandComponent;
     }

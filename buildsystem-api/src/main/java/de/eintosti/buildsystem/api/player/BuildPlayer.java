@@ -18,97 +18,33 @@
 package de.eintosti.buildsystem.api.player;
 
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import java.util.UUID;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
- * Represents a player managed by the BuildSystem. This interface provides access to player-specific data and settings within the BuildSystem.
+ * A player managed by BuildSystem.
+ *
+ * <p>Identity ({@link #getUniqueId()}) is stable across sessions; {@linkplain #getSettings() settings} are mutable.
+ * Anything beyond identity and settings — cached gameplay state, logout location, navigator UI state — is internal
+ * runtime state and lives outside this interface, so the public surface stays focused.
+ *
+ * @since 3.0.0
  */
 @NullMarked
 public interface BuildPlayer {
 
     /**
-     * Gets the unique-id of the player.
-     * <p>
-     * Should match the wrapped {@link Player}'s UUID.
+     * Returns the player's UUID. Equal to {@link Player#getUniqueId()} for the wrapped player.
      *
      * @return The player's UUID
-     * @see Player#getUniqueId()
      */
     UUID getUniqueId();
 
     /**
-     * Gets the player's custom settings.
+     * Returns the player's BuildSystem settings (display preferences, navigator type, scoreboard etc.).
      *
      * @return The player's settings
      */
     Settings getSettings();
-
-    /**
-     * Gets values that are supposed to be cached for a short amount of time.
-     *
-     * @return The player's cached values
-     */
-    @Internal
-    CachedValues getCachedValues();
-
-    /**
-     * Gets the location where the player was last before logging off.
-     *
-     * @return The location
-     */
-    @Internal
-    @Nullable
-    LogoutLocation getLogoutLocation();
-
-    /**
-     * Sets the location where the player was last before logging off.
-     *
-     * @param logoutLocation The logout location
-     */
-    @Internal
-    void setLogoutLocation(@Nullable LogoutLocation logoutLocation);
-
-    /**
-     * Gets the location the player was last at.
-     * <p>
-     * Usually this is the last location before teleportation.
-     *
-     * @return The player's previous location
-     */
-    @Internal
-    @Nullable
-    Location getPreviousLocation();
-
-    /**
-     * Sets the location the player was last at.
-     * <p>
-     * Usually this is the last location before teleportation.
-     *
-     * @param location The location
-     */
-    @Internal
-    void setPreviousLocation(@Nullable Location location);
-
-    /**
-     * Gets the {@link NavigatorCategory} the player last looked at.
-     *
-     * @return The last looked navigator inventory type
-     */
-    @Internal
-    @Nullable
-    NavigatorCategory getLastLookedAt();
-
-    /**
-     * Sets the {@link NavigatorCategory} the player last looked at.
-     *
-     * @param type The last looked navigator inventory type
-     */
-    @Internal
-    void setLastLookedAt(@Nullable NavigatorCategory type);
 }

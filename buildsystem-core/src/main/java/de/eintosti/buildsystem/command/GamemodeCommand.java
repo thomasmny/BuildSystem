@@ -18,107 +18,117 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class GamemodeCommand implements CommandExecutor {
-
-    private final BuildSystemPlugin plugin;
+public class GamemodeCommand extends CommandBase {
 
     public GamemodeCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        plugin.getCommand("gamemode").setExecutor(this);
+        super(plugin, true);
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
-            return true;
-        }
-
+    protected void run(Player player, String label, String[] args) {
         if (args.length == 0) {
-            sendUsageMessage(player);
-            return true;
+            messages.sendMessage(player, "gamemode_usage");
+            return;
         }
 
         switch (args[0].toLowerCase(Locale.ROOT)) {
             case "survival":
             case "s":
             case "0":
-                setGamemode(player, args, GameMode.SURVIVAL, Messages.getString("gamemode_survival", player));
+                setGamemode(player, args, GameMode.SURVIVAL, messages.getString("gamemode_survival", player));
                 break;
             case "creative":
             case "c":
             case "1":
-                setGamemode(player, args, GameMode.CREATIVE, Messages.getString("gamemode_creative", player));
+                setGamemode(player, args, GameMode.CREATIVE, messages.getString("gamemode_creative", player));
                 break;
             case "adventure":
             case "a":
             case "2":
-                setGamemode(player, args, GameMode.ADVENTURE, Messages.getString("gamemode_adventure", player));
+                setGamemode(player, args, GameMode.ADVENTURE, messages.getString("gamemode_adventure", player));
                 break;
             case "spectator":
             case "sp":
             case "3":
-                setGamemode(player, args, GameMode.SPECTATOR, Messages.getString("gamemode_spectator", player));
+                setGamemode(player, args, GameMode.SPECTATOR, messages.getString("gamemode_spectator", player));
                 break;
             default:
-                sendUsageMessage(player);
+                messages.sendMessage(player, "gamemode_usage");
                 break;
         }
+    }
 
-        return true;
+    @Override
+    protected List<String> complete(Player player, String label, String[] args) {
+        List<String> list = new ArrayList<>();
+
+        if (args.length == 1) {
+            Arrays.stream(GameMode.values())
+                    .map(gameMode -> gameMode.name().toLowerCase(Locale.ROOT))
+                    .filter(gameModeName -> player.hasPermission("buildsystem.gamemode.%s".formatted(gameModeName)))
+                    .forEach(gameModeName -> addArgument(args[0], gameModeName, list));
+        } else if (args.length == 2) {
+            String gameModeName =
+                    switch (args[0].toLowerCase(Locale.ROOT)) {
+                        case "survival", "s", "0" -> GameMode.SURVIVAL.name().toLowerCase(Locale.ROOT);
+                        case "creative", "c", "1" -> GameMode.CREATIVE.name().toLowerCase(Locale.ROOT);
+                        case "adventure", "a", "2" -> GameMode.ADVENTURE.name().toLowerCase(Locale.ROOT);
+                        case "spectator", "sp", "3" -> GameMode.SPECTATOR.name().toLowerCase(Locale.ROOT);
+                        default -> null;
+                    };
+
+            if (gameModeName != null && player.hasPermission("buildsystem.gamemode.%s.other".formatted(gameModeName))) {
+                Bukkit.getOnlinePlayers().forEach(pl -> addArgument(args[1], pl.getName(), list));
+            }
+        }
+
+        return list;
     }
 
     private void setGamemode(Player player, String[] args, GameMode gameMode, String gameModeName) {
         switch (args.length) {
-            case 1 -> this.setPlayerGamemode(player, gameMode, gameModeName);
-            case 2 -> this.setTargetGamemode(player, args, gameMode, gameModeName);
-            default -> this.sendUsageMessage(player);
+            case 1 -> setPlayerGamemode(player, gameMode, gameModeName);
+            case 2 -> setTargetGamemode(player, args, gameMode, gameModeName);
+            default -> messages.sendMessage(player, "gamemode_usage");
         }
     }
 
-    private void sendUsageMessage(Player player) {
-        Messages.sendMessage(player, "gamemode_usage");
-    }
-
     private void setPlayerGamemode(Player player, GameMode gameMode, String gameModeName) {
-        if (!player.hasPermission("buildsystem.gamemode.%s".formatted(gameMode.name().toLowerCase(Locale.ROOT)))) {
-            Messages.sendPermissionError(player);
+        if (!requirePermission(
+                player, "buildsystem.gamemode.%s".formatted(gameMode.name().toLowerCase(Locale.ROOT)))) {
             return;
         }
 
         player.setGameMode(gameMode);
-        Messages.sendMessage(player, "gamemode_set_self", Map.entry("%gamemode%", gameModeName));
+        messages.sendMessage(player, "gamemode_set_self", Map.entry("%gamemode%", gameModeName));
     }
 
     private void setTargetGamemode(Player player, String[] args, GameMode gameMode, String gameModeName) {
-        if (!player.hasPermission("buildsystem.gamemode.%s.other".formatted(gameMode.name().toLowerCase(Locale.ROOT)))) {
-            Messages.sendPermissionError(player);
+        if (!requirePermission(
+                player,
+                "buildsystem.gamemode.%s.other".formatted(gameMode.name().toLowerCase(Locale.ROOT)))) {
             return;
         }
 
         Player target = Bukkit.getPlayerExact(args[1]);
         if (target == null) {
-            Messages.sendMessage(player, "gamemode_player_not_found");
+            messages.sendMessage(player, "gamemode_player_not_found");
             return;
         }
 
         target.setGameMode(gameMode);
-        Messages.sendMessage(target, "gamemode_set_self", Map.entry("%gamemode%", gameModeName));
-        Messages.sendMessage(player, "gamemode_set_other",
+        messages.sendMessage(target, "gamemode_set_self", Map.entry("%gamemode%", gameModeName));
+        messages.sendMessage(
+                player,
+                "gamemode_set_other",
                 Map.entry("%target%", target.getName()),
-                Map.entry("%gamemode%", gameModeName)
-        );
+                Map.entry("%gamemode%", gameModeName));
     }
 }

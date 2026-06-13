@@ -18,86 +18,85 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
+import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class PhysicsCommand implements CommandExecutor {
+public class PhysicsCommand extends CommandBase {
 
-    private final BuildSystemPlugin plugin;
     private final WorldStorageImpl worldStorage;
 
     public PhysicsCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin, true);
         this.worldStorage = plugin.getWorldService().getWorldStorage();
-        plugin.getCommand("physics").setExecutor(this);
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
-            return true;
-        }
-
-        String worldName = args.length == 0 ? player.getWorld().getName() : args[0];
+    protected void run(Player player, String label, String[] args) {
+        String worldName = worldNameFromArgs(player, args, 0);
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
-        if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, "buildsystem.physics")) {
-            Messages.sendPermissionError(player);
-            return true;
+        if (!WorldPermissionsImpl.of(plugin, buildWorld).canPerformCommand(player, "buildsystem.physics")) {
+            messages.sendPermissionError(player);
+            return;
         }
 
         switch (args.length) {
-            case 0 -> {
-                togglePhysics(player, player.getWorld());
-            }
+            case 0 -> togglePhysics(player, player.getWorld());
             case 1 -> {
                 // TODO: Check each world for permission individually?
                 if (args[0].equalsIgnoreCase("all") && !worldStorage.worldExists("all")) {
-                    worldStorage.getBuildWorlds().forEach(world -> world.getData().physics().set(true));
-                    Messages.sendMessage(player, "physics_activated_all");
+                    worldStorage
+                            .getBuildWorlds()
+                            .forEach(world -> world.getData().physics().set(true));
+                    messages.sendMessage(player, "physics_activated_all");
                 } else {
                     togglePhysics(player, Bukkit.getWorld(args[0]));
                 }
             }
-            default -> {
-                Messages.sendMessage(player, "physics_usage");
-            }
+            default -> messages.sendMessage(player, "physics_usage");
         }
-        return true;
+    }
+
+    @Override
+    protected List<String> complete(Player player, String label, String[] args) {
+        List<String> list = new ArrayList<>();
+        if (args.length == 1) {
+            worldStorage.getBuildWorlds().stream()
+                    .filter(world -> world.getPermissions().canPerformCommand(player, "buildsystem.physics"))
+                    .forEach(world -> addArgument(args[0], world.getName(), list));
+        }
+        return list;
     }
 
     private void togglePhysics(Player player, @Nullable World world) {
         if (world == null) {
-            Messages.sendMessage(player, "physics_unknown_world");
+            messages.sendMessage(player, "physics_unknown_world");
             return;
         }
 
         BuildWorld buildWorld = worldStorage.getBuildWorld(world.getName());
         if (buildWorld == null) {
-            Messages.sendMessage(player, "physics_world_not_imported");
+            messages.sendMessage(player, "physics_world_not_imported");
             return;
         }
 
         WorldData worldData = buildWorld.getData();
         if (!worldData.physics().get()) {
             worldData.physics().set(true);
-            Messages.sendMessage(player, "physics_activated", Map.entry("%world%", buildWorld.getName()));
+            messages.sendMessage(player, "physics_activated", Map.entry("%world%", buildWorld.getName()));
         } else {
             worldData.physics().set(false);
-            Messages.sendMessage(player, "physics_deactivated", Map.entry("%world%", buildWorld.getName()));
+            messages.sendMessage(player, "physics_deactivated", Map.entry("%world%", buildWorld.getName()));
         }
     }
 }

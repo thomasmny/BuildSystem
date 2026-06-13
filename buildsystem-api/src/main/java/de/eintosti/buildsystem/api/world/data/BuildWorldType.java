@@ -23,8 +23,8 @@ import org.bukkit.generator.ChunkGenerator;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Represents the different types of {@link BuildWorld}s that can be created or managed by the BuildSystem plugin. Each type specifies unique characteristics for world generation
- * and behavior.
+ * Represents the different types of {@link BuildWorld}s that can be created or managed by the BuildSystem plugin. Each
+ * type specifies unique characteristics for world generation and behavior.
  *
  * @since 3.0.0
  */

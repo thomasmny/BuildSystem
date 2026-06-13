@@ -48,8 +48,7 @@ public interface FolderStorage extends Storage<Folder> {
      * @param name The name of the folder to retrieve
      * @return The folder if it exists, or {@code null} if it does not
      */
-    @Nullable
-    Folder getFolder(String name);
+    @Nullable Folder getFolder(String name);
 
     /**
      * Checks if a {@link Folder} with the given name (case-insensitive) exists.
@@ -62,9 +61,9 @@ public interface FolderStorage extends Storage<Folder> {
     /**
      * Creates a new {@link Folder} with the given name.
      *
-     * @param name     The name folder to create
+     * @param name The name folder to create
      * @param category The category in which the folder should be displayed
-     * @param creator  The builder who created the folder
+     * @param creator The builder who created the folder
      * @return The newly created folder
      */
     Folder createFolder(String name, NavigatorCategory category, Builder creator);
@@ -72,21 +71,22 @@ public interface FolderStorage extends Storage<Folder> {
     /**
      * Creates a new nested {@link Folder} with the given name.
      *
-     * @param name     The name folder to create
+     * @param name The name folder to create
      * @param category The category in which the folder should be displayed
-     * @param parent   The parent folder, or {@code null} if this is a top-level folder
-     * @param creator  The builder who created the folder
+     * @param parent The parent folder, or {@code null} if this is a top-level folder
+     * @param creator The builder who created the folder
      * @return The newly created folder
      */
     Folder createFolder(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator);
 
     /**
      * Removes the {@link Folder} with the given name.
-     * <p>
-     * This operation cascades:
+     *
+     * <p>This operation cascades:
+     *
      * <ul>
-     *   <li>All subfolders within the specified folder will also be removed.</li>
-     *   <li>Any {@link BuildWorld} instances associated with this folder will have their folder reference unset.</li>
+     *   <li>All subfolders within the specified folder will also be removed.
+     *   <li>Any {@link BuildWorld} instances associated with this folder will have their folder reference unset.
      * </ul>
      *
      * @param name The name of the folder to remove
@@ -96,11 +96,12 @@ public interface FolderStorage extends Storage<Folder> {
 
     /**
      * Removes the given {@link Folder}.
-     * <p>
-     * This operation cascades:
+     *
+     * <p>This operation cascades:
+     *
      * <ul>
-     *   <li>All subfolders within the specified folder will also be removed.</li>
-     *   <li>Any {@link BuildWorld} instances associated with this folder will have their folder reference unset.</li>
+     *   <li>All subfolders within the specified folder will also be removed.
+     *   <li>Any {@link BuildWorld} instances associated with this folder will have their folder reference unset.
      * </ul>
      *
      * @param folder The folder to remove

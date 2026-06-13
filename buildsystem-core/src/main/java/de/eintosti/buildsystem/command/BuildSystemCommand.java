@@ -19,37 +19,22 @@ package de.eintosti.buildsystem.command;
 
 import com.google.common.collect.Lists;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import java.util.List;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class BuildSystemCommand extends PagedCommand implements CommandExecutor {
-
-    private final BuildSystemPlugin plugin;
+public class BuildSystemCommand extends PagedCommand {
 
     public BuildSystemCommand(BuildSystemPlugin plugin) {
-        super("buildsystem_title_with_page", "buildsystem_permission");
-
-        this.plugin = plugin;
-        plugin.getCommand("buildsystem").setExecutor(this);
+        super(plugin, "buildsystem_title_with_page", "buildsystem_permission");
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
-            return true;
-        }
-
-        if (!player.hasPermission("buildsystem.help.buildsystem")) {
-            Messages.sendPermissionError(player);
-            return true;
+    protected void run(Player player, String label, String[] args) {
+        if (!requirePermission(player, "buildsystem.help.buildsystem")) {
+            return;
         }
 
         if (args.length == 0) {
@@ -59,12 +44,11 @@ public class BuildSystemCommand extends PagedCommand implements CommandExecutor 
                 int page = Integer.parseInt(args[0]);
                 sendMessage(player, page);
             } catch (NumberFormatException e) {
-                Messages.sendMessage(player, "buildsystem_invalid_page");
+                messages.sendMessage(player, "buildsystem_invalid_page");
             }
         } else {
-            Messages.sendMessage(player, "buildsystem_usage");
+            messages.sendMessage(player, "buildsystem_usage");
         }
-        return true;
     }
 
     @Override
@@ -75,8 +59,14 @@ public class BuildSystemCommand extends PagedCommand implements CommandExecutor 
                 createComponent(player, "/build [player]", "buildsystem_build", "/build", "buildsystem.build"),
                 createComponent(player, "/config reload", "buildsystem_config", "/config reload", "buildsystem.config"),
                 createComponent(player, "/day [world]", "buildsystem_day", "/day", "buildsystem.day"),
-                createComponent(player, "/explosions [world]", "buildsystem_explosions", "/explosions", "buildsystem.explosions"),
-                createComponent(player, "/gm <gamemode> [player]", "buildsystem_gamemode", "/gm ", "buildsystem.gamemode"),
+                createComponent(
+                        player,
+                        "/explosions [world]",
+                        "buildsystem_explosions",
+                        "/explosions",
+                        "buildsystem.explosions"),
+                createComponent(
+                        player, "/gm <gamemode> [player]", "buildsystem_gamemode", "/gm ", "buildsystem.gamemode"),
                 createComponent(player, "/night [world]", "buildsystem_night", "/night", "buildsystem.night"),
                 createComponent(player, "/noai [world]", "buildsystem_noai", "/noai", "buildsystem.noai"),
                 createComponent(player, "/physics [world]", "buildsystem_physics", "/physics", "buildsystem.physics"),
@@ -86,8 +76,7 @@ public class BuildSystemCommand extends PagedCommand implements CommandExecutor 
                 createComponent(player, "/spawn", "buildsystem_spawn", "/spawn", "-"),
                 createComponent(player, "/speed <1-5>", "buildsystem_speed", "/speed ", "buildsystem.speed"),
                 createComponent(player, "/top", "buildsystem_top", "/top", "buildsystem.top"),
-                createComponent(player, "/worlds help", "buildsystem_worlds", "/worlds help", "-")
-        );
+                createComponent(player, "/worlds help", "buildsystem_worlds", "/worlds help", "-"));
         commands.removeIf(textComponent -> textComponent.getText().isEmpty());
         return commands;
     }

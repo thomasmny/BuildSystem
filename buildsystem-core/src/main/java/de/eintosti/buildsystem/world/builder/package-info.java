@@ -19,4 +19,4 @@
 /**
  * Provides classes for managing world builders and their associated functionality.
  */
-package de.eintosti.buildsystem.world.builder; 
+package de.eintosti.buildsystem.world.builder;

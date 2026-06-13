@@ -19,66 +19,51 @@ package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
+import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class BackCommand implements CommandExecutor {
+public class BackCommand extends CommandBase {
 
-    private final BuildSystemPlugin plugin;
     private final PlayerStorage playerStorage;
 
     public BackCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin, true);
         this.playerStorage = plugin.getPlayerService().getPlayerStorage();
-        plugin.getCommand("back").setExecutor(this);
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
-            return true;
-        }
-
-        if (!player.hasPermission("buildsystem.back")) {
-            Messages.sendPermissionError(player);
-            return true;
+    protected void run(Player player, String label, String[] args) {
+        if (!requirePermission(player, "buildsystem.back")) {
+            return;
         }
 
         if (args.length == 0) {
             teleportBack(player);
         } else {
-            Messages.sendMessage(player, "back_usage");
+            messages.sendMessage(player, "back_usage");
         }
-
-        return true;
     }
 
     private void teleportBack(Player player) {
-        BuildPlayer buildPlayer = playerStorage.getBuildPlayer(player);
+        BuildPlayerImpl buildPlayer = BuildPlayerImpl.of(playerStorage.getBuildPlayer(player));
         Location previousLocation = buildPlayer.getPreviousLocation();
         if (previousLocation == null) {
-            Messages.sendMessage(player, "back_failed");
+            messages.sendMessage(player, "back_failed");
             return;
         }
 
-        PaperLib.teleportAsync(player, previousLocation)
-                .whenComplete((completed, throwable) -> {
-                    if (!completed) {
-                        return;
-                    }
-                    XSound.ENTITY_ZOMBIE_INFECT.play(player);
-                    Messages.sendMessage(player, "back_teleported");
-                    buildPlayer.setPreviousLocation(null);
-                });
+        PaperLib.teleportAsync(player, previousLocation).whenComplete((completed, throwable) -> {
+            if (!completed) {
+                return;
+            }
+            XSound.ENTITY_ZOMBIE_INFECT.play(player);
+            messages.sendMessage(player, "back_teleported");
+            buildPlayer.setPreviousLocation(null);
+        });
     }
 }

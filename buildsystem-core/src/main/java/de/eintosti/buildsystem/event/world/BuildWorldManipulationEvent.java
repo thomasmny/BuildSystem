@@ -19,27 +19,34 @@ package de.eintosti.buildsystem.event.world;
 
 import de.eintosti.buildsystem.api.event.world.BuildWorldEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.listener.WorldManipulateListener;
+import de.eintosti.buildsystem.listener.world.WorldManipulateListener;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
+import org.bukkit.event.HandlerList;
 import org.jspecify.annotations.NullMarked;
 
 /**
  * This event reduces duplicated code.
- * <p>
- * It will be called when:
+ *
+ * <p>It will be called when:
+ *
  * <ul>
- *     <li>Breaking Blocks</li>
- *     <li>Placing Blocks</li>
- *     <li>Other modification-related stuff</li>
+ *   <li>Breaking Blocks
+ *   <li>Placing Blocks
+ *   <li>Other modification-related stuff
  * </ul>
+ *
  * Cancelling this event will affect the parent-Event, which has caused the ManipulationEvent to fire.
- * <p>Expect the manipulation event to be canceled at {@link org.bukkit.event.EventPriority#LOW} if the player is not allowed to interact with the world.</p>
+ *
+ * <p>Expect the manipulation event to be canceled at {@link org.bukkit.event.EventPriority#LOW} if the player is not
+ * allowed to interact with the world.
  *
  * @see WorldManipulateListener
  */
 @NullMarked
 public class BuildWorldManipulationEvent extends BuildWorldEvent implements Cancellable {
+
+    private static final HandlerList HANDLERS = new HandlerList();
 
     private final Cancellable parentEvent;
     private final Player player;
@@ -74,5 +81,14 @@ public class BuildWorldManipulationEvent extends BuildWorldEvent implements Canc
      */
     public Player getPlayer() {
         return player;
+    }
+
+    @Override
+    public HandlerList getHandlers() {
+        return HANDLERS;
+    }
+
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
     }
 }

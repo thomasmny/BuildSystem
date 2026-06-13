@@ -24,7 +24,8 @@ import org.bukkit.event.player.PlayerEvent;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Called when a player's build mode is toggled. This event can be triggered by the player themselves or by another plugin/player.
+ * Called when a player's build mode is toggled. This event can be triggered by the player themselves or by another
+ * plugin/player.
  */
 @NullMarked
 public class PlayerBuildModeToggleEvent extends PlayerEvent implements Cancellable {
@@ -38,9 +39,9 @@ public class PlayerBuildModeToggleEvent extends PlayerEvent implements Cancellab
     /**
      * Constructs a new {@link PlayerBuildModeToggleEvent}.
      *
-     * @param who       The player whose build mode is being toggled
+     * @param who The player whose build mode is being toggled
      * @param buildMode The new build mode status ({@code true} for enabled, {@code false} for disabled)
-     * @param causer    The player who caused the build mode to be toggled
+     * @param causer The player who caused the build mode to be toggled
      */
     public PlayerBuildModeToggleEvent(Player who, boolean buildMode, Player causer) {
         super(who);
@@ -60,8 +61,8 @@ public class PlayerBuildModeToggleEvent extends PlayerEvent implements Cancellab
 
     /**
      * Gets the player who caused the build mode to be toggled.
-     * <p>
-     * This will return the player themselves if they toggled their own build mode.
+     *
+     * <p>This will return the player themselves if they toggled their own build mode.
      *
      * @return The player who caused the action, or null.
      */
@@ -70,7 +71,8 @@ public class PlayerBuildModeToggleEvent extends PlayerEvent implements Cancellab
     }
 
     /**
-     * Gets the cancellation state of this event. A cancelled event will not be executed in the server, but will still pass to other plugins
+     * Gets the cancellation state of this event. A cancelled event will not be executed in the server, but will still
+     * pass to other plugins
      *
      * @return true if this event is cancelled
      */
@@ -80,7 +82,8 @@ public class PlayerBuildModeToggleEvent extends PlayerEvent implements Cancellab
     }
 
     /**
-     * Sets the cancellation state of this event. A cancelled event will not be executed in the server, but will still pass to other plugins.
+     * Sets the cancellation state of this event. A cancelled event will not be executed in the server, but will still
+     * pass to other plugins.
      *
      * @param cancel true if you wish to cancel this event
      */

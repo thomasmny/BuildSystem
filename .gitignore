@@ -121,5 +121,7 @@ build/
 .gradle/
 buildSrc/build/
 buildSrc/.gradle/
+buildSrc/.kotlin/
 run/
 /*.jar
+plans/

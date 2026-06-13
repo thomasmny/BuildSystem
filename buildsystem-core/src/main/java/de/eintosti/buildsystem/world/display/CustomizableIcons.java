@@ -54,10 +54,10 @@ public class CustomizableIcons {
                 Map.entry(BuildWorldType.VOID, XMaterial.GLASS),
                 Map.entry(BuildWorldType.CUSTOM, XMaterial.FILLED_MAP),
                 Map.entry(BuildWorldType.TEMPLATE, XMaterial.FILLED_MAP),
-                Map.entry(BuildWorldType.IMPORTED, XMaterial.FURNACE)
-        ));
+                Map.entry(BuildWorldType.IMPORTED, XMaterial.FURNACE)));
 
-        Map<BuildWorldType, XMaterial> loadedIcons = this.setupStorage.loadIcons(IconType.TYPE, type -> BuildWorldType.valueOf(type.toUpperCase(Locale.ROOT)));
+        Map<BuildWorldType, XMaterial> loadedIcons = this.setupStorage.loadIcons(
+                IconType.TYPE, type -> BuildWorldType.valueOf(type.toUpperCase(Locale.ROOT)));
         if (loadedIcons != null) {
             typeIcons.putAll(loadedIcons);
         }
@@ -73,10 +73,10 @@ public class CustomizableIcons {
                 Map.entry(BuildWorldStatus.ALMOST_FINISHED, XMaterial.LIME_DYE),
                 Map.entry(BuildWorldStatus.FINISHED, XMaterial.GREEN_DYE),
                 Map.entry(BuildWorldStatus.ARCHIVE, XMaterial.CYAN_DYE),
-                Map.entry(BuildWorldStatus.HIDDEN, XMaterial.BONE_MEAL)
-        ));
+                Map.entry(BuildWorldStatus.HIDDEN, XMaterial.BONE_MEAL)));
 
-        Map<BuildWorldStatus, XMaterial> loadedIcons = this.setupStorage.loadIcons(IconType.STATUS, type -> BuildWorldStatus.valueOf(type.toUpperCase(Locale.ROOT)));
+        Map<BuildWorldStatus, XMaterial> loadedIcons = this.setupStorage.loadIcons(
+                IconType.STATUS, type -> BuildWorldStatus.valueOf(type.toUpperCase(Locale.ROOT)));
         if (loadedIcons != null) {
             statusIcon.putAll(loadedIcons);
         }
@@ -108,7 +108,7 @@ public class CustomizableIcons {
     /**
      * Sets a custom icon for a {@link BuildWorldType}.
      *
-     * @param type     The world type
+     * @param type The world type
      * @param material The material to use as an icon
      */
     public void setIcon(BuildWorldType type, XMaterial material) {
@@ -119,7 +119,7 @@ public class CustomizableIcons {
     /**
      * Sets a custom icon for a {@link BuildWorldStatus}.
      *
-     * @param status   The world status
+     * @param status The world status
      * @param material The material to use as an icon
      */
     public void setIcon(BuildWorldStatus status, XMaterial material) {

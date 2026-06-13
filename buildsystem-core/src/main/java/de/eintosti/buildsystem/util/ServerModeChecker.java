@@ -24,9 +24,10 @@ import org.jspecify.annotations.NullMarked;
 
 /**
  * Utility class to determine the mode in which the server is running. The server can be in one of the following modes:
+ *
  * <ul>
- *     <li>{@link ServerMode#ONLINE} - The server is running in online mode</li>
- *     <li>{@link ServerMode#OFFLINE} - The server is running in offline mode</li>
+ *   <li>{@link ServerMode#ONLINE} - The server is running in online mode
+ *   <li>{@link ServerMode#OFFLINE} - The server is running in offline mode
  * </ul>
  */
 @NullMarked
@@ -34,8 +35,7 @@ public final class ServerModeChecker {
 
     private static final ServerMode SERVER_MODE = determineServerMode();
 
-    private ServerModeChecker() {
-    }
+    private ServerModeChecker() {}
 
     /**
      * Determines the server mode based on configuration settings.

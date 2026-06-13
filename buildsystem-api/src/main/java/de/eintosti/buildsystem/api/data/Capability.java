@@ -22,6 +22,4 @@ package de.eintosti.buildsystem.api.data;
  *
  * @since 3.0.1
  */
-public interface Capability {
-
-}
+public interface Capability {}

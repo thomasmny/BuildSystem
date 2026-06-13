@@ -18,11 +18,10 @@
 package de.eintosti.buildsystem.player.settings;
 
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
+import de.eintosti.buildsystem.api.player.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
-import de.eintosti.buildsystem.api.world.navigator.settings.WorldDisplay;
-import de.eintosti.buildsystem.world.navigator.settings.WorldDisplayImpl;
-import org.bukkit.scheduler.BukkitTask;
+import de.eintosti.buildsystem.api.world.display.WorldDisplay;
+import de.eintosti.buildsystem.world.display.WorldDisplayImpl;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -31,7 +30,7 @@ public class SettingsImpl implements Settings {
 
     private DesignColor designColor;
     private NavigatorType navigatorType;
-    private WorldDisplay worldDisplay;
+    private final WorldDisplay worldDisplay;
     private boolean clearInventory;
     private boolean disableInteract;
     private boolean hidePlayers;
@@ -44,9 +43,6 @@ public class SettingsImpl implements Settings {
     private boolean slabBreaking;
     private boolean spawnTeleport;
     private boolean openTrapDoors;
-
-    @Nullable
-    private BukkitTask scoreboardTask;
 
     public SettingsImpl() {
         this.navigatorType = NavigatorType.OLD;
@@ -81,8 +77,7 @@ public class SettingsImpl implements Settings {
             boolean scoreboard,
             boolean slabBreaking,
             boolean spawnTeleport,
-            boolean openTrapDoors
-    ) {
+            boolean openTrapDoors) {
         this.navigatorType = navigatorType == null ? NavigatorType.OLD : navigatorType;
         this.designColor = designColor == null ? DesignColor.BLACK : designColor;
         this.worldDisplay = worldDisplay;
@@ -243,16 +238,5 @@ public class SettingsImpl implements Settings {
     @Override
     public void setOpenTrapDoors(boolean trapDoor) {
         this.openTrapDoors = trapDoor;
-    }
-
-    @Nullable
-    @Override
-    public BukkitTask getScoreboardTask() {
-        return scoreboardTask;
-    }
-
-    @Override
-    public void setScoreboardTask(@Nullable BukkitTask scoreboardTask) {
-        this.scoreboardTask = scoreboardTask;
     }
 }

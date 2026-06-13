@@ -19,57 +19,41 @@ package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import de.eintosti.buildsystem.menu.InventoryUtils;
 import java.util.Map;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class SkullCommand implements CommandExecutor {
-
-    private final BuildSystemPlugin plugin;
+public class SkullCommand extends CommandBase {
 
     public SkullCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        plugin.getCommand("skull").setExecutor(this);
+        super(plugin, true);
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
-            return true;
-        }
-
-        if (!player.hasPermission("buildsystem.skull")) {
-            Messages.sendPermissionError(player);
-            return true;
+    protected void run(Player player, String label, String[] args) {
+        if (!requirePermission(player, "buildsystem.skull")) {
+            return;
         }
 
         switch (args.length) {
             case 0 -> {
                 addSkull(player, "§b" + player.getName(), Profileable.of(player));
-                Messages.sendMessage(player, "skull_player_received", Map.entry("%player%", player.getName()));
+                messages.sendMessage(player, "skull_player_received", Map.entry("%player%", player.getName()));
             }
             case 1 -> {
                 String identifier = args[0];
                 if (identifier.length() > 16) {
-                    addSkull(player, Messages.getString("custom_skull_item", player), Profileable.detect(identifier));
-                    Messages.sendMessage(player, "skull_custom_received");
+                    addSkull(player, messages.getString("custom_skull_item", player), Profileable.detect(identifier));
+                    messages.sendMessage(player, "skull_custom_received");
                 } else {
                     addSkull(player, "§b" + identifier, Profileable.detect(identifier));
-                    Messages.sendMessage(player, "skull_player_received", Map.entry("%player%", identifier));
+                    messages.sendMessage(player, "skull_player_received", Map.entry("%player%", identifier));
                 }
             }
-            default -> {
-                Messages.sendMessage(player, "skull_usage");
-            }
+            default -> messages.sendMessage(player, "skull_usage");
         }
-        return true;
     }
 
     private void addSkull(Player player, String displayName, Profileable profileable) {

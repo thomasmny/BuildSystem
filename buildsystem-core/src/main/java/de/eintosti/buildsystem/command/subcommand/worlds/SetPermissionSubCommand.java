@@ -19,46 +19,28 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
-import de.eintosti.buildsystem.util.PlayerChatInput;
-import de.eintosti.buildsystem.world.modification.EditInventory;
-import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
+import de.eintosti.buildsystem.menu.PlayerChatInput;
+import de.eintosti.buildsystem.world.menu.EditMenu;
+import java.util.List;
 import java.util.Map;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class SetPermissionSubCommand implements SubCommand {
+public class SetPermissionSubCommand extends AbstractSubCommand {
 
-    private final BuildSystemPlugin plugin;
-
-    @Nullable
-    private final BuildWorld buildWorld;
-
-    public SetPermissionSubCommand(BuildSystemPlugin plugin, String worldName) {
-        this.plugin = plugin;
-        this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
+    public SetPermissionSubCommand(BuildSystemPlugin plugin) {
+        super(plugin);
     }
 
     @Override
-    public void execute(Player player, String[] args) {
-        if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
-            Messages.sendPermissionError(player);
-            return;
-        }
-
-        if (args.length > 2) {
-            Messages.sendMessage(player, "worlds_setpermission_usage");
-            return;
-        }
-
+    public void execute(Player player, String worldName, String[] args) {
+        BuildWorld buildWorld = requireWorld(player, worldName, args, 2, "worlds_setpermission");
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_setpermission_unknown_world");
             return;
         }
 
@@ -68,19 +50,26 @@ public class SetPermissionSubCommand implements SubCommand {
     public void getPermissionInput(Player player, BuildWorld buildWorld, boolean closeInventory) {
         new PlayerChatInput(plugin, player, "enter_world_permission", input -> {
             buildWorld.getData().permission().set(input.trim());
-            plugin.getPlayerService().forceUpdateSidebar(buildWorld);
+            plugin.getSettingsService().forceUpdateSidebar(buildWorld);
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
-            Messages.sendMessage(player, "worlds_setpermission_set",
-                    Map.entry("%world%", buildWorld.getName())
-            );
+            messages.sendMessage(player, "worlds_setpermission_set", Map.entry("%world%", buildWorld.getName()));
 
             if (closeInventory) {
                 player.closeInventory();
             } else {
-                new EditInventory(plugin).openInventory(player, buildWorld);
+                new EditMenu(plugin, buildWorld, player).open(player);
             }
         });
+    }
+
+    @Override
+    public List<String> complete(Player player, String[] args) {
+        if (args.length != 2) {
+            return List.of();
+        }
+        WorldStorage ws = plugin.getWorldService().getWorldStorage();
+        return WorldsCompletions.permittedWorldNames(player, ws, getArgument().getPermission(), args[1]);
     }
 
     @Override

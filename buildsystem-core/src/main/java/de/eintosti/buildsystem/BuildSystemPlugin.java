@@ -18,82 +18,29 @@
 package de.eintosti.buildsystem;
 
 import de.eintosti.buildsystem.api.BuildSystem;
-import de.eintosti.buildsystem.api.BuildSystemApi;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
+import de.eintosti.buildsystem.api.player.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
-import de.eintosti.buildsystem.command.BackCommand;
-import de.eintosti.buildsystem.command.BlocksCommand;
-import de.eintosti.buildsystem.command.BuildCommand;
-import de.eintosti.buildsystem.command.BuildSystemCommand;
-import de.eintosti.buildsystem.command.ConfigCommand;
-import de.eintosti.buildsystem.command.ExplosionsCommand;
-import de.eintosti.buildsystem.command.GamemodeCommand;
-import de.eintosti.buildsystem.command.NoAICommand;
-import de.eintosti.buildsystem.command.PhysicsCommand;
-import de.eintosti.buildsystem.command.SettingsCommand;
-import de.eintosti.buildsystem.command.SetupCommand;
-import de.eintosti.buildsystem.command.SkullCommand;
-import de.eintosti.buildsystem.command.SpawnCommand;
-import de.eintosti.buildsystem.command.SpeedCommand;
-import de.eintosti.buildsystem.command.TimeCommand;
-import de.eintosti.buildsystem.command.TopCommand;
-import de.eintosti.buildsystem.command.WorldsCommand;
-import de.eintosti.buildsystem.command.tabcomplete.BuildTabCompleter;
-import de.eintosti.buildsystem.command.tabcomplete.ConfigTabCompleter;
-import de.eintosti.buildsystem.command.tabcomplete.EmptyTabCompleter;
-import de.eintosti.buildsystem.command.tabcomplete.GamemodeTabCompleter;
-import de.eintosti.buildsystem.command.tabcomplete.PhysicsTabCompleter;
-import de.eintosti.buildsystem.command.tabcomplete.SpawnTabCompleter;
-import de.eintosti.buildsystem.command.tabcomplete.SpeedTabCompleter;
-import de.eintosti.buildsystem.command.tabcomplete.TimeTabCompleter;
-import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter;
-import de.eintosti.buildsystem.config.Config;
-import de.eintosti.buildsystem.config.Config.Folder;
-import de.eintosti.buildsystem.config.Config.Settings.Archive;
-import de.eintosti.buildsystem.config.Config.Settings.Builder;
-import de.eintosti.buildsystem.config.Config.World;
-import de.eintosti.buildsystem.config.Config.World.Unload;
+import de.eintosti.buildsystem.command.CommandRegistrar;
+import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.migration.ConfigMigrationManager;
-import de.eintosti.buildsystem.expansion.luckperms.LuckPermsExpansion;
-import de.eintosti.buildsystem.expansion.placeholderapi.PlaceholderApiExpansion;
-import de.eintosti.buildsystem.listener.AsyncPlayerChatListener;
-import de.eintosti.buildsystem.listener.AsyncPlayerPreLoginListener;
-import de.eintosti.buildsystem.listener.BlockPhysicsListener;
-import de.eintosti.buildsystem.listener.BuildModePreventationListener;
-import de.eintosti.buildsystem.listener.BuildWorldResetUnloadListener;
-import de.eintosti.buildsystem.listener.EditSessionListener;
-import de.eintosti.buildsystem.listener.EntityDamageListener;
-import de.eintosti.buildsystem.listener.EntitySpawnListener;
-import de.eintosti.buildsystem.listener.FoodLevelChangeListener;
-import de.eintosti.buildsystem.listener.InventoryCreativeListener;
-import de.eintosti.buildsystem.listener.InventoryListener;
-import de.eintosti.buildsystem.listener.NavigatorListener;
-import de.eintosti.buildsystem.listener.PlayerChangedWorldListener;
-import de.eintosti.buildsystem.listener.PlayerCommandPreprocessListener;
-import de.eintosti.buildsystem.listener.PlayerInventoryClearListener;
-import de.eintosti.buildsystem.listener.PlayerJoinListener;
-import de.eintosti.buildsystem.listener.PlayerMoveListener;
-import de.eintosti.buildsystem.listener.PlayerQuitListener;
-import de.eintosti.buildsystem.listener.PlayerRespawnListener;
-import de.eintosti.buildsystem.listener.PlayerTeleportListener;
-import de.eintosti.buildsystem.listener.SettingsInteractListener;
-import de.eintosti.buildsystem.listener.SignChangeListener;
-import de.eintosti.buildsystem.listener.WeatherChangeListener;
-import de.eintosti.buildsystem.listener.WorldManipulateByAxiomListener;
-import de.eintosti.buildsystem.listener.WorldManipulateListener;
-import de.eintosti.buildsystem.player.LogoutLocationImpl;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.integration.Integrations;
+import de.eintosti.buildsystem.listener.ListenerRegistrar;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.navigator.NavigatorService;
+import de.eintosti.buildsystem.player.BuildPlayerImpl;
+import de.eintosti.buildsystem.player.LogoutLocation;
+import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
-import de.eintosti.buildsystem.player.settings.NoClipManager;
-import de.eintosti.buildsystem.player.settings.SettingsManager;
+import de.eintosti.buildsystem.player.noclip.NoClipService;
+import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.UpdateChecker;
-import de.eintosti.buildsystem.util.inventory.InventoryManager;
-import de.eintosti.buildsystem.world.SpawnManager;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.backup.BackupService;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
-import de.eintosti.buildsystem.world.navigator.ArmorStandManager;
+import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.io.File;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -105,7 +52,6 @@ import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -116,21 +62,24 @@ public class BuildSystemPlugin extends JavaPlugin {
     public static final int METRICS_ID = 7427;
     public static final String ADMIN_PERMISSION = "buildsystem.admin";
 
-    private static BuildSystemPlugin instance;
+    private ConfigService configService;
+    private Messages messages;
 
-    private ArmorStandManager armorStandManager;
+    private NavigatorService navigatorService;
     private CustomBlockManager customBlockManager;
-    private InventoryManager inventoryManager;
     private PlayerServiceImpl playerService;
-    private NoClipManager noClipManager;
-    private SettingsManager settingsManager;
-    private SpawnManager spawnManager;
+    private PlayerLookupService playerLookupService;
+    private NoClipService noClipService;
+    private SettingsService settingsService;
+    private SpawnService spawnService;
     private WorldServiceImpl worldService;
     private BackupService backupService;
     private CustomizableIcons customizableIcons;
+    private MenuItems menuItems;
 
-    private LuckPermsExpansion luckPermsExpansion;
-    private PlaceholderApiExpansion placeholderApiExpansion;
+    private UpdateChecker updateChecker;
+
+    private Integrations integrations;
 
     private BuildSystemApi api;
 
@@ -138,14 +87,14 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        instance = this;
-
+        this.configService = new ConfigService(this);
         new ConfigMigrationManager(this).migrate();
         this.getConfig().options().copyDefaults(true);
         this.saveConfig();
-        Config.load();
+        this.configService.load();
 
-        Messages.createMessageFile();
+        this.messages = new Messages(this, configService);
+        this.messages.load();
         createTemplateFolder();
     }
 
@@ -153,10 +102,9 @@ public class BuildSystemPlugin extends JavaPlugin {
     public void onEnable() {
         initClasses();
 
-        registerCommands();
-        registerTabCompleters();
-        registerListeners();
-        registerExpansions();
+        new CommandRegistrar(this).registerAll();
+        new ListenerRegistrar(this).registerAll();
+        (this.integrations = new Integrations(this)).activate();
 
         performUpdateCheck();
 
@@ -167,32 +115,35 @@ public class BuildSystemPlugin extends JavaPlugin {
         Bukkit.getOnlinePlayers().forEach(pl -> {
             BuildPlayer buildPlayer = playerService.getPlayerStorage().createBuildPlayer(pl);
             Settings settings = buildPlayer.getSettings();
-            noClipManager.startNoClip(pl, settings);
-            settingsManager.displayScoreboard(pl);
+            noClipService.startNoClip(pl, settings);
+            settingsService.displayScoreboard(pl);
         });
 
         registerStats();
 
-        this.configSaveTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this, this::saveBuildConfig, 6000L, 6000L); // Every 5 minutes
+        this.configSaveTask = Bukkit.getScheduler()
+                .runTaskTimerAsynchronously(this, this::saveBuildConfig, 6000L, 6000L); // Every 5 minutes
 
-        Bukkit.getConsoleSender().sendMessage(
-                "%sBuildSystem » Plugin %senabled%s!".formatted(ChatColor.RESET, ChatColor.GREEN, ChatColor.RESET)
-        );
+        Bukkit.getConsoleSender()
+                .sendMessage("%sBuildSystem » Plugin %senabled%s!"
+                        .formatted(ChatColor.RESET, ChatColor.GREEN, ChatColor.RESET));
     }
 
     @Override
     public void onDisable() {
         Bukkit.getOnlinePlayers().forEach(pl -> {
-            BuildPlayer buildPlayer = playerService.getPlayerStorage().getBuildPlayer(pl);
+            BuildPlayerImpl buildPlayer =
+                    BuildPlayerImpl.of(playerService.getPlayerStorage().getBuildPlayer(pl));
             buildPlayer.getCachedValues().resetCachedValues(pl);
-            buildPlayer.setLogoutLocation(new LogoutLocationImpl(pl.getWorld().getName(), pl.getLocation()));
+            buildPlayer.setLogoutLocation(new LogoutLocation(pl.getWorld().getName(), pl.getLocation()));
 
-            settingsManager.hideScoreboard(pl);
-            noClipManager.stopNoClip(pl.getUniqueId());
-            playerService.closeNewNavigator(pl);
+            settingsService.hideScoreboard(pl);
+            noClipService.stopNoClip(pl.getUniqueId());
+            navigatorService.closeNewNavigator(pl);
         });
 
-        this.backupService.getStorage().close();
+        this.backupService.close();
+        worldService.cancelAllUnloadTasks();
 
         reloadConfigData(false);
         saveConfig();
@@ -206,179 +157,100 @@ public class BuildSystemPlugin extends JavaPlugin {
             this.configSaveTask.cancel();
         }
 
-        unregisterExpansions();
+        this.integrations.deactivate();
         this.api.unregister();
 
-        Bukkit.getConsoleSender().sendMessage(
-                "%sBuildSystem » Plugin %sdisabled%s!".formatted(ChatColor.RESET, ChatColor.RED, ChatColor.RESET)
-        );
-
-        instance = null;
-    }
-
-    public static BuildSystemPlugin get() {
-        if (instance == null) {
-            throw new IllegalStateException("BuildSystemPlugin instance is not initialized. Make sure the plugin is enabled.");
-        }
-        return instance;
+        Bukkit.getConsoleSender()
+                .sendMessage("%sBuildSystem » Plugin %sdisabled%s!"
+                        .formatted(ChatColor.RESET, ChatColor.RED, ChatColor.RESET));
     }
 
     private void initClasses() {
         this.customizableIcons = new CustomizableIcons(this);
 
-        this.inventoryManager = new InventoryManager();
-        this.armorStandManager = new ArmorStandManager();
         this.customBlockManager = new CustomBlockManager(this);
+        this.playerLookupService = new PlayerLookupService(this);
         (this.playerService = new PlayerServiceImpl(this)).init();
-        this.noClipManager = new NoClipManager(this);
+        this.navigatorService = new NavigatorService(this);
+        this.noClipService = new NoClipService(this);
         (this.worldService = new WorldServiceImpl(this)).init();
         this.backupService = new BackupService(this);
-        this.settingsManager = new SettingsManager(this);
-        this.spawnManager = new SpawnManager(this);
-    }
-
-    private void registerCommands() {
-        new BackCommand(this);
-        new BlocksCommand(this);
-        new BuildCommand(this);
-        new BuildSystemCommand(this);
-        new ConfigCommand(this);
-        new ExplosionsCommand(this);
-        new GamemodeCommand(this);
-        new NoAICommand(this);
-        new PhysicsCommand(this);
-        new SettingsCommand(this);
-        new SetupCommand(this);
-        new SkullCommand(this);
-        new SpawnCommand(this);
-        new SpeedCommand(this);
-        new TimeCommand(this);
-        new TopCommand(this);
-        new WorldsCommand(this);
-    }
-
-    private void registerTabCompleters() {
-        new BuildTabCompleter(this);
-        new ConfigTabCompleter(this);
-        new EmptyTabCompleter(this);
-        new GamemodeTabCompleter(this);
-        new PhysicsTabCompleter(this);
-        new SpawnTabCompleter(this);
-        new SpeedTabCompleter(this);
-        new TimeTabCompleter(this);
-        new WorldsTabCompleter(this);
-    }
-
-    private void registerListeners() {
-        new AsyncPlayerChatListener(this);
-        new AsyncPlayerPreLoginListener(this);
-        new BlockPhysicsListener(this);
-        new CustomBlockManager(this);
-        new BuildModePreventationListener(this);
-        new BuildWorldResetUnloadListener(this);
-        new EntitySpawnListener(this);
-        new FoodLevelChangeListener(this);
-        new InventoryCreativeListener(this);
-        new InventoryListener(this);
-        new NavigatorListener(this);
-        new PlayerChangedWorldListener(this);
-        new EntityDamageListener(this);
-        new PlayerCommandPreprocessListener(this);
-        new PlayerInventoryClearListener(this);
-        new PlayerJoinListener(this);
-        new PlayerMoveListener(this);
-        new PlayerQuitListener(this);
-        new PlayerRespawnListener(this);
-        new PlayerTeleportListener(this);
-        new SettingsInteractListener(this);
-        new SignChangeListener(this);
-        new WeatherChangeListener(this);
-        new WorldManipulateListener(this);
+        this.settingsService = new SettingsService(this);
+        this.spawnService = new SpawnService(this);
+        this.menuItems = new MenuItems(this, configService, messages, settingsService);
     }
 
     private void registerStats() {
         Metrics metrics = new Metrics(this, METRICS_ID);
-        metrics.addCustomChart(new SimplePie("archive_vanish", () -> String.valueOf(Archive.vanish)));
-        metrics.addCustomChart(new SimplePie("block_world_edit", () -> String.valueOf(Builder.blockWorldEditNonBuilder)));
-        metrics.addCustomChart(new SimplePie("join_quit_messages", () -> String.valueOf(Config.Messages.joinQuitMessages)));
-        metrics.addCustomChart(new SimplePie("lock_weather", () -> String.valueOf(World.lockWeather)));
-        metrics.addCustomChart(new SimplePie("scoreboard", () -> String.valueOf(Config.Settings.scoreboard)));
-        metrics.addCustomChart(new SimplePie("update_checker", () -> String.valueOf(Config.Settings.updateChecker)));
-        metrics.addCustomChart(new SimplePie("unload_worlds", () -> String.valueOf(Unload.enabled)));
+        metrics.addCustomChart(new SimplePie(
+                "archive_vanish",
+                () -> String.valueOf(
+                        configService.current().settings().archive().vanish())));
+        metrics.addCustomChart(new SimplePie(
+                "block_world_edit",
+                () -> String.valueOf(
+                        configService.current().settings().builder().blockWorldEditNonBuilder())));
+        metrics.addCustomChart(new SimplePie(
+                "join_quit_messages",
+                () -> String.valueOf(configService.current().settings().joinQuitMessages())));
+        metrics.addCustomChart(new SimplePie(
+                "lock_weather",
+                () -> String.valueOf(configService.current().world().lockWeather())));
+        metrics.addCustomChart(new SimplePie(
+                "scoreboard",
+                () -> String.valueOf(configService.current().settings().scoreboard())));
+        metrics.addCustomChart(new SimplePie(
+                "update_checker",
+                () -> String.valueOf(configService.current().settings().updateChecker())));
+        metrics.addCustomChart(new SimplePie(
+                "unload_worlds",
+                () -> String.valueOf(configService.current().world().unload().enabled())));
         metrics.addCustomChart(new AdvancedPie("navigator_type", () -> {
             Map<NavigatorType, Long> countsByType = playerService.getPlayerStorage().getBuildPlayers().stream()
                     .collect(Collectors.groupingBy(
-                            buildPlayer -> buildPlayer.getSettings().getNavigatorType(),
-                            Collectors.counting()
-                    ));
+                            buildPlayer -> buildPlayer.getSettings().getNavigatorType(), Collectors.counting()));
             int oldCount = countsByType.getOrDefault(NavigatorType.OLD, 0L).intValue();
             int newCount = countsByType.getOrDefault(NavigatorType.NEW, 0L).intValue();
             return Map.of("Old", oldCount, "New", newCount);
         }));
-        metrics.addCustomChart(new SimplePie("folder_override_permissions", () -> String.valueOf(Folder.overridePermissions)));
-        metrics.addCustomChart(new SimplePie("folder_override_projects", () -> String.valueOf(Folder.overrideProjects)));
+        metrics.addCustomChart(new SimplePie(
+                "folder_override_permissions",
+                () -> String.valueOf(configService.current().folder().overridePermissions())));
+        metrics.addCustomChart(new SimplePie(
+                "folder_override_projects",
+                () -> String.valueOf(configService.current().folder().overrideProjects())));
     }
 
-    private void registerExpansions() {
-        PluginManager pluginManager = Bukkit.getPluginManager();
-
-        if (pluginManager.getPlugin("PlaceholderAPI") != null) {
-            this.placeholderApiExpansion = new PlaceholderApiExpansion(this);
-            this.placeholderApiExpansion.register();
-        }
-
-        if (pluginManager.getPlugin("LuckPerms") != null) {
-            this.luckPermsExpansion = new LuckPermsExpansion(this);
-            this.luckPermsExpansion.registerAll();
-        }
-
-        if (pluginManager.getPlugin("AxiomPaper") != null) {
-            new WorldManipulateByAxiomListener(this);
-        }
-
-        boolean isWorldEdit = pluginManager.getPlugin("WorldEdit") != null
-                || pluginManager.getPlugin("FastAsyncWorldEdit") != null;
-        if (isWorldEdit && Builder.blockWorldEditNonBuilder) {
-            new EditSessionListener(this);
-        }
-    }
-
-    private void unregisterExpansions() {
-        if (this.placeholderApiExpansion != null) {
-            this.placeholderApiExpansion.unregister();
-        }
-
-        if (this.luckPermsExpansion != null) {
-            this.luckPermsExpansion.unregisterAll();
-        }
+    public UpdateChecker getUpdateChecker() {
+        return updateChecker;
     }
 
     private void performUpdateCheck() {
-        if (!Config.Settings.updateChecker) {
+        this.updateChecker = new UpdateChecker(this, SPIGOT_ID);
+        if (!configService.current().settings().updateChecker()) {
             return;
         }
 
-        UpdateChecker.init(this, SPIGOT_ID).requestUpdateCheck().whenComplete((result, e) -> {
-                    if (result.requiresUpdate()) {
-                        Bukkit.getConsoleSender().sendMessage(
-                                ChatColor.YELLOW + "[BuildSystem] Great! a new update is available: "
-                                        + ChatColor.GREEN + "v" + result.getNewestVersion()
-                        );
-                        Bukkit.getConsoleSender().sendMessage(
-                                ChatColor.YELLOW + " ➥ Your current version: " +
-                                        ChatColor.RED + this.getDescription().getVersion()
-                        );
-                        return;
-                    }
+        updateChecker.requestUpdateCheck().whenComplete((result, e) -> {
+            if (result.requiresUpdate()) {
+                Bukkit.getConsoleSender()
+                        .sendMessage(ChatColor.YELLOW + "[BuildSystem] Great! a new update is available: "
+                                + ChatColor.GREEN + "v" + result.getNewestVersion());
+                Bukkit.getConsoleSender()
+                        .sendMessage(ChatColor.YELLOW + " ➥ Your current version: " + ChatColor.RED
+                                + this.getDescription().getVersion());
+                return;
+            }
 
-                    UpdateChecker.UpdateReason reason = result.getReason();
-                    switch (reason) {
-                        case COULD_NOT_CONNECT, INVALID_JSON, UNAUTHORIZED_QUERY, UNKNOWN_ERROR, UNSUPPORTED_VERSION_SCHEME -> Bukkit.getConsoleSender().sendMessage(
-                                ChatColor.RED + "[BuildSystem] Could not check for a new version of BuildSystem. Reason: " + reason
-                        );
-                    }
-                }
-        );
+            UpdateChecker.UpdateReason reason = result.getReason();
+            switch (reason) {
+                case COULD_NOT_CONNECT, INVALID_JSON, UNAUTHORIZED_QUERY, UNKNOWN_ERROR, UNSUPPORTED_VERSION_SCHEME ->
+                    Bukkit.getConsoleSender()
+                            .sendMessage(ChatColor.RED
+                                    + "[BuildSystem] Could not check for a new version of BuildSystem. Reason: "
+                                    + reason);
+            }
+        });
     }
 
     private void createTemplateFolder() {
@@ -391,7 +263,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     private CompletableFuture<Void> saveBuildConfig() {
         CompletableFuture<Void> worldSave = worldService.save();
         CompletableFuture<Void> playerSave = playerService.save();
-        CompletableFuture<Void> spawnSave = spawnManager.save();
+        CompletableFuture<Void> spawnSave = spawnService.save();
         return CompletableFuture.allOf(worldSave, playerSave, spawnSave);
     }
 
@@ -402,52 +274,52 @@ public class BuildSystemPlugin extends JavaPlugin {
      */
     public void reloadConfigData(boolean init) {
         for (Player pl : Bukkit.getOnlinePlayers()) {
-            getSettingsManager().hideScoreboard(pl);
+            getSettingsService().hideScoreboard(pl);
         }
 
         reloadConfig();
-        Config.load();
+        configService.load();
         if (isEnabled()) {
             backupService.reload();
         }
 
         if (init) {
-            worldService.getWorldStorage().getBuildWorlds().forEach(buildWorld -> buildWorld.getUnloader().manageUnload());
+            worldService.remanageAllUnloadTasks();
 
-            if (Config.Settings.scoreboard) {
-                getSettingsManager().displayScoreboard();
+            if (configService.current().settings().scoreboard()) {
+                getSettingsService().displayScoreboard();
             } else {
-                getSettingsManager().hideScoreboards();
+                getSettingsService().hideScoreboards();
             }
         }
     }
 
-    public ArmorStandManager getArmorStandManager() {
-        return armorStandManager;
+    public NavigatorService getNavigatorService() {
+        return navigatorService;
     }
 
     public CustomBlockManager getCustomBlockManager() {
         return customBlockManager;
     }
 
-    public InventoryManager getInventoryManager() {
-        return inventoryManager;
-    }
-
     public PlayerServiceImpl getPlayerService() {
         return playerService;
     }
 
-    public NoClipManager getNoClipManager() {
-        return noClipManager;
+    public PlayerLookupService getPlayerLookupService() {
+        return playerLookupService;
     }
 
-    public SettingsManager getSettingsManager() {
-        return settingsManager;
+    public NoClipService getNoClipService() {
+        return noClipService;
     }
 
-    public SpawnManager getSpawnManager() {
-        return spawnManager;
+    public SettingsService getSettingsService() {
+        return settingsService;
+    }
+
+    public SpawnService getSpawnService() {
+        return spawnService;
     }
 
     public WorldServiceImpl getWorldService() {
@@ -458,7 +330,19 @@ public class BuildSystemPlugin extends JavaPlugin {
         return backupService;
     }
 
+    public ConfigService getConfigService() {
+        return configService;
+    }
+
+    public Messages getMessages() {
+        return messages;
+    }
+
     public CustomizableIcons getCustomizableIcons() {
         return customizableIcons;
+    }
+
+    public MenuItems getMenuItems() {
+        return menuItems;
     }
 }

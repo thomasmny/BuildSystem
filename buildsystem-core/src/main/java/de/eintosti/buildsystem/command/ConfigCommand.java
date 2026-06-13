@@ -18,47 +18,50 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class ConfigCommand implements CommandExecutor {
-
-    private final BuildSystemPlugin plugin;
+public class ConfigCommand extends CommandBase {
 
     public ConfigCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        plugin.getCommand("config").setExecutor(this);
+        super(plugin, false);
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!sender.hasPermission("buildsystem.config")) {
-            Messages.sendPermissionError(sender);
-            return true;
+    protected void run(CommandSender sender, String label, String[] args) {
+        if (!requirePermission(sender, "buildsystem.config")) {
+            return;
         }
 
         if (args.length != 1) {
-            Messages.sendMessage(sender, "config_usage");
-            return true;
+            messages.sendMessage(sender, "config_usage");
+            return;
         }
 
         switch (args[0].toLowerCase(Locale.ROOT)) {
             case "rl":
             case "reload":
-                Messages.reloadMessages();
+                messages.reload();
                 plugin.reloadConfigData(true);
-                Messages.sendMessage(sender, "config_reloaded");
+                messages.sendMessage(sender, "config_reloaded");
                 break;
             default:
-                Messages.sendMessage(sender, "config_usage");
+                messages.sendMessage(sender, "config_usage");
                 break;
         }
+    }
 
-        return true;
+    @Override
+    protected List<String> complete(Player player, String label, String[] args) {
+        List<String> list = new ArrayList<>();
+        if (player.hasPermission("buildsystem.config")) {
+            list.add("reload");
+        }
+        return list;
     }
 }

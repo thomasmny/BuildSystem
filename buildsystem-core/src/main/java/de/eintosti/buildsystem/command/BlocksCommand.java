@@ -19,38 +19,24 @@ package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.player.customblock.CustomBlockInventory;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
+import de.eintosti.buildsystem.player.customblock.CustomBlockMenu;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class BlocksCommand implements CommandExecutor {
-
-    private final BuildSystemPlugin plugin;
+public class BlocksCommand extends CommandBase {
 
     public BlocksCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        plugin.getCommand("blocks").setExecutor(this);
+        super(plugin, true);
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
-            return true;
-        }
-
-        if (!player.hasPermission("buildsystem.blocks")) {
-            Messages.sendPermissionError(player);
-            return true;
+    protected void run(Player player, String label, String[] args) {
+        if (!requirePermission(player, "buildsystem.blocks")) {
+            return;
         }
 
         XSound.BLOCK_CHEST_OPEN.play(player);
-        new CustomBlockInventory(plugin).openInventory(player);
-        return true;
+        new CustomBlockMenu(plugin, player).open(player);
     }
 }

@@ -22,7 +22,8 @@ import java.util.Locale;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Represents the various building statuses a {@link BuildWorld} can have. These statuses indicate the progression and accessibility of a world.
+ * Represents the various building statuses a {@link BuildWorld} can have. These statuses indicate the progression and
+ * accessibility of a world.
  *
  * @since 3.0.0
  */
@@ -30,12 +31,14 @@ import org.jspecify.annotations.NullMarked;
 public enum BuildWorldStatus {
 
     /**
-     * Represents a {@link BuildWorld} that has not yet been started or modified. This is typically the initial state for newly created worlds.
+     * Represents a {@link BuildWorld} that has not yet been started or modified. This is typically the initial state
+     * for newly created worlds.
      */
     NOT_STARTED(1),
 
     /**
-     * Represents a {@link BuildWorld} that is currently under construction. This status is automatically assigned when a block is placed or broken in the world.
+     * Represents a {@link BuildWorld} that is currently under construction. This status is automatically assigned when
+     * a block is placed or broken in the world.
      */
     IN_PROGRESS(2),
 
@@ -50,7 +53,8 @@ public enum BuildWorldStatus {
     FINISHED(4),
 
     /**
-     * Represents an older {@link BuildWorld} that has been completed and is now archived. Blocks typically cannot be placed or broken in archived worlds.
+     * Represents an older {@link BuildWorld} that has been completed and is now archived. Blocks typically cannot be
+     * placed or broken in archived worlds.
      */
     ARCHIVE(5),
 
@@ -75,7 +79,8 @@ public enum BuildWorldStatus {
     }
 
     /**
-     * Gets the development stage of the {@link BuildWorld}. A higher numerical value indicates a further developed or completed world.
+     * Gets the development stage of the {@link BuildWorld}. A higher numerical value indicates a further developed or
+     * completed world.
      *
      * @return The integer representing the stage of development
      */

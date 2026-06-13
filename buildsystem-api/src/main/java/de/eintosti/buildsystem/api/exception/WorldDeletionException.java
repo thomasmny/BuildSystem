@@ -28,7 +28,7 @@ public class WorldDeletionException extends WorldException {
      * Constructs a new {@link WorldDeletionException} with the specified message and cause.
      *
      * @param message The detail message
-     * @param cause   The cause of the exception
+     * @param cause The cause of the exception
      */
     public WorldDeletionException(String message, Throwable cause) {
         super(message, cause);

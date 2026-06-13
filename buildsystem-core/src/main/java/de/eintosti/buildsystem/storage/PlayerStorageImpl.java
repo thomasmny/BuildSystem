@@ -17,16 +17,15 @@
  */
 package de.eintosti.buildsystem.storage;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,34 +37,31 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public abstract class PlayerStorageImpl implements PlayerStorage {
 
-    protected final BuildSystemPlugin plugin;
     protected final Logger logger;
 
-    private final Map<UUID, BuildPlayer> buildPlayers;
+    private final ConcurrentHashMap<UUID, BuildPlayer> buildPlayers;
 
-    public PlayerStorageImpl(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        this.logger = plugin.getLogger();
-
-        this.buildPlayers = new HashMap<>();
+    protected PlayerStorageImpl(Logger logger) {
+        this.logger = logger;
+        this.buildPlayers = new ConcurrentHashMap<>();
     }
 
     public void loadPlayers() {
         load().thenAccept(players -> {
-            Map<UUID, BuildPlayer> loadedPlayers = players.stream().collect(Collectors.toMap(BuildPlayer::getUniqueId, Function.identity()));
-            this.buildPlayers.putAll(loadedPlayers);
-            logger.info("Loaded " + players.size() + " players from storage");
-        }).exceptionally(throwable -> {
-            logger.log(Level.SEVERE, "Failed to load players from storage", throwable);
-            return null;
-        });
+                    Map<UUID, BuildPlayer> loadedPlayers =
+                            players.stream().collect(Collectors.toMap(BuildPlayer::getUniqueId, Function.identity()));
+                    this.buildPlayers.putAll(loadedPlayers);
+                    logger.info("Loaded " + players.size() + " players from storage");
+                })
+                .exceptionally(throwable -> {
+                    logger.log(Level.SEVERE, "Failed to load players from storage", throwable);
+                    return null;
+                });
     }
 
     @Override
     public BuildPlayer createBuildPlayer(UUID uuid) {
-        BuildPlayer buildPlayer = this.buildPlayers.getOrDefault(uuid, new BuildPlayerImpl(uuid, new SettingsImpl()));
-        this.buildPlayers.put(uuid, buildPlayer);
-        return buildPlayer;
+        return this.buildPlayers.computeIfAbsent(uuid, id -> new BuildPlayerImpl(id, new SettingsImpl()));
     }
 
     @Override
@@ -79,13 +75,12 @@ public abstract class PlayerStorageImpl implements PlayerStorage {
     }
 
     @Override
-    @Nullable
-    public BuildPlayer getBuildPlayer(UUID uuid) {
+    public @Nullable BuildPlayer getBuildPlayer(UUID uuid) {
         return this.buildPlayers.get(uuid);
     }
 
     public BuildPlayer getBuildPlayer(Player player) {
-        UUID playerUuid = player.getUniqueId();
-        return this.buildPlayers.getOrDefault(playerUuid, createBuildPlayer(playerUuid));
+        return this.buildPlayers.computeIfAbsent(
+                player.getUniqueId(), id -> new BuildPlayerImpl(id, new SettingsImpl()));
     }
 }

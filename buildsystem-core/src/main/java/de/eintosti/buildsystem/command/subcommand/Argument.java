@@ -35,6 +35,5 @@ public interface Argument {
      *
      * @return The permission required to run the command
      */
-    @Nullable
-    String getPermission();
+    @Nullable String getPermission();
 }

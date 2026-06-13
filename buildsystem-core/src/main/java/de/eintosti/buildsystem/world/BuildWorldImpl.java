@@ -20,32 +20,25 @@ package de.eintosti.buildsystem.world;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.api.world.util.WorldPermissions;
-import de.eintosti.buildsystem.api.world.util.WorldTeleporter;
-import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter;
-import de.eintosti.buildsystem.config.Config.World.Default.Permission;
-import de.eintosti.buildsystem.config.Config.World.Default.Settings.BuildersEnabled;
-import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
+import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.world.builder.BuildersImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
-import de.eintosti.buildsystem.world.util.WorldLoaderImpl;
-import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
-import de.eintosti.buildsystem.world.util.WorldTeleporterImpl;
-import de.eintosti.buildsystem.world.util.WorldUnloaderImpl;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import de.eintosti.buildsystem.world.lifecycle.WorldLoaderImpl;
+import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
+import de.eintosti.buildsystem.world.lifecycle.WorldTeleporterImpl;
+import de.eintosti.buildsystem.world.lifecycle.WorldUnloaderImpl;
+import java.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.World;
@@ -60,47 +53,82 @@ public final class BuildWorldImpl implements BuildWorld {
     private final UUID uuid;
     private String name;
     private boolean loaded;
-    @Nullable
-    private Folder folder;
+
+    private @Nullable Folder folder;
 
     private final BuildWorldType worldType;
     private final WorldDataImpl worldData;
     private final BuildersImpl builders;
-    @Nullable
-    private final CustomGenerator customGenerator;
+
+    private final @Nullable CustomGenerator customGenerator;
+
     private final long creation;
 
+    private final BuildSystemPlugin plugin;
     private final WorldLoaderImpl worldLoader;
     private final WorldUnloaderImpl worldUnloader;
 
     public BuildWorldImpl(
+            BuildSystemPlugin plugin,
             String name,
-            Builder creator,
+            @Nullable Builder creator,
             BuildWorldType worldType,
             long creation,
             boolean privateWorld,
             @Nullable CustomGenerator customGenerator,
-            @Nullable Folder folder
-    ) {
+            @Nullable Folder folder) {
         this(
+                plugin,
                 UUID.randomUUID(),
                 name,
                 worldType,
-                new WorldDataBuilder(name)
-                        .withPrivateWorld(privateWorld)
-                        .withMaterial(privateWorld ? XMaterial.PLAYER_HEAD : BuildSystemPlugin.get().getCustomizableIcons().getIcon(worldType))
-                        .withPermission((privateWorld ? Permission.privatePermission : Permission.publicPermission).replace("%world%", name))
-                        .withBuildersEnabled(privateWorld ? BuildersEnabled.privateBuilders : BuildersEnabled.publicBuilders)
-                        .build(),
+                defaultWorldData(plugin, name, worldType, privateWorld),
                 creator,
                 new ArrayList<>(),
                 creation,
                 customGenerator,
-                folder
-        );
+                folder);
+    }
+
+    /**
+     * Builds the {@link WorldDataImpl} for a freshly created world, seeded from the configured world defaults.
+     * Extracted from the constructor so the repeated {@code config.world().defaults()} lookup can be bound to a single
+     * local instead of being re-walked for every field.
+     */
+    private static WorldDataImpl defaultWorldData(
+            BuildSystemPlugin plugin, String name, BuildWorldType worldType, boolean privateWorld) {
+        var defaults = plugin.getConfigService().current().world().defaults();
+        String permission = (privateWorld
+                        ? defaults.permission().privatePermission()
+                        : defaults.permission().publicPermission())
+                .replace("%world%", name);
+        boolean buildersEnabled = privateWorld
+                ? defaults.buildersEnabled().privateBuilders()
+                : defaults.buildersEnabled().publicBuilders();
+        return new WorldDataBuilder(name)
+                .withPrivateWorld(privateWorld)
+                .withMaterial(
+                        privateWorld
+                                ? XMaterial.PLAYER_HEAD
+                                : plugin.getCustomizableIcons().getIcon(worldType))
+                .withPermission(permission)
+                .withDifficulty(defaults.difficulty())
+                .withBlockBreaking(defaults.blockBreaking())
+                .withBlockInteractions(defaults.blockInteractions())
+                .withBlockPlacement(defaults.blockPlacement())
+                .withExplosions(defaults.explosions())
+                .withMobAi(defaults.mobAi())
+                .withPhysics(defaults.physics())
+                .withBuildersEnabled(buildersEnabled)
+                .withPermissionOverrideEnabled(
+                        () -> plugin.getConfigService().current().folder().overridePermissions())
+                .withProjectOverrideEnabled(
+                        () -> plugin.getConfigService().current().folder().overrideProjects())
+                .build();
     }
 
     public BuildWorldImpl(
+            BuildSystemPlugin plugin,
             UUID uuid,
             String name,
             BuildWorldType worldType,
@@ -109,19 +137,20 @@ public final class BuildWorldImpl implements BuildWorld {
             List<Builder> builders,
             long creation,
             @Nullable CustomGenerator customGenerator,
-            @Nullable Folder folder
-    ) {
+            @Nullable Folder folder) {
+        this.plugin = plugin;
         this.uuid = uuid;
         this.name = name;
         this.worldType = worldType;
         this.worldData = worldData;
-        this.builders = new BuildersImpl(creator, builders);
+        this.builders = new BuildersImpl(plugin.getMessages(), creator, builders);
         this.creation = creation;
         this.customGenerator = customGenerator;
         this.folder = folder;
 
-        this.worldLoader = WorldLoaderImpl.of(this);
-        this.worldUnloader = WorldUnloaderImpl.of(this);
+        this.worldData.setFolderResolver(this::getFolder);
+        this.worldLoader = WorldLoaderImpl.of(plugin, this);
+        this.worldUnloader = WorldUnloaderImpl.of(plugin, this);
         this.worldUnloader.manageUnload();
     }
 
@@ -130,8 +159,7 @@ public final class BuildWorldImpl implements BuildWorld {
      *
      * @return The Bukkit world, or {@code null} if not loaded
      */
-    @Nullable
-    public World getWorld() {
+    public @Nullable World getWorld() {
         return Bukkit.getWorld(name);
     }
 
@@ -163,45 +191,55 @@ public final class BuildWorldImpl implements BuildWorld {
 
     @Override
     public String getDisplayName(Player player) {
-        return Messages.getString("world_item_title", player,
-                Map.entry("%world%", this.name)
-        );
+        return plugin.getMessages().getString("world_item_title", player, Map.entry("%world%", this.name));
     }
 
     @Override
     public List<String> getLore(Player player) {
         @SuppressWarnings("unchecked")
         Map.Entry<String, Object>[] placeholders = List.of(
-                Map.entry("%status%", Messages.getString(Messages.getMessageKey(worldData.status().get()), player)),
-                Map.entry("%project%", worldData.project().get()),
-                Map.entry("%permission%", worldData.permission().get()),
-                Map.entry("%creator%", builders.hasCreator() ? builders.getCreator().getName() : "-"),
-                Map.entry("%creation%", Messages.formatDate(getCreation())),
-                Map.entry("%lastedited%", Messages.formatDate(worldData.lastEdited().get())),
-                Map.entry("%lastloaded%", Messages.formatDate(worldData.lastLoaded().get())),
-                Map.entry("%lastunloaded%", Messages.formatDate(worldData.lastUnloaded().get()))
-        ).toArray(Map.Entry[]::new);
+                        Map.entry(
+                                "%status%",
+                                plugin.getMessages()
+                                        .getString(
+                                                Messages.getMessageKey(
+                                                        worldData.status().get()),
+                                                player)),
+                        Map.entry("%project%", worldData.project().get()),
+                        Map.entry("%permission%", worldData.permission().get()),
+                        Map.entry(
+                                "%creator%",
+                                builders.hasCreator() ? builders.getCreator().getName() : "-"),
+                        Map.entry("%creation%", plugin.getMessages().formatDate(getCreation())),
+                        Map.entry(
+                                "%lastedited%",
+                                plugin.getMessages()
+                                        .formatDate(worldData.lastEdited().get())),
+                        Map.entry(
+                                "%lastloaded%",
+                                plugin.getMessages()
+                                        .formatDate(worldData.lastLoaded().get())),
+                        Map.entry(
+                                "%lastunloaded%",
+                                plugin.getMessages()
+                                        .formatDate(worldData.lastUnloaded().get())))
+                .toArray(Map.Entry[]::new);
 
-        List<String> messageList = getPermissions().canPerformCommand(player, WorldsTabCompleter.WorldsArgument.EDIT.getPermission())
-                ? Messages.getStringList("world_item_lore_edit", player, placeholders)
-                : Messages.getStringList("world_item_lore_normal", player, placeholders);
+        List<String> messageList = getPermissions().canPerformCommand(player, WorldsArgument.EDIT.getPermission())
+                ? plugin.getMessages().getStringList("world_item_lore_edit", player, placeholders)
+                : plugin.getMessages().getStringList("world_item_lore_normal", player, placeholders);
 
         List<String> lore = new ArrayList<>();
 
         for (String line : messageList) {
-            // If the current line does not contain the %builders% placeholder, add it directly
             if (!line.contains("%builders%")) {
                 lore.add(line);
                 continue;
             }
 
+            // The first builder line replaces the placeholder in-line; overflow lines become own lore entries
             List<String> builderLines = builders.formatBuildersForLore(player, 3);
-
-            // Replace the %builders% placeholder in the current line with the first generated builder line
             lore.add(line.replace("%builders%", builderLines.getFirst()));
-
-            // Add any further builder lines as new separate lore entries
-            // Start from the second element (index 1) of builderLines
             for (int i = 1; i < builderLines.size(); i++) {
                 lore.add(builderLines.get(i));
             }
@@ -213,7 +251,7 @@ public final class BuildWorldImpl implements BuildWorld {
     @Override
     public void addToInventory(Inventory inventory, int slot, Player player) {
         if (getIcon() == XMaterial.PLAYER_HEAD) {
-            InventoryUtils.addWorldItem(inventory, slot, this, getDisplayName(player), getLore(player));
+            plugin.getMenuItems().addWorldItem(inventory, slot, this, getDisplayName(player), getLore(player));
             return;
         }
         BuildWorld.super.addToInventory(inventory, slot, player);
@@ -221,9 +259,7 @@ public final class BuildWorldImpl implements BuildWorld {
 
     @Override
     public Profileable asProfilable() {
-        return builders.hasCreator()
-                ? Profileable.of(builders.getCreator().getUniqueId())
-                : Profileable.username(name);
+        return builders.hasCreator() ? Profileable.of(builders.getCreator().getUniqueId()) : Profileable.username(name);
     }
 
     @Override
@@ -242,19 +278,19 @@ public final class BuildWorldImpl implements BuildWorld {
     }
 
     @Override
-    @Nullable
-    public CustomGenerator getCustomGenerator() {
+    public @Nullable CustomGenerator getCustomGenerator() {
         return customGenerator;
     }
 
     @Override
     public Difficulty cycleDifficulty() {
-        Difficulty newDifficulty = switch (worldData.difficulty().get()) {
-            case PEACEFUL -> Difficulty.EASY;
-            case EASY -> Difficulty.NORMAL;
-            case NORMAL -> Difficulty.HARD;
-            case HARD -> Difficulty.PEACEFUL;
-        };
+        Difficulty newDifficulty =
+                switch (worldData.difficulty().get()) {
+                    case PEACEFUL -> Difficulty.EASY;
+                    case EASY -> Difficulty.NORMAL;
+                    case NORMAL -> Difficulty.HARD;
+                    case HARD -> Difficulty.PEACEFUL;
+                };
         worldData.difficulty().set(newDifficulty);
         return newDifficulty;
     }
@@ -295,17 +331,16 @@ public final class BuildWorldImpl implements BuildWorld {
 
     @Override
     public WorldTeleporter getTeleporter() {
-        return WorldTeleporterImpl.of(this);
+        return WorldTeleporterImpl.of(plugin, this);
     }
 
     @Override
     public WorldPermissions getPermissions() {
-        return WorldPermissionsImpl.of(this);
+        return WorldPermissionsImpl.of(plugin, this);
     }
 
     @Override
-    @Nullable
-    public Folder getFolder() {
+    public @Nullable Folder getFolder() {
         return folder;
     }
 
@@ -317,34 +352,21 @@ public final class BuildWorldImpl implements BuildWorld {
     @Override
     public void setFolder(@Nullable Folder folder) {
         if (Objects.equals(this.folder, folder)) {
-            // No change in folder assignment, do nothing
             return;
         }
 
         Folder oldFolder = this.folder;
-
-        // World is not assigned to any folder, assign it to the new folder
-        if (this.folder == null) {
-            this.folder = folder;
-            folder.addWorld(this);
-            return;
-        }
-
-        // World is currently assigned to a folder, remove it from the old folder
-        if (folder == null) {
-            this.folder = null;
-            oldFolder.removeWorld(this);
-            return;
-        }
-
-        // World is being moved to a new folder, remove it from the old folder and assign it to the new one
         this.folder = folder;
-        oldFolder.removeWorld(this);
-        folder.addWorld(this);
+        if (oldFolder != null) {
+            oldFolder.removeWorld(this);
+        }
+        if (folder != null) {
+            folder.addWorld(this);
+        }
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (this == o) {
             return true;
         }

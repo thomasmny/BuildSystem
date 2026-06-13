@@ -18,42 +18,38 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
-import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
+import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.Map;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class RemoveSpawnSubCommand implements SubCommand {
-
-    private final BuildSystemPlugin plugin;
+public class RemoveSpawnSubCommand extends AbstractSubCommand {
 
     public RemoveSpawnSubCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
     }
 
     @Override
-    public void execute(Player player, String[] args) {
+    public void execute(Player player, String worldName, String[] args) {
         BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld());
-        if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
-            Messages.sendPermissionError(player);
+        if (!WorldPermissionsImpl.of(plugin, buildWorld)
+                .canPerformCommand(player, getArgument().getPermission())) {
+            messages.sendPermissionError(player);
             return;
         }
 
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_removespawn_world_not_imported");
+            messages.sendMessage(player, "worlds_removespawn_world_not_imported");
             return;
         }
 
         buildWorld.getData().customSpawn().set("");
-        Messages.sendMessage(player, "worlds_removespawn_world_spawn_removed",
-                Map.entry("%world%", buildWorld.getName())
-        );
+        messages.sendMessage(
+                player, "worlds_removespawn_world_spawn_removed", Map.entry("%world%", buildWorld.getName()));
     }
 
     @Override

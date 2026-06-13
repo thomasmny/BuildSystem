@@ -47,6 +47,17 @@ public interface Displayable {
     String getName();
 
     /**
+     * Sets the name of this displayable item.
+     *
+     * <p><b>Note:</b> this only updates the in-memory name. Persisted storage is keyed by the name, so a durable rename
+     * additionally requires re-saving under the new key (delete the old storage entry, then save under the new name).
+     *
+     * @param name The new name for this item
+     * @throws IllegalArgumentException if the name is {@code null} or blank
+     */
+    void setName(String name);
+
+    /**
      * Gets the name used to display this item in an inventory.
      *
      * @param player The player viewing the item
@@ -57,7 +68,8 @@ public interface Displayable {
     /**
      * Gets the creation timestamp of the displayable.
      *
-     * @return The number of milliseconds that have passed since {@code January 1, 1970 UTC}, until the displayable was created.
+     * @return The number of milliseconds that have passed since {@code January 1, 1970 UTC}, until the displayable was
+     *     created.
      */
     long getCreation();
 
@@ -104,11 +116,14 @@ public interface Displayable {
         itemMeta.setLore(getLore(player));
         itemMeta.addItemFlags(ItemFlag.values());
 
-        DisplayableType type = switch (this) {
-            case BuildWorld ignored -> DisplayableType.BUILD_WORLD;
-            case Folder ignored -> DisplayableType.FOLDER;
-            default -> throw new IllegalStateException("Unknown displayable type: " + this.getClass().getSimpleName());
-        };
+        DisplayableType type =
+                switch (this) {
+                    case BuildWorld ignored -> DisplayableType.BUILD_WORLD;
+                    case Folder ignored -> DisplayableType.FOLDER;
+                    default ->
+                        throw new IllegalStateException(
+                                "Unknown displayable type: " + this.getClass().getSimpleName());
+                };
 
         JavaPlugin plugin = JavaPlugin.getProvidingPlugin(getClass());
         PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
@@ -124,8 +139,8 @@ public interface Displayable {
      * Adds this displayable to an {@link Inventory} at the given slot.
      *
      * @param inventory The inventory to add the item to
-     * @param slot      The slot in the inventory to add the item
-     * @param player    The player viewing the inventory
+     * @param slot The slot in the inventory to add the item
+     * @param player The player viewing the inventory
      */
     default void addToInventory(Inventory inventory, int slot, Player player) {
         inventory.setItem(slot, asItemStack(player));

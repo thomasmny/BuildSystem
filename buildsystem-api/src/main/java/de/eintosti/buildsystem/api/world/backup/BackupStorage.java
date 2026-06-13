@@ -30,16 +30,6 @@ import org.jspecify.annotations.NullMarked;
 public interface BackupStorage {
 
     /**
-     * Generates a unique backup name based on a given timestamp.
-     *
-     * @param timestamp The timestamp to use for the backup name.
-     * @return A string representing the backup name (e.g., "1678886400000.zip").
-     */
-    default String getBackupName(long timestamp) {
-        return timestamp + ".zip";
-    }
-
-    /**
      * Lists all available {@link Backup}s for a specific {@link BuildWorld}.
      *
      * @param buildWorld The world for which to list backups
@@ -48,13 +38,16 @@ public interface BackupStorage {
     CompletableFuture<List<Backup>> listBackups(BuildWorld buildWorld);
 
     /**
-     * Creates and stores a new {@link Backup} for a given {@link BuildWorld}. The result of the operation is communicated via the provided {@link CompletableFuture}.
-     * <p>
-     * In comparison to {@link BackupProfile#createBackup()}, a backup will always be created and no older backups will be deleted. This method is intended for immediate backup
-     * creation and storage, rather than profile management.
+     * Creates and stores a new {@link Backup} for a given {@link BuildWorld}. The result of the operation is
+     * communicated via the provided {@link CompletableFuture}.
+     *
+     * <p>In comparison to {@link BackupProfile#createBackup()}, a backup will always be created and no older backups
+     * will be deleted. This method is intended for immediate backup creation and storage, rather than profile
+     * management.
      *
      * @param buildWorld The world to be backed up
-     * @return A future that will be completed with the backup object upon successful storage, or exceptionally if an error occurs
+     * @return A future that will be completed with the backup object upon successful storage, or exceptionally if an
+     *     error occurs
      */
     CompletableFuture<Backup> storeBackup(BuildWorld buildWorld);
 
@@ -62,7 +55,8 @@ public interface BackupStorage {
      * Downloads a specific {@link Backup} file asynchronously.
      *
      * @param backup The backup object representing the backup to be downloaded
-     * @return A future that will complete with a {@link File} object pointing to the downloaded backup once the download operation is finished
+     * @return A future that will complete with a {@link File} object pointing to the downloaded backup once the
+     *     download operation is finished
      */
     CompletableFuture<File> downloadBackup(Backup backup);
 

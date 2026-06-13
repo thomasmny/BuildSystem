@@ -19,45 +19,31 @@ package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
-import de.eintosti.buildsystem.world.util.WorldTeleporterImpl;
+import de.eintosti.buildsystem.world.lifecycle.WorldTeleporterImpl;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class TopCommand implements CommandExecutor {
-
-    private final BuildSystemPlugin plugin;
+public class TopCommand extends CommandBase {
 
     public TopCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        plugin.getCommand("top").setExecutor(this);
+        super(plugin, true);
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
-            plugin.getLogger().warning(Messages.getString("sender_not_player", sender));
-            return true;
-        }
-
-        if (!player.hasPermission("buildsystem.top")) {
-            Messages.sendPermissionError(player);
-            return true;
+    protected void run(Player player, String label, String[] args) {
+        if (!requirePermission(player, "buildsystem.top")) {
+            return;
         }
 
         if (args.length != 0) {
-            Messages.sendMessage(player, "top_usage");
-            return true;
+            messages.sendMessage(player, "top_usage");
+            return;
         }
 
         sendToTop(player);
-        return true;
     }
 
     private void sendToTop(Player player) {
@@ -66,19 +52,19 @@ public class TopCommand implements CommandExecutor {
                 .getHighestBlockAt(playerLocation.getBlockX(), playerLocation.getBlockZ())
                 .getLocation();
 
-        boolean failed = !WorldTeleporterImpl.isSafeLocation(blockLocation) || blockLocation.getBlock().getY() < playerLocation.getBlock().getY();
+        boolean failed = !WorldTeleporterImpl.isSafeLocation(blockLocation)
+                || blockLocation.getBlock().getY() < playerLocation.getBlock().getY();
         if (failed) {
-            Messages.sendMessage(player, "top_failed");
+            messages.sendMessage(player, "top_failed");
             return;
         }
 
-        PaperLib.teleportAsync(player, blockLocation.add(0.5, 1, 0.5))
-                .whenComplete((completed, throwable) -> {
-                    if (!completed) {
-                        return;
-                    }
-                    XSound.ENTITY_ZOMBIE_INFECT.play(player);
-                    Messages.sendMessage(player, "top_teleported");
-                });
+        PaperLib.teleportAsync(player, blockLocation.add(0.5, 1, 0.5)).whenComplete((completed, throwable) -> {
+            if (!completed) {
+                return;
+            }
+            XSound.ENTITY_ZOMBIE_INFECT.play(player);
+            messages.sendMessage(player, "top_teleported");
+        });
     }
 }

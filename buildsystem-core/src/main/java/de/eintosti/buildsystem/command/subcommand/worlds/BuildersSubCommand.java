@@ -18,48 +18,41 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
-import de.eintosti.buildsystem.world.builder.BuilderInventory;
-import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
+import de.eintosti.buildsystem.world.menu.BuilderMenu;
+import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class BuildersSubCommand implements SubCommand {
+public class BuildersSubCommand extends AbstractSubCommand {
 
-    private final BuildSystemPlugin plugin;
-
-    @Nullable
-    private final BuildWorld buildWorld;
-
-    public BuildersSubCommand(BuildSystemPlugin plugin, String worldName) {
-        this.plugin = plugin;
-        this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
+    public BuildersSubCommand(BuildSystemPlugin plugin) {
+        super(plugin);
     }
 
     @Override
-    public void execute(Player player, String[] args) {
-        if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
-            Messages.sendPermissionError(player);
-            return;
-        }
-
-        if (args.length > 2) {
-            Messages.sendMessage(player, "worlds_builders_usage");
-            return;
-        }
-
+    public void execute(Player player, String worldName, String[] args) {
+        BuildWorld buildWorld = requireWorld(player, worldName, args, 2, "worlds_builders");
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_builders_unknown_world");
             return;
         }
 
-        new BuilderInventory(plugin).openInventory(buildWorld, player);
+        new BuilderMenu(plugin, buildWorld, player).open(player);
+    }
+
+    @Override
+    public List<String> complete(Player player, String[] args) {
+        if (args.length != 2) {
+            return List.of();
+        }
+
+        WorldStorage worldStorage = plugin.getWorldService().getWorldStorage();
+        return WorldsCompletions.permittedWorldNames(
+                player, worldStorage, getArgument().getPermission(), args[1]);
     }
 
     @Override

@@ -21,21 +21,19 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * <p>Provides extra functionality for Java Number classes.</p>
+ * Provides extra functionality for Java Number classes.
  *
  * @since 2.0
  */
 @NullMarked
 public final class NumberUtils {
 
-    private NumberUtils() {
-    }
+    private NumberUtils() {}
 
     /**
-     * <p>Convert a {@code String} to an {@code int}, returning
-     * {@code zero} if the conversion fails.</p>
+     * Convert a {@code String} to an {@code int}, returning {@code zero} if the conversion fails.
      *
-     * <p>If the string is {@code null}, {@code zero} is returned.</p>
+     * <p>If the string is {@code null}, {@code zero} is returned.
      *
      * <pre>
      *   NumberUtils.toInt(null) = 0
@@ -52,10 +50,9 @@ public final class NumberUtils {
     }
 
     /**
-     * <p>Convert a {@code String} to an {@code int}, returning a
-     * default value if the conversion fails.</p>
+     * Convert a {@code String} to an {@code int}, returning a default value if the conversion fails.
      *
-     * <p>If the string is {@code null}, the default value is returned.</p>
+     * <p>If the string is {@code null}, the default value is returned.
      *
      * <pre>
      *   NumberUtils.toInt(null, 1) = 1
@@ -63,12 +60,12 @@ public final class NumberUtils {
      *   NumberUtils.toInt("1", 0)  = 1
      * </pre>
      *
-     * @param str          the string to convert, may be null
+     * @param str the string to convert, may be null
      * @param defaultValue the default value
      * @return the int represented by the string, or the default if conversion fails
      * @since 2.1
      */
-    public static int toInt(@Nullable final String str, final int defaultValue) {
+    public static int toInt(final @Nullable String str, final int defaultValue) {
         if (str == null) {
             return defaultValue;
         }

@@ -19,65 +19,82 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
-import de.eintosti.buildsystem.world.backup.BackupsInventory;
-import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
+import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
+import de.eintosti.buildsystem.world.menu.BackupsMenu;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class BackupsSubCommand implements SubCommand {
-
-    private final BuildSystemPlugin plugin;
+public class BackupsSubCommand extends AbstractSubCommand {
 
     public BackupsSubCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
     }
 
     @Override
-    public void execute(Player player, String[] args) {
-        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld().getName());
-        if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
-            Messages.sendPermissionError(player);
+    public void execute(Player player, String worldName, String[] args) {
+        BuildWorld buildWorld = plugin.getWorldService()
+                .getWorldStorage()
+                .getBuildWorld(player.getWorld().getName());
+        if (!WorldPermissionsImpl.of(plugin, buildWorld)
+                .canPerformCommand(player, getArgument().getPermission())) {
+            messages.sendPermissionError(player);
             return;
         }
 
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_backup_world_not_imported");
+            messages.sendMessage(player, "worlds_backup_world_not_imported");
             return;
         }
 
         switch (args.length) {
             case 1 -> {
                 XSound.BLOCK_CHEST_OPEN.play(player);
-                new BackupsInventory(plugin).openBackupsInventory(player, buildWorld);
+                new BackupsMenu(plugin, buildWorld, player).open(player);
             }
             case 2 -> {
                 if (args[1].equalsIgnoreCase("create")) {
                     if (!player.hasPermission(getArgument().getPermission() + ".create")) {
-                        Messages.sendPermissionError(player);
+                        messages.sendPermissionError(player);
                         return;
                     }
 
                     Entry<String, Object> worldNamePlaceholder = Map.entry("%world%", buildWorld.getName());
-                    plugin.getBackupService().backup(buildWorld,
-                            () -> Messages.sendMessage(player, "worlds_backup_created", worldNamePlaceholder),
-                            () -> Messages.sendMessage(player, "worlds_backup_failed", worldNamePlaceholder)
-                    );
+                    plugin.getBackupService()
+                            .backup(
+                                    buildWorld,
+                                    () -> messages.sendMessage(player, "worlds_backup_created", worldNamePlaceholder),
+                                    () -> messages.sendMessage(player, "worlds_backup_failed", worldNamePlaceholder));
                 } else {
-                    Messages.sendMessage(player, "worlds_backup_usage");
+                    messages.sendMessage(player, "worlds_backup_usage");
                 }
             }
             default -> {
-                Messages.sendMessage(player, "worlds_backup_usage");
+                messages.sendMessage(player, "worlds_backup_usage");
             }
         }
+    }
+
+    @Override
+    public List<String> complete(Player player, String[] args) {
+        if (args.length != 2) {
+            return List.of();
+        }
+
+        if (player.hasPermission(getArgument().getPermission() + ".create")) {
+            List<String> result = new ArrayList<>();
+            WorldsCompletions.addIfStartsWith(args[1], "create", result);
+            return result;
+        }
+
+        return List.of();
     }
 
     @Override

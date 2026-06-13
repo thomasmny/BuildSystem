@@ -17,29 +17,32 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
-import de.eintosti.buildsystem.util.inventory.InventoryUtils;
+import de.eintosti.buildsystem.menu.MenuItems;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class ItemSubCommand implements SubCommand {
+public class ItemSubCommand extends AbstractSubCommand {
 
-    public ItemSubCommand() {
+    private final MenuItems menuItems;
+
+    public ItemSubCommand(BuildSystemPlugin plugin) {
+        super(plugin);
+        this.menuItems = plugin.getMenuItems();
     }
 
     @Override
-    public void execute(Player player, String[] args) {
+    public void execute(Player player, String worldName, String[] args) {
         if (!hasPermission(player)) {
-            Messages.sendPermissionError(player);
+            messages.sendPermissionError(player);
             return;
         }
 
-        player.getInventory().addItem(InventoryUtils.createNavigatorItem(player));
-        Messages.sendMessage(player, "worlds_item_receive");
+        player.getInventory().addItem(menuItems.createNavigatorItem(player));
+        messages.sendMessage(player, "worlds_item_receive");
     }
 
     @Override

@@ -57,6 +57,17 @@ dependencies {
     implementation(libs.sftp)
     implementation(libs.xseries)
     implementation(libs.zip4j)
+
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.mockito)
+    testImplementation(libs.spigot)
+    testImplementation(libs.placeholderapi)
+    testRuntimeOnly(libs.junit.platform.launcher)
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
 
 tasks.named("assemble") {

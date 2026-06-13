@@ -21,15 +21,17 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Interface for a single configuration migration step. Each implementation should know how to migrate a configuration from a specific source version to the next version.
+ * Interface for a single configuration migration step. Each implementation should know how to migrate a configuration
+ * from a specific source version to the next version.
  */
 @NullMarked
 public interface Migration {
 
     /**
      * Applies the migration logic to the given configuration.
-     * <p>
-     * The implementation is responsible for modifying the config's internal data and potentially its version, though the manager will handle version incrementing.
+     *
+     * <p>The implementation is responsible for modifying the config's internal data and potentially its version, though
+     * the manager will handle version incrementing.
      *
      * @param config The configuration to migrate
      */

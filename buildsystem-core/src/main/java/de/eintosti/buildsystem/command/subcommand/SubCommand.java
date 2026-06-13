@@ -17,15 +17,20 @@
  */
 package de.eintosti.buildsystem.command.subcommand;
 
+import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public interface SubCommand {
 
-    void execute(Player player, String[] args);
-
     Argument getArgument();
+
+    void execute(Player player, String worldName, String[] args);
+
+    default List<String> complete(Player player, String[] args) {
+        return List.of();
+    }
 
     default boolean hasPermission(Player player) {
         String permission = getArgument().getPermission();

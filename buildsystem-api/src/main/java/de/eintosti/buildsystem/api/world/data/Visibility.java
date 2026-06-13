@@ -21,7 +21,8 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Defines the visibility settings for a {@link BuildWorld} within the BuildSystem. These settings determine how worlds are displayed and accessed in the world navigator.
+ * Defines the visibility settings for a {@link BuildWorld} within the BuildSystem. These settings determine how worlds
+ * are displayed and accessed in the world navigator.
  *
  * @since 3.0.0
  */
@@ -34,14 +35,14 @@ public enum Visibility {
     PUBLIC,
 
     /**
-     * Indicates that a world is private, typically only visible and accessible to its creator and designated builders. Private worlds are usually displayed in a separate,
-     * dedicated menu.
+     * Indicates that a world is private, typically only visible and accessible to its creator and designated builders.
+     * Private worlds are usually displayed in a separate, dedicated menu.
      */
     PRIVATE,
 
     /**
-     * A special state indicating that the visibility setting of a world should be disregarded. This is useful for internal operations or specific contexts where visibility rules
-     * do not apply.
+     * A special state indicating that the visibility setting of a world should be disregarded. This is useful for
+     * internal operations or specific contexts where visibility rules do not apply.
      */
     IGNORE;
 

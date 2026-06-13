@@ -26,6 +26,4 @@ import org.jspecify.annotations.NullMarked;
  * @since 3.0.1
  */
 @NullMarked
-public record Bypassable(String permission) implements Capability {
-
-}
+public record Bypassable(String permission) implements Capability {}

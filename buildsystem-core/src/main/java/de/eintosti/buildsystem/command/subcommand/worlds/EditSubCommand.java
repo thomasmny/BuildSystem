@@ -19,54 +19,45 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
-import de.eintosti.buildsystem.world.modification.EditInventory;
-import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
+import de.eintosti.buildsystem.world.menu.EditMenu;
+import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class EditSubCommand implements SubCommand {
+public class EditSubCommand extends AbstractSubCommand {
 
-    private final BuildSystemPlugin plugin;
-
-    @Nullable
-    private final BuildWorld buildWorld;
-
-    public EditSubCommand(BuildSystemPlugin plugin, String worldName) {
-        this.plugin = plugin;
-        this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
+    public EditSubCommand(BuildSystemPlugin plugin) {
+        super(plugin);
     }
 
     @Override
-    public void execute(Player player, String[] args) {
-        if (!WorldPermissionsImpl.of(buildWorld).canPerformCommand(player, getArgument().getPermission())) {
-            Messages.sendPermissionError(player);
-            return;
-        }
-
-        if (args.length > 2) {
-            Messages.sendMessage(player, "worlds_edit_usage");
-            return;
-        }
-
+    public void execute(Player player, String worldName, String[] args) {
+        BuildWorld buildWorld = requireWorld(player, worldName, args, 2, "worlds_edit");
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_edit_unknown_world");
             return;
         }
 
         if (buildWorld.isLoaded()) {
             XSound.BLOCK_CHEST_OPEN.play(player);
-            new EditInventory(plugin).openInventory(player, buildWorld);
+            new EditMenu(plugin, buildWorld, player).open(player);
         } else {
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-            player.sendTitle(" ", Messages.getString("world_not_loaded", player), 5, 70, 20);
+            player.sendTitle(" ", messages.getString("world_not_loaded", player), 5, 70, 20);
         }
+    }
+
+    @Override
+    public List<String> complete(Player player, String[] args) {
+        if (args.length != 2) {
+            return List.of();
+        }
+        WorldStorage ws = plugin.getWorldService().getWorldStorage();
+        return WorldsCompletions.permittedWorldNames(player, ws, getArgument().getPermission(), args[1]);
     }
 
     @Override

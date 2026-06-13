@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.util;
 
-import de.eintosti.buildsystem.config.Config.Messages;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -26,8 +25,7 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public final class StringUtils {
 
-    private StringUtils() {
-    }
+    private StringUtils() {}
 
     /**
      * Formats a given time in milliseconds to a human-readable string.
@@ -35,9 +33,9 @@ public final class StringUtils {
      * @param millis The time in milliseconds to format
      * @return A formatted string representing the date and time
      */
-    public static String formatTime(long millis) {
+    public static String formatTime(long millis, String dateFormat) {
         Date date = new Date(millis);
-        DateFormat formatter = new SimpleDateFormat(Messages.dateFormat + " HH:mm:ss");
+        DateFormat formatter = new SimpleDateFormat(dateFormat + " HH:mm:ss");
         return formatter.format(date);
     }
 }

@@ -64,8 +64,7 @@ public abstract class AbstractYamlStorage {
         }
     }
 
-    @Nullable
-    public FileConfiguration getFile() {
+    public @Nullable FileConfiguration getFile() {
         return configuration;
     }
 }

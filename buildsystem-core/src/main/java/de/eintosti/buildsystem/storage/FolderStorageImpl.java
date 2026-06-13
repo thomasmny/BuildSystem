@@ -17,23 +17,23 @@
  */
 package de.eintosti.buildsystem.storage;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.event.folder.FolderCreatedEvent;
+import de.eintosti.buildsystem.api.event.folder.FolderDeletedEvent;
 import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
-import de.eintosti.buildsystem.world.display.FolderImpl;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import org.bukkit.Bukkit;
+import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
@@ -42,24 +42,20 @@ import org.jspecify.annotations.NullMarked;
 public abstract class FolderStorageImpl implements FolderStorage {
 
     protected final Logger logger;
-    protected final BuildSystemPlugin plugin;
-    protected final WorldServiceImpl worldService;
+    protected final WorldStorage worldStorage;
 
-    private final Map<String, Folder> foldersByName;
+    private final ConcurrentHashMap<String, Folder> foldersByName;
 
-    public FolderStorageImpl(BuildSystemPlugin plugin, WorldServiceImpl worldService) {
-        this.logger = plugin.getLogger();
-        this.plugin = plugin;
-        this.worldService = worldService;
-
-        this.foldersByName = new HashMap<>();
+    protected FolderStorageImpl(Logger logger, WorldStorage worldStorage) {
+        this.logger = logger;
+        this.worldStorage = worldStorage;
+        this.foldersByName = new ConcurrentHashMap<>();
     }
 
     public void loadFolders() {
         try {
-            this.foldersByName.putAll(
-                    load().get().stream().collect(Collectors.toMap(folder -> folder.getName().toLowerCase(), Function.identity()))
-            );
+            this.foldersByName.putAll(load().get().stream()
+                    .collect(Collectors.toMap(folder -> folder.getName().toLowerCase(), Function.identity())));
         } catch (InterruptedException | ExecutionException e) {
             logger.severe("Failed to load folders from storage: " + e.getMessage());
         }
@@ -71,8 +67,7 @@ public abstract class FolderStorageImpl implements FolderStorage {
         return Collections.unmodifiableCollection(foldersByName.values());
     }
 
-    @Nullable
-    @Override
+    @Nullable @Override
     public Folder getFolder(String name) {
         return foldersByName.get(name.toLowerCase());
     }
@@ -89,10 +84,17 @@ public abstract class FolderStorageImpl implements FolderStorage {
 
     @Override
     public Folder createFolder(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
-        Folder folder = new FolderImpl(name, category, parent, creator);
+        Folder folder = newFolder(name, category, parent, creator);
         foldersByName.put(name.toLowerCase(), folder);
+        fireEvent(new FolderCreatedEvent(folder));
         return folder;
     }
+
+    /**
+     * Creates the folder instance to register; implementations decide the concrete type and its dependencies.
+     */
+    protected abstract Folder newFolder(
+            String name, NavigatorCategory category, @Nullable Folder parent, Builder creator);
 
     @Override
     public void removeFolder(String name) {
@@ -101,18 +103,23 @@ public abstract class FolderStorageImpl implements FolderStorage {
             return;
         }
 
-        // Remove all subfolders
         getFolders().stream()
                 .filter(folder -> Objects.equals(folder.getParent(), removed))
                 .forEach(this::removeFolder);
 
-        // Remove world <> folder assignments
-        WorldStorage worldStorage = worldService.getWorldStorage();
-        removed.getWorldUUIDs()
-                .stream()
+        removed.getWorldUUIDs().stream()
                 .map(worldStorage::getBuildWorld)
                 .filter(Objects::nonNull)
                 .forEach(buildWorld -> buildWorld.setFolder(null));
+
+        fireEvent(new FolderDeletedEvent(removed));
+    }
+
+    /**
+     * Fires a Bukkit event for a folder lifecycle change. Overridable so unit tests can run without a Bukkit server.
+     */
+    protected void fireEvent(Event event) {
+        Bukkit.getPluginManager().callEvent(event);
     }
 
     @Override

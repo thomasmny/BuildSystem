@@ -18,14 +18,10 @@
 package de.eintosti.buildsystem.api.player.settings;
 
 import de.eintosti.buildsystem.api.player.BuildPlayer;
-import de.eintosti.buildsystem.api.world.navigator.settings.NavigatorType;
-import de.eintosti.buildsystem.api.world.navigator.settings.WorldDisplay;
+import de.eintosti.buildsystem.api.world.display.WorldDisplay;
 import org.bukkit.GameMode;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitTask;
-import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Different settings a {@link BuildPlayer} can modify for themselves.
@@ -44,8 +40,9 @@ public interface Settings {
 
     /**
      * Sets the navigator type.
-     * <p>
-     * The {@link NavigatorType#OLD} is the classic chest menu, whereas {@link NavigatorType#NEW} is a new 3D selector.
+     *
+     * <p>The {@link NavigatorType#OLD} is the classic chest menu, whereas {@link NavigatorType#NEW} is a new 3D
+     * selector.
      *
      * @param navigatorType The navigator type
      */
@@ -239,21 +236,4 @@ public interface Settings {
      * @param openTrapDoors If the iron (trap-)doors are to be opened/closed via right-click
      */
     void setOpenTrapDoors(boolean openTrapDoors);
-
-    /**
-     * Gets the {@link BukkitTask} responsible for updating the player's scoreboard.
-     *
-     * @return The scoreboard task
-     */
-    @Nullable
-    @Internal
-    BukkitTask getScoreboardTask();
-
-    /**
-     * Sets the {@link BukkitTask} responsible for updating the player's scoreboard.
-     *
-     * @param scoreboardTask The scoreboard task
-     */
-    @Internal
-    void setScoreboardTask(@Nullable BukkitTask scoreboardTask);
 }

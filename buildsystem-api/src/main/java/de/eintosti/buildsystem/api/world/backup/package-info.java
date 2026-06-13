@@ -19,4 +19,4 @@
 /**
  * Provides interfaces and classes for managing world backups.
  */
-package de.eintosti.buildsystem.api.world.backup; 
+package de.eintosti.buildsystem.api.world.backup;

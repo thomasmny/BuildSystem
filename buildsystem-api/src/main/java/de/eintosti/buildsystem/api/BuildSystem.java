@@ -24,7 +24,30 @@ import de.eintosti.buildsystem.api.world.WorldService;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * The BuildSystem API.
+ * Root entry point of the BuildSystem API.
+ *
+ * <p>Through this interface you access the two primary services BuildSystem exposes:
+ *
+ * <ul>
+ *   <li>{@link WorldService} — enumerate, create, load, unload and query worlds.
+ *   <li>{@link PlayerService} — look up per-player settings and identity.
+ * </ul>
+ *
+ * <h2>Obtaining an instance</h2>
+ *
+ * <p>The canonical way is via Bukkit's {@link org.bukkit.plugin.ServicesManager}:
+ *
+ * <pre>{@code
+ * BuildSystem api = getServer().getServicesManager()
+ *         .getRegistration(BuildSystem.class)
+ *         .getProvider();
+ * }</pre>
+ *
+ * <p>Or use the convenience shorthand {@link BuildSystemProvider#get()}.
+ *
+ * <p>The instance is registered during the BuildSystem plugin's {@code onEnable} and unregistered during
+ * {@code onDisable}. Calling the provider before enable (e.g. during your plugin's {@code onLoad}) will throw
+ * {@link IllegalStateException}.
  *
  * @since 3.0.0
  */
@@ -32,16 +55,18 @@ import org.jspecify.annotations.NullMarked;
 public interface BuildSystem {
 
     /**
-     * Gets the {@link WorldService}, responsible for managing {@link BuildWorld} instances.
+     * Returns the service managing all {@link BuildWorld} instances — world creation, lookup by name, folder
+     * organisation and access to per-world storage.
      *
-     * @return The world manager
+     * @return The world service, never {@code null}
      */
     WorldService getWorldService();
 
     /**
-     * Gets the {@link PlayerService}, responsible for managing {@link BuildPlayer} instances.
+     * Returns the service managing all {@link BuildPlayer} instances — player lookup, settings access and session-state
+     * tracking.
      *
-     * @return The player manager
+     * @return The player service, never {@code null}
      */
     PlayerService getPlayerService();
 }

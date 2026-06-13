@@ -60,7 +60,7 @@ public class ConfigurableType<T> implements Type<T> {
     /**
      * Attaches a new capability to this type.
      *
-     * @param capabilityType     The class of the capability
+     * @param capabilityType The class of the capability
      * @param capabilityInstance The instance of the capability
      * @return This object, for fluent chaining
      */
@@ -106,8 +106,9 @@ public class ConfigurableType<T> implements Type<T> {
 
     /**
      * Sets the base value for this type.
-     * <p>
-     * Note: This sets the underlying value. If an {@link Overridable} capability is active, {@link #get()} will still return the overridden value.
+     *
+     * <p>Note: This sets the underlying value. If an {@link Overridable} capability is active, {@link #get()} will
+     * still return the overridden value.
      *
      * @param value The new base value
      */

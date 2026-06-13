@@ -17,6 +17,43 @@
  */
 
 /**
- * Main package for the {@link de.eintosti.buildsystem.api.BuildSystem} API interface.
+ * The BuildSystem API — a programmatic interface for Minecraft (Spigot/Paper) plugins to interact with BuildSystem's
+ * world management, player preferences and backup capabilities.
+ *
+ * <h2>Getting started</h2>
+ *
+ * <p>Obtain the API instance through Bukkit's {@link org.bukkit.plugin.ServicesManager}:
+ *
+ * <pre>{@code
+ * BuildSystem api = getServer().getServicesManager()
+ *         .getRegistration(BuildSystem.class)
+ *         .getProvider();
+ * }</pre>
+ *
+ * <p>Alternatively, use the static shorthand {@link de.eintosti.buildsystem.api.BuildSystemProvider#get()}.
+ *
+ * <h2>Core concepts</h2>
+ *
+ * <ul>
+ *   <li>{@link de.eintosti.buildsystem.api.world.BuildWorld} — a managed world with metadata (status, visibility,
+ *       builders, world data).
+ *   <li>{@link de.eintosti.buildsystem.api.world.WorldService} — registry and lifecycle operations for all managed
+ *       worlds.
+ *   <li>{@link de.eintosti.buildsystem.api.player.BuildPlayer} — per-player identity and settings within BuildSystem.
+ *   <li>{@link de.eintosti.buildsystem.api.player.PlayerService} — registry for all known players.
+ * </ul>
+ *
+ * <h2>Threading</h2>
+ *
+ * <p>Unless a method's documentation explicitly states otherwise, all API calls must be made from the <strong>server
+ * main thread</strong>. Methods that perform I/O or network operations return
+ * {@link java.util.concurrent.CompletableFuture} and document which thread the future completes on.
+ *
+ * <h2>Nullability</h2>
+ *
+ * <p>All packages are annotated {@code @NullMarked}. Return values that may be absent are annotated {@code @Nullable};
+ * parameters accept {@code null} only when annotated. IDE null-analysis will surface misuse at compile time.
+ *
+ * @since 3.0.0
  */
 package de.eintosti.buildsystem.api;

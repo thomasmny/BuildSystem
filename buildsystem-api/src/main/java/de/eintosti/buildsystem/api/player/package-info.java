@@ -17,7 +17,7 @@
  */
 
 /**
- * Provides interfaces and classes related to {@link de.eintosti.buildsystem.api.player.BuildPlayer} management within the BuildSystem API. This includes player-specific data,
- * settings, and cached values.
+ * Provides interfaces and classes related to {@link de.eintosti.buildsystem.api.player.BuildPlayer} management within
+ * the BuildSystem API. This includes player-specific data, settings, and cached values.
  */
 package de.eintosti.buildsystem.api.player;

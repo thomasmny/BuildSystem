@@ -1,0 +1,206 @@
+/*
+ * Copyright (c) 2018-2026, Thomas Meaney
+ * Copyright (c) contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+package de.eintosti.buildsystem.world.menu;
+
+import static java.util.Map.entry;
+
+import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.profiles.objects.Profileable;
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.menu.Menu;
+import de.eintosti.buildsystem.menu.SkullTextures;
+import de.eintosti.buildsystem.world.display.CustomizableIcons;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
+public class SetupMenu extends Menu {
+
+    private static final Map<BuildWorldType, Integer> CREATE_ITEM_SLOTS = Map.ofEntries(
+            entry(BuildWorldType.NORMAL, 11),
+            entry(BuildWorldType.FLAT, 12),
+            entry(BuildWorldType.NETHER, 13),
+            entry(BuildWorldType.END, 14),
+            entry(BuildWorldType.VOID, 15),
+            entry(BuildWorldType.IMPORTED, 16));
+
+    private static final Map<BuildWorldStatus, Integer> STATUS_ITEM_SLOTS = Map.ofEntries(
+            entry(BuildWorldStatus.NOT_STARTED, 20),
+            entry(BuildWorldStatus.IN_PROGRESS, 21),
+            entry(BuildWorldStatus.ALMOST_FINISHED, 22),
+            entry(BuildWorldStatus.FINISHED, 23),
+            entry(BuildWorldStatus.ARCHIVE, 24),
+            entry(BuildWorldStatus.HIDDEN, 25));
+
+    private final BuildSystemPlugin plugin;
+    private final CustomizableIcons icons;
+
+    public SetupMenu(BuildSystemPlugin plugin, Player player) {
+        super(plugin.getMessages(), 36, plugin.getMessages().getString("setup_title", player));
+        this.plugin = plugin;
+        this.icons = plugin.getCustomizableIcons();
+    }
+
+    @Override
+    protected void populate(Player player) {
+        Inventory inv = getInventory();
+        plugin.getMenuItems().fillAll(player, inv);
+
+        inv.setItem(
+                10,
+                InventoryUtils.createSkull(
+                        messages.getString("setup_default_item_name", player),
+                        Profileable.detect(SkullTextures.NEXT_PAGE),
+                        messages.getStringList("setup_default_item_lore", player)));
+        inv.setItem(
+                19,
+                InventoryUtils.createSkull(
+                        messages.getString("setup_status_item_name", player),
+                        Profileable.detect(SkullTextures.NEXT_PAGE),
+                        messages.getStringList("setup_status_item_name_lore", player)));
+
+        inv.setItem(
+                11,
+                InventoryUtils.createItem(
+                        icons.getIcon(BuildWorldType.NORMAL), messages.getString("setup_normal_world", player)));
+        inv.setItem(
+                12,
+                InventoryUtils.createItem(
+                        icons.getIcon(BuildWorldType.FLAT), messages.getString("setup_flat_world", player)));
+        inv.setItem(
+                13,
+                InventoryUtils.createItem(
+                        icons.getIcon(BuildWorldType.NETHER), messages.getString("setup_nether_world", player)));
+        inv.setItem(
+                14,
+                InventoryUtils.createItem(
+                        icons.getIcon(BuildWorldType.END), messages.getString("setup_end_world", player)));
+        inv.setItem(
+                15,
+                InventoryUtils.createItem(
+                        icons.getIcon(BuildWorldType.VOID), messages.getString("setup_void_world", player)));
+        inv.setItem(
+                16,
+                InventoryUtils.createItem(
+                        icons.getIcon(BuildWorldType.IMPORTED), messages.getString("setup_imported_world", player)));
+
+        inv.setItem(
+                20,
+                InventoryUtils.createItem(
+                        icons.getIcon(BuildWorldStatus.NOT_STARTED), messages.getString("status_not_started", player)));
+        inv.setItem(
+                21,
+                InventoryUtils.createItem(
+                        icons.getIcon(BuildWorldStatus.IN_PROGRESS), messages.getString("status_in_progress", player)));
+        inv.setItem(
+                22,
+                InventoryUtils.createItem(
+                        icons.getIcon(BuildWorldStatus.ALMOST_FINISHED),
+                        messages.getString("status_almost_finished", player)));
+        inv.setItem(
+                23,
+                InventoryUtils.createItem(
+                        icons.getIcon(BuildWorldStatus.FINISHED), messages.getString("status_finished", player)));
+        inv.setItem(
+                24,
+                InventoryUtils.createItem(
+                        icons.getIcon(BuildWorldStatus.ARCHIVE), messages.getString("status_archive", player)));
+        inv.setItem(
+                25,
+                InventoryUtils.createItem(
+                        icons.getIcon(BuildWorldStatus.HIDDEN), messages.getString("status_hidden", player)));
+    }
+
+    @Override
+    public void handleClick(InventoryClickEvent event) {
+        InventoryAction action = event.getAction();
+        switch (action) {
+            case PICKUP_ALL,
+                    PICKUP_ONE,
+                    PICKUP_SOME,
+                    PICKUP_HALF,
+                    PLACE_ALL,
+                    PLACE_SOME,
+                    PLACE_ONE,
+                    SWAP_WITH_CURSOR -> {
+                if (event.getInventory().getType() != InventoryType.CHEST) {
+                    return;
+                }
+
+                int slot = event.getRawSlot();
+                event.setCancelled(slot < 36 || slot > 80);
+
+                if (action != InventoryAction.SWAP_WITH_CURSOR) {
+                    return;
+                }
+
+                if (!(slot >= 36 && slot <= 80)) {
+                    if ((slot >= 11 && slot <= 15) || (slot >= 20 && slot <= 25)) {
+                        ItemStack itemStack = event.getCursor();
+                        event.setCurrentItem(itemStack);
+                        event.getWhoClicked().setItemOnCursor(null);
+                    }
+                }
+            }
+            default -> event.setCancelled(true);
+        }
+    }
+
+    @Override
+    public void handleClose(InventoryCloseEvent event) {
+        Inventory inv = getInventory();
+        processIconMapping(inv, CREATE_ITEM_SLOTS, icons::setIcon);
+        processIconMapping(inv, STATUS_ITEM_SLOTS, icons::setIcon);
+    }
+
+    /**
+     * A generic helper method that iterates over a map of Enum-to-Slot, extracts the {@link ItemStack}, and sets the
+     * corresponding icon.
+     *
+     * @param inventory The inventory to get items from
+     * @param slotMapping A map from an Enum constant to its inventory slot index
+     * @param <T> The type of the Enum (e.g., {@link BuildWorldType}, {@link BuildWorldStatus})
+     */
+    private <T extends Enum<T>> void processIconMapping(
+            Inventory inventory, Map<T, Integer> slotMapping, BiConsumer<T, XMaterial> setter) {
+        slotMapping.forEach((enumConstant, slot) -> {
+            XMaterial material = Optional.ofNullable(inventory.getItem(slot))
+                    .map(XMaterial::matchXMaterial)
+                    .orElse(null);
+            if (material == null) {
+                plugin.getLogger()
+                        .warning("Failed to set icon for " + enumConstant.name()
+                                + " in setup inventory. ItemStack is null or not a valid Material.");
+                return;
+            }
+            setter.accept(enumConstant, material);
+        });
+    }
+}

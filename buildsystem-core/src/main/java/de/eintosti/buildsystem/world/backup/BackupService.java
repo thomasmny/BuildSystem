@@ -7,71 +7,128 @@
  */
 package de.eintosti.buildsystem.world.backup;
 
-import java.time.Duration;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.data.Type;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
 import de.eintosti.buildsystem.api.world.backup.BackupStorage;
-import de.eintosti.buildsystem.config.Config.World.Backup;
-import de.eintosti.buildsystem.config.Config.World.Backup.AutoBackup;
+import de.eintosti.buildsystem.config.PluginConfig;
+import de.eintosti.buildsystem.world.backup.storage.LocalBackupStorage;
+import de.eintosti.buildsystem.world.backup.storage.S3BackupStorage;
+import de.eintosti.buildsystem.world.backup.storage.SftpBackupStorage;
+import java.time.Duration;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class BackupService {
 
-    public static final Executor BACKUP_EXECUTOR = Executors.newCachedThreadPool();
     private static final long UPDATE_PERIOD = Duration.ofSeconds(5).getSeconds();
 
     private final BuildSystemPlugin plugin;
-    private final BackupStorage backupStorage;
+    private final ExecutorService executor;
+    private BackupStorage backupStorage;
     private final WorldStorage worldStorage;
 
-    private final Cache<UUID, BackupProfile> backupProfileCache = CacheBuilder.newBuilder().expireAfterAccess(3, TimeUnit.MINUTES).build();
+    private final Cache<UUID, BackupProfile> backupProfileCache =
+            CacheBuilder.newBuilder().expireAfterAccess(3, TimeUnit.MINUTES).build();
 
-    @Nullable
-    private BukkitTask autoBackupTask;
+    private @Nullable BukkitTask autoBackupTask;
 
     public BackupService(BuildSystemPlugin plugin) {
         this.plugin = plugin;
-        this.backupStorage = Backup.storage;
+        this.executor = Executors.newFixedThreadPool(3);
+
+        PluginConfig.World.Backup backupConfig =
+                plugin.getConfigService().current().world().backup();
+        this.backupStorage = createStorageOrFallback(backupConfig.storage());
         this.worldStorage = plugin.getWorldService().getWorldStorage();
 
-        if (AutoBackup.enabled) {
-            this.autoBackupTask = Bukkit.getScheduler().runTaskTimer(plugin, this::incrementTimeSinceBackup, UPDATE_PERIOD * 20, UPDATE_PERIOD * 20);
+        if (backupConfig.autoBackup().enabled()) {
+            this.autoBackupTask = Bukkit.getScheduler()
+                    .runTaskTimer(plugin, this::incrementTimeSinceBackup, UPDATE_PERIOD * 20, UPDATE_PERIOD * 20);
+        }
+    }
+
+    private static BackupStorage createStorage(
+            BuildSystemPlugin plugin, ExecutorService executor, PluginConfig.World.Backup.StorageSettings settings) {
+        return switch (settings) {
+            case PluginConfig.World.Backup.Local l -> new LocalBackupStorage(plugin, executor);
+            case PluginConfig.World.Backup.Sftp s -> {
+                String password = envOrConfig("BUILDSYSTEM_SFTP_PASSWORD", s.password());
+                requireNonBlank(s.host(), "backup.sftp.host");
+                requireNonBlank(s.username(), "backup.sftp.username");
+                requireNonBlank(password, "backup.sftp.password (or BUILDSYSTEM_SFTP_PASSWORD)");
+                yield new SftpBackupStorage(plugin, executor, s.host(), s.port(), s.username(), password, s.path());
+            }
+            case PluginConfig.World.Backup.S3 s3 -> {
+                String accessKey = envOrConfig("AWS_ACCESS_KEY_ID", s3.accessKey());
+                String secretKey = envOrConfig("AWS_SECRET_ACCESS_KEY", s3.secretKey());
+                requireNonBlank(accessKey, "backup.s3.access-key (or AWS_ACCESS_KEY_ID)");
+                requireNonBlank(secretKey, "backup.s3.secret-key (or AWS_SECRET_ACCESS_KEY)");
+                requireNonBlank(s3.region(), "backup.s3.region");
+                requireNonBlank(s3.bucket(), "backup.s3.bucket");
+                yield new S3BackupStorage(
+                        plugin, executor, s3.url(), accessKey, secretKey, s3.region(), s3.bucket(), s3.path());
+            }
+        };
+    }
+
+    /**
+     * Prefers the environment variable over the config value so operators can keep secrets out of config.yml.
+     */
+    private static @Nullable String envOrConfig(String envKey, @Nullable String configValue) {
+        String env = System.getenv(envKey);
+        return env != null && !env.isBlank() ? env : configValue;
+    }
+
+    private static void requireNonBlank(@Nullable String value, String configKey) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Backup storage configuration is incomplete: '" + configKey + "' must be set in config.yml");
+        }
+    }
+
+    private BackupStorage createStorageOrFallback(PluginConfig.World.Backup.StorageSettings settings) {
+        try {
+            return createStorage(plugin, executor, settings);
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger().severe("Backup storage disabled, falling back to local storage: " + e.getMessage());
+            return new LocalBackupStorage(plugin, executor);
         }
     }
 
     /**
-     * Reloads the auto-backup scheduler based on the current {@link AutoBackup} configuration.
-     * If auto-backup was previously running and is now disabled, the task is cancelled.
-     * If auto-backup was not running and is now enabled, a new task is started.
+     * Reloads the auto-backup scheduler based on the current {@link PluginConfig.World.Backup.AutoBackup}
+     * configuration. If auto-backup was previously running and is now disabled, the task is cancelled. If auto-backup
+     * was not running and is now enabled, a new task is started.
      */
     public void reload() {
         if (autoBackupTask != null) {
             autoBackupTask.cancel();
             autoBackupTask = null;
         }
-        if (AutoBackup.enabled && plugin.isEnabled()) {
-            this.autoBackupTask = Bukkit.getScheduler().runTaskTimer(plugin, this::incrementTimeSinceBackup, UPDATE_PERIOD * 20, UPDATE_PERIOD * 20);
+        this.backupStorage.close();
+        PluginConfig.World.Backup backupConfig =
+                plugin.getConfigService().current().world().backup();
+        this.backupStorage = createStorageOrFallback(backupConfig.storage());
+        if (backupConfig.autoBackup().enabled() && plugin.isEnabled()) {
+            this.autoBackupTask = Bukkit.getScheduler()
+                    .runTaskTimer(plugin, this::incrementTimeSinceBackup, UPDATE_PERIOD * 20, UPDATE_PERIOD * 20);
         }
     }
 
@@ -79,14 +136,21 @@ public class BackupService {
         return this.backupStorage;
     }
 
+    public void close() {
+        this.backupStorage.close();
+        this.executor.shutdown();
+    }
+
     /**
-     * Increments the time since a {@link BuildWorld} was backed-up by {@link #UPDATE_PERIOD} seconds. If the time has surpassed {@link AutoBackup#interval}, a backup will
-     * automatically be created.
+     * Increments the time since a {@link BuildWorld} was backed-up by {@link #UPDATE_PERIOD} seconds. If the time has
+     * surpassed {@link PluginConfig.World.Backup.AutoBackup#interval()}, a backup will automatically be created.
      */
     private void incrementTimeSinceBackup() {
         Set<BuildWorld> worlds = new HashSet<>();
 
-        if (AutoBackup.onlyActiveWorlds) {
+        PluginConfig.World.Backup.AutoBackup autoBackup =
+                plugin.getConfigService().current().world().backup().autoBackup();
+        if (autoBackup.onlyActiveWorlds()) {
             for (Player pl : Bukkit.getOnlinePlayers()) {
                 BuildWorld buildWorld = worldStorage.getBuildWorld(pl.getWorld().getName());
                 if (buildWorld != null && buildWorld.getPermissions().canModify(pl, Type.TRUE)) {
@@ -101,7 +165,7 @@ public class BackupService {
             Type<Integer> timeSinceBackup = buildWorld.getData().timeSinceBackup();
             timeSinceBackup.set((int) (timeSinceBackup.get() + UPDATE_PERIOD));
 
-            if (timeSinceBackup.get() > AutoBackup.interval) {
+            if (timeSinceBackup.get() > autoBackup.interval()) {
                 getProfile(buildWorld).createBackup();
                 timeSinceBackup.set(0);
             }
@@ -112,8 +176,8 @@ public class BackupService {
      * Performs a backup of the {@link BuildWorld}.
      *
      * @param buildWorld The world to create a backup of
-     * @param onSuccess  Action to run if backup was successful
-     * @param onFailure  Action to run if backup failed
+     * @param onSuccess Action to run if backup was successful
+     * @param onFailure Action to run if backup failed
      */
     public void backup(BuildWorld buildWorld, Runnable onSuccess, Runnable onFailure) {
         getProfile(buildWorld).createBackup().whenComplete((backup, throwable) -> {
@@ -135,9 +199,7 @@ public class BackupService {
     public BackupProfile getProfile(BuildWorld buildWorld) {
         try {
             return this.backupProfileCache.get(
-                    buildWorld.getUniqueId(),
-                    () -> new BackupProfileImpl(this.plugin, this.backupStorage, buildWorld)
-            );
+                    buildWorld.getUniqueId(), () -> new BackupProfileImpl(this.plugin, this.backupStorage, buildWorld));
         } catch (ExecutionException e) {
             BackupProfileImpl profile = new BackupProfileImpl(this.plugin, this.backupStorage, buildWorld);
             this.backupProfileCache.put(buildWorld.getUniqueId(), profile);

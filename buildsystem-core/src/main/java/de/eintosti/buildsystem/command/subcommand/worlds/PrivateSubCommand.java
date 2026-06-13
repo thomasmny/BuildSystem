@@ -18,31 +18,27 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
-import de.eintosti.buildsystem.world.navigator.inventory.PrivateWorldsInventory;
+import de.eintosti.buildsystem.world.menu.PrivateWorldsMenu;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class PrivateSubCommand implements SubCommand {
-
-    private final BuildSystemPlugin plugin;
+public class PrivateSubCommand extends AbstractSubCommand {
 
     public PrivateSubCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+        super(plugin);
     }
 
     @Override
-    public void execute(Player player, String[] args) {
+    public void execute(Player player, String worldName, String[] args) {
         if (!hasPermission(player)) {
-            Messages.sendPermissionError(player);
+            messages.sendPermissionError(player);
             return;
         }
 
-        new PrivateWorldsInventory(plugin, player).openInventory();
+        new PrivateWorldsMenu(plugin, player).open(player);
     }
 
     @Override

@@ -19,13 +19,15 @@ package de.eintosti.buildsystem.api.world;
 
 import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
-import de.eintosti.buildsystem.api.world.creation.BuildWorldCreator;
+import de.eintosti.buildsystem.api.world.creation.WorldBuilder;
+import de.eintosti.buildsystem.api.world.creation.WorldImporter;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import java.util.concurrent.CompletableFuture;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Provides a service for managing world-related operations and data. This interface offers methods to access and interact with world storage and folder management.
+ * Provides a service for managing world-related operations and data. This interface offers methods to access and
+ * interact with world storage and folder management.
  *
  * @since 3.0.0
  */
@@ -47,24 +49,62 @@ public interface WorldService {
     WorldStorage getWorldStorage();
 
     /**
-     * Creates a new {@link BuildWorldCreator} for the given name.
+     * Opens a {@link WorldBuilder} to generate a brand-new world with the given name.
+     *
+     * <pre>{@code
+     * BuildWorld world = worldService.newWorld("Lobby")
+     *         .type(BuildWorldType.NORMAL)
+     *         .creator(builder)
+     *         .build();
+     * }</pre>
      *
      * @param name The name of the world to create
-     * @return A new {@link BuildWorldCreator} instance for the specified world name
+     * @return A new {@link WorldBuilder} for the specified world name
+     * @since 3.1.0
      */
-    BuildWorldCreator createWorld(String name);
+    WorldBuilder newWorld(String name);
 
     /**
-     * Unimport an existing {@link BuildWorld}. In comparison to {@link #deleteWorld(BuildWorld)}, unimporting a world does not delete the world's directory.
+     * Opens a {@link WorldImporter} to adopt an existing world directory (located under the server's world container by
+     * the given name) as a {@link BuildWorld}.
+     *
+     * @param name The name of the existing world directory to import
+     * @return A new {@link WorldImporter} for the specified world name
+     * @since 3.1.0
+     */
+    WorldImporter importWorld(String name);
+
+    /**
+     * Imports every unregistered world directory found under the server's world container as a
+     * {@link de.eintosti.buildsystem.api.world.data.BuildWorldType#IMPORTED IMPORTED} world. Directories already
+     * registered with BuildSystem, and those with invalid names, are skipped.
+     *
+     * <p>To avoid lag-spiking the server, the imports are spread across server ticks (one per configured
+     * {@code import-all-delay} interval); the returned future therefore completes some time later, on the main thread,
+     * once every directory has been processed. Failures on individual worlds are skipped, not rolled back — partial
+     * success is possible.
+     *
+     * @return A future that completes with the number of worlds successfully imported, or completes exceptionally with
+     *     an {@link IllegalStateException} if a bulk import is already running
+     * @apiNote Each individual import goes through Bukkit's main-thread world machinery; the spreading is handled
+     *     internally. Safe to call from the main thread.
+     * @since 3.1.0
+     */
+    CompletableFuture<Integer> importWorlds();
+
+    /**
+     * Unimport an existing {@link BuildWorld}. In comparison to {@link #deleteWorld(BuildWorld)}, unimporting a world
+     * does not delete the world's directory.
      *
      * @param buildWorld The world to unimport
-     * @param save       Whether to save the world before unloading
+     * @param save Whether to save the world before unloading
      * @return A future that completes when the unimport operation is finished
      */
     CompletableFuture<Void> unimportWorld(BuildWorld buildWorld, boolean save);
 
     /**
-     * Delete an existing {@link BuildWorld}. In comparison to {@link #unimportWorld(BuildWorld, boolean)}, deleting a world deletes the world's directory.
+     * Delete an existing {@link BuildWorld}. In comparison to {@link #unimportWorld(BuildWorld, boolean)}, deleting a
+     * world deletes the world's directory.
      *
      * @param buildWorld The world to be deleted
      * @return A future that completes when the delete operation is finished

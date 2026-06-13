@@ -38,7 +38,8 @@ public class YamlSetupStorage extends AbstractYamlStorage {
     }
 
     public <T extends Enum<?>> void saveIcons(IconType iconType, Map<T, XMaterial> typeIcons) {
-        typeIcons.forEach((type, material) -> getFile().set("setup." + iconType.getKey() + "." + type.name().toLowerCase(Locale.ROOT), material.name()));
+        typeIcons.forEach((type, material) -> getFile()
+                .set("setup." + iconType.getKey() + "." + type.name().toLowerCase(Locale.ROOT), material.name()));
         saveFile();
     }
 
@@ -47,8 +48,7 @@ public class YamlSetupStorage extends AbstractYamlStorage {
         saveFile();
     }
 
-    @Nullable
-    public <T> Map<T, XMaterial> loadIcons(IconType iconType, Function<String, T> mapper) {
+    public <T> @Nullable Map<T, XMaterial> loadIcons(IconType iconType, Function<String, T> mapper) {
         FileConfiguration configuration = getFile();
         if (configuration == null) {
             return null;

@@ -90,7 +90,7 @@ public class CustomBlockManager implements Listener {
     /**
      * Sets a custom block based on the provided {@link CustomBlock}.
      *
-     * @param event       The {@link BlockPlaceEvent} triggered by the player
+     * @param event The {@link BlockPlaceEvent} triggered by the player
      * @param customBlock The custom block to be placed
      */
     public void setBlock(BlockPlaceEvent event, CustomBlock customBlock) {
@@ -225,7 +225,7 @@ public class CustomBlockManager implements Listener {
     /**
      * Rotates a block based on the provided {@link BlockFace} direction.
      *
-     * @param block     The block to rotate
+     * @param block The block to rotate
      * @param direction The {@link BlockFace} representing the new direction or axis
      */
     public void rotateBlock(Block block, BlockFace direction) {
@@ -235,11 +235,12 @@ public class CustomBlockManager implements Listener {
                 block.setBlockData(directional);
             }
             case Orientable orientable -> {
-                Axis axis = switch (direction) {
-                    case UP, DOWN -> Axis.Y;
-                    case EAST, WEST -> Axis.X;
-                    default -> Axis.Z;
-                };
+                Axis axis =
+                        switch (direction) {
+                            case UP, DOWN -> Axis.Y;
+                            case EAST, WEST -> Axis.X;
+                            default -> Axis.Z;
+                        };
                 orientable.setAxis(axis);
                 block.setBlockData(orientable);
             }
@@ -251,8 +252,7 @@ public class CustomBlockManager implements Listener {
                 hangingSign.setRotation(direction);
                 block.setBlockData(hangingSign);
             }
-            default -> {
-            }
+            default -> {}
         }
     }
 }

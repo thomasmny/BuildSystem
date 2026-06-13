@@ -19,88 +19,86 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Messages;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
-import de.eintosti.buildsystem.api.world.util.WorldPermissions;
+import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.command.subcommand.SubCommand;
-import de.eintosti.buildsystem.command.tabcomplete.WorldsTabCompleter.WorldsArgument;
-import de.eintosti.buildsystem.util.PlayerChatInput;
-import de.eintosti.buildsystem.util.UUIDFetcher;
-import de.eintosti.buildsystem.world.util.WorldPermissionsImpl;
+import de.eintosti.buildsystem.menu.PlayerChatInput;
+import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class RemoveBuilderSubCommand implements SubCommand {
+public class RemoveBuilderSubCommand extends AbstractSubCommand {
 
-    private final BuildSystemPlugin plugin;
-
-    @Nullable
-    private final BuildWorld buildWorld;
-    private final WorldPermissions permissions;
-
-    public RemoveBuilderSubCommand(BuildSystemPlugin plugin, String worldName) {
-        this.plugin = plugin;
-        this.buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
-        this.permissions = WorldPermissionsImpl.of(buildWorld);
+    public RemoveBuilderSubCommand(BuildSystemPlugin plugin) {
+        super(plugin);
     }
 
     @Override
-    public void execute(Player player, String[] args) {
+    public void execute(Player player, String worldName, String[] args) {
+        BuildWorld buildWorld = plugin.getWorldService()
+                .getWorldStorage()
+                .getBuildWorld(player.getWorld().getName());
+        var permissions = WorldPermissionsImpl.of(plugin, buildWorld);
         if (!permissions.canPerformCommand(player, getArgument().getPermission())) {
-            Messages.sendPermissionError(player);
+            messages.sendPermissionError(player);
             return;
         }
 
         if (buildWorld == null) {
-            Messages.sendMessage(player, "worlds_removebuilder_unknown_world");
+            messages.sendMessage(player, "worlds_removebuilder_unknown_world");
             return;
         }
 
         switch (args.length) {
             case 1 -> getRemoveBuilderInput(player, buildWorld);
             case 2 -> removeBuilder(player, buildWorld, args[1]);
-            default -> Messages.sendMessage(player, "worlds_removebuilder_usage");
+            default -> messages.sendMessage(player, "worlds_removebuilder_usage");
         }
     }
 
     private void removeBuilder(Player player, BuildWorld buildWorld, String builderName) {
         Player builderPlayer = Bukkit.getPlayerExact(builderName);
-        UUID builderId;
-
-        if (builderPlayer == null) {
-            builderId = UUIDFetcher.getUUID(builderName);
-            if (builderId == null) {
-                Messages.sendMessage(player, "worlds_removebuilder_player_not_found");
-                player.closeInventory();
-                return;
-            }
-        } else {
-            builderId = builderPlayer.getUniqueId();
+        if (builderPlayer != null) {
+            applyRemove(player, buildWorld, builderPlayer.getUniqueId(), builderName);
+            return;
         }
 
+        plugin.getPlayerLookupService()
+                .lookupUniqueId(builderName)
+                .thenAccept(builderId -> Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (builderId == null) {
+                        messages.sendMessage(player, "worlds_removebuilder_player_not_found");
+                        player.closeInventory();
+                        return;
+                    }
+                    applyRemove(player, buildWorld, builderId, builderName);
+                }));
+    }
+
+    private void applyRemove(Player player, BuildWorld buildWorld, UUID builderId, String builderName) {
         Builders builders = buildWorld.getBuilders();
         if (builderId.equals(player.getUniqueId()) && builders.isCreator(player)) {
-            Messages.sendMessage(player, "worlds_removebuilder_not_yourself");
+            messages.sendMessage(player, "worlds_removebuilder_not_yourself");
             player.closeInventory();
             return;
         }
 
         if (!builders.isBuilder(builderId)) {
-            Messages.sendMessage(player, "worlds_removebuilder_not_builder");
+            messages.sendMessage(player, "worlds_removebuilder_not_builder");
             player.closeInventory();
             return;
         }
 
         builders.removeBuilder(builderId);
         XSound.ENTITY_PLAYER_LEVELUP.play(player);
-        Messages.sendMessage(player, "worlds_removebuilder_removed", Map.entry("%builder%", builderName));
+        messages.sendMessage(player, "worlds_removebuilder_removed", Map.entry("%builder%", builderName));
 
         player.closeInventory();
     }
@@ -110,6 +108,26 @@ public class RemoveBuilderSubCommand implements SubCommand {
             String builderName = input.trim();
             removeBuilder(player, buildWorld, builderName);
         });
+    }
+
+    @Override
+    public List<String> complete(Player player, String[] args) {
+        if (args.length != 2) {
+            return List.of();
+        }
+        BuildWorld buildWorld = plugin.getWorldService()
+                .getWorldStorage()
+                .getBuildWorld(player.getWorld().getName());
+        if (buildWorld == null) {
+            return List.of();
+        }
+        Builders builders = buildWorld.getBuilders();
+        if (!builders.isCreator(player)) {
+            return List.of();
+        }
+        List<String> result = new ArrayList<>();
+        builders.getBuilderNames().forEach(name -> WorldsCompletions.addIfStartsWith(args[1], name, result));
+        return result;
     }
 
     @Override
