@@ -149,6 +149,7 @@ public class ConfigService {
         return new PluginConfig.Settings(
                 config.getBoolean("settings.update-checker", true),
                 config.getBoolean("settings.scoreboard", true),
+                config.getBoolean("settings.per-option-permissions", false),
                 config.getBoolean("settings.spawn-teleport-message", false),
                 config.getBoolean("settings.join-quit-messages", true),
                 Objects.requireNonNullElse(config.getString("settings.date-format"), "dd/MM/yyyy"),

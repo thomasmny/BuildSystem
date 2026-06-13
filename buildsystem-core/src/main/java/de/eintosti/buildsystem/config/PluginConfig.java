@@ -32,6 +32,7 @@ public record PluginConfig(Settings settings, World world, Folder folder) {
     public record Settings(
             boolean updateChecker,
             boolean scoreboard,
+            boolean perOptionPermissions,
             boolean spawnTeleportMessage,
             boolean joinQuitMessages,
             String dateFormat,

@@ -4,6 +4,7 @@
 settings:
   update-checker: true
   scoreboard: true
+  per-option-permissions: false
   spawn-teleport-message: false
   join-quit-messages: true
   date-format: "dd/MM/yyyy"
