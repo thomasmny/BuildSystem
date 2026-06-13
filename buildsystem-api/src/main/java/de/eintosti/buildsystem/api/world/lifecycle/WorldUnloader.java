@@ -60,7 +60,7 @@ public interface WorldUnloader {
     /**
      * Forces the unloading of the world, bypassing any checks or grace periods.
      *
-     * @param save Whether the world should be saved before unloading
+     * @param saveBehavior Whether the world should be saved before unloading
      */
-    void forceUnload(boolean save);
+    void forceUnload(SaveBehavior saveBehavior);
 }

@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.world.lifecycle;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostUnloadEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldUnloadEvent;
+import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldUnloader;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import java.util.Arrays;
@@ -142,11 +143,12 @@ public class WorldUnloaderImpl implements WorldUnloader {
             return;
         }
 
-        forceUnload(true);
+        forceUnload(SaveBehavior.SAVE);
     }
 
     @Override
-    public void forceUnload(boolean save) {
+    public void forceUnload(SaveBehavior saveBehavior) {
+        boolean save = saveBehavior.savesToDisk();
         BuildWorldUnloadEvent unloadEvent = new BuildWorldUnloadEvent(buildWorld);
         Bukkit.getServer().getPluginManager().callEvent(unloadEvent);
         if (unloadEvent.isCancelled()) {
