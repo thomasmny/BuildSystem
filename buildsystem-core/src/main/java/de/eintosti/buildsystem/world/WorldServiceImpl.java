@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world;
 
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.event.world.BuildWorldDeleteEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostDeleteEvent;
@@ -35,17 +34,17 @@ import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlFolderStorage;
 import de.eintosti.buildsystem.storage.yaml.YamlWorldStorage;
 import de.eintosti.buildsystem.util.FileUtils;
-import de.eintosti.buildsystem.util.StringCleaner;
-import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
 import de.eintosti.buildsystem.world.creation.WorldBuilderImpl;
+import de.eintosti.buildsystem.world.creation.WorldCreationPrompts;
+import de.eintosti.buildsystem.world.creation.WorldImportCoordinator;
 import de.eintosti.buildsystem.world.creation.WorldImporterImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
+import de.eintosti.buildsystem.world.lifecycle.WorldLoadBootstrap;
 import de.eintosti.buildsystem.world.lifecycle.WorldRenamer;
 import de.eintosti.buildsystem.world.lifecycle.WorldUnloaderImpl;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
@@ -54,15 +53,11 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
@@ -71,127 +66,26 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class WorldServiceImpl implements WorldService {
 
-    private final AtomicBoolean importingAllWorlds = new AtomicBoolean(false);
-
     private final BuildSystemPlugin plugin;
     private final FolderStorageImpl folderStorage;
     private final WorldStorageImpl worldStorage;
+
+    private final WorldLoadBootstrap loadBootstrap;
+    private final WorldCreationPrompts creationPrompts;
+    private final WorldImportCoordinator importCoordinator;
 
     public WorldServiceImpl(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.worldStorage = new YamlWorldStorage(plugin);
         this.folderStorage = new YamlFolderStorage(plugin, this.worldStorage);
+        this.loadBootstrap = new WorldLoadBootstrap(plugin, this.folderStorage, this.worldStorage);
+        this.creationPrompts = new WorldCreationPrompts(plugin, this);
+        this.importCoordinator = new WorldImportCoordinator(plugin, this, this.worldStorage);
     }
 
     public void init() {
         this.folderStorage.loadFolders();
-        loadWorlds();
-    }
-
-    private void loadWorlds() {
-        this.worldStorage
-                .load()
-                .thenAccept(worlds -> Bukkit.getScheduler().runTask(plugin, () -> {
-                    worlds.forEach(worldStorage::addBuildWorld);
-                    assignWorldsToFolders();
-
-                    boolean loadAllWorlds = !plugin.getConfigService()
-                            .current()
-                            .world()
-                            .unload()
-                            .enabled();
-                    if (loadAllWorlds) {
-                        plugin.getLogger().info("*** All worlds will be loaded now ***");
-                    }
-
-                    List<BuildWorld> notLoaded = new ArrayList<>();
-                    worldStorage.getBuildWorlds().forEach(buildWorld -> {
-                        if (preLoadWorld(buildWorld, loadAllWorlds) == LoadResult.FAILED) {
-                            notLoaded.add(buildWorld);
-                        }
-                    });
-                    notLoaded.forEach(worldStorage::removeBuildWorld);
-
-                    plugin.getLogger().info("Loaded " + worlds.size() + " worlds from storage");
-                }))
-                .exceptionally(throwable -> {
-                    plugin.getLogger().log(Level.SEVERE, "Failed to load worlds from storage", throwable);
-                    return null;
-                });
-    }
-
-    /**
-     * Assigns all {@link BuildWorld}s to their respective {@link Folder}s, dropping references to worlds that no longer
-     * exist.
-     *
-     * <p>Must be called after all folders and worlds have been loaded.
-     */
-    private void assignWorldsToFolders() {
-        folderStorage.getFolders().forEach(folder -> {
-            List<UUID> invalidWorlds = new ArrayList<>();
-            folder.getWorldUUIDs().stream()
-                    .map(worldUUID -> {
-                        BuildWorld buildWorld = worldStorage.getBuildWorld(worldUUID);
-                        if (buildWorld == null) {
-                            invalidWorlds.add(worldUUID);
-                            plugin.getLogger()
-                                    .warning("World with UUID " + worldUUID + " does not exist. Removing from folder: "
-                                            + folder.getName());
-                        }
-                        return buildWorld;
-                    })
-                    .filter(Objects::nonNull)
-                    .forEach(buildWorld -> buildWorld.setFolder(folder));
-            invalidWorlds.forEach(folder::removeWorld);
-        });
-    }
-
-    /**
-     * Attempts to load the Bukkit world backing the given {@link BuildWorld} at startup.
-     *
-     * @param buildWorld The world to load
-     * @param alwaysLoad Whether the world should always be loaded, regardless of being blacklisted
-     * @return The result of the load attempt
-     */
-    private LoadResult preLoadWorld(BuildWorld buildWorld, boolean alwaysLoad) {
-        String worldName = buildWorld.getName();
-        boolean shouldPreLoad = alwaysLoad
-                || plugin.getConfigService()
-                        .current()
-                        .world()
-                        .unload()
-                        .blacklistedWorlds()
-                        .contains(worldName);
-        if (!shouldPreLoad) {
-            return LoadResult.NOT_LOADED;
-        }
-
-        World world = new BukkitWorldFactory(plugin, buildWorld).generate(BukkitWorldFactory.VersionCheck.REQUIRED);
-        if (world == null) {
-            return LoadResult.FAILED;
-        }
-
-        buildWorld.getData().setLastLoaded(System.currentTimeMillis());
-        plugin.getLogger().info("✔ World loaded: " + worldName);
-        return LoadResult.LOADED;
-    }
-
-    private enum LoadResult {
-
-        /**
-         * The {@link BuildWorld} was successfully loaded.
-         */
-        LOADED,
-
-        /**
-         * The {@link BuildWorld} was attempted to be loaded, but failed.
-         */
-        FAILED,
-
-        /**
-         * Not attempted: unloading is enabled and the world is not blacklisted, so it may stay unloaded.
-         */
-        NOT_LOADED
+        this.loadBootstrap.loadWorlds();
     }
 
     @Override
@@ -222,65 +116,7 @@ public class WorldServiceImpl implements WorldService {
             @Nullable String template,
             boolean privateWorld,
             @Nullable Folder folder) {
-        player.closeInventory();
-        PlayerChatInput.requestSanitizedName(
-                plugin,
-                player,
-                "enter_world_name",
-                "worlds_world_creation_invalid_characters",
-                "worlds_world_creation_name_bank",
-                worldName -> {
-                    if (worldType == BuildWorldType.CUSTOM) {
-                        startCustomGeneratorInput(player, worldName, template, privateWorld, folder);
-                    } else {
-                        buildAndTeleport(
-                                player,
-                                newWorld(worldName)
-                                        .type(worldType)
-                                        .template(template)
-                                        .privateWorld(privateWorld)
-                                        .folder(folder));
-                    }
-                });
-    }
-
-    private void startCustomGeneratorInput(
-            Player player, String worldName, @Nullable String template, boolean privateWorld, @Nullable Folder folder) {
-        new PlayerChatInput(plugin, player, "enter_generator_name", input -> {
-            // Generator names are dynamic and cannot be pre-registered in plugin.yml, so default-allow is emulated: a
-            // generator is permitted unless an admin has explicitly denied its specific node.
-            String generatorNode = "buildsystem.create.generator." + input.trim();
-            boolean allowed = !player.isPermissionSet(generatorNode) || player.hasPermission(generatorNode);
-            if (!allowed) {
-                plugin.getMessages().sendPermissionError(player);
-                XSound.ENTITY_ITEM_BREAK.play(player);
-                return;
-            }
-
-            CustomGenerator customGenerator = CustomGeneratorImpl.of(input, worldName);
-            if (customGenerator == null) {
-                plugin.getMessages().sendMessage(player, "worlds_import_unknown_generator");
-                XSound.ENTITY_ITEM_BREAK.play(player);
-                return;
-            }
-
-            buildAndTeleport(
-                    player,
-                    newWorld(worldName)
-                            .type(BuildWorldType.CUSTOM)
-                            .template(template)
-                            .privateWorld(privateWorld)
-                            .customGenerator(customGenerator)
-                            .folder(folder));
-        });
-    }
-
-    private void buildAndTeleport(Player player, WorldBuilder worldBuilder) {
-        BuildWorld world =
-                worldBuilder.creator(Builder.of(player)).notify(player).build();
-        if (world != null) {
-            world.getTeleporter().teleport(player);
-        }
+        this.creationPrompts.startWorldNameInput(player, worldType, template, privateWorld, folder);
     }
 
     public boolean importWorld(
@@ -327,134 +163,16 @@ public class WorldServiceImpl implements WorldService {
     }
 
     public void importWorlds(Player player, String[] worldList, Generator generator, @Nullable Builder creator) {
-        int delay = plugin.getConfigService().current().world().importAllDelay();
-        plugin.getMessages()
-                .sendMessage(
-                        player, "worlds_importall_started", Map.entry("%amount%", String.valueOf(worldList.length)));
-        plugin.getMessages().sendMessage(player, "worlds_importall_delay", Map.entry("%delay%", String.valueOf(delay)));
-
-        importingAllWorlds.set(true);
-        BulkImportListener listener = new BulkImportListener() {
-            @Override
-            public void skippedExisting(String worldName) {
-                plugin.getMessages()
-                        .sendMessage(
-                                player, "worlds_importall_world_already_imported", Map.entry("%world%", worldName));
-            }
-
-            @Override
-            public void invalidName(String worldName, String invalidChar) {
-                plugin.getMessages()
-                        .sendMessage(
-                                player,
-                                "worlds_importall_invalid_character",
-                                Map.entry("%world%", worldName),
-                                Map.entry("%char%", invalidChar));
-            }
-
-            @Override
-            public void imported(String worldName) {
-                plugin.getMessages()
-                        .sendMessage(player, "worlds_importall_world_imported", Map.entry("%world%", worldName));
-            }
-        };
-        importStaggered(
-                        worldList,
-                        listener,
-                        worldName -> importWorld(
-                                player, worldName, creator, BuildWorldType.IMPORTED, generator, "void", false))
-                .thenRun(() -> plugin.getMessages().sendMessage(player, "worlds_importall_finished"));
+        this.importCoordinator.importWorlds(player, worldList, generator, creator);
     }
 
     public boolean isImportingAllWorlds() {
-        return importingAllWorlds.get();
+        return this.importCoordinator.isImportingAllWorlds();
     }
 
     @Override
     public CompletableFuture<Integer> importWorlds() {
-        if (!importingAllWorlds.compareAndSet(false, true)) {
-            return CompletableFuture.failedFuture(new IllegalStateException("A bulk import is already in progress"));
-        }
-
-        String[] directories = scanImportableDirectories();
-        if (directories.length == 0) {
-            importingAllWorlds.set(false);
-            return CompletableFuture.completedFuture(0);
-        }
-
-        return importStaggered(
-                directories,
-                new BulkImportListener() {},
-                worldName -> importWorld(worldName).build() != null);
-    }
-
-    /**
-     * Per-world progress callbacks for a staggered bulk import.
-     */
-    private interface BulkImportListener {
-
-        default void skippedExisting(String worldName) {}
-
-        default void invalidName(String worldName, String invalidChar) {}
-
-        default void imported(String worldName) {}
-    }
-
-    /**
-     * Imports the given worlds one per configured delay interval, skipping names that are already imported or contain
-     * invalid characters. Clears {@link #importingAllWorlds} and completes with the import count once all names have
-     * been processed.
-     */
-    private CompletableFuture<Integer> importStaggered(
-            String[] worldNames, BulkImportListener listener, Predicate<String> importer) {
-        int delay = plugin.getConfigService().current().world().importAllDelay();
-        String invalidCharacters = plugin.getConfigService().current().world().invalidCharacters();
-
-        CompletableFuture<Integer> result = new CompletableFuture<>();
-        AtomicInteger index = new AtomicInteger(0);
-        AtomicInteger imported = new AtomicInteger(0);
-
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                int i = index.getAndIncrement();
-                if (i >= worldNames.length) {
-                    this.cancel();
-                    importingAllWorlds.set(false);
-                    result.complete(imported.get());
-                    return;
-                }
-
-                String worldName = worldNames[i];
-                if (worldStorage.worldExists(worldName)) {
-                    listener.skippedExisting(worldName);
-                    return;
-                }
-
-                String invalidChar = StringCleaner.firstInvalidChar(worldName, invalidCharacters);
-                if (invalidChar != null) {
-                    listener.invalidName(worldName, invalidChar);
-                    return;
-                }
-
-                if (importer.test(worldName)) {
-                    imported.incrementAndGet();
-                    listener.imported(worldName);
-                }
-            }
-        }.runTaskTimer(plugin, 0, 20L * delay);
-
-        return result;
-    }
-
-    private String[] scanImportableDirectories() {
-        String[] directories = Bukkit.getWorldContainer().list((dir, name) -> {
-            File worldFolder = new File(dir, name);
-            return worldFolder.isDirectory()
-                    && new File(worldFolder, "level.dat").exists()
-                    && !worldStorage.worldExists(name);
-        });
-        return directories != null ? directories : new String[0];
+        return this.importCoordinator.importWorlds();
     }
 
     @Override
