@@ -18,24 +18,19 @@
 package de.eintosti.buildsystem.menu;
 
 import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Logger;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Stateless factory for the {@link ItemStack}s used by menus. Item builders that need plugin state (config, settings,
- * scheduler) live on {@link MenuItems}.
+ * Stateless factory for the {@link ItemStack}s used by menus. Thin façade over {@link ItemBuilder} for the common
+ * material/name/lore and skull cases; item builders that need plugin state (config, settings, scheduler) live on
+ * {@link MenuItems}.
  */
 @NullMarked
 public final class InventoryUtils {
-
-    private static final Logger LOGGER = Logger.getLogger(InventoryUtils.class.getName());
 
     private InventoryUtils() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
@@ -50,23 +45,11 @@ public final class InventoryUtils {
      * @return The created ItemStack
      */
     public static ItemStack createItem(XMaterial material, String displayName, List<String> lore) {
-        ItemStack itemStack = material.parseItem();
-        if (itemStack == null) {
-            itemStack = XMaterial.BEDROCK.parseItem();
-            LOGGER.warning("Unknown material found (" + material + "). Defaulting to " + itemStack.getType() + ".");
-        }
-
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null) {
-            return itemStack;
-        }
-
-        itemMeta.setDisplayName(displayName);
-        itemMeta.setLore(lore);
-        itemMeta.addItemFlags(ItemFlag.values());
-        itemStack.setItemMeta(itemMeta);
-
-        return itemStack;
+        return ItemBuilder.of(material)
+                .name(displayName)
+                .lore(lore)
+                .hideAttributes()
+                .build();
     }
 
     /**
@@ -90,18 +73,7 @@ public final class InventoryUtils {
      * @return The created skull ItemStack
      */
     public static ItemStack createSkull(String displayName, Profileable profileable, List<String> lore) {
-        ItemStack skull = XSkull.createItem().profile(profileable).lenient().apply();
-
-        ItemMeta itemMeta = skull.getItemMeta();
-        if (itemMeta == null) {
-            return skull;
-        }
-
-        itemMeta.setDisplayName(displayName);
-        itemMeta.setLore(lore);
-        skull.setItemMeta(itemMeta);
-
-        return skull;
+        return ItemBuilder.skull(profileable).name(displayName).lore(lore).build();
     }
 
     /**
