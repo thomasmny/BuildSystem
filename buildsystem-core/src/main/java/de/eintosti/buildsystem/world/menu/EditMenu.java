@@ -33,11 +33,9 @@ import de.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.Menu;
+import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
@@ -47,6 +45,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class EditMenu extends Menu {
@@ -177,52 +176,181 @@ public class EditMenu extends Menu {
         }
     }
 
+    /**
+     * Classifies what a button does after a click, so the per-slot contract can be asserted as data. The actual action
+     * lives in each button's {@link MenuButton#onClick}; this is the classification the golden test pins.
+     */
+    enum ClickOutcome {
+        REOPEN,
+        SUBMENU,
+        INPUT,
+        CLOSE,
+        NONE
+    }
+
+    /**
+     * A single editor slot: its required permission (or {@code null} for a render-only slot), its {@link ClickOutcome}
+     * classification, and the render/click behavior. Declaring each slot once here replaces the old parallel
+     * {@code populate} calls and {@code handleClick} switch.
+     */
+    private record EditButton(
+            @Nullable String permission,
+            ClickOutcome outcome,
+            BiConsumer<Player, Inventory> renderer,
+            BiConsumer<Player, InventoryClickEvent> clickHandler)
+            implements MenuButton {
+
+        @Override
+        public void render(Player player, Inventory inventory) {
+            renderer.accept(player, inventory);
+        }
+
+        @Override
+        public void onClick(Player player, InventoryClickEvent event) {
+            clickHandler.accept(player, event);
+        }
+    }
+
     private final BuildSystemPlugin plugin;
     private final PlayerServiceImpl playerManager;
     private final BuildWorld buildWorld;
+    private final Map<Integer, EditButton> buttons;
 
     public EditMenu(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
         super(plugin.getMessages(), 54, plugin.getMessages().getString("worldeditor_title", player));
         this.plugin = plugin;
         this.playerManager = plugin.getPlayerService();
         this.buildWorld = buildWorld;
+        this.buttons = buildButtons();
+    }
+
+    // package-private: only for unit tests that cannot run a Bukkit server
+    EditMenu(BuildSystemPlugin plugin, BuildWorld buildWorld, Messages messages, Inventory inventory) {
+        super(messages, inventory);
+        this.plugin = plugin;
+        this.playerManager = plugin.getPlayerService();
+        this.buildWorld = buildWorld;
+        this.buttons = buildButtons();
+    }
+
+    private Map<Integer, EditButton> buildButtons() {
+        Map<Integer, EditButton> map = new LinkedHashMap<>();
+
+        map.put(SLOT_WORLD_INFO, new EditButton(null, ClickOutcome.NONE, this::renderWorldInfo, (player, event) -> {}));
+
+        TOGGLES.forEach((slot, toggle) -> map.put(
+                slot,
+                new EditButton(
+                        toggle.permission(),
+                        ClickOutcome.REOPEN,
+                        (player, inventory) -> renderToggle(player, inventory, slot, toggle),
+                        (player, event) -> {
+                            if (requirePermission(player, toggle.permission())) {
+                                WorldData worldData = buildWorld.getData();
+                                toggle.setter()
+                                        .accept(worldData, !toggle.getter().test(worldData));
+                                reopen(player);
+                            }
+                        })));
+
+        map.put(
+                SLOT_TIME,
+                new EditButton("buildsystem.edit.time", ClickOutcome.REOPEN, this::renderTime, (player, event) -> {
+                    if (requirePermission(player, "buildsystem.edit.time")) {
+                        changeTime(player);
+                    }
+                    reopen(player);
+                }));
+
+        map.put(
+                SLOT_BUTCHER,
+                new EditButton(
+                        "buildsystem.edit.entities", ClickOutcome.CLOSE, this::renderButcher, (player, event) -> {
+                            if (requirePermission(player, "buildsystem.edit.entities")) {
+                                removeEntities(player);
+                            }
+                        }));
+
+        map.put(
+                SLOT_BUILDERS,
+                new EditButton(
+                        "buildsystem.edit.builders", ClickOutcome.REOPEN, this::renderBuilders, this::onBuildersClick));
+
+        map.put(
+                SLOT_VISIBILITY,
+                new EditButton(
+                        "buildsystem.edit.visibility",
+                        ClickOutcome.REOPEN,
+                        this::renderVisibility,
+                        this::onVisibilityClick));
+
+        map.put(
+                SLOT_GAMERULES,
+                new EditButton(
+                        "buildsystem.edit.gamerules", ClickOutcome.SUBMENU, this::renderGameRules, (player, event) -> {
+                            if (requirePermission(player, "buildsystem.edit.gamerules")) {
+                                XSound.BLOCK_CHEST_OPEN.play(player);
+                                new GameRulesMenu(plugin, buildWorld, player).open(player);
+                            }
+                        }));
+
+        map.put(
+                SLOT_DIFFICULTY,
+                new EditButton(
+                        "buildsystem.edit.difficulty", ClickOutcome.REOPEN, this::renderDifficulty, (player, event) -> {
+                            if (requirePermission(player, "buildsystem.edit.difficulty")) {
+                                cycleDifficulty();
+                            }
+                            reopen(player);
+                        }));
+
+        map.put(
+                SLOT_STATUS,
+                new EditButton("buildsystem.edit.status", ClickOutcome.SUBMENU, this::renderStatus, (player, event) -> {
+                    if (requirePermission(player, "buildsystem.edit.status")) {
+                        XSound.ENTITY_CHICKEN_EGG.play(player);
+                        new StatusMenu(plugin, buildWorld, player).open(player);
+                    }
+                }));
+
+        map.put(
+                SLOT_PROJECT,
+                new EditButton("buildsystem.edit.project", ClickOutcome.INPUT, this::renderProject, (player, event) -> {
+                    if (requirePermission(player, "buildsystem.edit.project")) {
+                        XSound.ENTITY_CHICKEN_EGG.play(player);
+                        new SetProjectSubCommand(plugin).getProjectInput(player, buildWorld, false);
+                    }
+                }));
+
+        map.put(
+                SLOT_PERMISSION,
+                new EditButton(
+                        "buildsystem.edit.permission", ClickOutcome.INPUT, this::renderPermission, (player, event) -> {
+                            if (requirePermission(player, "buildsystem.edit.permission")) {
+                                XSound.ENTITY_CHICKEN_EGG.play(player);
+                                new SetPermissionSubCommand(plugin).getPermissionInput(player, buildWorld, false);
+                            }
+                        }));
+
+        return map;
     }
 
     @Override
     protected void populate(Player player) {
         Inventory inv = getInventory();
         plugin.getMenuItems().fillAll(player, inv);
-
-        addBuildWorldInfoItem(player, inv);
-        addToggleItems(player, inv);
-        addTimeItem(player, inv);
-        addButcherItem(player, inv);
-        addBuildersItem(player, inv);
-        addVisibilityItem(player, inv);
-        addGameRulesItem(player, inv);
-        addDifficultyItem(player, inv);
-        addStatusItem(player, inv);
-        addProjectItem(player, inv);
-        addPermissionItem(player, inv);
+        buttons.forEach((slot, button) -> button.render(player, inv));
     }
 
-    private void addToggleItems(Player player, Inventory inventory) {
+    private void renderToggle(Player player, Inventory inventory, int slot, Toggle toggle) {
         WorldData worldData = buildWorld.getData();
-        TOGGLES.forEach((slot, toggle) -> {
-            boolean enabled = toggle.getter().test(worldData);
-            plugin.getMenuItems()
-                    .addToggleItem(
-                            player,
-                            inventory,
-                            slot,
-                            toggle.iconFor(enabled),
-                            enabled,
-                            toggle.itemKey(),
-                            toggle.loreKey());
-        });
+        boolean enabled = toggle.getter().test(worldData);
+        plugin.getMenuItems()
+                .addToggleItem(
+                        player, inventory, slot, toggle.iconFor(enabled), enabled, toggle.itemKey(), toggle.loreKey());
     }
 
-    private void addBuildWorldInfoItem(Player player, Inventory inventory) {
+    private void renderWorldInfo(Player player, Inventory inventory) {
         String displayName =
                 messages.getString("worldeditor_world_item", player, Map.entry("%world%", buildWorld.getName()));
         XMaterial material = buildWorld.getData().getMaterial();
@@ -234,7 +362,7 @@ public class EditMenu extends Menu {
         }
     }
 
-    private void addTimeItem(Player player, Inventory inventory) {
+    private void renderTime(Player player, Inventory inventory) {
         XMaterial material;
         String value;
         switch (getWorldTime()) {
@@ -260,7 +388,7 @@ public class EditMenu extends Menu {
                         messages.getStringList("worldeditor_time_lore", player, Map.entry("%time%", value))));
     }
 
-    private void addButcherItem(Player player, Inventory inventory) {
+    private void renderButcher(Player player, Inventory inventory) {
         inventory.setItem(
                 SLOT_BUTCHER,
                 InventoryUtils.createItem(
@@ -269,7 +397,7 @@ public class EditMenu extends Menu {
                         messages.getStringList("worldeditor_butcher_lore", player)));
     }
 
-    private void addBuildersItem(Player player, Inventory inventory) {
+    private void renderBuilders(Player player, Inventory inventory) {
         if (buildWorld.getBuilders().isCreator(player) || player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)) {
             plugin.getMenuItems()
                     .addToggleItem(
@@ -290,7 +418,7 @@ public class EditMenu extends Menu {
         }
     }
 
-    private void addVisibilityItem(Player player, Inventory inventory) {
+    private void renderVisibility(Player player, Inventory inventory) {
         String displayName = messages.getString("worldeditor_visibility_item", player);
         boolean isPrivate = buildWorld.getData().isPrivateWorld();
 
@@ -308,7 +436,7 @@ public class EditMenu extends Menu {
         inventory.setItem(SLOT_VISIBILITY, InventoryUtils.createItem(material, displayName, lore));
     }
 
-    private void addGameRulesItem(Player player, Inventory inventory) {
+    private void renderGameRules(Player player, Inventory inventory) {
         inventory.setItem(
                 SLOT_GAMERULES,
                 InventoryUtils.createItem(
@@ -317,7 +445,7 @@ public class EditMenu extends Menu {
                         messages.getStringList("worldeditor_gamerules_lore", player)));
     }
 
-    private void addDifficultyItem(Player player, Inventory inventory) {
+    private void renderDifficulty(Player player, Inventory inventory) {
         XMaterial material =
                 switch (buildWorld.getData().getDifficulty()) {
                     case EASY -> XMaterial.GOLDEN_HELMET;
@@ -337,7 +465,7 @@ public class EditMenu extends Menu {
                                 Map.entry("%difficulty%", getDifficultyName(player)))));
     }
 
-    private void addStatusItem(Player player, Inventory inventory) {
+    private void renderStatus(Player player, Inventory inventory) {
         BuildWorldStatus status = buildWorld.getData().getStatus();
         inventory.setItem(
                 SLOT_STATUS,
@@ -350,7 +478,7 @@ public class EditMenu extends Menu {
                                 Map.entry("%status%", messages.getString(Messages.getMessageKey(status), player)))));
     }
 
-    private void addProjectItem(Player player, Inventory inventory) {
+    private void renderProject(Player player, Inventory inventory) {
         inventory.setItem(
                 SLOT_PROJECT,
                 InventoryUtils.createItem(
@@ -362,7 +490,7 @@ public class EditMenu extends Menu {
                                 Map.entry("%project%", buildWorld.getData().getProject()))));
     }
 
-    private void addPermissionItem(Player player, Inventory inventory) {
+    private void renderPermission(Player player, Inventory inventory) {
         inventory.setItem(
                 SLOT_PERMISSION,
                 InventoryUtils.createItem(
@@ -393,116 +521,78 @@ public class EditMenu extends Menu {
         event.setCancelled(true);
         Player player = (Player) event.getWhoClicked();
 
-        if (handleToggleClick(event.getSlot(), player)) {
+        MenuButton button = buttons.get(event.getSlot());
+        if (button != null) {
+            button.onClick(player, event);
+        }
+    }
+
+    /**
+     * The builders button mixes behaviors, so it cannot share the toggle closure: a barrier icon (player is not the
+     * creator) only plays the deny sound, a right-click opens the {@link BuilderMenu}, and a left-click flips the
+     * builders flag and re-opens. Re-opening happens only on the successful left-click path.
+     */
+    private void onBuildersClick(Player player, InventoryClickEvent event) {
+        ItemStack itemStack = event.getCurrentItem();
+        if (itemStack != null && itemStack.getType() == XMaterial.BARRIER.get()) {
+            XSound.ENTITY_ITEM_BREAK.play(player);
             return;
         }
-
-        switch (event.getSlot()) {
-            case SLOT_TIME -> {
-                if (requirePermission(player, "buildsystem.edit.time")) {
-                    changeTime(player);
-                }
-            }
-            case SLOT_BUTCHER -> {
-                if (requirePermission(player, "buildsystem.edit.entities")) {
-                    removeEntities(player);
-                }
-                return;
-            }
-            case SLOT_BUILDERS -> {
-                if (handleBuildersClick(player, itemStack, event.isRightClick())) {
-                    return;
-                }
-            }
-            case SLOT_VISIBILITY -> {
-                if (handleVisibilityClick(player, itemStack)) {
-                    return;
-                }
-            }
-            case SLOT_GAMERULES -> {
-                if (requirePermission(player, "buildsystem.edit.gamerules")) {
-                    XSound.BLOCK_CHEST_OPEN.play(player);
-                    new GameRulesMenu(plugin, buildWorld, player).open(player);
-                }
-                return;
-            }
-            case SLOT_DIFFICULTY -> {
-                if (requirePermission(player, "buildsystem.edit.difficulty")) {
-                    cycleDifficulty();
-                }
-            }
-            case SLOT_STATUS -> {
-                if (requirePermission(player, "buildsystem.edit.status")) {
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
-                    new StatusMenu(plugin, buildWorld, player).open(player);
-                }
-                return;
-            }
-            case SLOT_PROJECT -> {
-                if (requirePermission(player, "buildsystem.edit.project")) {
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
-                    new SetProjectSubCommand(plugin).getProjectInput(player, buildWorld, false);
-                }
-                return;
-            }
-            case SLOT_PERMISSION -> {
-                if (requirePermission(player, "buildsystem.edit.permission")) {
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
-                    new SetPermissionSubCommand(plugin).getPermissionInput(player, buildWorld, false);
-                }
-                return;
-            }
-            default -> {
-                return;
-            }
-        }
-
-        reopen(player);
-    }
-
-    private boolean handleToggleClick(int slot, Player player) {
-        Toggle toggle = TOGGLES.get(slot);
-        if (toggle == null) {
-            return false;
-        }
-
-        if (requirePermission(player, toggle.permission())) {
-            WorldData worldData = buildWorld.getData();
-            toggle.setter().accept(worldData, !toggle.getter().test(worldData));
-            reopen(player);
-        }
-        return true;
-    }
-
-    private boolean handleBuildersClick(Player player, ItemStack itemStack, boolean rightClick) {
-        if (itemStack.getType() == XMaterial.BARRIER.get()) {
-            XSound.ENTITY_ITEM_BREAK.play(player);
-            return true;
-        }
         if (!requirePermission(player, "buildsystem.edit.builders")) {
-            return true;
+            return;
         }
-        if (rightClick) {
+        if (event.isRightClick()) {
             XSound.BLOCK_CHEST_OPEN.play(player);
             new BuilderMenu(plugin, buildWorld, player).open(player);
-            return true;
+            return;
         }
 
         WorldData worldData = buildWorld.getData();
         worldData.setBuildersEnabled(!worldData.isBuildersEnabled());
-        return false;
+        reopen(player);
     }
 
-    private boolean handleVisibilityClick(Player player, ItemStack itemStack) {
-        if (itemStack.getType() == XMaterial.BARRIER.get()) {
+    /**
+     * The visibility button guards against the barrier icon (player cannot create the target visibility): a barrier
+     * click only plays the deny sound and does not re-open. Every other click re-opens, matching the original behavior
+     * even when the permission check itself denies.
+     */
+    private void onVisibilityClick(Player player, InventoryClickEvent event) {
+        ItemStack itemStack = event.getCurrentItem();
+        if (itemStack != null && itemStack.getType() == XMaterial.BARRIER.get()) {
             XSound.ENTITY_ITEM_BREAK.play(player);
-            return true;
+            return;
         }
         if (requirePermission(player, "buildsystem.edit.visibility")) {
             WorldData worldData = buildWorld.getData();
             worldData.setPrivateWorld(!worldData.isPrivateWorld());
         }
-        return false;
+        reopen(player);
+    }
+
+    /**
+     * The slot &rarr; required-permission mapping, derived from the button registry. Render-only slots (no permission)
+     * are omitted. Exposed for the golden test that pins the per-slot contract.
+     */
+    Map<Integer, String> permissionBySlot() {
+        Map<Integer, String> permissions = new LinkedHashMap<>();
+        buttons.forEach((slot, button) -> {
+            String permission = button.permission();
+            if (permission != null) {
+                permissions.put(slot, permission);
+            }
+        });
+        return permissions;
+    }
+
+    /**
+     * The slot &rarr; {@link ClickOutcome} classification, derived from the button registry. Exposed for the golden
+     * test that pins the per-slot contract.
+     */
+    Map<Integer, ClickOutcome> outcomeBySlot() {
+        Map<Integer, ClickOutcome> outcomes = new LinkedHashMap<>();
+        buttons.forEach((slot, button) -> outcomes.put(slot, button.outcome()));
+        return outcomes;
     }
 
     private void cycleDifficulty() {

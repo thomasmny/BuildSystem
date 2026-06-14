@@ -39,8 +39,8 @@ public abstract class Menu implements InventoryHolder {
         this.inventory = Bukkit.createInventory(this, size, title);
     }
 
-    // package-private: only for unit tests that cannot run a Bukkit server
-    Menu(Messages messages, Inventory inventory) {
+    // protected: only for unit tests (in subclass packages) that cannot run a Bukkit server
+    protected Menu(Messages messages, Inventory inventory) {
         this.messages = messages;
         this.inventory = inventory;
     }
