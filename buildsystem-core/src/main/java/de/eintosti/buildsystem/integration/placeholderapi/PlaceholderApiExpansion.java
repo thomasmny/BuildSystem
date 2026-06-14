@@ -95,7 +95,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             return "";
         }
 
-        if (identifier.matches(".*_.*") && identifier.split("_")[0].equalsIgnoreCase(SETTINGS_KEY)) {
+        if (identifier.contains("_") && identifier.split("_")[0].equalsIgnoreCase(SETTINGS_KEY)) {
             return settingsPlaceholder(player, identifier);
         } else {
             return worldPlaceholder(player, identifier);
@@ -128,7 +128,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
 
     private @Nullable String worldPlaceholder(Player player, String identifier) {
         String worldName = player.getWorld().getName();
-        if (identifier.matches(".*_.*")) {
+        if (identifier.contains("_")) {
             String[] splitString = identifier.split("_");
             worldName = splitString[1];
             identifier = splitString[0];

@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.world.display;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.display.WorldFilter;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -62,7 +63,11 @@ public class WorldFilterImpl implements WorldFilter {
         return switch (mode) {
             case STARTS_WITH -> buildWorld -> buildWorld.getName().startsWith(text);
             case CONTAINS -> buildWorld -> buildWorld.getName().contains(text);
-            case MATCHES -> buildWorld -> buildWorld.getName().matches(text);
+            case MATCHES -> {
+                // Compile the user-supplied regex once per filter rather than once per world tested.
+                Pattern pattern = Pattern.compile(text);
+                yield buildWorld -> pattern.matcher(buildWorld.getName()).matches();
+            }
             default -> buildWorld -> true;
         };
     }

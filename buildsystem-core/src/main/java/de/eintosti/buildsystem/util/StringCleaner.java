@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.util;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -29,16 +30,22 @@ public final class StringCleaner {
     public static final String INVALID_NAME_CHARACTERS = "[^A-Za-z\\d_-]";
     public static final String DEFAULT_INVALID_CHARACTERS = "^\b$";
 
+    private static final Pattern INVALID_NAME_PATTERN = Pattern.compile(INVALID_NAME_CHARACTERS);
+
     private StringCleaner() {}
 
     public static boolean hasInvalidNameCharacters(String input, String configuredPattern) {
+        Pattern configured = Pattern.compile(configuredPattern);
         return Arrays.stream(input.split(""))
-                .anyMatch(c -> c.matches(INVALID_NAME_CHARACTERS) || c.matches(configuredPattern));
+                .anyMatch(c -> INVALID_NAME_PATTERN.matcher(c).matches()
+                        || configured.matcher(c).matches());
     }
 
     public static @Nullable String firstInvalidChar(String input, String configuredPattern) {
+        Pattern configured = Pattern.compile(configuredPattern);
         return Arrays.stream(input.split(""))
-                .filter(c -> c.matches(INVALID_NAME_CHARACTERS) || c.matches(configuredPattern))
+                .filter(c -> INVALID_NAME_PATTERN.matcher(c).matches()
+                        || configured.matcher(c).matches())
                 .findFirst()
                 .orElse(null);
     }
