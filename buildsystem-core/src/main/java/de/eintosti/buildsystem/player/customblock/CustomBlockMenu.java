@@ -21,10 +21,13 @@ import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.Menu;
+import java.util.Map;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jspecify.annotations.NullMarked;
@@ -32,10 +35,58 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class CustomBlockMenu extends Menu {
 
+    /**
+     * A selectable custom block. {@code giveMaterial} is the material the item is handed out as; the default
+     * {@link XMaterial#PLAYER_HEAD} means "give as a skull". Render is always a skull for every slot.
+     */
+    record BlockEntry(CustomBlock block, XMaterial giveMaterial) {
+        BlockEntry(CustomBlock block) {
+            this(block, XMaterial.PLAYER_HEAD);
+        }
+    }
+
+    /**
+     * The single source of truth for the block selection grid: each slot maps to the block it gives. Slots 32, 33 and 41
+     * give with a non-skull material; all others give as a skull. Drives both {@link #populate} and {@link #handleClick}.
+     */
+    private static final Map<Integer, BlockEntry> BLOCK_BY_SLOT = Map.ofEntries(
+            Map.entry(1, new BlockEntry(CustomBlock.FULL_OAK_BARCH)),
+            Map.entry(2, new BlockEntry(CustomBlock.FULL_SPRUCE_BARCH)),
+            Map.entry(3, new BlockEntry(CustomBlock.FULL_BIRCH_BARCH)),
+            Map.entry(4, new BlockEntry(CustomBlock.FULL_JUNGLE_BARCH)),
+            Map.entry(5, new BlockEntry(CustomBlock.FULL_ACACIA_BARCH)),
+            Map.entry(6, new BlockEntry(CustomBlock.FULL_DARK_OAK_BARCH)),
+            Map.entry(10, new BlockEntry(CustomBlock.RED_MUSHROOM)),
+            Map.entry(11, new BlockEntry(CustomBlock.BROWN_MUSHROOM)),
+            Map.entry(12, new BlockEntry(CustomBlock.FULL_MUSHROOM_STEM)),
+            Map.entry(13, new BlockEntry(CustomBlock.MUSHROOM_STEM)),
+            Map.entry(14, new BlockEntry(CustomBlock.MUSHROOM_BLOCK)),
+            Map.entry(19, new BlockEntry(CustomBlock.SMOOTH_STONE)),
+            Map.entry(20, new BlockEntry(CustomBlock.DOUBLE_STONE_SLAB)),
+            Map.entry(21, new BlockEntry(CustomBlock.SMOOTH_SANDSTONE)),
+            Map.entry(22, new BlockEntry(CustomBlock.SMOOTH_RED_SANDSTONE)),
+            Map.entry(28, new BlockEntry(CustomBlock.POWERED_REDSTONE_LAMP)),
+            Map.entry(29, new BlockEntry(CustomBlock.BURNING_FURNACE)),
+            Map.entry(30, new BlockEntry(CustomBlock.PISTON_HEAD)),
+            Map.entry(31, new BlockEntry(CustomBlock.COMMAND_BLOCK)),
+            Map.entry(32, new BlockEntry(CustomBlock.BARRIER, XMaterial.BARRIER)),
+            Map.entry(33, new BlockEntry(CustomBlock.INVISIBLE_ITEM_FRAME, XMaterial.ITEM_FRAME)),
+            Map.entry(37, new BlockEntry(CustomBlock.MOB_SPAWNER)),
+            Map.entry(38, new BlockEntry(CustomBlock.NETHER_PORTAL)),
+            Map.entry(39, new BlockEntry(CustomBlock.END_PORTAL)),
+            Map.entry(40, new BlockEntry(CustomBlock.DRAGON_EGG)),
+            Map.entry(41, new BlockEntry(CustomBlock.DEBUG_STICK, XMaterial.DEBUG_STICK)));
+
     private final BuildSystemPlugin plugin;
 
     public CustomBlockMenu(BuildSystemPlugin plugin, Player player) {
         super(plugin.getMessages(), 45, plugin.getMessages().getString("blocks_title", player));
+        this.plugin = plugin;
+    }
+
+    // protected: only for unit tests that cannot run a Bukkit server
+    CustomBlockMenu(BuildSystemPlugin plugin, Messages messages, Inventory inventory) {
+        super(messages, inventory);
         this.plugin = plugin;
     }
 
@@ -46,36 +97,14 @@ public class CustomBlockMenu extends Menu {
             plugin.getMenuItems().addGlassPane(player, getInventory(), i);
         }
 
-        setCustomBlock(player, 1, CustomBlock.FULL_OAK_BARCH);
-        setCustomBlock(player, 2, CustomBlock.FULL_SPRUCE_BARCH);
-        setCustomBlock(player, 3, CustomBlock.FULL_BIRCH_BARCH);
-        setCustomBlock(player, 4, CustomBlock.FULL_JUNGLE_BARCH);
-        setCustomBlock(player, 5, CustomBlock.FULL_ACACIA_BARCH);
-        setCustomBlock(player, 6, CustomBlock.FULL_DARK_OAK_BARCH);
+        BLOCK_BY_SLOT.forEach((slot, entry) -> setCustomBlock(player, slot, entry.block()));
+    }
 
-        setCustomBlock(player, 10, CustomBlock.RED_MUSHROOM);
-        setCustomBlock(player, 11, CustomBlock.BROWN_MUSHROOM);
-        setCustomBlock(player, 12, CustomBlock.FULL_MUSHROOM_STEM);
-        setCustomBlock(player, 13, CustomBlock.MUSHROOM_STEM);
-        setCustomBlock(player, 14, CustomBlock.MUSHROOM_BLOCK);
-
-        setCustomBlock(player, 19, CustomBlock.SMOOTH_STONE);
-        setCustomBlock(player, 20, CustomBlock.DOUBLE_STONE_SLAB);
-        setCustomBlock(player, 21, CustomBlock.SMOOTH_SANDSTONE);
-        setCustomBlock(player, 22, CustomBlock.SMOOTH_RED_SANDSTONE);
-
-        setCustomBlock(player, 28, CustomBlock.POWERED_REDSTONE_LAMP);
-        setCustomBlock(player, 29, CustomBlock.BURNING_FURNACE);
-        setCustomBlock(player, 30, CustomBlock.PISTON_HEAD);
-        setCustomBlock(player, 31, CustomBlock.COMMAND_BLOCK);
-        setCustomBlock(player, 32, CustomBlock.BARRIER);
-        setCustomBlock(player, 33, CustomBlock.INVISIBLE_ITEM_FRAME);
-
-        setCustomBlock(player, 37, CustomBlock.MOB_SPAWNER);
-        setCustomBlock(player, 38, CustomBlock.NETHER_PORTAL);
-        setCustomBlock(player, 39, CustomBlock.END_PORTAL);
-        setCustomBlock(player, 40, CustomBlock.DRAGON_EGG);
-        setCustomBlock(player, 41, CustomBlock.DEBUG_STICK);
+    /**
+     * The slot &rarr; block mapping. Exposed for the golden test that pins the selection grid.
+     */
+    Map<Integer, BlockEntry> blockBySlot() {
+        return BLOCK_BY_SLOT;
     }
 
     private void setCustomBlock(Player player, int position, CustomBlock customBlock) {
@@ -92,42 +121,10 @@ public class CustomBlockMenu extends Menu {
         event.setCancelled(true);
         Player player = (Player) event.getWhoClicked();
 
-        switch (event.getSlot()) {
-            case 1 -> giveCustomBlock(player, CustomBlock.FULL_OAK_BARCH);
-            case 2 -> giveCustomBlock(player, CustomBlock.FULL_SPRUCE_BARCH);
-            case 3 -> giveCustomBlock(player, CustomBlock.FULL_BIRCH_BARCH);
-            case 4 -> giveCustomBlock(player, CustomBlock.FULL_JUNGLE_BARCH);
-            case 5 -> giveCustomBlock(player, CustomBlock.FULL_ACACIA_BARCH);
-            case 6 -> giveCustomBlock(player, CustomBlock.FULL_DARK_OAK_BARCH);
-
-            case 10 -> giveCustomBlock(player, CustomBlock.RED_MUSHROOM);
-            case 11 -> giveCustomBlock(player, CustomBlock.BROWN_MUSHROOM);
-            case 12 -> giveCustomBlock(player, CustomBlock.FULL_MUSHROOM_STEM);
-            case 13 -> giveCustomBlock(player, CustomBlock.MUSHROOM_STEM);
-            case 14 -> giveCustomBlock(player, CustomBlock.MUSHROOM_BLOCK);
-
-            case 19 -> giveCustomBlock(player, CustomBlock.SMOOTH_STONE);
-            case 20 -> giveCustomBlock(player, CustomBlock.DOUBLE_STONE_SLAB);
-            case 21 -> giveCustomBlock(player, CustomBlock.SMOOTH_SANDSTONE);
-            case 22 -> giveCustomBlock(player, CustomBlock.SMOOTH_RED_SANDSTONE);
-
-            case 28 -> giveCustomBlock(player, CustomBlock.POWERED_REDSTONE_LAMP);
-            case 29 -> giveCustomBlock(player, CustomBlock.BURNING_FURNACE);
-            case 30 -> giveCustomBlock(player, CustomBlock.PISTON_HEAD);
-            case 31 -> giveCustomBlock(player, CustomBlock.COMMAND_BLOCK);
-            case 32 -> giveCustomBlock(player, CustomBlock.BARRIER, XMaterial.BARRIER);
-            case 33 -> giveCustomBlock(player, CustomBlock.INVISIBLE_ITEM_FRAME, XMaterial.ITEM_FRAME);
-
-            case 37 -> giveCustomBlock(player, CustomBlock.MOB_SPAWNER);
-            case 38 -> giveCustomBlock(player, CustomBlock.NETHER_PORTAL);
-            case 39 -> giveCustomBlock(player, CustomBlock.END_PORTAL);
-            case 40 -> giveCustomBlock(player, CustomBlock.DRAGON_EGG);
-            case 41 -> giveCustomBlock(player, CustomBlock.DEBUG_STICK, XMaterial.DEBUG_STICK);
+        BlockEntry entry = BLOCK_BY_SLOT.get(event.getSlot());
+        if (entry != null) {
+            giveCustomBlock(player, entry.block(), entry.giveMaterial());
         }
-    }
-
-    private void giveCustomBlock(Player player, CustomBlock customBlock) {
-        giveCustomBlock(player, customBlock, XMaterial.PLAYER_HEAD);
     }
 
     private void giveCustomBlock(Player player, CustomBlock customBlock, XMaterial material) {

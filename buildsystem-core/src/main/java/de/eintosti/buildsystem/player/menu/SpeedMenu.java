@@ -20,23 +20,19 @@ package de.eintosti.buildsystem.player.menu;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import java.util.Map;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class SpeedMenu extends Menu {
-
-    private static final int SLOT_SPEED_1 = 11;
-    private static final int SLOT_SPEED_2 = 12;
-    private static final int SLOT_SPEED_3 = 13;
-    private static final int SLOT_SPEED_4 = 14;
-    private static final int SLOT_SPEED_5 = 15;
 
     private static final String SKULL_SPEED_1 = "71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530";
     private static final String SKULL_SPEED_2 = "4cd9eeee883468881d83848a46bf3012485c23f75753b8fbe8487341419847";
@@ -44,11 +40,30 @@ public class SpeedMenu extends Menu {
     private static final String SKULL_SPEED_4 = "d2e78fb22424232dc27b81fbcb47fd24c1acf76098753f2d9c28598287db5";
     private static final String SKULL_SPEED_5 = "6d57e3bc88a65730e31a14e3f41e038a5ecf0891a6c243643b8e5476ae2";
 
+    record SpeedOption(String skullTexture, String nameKey, float speed, int displayNumber) {}
+
+    /**
+     * The single source of truth for the speed selection grid: each slot maps to the speed it sets. {@code speed} is the
+     * raw flight/walk speed; {@code displayNumber} is the 1&ndash;5 value shown in the {@code %speed%} placeholder.
+     */
+    private static final Map<Integer, SpeedOption> SPEED_BY_SLOT = Map.ofEntries(
+            Map.entry(11, new SpeedOption(SKULL_SPEED_1, "speed_1", 0.2f, 1)),
+            Map.entry(12, new SpeedOption(SKULL_SPEED_2, "speed_2", 0.4f, 2)),
+            Map.entry(13, new SpeedOption(SKULL_SPEED_3, "speed_3", 0.6f, 3)),
+            Map.entry(14, new SpeedOption(SKULL_SPEED_4, "speed_4", 0.8f, 4)),
+            Map.entry(15, new SpeedOption(SKULL_SPEED_5, "speed_5", 1.0f, 5)));
+
     private final SettingsService settingsService;
 
     public SpeedMenu(BuildSystemPlugin plugin, Player player) {
         super(plugin.getMessages(), 27, plugin.getMessages().getString("speed_title", player));
         this.settingsService = plugin.getSettingsService();
+    }
+
+    // protected: only for unit tests that cannot run a Bukkit server
+    SpeedMenu(SettingsService settingsService, Messages messages, Inventory inventory) {
+        super(messages, inventory);
+        this.settingsService = settingsService;
     }
 
     @Override
@@ -58,11 +73,14 @@ public class SpeedMenu extends Menu {
                     .setItem(i, ItemBuilder.glassPane(player, settingsService).build());
         }
 
-        addSpeedItem(player, SLOT_SPEED_1, SKULL_SPEED_1, "speed_1");
-        addSpeedItem(player, SLOT_SPEED_2, SKULL_SPEED_2, "speed_2");
-        addSpeedItem(player, SLOT_SPEED_3, SKULL_SPEED_3, "speed_3");
-        addSpeedItem(player, SLOT_SPEED_4, SKULL_SPEED_4, "speed_4");
-        addSpeedItem(player, SLOT_SPEED_5, SKULL_SPEED_5, "speed_5");
+        SPEED_BY_SLOT.forEach((slot, option) -> addSpeedItem(player, slot, option.skullTexture(), option.nameKey()));
+    }
+
+    /**
+     * The slot &rarr; speed mapping. Exposed for the golden test that pins the selection grid.
+     */
+    Map<Integer, SpeedOption> speedBySlot() {
+        return SPEED_BY_SLOT;
     }
 
     private void addSpeedItem(Player player, int slot, String skullTexture, String nameKey) {
@@ -88,16 +106,11 @@ public class SpeedMenu extends Menu {
             return;
         }
 
-        switch (event.getSlot()) {
-            case SLOT_SPEED_1 -> setSpeed(player, 0.2f, 1);
-            case SLOT_SPEED_2 -> setSpeed(player, 0.4f, 2);
-            case SLOT_SPEED_3 -> setSpeed(player, 0.6f, 3);
-            case SLOT_SPEED_4 -> setSpeed(player, 0.8f, 4);
-            case SLOT_SPEED_5 -> setSpeed(player, 1.0f, 5);
-            default -> {
-                return;
-            }
+        SpeedOption option = SPEED_BY_SLOT.get(event.getSlot());
+        if (option == null) {
+            return;
         }
+        setSpeed(player, option.speed(), option.displayNumber());
 
         XSound.ENTITY_CHICKEN_EGG.play(player);
         player.closeInventory();

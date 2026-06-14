@@ -30,21 +30,26 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class StatusMenu extends Menu {
 
-    private static final int SLOT_NOT_STARTED = 10;
-    private static final int SLOT_IN_PROGRESS = 11;
-    private static final int SLOT_ALMOST_FINISHED = 12;
-    private static final int SLOT_FINISHED = 13;
-    private static final int SLOT_ARCHIVE = 14;
-    private static final int SLOT_HIDDEN = 16;
+    /**
+     * The single source of truth for the status selection grid: each interactive slot maps to the status it selects.
+     * Slot 15 is intentionally absent (a gap in the layout). Drives both {@link #populate} and {@link #handleClick}.
+     */
+    private static final Map<Integer, BuildWorldStatus> STATUS_BY_SLOT = Map.ofEntries(
+            Map.entry(10, BuildWorldStatus.NOT_STARTED),
+            Map.entry(11, BuildWorldStatus.IN_PROGRESS),
+            Map.entry(12, BuildWorldStatus.ALMOST_FINISHED),
+            Map.entry(13, BuildWorldStatus.FINISHED),
+            Map.entry(14, BuildWorldStatus.ARCHIVE),
+            Map.entry(16, BuildWorldStatus.HIDDEN));
 
     private final BuildSystemPlugin plugin;
     private final BuildWorld buildWorld;
@@ -55,6 +60,13 @@ public class StatusMenu extends Menu {
                 27,
                 plugin.getMessages()
                         .getString("status_title", player, Map.entry("%world%", formatWorldName(buildWorld))));
+        this.plugin = plugin;
+        this.buildWorld = buildWorld;
+    }
+
+    // protected: only for unit tests that cannot run a Bukkit server
+    StatusMenu(BuildSystemPlugin plugin, BuildWorld buildWorld, Messages messages, Inventory inventory) {
+        super(messages, inventory);
         this.plugin = plugin;
         this.buildWorld = buildWorld;
     }
@@ -72,12 +84,14 @@ public class StatusMenu extends Menu {
         plugin.getMenuItems().fillRange(player, getInventory(), 0, 10);
         plugin.getMenuItems().fillRange(player, getInventory(), 17, 27);
 
-        addStatusItem(player, SLOT_NOT_STARTED, BuildWorldStatus.NOT_STARTED);
-        addStatusItem(player, SLOT_IN_PROGRESS, BuildWorldStatus.IN_PROGRESS);
-        addStatusItem(player, SLOT_ALMOST_FINISHED, BuildWorldStatus.ALMOST_FINISHED);
-        addStatusItem(player, SLOT_FINISHED, BuildWorldStatus.FINISHED);
-        addStatusItem(player, SLOT_ARCHIVE, BuildWorldStatus.ARCHIVE);
-        addStatusItem(player, SLOT_HIDDEN, BuildWorldStatus.HIDDEN);
+        STATUS_BY_SLOT.forEach((slot, status) -> addStatusItem(player, slot, status));
+    }
+
+    /**
+     * The slot &rarr; status mapping. Exposed for the golden test that pins the selection grid.
+     */
+    Map<Integer, BuildWorldStatus> statusBySlot() {
+        return STATUS_BY_SLOT;
     }
 
     /**
@@ -119,7 +133,7 @@ public class StatusMenu extends Menu {
         event.setCancelled(true);
         Player player = (Player) event.getWhoClicked();
 
-        BuildWorldStatus status = getStatusFromSlot(event.getSlot());
+        BuildWorldStatus status = STATUS_BY_SLOT.get(event.getSlot());
         if (status == null) {
             XSound.BLOCK_CHEST_OPEN.play(player);
             new EditMenu(plugin, buildWorld, player).open(player);
@@ -141,17 +155,5 @@ public class StatusMenu extends Menu {
                 "worlds_setstatus_set",
                 Map.entry("%world%", buildWorld.getName()),
                 Map.entry("%status%", messages.getString(Messages.getMessageKey(status), player)));
-    }
-
-    private @Nullable BuildWorldStatus getStatusFromSlot(int slot) {
-        return switch (slot) {
-            case SLOT_NOT_STARTED -> BuildWorldStatus.NOT_STARTED;
-            case SLOT_IN_PROGRESS -> BuildWorldStatus.IN_PROGRESS;
-            case SLOT_ALMOST_FINISHED -> BuildWorldStatus.ALMOST_FINISHED;
-            case SLOT_FINISHED -> BuildWorldStatus.FINISHED;
-            case SLOT_ARCHIVE -> BuildWorldStatus.ARCHIVE;
-            case SLOT_HIDDEN -> BuildWorldStatus.HIDDEN;
-            default -> null;
-        };
     }
 }
