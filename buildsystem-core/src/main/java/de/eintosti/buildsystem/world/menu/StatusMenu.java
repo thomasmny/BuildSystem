@@ -30,7 +30,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
@@ -58,13 +57,6 @@ public class StatusMenu extends Menu {
                 27,
                 plugin.getMessages()
                         .getString("status_title", player, Map.entry("%world%", formatWorldName(buildWorld))));
-        this.plugin = plugin;
-        this.buildWorld = buildWorld;
-    }
-
-    // protected: only for unit tests that cannot run a Bukkit server
-    StatusMenu(BuildSystemPlugin plugin, BuildWorld buildWorld, Messages messages, Inventory inventory) {
-        super(messages, inventory);
         this.plugin = plugin;
         this.buildWorld = buildWorld;
     }

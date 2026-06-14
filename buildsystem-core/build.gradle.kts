@@ -26,6 +26,12 @@ repositories {
         url = uri("https://repo.extendedclip.com/content/repositories/placeholderapi/")
     }
     maven {
+        // Test-only: MockBukkit is built against the Paper API. The plugin itself compiles against spigot-api;
+        // paper-api is used solely on the test classpath (see testImplementation below).
+        name = "PaperMC"
+        url = uri("https://repo.papermc.io/repository/maven-public/")
+    }
+    maven {
         name = "Modrinth"
         url = uri("https://api.modrinth.com/maven")
     }
@@ -62,7 +68,11 @@ dependencies {
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.mockito)
-    testImplementation(libs.spigot)
+    testImplementation(libs.mockbukkit)
+    // Test-only Bukkit API: MockBukkit requires the Paper API. The plugin itself targets spigot-api (compileOnly
+    // above); paper-api is a strict superset and is confined to the test classpath, so the shipped plugin stays
+    // spigot-only. Do NOT add paper-api to a non-test configuration.
+    testImplementation(libs.paperapi)
     testImplementation(libs.placeholderapi)
     testRuntimeOnly(libs.junit.platform.launcher)
 }

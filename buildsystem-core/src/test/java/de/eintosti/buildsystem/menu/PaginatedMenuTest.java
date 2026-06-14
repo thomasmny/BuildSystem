@@ -22,28 +22,38 @@ import static org.mockito.Mockito.mock;
 
 import de.eintosti.buildsystem.i18n.Messages;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockbukkit.mockbukkit.MockBukkit;
 
 @NullMarked
 class PaginatedMenuTest {
 
     private static final int ITEMS_PER_PAGE = 9;
 
-    private static TestMenu menu(int totalItems) {
-        Messages messages = mock(Messages.class);
-        Inventory inventory = mock(Inventory.class);
-        return new TestMenu(messages, inventory, totalItems);
+    @BeforeEach
+    void setUp() {
+        MockBukkit.mock();
     }
 
-    // Concrete subclass — sound is a no-op so XSound does not reach the Bukkit server
+    @AfterEach
+    void tearDown() {
+        MockBukkit.unmock();
+    }
+
+    private static TestMenu menu(int totalItems) {
+        return new TestMenu(mock(Messages.class), totalItems);
+    }
+
+    // Concrete subclass — sound is a no-op so XSound does not reach the server
     private static class TestMenu extends PaginatedMenu {
 
         private final int total;
 
-        TestMenu(Messages messages, Inventory inventory, int total) {
-            super(messages, inventory);
+        TestMenu(Messages messages, int total) {
+            super(messages, 9, "Test");
             this.total = total;
         }
 

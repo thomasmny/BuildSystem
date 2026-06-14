@@ -224,15 +224,6 @@ public class EditMenu extends Menu {
         this.buttons = buildButtons();
     }
 
-    // package-private: only for unit tests that cannot run a Bukkit server
-    EditMenu(BuildSystemPlugin plugin, BuildWorld buildWorld, Messages messages, Inventory inventory) {
-        super(messages, inventory);
-        this.plugin = plugin;
-        this.playerManager = plugin.getPlayerService();
-        this.buildWorld = buildWorld;
-        this.buttons = buildButtons();
-    }
-
     private Map<Integer, EditButton> buildButtons() {
         Map<Integer, EditButton> map = new LinkedHashMap<>();
 

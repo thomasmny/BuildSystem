@@ -24,7 +24,6 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.menu.MenuButton;
@@ -92,14 +91,6 @@ public class SettingsMenu extends Menu {
         super(plugin.getMessages(), 45, plugin.getMessages().getString("settings_title", player));
         this.plugin = plugin;
         this.settingsManager = plugin.getSettingsService();
-        this.buttons = buildButtons();
-    }
-
-    // protected: only for unit tests that cannot run a Bukkit server
-    SettingsMenu(BuildSystemPlugin plugin, SettingsService settingsManager, Messages messages, Inventory inventory) {
-        super(messages, inventory);
-        this.plugin = plugin;
-        this.settingsManager = settingsManager;
         this.buttons = buildButtons();
     }
 

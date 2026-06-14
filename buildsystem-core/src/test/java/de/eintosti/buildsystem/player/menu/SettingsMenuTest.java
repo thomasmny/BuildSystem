@@ -19,35 +19,51 @@ package de.eintosti.buildsystem.player.menu;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.menu.SettingsMenu.ClickOutcome;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import java.util.Map;
-import org.bukkit.inventory.Inventory;
+import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockbukkit.mockbukkit.MockBukkit;
+import org.mockbukkit.mockbukkit.ServerMock;
 
 /**
  * Golden test pinning the {@link SettingsMenu} slot &rarr; permission-node mapping and the design/scoreboard
- * classifications. Built through the package-private, Bukkit-free constructor so no server is required.
- *
- * <p>Out of scope: executing a click that opens {@code DesignMenu} or re-opens {@code SettingsMenu} (constructs a
- * {@code Menu} &rarr; {@code Bukkit.createInventory}); that needs {@code mockStatic(Bukkit.class)}, which this codebase
- * avoids. The structural mapping below is the regression net; the two permission-deny / reject landmines are guarded by
- * code review.
+ * classifications. Built through the real production constructor under a {@link MockBukkit} server.
  */
 @NullMarked
 class SettingsMenuTest {
 
-    private static SettingsMenu menu() {
-        BuildSystemPlugin plugin = mock(BuildSystemPlugin.class);
-        SettingsService settingsManager = mock(SettingsService.class);
+    private ServerMock server;
+
+    @BeforeEach
+    void setUp() {
+        server = MockBukkit.mock();
+    }
+
+    @AfterEach
+    void tearDown() {
+        MockBukkit.unmock();
+    }
+
+    private SettingsMenu menu() {
         Messages messages = mock(Messages.class);
-        Inventory inventory = mock(Inventory.class);
-        return new SettingsMenu(plugin, settingsManager, messages, inventory);
+        when(messages.getString(anyString(), any())).thenReturn("Title");
+        BuildSystemPlugin plugin = mock(BuildSystemPlugin.class);
+        when(plugin.getMessages()).thenReturn(messages);
+        when(plugin.getSettingsService()).thenReturn(mock(SettingsService.class));
+        Player player = server.addPlayer();
+        return new SettingsMenu(plugin, player);
     }
 
     @Test

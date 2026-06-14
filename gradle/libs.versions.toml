@@ -1,10 +1,14 @@
 [versions]
 # Platform expectations
 spigot = "26.1.2-R0.1-SNAPSHOT"
+paperlib = "1.0.8"
+
 # Test
 junit = "6.1.0"
 mockito = "5.23.0"
-paperlib = "1.0.8"
+mockbukkit = "4.113.2"
+paperapi = "26.1.2.build.69-stable"
+
 
 # Plugins
 luckperms = "5.5"
@@ -30,6 +34,8 @@ junit-bom = { group = "org.junit", name = "junit-bom", version.ref = "junit" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 mockito = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
+mockbukkit = { group = "org.mockbukkit.mockbukkit", name = "mockbukkit-v26.1.2", version.ref = "mockbukkit" }
+paperapi = { group = "io.papermc.paper", name = "paper-api", version.ref = "paperapi" }
 
 # Platform expectations
 spigot = { group = "org.spigotmc", name = "spigot-api", version.ref = "spigot" }

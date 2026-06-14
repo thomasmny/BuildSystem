@@ -20,14 +20,12 @@ package de.eintosti.buildsystem.player.menu;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import java.util.Map;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
@@ -58,12 +56,6 @@ public class SpeedMenu extends Menu {
     public SpeedMenu(BuildSystemPlugin plugin, Player player) {
         super(plugin.getMessages(), 27, plugin.getMessages().getString("speed_title", player));
         this.settingsService = plugin.getSettingsService();
-    }
-
-    // protected: only for unit tests that cannot run a Bukkit server
-    SpeedMenu(SettingsService settingsService, Messages messages, Inventory inventory) {
-        super(messages, inventory);
-        this.settingsService = settingsService;
     }
 
     @Override

@@ -20,13 +20,11 @@ package de.eintosti.buildsystem.player.customblock;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.Menu;
 import java.util.Map;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
@@ -79,12 +77,6 @@ public class CustomBlockMenu extends Menu {
 
     public CustomBlockMenu(BuildSystemPlugin plugin, Player player) {
         super(plugin.getMessages(), 45, plugin.getMessages().getString("blocks_title", player));
-        this.plugin = plugin;
-    }
-
-    // protected: only for unit tests that cannot run a Bukkit server
-    CustomBlockMenu(BuildSystemPlugin plugin, Messages messages, Inventory inventory) {
-        super(messages, inventory);
         this.plugin = plugin;
     }
 

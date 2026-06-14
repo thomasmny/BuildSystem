@@ -19,6 +19,8 @@ package de.eintosti.buildsystem.world.menu;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -28,28 +30,43 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.world.menu.EditMenu.ClickOutcome;
 import java.util.Map;
-import org.bukkit.inventory.Inventory;
+import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockbukkit.mockbukkit.MockBukkit;
+import org.mockbukkit.mockbukkit.ServerMock;
 
 /**
- * Golden test pinning the {@link EditMenu} slot &rarr; permission and slot &rarr; {@link ClickOutcome} contract. It is
- * built through the package-private, Bukkit-free constructor so no server is required.
- *
- * <p>Out of scope: executing clicks that open sub-menus or send chat input — they construct other {@code Menu}s / call
- * into Bukkit and would need {@code mockStatic(Bukkit.class)}, which this codebase avoids. The structural mapping below
- * is the regression net.
+ * Golden test pinning the {@link EditMenu} slot &rarr; permission and slot &rarr; {@link ClickOutcome} contract. The
+ * menu is built through its real production constructor under a {@link MockBukkit} server, so no test-only seam is
+ * required.
  */
 @NullMarked
 class EditMenuTest {
 
-    private static EditMenu menu() {
+    private ServerMock server;
+
+    @BeforeEach
+    void setUp() {
+        server = MockBukkit.mock();
+    }
+
+    @AfterEach
+    void tearDown() {
+        MockBukkit.unmock();
+    }
+
+    private EditMenu menu() {
+        Messages messages = mock(Messages.class);
+        when(messages.getString(anyString(), any())).thenReturn("Title");
         BuildSystemPlugin plugin = mock(BuildSystemPlugin.class);
+        when(plugin.getMessages()).thenReturn(messages);
         when(plugin.getPlayerService()).thenReturn(mock(PlayerServiceImpl.class));
         BuildWorld buildWorld = mock(BuildWorld.class);
-        Messages messages = mock(Messages.class);
-        Inventory inventory = mock(Inventory.class);
-        return new EditMenu(plugin, buildWorld, messages, inventory);
+        Player player = server.addPlayer();
+        return new EditMenu(plugin, buildWorld, player);
     }
 
     @Test
