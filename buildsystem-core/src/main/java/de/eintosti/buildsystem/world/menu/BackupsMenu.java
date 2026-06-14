@@ -21,7 +21,7 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
-import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
@@ -59,17 +59,14 @@ public class BackupsMenu extends Menu {
     protected void populate(Player player) {
         plugin.getMenuItems().fillRange(player, getInventory(), 0, 9);
 
-        getInventory()
-                .setItem(
-                        SLOT_INFO,
-                        InventoryUtils.createItem(
-                                XMaterial.OAK_HANGING_SIGN,
-                                messages.getString("backups_information_name", player),
-                                messages.getStringList(
-                                        "backups_information_lore",
-                                        player,
-                                        Map.entry("%interval%", getBackupIntervalSeconds() / 60),
-                                        Map.entry("%remaining%", getDurationUntilBackup()))));
+        ItemBuilder.of(XMaterial.OAK_HANGING_SIGN)
+                .name(messages.getString("backups_information_name", player))
+                .lore(messages.getStringList(
+                        "backups_information_lore",
+                        player,
+                        Map.entry("%interval%", getBackupIntervalSeconds() / 60),
+                        Map.entry("%remaining%", getDurationUntilBackup())))
+                .into(getInventory(), SLOT_INFO);
 
         plugin.getMenuItems().fillRange(player, getInventory(), 27, 36);
 
@@ -91,23 +88,19 @@ public class BackupsMenu extends Menu {
                     backups.addAll(loaded);
 
                     for (int i = 0; i < loaded.size(); i++) {
-                        getInventory()
-                                .setItem(
-                                        FIRST_BACKUP_SLOT + i,
-                                        InventoryUtils.createItem(
-                                                XMaterial.GRASS_BLOCK,
-                                                messages.getString(
-                                                        "backups_backup_name",
-                                                        player,
-                                                        Map.entry(
-                                                                "%timestamp%",
-                                                                StringUtils.formatTime(
-                                                                        loaded.get(i)
-                                                                                .creationTime(),
-                                                                        plugin.getConfigService()
-                                                                                .current()
-                                                                                .settings()
-                                                                                .dateFormat())))));
+                        ItemBuilder.of(XMaterial.GRASS_BLOCK)
+                                .name(messages.getString(
+                                        "backups_backup_name",
+                                        player,
+                                        Map.entry(
+                                                "%timestamp%",
+                                                StringUtils.formatTime(
+                                                        loaded.get(i).creationTime(),
+                                                        plugin.getConfigService()
+                                                                .current()
+                                                                .settings()
+                                                                .dateFormat()))))
+                                .into(getInventory(), FIRST_BACKUP_SLOT + i);
                     }
                 }))
                 .exceptionally(throwable -> {

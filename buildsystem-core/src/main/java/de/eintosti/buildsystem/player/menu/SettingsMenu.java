@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.player.menu;
 
-import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
@@ -26,7 +25,7 @@ import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.i18n.Messages;
-import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
@@ -41,9 +40,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemFlag;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -355,16 +351,12 @@ public class SettingsMenu extends Menu {
         DesignColor color = settingsManager.getSettings(player).getDesignColor();
         XMaterial material =
                 XMaterial.matchXMaterial(color.name() + "_STAINED_GLASS").orElse(XMaterial.BLACK_STAINED_GLASS);
-        ItemStack itemStack =
-                InventoryUtils.createItem(material, messages.getString("settings_change_design_item", player));
-        ItemMeta itemMeta = itemStack.getItemMeta();
 
-        itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        itemMeta.setLore(messages.getStringList("settings_change_design_lore", player));
-        itemStack.setItemMeta(itemMeta);
-        itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.get(), 1);
-
-        inventory.setItem(DESIGN_SLOT, itemStack);
+        ItemBuilder.of(material)
+                .name(messages.getString("settings_change_design_item", player))
+                .lore(messages.getStringList("settings_change_design_lore", player))
+                .glow(true)
+                .into(inventory, DESIGN_SLOT);
     }
 
     @Override

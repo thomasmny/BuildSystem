@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.util.FileUtils;
@@ -146,7 +147,7 @@ public class CreateMenu extends PaginatedMenu {
             displayName = "§c§m" + ChatColor.stripColor(displayName);
         }
 
-        getInventory().setItem(position, InventoryUtils.createItem(material, displayName));
+        ItemBuilder.of(material).name(displayName).into(getInventory(), position);
     }
 
     private static boolean canCreateType(Player player, BuildWorldType worldType) {
@@ -195,8 +196,9 @@ public class CreateMenu extends PaginatedMenu {
         plugin.getMenuItems().fillRange(player, getInventory(), FIRST_TEMPLATE_SLOT, SLOT_TEMPLATE_NEXT_PAGE);
 
         if (numTemplates == 0) {
-            ItemStack barrier =
-                    InventoryUtils.createItem(XMaterial.BARRIER, messages.getString("create_no_templates", player));
+            ItemStack barrier = ItemBuilder.of(XMaterial.BARRIER)
+                    .name(messages.getString("create_no_templates", player))
+                    .build();
             for (int i = FIRST_PREDEFINED_SLOT; i <= LAST_PREDEFINED_SLOT; i++) {
                 getInventory().setItem(i, barrier);
             }
@@ -213,13 +215,9 @@ public class CreateMenu extends PaginatedMenu {
             String rawTemplateName = templateFiles[startIndex + i].getName();
             int slot = FIRST_TEMPLATE_SLOT + i;
             this.templateSlots.put(slot, rawTemplateName);
-            getInventory()
-                    .setItem(
-                            slot,
-                            InventoryUtils.createItem(
-                                    XMaterial.FILLED_MAP,
-                                    messages.getString(
-                                            "create_template", player, Map.entry("%template%", rawTemplateName))));
+            ItemBuilder.of(XMaterial.FILLED_MAP)
+                    .name(messages.getString("create_template", player, Map.entry("%template%", rawTemplateName)))
+                    .into(getInventory(), slot);
         }
     }
 

@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
@@ -131,8 +132,9 @@ public class SetupMenu extends Menu {
      */
     private <T extends Enum<T>> void addIconItems(
             Inventory inv, Player player, Map<T, Integer> slots, Map<T, String> keys) {
-        slots.forEach((constant, slot) -> inv.setItem(
-                slot, InventoryUtils.createItem(getIcon(constant), messages.getString(keys.get(constant), player))));
+        slots.forEach((constant, slot) -> ItemBuilder.of(getIcon(constant))
+                .name(messages.getString(keys.get(constant), player))
+                .into(inv, slot));
     }
 
     private XMaterial getIcon(Enum<?> constant) {

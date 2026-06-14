@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import java.util.ArrayList;
@@ -105,8 +106,9 @@ public class BuilderMenu extends PaginatedMenu {
         Builder creator = builders.getCreator();
 
         if (creator == null) {
-            creatorInfoItem = InventoryUtils.createItem(
-                    XMaterial.BARRIER, messages.getString("worldeditor_builders_no_creator_item", player));
+            creatorInfoItem = ItemBuilder.of(XMaterial.BARRIER)
+                    .name(messages.getString("worldeditor_builders_no_creator_item", player))
+                    .build();
         } else {
             creatorInfoItem = InventoryUtils.createSkull(
                     messages.getString("worldeditor_builders_creator_item", player),

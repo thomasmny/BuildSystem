@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -37,6 +38,26 @@ import org.bukkit.persistence.PersistentDataType;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Fluent builder for the {@link ItemStack}s shown in menus.
+ *
+ * <p>Construction starts with a factory method that fixes the item's base type — {@link #of(XMaterial)} for a regular
+ * material, {@link #skull(Profileable)} for a textured player head, or {@link #glassPane(Player, SettingsService)} for a
+ * filler pane tinted to the player's chosen design colour. From there, chainable mutators ({@link #name(String)},
+ * {@link #lore(List)}, {@link #glow(boolean)}, {@link #pdc}) decorate the item, and a terminal call
+ * ({@link #build()} or {@link #into(Inventory, int)}) materialises it.
+ *
+ * <p><strong>Default flags.</strong> {@link #of(XMaterial)} hides all {@link ItemFlag}s, because menu items are
+ * decorative and their vanilla attribute/enchant tooltips would be noise. {@link #skull(Profileable)} does <em>not</em>
+ * hide flags, preserving the previous skull-rendering behaviour.
+ *
+ * <p><strong>Mutability and reuse.</strong> An instance wraps a single {@link ItemStack} and is <em>not</em> reusable:
+ * each factory call produces a fresh builder, and the terminal {@code build()}/{@code into(...)} returns/places that one
+ * stack. The builder is not thread-safe and is intended to be used on the main thread, chained in a single expression.
+ *
+ * <p>Mutators tolerate a missing {@link ItemMeta} (some exotic materials have none): when meta is unavailable the
+ * decorating call is silently skipped rather than throwing.
+ */
 @NullMarked
 public final class ItemBuilder {
 
@@ -50,20 +71,46 @@ public final class ItemBuilder {
         this.itemMeta = itemStack.getItemMeta();
     }
 
+    /**
+     * Starts a builder for a regular item, with all {@link ItemFlag}s hidden (see the class note on default flags). If
+     * the material cannot be resolved to a Bukkit item it falls back to {@link XMaterial#BEDROCK} and logs a warning,
+     * so callers always receive a usable builder.
+     *
+     * @param material The material of the item
+     * @return A new builder wrapping the resolved item
+     */
     public static ItemBuilder of(XMaterial material) {
         ItemStack base = material.parseItem();
         if (base == null) {
             base = XMaterial.BEDROCK.parseItem();
             LOGGER.warning("Unknown material (" + material + "). Defaulting to BEDROCK.");
         }
-        return new ItemBuilder(base);
+        assert base != null;
+        return new ItemBuilder(base).hideAttributes();
     }
 
+    /**
+     * Starts a builder for a textured player head. Unlike {@link #of(XMaterial)} this does not hide item flags, matching
+     * the historical skull-rendering behaviour. Profile resolution is lenient: an unresolvable profile yields a plain
+     * head rather than throwing.
+     *
+     * @param profileable The skull profile (player UUID, name, or texture) to apply
+     * @return A new builder wrapping the head
+     */
     public static ItemBuilder skull(Profileable profileable) {
         ItemStack skull = XSkull.createItem().profile(profileable).lenient().apply();
         return new ItemBuilder(skull);
     }
 
+    /**
+     * Starts a builder for a filler glass pane tinted to the player's configured {@link DesignColor}, falling back to
+     * black when the colour has no matching stained-glass-pane material. The pane is given a single-space name so it
+     * renders without a visible label.
+     *
+     * @param player The player whose design colour selects the pane tint
+     * @param settingsService The service used to read the player's settings
+     * @return A new builder wrapping the tinted pane
+     */
     public static ItemBuilder glassPane(Player player, SettingsService settingsService) {
         Settings settings = settingsService.getSettings(player);
         DesignColor color = settings.getDesignColor();
@@ -72,6 +119,12 @@ public final class ItemBuilder {
         return of(material).name(" ");
     }
 
+    /**
+     * Sets the item's display name.
+     *
+     * @param displayName The display name (legacy colour codes supported)
+     * @return This builder, for chaining
+     */
     public ItemBuilder name(String displayName) {
         ensureMeta();
         if (itemMeta != null) {
@@ -80,6 +133,12 @@ public final class ItemBuilder {
         return this;
     }
 
+    /**
+     * Sets the item's lore, replacing any existing lore. The list is defensively copied.
+     *
+     * @param lines The lore lines, one per row
+     * @return This builder, for chaining
+     */
     public ItemBuilder lore(List<String> lines) {
         ensureMeta();
         if (itemMeta != null) {
@@ -88,11 +147,17 @@ public final class ItemBuilder {
         return this;
     }
 
+    /**
+     * Varargs overload of {@link #lore(List)}.
+     *
+     * @param lines The lore lines, one per row
+     * @return This builder, for chaining
+     */
     public ItemBuilder lore(String... lines) {
         return lore(Arrays.asList(lines));
     }
 
-    public ItemBuilder hideAttributes() {
+    private ItemBuilder hideAttributes() {
         ensureMeta();
         if (itemMeta != null) {
             itemMeta.addItemFlags(ItemFlag.values());
@@ -100,6 +165,14 @@ public final class ItemBuilder {
         return this;
     }
 
+    /**
+     * Toggles the enchantment-glow effect. When {@code enabled}, adds a hidden level-1 {@code UNBREAKING} enchantment so
+     * the item shimmers without showing an enchantment tooltip; when {@code false} this is a no-op, which lets callers
+     * pass a condition (e.g. "is this the selected entry?") directly.
+     *
+     * @param enabled Whether the item should glow
+     * @return This builder, for chaining
+     */
     public ItemBuilder glow(boolean enabled) {
         if (!enabled) {
             return this;
@@ -115,6 +188,17 @@ public final class ItemBuilder {
         return this;
     }
 
+    /**
+     * Stores a value in the item's persistent data container, used to tag menu items (e.g. marking the navigator item)
+     * so they can be recognised later.
+     *
+     * @param key The namespaced key to store under
+     * @param type The persistent data type of the value
+     * @param value The value to store
+     * @param <T> The primitive storage type
+     * @param <Z> The complex (runtime) value type
+     * @return This builder, for chaining
+     */
     public <T, Z> ItemBuilder pdc(NamespacedKey key, PersistentDataType<T, Z> type, Z value) {
         ensureMeta();
         if (itemMeta != null) {
@@ -123,11 +207,28 @@ public final class ItemBuilder {
         return this;
     }
 
+    /**
+     * Finalises the item: applies the accumulated {@link ItemMeta} and returns the backing {@link ItemStack}. The
+     * builder should not be reused after this call.
+     *
+     * @return The built item
+     */
     public ItemStack build() {
         if (itemMeta != null) {
             itemStack.setItemMeta(itemMeta);
         }
         return itemStack;
+    }
+
+    /**
+     * Builds the item and places it directly into the given inventory slot. Terminal convenience for the common
+     * {@code inventory.setItem(slot, builder.build())} pattern.
+     *
+     * @param inventory The inventory to place the item into
+     * @param slot The slot to place the item at
+     */
+    public void into(Inventory inventory, int slot) {
+        inventory.setItem(slot, build());
     }
 
     private void ensureMeta() {

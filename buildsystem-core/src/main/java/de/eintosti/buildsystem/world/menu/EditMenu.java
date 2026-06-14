@@ -31,7 +31,7 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.command.subcommand.worlds.SetPermissionSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
 import de.eintosti.buildsystem.i18n.Messages;
-import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
@@ -358,7 +358,7 @@ public class EditMenu extends Menu {
         if (material == XMaterial.PLAYER_HEAD) {
             plugin.getMenuItems().addWorldItem(inventory, SLOT_WORLD_INFO, buildWorld, displayName, new ArrayList<>());
         } else {
-            inventory.setItem(SLOT_WORLD_INFO, InventoryUtils.createItem(material, displayName));
+            ItemBuilder.of(material).name(displayName).into(inventory, SLOT_WORLD_INFO);
         }
     }
 
@@ -380,21 +380,17 @@ public class EditMenu extends Menu {
             }
         }
 
-        inventory.setItem(
-                SLOT_TIME,
-                InventoryUtils.createItem(
-                        material,
-                        messages.getString("worldeditor_time_item", player),
-                        messages.getStringList("worldeditor_time_lore", player, Map.entry("%time%", value))));
+        ItemBuilder.of(material)
+                .name(messages.getString("worldeditor_time_item", player))
+                .lore(messages.getStringList("worldeditor_time_lore", player, Map.entry("%time%", value)))
+                .into(inventory, SLOT_TIME);
     }
 
     private void renderButcher(Player player, Inventory inventory) {
-        inventory.setItem(
-                SLOT_BUTCHER,
-                InventoryUtils.createItem(
-                        XMaterial.DIAMOND_SWORD,
-                        messages.getString("worldeditor_butcher_item", player),
-                        messages.getStringList("worldeditor_butcher_lore", player)));
+        ItemBuilder.of(XMaterial.DIAMOND_SWORD)
+                .name(messages.getString("worldeditor_butcher_item", player))
+                .lore(messages.getStringList("worldeditor_butcher_lore", player))
+                .into(inventory, SLOT_BUTCHER);
     }
 
     private void renderBuilders(Player player, Inventory inventory) {
@@ -409,12 +405,10 @@ public class EditMenu extends Menu {
                             "worldeditor_builders_item",
                             "worldeditor_builders_lore");
         } else {
-            inventory.setItem(
-                    SLOT_BUILDERS,
-                    InventoryUtils.createItem(
-                            XMaterial.BARRIER,
-                            messages.getString("worldeditor_builders_not_creator_item", player),
-                            messages.getStringList("worldeditor_builders_not_creator_lore", player)));
+            ItemBuilder.of(XMaterial.BARRIER)
+                    .name(messages.getString("worldeditor_builders_not_creator_item", player))
+                    .lore(messages.getStringList("worldeditor_builders_not_creator_lore", player))
+                    .into(inventory, SLOT_BUILDERS);
         }
     }
 
@@ -423,9 +417,9 @@ public class EditMenu extends Menu {
         boolean isPrivate = buildWorld.getData().isPrivateWorld();
 
         if (!playerManager.canCreateWorld(player, Visibility.matchVisibility(isPrivate))) {
-            inventory.setItem(
-                    SLOT_VISIBILITY,
-                    InventoryUtils.createItem(XMaterial.BARRIER, "§c§m" + ChatColor.stripColor(displayName)));
+            ItemBuilder.of(XMaterial.BARRIER)
+                    .name("§c§m" + ChatColor.stripColor(displayName))
+                    .into(inventory, SLOT_VISIBILITY);
             return;
         }
 
@@ -433,16 +427,14 @@ public class EditMenu extends Menu {
         List<String> lore = messages.getStringList(
                 isPrivate ? "worldeditor_visibility_lore_private" : "worldeditor_visibility_lore_public", player);
 
-        inventory.setItem(SLOT_VISIBILITY, InventoryUtils.createItem(material, displayName, lore));
+        ItemBuilder.of(material).name(displayName).lore(lore).into(inventory, SLOT_VISIBILITY);
     }
 
     private void renderGameRules(Player player, Inventory inventory) {
-        inventory.setItem(
-                SLOT_GAMERULES,
-                InventoryUtils.createItem(
-                        XMaterial.FILLED_MAP,
-                        messages.getString("worldeditor_gamerules_item", player),
-                        messages.getStringList("worldeditor_gamerules_lore", player)));
+        ItemBuilder.of(XMaterial.FILLED_MAP)
+                .name(messages.getString("worldeditor_gamerules_item", player))
+                .lore(messages.getStringList("worldeditor_gamerules_lore", player))
+                .into(inventory, SLOT_GAMERULES);
     }
 
     private void renderDifficulty(Player player, Inventory inventory) {
@@ -454,52 +446,42 @@ public class EditMenu extends Menu {
                     default -> XMaterial.LEATHER_HELMET;
                 };
 
-        inventory.setItem(
-                SLOT_DIFFICULTY,
-                InventoryUtils.createItem(
-                        material,
-                        messages.getString("worldeditor_difficulty_item", player),
-                        messages.getStringList(
-                                "worldeditor_difficulty_lore",
-                                player,
-                                Map.entry("%difficulty%", getDifficultyName(player)))));
+        ItemBuilder.of(material)
+                .name(messages.getString("worldeditor_difficulty_item", player))
+                .lore(messages.getStringList(
+                        "worldeditor_difficulty_lore", player, Map.entry("%difficulty%", getDifficultyName(player))))
+                .into(inventory, SLOT_DIFFICULTY);
     }
 
     private void renderStatus(Player player, Inventory inventory) {
         BuildWorldStatus status = buildWorld.getData().getStatus();
-        inventory.setItem(
-                SLOT_STATUS,
-                InventoryUtils.createItem(
-                        plugin.getCustomizableIcons().getIcon(status),
-                        messages.getString("worldeditor_status_item", player),
-                        messages.getStringList(
-                                "worldeditor_status_lore",
-                                player,
-                                Map.entry("%status%", messages.getString(Messages.getMessageKey(status), player)))));
+        ItemBuilder.of(plugin.getCustomizableIcons().getIcon(status))
+                .name(messages.getString("worldeditor_status_item", player))
+                .lore(messages.getStringList(
+                        "worldeditor_status_lore",
+                        player,
+                        Map.entry("%status%", messages.getString(Messages.getMessageKey(status), player))))
+                .into(inventory, SLOT_STATUS);
     }
 
     private void renderProject(Player player, Inventory inventory) {
-        inventory.setItem(
-                SLOT_PROJECT,
-                InventoryUtils.createItem(
-                        XMaterial.ANVIL,
-                        messages.getString("worldeditor_project_item", player),
-                        messages.getStringList(
-                                "worldeditor_project_lore",
-                                player,
-                                Map.entry("%project%", buildWorld.getData().getProject()))));
+        ItemBuilder.of(XMaterial.ANVIL)
+                .name(messages.getString("worldeditor_project_item", player))
+                .lore(messages.getStringList(
+                        "worldeditor_project_lore",
+                        player,
+                        Map.entry("%project%", buildWorld.getData().getProject())))
+                .into(inventory, SLOT_PROJECT);
     }
 
     private void renderPermission(Player player, Inventory inventory) {
-        inventory.setItem(
-                SLOT_PERMISSION,
-                InventoryUtils.createItem(
-                        XMaterial.PAPER,
-                        messages.getString("worldeditor_permission_item", player),
-                        messages.getStringList(
-                                "worldeditor_permission_lore",
-                                player,
-                                Map.entry("%permission%", buildWorld.getData().getPermission()))));
+        ItemBuilder.of(XMaterial.PAPER)
+                .name(messages.getString("worldeditor_permission_item", player))
+                .lore(messages.getStringList(
+                        "worldeditor_permission_lore",
+                        player,
+                        Map.entry("%permission%", buildWorld.getData().getPermission())))
+                .into(inventory, SLOT_PERMISSION);
     }
 
     private String getDifficultyName(Player player) {

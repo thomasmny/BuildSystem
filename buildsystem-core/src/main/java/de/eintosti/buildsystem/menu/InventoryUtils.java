@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.menu;
 
-import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import java.util.Arrays;
 import java.util.List;
@@ -34,34 +33,6 @@ public final class InventoryUtils {
 
     private InventoryUtils() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
-    }
-
-    /**
-     * Creates an ItemStack with the given material, display name and lore.
-     *
-     * @param material The material of the item
-     * @param displayName The display name of the item
-     * @param lore The lore of the item
-     * @return The created ItemStack
-     */
-    public static ItemStack createItem(XMaterial material, String displayName, List<String> lore) {
-        return ItemBuilder.of(material)
-                .name(displayName)
-                .lore(lore)
-                .hideAttributes()
-                .build();
-    }
-
-    /**
-     * Creates an ItemStack with the given material, display name and lore.
-     *
-     * @param material The material of the item
-     * @param displayName The display name of the item
-     * @param lore The lore of the item as varargs
-     * @return The created ItemStack
-     */
-    public static ItemStack createItem(XMaterial material, String displayName, String... lore) {
-        return createItem(material, displayName, Arrays.asList(lore));
     }
 
     /**

@@ -83,7 +83,7 @@ public final class MenuItems {
      * @param position The position to add the glass pane at
      */
     public void addGlassPane(Player player, Inventory inventory, int position) {
-        inventory.setItem(position, InventoryUtils.createItem(getColoredGlassPane(player), " "));
+        ItemBuilder.of(getColoredGlassPane(player)).name(" ").into(inventory, position);
     }
 
     /**
@@ -112,11 +112,14 @@ public final class MenuItems {
             Inventory inventory, int slot, BuildWorld buildWorld, String displayName, List<String> lore) {
         XMaterial material = buildWorld.getData().getMaterial();
         if (material != XMaterial.PLAYER_HEAD) {
-            inventory.setItem(slot, InventoryUtils.createItem(material, displayName, lore));
+            ItemBuilder.of(material).name(displayName).lore(lore).into(inventory, slot);
             return;
         }
 
-        ItemStack defaultHead = InventoryUtils.createItem(XMaterial.PLAYER_HEAD, displayName, lore);
+        ItemStack defaultHead = ItemBuilder.of(XMaterial.PLAYER_HEAD)
+                .name(displayName)
+                .lore(lore)
+                .build();
         storeWorldInformation(defaultHead, buildWorld);
         inventory.setItem(slot, defaultHead);
 
@@ -183,8 +186,10 @@ public final class MenuItems {
 
     @Contract("_ -> new")
     public ItemStack createNavigatorItem(Player player) {
-        ItemStack itemStack = InventoryUtils.createItem(
-                configService.current().settings().navigator().item(), messages.getString("navigator_item", player));
+        ItemStack itemStack = ItemBuilder.of(
+                        configService.current().settings().navigator().item())
+                .name(messages.getString("navigator_item", player))
+                .build();
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta == null) {
             return itemStack;

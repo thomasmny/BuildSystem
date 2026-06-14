@@ -17,19 +17,18 @@
  */
 package de.eintosti.buildsystem.player.customblock;
 
-import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.Menu;
 import java.util.Map;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -134,10 +133,10 @@ public class CustomBlockMenu extends Menu {
                     messages.getString(customBlock.getMessageKey(), player),
                     Profileable.detect(customBlock.getSkullUrl()));
         } else {
-            itemStack = InventoryUtils.createItem(material, messages.getString(customBlock.getMessageKey(), player));
-            ItemMeta itemMeta = itemStack.getItemMeta();
-            itemMeta.addEnchant(XEnchantment.UNBREAKING.get(), 1, true);
-            itemStack.setItemMeta(itemMeta);
+            itemStack = ItemBuilder.of(material)
+                    .name(messages.getString(customBlock.getMessageKey(), player))
+                    .glow(true)
+                    .build();
         }
         player.getInventory().addItem(customBlock.storeCustomBlock(itemStack));
     }

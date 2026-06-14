@@ -28,7 +28,7 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
@@ -120,8 +120,9 @@ public class NavigatorListener implements Listener {
 
                 summonNewNavigator(player);
                 String findItemName = plugin.getMessages().getString("navigator_item", player);
-                ItemStack replaceItem = InventoryUtils.createItem(
-                        XMaterial.BARRIER, plugin.getMessages().getString("barrier_item", player));
+                ItemStack replaceItem = ItemBuilder.of(XMaterial.BARRIER)
+                        .name(plugin.getMessages().getString("barrier_item", player))
+                        .build();
                 plugin.getMenuItems()
                         .replaceItem(
                                 player,

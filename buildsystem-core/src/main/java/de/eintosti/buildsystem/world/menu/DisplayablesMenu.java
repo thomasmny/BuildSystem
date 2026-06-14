@@ -32,6 +32,7 @@ import de.eintosti.buildsystem.api.world.display.Displayable.DisplayableType;
 import de.eintosti.buildsystem.api.world.display.WorldFilter.Mode;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
@@ -232,12 +233,10 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                     case OLDEST_FIRST -> "world_sort_date_oldest";
                 };
 
-        inventory.setItem(
-                SLOT_WORLD_SORT,
-                InventoryUtils.createItem(
-                        XMaterial.BOOK,
-                        plugin.getMessages().getString("world_sort_title", player),
-                        plugin.getMessages().getString(messageKey, player)));
+        ItemBuilder.of(XMaterial.BOOK)
+                .name(plugin.getMessages().getString("world_sort_title", player))
+                .lore(plugin.getMessages().getString(messageKey, player))
+                .into(inventory, SLOT_WORLD_SORT);
     }
 
     private void addWorldFilterItem(Inventory inventory) {
@@ -256,10 +255,10 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         lore.add(plugin.getMessages().getString(loreKey, player, Map.entry("%text%", worldFilter.getText())));
         lore.addAll(plugin.getMessages().getStringList("world_filter_lore", player));
 
-        inventory.setItem(
-                SLOT_WORLD_FILTER,
-                InventoryUtils.createItem(
-                        XMaterial.HOPPER, plugin.getMessages().getString("world_filter_title", player), lore));
+        ItemBuilder.of(XMaterial.HOPPER)
+                .name(plugin.getMessages().getString("world_filter_title", player))
+                .lore(lore)
+                .into(inventory, SLOT_WORLD_FILTER);
     }
 
     @Override

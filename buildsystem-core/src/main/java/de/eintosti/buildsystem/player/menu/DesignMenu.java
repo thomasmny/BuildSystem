@@ -17,20 +17,17 @@
  */
 package de.eintosti.buildsystem.player.menu;
 
-import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.Menu;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -84,20 +81,12 @@ public class DesignMenu extends Menu {
     private void setItem(Player player, int position, XMaterial material, String key, DesignColor color) {
         Settings settings = plugin.getSettingsService().getSettings(player);
 
+        boolean selected = settings.getDesignColor() == color;
         String displayName = messages.getString(key, player);
-        ItemStack itemStack = InventoryUtils.createItem(
-                material, settings.getDesignColor() == color ? "§a" + displayName : "§7" + displayName);
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta != null) {
-            itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        }
-
-        itemStack.setItemMeta(itemMeta);
-        if (settings.getDesignColor() == color) {
-            itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.get(), 1);
-        }
-
-        getInventory().setItem(position, itemStack);
+        ItemBuilder.of(material)
+                .name((selected ? "§a" : "§7") + displayName)
+                .glow(selected)
+                .into(getInventory(), position);
     }
 
     @Override
