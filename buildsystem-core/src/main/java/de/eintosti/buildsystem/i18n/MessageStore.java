@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.i18n;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -47,19 +48,17 @@ final class MessageStore {
     }
 
     void load() {
-        // 1. If user file doesn't exist, save the bundled default
         File file = new File(plugin.getDataFolder(), "messages.yml");
         if (!file.exists()) {
             plugin.saveResource("messages.yml", false);
         }
 
-        // 2. Load user file and bundled defaults
         YamlConfiguration userConfig = YamlConfiguration.loadConfiguration(file);
-        java.io.InputStream defaultStream = plugin.getResource("messages.yml");
+        InputStream defaultStream = plugin.getResource("messages.yml");
         if (defaultStream != null) {
             YamlConfiguration defaults =
                     YamlConfiguration.loadConfiguration(new InputStreamReader(defaultStream, StandardCharsets.UTF_8));
-            // 3. Copy missing keys from bundled defaults to user file
+
             boolean changed = false;
             for (String key : defaults.getKeys(false)) {
                 if (!userConfig.contains(key)) {
@@ -67,6 +66,7 @@ final class MessageStore {
                     changed = true;
                 }
             }
+
             if (changed) {
                 try {
                     userConfig.save(file);
@@ -76,7 +76,6 @@ final class MessageStore {
             }
         }
 
-        // 4. Build messages map
         Map<String, String> map = new HashMap<>();
         ConfigurationSection section = userConfig.getConfigurationSection("");
         if (section != null) {
@@ -86,6 +85,7 @@ final class MessageStore {
                             .sendMessage(ChatColor.RED + "[BuildSystem] Could not find message with key: " + key);
                     return;
                 }
+
                 if (userConfig.isList(key)) {
                     map.put(key, String.join("\n", userConfig.getStringList(key)));
                 } else {

@@ -29,6 +29,7 @@ import de.eintosti.buildsystem.listener.player.*;
 import de.eintosti.buildsystem.listener.settings.*;
 import de.eintosti.buildsystem.listener.world.*;
 import de.eintosti.buildsystem.menu.MenuListener;
+import de.eintosti.buildsystem.menu.PlayerChatInput;
 import org.bukkit.plugin.PluginManager;
 import org.jspecify.annotations.NullMarked;
 
@@ -57,6 +58,7 @@ public final class ListenerRegistrar {
         pluginManager.registerEvents(new InventoryCreativeListener(plugin), plugin);
         pluginManager.registerEvents(new IronDoorListener(plugin), plugin);
         pluginManager.registerEvents(new MenuListener(), plugin);
+        pluginManager.registerEvents(new PlayerChatInput.ChatInputListener(), plugin);
         pluginManager.registerEvents(new NavigatorListener(plugin), plugin);
         pluginManager.registerEvents(new PlayerChangedWorldListener(plugin), plugin);
         pluginManager.registerEvents(new PlayerCommandPreprocessListener(plugin), plugin);
