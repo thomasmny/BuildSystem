@@ -50,7 +50,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Builds and inspects stateful menu items. Holds the dependencies the item builders need (config, messages, settings)
- * so menus do not reach for the plugin singleton. Pure, stateless item construction lives in {@link InventoryUtils}.
+ * so menus do not reach for the plugin singleton. Pure, stateless item construction lives in {@link ItemBuilder}.
  */
 @NullMarked
 public final class MenuItems {

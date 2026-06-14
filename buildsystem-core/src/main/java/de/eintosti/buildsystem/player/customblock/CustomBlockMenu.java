@@ -21,7 +21,6 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.i18n.Messages;
-import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.Menu;
 import java.util.Map;
@@ -107,12 +106,9 @@ public class CustomBlockMenu extends Menu {
     }
 
     private void setCustomBlock(Player player, int position, CustomBlock customBlock) {
-        getInventory()
-                .setItem(
-                        position,
-                        InventoryUtils.createSkull(
-                                messages.getString(customBlock.getMessageKey(), player),
-                                Profileable.detect(customBlock.getSkullUrl())));
+        ItemBuilder.skull(Profileable.detect(customBlock.getSkullUrl()))
+                .name(messages.getString(customBlock.getMessageKey(), player))
+                .into(getInventory(), position);
     }
 
     @Override
@@ -129,9 +125,9 @@ public class CustomBlockMenu extends Menu {
     private void giveCustomBlock(Player player, CustomBlock customBlock, XMaterial material) {
         ItemStack itemStack;
         if (material == XMaterial.PLAYER_HEAD) {
-            itemStack = InventoryUtils.createSkull(
-                    messages.getString(customBlock.getMessageKey(), player),
-                    Profileable.detect(customBlock.getSkullUrl()));
+            itemStack = ItemBuilder.skull(Profileable.detect(customBlock.getSkullUrl()))
+                    .name(messages.getString(customBlock.getMessageKey(), player))
+                    .build();
         } else {
             itemStack = ItemBuilder.of(material)
                     .name(messages.getString(customBlock.getMessageKey(), player))

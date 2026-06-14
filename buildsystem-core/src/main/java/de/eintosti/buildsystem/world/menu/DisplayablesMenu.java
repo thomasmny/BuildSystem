@@ -31,7 +31,6 @@ import de.eintosti.buildsystem.api.world.display.*;
 import de.eintosti.buildsystem.api.world.display.Displayable.DisplayableType;
 import de.eintosti.buildsystem.api.world.display.WorldFilter.Mode;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
-import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
@@ -131,25 +130,21 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         addWorldSortItem(inv);
         addWorldFilterItem(inv);
         addExtraItems(inv, player);
-        inv.setItem(
-                SLOT_PREVIOUS_PAGE,
-                InventoryUtils.createSkull(
-                        plugin.getMessages().getString("gui_previous_page", player),
-                        Profileable.detect(PREVIOUS_PAGE_SKULL_PROFILE)));
-        inv.setItem(
-                SLOT_NEXT_PAGE,
-                InventoryUtils.createSkull(
-                        plugin.getMessages().getString("gui_next_page", player),
-                        Profileable.detect(NEXT_PAGE_SKULL_PROFILE)));
+        ItemBuilder.skull(Profileable.detect(PREVIOUS_PAGE_SKULL_PROFILE))
+                .name(plugin.getMessages().getString("gui_previous_page", player))
+                .into(inv, SLOT_PREVIOUS_PAGE);
+        ItemBuilder.skull(Profileable.detect(NEXT_PAGE_SKULL_PROFILE))
+                .name(plugin.getMessages().getString("gui_next_page", player))
+                .into(inv, SLOT_NEXT_PAGE);
 
         for (int i = FIRST_WORD_SLOT; i <= LAST_WORLD_SLOT; i++) {
             inv.setItem(i, null);
         }
 
         if (cachedDisplayables.isEmpty() && noWorldsMessage != null) {
-            inv.setItem(
-                    SLOT_NO_WORLDS,
-                    InventoryUtils.createSkull(noWorldsMessage, Profileable.detect(NO_WORLDS_SKULL_PROFILE)));
+            ItemBuilder.skull(Profileable.detect(NO_WORLDS_SKULL_PROFILE))
+                    .name(noWorldsMessage)
+                    .into(inv, SLOT_NO_WORLDS);
             return;
         }
 

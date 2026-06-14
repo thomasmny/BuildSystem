@@ -25,7 +25,6 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
@@ -92,19 +91,21 @@ public class CreateMenu extends PaginatedMenu {
 
         addPageItem(
                 Page.PREDEFINED,
-                InventoryUtils.createSkull(
-                        messages.getString("create_predefined_worlds", player),
-                        Profileable.detect("2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78")));
+                ItemBuilder.skull(
+                                Profileable.detect("2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78"))
+                        .name(messages.getString("create_predefined_worlds", player))
+                        .build());
         addPageItem(
                 Page.GENERATOR,
-                InventoryUtils.createSkull(
-                        messages.getString("create_generators", player),
-                        Profileable.detect("b2f79016cad84d1ae21609c4813782598e387961be13c15682752f126dce7a")));
+                ItemBuilder.skull(Profileable.detect("b2f79016cad84d1ae21609c4813782598e387961be13c15682752f126dce7a"))
+                        .name(messages.getString("create_generators", player))
+                        .build());
         addPageItem(
                 Page.TEMPLATES,
-                InventoryUtils.createSkull(
-                        messages.getString("create_templates", player),
-                        Profileable.detect("d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c")));
+                ItemBuilder.skull(
+                                Profileable.detect("d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c"))
+                        .name(messages.getString("create_templates", player))
+                        .build());
 
         switch (currentPage) {
             case PREDEFINED -> populatePredefined(player);
@@ -161,27 +162,18 @@ public class CreateMenu extends PaginatedMenu {
                 plugin.getMenuItems().addGlassPane(player, getInventory(), slot);
             }
         }
-        getInventory()
-                .setItem(
-                        SLOT_GENERATOR_CREATE,
-                        InventoryUtils.createSkull(
-                                messages.getString("create_generators_create_world", player),
-                                Profileable.detect(SkullTextures.ADD_ITEM)));
+        ItemBuilder.skull(Profileable.detect(SkullTextures.ADD_ITEM))
+                .name(messages.getString("create_generators_create_world", player))
+                .into(getInventory(), SLOT_GENERATOR_CREATE);
     }
 
     private void populateTemplates(Player player) {
-        getInventory()
-                .setItem(
-                        SLOT_TEMPLATE_PREVIOUS_PAGE,
-                        InventoryUtils.createSkull(
-                                messages.getString("gui_previous_page", player),
-                                Profileable.detect(SkullTextures.PREVIOUS_PAGE)));
-        getInventory()
-                .setItem(
-                        SLOT_TEMPLATE_NEXT_PAGE,
-                        InventoryUtils.createSkull(
-                                messages.getString("gui_next_page", player),
-                                Profileable.detect(SkullTextures.NEXT_PAGE)));
+        ItemBuilder.skull(Profileable.detect(SkullTextures.PREVIOUS_PAGE))
+                .name(messages.getString("gui_previous_page", player))
+                .into(getInventory(), SLOT_TEMPLATE_PREVIOUS_PAGE);
+        ItemBuilder.skull(Profileable.detect(SkullTextures.NEXT_PAGE))
+                .name(messages.getString("gui_next_page", player))
+                .into(getInventory(), SLOT_TEMPLATE_NEXT_PAGE);
 
         // Listed once per menu instance so page flips do not repeat directory I/O on the main thread
         if (this.templateFiles == null) {

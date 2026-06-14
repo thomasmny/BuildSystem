@@ -23,7 +23,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import java.util.Set;
@@ -61,18 +61,14 @@ public abstract class CreatableWorldsMenu extends DisplayablesMenu {
     protected void addExtraItems(Inventory inventory, Player player) {
         if (playerService.canCreateWorld(player, requiredVisibility)
                 && player.hasPermission(getWorldCreationPermission())) {
-            inventory.setItem(
-                    48,
-                    InventoryUtils.createSkull(
-                            plugin.getMessages().getString(getWorldCreationItemTitleKey(), player),
-                            Profileable.detect(CREATE_WORLD_PROFILE)));
+            ItemBuilder.skull(Profileable.detect(CREATE_WORLD_PROFILE))
+                    .name(plugin.getMessages().getString(getWorldCreationItemTitleKey(), player))
+                    .into(inventory, 48);
         }
         if (player.hasPermission("buildsystem.create.folder")) {
-            inventory.setItem(
-                    50,
-                    InventoryUtils.createSkull(
-                            plugin.getMessages().getString("world_navigator_create_folder", player),
-                            Profileable.detect(CREATE_FOLDER_PROFILE)));
+            ItemBuilder.skull(Profileable.detect(CREATE_FOLDER_PROFILE))
+                    .name(plugin.getMessages().getString("world_navigator_create_folder", player))
+                    .into(inventory, 50);
         }
     }
 

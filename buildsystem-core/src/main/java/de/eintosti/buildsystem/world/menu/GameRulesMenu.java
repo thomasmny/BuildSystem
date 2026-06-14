@@ -23,7 +23,7 @@ import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import java.util.Arrays;
@@ -108,11 +108,9 @@ public class GameRulesMenu extends PaginatedMenu {
      */
     private void addPageNavItem(Player player, int slot, boolean hasMorePages, String nameKey, String skullTexture) {
         if (totalPages(ITEMS_PER_PAGE) > 1 && hasMorePages) {
-            getInventory()
-                    .setItem(
-                            slot,
-                            InventoryUtils.createSkull(
-                                    messages.getString(nameKey, player), Profileable.detect(skullTexture)));
+            ItemBuilder.skull(Profileable.detect(skullTexture))
+                    .name(messages.getString(nameKey, player))
+                    .into(getInventory(), slot);
         } else {
             plugin.getMenuItems().addGlassPane(player, getInventory(), slot);
         }

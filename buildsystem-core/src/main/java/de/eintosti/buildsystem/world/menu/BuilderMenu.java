@@ -26,7 +26,6 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
-import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
@@ -81,15 +80,12 @@ public class BuilderMenu extends PaginatedMenu {
         addCreatorInfoItem(inv, buildWorld.getBuilders(), player);
         addBuilderAddItem(inv, player);
 
-        inv.setItem(
-                SLOT_PREVIOUS_PAGE,
-                InventoryUtils.createSkull(
-                        messages.getString("gui_previous_page", player),
-                        Profileable.detect(SkullTextures.PREVIOUS_PAGE)));
-        inv.setItem(
-                SLOT_NEXT_PAGE,
-                InventoryUtils.createSkull(
-                        messages.getString("gui_next_page", player), Profileable.detect(SkullTextures.NEXT_PAGE)));
+        ItemBuilder.skull(Profileable.detect(SkullTextures.PREVIOUS_PAGE))
+                .name(messages.getString("gui_previous_page", player))
+                .into(inv, SLOT_PREVIOUS_PAGE);
+        ItemBuilder.skull(Profileable.detect(SkullTextures.NEXT_PAGE))
+                .name(messages.getString("gui_next_page", player))
+                .into(inv, SLOT_NEXT_PAGE);
 
         // Clear builder slots from previous state
         plugin.getMenuItems().fillRange(player, inv, FIRST_BUILDER_SLOT, FIRST_BUILDER_SLOT + MAX_BUILDERS_PER_PAGE);
@@ -110,11 +106,11 @@ public class BuilderMenu extends PaginatedMenu {
                     .name(messages.getString("worldeditor_builders_no_creator_item", player))
                     .build();
         } else {
-            creatorInfoItem = InventoryUtils.createSkull(
-                    messages.getString("worldeditor_builders_creator_item", player),
-                    Profileable.of(creator.getUniqueId()),
-                    messages.getString(
-                            "worldeditor_builders_creator_lore", player, Map.entry("%creator%", creator.getName())));
+            creatorInfoItem = ItemBuilder.skull(Profileable.of(creator.getUniqueId()))
+                    .name(messages.getString("worldeditor_builders_creator_item", player))
+                    .lore(messages.getString(
+                            "worldeditor_builders_creator_lore", player, Map.entry("%creator%", creator.getName())))
+                    .build();
         }
         inventory.setItem(SLOT_CREATOR_INFO, creatorInfoItem);
     }
@@ -122,9 +118,9 @@ public class BuilderMenu extends PaginatedMenu {
     private void addBuilderAddItem(Inventory inventory, Player player) {
         ItemStack builderAddItem;
         if (buildWorld.getBuilders().isCreator(player) || player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)) {
-            builderAddItem = InventoryUtils.createSkull(
-                    messages.getString("worldeditor_builders_add_builder_item", player),
-                    Profileable.detect(SkullTextures.ADD_ITEM));
+            builderAddItem = ItemBuilder.skull(Profileable.detect(SkullTextures.ADD_ITEM))
+                    .name(messages.getString("worldeditor_builders_add_builder_item", player))
+                    .build();
         } else {
             builderAddItem = plugin.getMenuItems().getColoredGlassPane(player).parseItem();
         }
@@ -132,11 +128,11 @@ public class BuilderMenu extends PaginatedMenu {
     }
 
     private ItemStack createBuilderItem(Builder builder, Player player) {
-        ItemStack itemStack = InventoryUtils.createSkull(
-                messages.getString(
-                        "worldeditor_builders_builder_item", player, Map.entry("%builder%", builder.getName())),
-                Profileable.username(builder.getName()),
-                messages.getStringList("worldeditor_builders_builder_lore", player));
+        ItemStack itemStack = ItemBuilder.skull(Profileable.username(builder.getName()))
+                .name(messages.getString(
+                        "worldeditor_builders_builder_item", player, Map.entry("%builder%", builder.getName())))
+                .lore(messages.getStringList("worldeditor_builders_builder_lore", player))
+                .build();
         ItemMeta itemMeta = itemStack.getItemMeta();
         itemMeta.getPersistentDataContainer().set(this.builderNameKey, PersistentDataType.STRING, builder.getName());
         itemStack.setItemMeta(itemMeta);

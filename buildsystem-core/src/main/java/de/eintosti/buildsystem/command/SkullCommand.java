@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.menu.ItemBuilder;
 import java.util.Map;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -57,6 +57,7 @@ public class SkullCommand extends CommandBase {
     }
 
     private void addSkull(Player player, String displayName, Profileable profileable) {
-        player.getInventory().addItem(InventoryUtils.createSkull(displayName, profileable));
+        player.getInventory()
+                .addItem(ItemBuilder.skull(profileable).name(displayName).build());
     }
 }

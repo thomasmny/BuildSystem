@@ -25,7 +25,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.menu.InventoryUtils;
+import de.eintosti.buildsystem.menu.ItemBuilder;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
@@ -47,11 +47,9 @@ public class ArchivedWorldsMenu extends DisplayablesMenu {
     @Override
     protected void addExtraItems(Inventory inventory, Player player) {
         if (player.hasPermission("buildsystem.create.folder")) {
-            inventory.setItem(
-                    49,
-                    InventoryUtils.createSkull(
-                            plugin.getMessages().getString("world_navigator_create_folder", player),
-                            Profileable.detect(CREATE_FOLDER_PROFILE)));
+            ItemBuilder.skull(Profileable.detect(CREATE_FOLDER_PROFILE))
+                    .name(plugin.getMessages().getString("world_navigator_create_folder", player))
+                    .into(inventory, 49);
         }
     }
 }

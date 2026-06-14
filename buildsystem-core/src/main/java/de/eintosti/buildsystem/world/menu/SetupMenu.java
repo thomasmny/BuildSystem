@@ -24,7 +24,6 @@ import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
-import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.menu.SkullTextures;
@@ -107,18 +106,14 @@ public class SetupMenu extends Menu {
     }
 
     private void addSectionHeaders(Inventory inv, Player player) {
-        inv.setItem(
-                SLOT_DEFAULT_HEADER,
-                InventoryUtils.createSkull(
-                        messages.getString("setup_default_item_name", player),
-                        Profileable.detect(SkullTextures.NEXT_PAGE),
-                        messages.getStringList("setup_default_item_lore", player)));
-        inv.setItem(
-                SLOT_STATUS_HEADER,
-                InventoryUtils.createSkull(
-                        messages.getString("setup_status_item_name", player),
-                        Profileable.detect(SkullTextures.NEXT_PAGE),
-                        messages.getStringList("setup_status_item_name_lore", player)));
+        ItemBuilder.skull(Profileable.detect(SkullTextures.NEXT_PAGE))
+                .name(messages.getString("setup_default_item_name", player))
+                .lore(messages.getStringList("setup_default_item_lore", player))
+                .into(inv, SLOT_DEFAULT_HEADER);
+        ItemBuilder.skull(Profileable.detect(SkullTextures.NEXT_PAGE))
+                .name(messages.getString("setup_status_item_name", player))
+                .lore(messages.getStringList("setup_status_item_name_lore", player))
+                .into(inv, SLOT_STATUS_HEADER);
     }
 
     /**
