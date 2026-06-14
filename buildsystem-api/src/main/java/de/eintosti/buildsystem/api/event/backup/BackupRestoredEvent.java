@@ -26,7 +26,7 @@ import org.jspecify.annotations.NullMarked;
 /**
  * Called after a {@link BuildWorld} has been restored from a {@link Backup}.
  *
- * @since 3.0.0
+ * @since TODO
  */
 @NullMarked
 public class BackupRestoredEvent extends BackupEvent {

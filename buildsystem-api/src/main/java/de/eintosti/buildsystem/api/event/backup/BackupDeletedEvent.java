@@ -26,7 +26,7 @@ import org.jspecify.annotations.NullMarked;
 /**
  * Called after a {@link Backup} has been deleted, for example when pruning the oldest backups over the configured per-world limit.
  *
- * @since 3.0.0
+ * @since TODO
  */
 @NullMarked
 public class BackupDeletedEvent extends BackupEvent {
