@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 import org.bukkit.NamespacedKey;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
@@ -83,7 +84,7 @@ public final class ItemBuilder {
         ItemStack base = material.parseItem();
         if (base == null) {
             base = XMaterial.BEDROCK.parseItem();
-            LOGGER.warning("Unknown material (" + material + "). Defaulting to BEDROCK.");
+            LOGGER.warning("Unknown material (%s). Defaulting to BEDROCK.".formatted(material.name()));
         }
         assert base != null;
         return new ItemBuilder(base).hideAttributes();
@@ -116,7 +117,7 @@ public final class ItemBuilder {
         DesignColor color = settings.getDesignColor();
         XMaterial material = XMaterial.matchXMaterial(color.name() + "_STAINED_GLASS_PANE")
                 .orElse(XMaterial.BLACK_STAINED_GLASS_PANE);
-        return of(material).name(" ");
+        return of(material).name("§0");
     }
 
     /**
@@ -177,9 +178,10 @@ public final class ItemBuilder {
         if (!enabled) {
             return this;
         }
+
         ensureMeta();
         if (itemMeta != null) {
-            var enchantment = XEnchantment.UNBREAKING.get();
+            Enchantment enchantment = XEnchantment.UNBREAKING.get();
             if (enchantment != null) {
                 itemStack.addUnsafeEnchantment(enchantment, 1);
                 itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
