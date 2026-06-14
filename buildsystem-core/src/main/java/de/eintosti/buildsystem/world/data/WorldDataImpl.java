@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
@@ -77,17 +78,14 @@ public class WorldDataImpl implements WorldData {
                 "permission",
                 new ConfigurableProperty<>(builder.permission)
                         .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.permission"))
-                        .withCapability(Overridable.class, new Overridable<>(builder.permissionOverrideEnabled, () -> {
-                            Folder folder = getAssignedFolder();
-                            return (folder != null) ? folder.getPermission() : null;
-                        })));
+                        .withCapability(
+                                Overridable.class,
+                                folderOverride(builder.permissionOverrideEnabled, Folder::getPermission)));
         this.project = register(
                 "project",
                 new ConfigurableProperty<>(builder.project)
-                        .withCapability(Overridable.class, new Overridable<>(builder.projectOverrideEnabled, () -> {
-                            Folder folder = getAssignedFolder();
-                            return (folder != null) ? folder.getProject() : null;
-                        })));
+                        .withCapability(
+                                Overridable.class, folderOverride(builder.projectOverrideEnabled, Folder::getProject)));
 
         this.difficulty = register(
                 "difficulty", new ConfigurableProperty<>(builder.difficulty).withConfigFormatter(Difficulty::name));
@@ -99,18 +97,9 @@ public class WorldDataImpl implements WorldData {
                         .withConfigFormatter(BuildWorldStatus::name)
                         .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.archive")));
 
-        this.blockBreaking = register(
-                "block-breaking",
-                new ConfigurableProperty<>(builder.blockBreaking)
-                        .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.settings")));
-        this.blockInteractions = register(
-                "block-interactions",
-                new ConfigurableProperty<>(builder.blockInteractions)
-                        .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.settings")));
-        this.blockPlacement = register(
-                "block-placement",
-                new ConfigurableProperty<>(builder.blockPlacement)
-                        .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.settings")));
+        this.blockBreaking = register("block-breaking", settingsBypassable(builder.blockBreaking));
+        this.blockInteractions = register("block-interactions", settingsBypassable(builder.blockInteractions));
+        this.blockPlacement = register("block-placement", settingsBypassable(builder.blockPlacement));
         this.buildersEnabled = register("builders-enabled", new ConfigurableProperty<>(builder.buildersEnabled));
         this.explosions = register("explosions", new ConfigurableProperty<>(builder.explosions));
         this.mobAi = register("mob-ai", new ConfigurableProperty<>(builder.mobAi));
@@ -141,6 +130,25 @@ public class WorldDataImpl implements WorldData {
     private <T> ConfigurableProperty<T> register(String key, ConfigurableProperty<T> property) {
         this.data.put(key, property);
         return property;
+    }
+
+    /**
+     * Builds a boolean setting property that may be bypassed with the {@code buildsystem.bypass.settings} permission.
+     */
+    private static ConfigurableProperty<Boolean> settingsBypassable(boolean defaultValue) {
+        return new ConfigurableProperty<>(defaultValue)
+                .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.settings"));
+    }
+
+    /**
+     * Builds an {@link Overridable} capability that draws its override value from this world's assigned folder, or
+     * {@code null} when the world has no folder.
+     */
+    private Overridable<String> folderOverride(BooleanSupplier enabled, Function<Folder, @Nullable String> extractor) {
+        return new Overridable<>(enabled, () -> {
+            Folder folder = getAssignedFolder();
+            return folder != null ? extractor.apply(folder) : null;
+        });
     }
 
     @Override
