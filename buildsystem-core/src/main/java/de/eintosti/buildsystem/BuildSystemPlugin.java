@@ -37,7 +37,7 @@ import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
-import de.eintosti.buildsystem.world.backup.BackupService;
+import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.io.File;
@@ -251,7 +251,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         return services.world();
     }
 
-    public BackupService getBackupService() {
+    public BackupServiceImpl getBackupService() {
         return services.backup();
     }
 

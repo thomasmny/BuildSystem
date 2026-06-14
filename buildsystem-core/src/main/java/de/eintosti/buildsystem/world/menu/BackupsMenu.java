@@ -24,7 +24,7 @@ import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.menu.InventoryUtils;
 import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.util.StringUtils;
-import de.eintosti.buildsystem.world.backup.BackupService;
+import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +44,7 @@ public class BackupsMenu extends Menu {
     private static final int MAX_BACKUPS = 18;
 
     private final BuildSystemPlugin plugin;
-    private final BackupService backupService;
+    private final BackupServiceImpl backupService;
     private final BuildWorld buildWorld;
     private final List<Backup> backups = new ArrayList<>();
 

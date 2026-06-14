@@ -13,6 +13,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
+import de.eintosti.buildsystem.api.world.backup.BackupService;
 import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.config.PluginConfig;
@@ -35,7 +36,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class BackupService {
+public class BackupServiceImpl implements BackupService {
 
     private static final long UPDATE_PERIOD = Duration.ofSeconds(5).getSeconds();
 
@@ -49,7 +50,7 @@ public class BackupService {
 
     private @Nullable BukkitTask autoBackupTask;
 
-    public BackupService(BuildSystemPlugin plugin) {
+    public BackupServiceImpl(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.executor = Executors.newFixedThreadPool(3);
 
@@ -196,6 +197,7 @@ public class BackupService {
      * @param buildWorld The world to get the backup profile for
      * @return The backup profile
      */
+    @Override
     public BackupProfile getProfile(BuildWorld buildWorld) {
         try {
             return this.backupProfileCache.get(

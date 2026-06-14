@@ -21,6 +21,8 @@ import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.WorldService;
+import de.eintosti.buildsystem.api.world.backup.BackupProfile;
+import de.eintosti.buildsystem.api.world.backup.BackupService;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -31,6 +33,7 @@ import org.jspecify.annotations.NullMarked;
  * <ul>
  *   <li>{@link WorldService} — enumerate, create, load, unload and query worlds.
  *   <li>{@link PlayerService} — look up per-player settings and identity.
+ *   <li>{@link BackupService} — list, create and restore world backups.
  * </ul>
  *
  * <h2>Obtaining an instance</h2>
@@ -56,17 +59,25 @@ public interface BuildSystem {
 
     /**
      * Returns the service managing all {@link BuildWorld} instances — world creation, lookup by name, folder
-     * organisation and access to per-world storage.
+     * organization and access to per-world storage.
      *
      * @return The world service, never {@code null}
      */
     WorldService getWorldService();
 
     /**
-     * Returns the service managing all {@link BuildPlayer} instances — player lookup, settings access and session-state
+     * Returns the service managing all {@link BuildPlayer} instances — player lookup, settings access, and session-state
      * tracking.
      *
      * @return The player service, never {@code null}
      */
     PlayerService getPlayerService();
+
+    /**
+     * Returns the service for listing, creating, and restoring world backups via per-world {@link BackupProfile}s.
+     *
+     * @return The backup service, never {@code null}
+     * @since TODO
+     */
+    BackupService getBackupService();
 }
