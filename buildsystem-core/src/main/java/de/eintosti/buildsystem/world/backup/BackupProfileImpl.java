@@ -28,15 +28,18 @@ import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
 import de.eintosti.buildsystem.util.FileUtils;
+import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.model.FileHeader;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -129,14 +132,39 @@ public class BackupProfileImpl implements BackupProfile {
         List<@Nullable Player> removedPlayers =
                 plugin.getWorldService().removePlayersFromWorld(worldName, "worlds_backup_restoration_in_progress");
 
-        File backupFile;
-        try {
-            backupFile = this.storage.downloadBackup(backup).get();
-        } catch (InterruptedException | ExecutionException e) {
-            plugin.getLogger().log(Level.SEVERE, "Error while downloading backup", e);
-            return CompletableFuture.failedFuture(e);
-        }
+        // Download off the main thread, then apply the restore back on the main thread. Blocking the
+        // download here would freeze the entire server for the duration of a remote (S3/SFTP) fetch.
+        return this.storage
+                .downloadBackup(backup)
+                .thenCompose(backupFile -> CompletableFuture.runAsync(
+                        () -> {
+                            try {
+                                applyRestore(backup, player, world, worldName, removedPlayers, backupFile);
+                            } catch (IOException e) {
+                                throw new CompletionException(e);
+                            }
+                        },
+                        mainThreadExecutor()))
+                .whenComplete((ignored, throwable) -> {
+                    if (throwable != null) {
+                        plugin.getLogger()
+                                .log(Level.SEVERE, "Failed to restore backup for world " + worldName, throwable);
+                    }
+                });
+    }
 
+    /**
+     * Applies a downloaded backup to the world. Must run on the main thread: it unloads, wipes and reloads the world
+     * and fires Bukkit events.
+     */
+    private void applyRestore(
+            Backup backup,
+            Player player,
+            World world,
+            String worldName,
+            List<@Nullable Player> removedPlayers,
+            File backupFile)
+            throws IOException {
         SpawnService spawnService = plugin.getSpawnService();
         Location spawn = spawnService.getSpawn();
         boolean isSpawn = spawn != null && Objects.equals(spawn.getWorld(), world);
@@ -145,16 +173,12 @@ public class BackupProfileImpl implements BackupProfile {
         try {
             FileUtils.deleteDirectory(new File(Bukkit.getWorldContainer(), worldName));
         } catch (IOException e) {
-            plugin.getLogger().log(Level.SEVERE, "Error while deleting backup file", e);
+            plugin.getLogger().log(Level.SEVERE, "Error while deleting world directory before restore", e);
         }
 
-        try (ZipFile zip = new ZipFile(backupFile)) {
-            zip.extractAll(FileUtils.resolve(Bukkit.getWorldContainer(), this.buildWorld.getName())
-                    .toString());
-        } catch (IOException e) {
-            plugin.getLogger().warning("Failed to restore backup at: " + backupFile.getAbsolutePath());
-            return CompletableFuture.failedFuture(e);
-        }
+        File targetDirectory =
+                FileUtils.resolve(Bukkit.getWorldContainer(), worldName).toFile();
+        extractBackup(backupFile, targetDirectory);
 
         this.buildWorld.getLoader().load();
         WorldTeleporter worldTeleporter = this.buildWorld.getTeleporter();
@@ -179,6 +203,30 @@ public class BackupProfileImpl implements BackupProfile {
                                                 .current()
                                                 .settings()
                                                 .dateFormat())));
-        return CompletableFuture.completedFuture(null);
+    }
+
+    /**
+     * Extracts a backup archive into {@code targetDirectory}, rejecting any entry whose resolved path escapes that
+     * directory (zip-slip / path traversal) before anything is written to disk.
+     */
+    private void extractBackup(File backupFile, File targetDirectory) throws IOException {
+        try (ZipFile zip = new ZipFile(backupFile)) {
+            for (FileHeader header : zip.getFileHeaders()) {
+                File resolved = new File(targetDirectory, header.getFileName());
+                if (StringCleaner.isPathEscape(targetDirectory, resolved)) {
+                    throw new IOException("Refusing to restore backup: archive entry escapes the world directory: "
+                            + header.getFileName());
+                }
+            }
+            zip.extractAll(targetDirectory.getPath());
+        }
+    }
+
+    /**
+     * Returns an {@link Executor} that runs tasks on the server main thread, where Bukkit world and event operations
+     * must happen.
+     */
+    private Executor mainThreadExecutor() {
+        return task -> Bukkit.getScheduler().runTask(plugin, task);
     }
 }

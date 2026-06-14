@@ -19,10 +19,15 @@ package de.eintosti.buildsystem.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -103,5 +108,36 @@ class FileUtilsTest {
 
         assertTrue(Files.isDirectory(resolved));
         assertEquals(tempDir.resolve("parent").resolve("child"), resolved);
+    }
+
+    private Map<String, String> readZipEntries(byte[] zipped) throws IOException {
+        Map<String, String> entries = new HashMap<>();
+        try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(zipped))) {
+            ZipEntry entry;
+            while ((entry = zip.getNextEntry()) != null) {
+                entries.put(entry.getName(), new String(zip.readAllBytes()));
+            }
+        }
+        return entries;
+    }
+
+    @Test
+    void zipDirectoryToMemory_archivesEveryFileWithForwardSlashPaths() throws IOException {
+        File world = createWorldLikeDirectory("source");
+
+        byte[] zipped = FileUtils.zipDirectoryToMemory(world.toPath());
+
+        Map<String, String> entries = readZipEntries(zipped);
+        assertEquals("level", entries.get("level.dat"));
+        assertEquals("region-data", entries.get("region/r.0.0.mca"));
+        assertEquals(4, entries.size(), "Every regular file should be archived");
+    }
+
+    @Test
+    void zipDirectoryToMemory_missingDirectoryThrows() {
+        Path missing = tempDir.resolve("missing");
+
+        // Failure must surface instead of producing a silently-truncated archive.
+        assertThrows(IOException.class, () -> FileUtils.zipDirectoryToMemory(missing));
     }
 }

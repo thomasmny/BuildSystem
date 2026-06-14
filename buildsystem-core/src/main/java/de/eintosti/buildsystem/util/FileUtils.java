@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -190,20 +191,30 @@ public final class FileUtils {
 
     public static byte[] zipWorldToMemory(BuildWorld buildWorld) throws IOException {
         Path worldPath = Path.of(new File(Bukkit.getWorldContainer(), buildWorld.getName()).getPath());
+        return zipDirectoryToMemory(worldPath);
+    }
+
+    /**
+     * Zips every regular file under {@code worldPath} into an in-memory archive. A failure reading any single file
+     * aborts the whole archive (propagated as {@link IOException}) rather than being swallowed and producing a
+     * silently-truncated backup.
+     *
+     * @param worldPath The directory to archive
+     * @return The zipped bytes
+     * @throws IOException If the directory cannot be walked or any file cannot be read
+     */
+    static byte[] zipDirectoryToMemory(Path worldPath) throws IOException {
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 
         try (ZipOutputStream zipOut = new ZipOutputStream(byteOut);
                 Stream<Path> walk = Files.walk(worldPath)) {
-            walk.filter(Files::isRegularFile).forEach(file -> {
-                try {
-                    Path relativePath = worldPath.relativize(file);
-                    zipOut.putNextEntry(new ZipEntry(relativePath.toString().replace("\\", "/")));
-                    Files.copy(file, zipOut);
-                    zipOut.closeEntry();
-                } catch (IOException e) {
-                    LOGGER.log(Level.SEVERE, "Failed to zip world " + worldPath + " to memory", e);
-                }
-            });
+            List<Path> files = walk.filter(Files::isRegularFile).toList();
+            for (Path file : files) {
+                Path relativePath = worldPath.relativize(file);
+                zipOut.putNextEntry(new ZipEntry(relativePath.toString().replace("\\", "/")));
+                Files.copy(file, zipOut);
+                zipOut.closeEntry();
+            }
         }
 
         return byteOut.toByteArray();
