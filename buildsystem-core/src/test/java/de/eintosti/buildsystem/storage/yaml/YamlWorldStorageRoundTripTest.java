@@ -33,7 +33,6 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletionException;
 import org.bukkit.Difficulty;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,9 +41,9 @@ import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Round-trip and parse-error tests for {@link YamlWorldStorage}. Establishes the contract for the on-disk
- * {@code worlds.yml} format: a world serialized and saved must deserialize back with all fields intact, and malformed
- * enum data must surface (it currently throws — these tests pin that behavior so a future graceful-fallback change is a
- * deliberate decision).
+ * {@code worlds.yml} format: a world serialized and saved must deserialize back with all fields intact; malformed enum
+ * data falls back to a safe default; and an entry that cannot be parsed at all is skipped so the remaining worlds still
+ * load (one bad row never aborts the whole load).
  */
 class YamlWorldStorageRoundTripTest {
 
@@ -140,7 +139,7 @@ class YamlWorldStorageRoundTripTest {
     }
 
     @Test
-    void load_invalidTypeEnum_throws() throws Exception {
+    void load_invalidTypeEnum_defaultsToUnknown() throws Exception {
         YamlConfiguration yaml = new YamlConfiguration();
         yaml.set("worlds.Bad.uuid", UUID.randomUUID().toString());
         yaml.set("worlds.Bad.type", "NOT_A_REAL_TYPE");
@@ -148,20 +147,41 @@ class YamlWorldStorageRoundTripTest {
         yaml.set("worlds.Bad.data.status", "FINISHED");
         yaml.save(new File(dataFolder, "worlds.yml"));
 
-        YamlWorldStorage storage = newStorage();
-        assertThrows(CompletionException.class, () -> storage.load().join());
+        Collection<BuildWorld> loaded = newStorage().load().join();
+        assertEquals(1, loaded.size());
+        assertEquals(BuildWorldType.UNKNOWN, loaded.iterator().next().getType());
     }
 
     @Test
-    void load_missingStatus_throws() throws Exception {
+    void load_missingStatus_defaultsToNotStarted() throws Exception {
         YamlConfiguration yaml = new YamlConfiguration();
         yaml.set("worlds.Bad.uuid", UUID.randomUUID().toString());
         yaml.set("worlds.Bad.type", "NORMAL");
         yaml.set("worlds.Bad.date", 1L);
-        // No data.status key — Enum.valueOf(null) will fail.
+        // No data.status key — must fall back rather than throw.
         yaml.save(new File(dataFolder, "worlds.yml"));
 
-        YamlWorldStorage storage = newStorage();
-        assertThrows(CompletionException.class, () -> storage.load().join());
+        Collection<BuildWorld> loaded = newStorage().load().join();
+        assertEquals(1, loaded.size());
+        assertEquals(
+                BuildWorldStatus.NOT_STARTED, loaded.iterator().next().getData().getStatus());
+    }
+
+    @Test
+    void load_unparseableEntry_isSkipped_othersStillLoad() throws Exception {
+        // Persist a good world, then inject a sibling entry whose UUID cannot be parsed.
+        newStorage().save(sampleWorld(UUID.randomUUID(), "Good")).join();
+
+        YamlConfiguration yaml = new YamlConfiguration();
+        yaml.load(new File(dataFolder, "worlds.yml"));
+        yaml.set("worlds.Bad.uuid", "not-a-uuid");
+        yaml.set("worlds.Bad.type", "NORMAL");
+        yaml.set("worlds.Bad.date", 1L);
+        yaml.set("worlds.Bad.data.status", "FINISHED");
+        yaml.save(new File(dataFolder, "worlds.yml"));
+
+        Collection<BuildWorld> loaded = newStorage().load().join();
+        assertEquals(1, loaded.size());
+        assertEquals("Good", loaded.iterator().next().getName());
     }
 }

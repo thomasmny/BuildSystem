@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -53,6 +52,12 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
     private final File file;
     private final FileConfiguration config;
 
+    /**
+     * Serializes all access to {@link #config} and {@link #file}; see {@code YamlWorldStorage} for the rationale (the
+     * non-thread-safe configuration is touched from common-pool tasks).
+     */
+    private final Object ioLock = new Object();
+
     public YamlPlayerStorage(BuildSystemPlugin plugin) {
         super(plugin.getLogger());
         this.file = new File(plugin.getDataFolder(), "players.yml");
@@ -62,17 +67,23 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
     @Override
     public CompletableFuture<Void> save(BuildPlayer buildPlayer) {
         return CompletableFuture.runAsync(() -> {
-            config.set(PLAYERS_KEY + "." + buildPlayer.getUniqueId(), serializePlayer(BuildPlayerImpl.of(buildPlayer)));
-            saveFile();
+            synchronized (ioLock) {
+                config.set(
+                        PLAYERS_KEY + "." + buildPlayer.getUniqueId(),
+                        serializePlayer(BuildPlayerImpl.of(buildPlayer)));
+                saveFile();
+            }
         });
     }
 
     @Override
     public CompletableFuture<Void> save(Collection<BuildPlayer> players) {
         return CompletableFuture.runAsync(() -> {
-            players.forEach(player ->
-                    config.set(PLAYERS_KEY + "." + player.getUniqueId(), serializePlayer(BuildPlayerImpl.of(player))));
-            saveFile();
+            synchronized (ioLock) {
+                players.forEach(player -> config.set(
+                        PLAYERS_KEY + "." + player.getUniqueId(), serializePlayer(BuildPlayerImpl.of(player))));
+                saveFile();
+            }
         });
     }
 
@@ -133,8 +144,19 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
 
     @Override
     public CompletableFuture<Collection<BuildPlayer>> load() {
-        return CompletableFuture.supplyAsync(
-                () -> loadPlayerKeys().stream().map(this::loadPlayer).collect(Collectors.toCollection(ArrayList::new)));
+        return CompletableFuture.supplyAsync(() -> {
+            synchronized (ioLock) {
+                Collection<BuildPlayer> players = new ArrayList<>();
+                for (String playerUuid : loadPlayerKeys()) {
+                    try {
+                        players.add(loadPlayer(playerUuid));
+                    } catch (Exception e) {
+                        logger.log(Level.WARNING, "Skipping player \"" + playerUuid + "\": could not be loaded", e);
+                    }
+                }
+                return players;
+            }
+        });
     }
 
     private Set<String> loadPlayerKeys() {
@@ -190,9 +212,21 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
         return new LogoutLocation(worldName, x, y, z, yaw, pitch);
     }
 
+    private NavigatorType parseNavigatorType(@Nullable String raw) {
+        if (raw == null) {
+            return NavigatorType.OLD;
+        }
+        try {
+            return NavigatorType.valueOf(raw);
+        } catch (IllegalArgumentException e) {
+            logger.warning("Unknown navigator type \"" + raw + "\". Defaulting to OLD.");
+            return NavigatorType.OLD;
+        }
+    }
+
     @Contract("_, _ -> new")
     private SettingsImpl loadSettings(FileConfiguration configuration, String pathPrefix) {
-        NavigatorType navigatorType = NavigatorType.valueOf(configuration.getString(pathPrefix + ".type"));
+        NavigatorType navigatorType = parseNavigatorType(configuration.getString(pathPrefix + ".type"));
         DesignColor glassColor = DesignColor.matchColor(configuration.getString(pathPrefix + ".glass"));
         WorldDisplay worldDisplay = loadWorldDisplay(configuration, pathPrefix + ".world-display");
         boolean clearInventory = configuration.getBoolean(pathPrefix + ".clear-inventory", false);
@@ -244,8 +278,10 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
     @Override
     public CompletableFuture<Void> delete(String playerKey) {
         return CompletableFuture.runAsync(() -> {
-            config.set(PLAYERS_KEY + "." + playerKey, null);
-            saveFile();
+            synchronized (ioLock) {
+                config.set(PLAYERS_KEY + "." + playerKey, null);
+                saveFile();
+            }
         });
     }
 }

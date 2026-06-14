@@ -53,6 +53,13 @@ public class YamlWorldStorage extends WorldStorageImpl {
     private final File file;
     private final FileConfiguration config;
 
+    /**
+     * Serializes all access to {@link #config} and {@link #file}. {@code save}, {@code load} and {@code delete} run on
+     * the common pool, so without this lock concurrent tasks would mutate the non-thread-safe configuration and write
+     * the same file at once, corrupting worlds.yml.
+     */
+    private final Object ioLock = new Object();
+
     public YamlWorldStorage(BuildSystemPlugin plugin) {
         super(plugin.getLogger());
         this.plugin = plugin;
@@ -63,17 +70,21 @@ public class YamlWorldStorage extends WorldStorageImpl {
     @Override
     public CompletableFuture<Void> save(BuildWorld buildWorld) {
         return CompletableFuture.runAsync(() -> {
-            config.set(WORLDS_KEY + "." + buildWorld.getName(), serializeWorld(buildWorld));
-            saveFile();
+            synchronized (ioLock) {
+                config.set(WORLDS_KEY + "." + buildWorld.getName(), serializeWorld(buildWorld));
+                saveFile();
+            }
         });
     }
 
     @Override
     public CompletableFuture<Void> save(Collection<BuildWorld> buildWorlds) {
         return CompletableFuture.runAsync(() -> {
-            buildWorlds.forEach(
-                    buildWorld -> config.set(WORLDS_KEY + "." + buildWorld.getName(), serializeWorld(buildWorld)));
-            saveFile();
+            synchronized (ioLock) {
+                buildWorlds.forEach(
+                        buildWorld -> config.set(WORLDS_KEY + "." + buildWorld.getName(), serializeWorld(buildWorld)));
+                saveFile();
+            }
         });
     }
 
@@ -120,8 +131,19 @@ public class YamlWorldStorage extends WorldStorageImpl {
 
     @Override
     public CompletableFuture<Collection<BuildWorld>> load() {
-        return CompletableFuture.supplyAsync(
-                () -> loadWorldKeys().stream().map(this::loadWorld).collect(Collectors.toCollection(ArrayList::new)));
+        return CompletableFuture.supplyAsync(() -> {
+            synchronized (ioLock) {
+                Collection<BuildWorld> worlds = new ArrayList<>();
+                for (String worldName : loadWorldKeys()) {
+                    try {
+                        worlds.add(loadWorld(worldName));
+                    } catch (Exception e) {
+                        logger.log(Level.WARNING, "Skipping world \"" + worldName + "\": could not be loaded", e);
+                    }
+                }
+                return worlds;
+            }
+        });
     }
 
     private Set<String> loadWorldKeys() {
@@ -151,9 +173,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
                 ? UUID.fromString(config.getString("worlds." + worldName + ".uuid"))
                 : UUID.randomUUID();
         Builder creator = parseCreator(worldName);
-        BuildWorldType worldType = config.isString("worlds." + worldName + ".type")
-                ? BuildWorldType.valueOf(config.getString("worlds." + worldName + ".type"))
-                : BuildWorldType.UNKNOWN;
+        BuildWorldType worldType = parseType(worldName);
         WorldDataImpl worldData = parseWorldData(worldName);
         long creationDate =
                 config.isLong("worlds." + worldName + ".date") ? config.getLong("worlds." + worldName + ".date") : -1;
@@ -186,7 +206,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
                 .withDifficulty(Difficulty.valueOf(
                         config.getString(path + ".difficulty", "PEACEFUL").toUpperCase(Locale.ROOT)))
                 .withMaterial(parseMaterial(path + ".material", worldName))
-                .withStatus(BuildWorldStatus.valueOf(config.getString(path + ".status")))
+                .withStatus(parseStatus(path + ".status", worldName))
                 .withBlockBreaking(config.getBoolean(path + ".block-breaking"))
                 .withBlockInteractions(config.getBoolean(path + ".block-interactions"))
                 .withBlockPlacement(config.getBoolean(path + ".block-placement"))
@@ -205,6 +225,34 @@ public class YamlWorldStorage extends WorldStorageImpl {
                 .withProjectOverrideEnabled(
                         () -> plugin.getConfigService().current().folder().overrideProjects())
                 .build();
+    }
+
+    private BuildWorldType parseType(String worldName) {
+        String raw = config.getString("worlds." + worldName + ".type");
+        if (raw == null) {
+            return BuildWorldType.UNKNOWN;
+        }
+        try {
+            return BuildWorldType.valueOf(raw);
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger()
+                    .warning("Unknown world type \"" + raw + "\" for \"" + worldName + "\". Defaulting to UNKNOWN.");
+            return BuildWorldType.UNKNOWN;
+        }
+    }
+
+    private BuildWorldStatus parseStatus(String path, String worldName) {
+        String raw = config.getString(path);
+        if (raw == null) {
+            return BuildWorldStatus.NOT_STARTED;
+        }
+        try {
+            return BuildWorldStatus.valueOf(raw);
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger()
+                    .warning("Unknown status \"" + raw + "\" for \"" + worldName + "\". Defaulting to NOT_STARTED.");
+            return BuildWorldStatus.NOT_STARTED;
+        }
     }
 
     private XMaterial parseMaterial(String path, String worldName) {
@@ -282,8 +330,10 @@ public class YamlWorldStorage extends WorldStorageImpl {
     @Override
     public CompletableFuture<Void> delete(String worldKey) {
         return CompletableFuture.runAsync(() -> {
-            config.set(WORLDS_KEY + "." + worldKey, null);
-            saveFile();
+            synchronized (ioLock) {
+                config.set(WORLDS_KEY + "." + worldKey, null);
+                saveFile();
+            }
         });
     }
 }

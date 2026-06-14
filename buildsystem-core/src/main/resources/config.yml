@@ -4,8 +4,6 @@
 settings:
   update-checker: true
   scoreboard: true
-  # When non-empty, only the listed permission strings (plus "-" to clear) may be set
-  # via /worlds setPermission. Empty list means no restriction.
   world-permission-whitelist: []
   spawn-teleport-message: false
   join-quit-messages: true
@@ -76,7 +74,6 @@ world:
     max-backups-per-world: 5
     auto-backup:
       enabled: true
-      # In seconds
       interval: 900
       only-active-worlds: true
     storage:
