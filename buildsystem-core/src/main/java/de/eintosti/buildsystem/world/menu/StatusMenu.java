@@ -17,13 +17,13 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.Menu;
 import java.util.Map;
 import org.bukkit.ChatColor;
@@ -31,9 +31,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -110,17 +108,10 @@ public class StatusMenu extends Menu {
             displayName = "§c§m" + ChatColor.stripColor(displayName);
         }
 
-        ItemStack itemStack = material.parseItem();
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.setDisplayName(displayName);
-        itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        itemStack.setItemMeta(itemMeta);
-
-        if (buildWorld.getData().getStatus() == status) {
-            itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.get(), 1);
-        }
-
-        getInventory().setItem(position, itemStack);
+        ItemBuilder.of(material)
+                .name(displayName)
+                .glow(buildWorld.getData().getStatus() == status)
+                .into(getInventory(), position);
     }
 
     @Override

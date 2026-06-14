@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.menu;
 
-import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
@@ -36,7 +35,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -286,19 +284,11 @@ public final class MenuItems {
             boolean enabled,
             String displayNameKey,
             String loreKey) {
-        ItemStack itemStack = material.parseItem();
-        ItemMeta itemMeta = itemStack.getItemMeta();
-
-        itemMeta.setDisplayName(messages.getString(displayNameKey, player));
-        itemMeta.setLore(messages.getStringList(loreKey, player));
-        itemMeta.addItemFlags(ItemFlag.values());
-        itemStack.setItemMeta(itemMeta);
-
-        if (enabled) {
-            itemStack.addUnsafeEnchantment(XEnchantment.UNBREAKING.get(), 1);
-        }
-
-        inventory.setItem(slot, itemStack);
+        ItemBuilder.of(material)
+                .name(messages.getString(displayNameKey, player))
+                .lore(messages.getStringList(loreKey, player))
+                .glow(enabled)
+                .into(inventory, slot);
     }
 
     /**

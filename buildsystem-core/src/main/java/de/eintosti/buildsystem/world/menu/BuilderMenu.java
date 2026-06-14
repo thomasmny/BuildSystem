@@ -39,7 +39,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.jspecify.annotations.NullMarked;
 
@@ -122,21 +121,19 @@ public class BuilderMenu extends PaginatedMenu {
                     .name(messages.getString("worldeditor_builders_add_builder_item", player))
                     .build();
         } else {
-            builderAddItem = plugin.getMenuItems().getColoredGlassPane(player).parseItem();
+            builderAddItem = ItemBuilder.of(plugin.getMenuItems().getColoredGlassPane(player))
+                    .build();
         }
         inventory.setItem(SLOT_ADD_BUILDER, builderAddItem);
     }
 
     private ItemStack createBuilderItem(Builder builder, Player player) {
-        ItemStack itemStack = ItemBuilder.skull(Profileable.username(builder.getName()))
+        return ItemBuilder.skull(Profileable.username(builder.getName()))
                 .name(messages.getString(
                         "worldeditor_builders_builder_item", player, Map.entry("%builder%", builder.getName())))
                 .lore(messages.getStringList("worldeditor_builders_builder_lore", player))
+                .pdc(this.builderNameKey, PersistentDataType.STRING, builder.getName())
                 .build();
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.getPersistentDataContainer().set(this.builderNameKey, PersistentDataType.STRING, builder.getName());
-        itemStack.setItemMeta(itemMeta);
-        return itemStack;
     }
 
     @Override

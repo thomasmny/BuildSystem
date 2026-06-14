@@ -35,7 +35,6 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Contract;
@@ -124,15 +123,10 @@ public class GameRulesMenu extends PaginatedMenu {
             return;
         }
 
-        ItemStack itemStack = new ItemStack(isEnabled(world, gameRule) ? Material.FILLED_MAP : Material.MAP);
-        ItemMeta itemMeta = itemStack.getItemMeta();
-
-        itemMeta.setDisplayName(ChatColor.YELLOW + gameRule.name());
-        itemMeta.setLore(getLore(world, gameRule, player));
-        itemMeta.addItemFlags(ItemFlag.values());
-        itemStack.setItemMeta(itemMeta);
-
-        getInventory().setItem(slot, itemStack);
+        ItemBuilder.of(isEnabled(world, gameRule) ? XMaterial.FILLED_MAP : XMaterial.MAP)
+                .name(ChatColor.YELLOW + gameRule.name())
+                .lore(getLore(world, gameRule, player))
+                .into(getInventory(), slot);
     }
 
     private List<String> getLore(World world, XGameRule<?> gameRule, Player player) {
