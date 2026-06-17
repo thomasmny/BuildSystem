@@ -397,7 +397,7 @@ new_navigator_private_worlds: "&b&lPRIVATE WORLDS"
 # World Navigator
 world_navigator_title: "&3» &8World Navigator"
 world_navigator_no_worlds: "&c&nNo worlds available"
-world_navigator_create_world: "&bCreate a Public World"
+world_navigator_create_world: "&bCreate a World"
 world_navigator_create_folder: "&bCreate a Folder"
 world_item_title: "&3&l%world%"
 world_item_pinned_prefix: "📌 "
@@ -482,26 +482,180 @@ restore_backup_cancel_name: "&cCancel"
 
 # Setup
 setup_title: "&3» &8Setup"
-setup_default_item_name: "&bDefault Item"
-setup_default_item_lore:
-  - "&7The item which a world"
-  - "&7has by default when created."
+
+# Setup - Hub
+setup_default_icons_item: "&bDefault World Icons"
+setup_default_icons_item_lore:
+  - "&7The icons new worlds use"
+  - "&7for each world type."
   - ""
-  - "&7&nTo change&7:"
-  - "&8» &7&oDrag new item onto old one"
-setup_status_item_name: "&bStatus Item"
-setup_status_item_name_lore:
-  - "&7The item which is shown when"
-  - "&7you change a world's status."
+  - "&8» &7&oClick to edit"
+setup_statuses_item: "&bWorld Statuses"
+setup_statuses_item_lore:
+  - "&7Create and customise the"
+  - "&7statuses a world can have."
   - ""
-  - "&7&nTo change&7:"
-  - "&8» &7&oDrag new item onto old one"
+  - "&8» &7&oClick to manage"
+setup_categories_item: "&bNavigator Categories"
+setup_categories_item_lore:
+  - "&7Create and customise the"
+  - "&7sections of the navigator."
+  - ""
+  - "&8» &7&oClick to manage"
+setup_navigator_item: "&bNavigator Layout"
+setup_navigator_item_lore:
+  - "&7Arrange where each category"
+  - "&7appears in the navigator."
+  - ""
+  - "&8» &7&oClick to edit"
+
+# Setup - Navigator Layout
+setup_navigator_title: "&3» &8Navigator Layout"
+setup_navigator_empty_slot: "&8Empty slot"
+setup_navigator_placed_lore:
+  - "&8» &7&oClick to pick up & move"
+setup_navigator_palette_shown_lore:
+  - "&aShown in navigator"
+  - "&8» &7&oClick to pick up"
+setup_navigator_palette_hidden_lore:
+  - "&7Not in navigator"
+  - "&8» &7&oClick to pick up & place"
+setup_navigator_remove: "&cRemove from navigator"
+setup_navigator_remove_lore:
+  - "&7While holding a category,"
+  - "&7click to take it off the navigator."
+setup_navigator_done: "&aDone"
+
+# Setup - Default Icons
+setup_default_icons_title: "&3» &8Default Icons"
 setup_normal_world: "&bNormal World"
 setup_flat_world: "&aFlat World"
 setup_nether_world: "&cNether World"
 setup_end_world: "&eEnd World"
 setup_void_world: "&fEmpty World"
 setup_imported_world: "&7Imported World"
+
+# Setup - Shared
+setup_back: "&cBack"
+setup_name_invalid_characters: "%prefix% &cInvalid characters were removed from the name."
+setup_name_empty: "%prefix% &cThe name cannot be empty."
+setup_icon_lore:
+  - "&8» &7&oClick to choose an item"
+setup_item_picker_title: "&3» &8Pick an Item"
+setup_scroll_up: "&eScroll up"
+setup_scroll_down: "&eScroll down"
+setup_filter: "&bFilter"
+setup_filter_none: "&7none"
+setup_filter_lore:
+  - "&7Active filter&8: &f%filter%"
+  - ""
+  - "&8» &7&oClick to search"
+  - "&8» &7&oRight-click to clear"
+setup_filter_prompt: "&aType text to filter items by"
+setup_order_lore:
+  - "&8» &7&oLeft-click to increase"
+  - "&8» &7&oRight-click to decrease"
+setup_toggle_enabled:
+  - "&aEnabled"
+  - "&8» &7&oClick to toggle"
+setup_toggle_disabled:
+  - "&cDisabled"
+  - "&8» &7&oClick to toggle"
+
+# Setup - Colour Picker
+setup_color_picker_title: "&3» &8Pick a Colour"
+
+# Setup - Confirmation
+setup_confirm_title: "&3» &8Are you sure?"
+setup_confirm_yes: "&aConfirm"
+setup_confirm_no: "&cCancel"
+
+# Setup - Management (shared)
+setup_delete_last: "%prefix% &cYou cannot delete the last remaining entry."
+setup_reset: "&eReset to defaults"
+setup_reset_lore:
+  - "&7Restore the built-in entries,"
+  - "&7discarding all customizations."
+  - ""
+  - "&8» &7&oClick to reset"
+setup_reset_confirm_lore:
+  - "&7All custom entries will be removed and"
+  - "&7the built-in defaults restored."
+
+# Setup - Status Management
+setup_statuses_title: "&3» &8World Statuses"
+setup_status_entry_lore:
+  - "&8» &7&oClick to edit"
+  - "&8» &7&oShift-click to delete"
+setup_status_entry_builtin_lore:
+  - "&8(&7Built-in&8)"
+  - "&8» &7&oClick to edit"
+  - "&8» &7&oShift-click to delete"
+setup_status_add: "&aCreate a new status"
+setup_status_add_prompt: "&aType a name for the status"
+setup_status_delete_lore:
+  - "&7Worlds using this status: &c%worlds%"
+  - "&7They will be reset to the default status."
+
+# Setup - Status Editor
+setup_status_editor_title: "&8Status &7» %status%"
+setup_status_preview_lore:
+  - "&7Id&8: &f%id%"
+  - "&7Permission&8: &f%permission%"
+setup_status_rename: "&bRename"
+setup_status_rename_prompt: "&aType a new name for the status"
+setup_status_color: "&bColour"
+setup_status_icon: "&bIcon"
+setup_status_order: "&bOrder &8(&f%order%&8)"
+setup_status_building: "&bBuilding allowed"
+setup_status_navigator: "&bShown in navigator"
+setup_status_progresses: "&bAuto-progresses to &8(&f%target%&8)"
+setup_status_progresses_lore:
+  - "&7The status a world advances to"
+  - "&7the first time it is edited."
+  - ""
+  - "&8» &7&oClick to cycle"
+  - "&8» &7&oRight-click to clear"
+setup_status_progresses_none: "&7None"
+
+# Setup - Category Management
+setup_categories_title: "&3» &8Navigator Categories"
+setup_category_entry_lore:
+  - "&8» &7&oClick to edit"
+  - "&8» &7&oShift-click to delete"
+setup_category_entry_builtin_lore:
+  - "&8(&7Built-in&8)"
+  - "&8» &7&oClick to edit"
+  - "&8» &7&oShift-click to delete"
+setup_category_add: "&aCreate a new category"
+setup_category_add_prompt: "&aType a name for the category"
+setup_category_delete_lore:
+  - "&7Worlds in this category will resolve"
+  - "&7to another matching category."
+
+# Setup - Category Editor
+setup_category_editor_title: "&8Category &7» %category%"
+setup_category_preview_lore:
+  - "&7Id&8: &f%id%"
+setup_category_rename: "&bRename"
+setup_category_rename_prompt: "&aType a new name for the category"
+setup_category_color: "&bColour"
+setup_category_icon: "&bIcon"
+setup_category_skull: "&bSkull texture &8(&f%texture%&8)"
+setup_category_skull_none: "none"
+setup_category_skull_lore:
+  - "&7Used when the icon is a player head."
+  - ""
+  - "&8» &7&oClick to set (type a texture,"
+  - "&8  &7&o'viewer', or 'none')"
+setup_category_skull_prompt: "&aType a skull texture, 'viewer', or 'none'"
+setup_category_visibility_everyone: "&bGroups public worlds"
+setup_category_visibility_added: "&bGroups private worlds"
+setup_category_visibility_last: "%prefix% &cA category must group at least one visibility."
+setup_category_statuses: "&bMember statuses"
+setup_category_statuses_title: "&3» &8Category Statuses"
+setup_category_shown: "&bShown in navigator"
+setup_category_slot: "&bNavigator slot &8(&f%slot%&8)"
 
 # Create World
 create_title: "&3» &8Create World"
@@ -527,15 +681,10 @@ type_custom: "Custom"
 type_template: "Template"
 type_private: "Private"
 type_imported: "Imported"
+type_unknown: "Unknown"
 
 # World Status
 status_title: "&8Status &7» &3%world%"
-status_not_started: "&cNot Started"
-status_in_progress: "&6In Progress"
-status_almost_finished: "&aAlmost Finished"
-status_finished: "&2Finished"
-status_archive: "&9Archive"
-status_hidden: "&fHidden"
 
 # World Difficulty
 difficulty_peaceful: "&fPeaceful"
@@ -557,6 +706,10 @@ delete_world_confirm: "&aConfirm"
 # World Editor
 worldeditor_title: "&3» &8World Editor"
 worldeditor_world_item: "&3&l%world%"
+
+# Shared toggle state line (appended to every on/off item's lore)
+toggle_currently_enabled: "&7&nCurrently&7: &aEnabled"
+toggle_currently_disabled: "&7&nCurrently&7: &cDisabled"
 
 worldeditor_blockbreaking_item: "&bBlock Breaking"
 worldeditor_blockbreaking_lore:
