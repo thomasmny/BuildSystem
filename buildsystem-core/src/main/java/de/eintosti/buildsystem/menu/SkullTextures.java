@@ -82,7 +82,7 @@ public final class SkullTextures {
     /**
      * Refresh/arrows head used for "reset to defaults" actions.
      */
-    public static final String RESET = "816ea34a6a6ec5c051e6932f1c471b7012b298d38d179f1b487c413f51959cd4";
+    public static final String RESET = "ed707db46a5acbfebf61239536d25648134bb43b65c16716ba329c6dbf412";
 
     /**
      * Head used for "remove"/"cancel" actions.

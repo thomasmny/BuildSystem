@@ -21,11 +21,13 @@ import static java.util.Map.entry;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import de.eintosti.buildsystem.world.menu.SetupMenu;
 import java.util.Map;
@@ -56,6 +58,7 @@ public class DefaultIconsMenu extends ButtonMenu<MenuButton> {
             entry(BuildWorldType.VOID, "setup_void_world"),
             entry(BuildWorldType.IMPORTED, "setup_imported_world"));
 
+    private static final int SLOT_RESET = 4;
     private static final int SLOT_BACK = 18;
 
     private final BuildSystemPlugin plugin;
@@ -67,7 +70,29 @@ public class DefaultIconsMenu extends ButtonMenu<MenuButton> {
         this.icons = plugin.getCustomizableIcons();
 
         TYPE_SLOTS.forEach((type, slot) -> register(slot, typeButton(type)));
+        register(SLOT_RESET, resetButton());
         register(SLOT_BACK, backButton());
+    }
+
+    private MenuButton resetButton() {
+        return MenuButton.builder()
+                .render((player, inventory, slot) -> ItemBuilder.skull(Profileable.detect(SkullTextures.RESET))
+                        .name(messages.getString("setup_reset", player))
+                        .lore(messages.getStringList("setup_reset_lore", player))
+                        .into(inventory, slot))
+                .onClick((player, event) -> new DeletionConfirmMenu(
+                                plugin,
+                                player,
+                                messages.getString("setup_reset", player),
+                                messages.getStringList("setup_reset_confirm_lore", player),
+                                () -> {
+                                    icons.resetToDefaults();
+                                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                                    new DefaultIconsMenu(plugin, player).open(player);
+                                },
+                                () -> new DefaultIconsMenu(plugin, player).open(player))
+                        .open(player))
+                .build();
     }
 
     private MenuButton typeButton(BuildWorldType type) {

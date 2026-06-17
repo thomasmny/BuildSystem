@@ -43,8 +43,8 @@ public class CustomizableIcons {
         this.typeIcons = loadTypeIcons();
     }
 
-    private Map<BuildWorldType, XMaterial> loadTypeIcons() {
-        Map<BuildWorldType, XMaterial> typeIcons = new EnumMap<>(Map.ofEntries(
+    private static Map<BuildWorldType, XMaterial> defaultTypeIcons() {
+        return new EnumMap<>(Map.ofEntries(
                 Map.entry(BuildWorldType.NORMAL, XMaterial.OAK_LOG),
                 Map.entry(BuildWorldType.FLAT, XMaterial.GRASS_BLOCK),
                 Map.entry(BuildWorldType.NETHER, XMaterial.NETHERRACK),
@@ -53,6 +53,10 @@ public class CustomizableIcons {
                 Map.entry(BuildWorldType.CUSTOM, XMaterial.FILLED_MAP),
                 Map.entry(BuildWorldType.TEMPLATE, XMaterial.FILLED_MAP),
                 Map.entry(BuildWorldType.IMPORTED, XMaterial.FURNACE)));
+    }
+
+    private Map<BuildWorldType, XMaterial> loadTypeIcons() {
+        Map<BuildWorldType, XMaterial> typeIcons = defaultTypeIcons();
 
         Map<BuildWorldType, XMaterial> loadedIcons = this.setupStorage.loadIcons(
                 IconType.TYPE, type -> BuildWorldType.valueOf(type.toUpperCase(Locale.ROOT)));
@@ -62,6 +66,15 @@ public class CustomizableIcons {
 
         setupStorage.saveIcons(IconType.TYPE, typeIcons);
         return typeIcons;
+    }
+
+    /**
+     * Restores the default world-type icons, discarding all customizations, and persists them.
+     */
+    public void resetToDefaults() {
+        this.typeIcons.clear();
+        this.typeIcons.putAll(defaultTypeIcons());
+        this.setupStorage.saveIcons(IconType.TYPE, this.typeIcons);
     }
 
     /**
