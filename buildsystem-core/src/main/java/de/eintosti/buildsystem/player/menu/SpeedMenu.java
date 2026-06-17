@@ -26,7 +26,6 @@ import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import java.util.Map;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -68,6 +67,10 @@ public class SpeedMenu extends ButtonMenu<MenuButton> {
                                 .name(messages.getString(option.nameKey(), player))
                                 .build()))
                 .onClick((player, event) -> {
+                    if (!player.hasPermission("buildsystem.speed")) {
+                        player.closeInventory();
+                        return;
+                    }
                     setSpeed(player, option.speed(), option.displayNumber());
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     player.closeInventory();
@@ -90,18 +93,6 @@ public class SpeedMenu extends ButtonMenu<MenuButton> {
      */
     Map<Integer, SpeedOption> speedBySlot() {
         return SPEED_BY_SLOT;
-    }
-
-    @Override
-    public void handleClick(InventoryClickEvent event) {
-        Player player = (Player) event.getWhoClicked();
-        if (!player.hasPermission("buildsystem.speed")) {
-            event.setCancelled(true);
-            player.closeInventory();
-            return;
-        }
-
-        super.handleClick(event);
     }
 
     private void setSpeed(Player player, float speed, int num) {
