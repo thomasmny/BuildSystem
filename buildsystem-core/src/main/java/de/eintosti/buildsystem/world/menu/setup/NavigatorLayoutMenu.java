@@ -45,23 +45,25 @@ import org.jspecify.annotations.Nullable;
  * inventory is a live, exact preview of the inventory navigator — each shown category at its slot plus the settings
  * button at its slot. The player's own inventory is taken over (snapshotted and cleared by
  * {@link de.eintosti.buildsystem.navigator.NavigatorEditorService}, restored on close/quit/shutdown) to present a
- * palette of every category and the settings token, plus add/remove/done controls.
+ * back button, a create-category button, and the palette of categories not yet in the navigator.
  *
- * <p>Interaction is a controlled pick-and-place. Picking up a palette category, or one already placed, puts it on the
- * cursor; clicking a navigator slot drops it there (moving, or swapping with the occupant). The settings token is moved
- * the same way. Right-clicking a palette category opens its {@link CategoryEditorMenu}. Dropping a held category onto
- * the remove control takes it off the navigator. All clicks are cancelled, so the real items can never be taken; the
- * category registry is the single source of truth and persists every change.
+ * <p>Interaction is a controlled pick-and-place. Left-clicking a category — in the palette or already placed — puts it
+ * on the cursor; clicking a navigator slot drops it there (moving, or swapping with the occupant), while clicking
+ * outside the navigator preview drops it off. Right-clicking a category opens its {@link CategoryEditorMenu}. The
+ * settings button is moved the same way and clicking an empty navigator slot while holding nothing does nothing (new
+ * categories come from the create button). All clicks are cancelled, so the real items can never be taken; the category
+ * registry is the single source of truth and persists every change.
  */
 @NullMarked
 public class NavigatorLayoutMenu extends Menu {
 
     private static final int NAVIGATOR_SIZE = 27;
 
-    // The taken-over player inventory: a back button (left hotbar) and create button (centre hotbar), with the palette
-    // of not-yet-added categories filling the three main rows above.
+    // The taken-over player inventory: a back button (left hotbar), create button (centre hotbar) and a delete drop
+    // target (right hotbar), with the palette of not-yet-added categories filling the three main rows above.
     private static final int BACK_SLOT = 0;
     private static final int CREATE_SLOT = 4;
+    private static final int DELETE_SLOT = 8;
     private static final int PALETTE_FIRST_SLOT = 9;
     private static final int PALETTE_LAST_SLOT = 35;
 
@@ -81,8 +83,13 @@ public class NavigatorLayoutMenu extends Menu {
     @Override
     public void open(Player player) {
         plugin.getNavigatorEditorService().beginSession(player);
-        refresh(player);
+        // Populate the chest, open it, and only then fill the (now-contained) player inventory with the palette.
+        // Filling
+        // it before the chest is open would briefly expose the palette items in the player's own inventory during the
+        // menu transition, letting them be grabbed.
+        populate(player);
         player.openInventory(getInventory());
+        renderControls(player);
     }
 
     @Override
@@ -127,16 +134,19 @@ public class NavigatorLayoutMenu extends Menu {
                 .name(messages.getString("setup_category_add", player))
                 .lore(messages.getStringList("setup_navigator_create_lore", player))
                 .into(playerInventory, CREATE_SLOT);
+        ItemBuilder.skull(Profileable.detect(SkullTextures.DELETE))
+                .name(messages.getString("setup_navigator_delete", player))
+                .lore(messages.getStringList("setup_navigator_delete_lore", player))
+                .into(playerInventory, DELETE_SLOT);
 
         // The palette holds only categories not currently in the navigator — the ones available to add.
         List<NavigatorCategory> notAdded = notAddedCategories();
         for (int i = 0; i < notAdded.size() && PALETTE_FIRST_SLOT + i <= PALETTE_LAST_SLOT; i++) {
             NavigatorCategory category = notAdded.get(i);
             int slot = PALETTE_FIRST_SLOT + i;
-            // The picked-up category lives on the cursor; show a design-colour pane in its palette slot so it never
-            // appears twice.
+            // The picked-up category lives on the cursor; leave its palette slot empty (no glass — the design-colour
+            // "held" pane is only used in the top navigator preview).
             if (category.getId().equals(heldCategoryId)) {
-                plugin.getMenuItems().addGlassPane(player, playerInventory, slot);
                 continue;
             }
             ItemBuilder.icon(category, player)
@@ -242,7 +252,12 @@ public class NavigatorLayoutMenu extends Menu {
     }
 
     private void handlePlayerClick(Player player, int slot, boolean rightClick) {
-        // While holding, clicking out of the navigator (into the palette) drops the category off the navigator.
+        // Dropping a held category onto the delete target removes it entirely.
+        if (heldCategoryId != null && slot == DELETE_SLOT) {
+            deleteHeldCategory(player);
+            return;
+        }
+        // While holding, clicking elsewhere out of the navigator drops the category off the navigator.
         if (heldCategoryId != null || heldSettings) {
             handleOutsideClickWhileHolding(player);
             return;
@@ -270,6 +285,18 @@ public class NavigatorLayoutMenu extends Menu {
         } else {
             pickUpCategory(player, clicked.getId(), -1);
         }
+    }
+
+    /**
+     * Deletes the held category outright (cascading any worlds to the default). The registry refuses to delete the last
+     * remaining category, in which case the pickup is simply cancelled.
+     */
+    private void deleteHeldCategory(Player player) {
+        if (heldCategoryId != null && registry.deleteCategory(heldCategoryId)) {
+            XSound.ENTITY_ITEM_BREAK.play(player);
+        }
+        clearHeld(player);
+        refresh(player);
     }
 
     /**

@@ -75,6 +75,11 @@ public final class SkullTextures {
     public static final String SCROLL_DOWN = "be9ae7a4be65fcbaee65181389a2f7d47e2e326db59ea3eb789a92c85ea46";
 
     /**
+     * Red bin/trash head used for "delete" drop targets.
+     */
+    public static final String DELETE = "6ffb912612a06e7ebf865be50ce9ff609195efd19bbe497c61e228c73ef7757";
+
+    /**
      * Head used for "remove"/"cancel" actions.
      */
     public static final String CANCEL = "MHF_TNT";

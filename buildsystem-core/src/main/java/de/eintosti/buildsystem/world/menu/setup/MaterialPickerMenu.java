@@ -45,7 +45,7 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
 
     private static final int SLOT_SCROLL_UP = 8;
     private static final int SLOT_FILTER = 26;
-    private static final int SLOT_BACK = 44;
+    private static final int SLOT_BACK = 35;
     private static final int SLOT_SCROLL_DOWN = 53;
 
     /**

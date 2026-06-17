@@ -39,13 +39,6 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class StatusEditorMenu extends RegistryEditorMenu {
 
-    private static final int SLOT_RENAME = 10;
-    private static final int SLOT_COLOR = 11;
-    private static final int SLOT_ICON = 12;
-    private static final int SLOT_ORDER = 13;
-    private static final int SLOT_BUILDING = 14;
-    private static final int SLOT_NAVIGATOR = 15;
-    private static final int SLOT_PROGRESSES = 16;
     private static final int SLOT_BACK = 18;
 
     private final WorldStatusRegistryImpl registry;
@@ -62,25 +55,20 @@ public class StatusEditorMenu extends RegistryEditorMenu {
         this.registry = plugin.getWorldStatusRegistry();
         this.status = (WorldStatusImpl) status;
 
-        register(
-                SLOT_RENAME,
-                renameButton("setup_status_rename", "setup_status_rename_prompt", this.status::setDisplayName));
-        register(SLOT_COLOR, colorButton("setup_status_color", this.status::setColor));
-        register(SLOT_ICON, iconButton("setup_status_icon", this.status::getIcon, this.status::setIcon));
-        register(SLOT_ORDER, orderButton());
-        register(
-                SLOT_BUILDING,
+        registerCentered(List.of(
+                renameButton("setup_status_rename", "setup_status_rename_prompt", this.status::setDisplayName),
+                colorButton("setup_status_color", this.status::setColor),
+                iconButton("setup_status_icon", this.status::getIcon, this.status::setIcon),
+                orderButton(),
                 toggleButton(
                         "setup_status_building",
                         this.status::isBuildingAllowed,
-                        () -> this.status.setBuildingAllowed(!this.status.isBuildingAllowed())));
-        register(
-                SLOT_NAVIGATOR,
+                        () -> this.status.setBuildingAllowed(!this.status.isBuildingAllowed())),
                 toggleButton(
                         "setup_status_navigator",
                         this.status::isVisibleInNavigator,
-                        () -> this.status.setVisibleInNavigator(!this.status.isVisibleInNavigator())));
-        register(SLOT_PROGRESSES, progressesButton());
+                        () -> this.status.setVisibleInNavigator(!this.status.isVisibleInNavigator())),
+                progressesButton()));
         register(SLOT_BACK, backButton());
     }
 

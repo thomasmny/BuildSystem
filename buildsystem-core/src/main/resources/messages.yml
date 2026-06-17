@@ -515,12 +515,19 @@ setup_navigator_placed_lore:
   - "&8» &7&oLeft-click to move"
   - "&8» &7&oRight-click to edit"
 setup_navigator_palette_lore:
-  - "&7Not in the navigator yet."
+  - "&7This category is hidden from the"
+  - "&7navigator until you add it."
   - ""
-  - "&8» &7&oLeft-click to add"
-  - "&8» &7&oRight-click to edit"
+  - "&8» &aLeft-click &7to add it to the navigator"
+  - "&8» &eRight-click &7to edit it"
+  - "&8» &7Drag onto the &cbin &7to delete it"
 setup_navigator_create_lore:
   - "&8» &7&oClick to create a category"
+setup_navigator_delete: "&cDelete category"
+setup_navigator_delete_lore:
+  - "&7Drop a category here to delete it"
+  - "&7for good (its worlds move to the"
+  - "&7default category)."
 setup_navigator_settings_lore:
   - "&7The settings button players see"
   - "&7in the navigator."

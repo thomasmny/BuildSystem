@@ -45,8 +45,8 @@ abstract class RegistryManagementMenu<T> extends PaginatedMenu {
 
     private static final int ITEMS_PER_PAGE = 36;
     private static final int FIRST_CONTENT_SLOT = 9;
+    private static final int SLOT_RESET = 8;
     private static final int SLOT_BACK = 45;
-    private static final int SLOT_RESET = 47;
     private static final int SLOT_ADD = 49;
     private static final int SLOT_PREVIOUS_PAGE = 52;
     private static final int SLOT_NEXT_PAGE = 53;

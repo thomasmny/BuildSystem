@@ -28,6 +28,8 @@ import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -40,13 +42,6 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class CategoryEditorMenu extends RegistryEditorMenu {
 
-    private static final int SLOT_RENAME = 10;
-    private static final int SLOT_COLOR = 11;
-    private static final int SLOT_ICON = 12;
-    private static final int SLOT_EVERYONE = 13;
-    private static final int SLOT_ADDED_PLAYERS = 14;
-    private static final int SLOT_STATUSES = 15;
-    private static final int SLOT_SKULL = 16;
     private static final int SLOT_BACK = 18;
 
     private final NavigatorCategoryRegistryImpl registry;
@@ -65,24 +60,25 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
         this.registry = plugin.getNavigatorCategoryRegistry();
         this.category = (NavigatorCategoryImpl) category;
 
-        register(
-                SLOT_RENAME,
+        List<MenuButton> properties = new ArrayList<>();
+        properties.add(
                 renameButton("setup_category_rename", "setup_category_rename_prompt", this.category::setDisplayName));
-        register(SLOT_COLOR, colorButton("setup_category_color", this.category::setColor));
-        register(SLOT_ICON, iconButton("setup_category_icon", this.category::getIcon, this.category::setIcon));
-        register(SLOT_EVERYONE, visibilityButton(Visibility.EVERYONE, "setup_category_visibility_everyone"));
-        register(SLOT_ADDED_PLAYERS, visibilityButton(Visibility.ADDED_PLAYERS, "setup_category_visibility_added"));
-        register(
-                SLOT_STATUSES,
-                labelled(
-                        XMaterial.NAME_TAG,
-                        "setup_category_statuses",
-                        (p, event) -> new CategoryStatusesMenu(plugin, p, this.category).open(p)));
+        properties.add(colorButton("setup_category_color", this.category::setColor));
+        properties.add(iconButton("setup_category_icon", this.category::getIcon, this.category::setIcon));
+        properties.add(
+                visibilityButton(Visibility.EVERYONE, XMaterial.ENDER_EYE, "setup_category_visibility_everyone"));
+        properties.add(
+                visibilityButton(Visibility.ADDED_PLAYERS, XMaterial.ENDER_PEARL, "setup_category_visibility_added"));
+        properties.add(labelled(
+                XMaterial.BOOK,
+                "setup_category_statuses",
+                (p, event) -> new CategoryStatusesMenu(plugin, p, this.category).open(p)));
         // The skull-texture option only makes sense for a player-head icon, so it appears only then (keeping the
         // property row contiguous as the last entry otherwise).
         if (this.category.getIcon() == XMaterial.PLAYER_HEAD) {
-            register(SLOT_SKULL, skullButton());
+            properties.add(skullButton());
         }
+        registerCentered(properties);
         register(SLOT_BACK, backButton());
     }
 
@@ -123,11 +119,11 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
         return messages.getString("setup_category_skull_custom", player);
     }
 
-    private MenuButton visibilityButton(Visibility visibility, String nameKey) {
+    private MenuButton visibilityButton(Visibility visibility, XMaterial icon, String nameKey) {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> {
                     boolean active = category.getVisibilities().contains(visibility);
-                    ItemBuilder.of(active ? XMaterial.LIME_DYE : XMaterial.GRAY_DYE)
+                    ItemBuilder.of(icon)
                             .name(messages.getString(nameKey, player))
                             .lore(messages.getStringList(
                                     active ? "setup_toggle_enabled" : "setup_toggle_disabled", player))

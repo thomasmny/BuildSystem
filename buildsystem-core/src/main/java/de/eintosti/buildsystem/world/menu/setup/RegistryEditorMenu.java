@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
+import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -155,6 +156,19 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
                     openManagement(player);
                 })
                 .build();
+    }
+
+    /**
+     * Registers the given property buttons centred in the middle row (slots 9-17), so the row stays balanced whether it
+     * holds six or seven buttons.
+     *
+     * @param buttons The property buttons, in display order
+     */
+    protected final void registerCentered(List<MenuButton> buttons) {
+        int start = 9 + (10 - buttons.size()) / 2;
+        for (int i = 0; i < buttons.size(); i++) {
+            register(start + i, buttons.get(i));
+        }
     }
 
     @Override
