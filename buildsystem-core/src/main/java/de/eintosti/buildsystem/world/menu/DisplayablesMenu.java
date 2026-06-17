@@ -27,10 +27,7 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.*;
 import de.eintosti.buildsystem.api.world.display.WorldFilter.Mode;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
-import de.eintosti.buildsystem.menu.ItemBuilder;
-import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.PaginatedMenu;
-import de.eintosti.buildsystem.menu.PlayerChatInput;
+import de.eintosti.buildsystem.menu.*;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
@@ -67,10 +64,6 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     private static final int FIRST_BOTTOM_BAR_SLOT = 45;
     private static final int LAST_BOTTOM_BAR_SLOT = 53;
 
-    private static final String PREVIOUS_PAGE_SKULL_PROFILE =
-            "86971dd881dbaf4fd6bcaa93614493c612f869641ed59d1c9363a3666a5fa6";
-    private static final String NEXT_PAGE_SKULL_PROFILE =
-            "f32ca66056b72863e98f7f32bd7d94c7a0d796af691c9ac3a9136331352288f9";
     private static final String NO_WORLDS_SKULL_PROFILE =
             "2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6";
 
@@ -170,8 +163,8 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         addWorldSortItem(inv);
         addWorldFilterItem(inv);
         addExtraItems(inv, player);
-        register(SLOT_PREVIOUS_PAGE, previousPageButton(PREVIOUS_PAGE_SKULL_PROFILE, MAX_WORLDS_PER_PAGE));
-        register(SLOT_NEXT_PAGE, nextPageButton(NEXT_PAGE_SKULL_PROFILE, MAX_WORLDS_PER_PAGE));
+        register(SLOT_PREVIOUS_PAGE, previousPageButton(SkullTextures.PREVIOUS_PAGE, MAX_WORLDS_PER_PAGE));
+        register(SLOT_NEXT_PAGE, nextPageButton(SkullTextures.NEXT_PAGE, MAX_WORLDS_PER_PAGE));
 
         for (int i = FIRST_WORD_SLOT; i <= LAST_WORLD_SLOT; i++) {
             inv.setItem(i, null);

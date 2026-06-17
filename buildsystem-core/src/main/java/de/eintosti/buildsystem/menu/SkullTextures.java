@@ -30,14 +30,14 @@ import org.jspecify.annotations.NullMarked;
 public final class SkullTextures {
 
     /**
-     * Right-pointing arrow used for the "next page" button (and reused for setup default items).
+     * Right-pointing arrow used for the "next page" button.
      */
-    public static final String NEXT_PAGE = "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158";
+    public static final String NEXT_PAGE = "f32ca66056b72863e98f7f32bd7d94c7a0d796af691c9ac3a9136331352288f9";
 
     /**
      * Left-pointing arrow used for the "previous page" button.
      */
-    public static final String PREVIOUS_PAGE = "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2";
+    public static final String PREVIOUS_PAGE = "86971dd881dbaf4fd6bcaa93614493c612f869641ed59d1c9363a3666a5fa6";
 
     /**
      * Green plus used for "create"/"add" actions (create world, add builder).
@@ -78,6 +78,11 @@ public final class SkullTextures {
      * Red bin/trash head used for "delete" drop targets.
      */
     public static final String DELETE = "6ffb912612a06e7ebf865be50ce9ff609195efd19bbe497c61e228c73ef7757";
+
+    /**
+     * Refresh/arrows head used for "reset to defaults" actions.
+     */
+    public static final String RESET = "816ea34a6a6ec5c051e6932f1c471b7012b298d38d179f1b487c413f51959cd4";
 
     /**
      * Head used for "remove"/"cancel" actions.

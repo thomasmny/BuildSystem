@@ -43,7 +43,7 @@ public class CategoryStatusesMenu extends PaginatedMenu {
 
     private static final int ITEMS_PER_PAGE = 36;
     private static final int FIRST_CONTENT_SLOT = 9;
-    private static final int SLOT_BACK = 49;
+    private static final int SLOT_BACK = 45;
     private static final int SLOT_PREVIOUS_PAGE = 52;
     private static final int SLOT_NEXT_PAGE = 53;
 
@@ -66,8 +66,8 @@ public class CategoryStatusesMenu extends PaginatedMenu {
     @Override
     protected void populate(Player player) {
         clearButtons();
-        // Frame the whole menu so the (usually mostly empty) grid reads as a deliberate panel, not a void.
-        plugin.getMenuItems().fillAll(player, getInventory());
+        // Top + bottom glass border with a hollow middle, matching the status/category management menus.
+        plugin.getMenuItems().fillWithGlass(getInventory(), player);
 
         List<BuildWorldStatus> statuses =
                 List.copyOf(plugin.getWorldStatusRegistry().getStatuses());

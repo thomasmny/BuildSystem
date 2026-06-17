@@ -114,10 +114,19 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
             return PICKABLE;
         }
         String needle = filter.toLowerCase(Locale.ROOT);
-        return PICKABLE.stream()
-                .filter(material ->
-                        prettyName(material).toLowerCase(Locale.ROOT).contains(needle))
-                .toList();
+        return PICKABLE.stream().filter(material -> matches(material, needle)).toList();
+    }
+
+    /**
+     * Matches the search term against both the readable display name ({@code Diamond Pickaxe}) and the registry name
+     * ({@code diamond_pickaxe} / {@code minecraft:diamond_pickaxe}), so either form finds the item.
+     */
+    private static boolean matches(XMaterial material, String needle) {
+        if (prettyName(material).toLowerCase(Locale.ROOT).contains(needle)) {
+            return true;
+        }
+        String registryName = material.name().toLowerCase(Locale.ROOT);
+        return registryName.contains(needle) || ("minecraft:" + registryName).contains(needle);
     }
 
     private MenuButton materialButton(XMaterial material) {

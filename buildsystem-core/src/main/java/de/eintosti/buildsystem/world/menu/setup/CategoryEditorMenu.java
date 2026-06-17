@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.world.menu.setup;
 
 import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
@@ -63,45 +62,62 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
         List<MenuButton> properties = new ArrayList<>();
         properties.add(
                 renameButton("setup_category_rename", "setup_category_rename_prompt", this.category::setDisplayName));
-        properties.add(colorButton("setup_category_color", this.category::setColor));
-        properties.add(iconButton("setup_category_icon", this.category::getIcon, this.category::setIcon));
+        properties.add(colorButton("setup_category_color", this.category::getColor, this.category::setColor));
+        properties.add(iconButton());
         properties.add(
                 visibilityButton(Visibility.EVERYONE, XMaterial.ENDER_EYE, "setup_category_visibility_everyone"));
         properties.add(
                 visibilityButton(Visibility.ADDED_PLAYERS, XMaterial.ENDER_PEARL, "setup_category_visibility_added"));
-        properties.add(labelled(
-                XMaterial.BOOK,
-                "setup_category_statuses",
-                (p, event) -> new CategoryStatusesMenu(plugin, p, this.category).open(p)));
-        // The skull-texture option only makes sense for a player-head icon, so it appears only then (keeping the
-        // property row contiguous as the last entry otherwise).
-        if (this.category.getIcon() == XMaterial.PLAYER_HEAD) {
-            properties.add(skullButton());
-        }
+        properties.add(statusesButton());
         registerCentered(properties);
         register(SLOT_BACK, backButton());
     }
 
-    private MenuButton skullButton() {
+    /**
+     * The category icon button. Left-click opens the item picker to choose the material. When that material is a player
+     * head, the skull texture is part of the same control: right-click prompts for it (a texture, {@code viewer} for the
+     * viewing player's head, or {@code none} to clear).
+     */
+    private MenuButton iconButton() {
+        boolean isHead = category.getIcon() == XMaterial.PLAYER_HEAD;
         return MenuButton.builder()
-                .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.PLAYER_HEAD)
-                        .name(messages.getString(
-                                "setup_category_skull", player, Map.entry("%state%", skullState(player))))
-                        .lore(messages.getStringList("setup_category_skull_lore", player))
+                .render((player, inventory, slot) -> ItemBuilder.icon(category, player)
+                        .name(messages.getString("setup_category_icon", player))
+                        .lore(messages.getStringList(
+                                isHead ? "setup_category_icon_head_lore" : "setup_category_icon_lore",
+                                player,
+                                Map.entry("%texture%", skullState(player))))
                         .into(inventory, slot))
-                .onClick((player, event) ->
-                        new PlayerChatInput(plugin, player, "setup_category_skull_prompt", input -> {
-                            String trimmed = input.strip();
-                            if (trimmed.equalsIgnoreCase("none") || trimmed.equalsIgnoreCase("clear")) {
-                                category.setIconSkullTexture(null);
-                            } else if (trimmed.equalsIgnoreCase("viewer")) {
-                                category.setIconSkullTexture(ItemBuilder.VIEWER_HEAD);
-                            } else {
-                                category.setIconSkullTexture(trimmed);
-                            }
-                            save(player);
-                        }))
+                .onClick((player, event) -> {
+                    if (isHead && event.isRightClick()) {
+                        promptSkullTexture(player);
+                        return;
+                    }
+                    new MaterialPickerMenu(
+                                    plugin,
+                                    player,
+                                    material -> {
+                                        category.setIcon(material);
+                                        save(player);
+                                    },
+                                    () -> reopen(player))
+                            .open(player);
+                })
                 .build();
+    }
+
+    private void promptSkullTexture(Player player) {
+        new PlayerChatInput(plugin, player, "setup_category_skull_prompt", input -> {
+            String trimmed = input.strip();
+            if (trimmed.equalsIgnoreCase("none") || trimmed.equalsIgnoreCase("clear")) {
+                category.setIconSkullTexture(null);
+            } else if (trimmed.equalsIgnoreCase("viewer")) {
+                category.setIconSkullTexture(ItemBuilder.VIEWER_HEAD);
+            } else {
+                category.setIconSkullTexture(trimmed);
+            }
+            save(player);
+        });
     }
 
     /**
@@ -123,23 +139,47 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> {
                     boolean active = category.getVisibilities().contains(visibility);
+                    String state = messages.getString(
+                            active ? "setup_category_visibility_state_on" : "setup_category_visibility_state_off",
+                            player);
                     ItemBuilder.of(icon)
                             .name(messages.getString(nameKey, player))
-                            .lore(messages.getStringList(
-                                    active ? "setup_toggle_enabled" : "setup_toggle_disabled", player))
+                            .lore(messages.getStringList(nameKey + "_lore", player, Map.entry("%state%", state)))
                             .glow(active)
                             .into(inventory, slot);
                 })
                 .onClick((player, event) -> {
-                    boolean active = category.getVisibilities().contains(visibility);
-                    if (active && category.getVisibilities().size() == 1) {
-                        XSound.ENTITY_ITEM_BREAK.play(player);
-                        messages.sendMessage(player, "setup_category_visibility_last");
-                        return;
-                    }
                     category.toggleVisibility(visibility);
                     save(player);
                 })
+                .build();
+    }
+
+    private MenuButton statusesButton() {
+        return MenuButton.builder()
+                .render((player, inventory, slot) -> {
+                    List<String> lore = new ArrayList<>(messages.getStringList("setup_category_statuses_lore", player));
+                    lore.add(messages.getString("setup_category_statuses_members", player));
+                    if (category.getStatusIds().isEmpty()) {
+                        lore.add(messages.getString("setup_category_statuses_none", player));
+                    } else {
+                        for (String statusId : category.getStatusIds()) {
+                            String name = plugin.getWorldStatusRegistry()
+                                    .getStatus(statusId)
+                                    .map(status -> ColorAPI.process(status.getStyledName()))
+                                    .orElse(statusId);
+                            lore.add(messages.getString(
+                                    "setup_category_statuses_member_entry", player, Map.entry("%status%", name)));
+                        }
+                    }
+                    lore.add("");
+                    lore.add(messages.getString("setup_category_statuses_hint", player));
+                    ItemBuilder.of(XMaterial.BOOK)
+                            .name(messages.getString("setup_category_statuses", player))
+                            .lore(lore)
+                            .into(inventory, slot);
+                })
+                .onClick((player, event) -> new CategoryStatusesMenu(plugin, player, category).open(player))
                 .build();
     }
 

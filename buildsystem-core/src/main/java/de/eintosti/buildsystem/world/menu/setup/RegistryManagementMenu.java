@@ -45,7 +45,7 @@ abstract class RegistryManagementMenu<T> extends PaginatedMenu {
 
     private static final int ITEMS_PER_PAGE = 36;
     private static final int FIRST_CONTENT_SLOT = 9;
-    private static final int SLOT_RESET = 8;
+    private static final int SLOT_RESET = 4;
     private static final int SLOT_BACK = 45;
     private static final int SLOT_ADD = 49;
     private static final int SLOT_PREVIOUS_PAGE = 52;
@@ -117,7 +117,7 @@ abstract class RegistryManagementMenu<T> extends PaginatedMenu {
 
     private MenuButton resetButton() {
         return MenuButton.builder()
-                .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.NETHER_STAR)
+                .render((player, inventory, slot) -> ItemBuilder.skull(Profileable.detect(SkullTextures.RESET))
                         .name(messages.getString("setup_reset", player))
                         .lore(messages.getStringList("setup_reset_lore", player))
                         .into(inventory, slot))

@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -88,19 +89,23 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
                         }));
     }
 
-    protected final MenuButton colorButton(String nameKey, Consumer<String> apply) {
-        return labelled(
-                XMaterial.INK_SAC,
-                nameKey,
-                (player, event) -> new DyePickerMenu(
+    protected final MenuButton colorButton(String nameKey, Supplier<String> current, Consumer<String> apply) {
+        return MenuButton.builder()
+                .render((player, inventory, slot) -> ItemBuilder.of(DyePickerMenu.dyeFor(current.get()))
+                        .name(messages.getString(nameKey, player))
+                        .lore(messages.getStringList(nameKey + "_lore", player))
+                        .into(inventory, slot))
+                .onClick((player, event) -> new DyePickerMenu(
                                 plugin,
                                 player,
+                                current.get(),
                                 token -> {
                                     apply.accept(token);
                                     save(player);
                                 },
                                 () -> reopen(player))
-                        .open(player));
+                        .open(player))
+                .build();
     }
 
     protected final MenuButton iconButton(String nameKey, Supplier<XMaterial> getter, Consumer<XMaterial> setter) {
@@ -123,13 +128,16 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
 
     protected final MenuButton toggleButton(String nameKey, BooleanSupplier state, Runnable toggle) {
         return MenuButton.builder()
-                .render((player, inventory, slot) -> ItemBuilder.of(
-                                state.getAsBoolean() ? XMaterial.LIME_DYE : XMaterial.GRAY_DYE)
-                        .name(messages.getString(nameKey, player))
-                        .lore(messages.getStringList(
-                                state.getAsBoolean() ? "setup_toggle_enabled" : "setup_toggle_disabled", player))
-                        .glow(state.getAsBoolean())
-                        .into(inventory, slot))
+                .render((player, inventory, slot) -> {
+                    boolean on = state.getAsBoolean();
+                    String stateText =
+                            messages.getString(on ? "setup_toggle_state_on" : "setup_toggle_state_off", player);
+                    ItemBuilder.of(on ? XMaterial.LIME_DYE : XMaterial.GRAY_DYE)
+                            .name(messages.getString(nameKey, player))
+                            .lore(messages.getStringList(nameKey + "_lore", player, Map.entry("%state%", stateText)))
+                            .glow(on)
+                            .into(inventory, slot);
+                })
                 .onClick((player, event) -> {
                     toggle.run();
                     save(player);
@@ -137,10 +145,15 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
                 .build();
     }
 
+    /**
+     * Builds a labelled action button whose lore is read from {@code <nameKey>_lore}, so every property button carries a
+     * short description.
+     */
     protected final MenuButton labelled(XMaterial icon, String nameKey, MenuButton.ClickHandler onClick) {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(icon)
                         .name(messages.getString(nameKey, player))
+                        .lore(messages.getStringList(nameKey + "_lore", player))
                         .into(inventory, slot))
                 .onClick(onClick)
                 .build();

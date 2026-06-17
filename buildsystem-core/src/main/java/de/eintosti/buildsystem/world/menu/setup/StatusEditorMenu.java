@@ -57,7 +57,7 @@ public class StatusEditorMenu extends RegistryEditorMenu {
 
         registerCentered(List.of(
                 renameButton("setup_status_rename", "setup_status_rename_prompt", this.status::setDisplayName),
-                colorButton("setup_status_color", this.status::setColor),
+                colorButton("setup_status_color", this.status::getColor, this.status::setColor),
                 iconButton("setup_status_icon", this.status::getIcon, this.status::setIcon),
                 orderButton(),
                 toggleButton(

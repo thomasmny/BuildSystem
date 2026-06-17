@@ -47,22 +47,24 @@ public class DyePickerMenu extends ButtonMenu<MenuButton> {
      */
     private record Swatch(String token, XMaterial swatch, String label) {}
 
+    // Ordered by colour family — reds, oranges/yellows, greens, aquas, blues, purples, then greyscale dark→light — so
+    // the palette reads as a sorted gradient rather than the raw chat-code order.
     private static final List<Swatch> SWATCHES = List.of(
-            new Swatch("&0", XMaterial.BLACK_DYE, "Black"),
-            new Swatch("&1", XMaterial.BLUE_DYE, "Dark Blue"),
-            new Swatch("&2", XMaterial.GREEN_DYE, "Dark Green"),
-            new Swatch("&3", XMaterial.CYAN_DYE, "Dark Aqua"),
             new Swatch("&4", XMaterial.RED_DYE, "Dark Red"),
-            new Swatch("&5", XMaterial.PURPLE_DYE, "Dark Purple"),
+            new Swatch("&c", XMaterial.PINK_DYE, "Red"),
             new Swatch("&6", XMaterial.ORANGE_DYE, "Gold"),
-            new Swatch("&7", XMaterial.LIGHT_GRAY_DYE, "Gray"),
-            new Swatch("&8", XMaterial.GRAY_DYE, "Dark Gray"),
-            new Swatch("&9", XMaterial.LIGHT_BLUE_DYE, "Blue"),
-            new Swatch("&a", XMaterial.LIME_DYE, "Green"),
-            new Swatch("&b", XMaterial.CYAN_DYE, "Aqua"),
-            new Swatch("&c", XMaterial.RED_DYE, "Red"),
-            new Swatch("&d", XMaterial.MAGENTA_DYE, "Light Purple"),
             new Swatch("&e", XMaterial.YELLOW_DYE, "Yellow"),
+            new Swatch("&2", XMaterial.GREEN_DYE, "Dark Green"),
+            new Swatch("&a", XMaterial.LIME_DYE, "Green"),
+            new Swatch("&3", XMaterial.CYAN_DYE, "Dark Aqua"),
+            new Swatch("&b", XMaterial.LIGHT_BLUE_DYE, "Aqua"),
+            new Swatch("&1", XMaterial.BLUE_DYE, "Dark Blue"),
+            new Swatch("&9", XMaterial.LAPIS_LAZULI, "Blue"),
+            new Swatch("&5", XMaterial.PURPLE_DYE, "Dark Purple"),
+            new Swatch("&d", XMaterial.MAGENTA_DYE, "Light Purple"),
+            new Swatch("&0", XMaterial.BLACK_DYE, "Black"),
+            new Swatch("&8", XMaterial.GRAY_DYE, "Dark Gray"),
+            new Swatch("&7", XMaterial.LIGHT_GRAY_DYE, "Gray"),
             new Swatch("&f", XMaterial.WHITE_DYE, "White"));
 
     // Three rows of swatches, seven per row (the last holds the remaining two), inside the plugin's one-slot border.
@@ -72,29 +74,62 @@ public class DyePickerMenu extends ButtonMenu<MenuButton> {
         28, 29
     };
 
+    /**
+     * {@return the dye that represents the given legacy colour token} Falls back to a black dye for an unknown or hex
+     * token, so a colour is always shown as a dye swatch.
+     *
+     * @param token The legacy colour token (e.g. {@code "&a"})
+     */
+    public static XMaterial dyeFor(String token) {
+        return SWATCHES.stream()
+                .filter(swatch -> swatch.token().equalsIgnoreCase(token))
+                .map(Swatch::swatch)
+                .findFirst()
+                .orElse(XMaterial.BLACK_DYE);
+    }
+
+    private static final int SLOT_BACK = 40;
+
     private final BuildSystemPlugin plugin;
+    private final String currentToken;
     private final Consumer<String> onPick;
     private final Runnable onBack;
 
-    public DyePickerMenu(BuildSystemPlugin plugin, Player player, Consumer<String> onPick, Runnable onBack) {
+    public DyePickerMenu(
+            BuildSystemPlugin plugin, Player player, String currentToken, Consumer<String> onPick, Runnable onBack) {
         super(plugin.getMessages(), 45, plugin.getMessages().getString("setup_color_picker_title", player));
         this.plugin = plugin;
+        this.currentToken = currentToken;
         this.onPick = onPick;
         this.onBack = onBack;
 
         for (int i = 0; i < SWATCHES.size(); i++) {
             register(SWATCH_SLOTS[i], swatchButton(SWATCHES.get(i)));
         }
+        register(SLOT_BACK, backButton());
     }
 
     private MenuButton swatchButton(Swatch swatch) {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(swatch.swatch())
                         .name(ColorAPI.process(swatch.token() + swatch.label()))
+                        .glow(swatch.token().equalsIgnoreCase(currentToken))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     onPick.accept(swatch.token());
+                })
+                .build();
+    }
+
+    private MenuButton backButton() {
+        return MenuButton.builder()
+                .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.BARRIER)
+                        .name(messages.getString("setup_back", player))
+                        .into(inventory, slot))
+                .onClick((player, event) -> {
+                    XSound.BLOCK_CHEST_OPEN.play(player);
+                    onBack.run();
                 })
                 .build();
     }
@@ -107,10 +142,6 @@ public class DyePickerMenu extends ButtonMenu<MenuButton> {
 
     @Override
     protected void onUnhandledClick(Player player, InventoryClickEvent event) {
-        if (event.getRawSlot() < 0 || event.getRawSlot() >= getInventory().getSize()) {
-            return;
-        }
-        XSound.BLOCK_CHEST_OPEN.play(player);
-        onBack.run();
+        // Filler clicks do nothing; navigation is via the explicit back button.
     }
 }

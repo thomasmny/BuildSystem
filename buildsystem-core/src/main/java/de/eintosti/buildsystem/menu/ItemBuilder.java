@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.menu;
 
-import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
@@ -32,7 +31,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 import org.bukkit.NamespacedKey;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
@@ -246,17 +244,9 @@ public final class ItemBuilder {
      * @return This builder, for chaining
      */
     public ItemBuilder glow(boolean enabled) {
-        if (!enabled) {
-            return this;
-        }
-
         ensureMeta();
         if (itemMeta != null) {
-            Enchantment enchantment = XEnchantment.UNBREAKING.get();
-            if (enchantment != null) {
-                itemStack.addUnsafeEnchantment(enchantment, 1);
-                itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-            }
+            itemMeta.setEnchantmentGlintOverride(enabled);
         }
         return this;
     }
