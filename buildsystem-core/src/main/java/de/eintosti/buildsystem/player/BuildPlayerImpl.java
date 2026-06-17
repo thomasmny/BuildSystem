@@ -99,7 +99,7 @@ public final class BuildPlayerImpl implements BuildPlayer {
         return lastLookedAt;
     }
 
-    public void setLastLookedAt(@Nullable NavigatorCategory type) {
-        this.lastLookedAt = type;
+    public void setLastLookedAt(@Nullable NavigatorCategory category) {
+        this.lastLookedAt = category;
     }
 }

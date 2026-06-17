@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.listener.world;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -43,7 +42,7 @@ public class FoodLevelChangeListener implements Listener {
         }
 
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
-        if (buildWorld != null && buildWorld.getData().getStatus() == BuildWorldStatus.ARCHIVE) {
+        if (buildWorld != null && !buildWorld.getData().getStatus().isBuildingAllowed()) {
             event.setCancelled(true);
         }
     }

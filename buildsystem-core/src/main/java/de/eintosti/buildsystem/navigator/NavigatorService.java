@@ -20,13 +20,12 @@ package de.eintosti.buildsystem.navigator;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
-import com.cryptomorin.xseries.profiles.builder.XSkull;
-import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.menu.SkullTextures;
+import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
+import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.util.*;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -66,8 +65,10 @@ public class NavigatorService {
     }
 
     public @Nullable NavigatorCategory matchNavigatorCategory(ArmorStand armorStand) {
-        String categoryName = armorStand.getPersistentDataContainer().get(categoryKey, PersistentDataType.STRING);
-        return categoryName != null ? NavigatorCategory.valueOf(categoryName) : null;
+        String categoryId = armorStand.getPersistentDataContainer().get(categoryKey, PersistentDataType.STRING);
+        return categoryId != null
+                ? plugin.getNavigatorCategoryRegistry().getCategory(categoryId).orElse(null)
+                : null;
     }
 
     public @Nullable UUID getOwner(ArmorStand armorStand) {
@@ -76,10 +77,15 @@ public class NavigatorService {
     }
 
     public void spawnArmorStands(Player player) {
-        ArmorStand worldNavigator = spawnWorldNavigator(player);
-        ArmorStand worldArchive = spawnWorldArchive(player);
-        ArmorStand privateWorlds = spawnPrivateWorlds(player);
-        this.armorStands.put(player.getUniqueId(), new ArmorStand[] {worldNavigator, worldArchive, privateWorlds});
+        List<NavigatorCategory> shownCategories = plugin.getNavigatorCategoryRegistry().getCategories().stream()
+                .filter(NavigatorCategory::isShownInNavigator)
+                .toList();
+
+        ArmorStand[] stands = new ArmorStand[shownCategories.size()];
+        for (int i = 0; i < shownCategories.size(); i++) {
+            stands[i] = spawnArmorStand(player, shownCategories.get(i), spreadAngle(i, shownCategories.size()));
+        }
+        this.armorStands.put(player.getUniqueId(), stands);
     }
 
     public void removeArmorStands(Player player) {
@@ -92,20 +98,15 @@ public class NavigatorService {
         }
     }
 
-    private ArmorStand spawnWorldNavigator(Player player) {
-        Location navigatorLocation = calculatePosition(player, SPREAD / 2 * -1);
-        return spawnArmorStand(
-                player, navigatorLocation, NavigatorCategory.PUBLIC, true, SkullTextures.WORLD_NAVIGATOR);
-    }
-
-    private ArmorStand spawnWorldArchive(Player player) {
-        Location archiveLocation = calculatePosition(player, 0);
-        return spawnArmorStand(player, archiveLocation, NavigatorCategory.ARCHIVE, true, SkullTextures.WORLD_ARCHIVE);
-    }
-
-    private ArmorStand spawnPrivateWorlds(Player player) {
-        Location privateLocation = calculatePosition(player, SPREAD / 2);
-        return spawnArmorStand(player, privateLocation, NavigatorCategory.PRIVATE, false, player.getName());
+    /**
+     * Distributes the shown categories evenly across the {@link #SPREAD} arc in front of the player; a single category
+     * sits dead centre.
+     */
+    private float spreadAngle(int index, int count) {
+        if (count <= 1) {
+            return 0;
+        }
+        return -SPREAD / 2 + (SPREAD * index / (count - 1));
     }
 
     private Location calculatePosition(Player player, float angle) {
@@ -122,23 +123,27 @@ public class NavigatorService {
         return location;
     }
 
-    private ArmorStand spawnArmorStand(
-            Player player, Location location, NavigatorCategory category, boolean customSkull, String skullUrl) {
+    private ArmorStand spawnArmorStand(Player player, NavigatorCategory category, float angle) {
+        Location location = calculatePosition(player, angle);
         ArmorStand armorStand = location.getWorld().spawn(location, ArmorStand.class);
         armorStand.setVisible(false);
         armorStand.setGravity(false);
         armorStand.setCanPickupItems(false);
-        armorStand
-                .getEquipment()
-                .setHelmet(XSkull.createItem()
-                        .profile(Profileable.detect(customSkull ? skullUrl : player.getName()))
-                        .apply());
+        armorStand.getEquipment().setHelmet(helmetFor(player, category));
 
         PersistentDataContainer pdc = armorStand.getPersistentDataContainer();
         pdc.set(ownerKey, PersistentDataType.STRING, player.getUniqueId().toString());
-        pdc.set(categoryKey, PersistentDataType.STRING, category.name());
+        pdc.set(categoryKey, PersistentDataType.STRING, category.getId());
 
         return armorStand;
+    }
+
+    /**
+     * Builds the floating head shown for a category, delegating the texture resolution (configured texture, viewer head
+     * for added-players categories, or the navigator texture) to {@link ItemBuilder#icon(NavigatorCategory, Player)}.
+     */
+    private ItemStack helmetFor(Player player, NavigatorCategory category) {
+        return ItemBuilder.icon(category, player).build();
     }
 
     public Set<Player> getOpenNavigator() {
@@ -253,18 +258,12 @@ public class NavigatorService {
         }
 
         NavigatorCategory lastLookedAt = buildPlayer.getLastLookedAt();
-        if (lastLookedAt == null || lastLookedAt != category) {
+        if (lastLookedAt == null || !lastLookedAt.equals(category)) {
             buildPlayer.setLastLookedAt(category);
             XSound.ENTITY_CHICKEN_EGG.play(player);
         }
 
-        String message =
-                switch (category) {
-                    case PUBLIC -> "new_navigator_world_navigator";
-                    case ARCHIVE -> "new_navigator_world_archive";
-                    case PRIVATE -> "new_navigator_private_worlds";
-                };
-        displayActionBarMessage(player, plugin.getMessages().getString(message, player));
+        displayActionBarMessage(player, ColorAPI.process(category.getColor() + category.getDisplayName()));
     }
 
     private void displayActionBarMessage(Player player, String message) {

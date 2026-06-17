@@ -22,7 +22,6 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.access.WorldSetting;
 import de.eintosti.buildsystem.api.world.builder.Builders;
-import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
@@ -88,7 +87,7 @@ public class WorldPermissionsImpl implements WorldPermissions {
             return true;
         }
 
-        if (buildWorld.getData().getStatus() == BuildWorldStatus.ARCHIVE
+        if (!buildWorld.getData().getStatus().isBuildingAllowed()
                 && !player.hasPermission("buildsystem.bypass.archive")) {
             return false;
         }
@@ -145,11 +144,11 @@ public class WorldPermissionsImpl implements WorldPermissions {
         }
 
         WorldData worldData = buildWorld.getData();
-        if (worldData.getStatus() == BuildWorldStatus.ARCHIVE) {
+        if (!worldData.getStatus().isBuildingAllowed()) {
             return player.hasPermission("buildsystem.bypass.permission.archive");
         }
 
-        return worldData.isPrivateWorld()
+        return worldData.getVisibility().isPrivate()
                 ? player.hasPermission("buildsystem.bypass.permission.private")
                 : player.hasPermission("buildsystem.bypass.permission.public");
     }

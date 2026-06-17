@@ -22,7 +22,7 @@ import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.WorldData;
-import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import fr.mrmicky.fastboard.FastBoard;
 import java.util.HashMap;
@@ -132,7 +132,7 @@ public class SettingsService {
             WorldData worldData = buildWorld.getData();
             Builders builders = buildWorld.getBuilders();
 
-            status = plugin.getMessages().getString(Messages.getMessageKey(worldData.getStatus()), player);
+            status = ColorAPI.process(worldData.getStatus().getStyledName());
             permission = worldData.getPermission();
             project = worldData.getProject();
             creator = builders.hasCreator() ? builders.getCreator().getName() : "-";

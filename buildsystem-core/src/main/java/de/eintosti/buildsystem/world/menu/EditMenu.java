@@ -30,11 +30,11 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.command.subcommand.worlds.SetPermissionSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -420,13 +420,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
     private void renderWorldInfo(Player player, Inventory inventory) {
         String displayName =
                 messages.getString("worldeditor_world_item", player, Map.entry("%world%", buildWorld.getName()));
-        XMaterial material = buildWorld.getData().getMaterial();
-
-        if (material == XMaterial.PLAYER_HEAD) {
-            plugin.getMenuItems().addWorldItem(inventory, SLOT_WORLD_INFO, buildWorld, displayName, new ArrayList<>());
-        } else {
-            ItemBuilder.of(material).name(displayName).into(inventory, SLOT_WORLD_INFO);
-        }
+        ItemBuilder.icon(buildWorld, player).name(displayName).into(inventory, SLOT_WORLD_INFO);
     }
 
     private void renderTime(Player player, Inventory inventory) {
@@ -481,7 +475,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
     private void renderVisibility(Player player, Inventory inventory) {
         String displayName = messages.getString("worldeditor_visibility_item", player);
-        boolean isPrivate = buildWorld.getData().isPrivateWorld();
+        boolean isPrivate = buildWorld.getData().getVisibility().isPrivate();
 
         if (!playerManager.canCreateWorld(player, Visibility.matchVisibility(isPrivate))) {
             ItemBuilder.of(XMaterial.BARRIER)
@@ -522,12 +516,12 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
     private void renderStatus(Player player, Inventory inventory) {
         BuildWorldStatus status = buildWorld.getData().getStatus();
-        ItemBuilder.of(plugin.getCustomizableIcons().getIcon(status))
+        ItemBuilder.of(status.getIcon())
                 .name(messages.getString("worldeditor_status_item", player))
                 .lore(messages.getStringList(
                         "worldeditor_status_lore",
                         player,
-                        Map.entry("%status%", messages.getString(Messages.getMessageKey(status), player))))
+                        Map.entry("%status%", ColorAPI.process(status.getStyledName()))))
                 .into(inventory, SLOT_STATUS);
     }
 
@@ -608,7 +602,8 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         }
         if (requirePermission(player, "buildsystem.edit.visibility")) {
             WorldData worldData = buildWorld.getData();
-            worldData.setPrivateWorld(!worldData.isPrivateWorld());
+            worldData.setVisibility(
+                    worldData.getVisibility().isPrivate() ? Visibility.EVERYONE : Visibility.ADDED_PLAYERS);
         }
         reopen(player);
     }

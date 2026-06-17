@@ -61,6 +61,9 @@ public class PlayerQuitListener implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
+        // Restore the real inventory first if the navigator layout editor took it over, so later quit handling
+        // (e.g. clear-inventory) and the server's player-data save see the genuine contents.
+        plugin.getNavigatorEditorService().restore(player);
         navigatorService.closeNewNavigator(player);
 
         Settings settings = settingsManager.getSettings(player);

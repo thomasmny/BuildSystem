@@ -65,7 +65,7 @@ public final class MaxWorldsResolver {
                 continue;
             }
 
-            if (!splitPermission[2].equalsIgnoreCase(visibility.name())) {
+            if (!splitPermission[2].equalsIgnoreCase(visibility.getPermissionNode())) {
                 continue;
             }
 

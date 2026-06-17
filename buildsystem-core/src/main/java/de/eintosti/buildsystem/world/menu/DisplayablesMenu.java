@@ -24,9 +24,6 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
-import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
-import de.eintosti.buildsystem.api.world.data.Visibility;
-import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.display.*;
 import de.eintosti.buildsystem.api.world.display.WorldFilter.Mode;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
@@ -85,8 +82,6 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
 
     protected final Player player;
     protected final NavigatorCategory category;
-    protected final Visibility requiredVisibility;
-    protected final Set<BuildWorldStatus> validStatuses;
 
     private final @Nullable String noWorldsMessage;
     private @Nullable List<Displayable> cachedDisplayables;
@@ -102,27 +97,21 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         this.player = player;
         this.category = options.category();
         this.noWorldsMessage = options.emptyMessage();
-        this.requiredVisibility = options.requiredVisibility();
-        this.validStatuses = options.validStatuses();
     }
 
     /**
-     * The configuration of a {@link DisplayablesMenu}: which {@link NavigatorCategory category} it lists, its title and
-     * "no worlds" message, the {@link Visibility} it requires, and the {@link BuildWorldStatus statuses} it shows.
-     * Bundled into one named-field object so subclasses no longer pass a long positional argument list to {@code super}.
+     * The configuration of a {@link DisplayablesMenu}: the {@link NavigatorCategory category} whose folders and worlds it lists,
+     * its title and "no worlds" message. A world is listed when {@link NavigatorCategoryRegistry#getCategoryForWorld(BuildWorld)}
+     * resolves to this category, so visibility and status filtering are derived from the category rather than passed separately.
      *
      * @param category The navigator category whose folders/worlds are listed
      * @param title The inventory title
      * @param emptyMessage The message shown when nothing matches, or {@code null} to show nothing
-     * @param requiredVisibility The visibility a world must have to be listed
-     * @param validStatuses The statuses a world must have to be listed
      */
     public record Options(
             NavigatorCategory category,
             String title,
-            @Nullable String emptyMessage,
-            Visibility requiredVisibility,
-            Set<BuildWorldStatus> validStatuses) {
+            @Nullable String emptyMessage) {
 
         /**
          * {@return a new {@link Builder}}
@@ -132,16 +121,13 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         }
 
         /**
-         * Fluent builder for {@link Options}. {@code requiredVisibility} defaults to {@link Visibility#IGNORE} and
-         * {@code validStatuses} to all statuses; {@code category} and {@code title} are required.
+         * Fluent builder for {@link Options}. {@code category} and {@code title} are required.
          */
         public static final class Builder {
 
             private @Nullable NavigatorCategory category;
             private @Nullable String title;
             private @Nullable String emptyMessage;
-            private Visibility requiredVisibility = Visibility.IGNORE;
-            private Set<BuildWorldStatus> validStatuses = EnumSet.allOf(BuildWorldStatus.class);
 
             private Builder() {}
 
@@ -160,23 +146,11 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                 return this;
             }
 
-            public Builder requiredVisibility(Visibility requiredVisibility) {
-                this.requiredVisibility = requiredVisibility;
-                return this;
-            }
-
-            public Builder validStatuses(Set<BuildWorldStatus> validStatuses) {
-                this.validStatuses = validStatuses;
-                return this;
-            }
-
             public Options build() {
                 return new Options(
                         Objects.requireNonNull(category, "category"),
                         Objects.requireNonNull(title, "title"),
-                        emptyMessage,
-                        requiredVisibility,
-                        validStatuses);
+                        emptyMessage);
             }
         }
     }
@@ -221,8 +195,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                     if (displayable instanceof BuildWorld buildWorld) {
                         manageWorldItemClick(event, buildWorld);
                     } else if (displayable instanceof Folder folder) {
-                        new FolderContentMenu(plugin, player, category, folder, this, requiredVisibility, validStatuses)
-                                .open(player);
+                        new FolderContentMenu(plugin, player, category, folder, this).open(player);
                     }
                 })
                 .build();
@@ -249,7 +222,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     @Unmodifiable
     protected Collection<Folder> collectFolders() {
         return folderStorage.getFolders().stream()
-                .filter(folder -> folder.getCategory() == this.category)
+                .filter(folder -> folder.getCategory().equals(this.category))
                 .filter(folder -> !folder.hasParent())
                 .filter(folder -> folder.canView(this.player))
                 .toList();
@@ -268,11 +241,9 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     }
 
     private boolean isWorldValidForDisplay(BuildWorld buildWorld) {
-        WorldData worldData = buildWorld.getData();
-        if (!this.worldStorage.isCorrectVisibility(worldData.isPrivateWorld(), this.requiredVisibility)) {
-            return false;
-        }
-        if (!this.validStatuses.contains(worldData.getStatus())) {
+        if (!plugin.getNavigatorCategoryRegistry()
+                .getCategoryForWorld(buildWorld)
+                .equals(this.category)) {
             return false;
         }
         if (!buildWorld.getPermissions().canEnter(this.player)) {
@@ -381,7 +352,8 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     }
 
     protected void beginWorldCreation() {
-        new CreateMenu(plugin, Page.PREDEFINED, this.requiredVisibility, null, this.player).open(this.player);
+        new CreateMenu(plugin, Page.PREDEFINED, this.category.getPrimaryVisibility(), null, this.player)
+                .open(this.player);
     }
 
     private void beginFolderCreation(Player player) {

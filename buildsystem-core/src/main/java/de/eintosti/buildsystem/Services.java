@@ -20,6 +20,7 @@ package de.eintosti.buildsystem;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.navigator.NavigatorEditorService;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
@@ -28,9 +29,12 @@ import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
+import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
+import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Internal holder for the plugin's services. Owns the service fields and constructs them in the exact order the plugin
@@ -41,20 +45,23 @@ final class Services {
 
     private final BuildSystemPlugin plugin;
 
-    private ConfigService configService;
-    private Messages messages;
+    private @Nullable ConfigService configService;
+    private @Nullable Messages messages;
 
-    private NavigatorService navigatorService;
-    private CustomBlockManager customBlockManager;
-    private PlayerServiceImpl playerService;
-    private PlayerLookupService playerLookupService;
-    private NoClipService noClipService;
-    private SettingsService settingsService;
-    private SpawnService spawnService;
-    private WorldServiceImpl worldService;
-    private BackupServiceImpl backupService;
-    private CustomizableIcons customizableIcons;
-    private MenuItems menuItems;
+    private @Nullable NavigatorService navigatorService;
+    private @Nullable NavigatorEditorService navigatorEditorService;
+    private @Nullable CustomBlockManager customBlockManager;
+    private @Nullable PlayerServiceImpl playerService;
+    private @Nullable PlayerLookupService playerLookupService;
+    private @Nullable NoClipService noClipService;
+    private @Nullable SettingsService settingsService;
+    private @Nullable SpawnService spawnService;
+    private @Nullable WorldServiceImpl worldService;
+    private @Nullable BackupServiceImpl backupService;
+    private @Nullable CustomizableIcons customizableIcons;
+    private @Nullable NavigatorCategoryRegistryImpl navigatorCategoryRegistry;
+    private @Nullable WorldStatusRegistryImpl worldStatusRegistry;
+    private @Nullable MenuItems menuItems;
 
     Services(BuildSystemPlugin plugin) {
         this.plugin = plugin;
@@ -73,7 +80,7 @@ final class Services {
      * {@code onLoad}.
      */
     Messages createMessages() {
-        this.messages = new Messages(plugin, configService);
+        this.messages = new Messages(plugin, config());
         return this.messages;
     }
 
@@ -82,69 +89,91 @@ final class Services {
      * {@code onEnable}.
      */
     void initClasses() {
+        this.navigatorCategoryRegistry = new NavigatorCategoryRegistryImpl(plugin);
+        this.worldStatusRegistry = new WorldStatusRegistryImpl(plugin, navigatorCategoryRegistry());
         this.customizableIcons = new CustomizableIcons(plugin);
 
         this.customBlockManager = new CustomBlockManager(plugin);
         this.playerLookupService = new PlayerLookupService(plugin);
         (this.playerService = new PlayerServiceImpl(plugin)).init();
         this.navigatorService = new NavigatorService(plugin);
+        this.navigatorEditorService = new NavigatorEditorService();
         this.noClipService = new NoClipService(plugin);
         (this.worldService = new WorldServiceImpl(plugin)).init();
         this.backupService = new BackupServiceImpl(plugin);
         this.settingsService = new SettingsService(plugin);
         this.spawnService = new SpawnService(plugin);
-        this.menuItems = new MenuItems(plugin, configService, messages, settingsService);
+        this.menuItems = new MenuItems(plugin, config(), messages(), settings());
+    }
+
+    private <T> T checkNotNull(@Nullable T service, String serviceName) {
+        if (service == null) {
+            throw new IllegalStateException(serviceName + " has not been initialized yet. Check the plugin lifecycle.");
+        }
+        return service;
     }
 
     ConfigService config() {
-        return configService;
+        return checkNotNull(configService, "ConfigService");
     }
 
     Messages messages() {
-        return messages;
+        return checkNotNull(messages, "Messages");
     }
 
     NavigatorService navigator() {
-        return navigatorService;
+        return checkNotNull(navigatorService, "NavigatorService");
+    }
+
+    NavigatorEditorService navigatorEditor() {
+        return checkNotNull(navigatorEditorService, "NavigatorEditorService");
     }
 
     CustomBlockManager customBlockManager() {
-        return customBlockManager;
+        return checkNotNull(customBlockManager, "CustomBlockManager");
     }
 
     PlayerServiceImpl player() {
-        return playerService;
+        return checkNotNull(playerService, "PlayerServiceImpl");
     }
 
     PlayerLookupService playerLookup() {
-        return playerLookupService;
+        return checkNotNull(playerLookupService, "PlayerLookupService");
     }
 
     NoClipService noClip() {
-        return noClipService;
+        return checkNotNull(noClipService, "NoClipService");
     }
 
     SettingsService settings() {
-        return settingsService;
+        return checkNotNull(settingsService, "SettingsService");
     }
 
     SpawnService spawn() {
-        return spawnService;
+        return checkNotNull(spawnService, "SpawnService");
     }
 
     WorldServiceImpl world() {
-        return worldService;
+        return checkNotNull(worldService, "WorldServiceImpl");
     }
 
     BackupServiceImpl backup() {
-        return backupService;
+        return checkNotNull(backupService, "BackupServiceImpl");
     }
 
     CustomizableIcons customizableIcons() {
-        return customizableIcons;
+        return checkNotNull(customizableIcons, "CustomizableIcons");
+    }
+
+    NavigatorCategoryRegistryImpl navigatorCategoryRegistry() {
+        return checkNotNull(navigatorCategoryRegistry, "NavigatorCategoryRegistryImpl");
+    }
+
+    WorldStatusRegistryImpl worldStatusRegistry() {
+        return checkNotNull(worldStatusRegistry, "WorldStatusRegistryImpl");
     }
 
     MenuItems menuItems() {
-        return menuItems;
+        return checkNotNull(menuItems, "MenuItems");
     }
 }

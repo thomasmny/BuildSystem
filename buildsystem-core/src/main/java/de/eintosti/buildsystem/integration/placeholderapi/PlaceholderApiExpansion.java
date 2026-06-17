@@ -158,11 +158,11 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "material" -> worldData.getMaterial().name();
             case "mobai" -> String.valueOf(worldData.isMobAi());
             case "permission" -> worldData.getPermission();
-            case "private" -> String.valueOf(worldData.isPrivateWorld());
+            case "private" -> String.valueOf(worldData.getVisibility().isPrivate());
             case "project" -> worldData.getProject();
             case "physics" -> String.valueOf(worldData.isPhysics());
             case "spawn" -> worldData.getCustomSpawn();
-            case "status" -> messages.getString(Messages.getMessageKey(worldData.getStatus()), player);
+            case "status" -> worldData.getStatus().getDisplayName();
             case "time" -> buildWorld.getWorldTime();
             case "type" -> messages.getString(Messages.getMessageKey(buildWorld.getType()), player);
             case "world" -> buildWorld.getName();

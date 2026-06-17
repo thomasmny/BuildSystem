@@ -132,14 +132,14 @@ public class FolderSubCommand extends AbstractSubCommand {
                     return;
                 }
 
-                if (folder.getCategory() != NavigatorCategory.of(buildWorld)) {
+                NavigatorCategory worldCategory =
+                        plugin.getNavigatorCategoryRegistry().getCategoryForWorld(buildWorld);
+                if (!folder.getCategory().equals(worldCategory)) {
                     messages.sendMessage(
                             player,
                             "worlds_folder_world_category_mismatch",
-                            Map.entry("%folder_category%", folder.getCategory().name()),
-                            Map.entry(
-                                    "%world_category%",
-                                    NavigatorCategory.of(buildWorld).name()));
+                            Map.entry("%folder_category%", folder.getCategory().getDisplayName()),
+                            Map.entry("%world_category%", worldCategory.getDisplayName()));
                     return;
                 }
 
@@ -262,7 +262,9 @@ public class FolderSubCommand extends AbstractSubCommand {
                 return result;
             }
             worldService.getWorldStorage().getBuildWorlds().stream()
-                    .filter(bw -> NavigatorCategory.of(bw) == folder.getCategory())
+                    .filter(bw -> plugin.getNavigatorCategoryRegistry()
+                            .getCategoryForWorld(bw)
+                            .equals(folder.getCategory()))
                     .filter(bw -> op.equals("add") ? !bw.isAssignedToFolder() : folder.containsWorld(bw))
                     .forEach(bw -> WorldsCompletions.addIfStartsWith(args[3], bw.getName(), result));
             return result;

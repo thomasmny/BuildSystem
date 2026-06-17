@@ -27,11 +27,11 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.world.builder.BuildersImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
@@ -107,7 +107,8 @@ public final class BuildWorldImpl implements BuildWorld {
                 ? defaults.buildersEnabled().privateBuilders()
                 : defaults.buildersEnabled().publicBuilders();
         return new WorldDataBuilder(name)
-                .withPrivateWorld(privateWorld)
+                .withVisibility(Visibility.matchVisibility(privateWorld))
+                .withStatus(plugin.getWorldStatusRegistry().getDefaultStatus())
                 .withMaterial(
                         privateWorld
                                 ? XMaterial.PLAYER_HEAD
@@ -199,6 +200,16 @@ public final class BuildWorldImpl implements BuildWorld {
     }
 
     @Override
+    public @Nullable String getIconSkullTexture() {
+        return this.worldData.getIconSkullTexture();
+    }
+
+    @Override
+    public void setIconSkullTexture(@Nullable String skullTexture) {
+        this.worldData.setIconSkullTexture(skullTexture);
+    }
+
+    @Override
     public String getDisplayName(Player player) {
         String title = plugin.getMessages().getString("world_item_title", player, Map.entry("%world%", this.name));
         if (this.worldData.isPinned()) {
@@ -211,9 +222,7 @@ public final class BuildWorldImpl implements BuildWorld {
     public List<String> getLore(Player player) {
         @SuppressWarnings("unchecked")
         Map.Entry<String, Object>[] placeholders = List.of(
-                        Map.entry(
-                                "%status%",
-                                plugin.getMessages().getString(Messages.getMessageKey(worldData.getStatus()), player)),
+                        Map.entry("%status%", worldData.getStatus().getStyledName()),
                         Map.entry("%project%", worldData.getProject()),
                         Map.entry("%permission%", worldData.getPermission()),
                         Map.entry(
@@ -250,16 +259,19 @@ public final class BuildWorldImpl implements BuildWorld {
 
     @Override
     public void addToInventory(Inventory inventory, int slot, Player player) {
-        if (getIcon() == XMaterial.PLAYER_HEAD) {
-            plugin.getMenuItems().addWorldItem(inventory, slot, this, getDisplayName(player), getLore(player));
-            return;
-        }
-        BuildWorld.super.addToInventory(inventory, slot, player);
+        plugin.getMenuItems().renderDisplayable(inventory, slot, this, player);
     }
 
+    /**
+     * Defaults a player-head world icon to the creator's skin (private worlds) or the world-name owner's skin (public
+     * worlds) when no explicit skull texture is configured. Only consulted by the renderer for un-textured heads.
+     */
     @Override
-    public Profileable asProfileable() {
-        return builders.hasCreator() ? Profileable.of(builders.getCreator().getUniqueId()) : Profileable.username(name);
+    public @Nullable Profileable getHeadProfile() {
+        if (worldData.getVisibility().isPrivate() && builders.hasCreator()) {
+            return Profileable.of(builders.getCreator().getUniqueId());
+        }
+        return Profileable.username(name);
     }
 
     @Override

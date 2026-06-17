@@ -20,8 +20,6 @@ package de.eintosti.buildsystem.world.menu;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
-import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
-import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
@@ -45,9 +43,7 @@ public class FolderContentMenu extends DisplayablesMenu {
             Player player,
             NavigatorCategory category,
             Folder folder,
-            DisplayablesMenu parentInventory,
-            Visibility requiredVisibility,
-            Set<BuildWorldStatus> validStatuses) {
+            DisplayablesMenu parentInventory) {
         super(
                 plugin,
                 player,
@@ -55,8 +51,6 @@ public class FolderContentMenu extends DisplayablesMenu {
                         .category(category)
                         .title(plugin.getMessages()
                                 .getString("folder_title", player, new SimpleEntry<>("%folder%", folder.getName())))
-                        .requiredVisibility(requiredVisibility)
-                        .validStatuses(validStatuses)
                         .build());
         this.folder = folder;
         this.parentInventory = parentInventory;
@@ -102,7 +96,12 @@ public class FolderContentMenu extends DisplayablesMenu {
 
     @Override
     protected void beginWorldCreation() {
-        new CreateMenu(plugin, CreateMenu.Page.PREDEFINED, this.requiredVisibility, this.folder, this.player)
+        new CreateMenu(
+                        plugin,
+                        CreateMenu.Page.PREDEFINED,
+                        this.category.getPrimaryVisibility(),
+                        this.folder,
+                        this.player)
                 .open(this.player);
     }
 

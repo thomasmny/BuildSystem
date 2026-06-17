@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.Location;
@@ -57,12 +58,12 @@ public class InfoSubCommand extends AbstractSubCommand {
                 Map.entry("%creator%", getCreator(builders)),
                 Map.entry("%item%", worldData.getMaterial().name()),
                 Map.entry("%type%", messages.getString(Messages.getMessageKey(buildWorld.getType()), player)),
-                Map.entry("%private%", worldData.isPrivateWorld()),
+                Map.entry("%private%", worldData.getVisibility().isPrivate()),
                 Map.entry("%builders_enabled%", worldData.isBuildersEnabled()),
                 Map.entry("%builders%", builders.asPlaceholder(player)),
                 Map.entry("%block_breaking%", worldData.isBlockBreaking()),
                 Map.entry("%block_placement%", worldData.isBlockPlacement()),
-                Map.entry("%status%", messages.getString(Messages.getMessageKey(worldData.getStatus()), player)),
+                Map.entry("%status%", ColorAPI.process(worldData.getStatus().getStyledName())),
                 Map.entry("%project%", worldData.getProject()),
                 Map.entry("%permission%", worldData.getPermission()),
                 Map.entry("%time%", buildWorld.getWorldTime()),

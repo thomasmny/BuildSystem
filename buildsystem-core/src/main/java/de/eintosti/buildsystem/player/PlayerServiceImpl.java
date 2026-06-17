@@ -69,7 +69,7 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public boolean canCreateWorld(Player player, Visibility visibility) {
-        boolean showPrivateWorlds = visibility == Visibility.PRIVATE;
+        boolean showPrivateWorlds = visibility == Visibility.ADDED_PLAYERS;
         WorldStorageImpl worldStorage = plugin.getWorldService().getWorldStorage();
 
         int maxWorldAmountConfig = showPrivateWorlds
@@ -79,7 +79,8 @@ public class PlayerServiceImpl implements PlayerService {
             return false;
         }
 
-        int maxWorldAmountPlayer = getMaxWorlds(player, showPrivateWorlds ? Visibility.PRIVATE : Visibility.PUBLIC);
+        int maxWorldAmountPlayer =
+                getMaxWorlds(player, showPrivateWorlds ? Visibility.ADDED_PLAYERS : Visibility.EVERYONE);
         return maxWorldAmountPlayer < 0
                 || worldStorage
                                 .getBuildWorldsCreatedByPlayer(player, visibility)

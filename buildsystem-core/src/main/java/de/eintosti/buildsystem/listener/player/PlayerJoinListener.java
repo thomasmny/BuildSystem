@@ -22,7 +22,6 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
@@ -95,7 +94,7 @@ public class PlayerJoinListener implements Listener {
             }
 
             if (plugin.getConfigService().current().settings().archive().vanish()
-                    && worldData.getStatus() == BuildWorldStatus.ARCHIVE) {
+                    && !worldData.getStatus().isBuildingAllowed()) {
                 player.addPotionEffect(
                         new PotionEffect(XPotion.INVISIBILITY.get(), PotionEffect.INFINITE_DURATION, 0, false, false),
                         false);

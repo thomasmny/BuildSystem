@@ -22,7 +22,6 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.event.world.BuildWorldManipulationEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldSetting;
-import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.event.EventDispatcher;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -142,9 +141,14 @@ public class WorldManipulateListener implements Listener {
     }
 
     private void updateStatus(WorldData worldData, Player player) {
-        if (worldData.getStatus() == BuildWorldStatus.NOT_STARTED) {
-            worldData.setStatus(BuildWorldStatus.IN_PROGRESS);
-            plugin.getSettingsService().forceUpdateSidebar(player);
-        }
+        worldData
+                .getStatus()
+                .getProgressesTo()
+                .ifPresent(nextId -> plugin.getWorldStatusRegistry()
+                        .getStatus(nextId)
+                        .ifPresent(next -> {
+                            worldData.setStatus(next);
+                            plugin.getSettingsService().forceUpdateSidebar(player);
+                        }));
     }
 }

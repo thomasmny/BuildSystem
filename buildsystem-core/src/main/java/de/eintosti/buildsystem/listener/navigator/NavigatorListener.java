@@ -26,7 +26,6 @@ import de.eintosti.buildsystem.api.player.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.navigator.NavigatorService;
@@ -192,15 +191,8 @@ public class NavigatorListener implements Listener {
                 return;
             }
 
-            DisplayablesMenu inventory =
-                    switch (category) {
-                        case PUBLIC -> new PublicWorldsMenu(plugin, player);
-                        case ARCHIVE -> new ArchivedWorldsMenu(plugin, player);
-                        case PRIVATE -> new PrivateWorldsMenu(plugin, player);
-                    };
-
             XSound.BLOCK_CHEST_OPEN.play(player);
-            inventory.open(player);
+            new CategoryWorldsMenu(plugin, player, category).open(player);
         }
     }
 
@@ -212,7 +204,7 @@ public class NavigatorListener implements Listener {
      */
     private void disableArchivedWorlds(Player player, Cancellable cancellable) {
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
-        if (buildWorld == null || buildWorld.getData().getStatus() != BuildWorldStatus.ARCHIVE) {
+        if (buildWorld == null || buildWorld.getData().getStatus().isBuildingAllowed()) {
             return;
         }
 

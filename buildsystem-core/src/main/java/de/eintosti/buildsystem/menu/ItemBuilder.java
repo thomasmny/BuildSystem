@@ -23,6 +23,9 @@ import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
+import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.api.world.display.Displayable;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,6 +67,11 @@ public final class ItemBuilder {
 
     private static final Logger LOGGER = Logger.getLogger(ItemBuilder.class.getName());
 
+    /**
+     * Sentinel skull-texture value meaning "render the viewing player's own head" rather than a fixed texture.
+     */
+    public static final String VIEWER_HEAD = "%viewer%";
+
     private final ItemStack itemStack;
     private @Nullable ItemMeta itemMeta;
 
@@ -101,6 +109,69 @@ public final class ItemBuilder {
     public static ItemBuilder skull(Profileable profileable) {
         ItemStack skull = XSkull.createItem().profile(profileable).lenient().apply();
         return new ItemBuilder(skull);
+    }
+
+    /**
+     * Starts a builder for a configurable icon. When {@code material} is a player head, the head's skin is resolved from
+     * {@code skullTexture}: the {@link #VIEWER_HEAD} sentinel uses the viewing player's own skin, a non-blank value is
+     * treated as a texture/name/UUID profile, and {@code null}/blank yields a plain head. For any other material this is
+     * equivalent to {@link #of(XMaterial)}.
+     *
+     * @param material The base icon material
+     * @param skullTexture The skull texture to apply when {@code material} is a head, or {@code null}
+     * @param viewer The viewing player, used to resolve the {@link #VIEWER_HEAD} sentinel; may be {@code null}
+     * @return A new builder wrapping the resolved icon
+     */
+    public static ItemBuilder icon(XMaterial material, @Nullable String skullTexture, @Nullable Player viewer) {
+        if (material != XMaterial.PLAYER_HEAD) {
+            return of(material);
+        }
+        if (VIEWER_HEAD.equals(skullTexture) && viewer != null) {
+            return skull(Profileable.detect(viewer.getName()));
+        }
+        if (skullTexture != null && !skullTexture.isBlank()) {
+            return skull(Profileable.detect(skullTexture));
+        }
+        return of(XMaterial.PLAYER_HEAD);
+    }
+
+    /**
+     * Starts a builder for a {@link NavigatorCategory navigator category} icon. An explicitly configured skull texture
+     * wins; otherwise a player-head icon defaults to the viewing player's own skin for added-players categories (the
+     * "private" style) and the navigator texture for everyone-visible categories.
+     *
+     * @param category The category whose icon is rendered
+     * @param viewer The viewing player, used to resolve the viewer-head default
+     * @return A new builder wrapping the resolved icon
+     */
+    public static ItemBuilder icon(NavigatorCategory category, Player viewer) {
+        String texture = category.getIconSkullTexture();
+        if (category.getIcon() == XMaterial.PLAYER_HEAD && (texture == null || texture.isBlank())) {
+            texture = category.getPrimaryVisibility() == Visibility.ADDED_PLAYERS
+                    ? VIEWER_HEAD
+                    : SkullTextures.WORLD_NAVIGATOR;
+        }
+        return icon(category.getIcon(), texture, viewer);
+    }
+
+    /**
+     * Resolves a {@link Displayable}'s icon to a builder <em>without</em> applying its name or lore, so the caller can
+     * label it itself: a non-head icon or a configured skull texture is honoured, otherwise the displayable's
+     * {@link Displayable#getHeadProfile() default head profile} is applied. This is the synchronous counterpart to
+     * {@code MenuItems.renderDisplayable} and is intended for single items, not bulk lists.
+     *
+     * @param displayable The displayable whose icon is rendered
+     * @param viewer The viewing player, used to resolve the viewer-head sentinel
+     * @return A new builder wrapping the resolved icon
+     */
+    public static ItemBuilder icon(Displayable displayable, Player viewer) {
+        XMaterial material = displayable.getIcon();
+        String texture = displayable.getIconSkullTexture();
+        if (material != XMaterial.PLAYER_HEAD || (texture != null && !texture.isBlank())) {
+            return icon(material, texture, viewer);
+        }
+        Profileable headProfile = displayable.getHeadProfile();
+        return headProfile != null ? skull(headProfile) : of(XMaterial.PLAYER_HEAD);
     }
 
     /**
