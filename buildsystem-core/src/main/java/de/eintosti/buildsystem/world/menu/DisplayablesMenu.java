@@ -234,9 +234,11 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     }
 
     private boolean isWorldValidForDisplay(BuildWorld buildWorld) {
-        if (!plugin.getNavigatorCategoryRegistry()
-                .getCategoryForWorld(buildWorld)
-                .equals(this.category)) {
+        // A world shows in every category that groups it (overlapping categories each list it), not just its primary
+        // resolved category.
+        if (!this.category.groups(
+                buildWorld.getData().getVisibility(),
+                buildWorld.getData().getStatus().getId())) {
             return false;
         }
         if (!buildWorld.getPermissions().canEnter(this.player)) {

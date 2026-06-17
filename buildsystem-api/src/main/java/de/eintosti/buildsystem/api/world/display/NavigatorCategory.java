@@ -114,6 +114,21 @@ public interface NavigatorCategory {
     List<String> getStatusIds();
 
     /**
+     * Gets whether this category groups a world of the given visibility and status — i.e. the category's
+     * {@link #getVisibilities() visibilities} contain the visibility and its {@link #getStatusIds() statuses} contain
+     * the status id. A world may be grouped by several overlapping categories, appearing in each of their navigator
+     * sections.
+     *
+     * @param visibility The world's visibility
+     * @param statusId The world's status id
+     * @return {@code true} if this category groups such a world
+     * @since TODO
+     */
+    default boolean groups(Visibility visibility, String statusId) {
+        return getVisibilities().contains(visibility) && getStatusIds().contains(statusId);
+    }
+
+    /**
      * Gets whether this category is given a section in the navigator. When {@code false}, its worlds are only reachable
      * directly via commands or secondary menus.
      *
