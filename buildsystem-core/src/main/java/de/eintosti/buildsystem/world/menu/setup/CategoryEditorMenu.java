@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.world.menu.setup;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.menu.ItemBuilder;
@@ -28,8 +29,10 @@ import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -159,18 +162,22 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> {
                     List<String> lore = new ArrayList<>(messages.getStringList("setup_category_statuses_lore", player));
+                    lore.add("");
                     lore.add(messages.getString("setup_category_statuses_members", player));
                     if (category.getStatusIds().isEmpty()) {
                         lore.add(messages.getString("setup_category_statuses_none", player));
                     } else {
-                        for (String statusId : category.getStatusIds()) {
-                            String name = plugin.getWorldStatusRegistry()
-                                    .getStatus(statusId)
-                                    .map(status -> ColorAPI.process(status.getStyledName()))
-                                    .orElse(statusId);
-                            lore.add(messages.getString(
-                                    "setup_category_statuses_member_entry", player, Map.entry("%status%", name)));
-                        }
+                        // List members in status order (lowest order first), not insertion order.
+                        category.getStatusIds().stream()
+                                .map(id -> plugin.getWorldStatusRegistry()
+                                        .getStatus(id)
+                                        .orElse(null))
+                                .filter(Objects::nonNull)
+                                .sorted(Comparator.comparingInt(BuildWorldStatus::getOrder))
+                                .forEach(status -> lore.add(messages.getString(
+                                        "setup_category_statuses_member_entry",
+                                        player,
+                                        Map.entry("%status%", ColorAPI.process(status.getStyledName())))));
                     }
                     lore.add("");
                     lore.add(messages.getString("setup_category_statuses_hint", player));

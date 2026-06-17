@@ -104,7 +104,7 @@ public class NavigatorLayoutMenu extends Menu {
         if (!heldSettings && settingsSlot >= 0 && settingsSlot < NAVIGATOR_SIZE) {
             ItemBuilder.skull(Profileable.detect(SkullTextures.SETTINGS))
                     .name(messages.getString("old_navigator_settings", player))
-                    .lore(messages.getStringList("setup_navigator_placed_lore", player))
+                    .lore(messages.getStringList("setup_navigator_settings_placed_lore", player))
                     .into(inventory, settingsSlot);
         }
 
@@ -154,6 +154,24 @@ public class NavigatorLayoutMenu extends Menu {
                     .lore(messages.getStringList("setup_navigator_palette_lore", player))
                     .into(playerInventory, slot);
         }
+
+        // When the settings button has been removed from the navigator, offer it back in the palette.
+        int settingsTokenSlot = settingsPaletteSlot();
+        if (!heldSettings && registry.getSettingsSlot() < 0 && settingsTokenSlot >= 0) {
+            ItemBuilder.skull(Profileable.detect(SkullTextures.SETTINGS))
+                    .name(messages.getString("old_navigator_settings", player))
+                    .lore(messages.getStringList("setup_navigator_settings_palette_lore", player))
+                    .into(playerInventory, settingsTokenSlot);
+        }
+    }
+
+    /**
+     * {@return the palette slot the settings token occupies when it is not in the navigator, or {@code -1} if the
+     * palette is full}
+     */
+    private int settingsPaletteSlot() {
+        int slot = PALETTE_FIRST_SLOT + notAddedCategories().size();
+        return slot <= PALETTE_LAST_SLOT ? slot : -1;
     }
 
     /**
@@ -273,6 +291,11 @@ public class NavigatorLayoutMenu extends Menu {
             beginCategoryCreation(player);
             return;
         }
+        // Pick the settings token back up from the palette to re-add it to the navigator.
+        if (registry.getSettingsSlot() < 0 && slot == settingsPaletteSlot()) {
+            pickUpSettings(player);
+            return;
+        }
 
         int paletteIndex = slot - PALETTE_FIRST_SLOT;
         List<NavigatorCategory> notAdded = notAddedCategories();
@@ -300,11 +323,12 @@ public class NavigatorLayoutMenu extends Menu {
     }
 
     /**
-     * While a category is held, a click outside the navigator preview drops it off the navigator (it returns to the
-     * palette). A held settings button cannot be removed, so the click simply cancels the pickup.
+     * While holding, a click outside the navigator preview removes the held element from the navigator: a category
+     * returns to the palette; the settings button is taken off the navigator (it too returns to the palette).
      */
     private void handleOutsideClickWhileHolding(Player player) {
         if (heldSettings) {
+            registry.setSettingsSlot(-1);
             clearHeld(player);
             refresh(player);
             return;

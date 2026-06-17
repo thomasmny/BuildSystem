@@ -528,11 +528,17 @@ setup_navigator_delete_lore:
   - "&7Drop a category here to delete it"
   - "&7for good (its worlds move to the"
   - "&7default category)."
-setup_navigator_settings_lore:
+setup_navigator_settings_placed_lore:
   - "&7The settings button players see"
   - "&7in the navigator."
   - ""
   - "&8» &7&oLeft-click to move"
+  - "&8» &7Drop it outside to remove it"
+setup_navigator_settings_palette_lore:
+  - "&7The settings button is hidden from"
+  - "&7the navigator until you add it."
+  - ""
+  - "&8» &aLeft-click &7to add it to the navigator"
 
 # Setup - Default Icons
 setup_default_icons_title: "&3» &8Default Icons"
@@ -565,8 +571,8 @@ setup_icon_lore:
   - "&7The item shown for this in menus."
   - ""
   - "&8» &7&oClick to choose an item"
-setup_toggle_state_on: "&aEnabled"
-setup_toggle_state_off: "&cDisabled"
+setup_toggle_state_on: "&7&nCurrently&7: &aEnabled"
+setup_toggle_state_off: "&7&nCurrently&7: &cDisabled"
 
 # Setup - Colour Picker
 setup_color_picker_title: "&3» &8Pick a Colour"
@@ -594,7 +600,6 @@ setup_status_entry_lore:
   - "&8» &7&oClick to edit"
   - "&8» &7&oShift-click to delete"
 setup_status_entry_builtin_lore:
-  - "&8(&7Built-in&8)"
   - "&8» &7&oClick to edit"
   - "&8» &7&oShift-click to delete"
 setup_status_add: "&aCreate a new status"
@@ -650,7 +655,6 @@ setup_category_entry_lore:
   - "&8» &7&oClick to edit"
   - "&8» &7&oShift-click to delete"
 setup_category_entry_builtin_lore:
-  - "&8(&7Built-in&8)"
   - "&8» &7&oClick to edit"
   - "&8» &7&oShift-click to delete"
 setup_category_add: "&aCreate a new category"
@@ -714,15 +718,21 @@ setup_category_visibility_added_lore:
   - ""
   - "%state%"
   - "&8» &7&oClick to toggle"
-setup_category_visibility_state_on: "&aGrouped &7in this category"
-setup_category_visibility_state_off: "&cNot grouped &7in this category"
+setup_category_visibility_state_on: "&7&nCurrently&7: &aGrouped"
+setup_category_visibility_state_off: "&7&nCurrently&7: &cNot grouped"
 setup_category_statuses: "&bMember statuses"
 setup_category_statuses_title: "&3» &8Category Statuses"
 setup_category_status_member:
-  - "&a✔ In this category"
+  - "&7Worlds with this status are grouped"
+  - "&7into this category."
+  - ""
+  - "&7&nCurrently&7: &a✔ In this category"
   - "&8» &7&oClick to remove"
 setup_category_status_not_member:
-  - "&c✖ Not in this category"
+  - "&7Worlds with this status are grouped"
+  - "&7into this category."
+  - ""
+  - "&7&nCurrently&7: &c✖ Not in this category"
   - "&8» &7&oClick to add"
 
 # Create World
