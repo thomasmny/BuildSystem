@@ -28,7 +28,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -38,6 +37,18 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public interface Displayable {
+
+    /**
+     * The {@link PersistentDataContainer} key under which {@link #asItemStack(Player)} stores the
+     * {@link DisplayableType#name() type name} of a displayable item.
+     */
+    NamespacedKey DISPLAYABLE_TYPE_KEY = new NamespacedKey("buildsystem", "displayable_type");
+
+    /**
+     * The {@link PersistentDataContainer} key under which {@link #asItemStack(Player)} stores the {@link #getName() name}
+     * of a displayable item.
+     */
+    NamespacedKey DISPLAYABLE_NAME_KEY = new NamespacedKey("buildsystem", "displayable_name");
 
     /**
      * Gets the unique name of this displayable item.
@@ -96,6 +107,16 @@ public interface Displayable {
     List<String> getLore(Player player);
 
     /**
+     * Gets the {@link DisplayableType} that classifies this displayable.
+     *
+     * <p>Implementations declare their own type, allowing {@link #asItemStack(Player)} to tag the item without relying on
+     * the concrete class.
+     *
+     * @return The type of this displayable
+     */
+    DisplayableType getDisplayableType();
+
+    /**
      * Converts this displayable to an {@link ItemStack} for display.
      *
      * @param player The player viewing the inventory
@@ -116,19 +137,12 @@ public interface Displayable {
         itemMeta.setLore(getLore(player));
         itemMeta.addItemFlags(ItemFlag.values());
 
-        DisplayableType type =
-                switch (this) {
-                    case BuildWorld ignored -> DisplayableType.BUILD_WORLD;
-                    case Folder ignored -> DisplayableType.FOLDER;
-                    default ->
-                        throw new IllegalStateException(
-                                "Unknown displayable type: " + this.getClass().getSimpleName());
-                };
-
-        JavaPlugin plugin = JavaPlugin.getProvidingPlugin(getClass());
         PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
-        pdc.set(new NamespacedKey(plugin, "displayable_type"), PersistentDataType.STRING, type.name());
-        pdc.set(new NamespacedKey(plugin, "displayable_name"), PersistentDataType.STRING, getName());
+        pdc.set(
+                DISPLAYABLE_TYPE_KEY,
+                PersistentDataType.STRING,
+                getDisplayableType().name());
+        pdc.set(DISPLAYABLE_NAME_KEY, PersistentDataType.STRING, getName());
 
         itemStack.setItemMeta(itemMeta);
 

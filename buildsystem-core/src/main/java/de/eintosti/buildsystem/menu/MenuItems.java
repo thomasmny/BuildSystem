@@ -23,6 +23,7 @@ import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.Displayable.DisplayableType;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -68,8 +69,8 @@ public final class MenuItems {
         this.configService = configService;
         this.messages = messages;
         this.settingsService = settingsService;
-        this.displayableNameKey = new NamespacedKey(plugin, "displayable_name");
-        this.displayableTypeKey = new NamespacedKey(plugin, "displayable_type");
+        this.displayableNameKey = Displayable.DISPLAYABLE_NAME_KEY;
+        this.displayableTypeKey = Displayable.DISPLAYABLE_TYPE_KEY;
         this.navigatorKey = new NamespacedKey(plugin, "navigator");
     }
 
@@ -124,9 +125,9 @@ public final class MenuItems {
         XSkull.createItem()
                 .profile(
                         buildWorld.getData().isPrivateWorld()
-                                ? buildWorld.asProfilable()
+                                ? buildWorld.asProfileable()
                                 : Profileable.username(buildWorld.getName()))
-                .fallback(buildWorld.asProfilable())
+                .fallback(buildWorld.asProfileable())
                 .lenient()
                 .applyAsync()
                 .thenAcceptAsync(itemStack -> {

@@ -51,11 +51,13 @@ public class FolderContentMenu extends DisplayablesMenu {
         super(
                 plugin,
                 player,
-                category,
-                plugin.getMessages().getString("folder_title", player, new SimpleEntry<>("%folder%", folder.getName())),
-                null,
-                requiredVisibility,
-                validStatuses);
+                Options.builder()
+                        .category(category)
+                        .title(plugin.getMessages()
+                                .getString("folder_title", player, new SimpleEntry<>("%folder%", folder.getName())))
+                        .requiredVisibility(requiredVisibility)
+                        .validStatuses(validStatuses)
+                        .build());
         this.folder = folder;
         this.parentInventory = parentInventory;
     }

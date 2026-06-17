@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.event.folder.FolderCreatedEvent;
 import de.eintosti.buildsystem.api.event.folder.FolderDeletedEvent;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
+import de.eintosti.buildsystem.api.world.display.Displayable.DisplayableType;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import java.util.ArrayList;
@@ -286,6 +287,11 @@ class FolderStorageImplTest {
         @Override
         public List<String> getLore(org.bukkit.entity.Player player) {
             return List.of();
+        }
+
+        @Override
+        public DisplayableType getDisplayableType() {
+            return DisplayableType.FOLDER;
         }
     }
 

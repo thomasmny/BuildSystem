@@ -53,7 +53,16 @@ public abstract class CreatableWorldsMenu extends DisplayablesMenu {
             String inventoryTitle,
             @Nullable String noWorldsMessage,
             Visibility requiredVisibility) {
-        super(plugin, player, category, inventoryTitle, noWorldsMessage, requiredVisibility, VALID_STATUSES);
+        super(
+                plugin,
+                player,
+                Options.builder()
+                        .category(category)
+                        .title(inventoryTitle)
+                        .emptyMessage(noWorldsMessage)
+                        .requiredVisibility(requiredVisibility)
+                        .validStatuses(VALID_STATUSES)
+                        .build());
         this.playerService = plugin.getPlayerService();
     }
 

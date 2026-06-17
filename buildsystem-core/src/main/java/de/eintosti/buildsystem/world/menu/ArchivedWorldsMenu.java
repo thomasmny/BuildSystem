@@ -33,15 +33,19 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class ArchivedWorldsMenu extends DisplayablesMenu {
 
+    private static final int SLOT_CREATE_FOLDER = 49;
+
     public ArchivedWorldsMenu(BuildSystemPlugin plugin, Player player) {
         super(
                 plugin,
                 player,
-                NavigatorCategory.ARCHIVE,
-                plugin.getMessages().getString("archive_title", player),
-                plugin.getMessages().getString("archive_no_worlds", player),
-                Visibility.IGNORE,
-                Sets.newHashSet(BuildWorldStatus.ARCHIVE));
+                Options.builder()
+                        .category(NavigatorCategory.ARCHIVE)
+                        .title(plugin.getMessages().getString("archive_title", player))
+                        .emptyMessage(plugin.getMessages().getString("archive_no_worlds", player))
+                        .requiredVisibility(Visibility.IGNORE)
+                        .validStatuses(Sets.newHashSet(BuildWorldStatus.ARCHIVE))
+                        .build());
     }
 
     @Override
@@ -49,7 +53,7 @@ public class ArchivedWorldsMenu extends DisplayablesMenu {
         if (player.hasPermission("buildsystem.create.folder")) {
             ItemBuilder.skull(Profileable.detect(CREATE_FOLDER_PROFILE))
                     .name(plugin.getMessages().getString("world_navigator_create_folder", player))
-                    .into(inventory, 49);
+                    .into(inventory, SLOT_CREATE_FOLDER);
         }
     }
 }

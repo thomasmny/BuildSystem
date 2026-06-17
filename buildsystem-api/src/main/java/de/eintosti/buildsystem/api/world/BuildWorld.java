@@ -68,7 +68,7 @@ public interface BuildWorld extends Displayable {
      *
      * @return The {@link Profileable} representation of this build world
      */
-    Profileable asProfilable();
+    Profileable asProfileable();
 
     /**
      * Gets this world's {@link BuildWorldType}.

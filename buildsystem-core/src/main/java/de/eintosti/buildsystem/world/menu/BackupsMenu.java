@@ -21,23 +21,19 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
+import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
-import de.eintosti.buildsystem.menu.Menu;
+import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class BackupsMenu extends Menu {
+public class BackupsMenu extends ButtonMenu<MenuButton> {
 
     private static final int SLOT_INFO = 4;
     private static final int FIRST_BACKUP_SLOT = 9;
@@ -46,7 +42,6 @@ public class BackupsMenu extends Menu {
     private final BuildSystemPlugin plugin;
     private final BackupServiceImpl backupService;
     private final BuildWorld buildWorld;
-    private final List<Backup> backups = new ArrayList<>();
 
     public BackupsMenu(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
         super(plugin.getMessages(), 36, plugin.getMessages().getString("backups_title", player));
@@ -74,40 +69,51 @@ public class BackupsMenu extends Menu {
     }
 
     /**
-     * Loads the {@link Backup} for the world and adds them to the inventory on completion.
+     * Loads the {@link Backup}s for the world and, once they arrive, registers a button per backup and renders them.
+     * The backups load asynchronously, so the button registry is (re)built on the main thread in the completion
+     * callback rather than at construction.
      *
      * @param player The player to display the backups to
      */
     private void loadBackups(Player player) {
-        // Inventory and the backing list may only be touched on the main thread; the click handler reads both.
+        // The registry and inventory may only be touched on the main thread; hop back before mutating them.
         backupService
                 .getProfile(buildWorld)
                 .listBackups()
                 .thenAccept(loaded -> Bukkit.getScheduler().runTask(plugin, () -> {
-                    backups.clear();
-                    backups.addAll(loaded);
-
-                    for (int i = 0; i < loaded.size(); i++) {
-                        ItemBuilder.of(XMaterial.GRASS_BLOCK)
-                                .name(messages.getString(
-                                        "backups_backup_name",
-                                        player,
-                                        Map.entry(
-                                                "%timestamp%",
-                                                StringUtils.formatTime(
-                                                        loaded.get(i).creationTime(),
-                                                        plugin.getConfigService()
-                                                                .current()
-                                                                .settings()
-                                                                .dateFormat()))))
-                                .into(getInventory(), FIRST_BACKUP_SLOT + i);
+                    clearButtons();
+                    for (int i = 0; i < loaded.size() && i < MAX_BACKUPS; i++) {
+                        register(FIRST_BACKUP_SLOT + i, backupButton(loaded.get(i)));
                     }
+                    renderButtons(player);
                 }))
                 .exceptionally(throwable -> {
                     plugin.getLogger()
                             .log(Level.SEVERE, "Failed to list backups for world: " + buildWorld.getName(), throwable);
                     return null;
                 });
+    }
+
+    private MenuButton backupButton(Backup backup) {
+        return MenuButton.builder()
+                .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.GRASS_BLOCK)
+                        .name(messages.getString(
+                                "backups_backup_name",
+                                player,
+                                Map.entry(
+                                        "%timestamp%",
+                                        StringUtils.formatTime(
+                                                backup.creationTime(),
+                                                plugin.getConfigService()
+                                                        .current()
+                                                        .settings()
+                                                        .dateFormat()))))
+                        .into(inventory, slot))
+                .onClick((player, event) -> {
+                    player.closeInventory();
+                    new BackupsConfirmationMenu(plugin, backup, player).open(player);
+                })
+                .build();
     }
 
     private int getBackupIntervalSeconds() {
@@ -118,27 +124,5 @@ public class BackupsMenu extends Menu {
         int timeSinceBackup = buildWorld.getData().getTimeSinceBackup();
         int secondsRemaining = Math.max(0, getBackupIntervalSeconds() - timeSinceBackup);
         return "%02d:%02d".formatted(secondsRemaining / 60, secondsRemaining % 60);
-    }
-
-    @Override
-    public void handleClick(InventoryClickEvent event) {
-        ItemStack itemStack = event.getCurrentItem();
-        if (itemStack == null || itemStack.getType() == Material.AIR || !itemStack.hasItemMeta()) {
-            return;
-        }
-
-        event.setCancelled(true);
-        Player player = (Player) event.getWhoClicked();
-
-        int slot = event.getSlot();
-        int backupIndex = slot - FIRST_BACKUP_SLOT;
-        if (slot >= FIRST_BACKUP_SLOT
-                && slot < FIRST_BACKUP_SLOT + MAX_BACKUPS
-                && backupIndex < backups.size()
-                && itemStack.getType() == XMaterial.GRASS_BLOCK.get()) {
-            Backup backup = backups.get(backupIndex);
-            player.closeInventory();
-            new BackupsConfirmationMenu(plugin, backup, player).open(player);
-        }
     }
 }

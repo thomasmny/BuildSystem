@@ -20,68 +20,82 @@ package de.eintosti.buildsystem.world.menu;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
-import de.eintosti.buildsystem.menu.Menu;
+import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.player.menu.SettingsMenu;
+import java.util.function.Consumer;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class NavigatorMenu extends Menu {
+public class NavigatorMenu extends ButtonMenu<MenuButton> {
+
+    private static final int SLOT_WORLDS = 11;
+    private static final int SLOT_ARCHIVE = 12;
+    private static final int SLOT_PRIVATE = 13;
+    private static final int SLOT_SETTINGS = 15;
+
+    private static final String SETTINGS_SKULL_PROFILE =
+            "1cba7277fc895bf3b673694159864b83351a4d14717e476ebda1c3bf38fcf37";
 
     private final BuildSystemPlugin plugin;
 
     public NavigatorMenu(BuildSystemPlugin plugin, Player player) {
         super(plugin.getMessages(), 27, plugin.getMessages().getString("old_navigator_title", player));
         this.plugin = plugin;
+
+        register(
+                SLOT_WORLDS,
+                navButton(
+                        Profileable.detect(SkullTextures.WORLD_NAVIGATOR),
+                        "old_navigator_world_navigator",
+                        p -> new PublicWorldsMenu(plugin, p).open(p)));
+        register(
+                SLOT_ARCHIVE,
+                navButton(
+                        Profileable.detect(SkullTextures.WORLD_ARCHIVE),
+                        "old_navigator_world_archive",
+                        p -> new ArchivedWorldsMenu(plugin, p).open(p)));
+        register(
+                SLOT_PRIVATE,
+                navButton(
+                        Profileable.of(player),
+                        "old_navigator_private_worlds",
+                        p -> new PrivateWorldsMenu(plugin, p).open(p)));
+        register(
+                SLOT_SETTINGS,
+                MenuButton.builder()
+                        .render((p, inventory, slot) -> ItemBuilder.skull(Profileable.detect(SETTINGS_SKULL_PROFILE))
+                                .name(messages.getString("old_navigator_settings", p))
+                                .into(inventory, slot))
+                        .onClick((p, event) -> {
+                            if (!p.hasPermission("buildsystem.settings")) {
+                                XSound.ENTITY_ITEM_BREAK.play(p);
+                                return;
+                            }
+                            new SettingsMenu(plugin, p).open(p);
+                            XSound.ENTITY_CHICKEN_EGG.play(p);
+                        })
+                        .build());
+    }
+
+    private MenuButton navButton(Profileable icon, String nameKey, Consumer<Player> open) {
+        return MenuButton.builder()
+                .render((player, inventory, slot) -> ItemBuilder.skull(icon)
+                        .name(messages.getString(nameKey, player))
+                        .into(inventory, slot))
+                .onClick((player, event) -> {
+                    open.accept(player);
+                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                })
+                .build();
     }
 
     @Override
     protected void populate(Player player) {
         plugin.getMenuItems().fillRange(player, getInventory(), 0, 27);
-
-        ItemBuilder.skull(Profileable.detect(SkullTextures.WORLD_NAVIGATOR))
-                .name(messages.getString("old_navigator_world_navigator", player))
-                .into(getInventory(), 11);
-        ItemBuilder.skull(Profileable.detect(SkullTextures.WORLD_ARCHIVE))
-                .name(messages.getString("old_navigator_world_archive", player))
-                .into(getInventory(), 12);
-        ItemBuilder.skull(Profileable.of(player))
-                .name(messages.getString("old_navigator_private_worlds", player))
-                .into(getInventory(), 13);
-        ItemBuilder.skull(Profileable.detect("1cba7277fc895bf3b673694159864b83351a4d14717e476ebda1c3bf38fcf37"))
-                .name(messages.getString("old_navigator_settings", player))
-                .into(getInventory(), 15);
-    }
-
-    @Override
-    public void handleClick(InventoryClickEvent event) {
-        event.setCancelled(true);
-        Player player = (Player) event.getWhoClicked();
-
-        switch (event.getSlot()) {
-            case 11:
-                new PublicWorldsMenu(plugin, player).open(player);
-                break;
-            case 12:
-                new ArchivedWorldsMenu(plugin, player).open(player);
-                break;
-            case 13:
-                new PrivateWorldsMenu(plugin, player).open(player);
-                break;
-            case 15:
-                if (!player.hasPermission("buildsystem.settings")) {
-                    XSound.ENTITY_ITEM_BREAK.play(player);
-                    return;
-                }
-                new SettingsMenu(plugin, player).open(player);
-                break;
-            default:
-                return;
-        }
-
-        XSound.ENTITY_CHICKEN_EGG.play(player);
+        renderButtons(player);
     }
 }

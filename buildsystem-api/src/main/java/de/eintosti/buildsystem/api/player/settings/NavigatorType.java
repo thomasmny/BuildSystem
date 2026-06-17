@@ -19,12 +19,14 @@ package de.eintosti.buildsystem.api.player.settings;
 
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.inventory.Inventory;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Represents the type of the navigator.
  *
  * @since 3.0.0
  */
+@NullMarked
 public enum NavigatorType {
 
     /**

@@ -23,8 +23,9 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
-import de.eintosti.buildsystem.menu.Menu;
+import de.eintosti.buildsystem.menu.MenuButton;
 import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -34,7 +35,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class StatusMenu extends Menu {
+public class StatusMenu extends ButtonMenu<MenuButton> {
 
     /**
      * The single source of truth for the status selection grid: each interactive slot maps to the status it selects.
@@ -59,6 +60,8 @@ public class StatusMenu extends Menu {
                         .getString("status_title", player, Map.entry("%world%", formatWorldName(buildWorld))));
         this.plugin = plugin;
         this.buildWorld = buildWorld;
+
+        STATUS_BY_SLOT.forEach((slot, status) -> register(slot, statusButton(status)));
     }
 
     private static String formatWorldName(BuildWorld buildWorld) {
@@ -69,12 +72,48 @@ public class StatusMenu extends Menu {
         return worldName;
     }
 
+    private MenuButton statusButton(BuildWorldStatus status) {
+        return MenuButton.builder()
+                .render((player, inventory, slot) -> {
+                    XMaterial material = plugin.getCustomizableIcons().getIcon(status);
+                    String displayName = messages.getString(Messages.getMessageKey(status), player);
+
+                    if (!player.hasPermission(status.getPermission())) {
+                        material = XMaterial.BARRIER;
+                        displayName = "§c§m" + ChatColor.stripColor(displayName);
+                    }
+
+                    ItemBuilder.of(material)
+                            .name(displayName)
+                            .glow(buildWorld.getData().getStatus() == status)
+                            .into(inventory, slot);
+                })
+                .onClick((player, event) -> {
+                    if (!player.hasPermission(status.getPermission())) {
+                        XSound.ENTITY_ITEM_BREAK.play(player);
+                        return;
+                    }
+
+                    player.closeInventory();
+                    buildWorld.getData().setStatus(status);
+                    plugin.getSettingsService().forceUpdateSidebar(buildWorld);
+
+                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    messages.sendMessage(
+                            player,
+                            "worlds_setstatus_set",
+                            Map.entry("%world%", buildWorld.getName()),
+                            Map.entry("%status%", messages.getString(Messages.getMessageKey(status), player)));
+                })
+                .build();
+    }
+
     @Override
     protected void populate(Player player) {
         plugin.getMenuItems().fillRange(player, getInventory(), 0, 10);
         plugin.getMenuItems().fillRange(player, getInventory(), 17, 27);
 
-        STATUS_BY_SLOT.forEach((slot, status) -> addStatusItem(player, slot, status));
+        renderButtons(player);
     }
 
     /**
@@ -84,59 +123,19 @@ public class StatusMenu extends Menu {
         return STATUS_BY_SLOT;
     }
 
-    /**
-     * Adds a status item to the inventory at the specified position.
-     *
-     * @param player The player who will see the item
-     * @param position The position in the inventory to add the item
-     * @param status The status to represent with the item
-     */
-    private void addStatusItem(Player player, int position, BuildWorldStatus status) {
-        XMaterial material = plugin.getCustomizableIcons().getIcon(status);
-        String displayName = messages.getString(Messages.getMessageKey(status), player);
-
-        if (!player.hasPermission(status.getPermission())) {
-            material = XMaterial.BARRIER;
-            displayName = "§c§m" + ChatColor.stripColor(displayName);
-        }
-
-        ItemBuilder.of(material)
-                .name(displayName)
-                .glow(buildWorld.getData().getStatus() == status)
-                .into(getInventory(), position);
-    }
-
     @Override
-    public void handleClick(InventoryClickEvent event) {
+    protected void onUnhandledClick(Player player, InventoryClickEvent event) {
+        // Only react to clicks inside this menu (not the player's own inventory).
+        if (event.getRawSlot() < 0 || event.getRawSlot() >= getInventory().getSize()) {
+            return;
+        }
         ItemStack itemStack = event.getCurrentItem();
         if (itemStack == null || itemStack.getType() == Material.AIR || !itemStack.hasItemMeta()) {
             return;
         }
 
-        event.setCancelled(true);
-        Player player = (Player) event.getWhoClicked();
-
-        BuildWorldStatus status = STATUS_BY_SLOT.get(event.getSlot());
-        if (status == null) {
-            XSound.BLOCK_CHEST_OPEN.play(player);
-            new EditMenu(plugin, buildWorld, player).open(player);
-            return;
-        }
-
-        if (!player.hasPermission(status.getPermission())) {
-            XSound.ENTITY_ITEM_BREAK.play(player);
-            return;
-        }
-
-        player.closeInventory();
-        buildWorld.getData().setStatus(status);
-        plugin.getSettingsService().forceUpdateSidebar(buildWorld);
-
-        XSound.ENTITY_CHICKEN_EGG.play(player);
-        messages.sendMessage(
-                player,
-                "worlds_setstatus_set",
-                Map.entry("%world%", buildWorld.getName()),
-                Map.entry("%status%", messages.getString(Messages.getMessageKey(status), player)));
+        // A click on any non-status slot (e.g. the filler) returns to the editor.
+        XSound.BLOCK_CHEST_OPEN.play(player);
+        new EditMenu(plugin, buildWorld, player).open(player);
     }
 }

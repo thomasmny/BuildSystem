@@ -22,50 +22,61 @@ import java.util.concurrent.CompletableFuture;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * A generic interface for storage operations.
+ * A generic, backend-agnostic interface for asynchronous persistence operations.
+ *
+ * <p>All operations are performed off the main server thread and report their result through a {@link CompletableFuture}.
+ * If an operation fails, the returned future completes exceptionally with the underlying cause.
  *
  * @param <T> The type of objects to be stored
+ * @apiNote The returned futures complete on a background thread. Bukkit's API is not thread-safe, so any continuation
+ *     that touches the server (worlds, entities, scheduler, etc.) must first hop back onto the main thread, e.g. via
+ *     {@code thenAccept(result -> Bukkit.getScheduler().runTask(plugin, () -> ...))}.
  * @since 3.0.0
  */
 @NullMarked
 public interface Storage<T> {
 
     /**
-     * Saves the given object to the storage.
+     * Saves the given object to the storage, overwriting any existing entry with the same key.
      *
      * @param object The object to save
-     * @return A {@link CompletableFuture} that completes when the save operation is done
+     * @return A {@link CompletableFuture} that completes when the object has been persisted, or completes exceptionally
+     *     if the operation fails
      */
     CompletableFuture<Void> save(T object);
 
     /**
-     * Saves all the given objects to the storage.
+     * Saves all the given objects to the storage, overwriting any existing entries with the same keys.
      *
      * @param objects The objects to save
-     * @return A {@link CompletableFuture} that completes when the save operation is done
+     * @return A {@link CompletableFuture} that completes when every object has been persisted, or completes exceptionally
+     *     if the operation fails
      */
     CompletableFuture<Void> save(Collection<T> objects);
 
     /**
-     * Loads all objects from the storage.
+     * Loads all objects currently held in the storage.
      *
-     * @return A {@link CompletableFuture} that completes with a collection of loaded objects
+     * @return A {@link CompletableFuture} that completes with all stored objects, or with an empty collection if the
+     *     storage holds none; completes exceptionally if the operation fails
      */
     CompletableFuture<Collection<T>> load();
 
     /**
-     * Deletes the given object from the storage.
+     * Deletes the given object from the storage. Completes normally even if no matching entry exists.
      *
      * @param object The object to delete
-     * @return A {@link CompletableFuture} that completes when the deletion finishes
+     * @return A {@link CompletableFuture} that completes when the deletion finishes, or completes exceptionally if the
+     *     operation fails
      */
     CompletableFuture<Void> delete(T object);
 
     /**
-     * Deletes the object with the given key from the storage.
+     * Deletes the object stored under the given key. Completes normally even if no matching entry exists.
      *
      * @param key The key of the object to delete
-     * @return A {@link CompletableFuture} that completes when the deletion finishes
+     * @return A {@link CompletableFuture} that completes when the deletion finishes, or completes exceptionally if the
+     *     operation fails
      */
     CompletableFuture<Void> delete(String key);
 }

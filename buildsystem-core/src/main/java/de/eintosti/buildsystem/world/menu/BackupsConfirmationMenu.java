@@ -21,16 +21,19 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.backup.Backup;
+import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
-import de.eintosti.buildsystem.menu.Menu;
+import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.util.StringUtils;
 import java.util.Map;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class BackupsConfirmationMenu extends Menu {
+public class BackupsConfirmationMenu extends ButtonMenu<MenuButton> {
+
+    private static final int SLOT_CONFIRM = 11;
+    private static final int SLOT_CANCEL = 15;
 
     private final Backup backup;
     private final String dateFormat;
@@ -39,6 +42,36 @@ public class BackupsConfirmationMenu extends Menu {
         super(plugin.getMessages(), 27, plugin.getMessages().getString("restore_backup_title", player));
         this.backup = backup;
         this.dateFormat = plugin.getConfigService().current().settings().dateFormat();
+
+        register(
+                SLOT_CONFIRM,
+                MenuButton.builder()
+                        .render((p, inventory, slot) -> ItemBuilder.of(XMaterial.LIME_DYE)
+                                .name(messages.getString("restore_backup_confirm_name", p))
+                                .lore(messages.getStringList(
+                                        "restore_backup_confirm_lore",
+                                        p,
+                                        Map.entry(
+                                                "%timestamp%",
+                                                StringUtils.formatTime(backup.creationTime(), dateFormat))))
+                                .into(inventory, slot))
+                        .onClick((p, event) -> {
+                            p.closeInventory();
+                            XSound.ENTITY_PLAYER_LEVELUP.play(p);
+                            backup.owner().restoreBackup(backup, p);
+                        })
+                        .build());
+        register(
+                SLOT_CANCEL,
+                MenuButton.builder()
+                        .render((p, inventory, slot) -> ItemBuilder.of(XMaterial.RED_DYE)
+                                .name(messages.getString("restore_backup_cancel_name", p))
+                                .into(inventory, slot))
+                        .onClick((p, event) -> {
+                            p.closeInventory();
+                            XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(p);
+                        })
+                        .build());
     }
 
     @Override
@@ -53,33 +86,6 @@ public class BackupsConfirmationMenu extends Menu {
             ItemBuilder.of(XMaterial.RED_STAINED_GLASS_PANE).name("§c").into(getInventory(), slot);
         }
 
-        ItemBuilder.of(XMaterial.LIME_DYE)
-                .name(messages.getString("restore_backup_confirm_name", player))
-                .lore(messages.getStringList(
-                        "restore_backup_confirm_lore",
-                        player,
-                        Map.entry("%timestamp%", StringUtils.formatTime(backup.creationTime(), dateFormat))))
-                .into(getInventory(), 11);
-        ItemBuilder.of(XMaterial.RED_DYE)
-                .name(messages.getString("restore_backup_cancel_name", player))
-                .into(getInventory(), 15);
-    }
-
-    @Override
-    public void handleClick(InventoryClickEvent event) {
-        event.setCancelled(true);
-        Player player = (Player) event.getWhoClicked();
-
-        switch (event.getSlot()) {
-            case 11 -> {
-                player.closeInventory();
-                XSound.ENTITY_PLAYER_LEVELUP.play(player);
-                backup.owner().restoreBackup(backup, player);
-            }
-            case 15 -> {
-                player.closeInventory();
-                XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-            }
-        }
+        renderButtons(player);
     }
 }

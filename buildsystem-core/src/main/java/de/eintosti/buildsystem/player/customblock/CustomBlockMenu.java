@@ -20,16 +20,16 @@ package de.eintosti.buildsystem.player.customblock;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
-import de.eintosti.buildsystem.menu.Menu;
+import de.eintosti.buildsystem.menu.MenuButton;
 import java.util.Map;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class CustomBlockMenu extends Menu {
+public class CustomBlockMenu extends ButtonMenu<MenuButton> {
 
     /**
      * A selectable custom block. {@code giveMaterial} is the material the item is handed out as; the default
@@ -78,6 +78,18 @@ public class CustomBlockMenu extends Menu {
     public CustomBlockMenu(BuildSystemPlugin plugin, Player player) {
         super(plugin.getMessages(), 45, plugin.getMessages().getString("blocks_title", player));
         this.plugin = plugin;
+
+        BLOCK_BY_SLOT.forEach((slot, entry) -> register(slot, blockButton(entry)));
+    }
+
+    private MenuButton blockButton(BlockEntry entry) {
+        return MenuButton.builder()
+                .render((player, inventory, slot) -> ItemBuilder.skull(
+                                Profileable.detect(entry.block().getSkullUrl()))
+                        .name(messages.getString(entry.block().getMessageKey(), player))
+                        .into(inventory, slot))
+                .onClick((player, event) -> giveCustomBlock(player, entry.block(), entry.giveMaterial()))
+                .build();
     }
 
     @Override
@@ -87,7 +99,7 @@ public class CustomBlockMenu extends Menu {
             plugin.getMenuItems().addGlassPane(player, getInventory(), i);
         }
 
-        BLOCK_BY_SLOT.forEach((slot, entry) -> setCustomBlock(player, slot, entry.block()));
+        renderButtons(player);
     }
 
     /**
@@ -95,23 +107,6 @@ public class CustomBlockMenu extends Menu {
      */
     Map<Integer, BlockEntry> blockBySlot() {
         return BLOCK_BY_SLOT;
-    }
-
-    private void setCustomBlock(Player player, int position, CustomBlock customBlock) {
-        ItemBuilder.skull(Profileable.detect(customBlock.getSkullUrl()))
-                .name(messages.getString(customBlock.getMessageKey(), player))
-                .into(getInventory(), position);
-    }
-
-    @Override
-    public void handleClick(InventoryClickEvent event) {
-        event.setCancelled(true);
-        Player player = (Player) event.getWhoClicked();
-
-        BlockEntry entry = BLOCK_BY_SLOT.get(event.getSlot());
-        if (entry != null) {
-            giveCustomBlock(player, entry.block(), entry.giveMaterial());
-        }
     }
 
     private void giveCustomBlock(Player player, CustomBlock customBlock, XMaterial material) {

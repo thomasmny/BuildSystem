@@ -94,15 +94,8 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     private final @Nullable String noWorldsMessage;
     private @Nullable List<Displayable> cachedDisplayables;
 
-    protected DisplayablesMenu(
-            BuildSystemPlugin plugin,
-            Player player,
-            NavigatorCategory category,
-            String inventoryTitle,
-            @Nullable String noWorldsMessage,
-            Visibility requiredVisibility,
-            Set<BuildWorldStatus> validStatuses) {
-        super(plugin.getMessages(), 54, inventoryTitle);
+    protected DisplayablesMenu(BuildSystemPlugin plugin, Player player, Options options) {
+        super(plugin.getMessages(), 54, options.title());
         this.plugin = plugin;
         this.playerService = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsService();
@@ -110,10 +103,85 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         this.folderStorage = worldService.getFolderStorage();
         this.worldStorage = worldService.getWorldStorage();
         this.player = player;
-        this.category = category;
-        this.noWorldsMessage = noWorldsMessage;
-        this.requiredVisibility = requiredVisibility;
-        this.validStatuses = validStatuses;
+        this.category = options.category();
+        this.noWorldsMessage = options.emptyMessage();
+        this.requiredVisibility = options.requiredVisibility();
+        this.validStatuses = options.validStatuses();
+    }
+
+    /**
+     * The configuration of a {@link DisplayablesMenu}: which {@link NavigatorCategory category} it lists, its title and
+     * "no worlds" message, the {@link Visibility} it requires, and the {@link BuildWorldStatus statuses} it shows.
+     * Bundled into one named-field object so subclasses no longer pass a long positional argument list to {@code super}.
+     *
+     * @param category The navigator category whose folders/worlds are listed
+     * @param title The inventory title
+     * @param emptyMessage The message shown when nothing matches, or {@code null} to show nothing
+     * @param requiredVisibility The visibility a world must have to be listed
+     * @param validStatuses The statuses a world must have to be listed
+     */
+    public record Options(
+            NavigatorCategory category,
+            String title,
+            @Nullable String emptyMessage,
+            Visibility requiredVisibility,
+            Set<BuildWorldStatus> validStatuses) {
+
+        /**
+         * {@return a new {@link Builder}}
+         */
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        /**
+         * Fluent builder for {@link Options}. {@code requiredVisibility} defaults to {@link Visibility#IGNORE} and
+         * {@code validStatuses} to all statuses; {@code category} and {@code title} are required.
+         */
+        public static final class Builder {
+
+            private @Nullable NavigatorCategory category;
+            private @Nullable String title;
+            private @Nullable String emptyMessage;
+            private Visibility requiredVisibility = Visibility.IGNORE;
+            private Set<BuildWorldStatus> validStatuses = EnumSet.allOf(BuildWorldStatus.class);
+
+            private Builder() {}
+
+            public Builder category(NavigatorCategory category) {
+                this.category = category;
+                return this;
+            }
+
+            public Builder title(String title) {
+                this.title = title;
+                return this;
+            }
+
+            public Builder emptyMessage(@Nullable String emptyMessage) {
+                this.emptyMessage = emptyMessage;
+                return this;
+            }
+
+            public Builder requiredVisibility(Visibility requiredVisibility) {
+                this.requiredVisibility = requiredVisibility;
+                return this;
+            }
+
+            public Builder validStatuses(Set<BuildWorldStatus> validStatuses) {
+                this.validStatuses = validStatuses;
+                return this;
+            }
+
+            public Options build() {
+                return new Options(
+                        Objects.requireNonNull(category, "category"),
+                        Objects.requireNonNull(title, "title"),
+                        emptyMessage,
+                        requiredVisibility,
+                        validStatuses);
+            }
+        }
     }
 
     @Override

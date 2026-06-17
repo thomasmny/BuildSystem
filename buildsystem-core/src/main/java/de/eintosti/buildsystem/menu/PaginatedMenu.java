@@ -37,9 +37,13 @@ import org.jspecify.annotations.NullMarked;
  *
  * <p>The page-change and refusal sounds are overridable ({@link #playPageSound}/{@link #playRefuseSound}) for menus
  * that want different audio feedback.
+ *
+ * <p>Being a {@link ButtonMenu}, a paginated menu may also {@link #register(int, MenuButton) register} fixed control
+ * buttons (e.g. the page arrows and a close button) whose clicks are routed by the base {@code handleClick}, while the
+ * variable page content is rendered separately by its {@code populate}.
  */
 @NullMarked
-public abstract class PaginatedMenu extends Menu {
+public abstract class PaginatedMenu extends ButtonMenu<MenuButton> {
 
     private int page = 0;
 
