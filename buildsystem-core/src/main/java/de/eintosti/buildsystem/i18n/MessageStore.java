@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -121,5 +122,16 @@ final class MessageStore {
      */
     String getRaw(String key) {
         return messages.getOrDefault(key, "");
+    }
+
+    /**
+     * Returns the raw stored value for the given key only if the loaded {@code messages.yml} actually contains it,
+     * without logging a "missing key" warning. Used to read legacy keys during a one-time migration.
+     *
+     * @param key The message key
+     * @return The raw stored value, or {@link Optional#empty()} when the key is absent
+     */
+    Optional<String> find(String key) {
+        return Optional.ofNullable(messages.get(key));
     }
 }

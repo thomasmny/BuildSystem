@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.world.data;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.world.data.type.Bypassable;
@@ -53,6 +54,7 @@ public class WorldDataImpl implements WorldData {
 
     private final Property<Difficulty> difficulty;
     private final Property<XMaterial> material;
+    private final Property<String> iconSkullTexture;
     private final Property<BuildWorldStatus> status;
 
     private final Property<Boolean> blockBreaking;
@@ -63,7 +65,7 @@ public class WorldDataImpl implements WorldData {
     private final Property<Boolean> mobAi;
     private final Property<Boolean> physics;
     private final Property<Boolean> pinned;
-    private final Property<Boolean> privateWorld;
+    private final Property<Visibility> visibility;
 
     private final Property<Integer> timeSinceBackup;
     private final Property<Long> lastEdited;
@@ -91,10 +93,11 @@ public class WorldDataImpl implements WorldData {
                 "difficulty", new ConfigurableProperty<>(builder.difficulty).withConfigFormatter(Difficulty::name));
         this.material =
                 register("material", new ConfigurableProperty<>(builder.material).withConfigFormatter(XMaterial::name));
+        this.iconSkullTexture = register("icon-skull-texture", new ConfigurableProperty<>(builder.iconSkullTexture));
         this.status = register(
                 "status",
-                new ConfigurableProperty<>(builder.status)
-                        .withConfigFormatter(BuildWorldStatus::name)
+                new ConfigurableProperty<>(Objects.requireNonNull(builder.status, "status"))
+                        .withConfigFormatter(BuildWorldStatus::getId)
                         .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.archive")));
 
         this.blockBreaking = register("block-breaking", settingsBypassable(builder.blockBreaking));
@@ -105,7 +108,8 @@ public class WorldDataImpl implements WorldData {
         this.mobAi = register("mob-ai", new ConfigurableProperty<>(builder.mobAi));
         this.physics = register("physics", new ConfigurableProperty<>(builder.physics));
         this.pinned = register("pinned", new ConfigurableProperty<>(builder.pinned));
-        this.privateWorld = register("private", new ConfigurableProperty<>(builder.privateWorld));
+        this.visibility = register(
+                "visibility", new ConfigurableProperty<>(builder.visibility).withConfigFormatter(Visibility::name));
 
         this.timeSinceBackup = register("time-since-backup", new ConfigurableProperty<>(builder.timeSinceBackup));
         this.lastEdited = register("last-edited", new ConfigurableProperty<>(builder.lastEdited));
@@ -219,6 +223,17 @@ public class WorldDataImpl implements WorldData {
     }
 
     @Override
+    public @Nullable String getIconSkullTexture() {
+        String value = iconSkullTexture.get();
+        return value.isBlank() ? null : value;
+    }
+
+    @Override
+    public void setIconSkullTexture(@Nullable String skullTexture) {
+        this.iconSkullTexture.set(skullTexture == null ? "" : skullTexture);
+    }
+
+    @Override
     public BuildWorldStatus getStatus() {
         return status.get();
     }
@@ -309,13 +324,13 @@ public class WorldDataImpl implements WorldData {
     }
 
     @Override
-    public boolean isPrivateWorld() {
-        return privateWorld.get();
+    public Visibility getVisibility() {
+        return visibility.get();
     }
 
     @Override
-    public void setPrivateWorld(boolean privateWorld) {
-        this.privateWorld.set(privateWorld);
+    public void setVisibility(Visibility visibility) {
+        this.visibility.set(visibility);
     }
 
     @Override
@@ -375,7 +390,8 @@ public class WorldDataImpl implements WorldData {
         private String project = "-";
         private Difficulty difficulty = Difficulty.PEACEFUL;
         private XMaterial material = XMaterial.GRASS_BLOCK;
-        private BuildWorldStatus status = BuildWorldStatus.NOT_STARTED;
+        private String iconSkullTexture = "";
+        private @Nullable BuildWorldStatus status;
         private boolean blockBreaking = true;
         private boolean blockInteractions = true;
         private boolean blockPlacement = true;
@@ -384,7 +400,7 @@ public class WorldDataImpl implements WorldData {
         private boolean mobAi = true;
         private boolean physics = true;
         private boolean pinned = false;
-        private boolean privateWorld = false;
+        private Visibility visibility = Visibility.EVERYONE;
         private int timeSinceBackup = 0;
         private long lastEdited = -1L;
         private long lastLoaded = -1L;
@@ -435,6 +451,11 @@ public class WorldDataImpl implements WorldData {
             return this;
         }
 
+        public WorldDataBuilder withIconSkullTexture(String iconSkullTexture) {
+            this.iconSkullTexture = iconSkullTexture;
+            return this;
+        }
+
         public WorldDataBuilder withStatus(BuildWorldStatus status) {
             this.status = status;
             return this;
@@ -480,8 +501,8 @@ public class WorldDataImpl implements WorldData {
             return this;
         }
 
-        public WorldDataBuilder withPrivateWorld(boolean privateWorld) {
-            this.privateWorld = privateWorld;
+        public WorldDataBuilder withVisibility(Visibility visibility) {
+            this.visibility = visibility;
             return this;
         }
 

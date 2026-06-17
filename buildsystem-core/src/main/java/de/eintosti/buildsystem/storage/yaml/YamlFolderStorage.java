@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.io.File;
@@ -90,9 +91,10 @@ public class YamlFolderStorage extends FolderStorageImpl {
 
         serializedFolder.put("creator", folder.getCreator().toString());
         serializedFolder.put("creation", folder.getCreation());
-        serializedFolder.put("category", folder.getCategory().name());
+        serializedFolder.put("category", folder.getCategory().getId());
         serializedFolder.put("parent", folder.hasParent() ? folder.getParent().getName() : null);
         serializedFolder.put("material", folder.getIcon().name());
+        serializedFolder.put("icon-skull-texture", folder.getIconSkullTexture());
         serializedFolder.put("permission", folder.getPermission());
         serializedFolder.put("project", folder.getProject());
         serializedFolder.put(
@@ -157,7 +159,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
                 Builder.deserialize(config.getString(path + ".creator")),
                 "Creator cannot be null for folder: " + folderName);
         long creation = config.getLong(path + ".creation", System.currentTimeMillis());
-        NavigatorCategory category = NavigatorCategory.valueOf(config.getString(path + ".category"));
+        NavigatorCategory category = resolveCategory(path);
         XMaterial defaultMaterial = XMaterial.CHEST;
         XMaterial material = XMaterial.matchXMaterial(config.getString(path + ".material", defaultMaterial.name()))
                 .orElse(defaultMaterial);
@@ -167,7 +169,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
                 .map(UUID::fromString)
                 .toList();
 
-        return new FolderImpl(
+        FolderImpl folder = new FolderImpl(
                 plugin,
                 folderName,
                 creation,
@@ -179,6 +181,22 @@ public class YamlFolderStorage extends FolderStorageImpl {
                 project,
                 worlds,
                 new ArrayList<>());
+        folder.setIconSkullTexture(config.getString(path + ".icon-skull-texture"));
+        return folder;
+    }
+
+    /**
+     * Resolves a folder's {@link NavigatorCategory} from its stored {@code category} id. Pre-4.0 stored this as an
+     * upper-case enum name ({@code PUBLIC}/{@code ARCHIVE}/{@code PRIVATE}), which lower-casing normalises to the
+     * built-in category id. Falls back to the default category when the key is missing or unknown.
+     */
+    private NavigatorCategory resolveCategory(String path) {
+        NavigatorCategoryRegistry registry = plugin.getNavigatorCategoryRegistry();
+        String categoryId = config.getString(path + ".category");
+        categoryId = categoryId != null ? categoryId.toLowerCase(Locale.ROOT) : null;
+        return categoryId != null
+                ? registry.getCategory(categoryId).orElseGet(registry::getDefaultCategory)
+                : registry.getDefaultCategory();
     }
 
     @Override

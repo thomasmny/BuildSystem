@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.world.display;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.storage.yaml.YamlSetupStorage;
 import java.util.EnumMap;
@@ -28,7 +27,8 @@ import java.util.Map;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * User-customizable icons for different areas of the plugin.
+ * User-customizable default icons for the world types used throughout the plugin. Status icons are configured per
+ * status through the status registry, so they are no longer held here.
  */
 @NullMarked
 public class CustomizableIcons {
@@ -36,13 +36,11 @@ public class CustomizableIcons {
     private final YamlSetupStorage setupStorage;
 
     private final Map<BuildWorldType, XMaterial> typeIcons;
-    private final Map<BuildWorldStatus, XMaterial> statusIcons;
 
     public CustomizableIcons(BuildSystemPlugin plugin) {
         this.setupStorage = new YamlSetupStorage(plugin);
 
         this.typeIcons = loadTypeIcons();
-        this.statusIcons = loadStatusIcons();
     }
 
     private Map<BuildWorldType, XMaterial> loadTypeIcons() {
@@ -66,25 +64,6 @@ public class CustomizableIcons {
         return typeIcons;
     }
 
-    private Map<BuildWorldStatus, XMaterial> loadStatusIcons() {
-        Map<BuildWorldStatus, XMaterial> statusIcon = new EnumMap<>(Map.ofEntries(
-                Map.entry(BuildWorldStatus.NOT_STARTED, XMaterial.RED_DYE),
-                Map.entry(BuildWorldStatus.IN_PROGRESS, XMaterial.ORANGE_DYE),
-                Map.entry(BuildWorldStatus.ALMOST_FINISHED, XMaterial.LIME_DYE),
-                Map.entry(BuildWorldStatus.FINISHED, XMaterial.GREEN_DYE),
-                Map.entry(BuildWorldStatus.ARCHIVE, XMaterial.CYAN_DYE),
-                Map.entry(BuildWorldStatus.HIDDEN, XMaterial.BONE_MEAL)));
-
-        Map<BuildWorldStatus, XMaterial> loadedIcons = this.setupStorage.loadIcons(
-                IconType.STATUS, type -> BuildWorldStatus.valueOf(type.toUpperCase(Locale.ROOT)));
-        if (loadedIcons != null) {
-            statusIcon.putAll(loadedIcons);
-        }
-
-        setupStorage.saveIcons(IconType.STATUS, statusIcon);
-        return statusIcon;
-    }
-
     /**
      * Gets the icon for a specific {@link BuildWorldType}.
      *
@@ -93,16 +72,6 @@ public class CustomizableIcons {
      */
     public XMaterial getIcon(BuildWorldType type) {
         return this.typeIcons.get(type);
-    }
-
-    /**
-     * Gets the icon for a specific {@link BuildWorldStatus}.
-     *
-     * @param status The world status
-     * @return The material to use as an icon
-     */
-    public XMaterial getIcon(BuildWorldStatus status) {
-        return this.statusIcons.get(status);
     }
 
     /**
@@ -116,20 +85,8 @@ public class CustomizableIcons {
         this.setupStorage.saveIcon(IconType.TYPE, type, material);
     }
 
-    /**
-     * Sets a custom icon for a {@link BuildWorldStatus}.
-     *
-     * @param status The world status
-     * @param material The material to use as an icon
-     */
-    public void setIcon(BuildWorldStatus status, XMaterial material) {
-        this.statusIcons.put(status, material);
-        this.setupStorage.saveIcon(IconType.STATUS, status, material);
-    }
-
     public enum IconType {
-        TYPE,
-        STATUS;
+        TYPE;
 
         public String getKey() {
             return name().toLowerCase(Locale.ROOT);

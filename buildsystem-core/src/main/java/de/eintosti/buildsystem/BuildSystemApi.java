@@ -21,6 +21,8 @@ import de.eintosti.buildsystem.api.BuildSystem;
 import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.world.WorldService;
 import de.eintosti.buildsystem.api.world.backup.BackupService;
+import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -45,5 +47,15 @@ public class BuildSystemApi implements BuildSystem {
     @Override
     public BackupService getBackupService() {
         return plugin.getBackupService();
+    }
+
+    @Override
+    public WorldStatusRegistry getStatusRegistry() {
+        return plugin.getWorldStatusRegistry();
+    }
+
+    @Override
+    public NavigatorCategoryRegistry getNavigatorCategoryRegistry() {
+        return plugin.getNavigatorCategoryRegistry();
     }
 }
