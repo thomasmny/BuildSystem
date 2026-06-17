@@ -66,15 +66,19 @@ public class CategoryStatusesMenu extends PaginatedMenu {
     @Override
     protected void populate(Player player) {
         clearButtons();
-        plugin.getMenuItems().fillWithGlass(getInventory(), player);
+        // Frame the whole menu so the (usually mostly empty) grid reads as a deliberate panel, not a void.
+        plugin.getMenuItems().fillAll(player, getInventory());
 
         List<BuildWorldStatus> statuses =
                 List.copyOf(plugin.getWorldStatusRegistry().getStatuses());
         registerPageItems(FIRST_CONTENT_SLOT, ITEMS_PER_PAGE, statuses, this::statusToggle);
 
         register(SLOT_BACK, backButton());
-        register(SLOT_PREVIOUS_PAGE, previousPageButton(SkullTextures.PREVIOUS_PAGE, ITEMS_PER_PAGE));
-        register(SLOT_NEXT_PAGE, nextPageButton(SkullTextures.NEXT_PAGE, ITEMS_PER_PAGE));
+        // Page arrows only when the statuses actually overflow a single page.
+        if (totalPages(ITEMS_PER_PAGE) > 1) {
+            register(SLOT_PREVIOUS_PAGE, previousPageButton(SkullTextures.PREVIOUS_PAGE, ITEMS_PER_PAGE));
+            register(SLOT_NEXT_PAGE, nextPageButton(SkullTextures.NEXT_PAGE, ITEMS_PER_PAGE));
+        }
 
         renderButtons(player);
     }
@@ -83,10 +87,13 @@ public class CategoryStatusesMenu extends PaginatedMenu {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> {
                     boolean member = category.getStatusIds().contains(status.getId());
-                    ItemBuilder.of(status.getIcon())
+                    // Member: the status's own icon, enchant-glowing. Non-member: a muted grey dye. The coloured status
+                    // name identifies the slot in both cases, so membership reads at a glance.
+                    ItemBuilder.of(member ? status.getIcon() : XMaterial.GRAY_DYE)
                             .name(ColorAPI.process(status.getStyledName()))
                             .lore(messages.getStringList(
-                                    member ? "setup_toggle_enabled" : "setup_toggle_disabled", player))
+                                    member ? "setup_category_status_member" : "setup_category_status_not_member",
+                                    player))
                             .glow(member)
                             .into(inventory, slot);
                 })

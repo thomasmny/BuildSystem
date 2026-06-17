@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.util.color.ColorAPI;
+import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
@@ -83,6 +84,15 @@ public class CategoryWorldsMenu extends DisplayablesMenu {
                 plugin.getWorldStatusRegistry().getDefaultStatus().getId();
         return category.getStatusIds().contains(defaultStatusId)
                 && playerService.canCreateWorld(player, category.getPrimaryVisibility())
-                && player.hasPermission("buildsystem.create." + category.getId());
+                && hasCreatePermission(player);
+    }
+
+    /**
+     * Admins may create worlds in any category; everyone else needs the per-category create node
+     * {@code buildsystem.create.<categoryId>}. This mirrors how the admin permission grants an unlimited world count.
+     */
+    private boolean hasCreatePermission(Player player) {
+        return WorldPermissionsImpl.of(plugin, null).hasAdminPermission(player)
+                || player.hasPermission("buildsystem.create." + category.getId());
     }
 }

@@ -44,10 +44,10 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
     private static final int SLOT_RENAME = 19;
     private static final int SLOT_COLOR = 20;
     private static final int SLOT_ICON = 21;
-    private static final int SLOT_SKULL = 22;
-    private static final int SLOT_EVERYONE = 23;
-    private static final int SLOT_ADDED_PLAYERS = 24;
-    private static final int SLOT_STATUSES = 25;
+    private static final int SLOT_EVERYONE = 22;
+    private static final int SLOT_ADDED_PLAYERS = 23;
+    private static final int SLOT_STATUSES = 24;
+    private static final int SLOT_SKULL = 25;
     private static final int SLOT_BACK = 49;
 
     private final NavigatorCategoryRegistryImpl registry;
@@ -72,7 +72,6 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
                 renameButton("setup_category_rename", "setup_category_rename_prompt", this.category::setDisplayName));
         register(SLOT_COLOR, colorButton("setup_category_color", this.category::setColor));
         register(SLOT_ICON, iconButton("setup_category_icon", this.category::getIcon, this.category::setIcon));
-        register(SLOT_SKULL, skullButton());
         register(SLOT_EVERYONE, visibilityButton(Visibility.EVERYONE, "setup_category_visibility_everyone"));
         register(SLOT_ADDED_PLAYERS, visibilityButton(Visibility.ADDED_PLAYERS, "setup_category_visibility_added"));
         register(
@@ -81,6 +80,11 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
                         XMaterial.NAME_TAG,
                         "setup_category_statuses",
                         (p, event) -> new CategoryStatusesMenu(plugin, p, this.category).open(p)));
+        // The skull-texture option only makes sense for a player-head icon, so it appears only then (keeping the
+        // property row contiguous as the last entry otherwise).
+        if (this.category.getIcon() == XMaterial.PLAYER_HEAD) {
+            register(SLOT_SKULL, skullButton());
+        }
         register(SLOT_BACK, backButton());
     }
 
@@ -98,13 +102,7 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.PLAYER_HEAD)
                         .name(messages.getString(
-                                "setup_category_skull",
-                                player,
-                                Map.entry(
-                                        "%texture%",
-                                        category.getIconSkullTexture() == null
-                                                ? messages.getString("setup_category_skull_none", player)
-                                                : category.getIconSkullTexture())))
+                                "setup_category_skull", player, Map.entry("%state%", skullState(player))))
                         .lore(messages.getStringList("setup_category_skull_lore", player))
                         .into(inventory, slot))
                 .onClick((player, event) ->
@@ -120,6 +118,21 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
                             save(player);
                         }))
                 .build();
+    }
+
+    /**
+     * {@return a short label for the current skull texture} Avoids rendering the full texture hash in the item name:
+     * {@code none}, the viewer-head label, or a generic "custom" label.
+     */
+    private String skullState(Player player) {
+        String texture = category.getIconSkullTexture();
+        if (texture == null || texture.isBlank()) {
+            return messages.getString("setup_category_skull_none", player);
+        }
+        if (ItemBuilder.VIEWER_HEAD.equals(texture)) {
+            return messages.getString("setup_category_skull_viewer", player);
+        }
+        return messages.getString("setup_category_skull_custom", player);
     }
 
     private MenuButton visibilityButton(Visibility visibility, String nameKey) {
