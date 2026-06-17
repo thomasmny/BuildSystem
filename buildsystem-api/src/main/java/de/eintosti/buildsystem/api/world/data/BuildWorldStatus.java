@@ -17,74 +17,109 @@
  */
 package de.eintosti.buildsystem.api.world.data;
 
+import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import java.util.Locale;
+import java.util.Optional;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Represents the various building statuses a {@link BuildWorld} can have. These statuses indicate the progression and
- * accessibility of a world.
+ * Represents a building status a {@link BuildWorld} can have, indicating the progression and accessibility of a world.
  *
- * @since 3.0.0
+ * <p>Statuses are dynamic; server administrators can create, restyle, and delete custom statuses at runtime through
+ * the in-game setup menu. Instances are obtained and resolved through the {@link WorldStatusRegistry}. Six built-in
+ * statuses are always present and {@link #isBuiltIn() protected from deletion}: {@code not_started}, {@code in_progress},
+ * {@code almost_finished}, {@code finished}, {@code archive}, and {@code hidden}.
+ *
+ * <p>Behavioral traits are data-driven and defined by individual properties, such as whether building is permitted,
+ * visibility flags, and automatic progression rules.
+ *
+ * @since TODO
  */
 @NullMarked
-public enum BuildWorldStatus {
+public interface BuildWorldStatus {
 
     /**
-     * Represents a {@link BuildWorld} that has not yet been started or modified. This is typically the initial state
-     * for newly created worlds.
-     */
-    NOT_STARTED(1),
-
-    /**
-     * Represents a {@link BuildWorld} that is currently under construction. This status is automatically assigned when
-     * a block is placed or broken in the world.
-     */
-    IN_PROGRESS(2),
-
-    /**
-     * Represents a {@link BuildWorld} that is nearing completion.
-     */
-    ALMOST_FINISHED(3),
-
-    /**
-     * Represents a {@link BuildWorld} whose building phase has been completed.
-     */
-    FINISHED(4),
-
-    /**
-     * Represents an older {@link BuildWorld} that has been completed and is now archived. Blocks typically cannot be
-     * placed or broken in archived worlds.
-     */
-    ARCHIVE(5),
-
-    /**
-     * Represents a {@link BuildWorld} that is hidden from public view in the navigator.
-     */
-    HIDDEN(6);
-
-    private final int stage;
-
-    BuildWorldStatus(int stage) {
-        this.stage = stage;
-    }
-
-    /**
-     * Gets the permission required to change a world to this status.
+     * Gets the stable, lower-case identifier of this status (e.g. {@code "in_progress"}). The id is unique within the
+     * {@link WorldStatusRegistry} and is what gets persisted; it never changes once created.
      *
-     * @return The permission string (e.g., "buildsystem.setstatus.notstarted")
+     * @return The status identifier
      */
-    public String getPermission() {
-        return "buildsystem.setstatus." + name().toLowerCase(Locale.ROOT).replace("_", "");
+    String getId();
+
+    /**
+     * Gets the configurable display name of this status, with legacy colour codes unresolved.
+     *
+     * @return The display name
+     */
+    String getDisplayName();
+
+    /**
+     * Gets the legacy colour-code token (e.g. {@code "&a"}) applied to this status and, by default, to the worlds that
+     * carry it.
+     *
+     * @return The colour token
+     */
+    String getColor();
+
+    /**
+     * Gets the material used to represent this status in menus.
+     *
+     * @return The icon material
+     */
+    XMaterial getIcon();
+
+    /**
+     * Gets the display name prefixed with this status's {@link #getColor() colour}, with legacy colour codes still
+     * unresolved. Callers translate the codes when rendering.
+     *
+     * @return The colour-prefixed display name
+     */
+    default String getStyledName() {
+        return getColor() + getDisplayName();
     }
 
     /**
-     * Gets the development stage of the {@link BuildWorld}. A higher numerical value indicates a further developed or
-     * completed world.
+     * Gets the ordering weight of this status. Lower values are considered earlier in a world's lifecycle and are used
+     * to order the status grid and the status-based world sort.
      *
-     * @return The integer representing the stage of development
+     * @return The ordering weight
      */
-    public int getStage() {
-        return stage;
-    }
+    int getOrder();
+
+    /**
+     * Gets the permission required to assign this status to a world (e.g. {@code "buildsystem.setstatus.inprogress"}).
+     *
+     * @return The permission string
+     */
+    String getPermission();
+
+    /**
+     * Gets whether worlds with this status may be modified (blocks placed/broken, interactions). When {@code false},
+     * modification can still be granted to users with the {@code buildsystem.bypass.archive} permission.
+     *
+     * @return {@code true} if building is allowed, otherwise {@code false}
+     */
+    boolean isBuildingAllowed();
+
+    /**
+     * Gets whether worlds with this status are shown in the navigator.
+     *
+     * @return {@code true} if visible in the navigator, otherwise {@code false}
+     */
+    boolean isVisibleInNavigator();
+
+    /**
+     * Gets the id of the status a world is automatically advanced to the first time it is modified.
+     *
+     * @return The target status id, or {@link Optional#empty()} if this status does not auto-advance
+     */
+    Optional<String> getProgressesTo();
+
+    /**
+     * Gets whether this is a built-in status. Built-in statuses can be restyled but never deleted, guaranteeing a valid
+     * fallback always exists.
+     *
+     * @return {@code true} if built-in, otherwise {@code false}
+     */
+    boolean isBuiltIn();
 }

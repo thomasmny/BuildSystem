@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.api.world;
 
-import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
@@ -31,7 +30,6 @@ import de.eintosti.buildsystem.api.world.lifecycle.WorldUnloader;
 import java.util.Optional;
 import java.util.UUID;
 import org.bukkit.Difficulty;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -61,14 +59,6 @@ public interface BuildWorld extends Displayable {
      * @return The uuid of this world
      */
     UUID getUniqueId();
-
-    /**
-     * Gets the {@link Profileable} representation of this build world which is applied when
-     * {@link WorldData#getMaterial()} is set to {@link Material#PLAYER_HEAD}.
-     *
-     * @return The {@link Profileable} representation of this build world
-     */
-    Profileable asProfileable();
 
     /**
      * Gets this world's {@link BuildWorldType}.

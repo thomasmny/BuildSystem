@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.api.world.display;
 
 import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import java.util.List;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -25,6 +26,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Represents an object that can be displayed in an inventory.
@@ -83,6 +85,37 @@ public interface Displayable {
     void setIcon(XMaterial material);
 
     /**
+     * Gets the skull texture applied when this item's {@link #getIcon() icon} is a player head. Returns {@code null}
+     * when no custom texture is set; the literal {@code "%viewer%"} means the viewing player's own head.
+     *
+     * @return The skull texture, {@code "%viewer%"} for the viewer's head, or {@code null}
+     * @since TODO
+     */
+    @Nullable String getIconSkullTexture();
+
+    /**
+     * Sets the skull texture applied when this item's {@link #getIcon() icon} is a player head. Pass {@code null} to
+     * clear it, or the literal {@code "%viewer%"} to render the viewing player's own head.
+     *
+     * @param skullTexture The skull texture, {@code "%viewer%"}, or {@code null}
+     * @since TODO
+     */
+    void setIconSkullTexture(@Nullable String skullTexture);
+
+    /**
+     * Gets the profile used to render this displayable's head when its {@link #getIcon() icon} is a player head and no
+     * explicit {@link #getIconSkullTexture() skull texture} is configured. Returns {@code null} to render a plain,
+     * un-textured head. The renderer resolves this asynchronously, so implementations may return network-backed
+     * profiles (e.g. a world's creator) without blocking the inventory from opening.
+     *
+     * @return The default head profile, or {@code null} for a plain head
+     * @since TODO
+     */
+    @Nullable default Profileable getHeadProfile() {
+        return null;
+    }
+
+    /**
      * Gets the lore of this displayable item.
      *
      * @param player The player viewing the item
@@ -99,7 +132,8 @@ public interface Displayable {
     default ItemStack asItemStack(Player player) {
         ItemStack itemStack = getIcon().parseItem();
         if (itemStack == null) {
-            throw new IllegalStateException("Icon material %s could not be parsed into an ItemStack.".formatted(getIcon()));
+            throw new IllegalStateException(
+                    "Icon material %s could not be parsed into an ItemStack.".formatted(getIcon()));
         }
 
         ItemMeta itemMeta = itemStack.getItemMeta();

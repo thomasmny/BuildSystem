@@ -23,6 +23,10 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.WorldService;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
 import de.eintosti.buildsystem.api.world.backup.BackupService;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -80,4 +84,22 @@ public interface BuildSystem {
      * @since TODO
      */
     BackupService getBackupService();
+
+    /**
+     * Returns the registry of world {@link BuildWorldStatus statuses} — the
+     * built-in defaults plus any custom statuses created by administrators.
+     *
+     * @return The status registry, never {@code null}
+     * @since TODO
+     */
+    WorldStatusRegistry getStatusRegistry();
+
+    /**
+     * Returns the registry of {@link NavigatorCategory navigator categories} — the single source of truth for world
+     * visibility and navigator grouping.
+     *
+     * @return The navigator category registry, never {@code null}
+     * @since TODO
+     */
+    NavigatorCategoryRegistry getNavigatorCategoryRegistry();
 }

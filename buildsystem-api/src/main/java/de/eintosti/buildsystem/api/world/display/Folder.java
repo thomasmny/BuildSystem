@@ -46,6 +46,7 @@ public interface Folder extends Displayable {
      * Gets the {@link NavigatorCategory} in which this folder is displayed.
      *
      * @return The {@link NavigatorCategory} of the folder
+     * @since TODO
      */
     NavigatorCategory getCategory();
 
@@ -59,11 +60,11 @@ public interface Folder extends Displayable {
     /**
      * Sets the parent {@link Folder} for this folder. Setting it to {@code null} will make this a top-level folder.
      *
-     * <p>The parent folder must belong to the same {@link NavigatorCategory} as this folder. If the categories differ,
-     * an {@link IllegalArgumentException} is thrown.
+     * <p>The parent folder must belong to the same {@link NavigatorCategory} as this folder. If the categories differ, an
+     * {@link IllegalArgumentException} is thrown.
      *
      * @param parent The new parent {@link Folder}, or {@code null} to remove the current parent
-     * @throws IllegalArgumentException if the parent has a different {@link NavigatorCategory}
+     * @throws IllegalArgumentException if the parent belongs to a different {@link NavigatorCategory}
      */
     void setParent(@Nullable Folder parent);
 
