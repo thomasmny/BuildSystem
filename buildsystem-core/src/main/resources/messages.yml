@@ -511,7 +511,6 @@ setup_navigator_item_lore:
 
 # Setup - Navigator Layout
 setup_navigator_title: "&3» &8Navigator Layout"
-setup_navigator_empty_slot: "&8Empty slot"
 setup_navigator_placed_lore:
   - "&8» &7&oClick to pick up & move"
 setup_navigator_palette_shown_lore:

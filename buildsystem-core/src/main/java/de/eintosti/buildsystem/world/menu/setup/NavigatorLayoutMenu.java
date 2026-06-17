@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu.setup;
 
-import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
@@ -88,10 +87,9 @@ public class NavigatorLayoutMenu extends Menu {
     @Override
     protected void populate(Player player) {
         Inventory inventory = getInventory();
+        // Empty navigator slots use the player's design-colour pane, exactly like the live navigator.
         for (int slot = 0; slot < NAVIGATOR_SIZE; slot++) {
-            ItemBuilder.of(XMaterial.GRAY_STAINED_GLASS_PANE)
-                    .name(messages.getString("setup_navigator_empty_slot", player))
-                    .into(inventory, slot);
+            plugin.getMenuItems().addGlassPane(player, inventory, slot);
         }
 
         int settingsSlot = registry.getSettingsSlot();
@@ -131,15 +129,26 @@ public class NavigatorLayoutMenu extends Menu {
         ItemBuilder.skull(Profileable.detect(SkullTextures.CONFIRM))
                 .name(messages.getString("setup_navigator_done", player))
                 .into(playerInventory, CONTROL_DONE_SLOT);
-        ItemBuilder.skull(Profileable.detect(SkullTextures.SETTINGS))
-                .name(messages.getString("old_navigator_settings", player))
-                .lore(messages.getStringList("setup_navigator_settings_lore", player))
-                .glow(heldSettings)
-                .into(playerInventory, CONTROL_SETTINGS_SLOT);
+        if (heldSettings) {
+            // The settings button is on the cursor; show a design-colour pane in its slot so it isn't shown twice.
+            plugin.getMenuItems().addGlassPane(player, playerInventory, CONTROL_SETTINGS_SLOT);
+        } else {
+            ItemBuilder.skull(Profileable.detect(SkullTextures.SETTINGS))
+                    .name(messages.getString("old_navigator_settings", player))
+                    .lore(messages.getStringList("setup_navigator_settings_lore", player))
+                    .into(playerInventory, CONTROL_SETTINGS_SLOT);
+        }
 
         List<NavigatorCategory> categories = List.copyOf(registry.getCategories());
         for (int i = 0; i < categories.size() && PALETTE_FIRST_SLOT + i <= PALETTE_LAST_SLOT; i++) {
             NavigatorCategory category = categories.get(i);
+            int slot = PALETTE_FIRST_SLOT + i;
+            // The picked-up category lives on the cursor; show a design-colour pane in its palette slot so it never
+            // appears twice.
+            if (category.getId().equals(heldCategoryId)) {
+                plugin.getMenuItems().addGlassPane(player, playerInventory, slot);
+                continue;
+            }
             ItemBuilder.icon(category, player)
                     .name(ColorAPI.process(category.getColor() + category.getDisplayName()))
                     .lore(messages.getStringList(
@@ -147,8 +156,7 @@ public class NavigatorLayoutMenu extends Menu {
                                     ? "setup_navigator_palette_shown_lore"
                                     : "setup_navigator_palette_hidden_lore",
                             player))
-                    .glow(category.getId().equals(heldCategoryId))
-                    .into(playerInventory, PALETTE_FIRST_SLOT + i);
+                    .into(playerInventory, slot);
         }
     }
 
