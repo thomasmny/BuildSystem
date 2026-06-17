@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.world.menu.setup;
 
+import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
@@ -28,6 +29,7 @@ import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
+import de.eintosti.buildsystem.world.menu.SetupMenu;
 import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -56,11 +58,10 @@ public class NavigatorLayoutMenu extends Menu {
 
     private static final int NAVIGATOR_SIZE = 27;
 
-    // Control slots within the player's (taken-over) inventory, addressed by InventoryClickEvent#getSlot.
-    private static final int CONTROL_ADD_SLOT = 2;
-    private static final int CONTROL_REMOVE_SLOT = 4;
-    private static final int CONTROL_DONE_SLOT = 6;
-    private static final int CONTROL_SETTINGS_SLOT = 8;
+    // The taken-over player inventory: a back button (left hotbar) and create button (centre hotbar), with the palette
+    // of not-yet-added categories filling the three main rows above.
+    private static final int BACK_SLOT = 0;
+    private static final int CREATE_SLOT = 4;
     private static final int PALETTE_FIRST_SLOT = 9;
     private static final int PALETTE_LAST_SLOT = 35;
 
@@ -87,7 +88,7 @@ public class NavigatorLayoutMenu extends Menu {
     @Override
     protected void populate(Player player) {
         Inventory inventory = getInventory();
-        // Empty navigator slots use the player's design-colour pane, exactly like the live navigator.
+        // Empty navigator slots are the player's blank design-colour pane, exactly like the live navigator.
         for (int slot = 0; slot < NAVIGATOR_SIZE; slot++) {
             plugin.getMenuItems().addGlassPane(player, inventory, slot);
         }
@@ -119,29 +120,18 @@ public class NavigatorLayoutMenu extends Menu {
         Inventory playerInventory = player.getInventory();
         playerInventory.clear();
 
+        ItemBuilder.of(XMaterial.BARRIER)
+                .name(messages.getString("setup_back", player))
+                .into(playerInventory, BACK_SLOT);
         ItemBuilder.skull(Profileable.detect(SkullTextures.ADD_ITEM))
                 .name(messages.getString("setup_category_add", player))
-                .into(playerInventory, CONTROL_ADD_SLOT);
-        ItemBuilder.skull(Profileable.detect(SkullTextures.CANCEL))
-                .name(messages.getString("setup_navigator_remove", player))
-                .lore(messages.getStringList("setup_navigator_remove_lore", player))
-                .into(playerInventory, CONTROL_REMOVE_SLOT);
-        ItemBuilder.skull(Profileable.detect(SkullTextures.CONFIRM))
-                .name(messages.getString("setup_navigator_done", player))
-                .into(playerInventory, CONTROL_DONE_SLOT);
-        if (heldSettings) {
-            // The settings button is on the cursor; show a design-colour pane in its slot so it isn't shown twice.
-            plugin.getMenuItems().addGlassPane(player, playerInventory, CONTROL_SETTINGS_SLOT);
-        } else {
-            ItemBuilder.skull(Profileable.detect(SkullTextures.SETTINGS))
-                    .name(messages.getString("old_navigator_settings", player))
-                    .lore(messages.getStringList("setup_navigator_settings_lore", player))
-                    .into(playerInventory, CONTROL_SETTINGS_SLOT);
-        }
+                .lore(messages.getStringList("setup_navigator_create_lore", player))
+                .into(playerInventory, CREATE_SLOT);
 
-        List<NavigatorCategory> categories = List.copyOf(registry.getCategories());
-        for (int i = 0; i < categories.size() && PALETTE_FIRST_SLOT + i <= PALETTE_LAST_SLOT; i++) {
-            NavigatorCategory category = categories.get(i);
+        // The palette holds only categories not currently in the navigator — the ones available to add.
+        List<NavigatorCategory> notAdded = notAddedCategories();
+        for (int i = 0; i < notAdded.size() && PALETTE_FIRST_SLOT + i <= PALETTE_LAST_SLOT; i++) {
+            NavigatorCategory category = notAdded.get(i);
             int slot = PALETTE_FIRST_SLOT + i;
             // The picked-up category lives on the cursor; show a design-colour pane in its palette slot so it never
             // appears twice.
@@ -151,13 +141,18 @@ public class NavigatorLayoutMenu extends Menu {
             }
             ItemBuilder.icon(category, player)
                     .name(ColorAPI.process(category.getColor() + category.getDisplayName()))
-                    .lore(messages.getStringList(
-                            category.isShownInNavigator()
-                                    ? "setup_navigator_palette_shown_lore"
-                                    : "setup_navigator_palette_hidden_lore",
-                            player))
+                    .lore(messages.getStringList("setup_navigator_palette_lore", player))
                     .into(playerInventory, slot);
         }
+    }
+
+    /**
+     * {@return the categories not currently shown in the navigator, ordered as the registry lists them}
+     */
+    private List<NavigatorCategory> notAddedCategories() {
+        return registry.getCategories().stream()
+                .filter(category -> !category.isShownInNavigator())
+                .toList();
     }
 
     @Override
@@ -166,13 +161,16 @@ public class NavigatorLayoutMenu extends Menu {
         Player player = (Player) event.getWhoClicked();
 
         if (event.getClickedInventory() == getInventory()) {
-            handleNavigatorClick(player, event.getRawSlot());
+            handleNavigatorClick(player, event.getRawSlot(), event.isRightClick());
         } else if (event.getClickedInventory() == player.getInventory()) {
             handlePlayerClick(player, event.getSlot(), event.isRightClick());
+        } else {
+            // Click outside any inventory: while placing, this drops the held category off the navigator.
+            handleOutsideClickWhileHolding(player);
         }
     }
 
-    private void handleNavigatorClick(Player player, int slot) {
+    private void handleNavigatorClick(Player player, int slot, boolean rightClick) {
         if (slot < 0 || slot >= NAVIGATOR_SIZE) {
             return;
         }
@@ -186,15 +184,20 @@ public class NavigatorLayoutMenu extends Menu {
             return;
         }
 
-        // Nothing held: pick up whatever sits here (a category, or the settings button) so it can be moved.
+        // Nothing held.
         if (slot == registry.getSettingsSlot()) {
             pickUpSettings(player);
-        } else {
-            NavigatorCategoryImpl occupant = categoryAtSlot(slot);
-            if (occupant != null) {
+            return;
+        }
+        NavigatorCategoryImpl occupant = categoryAtSlot(slot);
+        if (occupant != null) {
+            if (rightClick) {
+                new CategoryEditorMenu(plugin, player, occupant).open(player);
+            } else {
                 pickUpCategory(player, occupant.getId(), slot);
             }
         }
+        // An empty slot with nothing held does nothing; categories are created via the create button.
     }
 
     private void placeHeldCategory(Player player, int slot) {
@@ -239,63 +242,57 @@ public class NavigatorLayoutMenu extends Menu {
     }
 
     private void handlePlayerClick(Player player, int slot, boolean rightClick) {
-        switch (slot) {
-            case CONTROL_DONE_SLOT -> {
-                player.closeInventory();
-                return;
-            }
-            case CONTROL_ADD_SLOT -> {
-                beginCategoryCreation(player);
-                return;
-            }
-            case CONTROL_REMOVE_SLOT -> {
-                removeHeldCategory(player);
-                return;
-            }
-            case CONTROL_SETTINGS_SLOT -> {
-                if (heldSettings) {
-                    clearHeld(player);
-                } else {
-                    pickUpSettings(player);
-                }
-                refresh(player);
-                return;
-            }
-            default -> {
-                // fall through to palette handling
-            }
+        // While holding, clicking out of the navigator (into the palette) drops the category off the navigator.
+        if (heldCategoryId != null || heldSettings) {
+            handleOutsideClickWhileHolding(player);
+            return;
+        }
+
+        if (slot == BACK_SLOT) {
+            XSound.BLOCK_CHEST_OPEN.play(player);
+            player.closeInventory();
+            new SetupMenu(plugin, player).open(player);
+            return;
+        }
+        if (slot == CREATE_SLOT) {
+            beginCategoryCreation(player);
+            return;
         }
 
         int paletteIndex = slot - PALETTE_FIRST_SLOT;
-        List<NavigatorCategory> categories = List.copyOf(registry.getCategories());
-        if (paletteIndex < 0 || paletteIndex >= categories.size() || slot > PALETTE_LAST_SLOT) {
+        List<NavigatorCategory> notAdded = notAddedCategories();
+        if (paletteIndex < 0 || paletteIndex >= notAdded.size() || slot > PALETTE_LAST_SLOT) {
             return;
         }
-        NavigatorCategory clicked = categories.get(paletteIndex);
+        NavigatorCategory clicked = notAdded.get(paletteIndex);
         if (rightClick) {
             new CategoryEditorMenu(plugin, player, clicked).open(player);
-            return;
-        }
-        if (clicked.getId().equals(heldCategoryId)) {
-            clearHeld(player);
         } else {
             pickUpCategory(player, clicked.getId(), -1);
+            refresh(player);
         }
-        refresh(player);
     }
 
-    private void removeHeldCategory(Player player) {
-        if (heldCategoryId == null) {
+    /**
+     * While a category is held, a click outside the navigator preview drops it off the navigator (it returns to the
+     * palette). A held settings button cannot be removed, so the click simply cancels the pickup.
+     */
+    private void handleOutsideClickWhileHolding(Player player) {
+        if (heldSettings) {
+            clearHeld(player);
+            refresh(player);
             return;
         }
-        NavigatorCategoryImpl held =
-                (NavigatorCategoryImpl) registry.getCategory(heldCategoryId).orElse(null);
-        if (held != null) {
-            held.setShownInNavigator(false);
-            registry.persist(held);
+        if (heldCategoryId != null) {
+            NavigatorCategoryImpl held =
+                    (NavigatorCategoryImpl) registry.getCategory(heldCategoryId).orElse(null);
+            if (held != null) {
+                held.setShownInNavigator(false);
+                registry.persist(held);
+            }
+            clearHeld(player);
+            refresh(player);
         }
-        clearHeld(player);
-        refresh(player);
     }
 
     private void beginCategoryCreation(Player player) {
@@ -305,7 +302,14 @@ public class NavigatorLayoutMenu extends Menu {
                 "setup_category_add_prompt",
                 "setup_name_invalid_characters",
                 "setup_name_empty",
-                name -> new CategoryEditorMenu(plugin, player, registry.createCategory(name)).open(player));
+                name -> {
+                    // New categories start in the navigator at the first free slot so they are immediately visible.
+                    NavigatorCategoryImpl created = registry.createCategory(name);
+                    created.setShownInNavigator(true);
+                    created.setNavigatorSlot(firstFreeSlot());
+                    registry.persist(created);
+                    new CategoryEditorMenu(plugin, player, created).open(player);
+                });
     }
 
     private void pickUpCategory(Player player, String categoryId, int fromSlot) {

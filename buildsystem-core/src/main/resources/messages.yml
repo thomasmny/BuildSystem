@@ -512,23 +512,20 @@ setup_navigator_item_lore:
 # Setup - Navigator Layout
 setup_navigator_title: "&3» &8Navigator Layout"
 setup_navigator_placed_lore:
-  - "&8» &7&oClick to pick up & move"
-setup_navigator_palette_shown_lore:
-  - "&aShown in navigator"
-  - "&8» &7&oClick to pick up"
-setup_navigator_palette_hidden_lore:
-  - "&7Not in navigator"
-  - "&8» &7&oClick to pick up & place"
-setup_navigator_remove: "&cRemove from navigator"
-setup_navigator_remove_lore:
-  - "&7While holding a category,"
-  - "&7click to take it off the navigator."
-setup_navigator_done: "&aDone"
+  - "&8» &7&oLeft-click to move"
+  - "&8» &7&oRight-click to edit"
+setup_navigator_palette_lore:
+  - "&7Not in the navigator yet."
+  - ""
+  - "&8» &7&oLeft-click to add"
+  - "&8» &7&oRight-click to edit"
+setup_navigator_create_lore:
+  - "&8» &7&oClick to create a category"
 setup_navigator_settings_lore:
   - "&7The settings button players see"
   - "&7in the navigator."
   - ""
-  - "&8» &7&oClick to pick up & move"
+  - "&8» &7&oLeft-click to move"
 
 # Setup - Default Icons
 setup_default_icons_title: "&3» &8Default Icons"

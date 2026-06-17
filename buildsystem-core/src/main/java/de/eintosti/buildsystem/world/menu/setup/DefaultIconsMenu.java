@@ -56,13 +56,13 @@ public class DefaultIconsMenu extends ButtonMenu<MenuButton> {
             entry(BuildWorldType.VOID, "setup_void_world"),
             entry(BuildWorldType.IMPORTED, "setup_imported_world"));
 
-    private static final int SLOT_BACK = 31;
+    private static final int SLOT_BACK = 18;
 
     private final BuildSystemPlugin plugin;
     private final CustomizableIcons icons;
 
     public DefaultIconsMenu(BuildSystemPlugin plugin, Player player) {
-        super(plugin.getMessages(), 36, plugin.getMessages().getString("setup_default_icons_title", player));
+        super(plugin.getMessages(), 27, plugin.getMessages().getString("setup_default_icons_title", player));
         this.plugin = plugin;
         this.icons = plugin.getCustomizableIcons();
 

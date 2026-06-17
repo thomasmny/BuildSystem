@@ -60,10 +60,19 @@ public final class SkullTextures {
     public static final String SETTINGS = "1cba7277fc895bf3b673694159864b83351a4d14717e476ebda1c3bf38fcf37";
 
     /**
-     * Head used for "confirm"/"done" actions. Resolved by {@link com.cryptomorin.xseries.profiles.objects.Profileable}
-     * — a texture hash or a head username both work.
+     * Green-check head used for "confirm"/"done" actions.
      */
-    public static final String CONFIRM = ADD_ITEM;
+    public static final String CONFIRM = "a92e31ffb59c90ab08fc9dc1fe26802035a3a47c42fee63423bcdb4262ecb9b6";
+
+    /**
+     * Upward-pointing arrow head used for scrolling a list up.
+     */
+    public static final String SCROLL_UP = "3f46abad924b22372bc966a6d517d2f1b8b57fdd262b4e04f48352e683fff92";
+
+    /**
+     * Downward-pointing arrow head used for scrolling a list down.
+     */
+    public static final String SCROLL_DOWN = "be9ae7a4be65fcbaee65181389a2f7d47e2e326db59ea3eb789a92c85ea46";
 
     /**
      * Head used for "remove"/"cancel" actions.

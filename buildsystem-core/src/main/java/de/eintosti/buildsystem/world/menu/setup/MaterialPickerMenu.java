@@ -21,16 +21,9 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.menu.ButtonMenu;
-import de.eintosti.buildsystem.menu.ItemBuilder;
-import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.PlayerChatInput;
+import de.eintosti.buildsystem.menu.*;
 import de.eintosti.buildsystem.util.color.ColorAPI;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -142,7 +135,7 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
     private MenuButton scrollButton(boolean up, boolean enabled) {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.skull(
-                                Profileable.detect(up ? "MHF_ArrowUp" : "MHF_ArrowDown"))
+                                Profileable.detect(up ? SkullTextures.SCROLL_UP : SkullTextures.SCROLL_DOWN))
                         .name(messages.getString(up ? "setup_scroll_up" : "setup_scroll_down", player))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
