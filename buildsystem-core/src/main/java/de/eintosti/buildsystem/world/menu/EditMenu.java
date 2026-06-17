@@ -31,8 +31,8 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.command.subcommand.worlds.SetPermissionSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
-import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import java.util.*;
@@ -48,7 +48,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class EditMenu extends Menu {
+public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
     private static final int SLOT_WORLD_INFO = 3;
     private static final int SLOT_PIN = 5;
@@ -193,7 +193,7 @@ public class EditMenu extends Menu {
      * classification, and the render/click behavior. Declaring each slot once here replaces the old parallel
      * {@code populate} calls and {@code handleClick} switch.
      */
-    private record EditButton(
+    record EditButton(
             @Nullable String permission,
             ClickOutcome outcome,
             BiConsumer<Player, Inventory> renderer,
@@ -201,7 +201,7 @@ public class EditMenu extends Menu {
             implements MenuButton {
 
         @Override
-        public void render(Player player, Inventory inventory) {
+        public void render(Player player, Inventory inventory, int slot) {
             renderer.accept(player, inventory);
         }
 
@@ -209,128 +209,204 @@ public class EditMenu extends Menu {
         public void onClick(Player player, InventoryClickEvent event) {
             clickHandler.accept(player, event);
         }
+
+        static Builder builder() {
+            return new Builder();
+        }
+
+        /**
+         * Fluent builder for an {@link EditButton}. {@code outcome} defaults to {@link ClickOutcome#NONE}; the
+         * {@code permission}, renderer, and click handler default to none/no-op until set. Editor slots render at fixed
+         * positions, so the renderer is a plain {@code (player, inventory)} consumer rather than a slot-aware one.
+         */
+        static final class Builder {
+
+            private @Nullable String permission;
+            private ClickOutcome outcome = ClickOutcome.NONE;
+            private BiConsumer<Player, Inventory> renderer = (player, inventory) -> {};
+            private BiConsumer<Player, InventoryClickEvent> clickHandler = (player, event) -> {};
+
+            private Builder() {}
+
+            Builder permission(@Nullable String permission) {
+                this.permission = permission;
+                return this;
+            }
+
+            Builder outcome(ClickOutcome outcome) {
+                this.outcome = outcome;
+                return this;
+            }
+
+            Builder render(BiConsumer<Player, Inventory> renderer) {
+                this.renderer = renderer;
+                return this;
+            }
+
+            Builder onClick(BiConsumer<Player, InventoryClickEvent> clickHandler) {
+                this.clickHandler = clickHandler;
+                return this;
+            }
+
+            EditButton build() {
+                return new EditButton(permission, outcome, renderer, clickHandler);
+            }
+        }
     }
 
     private final BuildSystemPlugin plugin;
     private final PlayerServiceImpl playerManager;
     private final BuildWorld buildWorld;
-    private final Map<Integer, EditButton> buttons;
 
     public EditMenu(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
         super(plugin.getMessages(), 54, plugin.getMessages().getString("worldeditor_title", player));
         this.plugin = plugin;
         this.playerManager = plugin.getPlayerService();
         this.buildWorld = buildWorld;
-        this.buttons = buildButtons();
+        buildButtons();
     }
 
-    private Map<Integer, EditButton> buildButtons() {
-        Map<Integer, EditButton> map = new LinkedHashMap<>();
+    private void buildButtons() {
+        register(
+                SLOT_WORLD_INFO,
+                EditButton.builder().render(this::renderWorldInfo).build());
 
-        map.put(SLOT_WORLD_INFO, new EditButton(null, ClickOutcome.NONE, this::renderWorldInfo, (player, event) -> {}));
-
-        TOGGLES.forEach((slot, toggle) -> map.put(
+        TOGGLES.forEach((slot, toggle) -> register(
                 slot,
-                new EditButton(
-                        toggle.permission(),
-                        ClickOutcome.REOPEN,
-                        (player, inventory) -> renderToggle(player, inventory, slot, toggle),
-                        (player, event) -> {
+                EditButton.builder()
+                        .permission(toggle.permission())
+                        .outcome(ClickOutcome.REOPEN)
+                        .render((player, inventory) -> renderToggle(player, inventory, slot, toggle))
+                        .onClick((player, event) -> {
                             if (requirePermission(player, toggle.permission())) {
                                 WorldData worldData = buildWorld.getData();
                                 toggle.setter()
                                         .accept(worldData, !toggle.getter().test(worldData));
                                 reopen(player);
                             }
-                        })));
+                        })
+                        .build()));
 
-        map.put(
+        register(
                 SLOT_TIME,
-                new EditButton("buildsystem.edit.time", ClickOutcome.REOPEN, this::renderTime, (player, event) -> {
-                    if (requirePermission(player, "buildsystem.edit.time")) {
-                        changeTime(player);
-                    }
-                    reopen(player);
-                }));
+                EditButton.builder()
+                        .permission("buildsystem.edit.time")
+                        .outcome(ClickOutcome.REOPEN)
+                        .render(this::renderTime)
+                        .onClick((player, event) -> {
+                            if (requirePermission(player, "buildsystem.edit.time")) {
+                                changeTime(player);
+                            }
+                            reopen(player);
+                        })
+                        .build());
 
-        map.put(
+        register(
                 SLOT_BUTCHER,
-                new EditButton(
-                        "buildsystem.edit.entities", ClickOutcome.CLOSE, this::renderButcher, (player, event) -> {
+                EditButton.builder()
+                        .permission("buildsystem.edit.entities")
+                        .outcome(ClickOutcome.CLOSE)
+                        .render(this::renderButcher)
+                        .onClick((player, event) -> {
                             if (requirePermission(player, "buildsystem.edit.entities")) {
                                 removeEntities(player);
                             }
-                        }));
+                        })
+                        .build());
 
-        map.put(
+        register(
                 SLOT_BUILDERS,
-                new EditButton(
-                        "buildsystem.edit.builders", ClickOutcome.REOPEN, this::renderBuilders, this::onBuildersClick));
+                EditButton.builder()
+                        .permission("buildsystem.edit.builders")
+                        .outcome(ClickOutcome.REOPEN)
+                        .render(this::renderBuilders)
+                        .onClick(this::onBuildersClick)
+                        .build());
 
-        map.put(
+        register(
                 SLOT_VISIBILITY,
-                new EditButton(
-                        "buildsystem.edit.visibility",
-                        ClickOutcome.REOPEN,
-                        this::renderVisibility,
-                        this::onVisibilityClick));
+                EditButton.builder()
+                        .permission("buildsystem.edit.visibility")
+                        .outcome(ClickOutcome.REOPEN)
+                        .render(this::renderVisibility)
+                        .onClick(this::onVisibilityClick)
+                        .build());
 
-        map.put(
+        register(
                 SLOT_GAMERULES,
-                new EditButton(
-                        "buildsystem.edit.gamerules", ClickOutcome.SUBMENU, this::renderGameRules, (player, event) -> {
+                EditButton.builder()
+                        .permission("buildsystem.edit.gamerules")
+                        .outcome(ClickOutcome.SUBMENU)
+                        .render(this::renderGameRules)
+                        .onClick((player, event) -> {
                             if (requirePermission(player, "buildsystem.edit.gamerules")) {
                                 XSound.BLOCK_CHEST_OPEN.play(player);
                                 new GameRulesMenu(plugin, buildWorld, player).open(player);
                             }
-                        }));
+                        })
+                        .build());
 
-        map.put(
+        register(
                 SLOT_DIFFICULTY,
-                new EditButton(
-                        "buildsystem.edit.difficulty", ClickOutcome.REOPEN, this::renderDifficulty, (player, event) -> {
+                EditButton.builder()
+                        .permission("buildsystem.edit.difficulty")
+                        .outcome(ClickOutcome.REOPEN)
+                        .render(this::renderDifficulty)
+                        .onClick((player, event) -> {
                             if (requirePermission(player, "buildsystem.edit.difficulty")) {
                                 cycleDifficulty();
                             }
                             reopen(player);
-                        }));
+                        })
+                        .build());
 
-        map.put(
+        register(
                 SLOT_STATUS,
-                new EditButton("buildsystem.edit.status", ClickOutcome.SUBMENU, this::renderStatus, (player, event) -> {
-                    if (requirePermission(player, "buildsystem.edit.status")) {
-                        XSound.ENTITY_CHICKEN_EGG.play(player);
-                        new StatusMenu(plugin, buildWorld, player).open(player);
-                    }
-                }));
+                EditButton.builder()
+                        .permission("buildsystem.edit.status")
+                        .outcome(ClickOutcome.SUBMENU)
+                        .render(this::renderStatus)
+                        .onClick((player, event) -> {
+                            if (requirePermission(player, "buildsystem.edit.status")) {
+                                XSound.ENTITY_CHICKEN_EGG.play(player);
+                                new StatusMenu(plugin, buildWorld, player).open(player);
+                            }
+                        })
+                        .build());
 
-        map.put(
+        register(
                 SLOT_PROJECT,
-                new EditButton("buildsystem.edit.project", ClickOutcome.INPUT, this::renderProject, (player, event) -> {
-                    if (requirePermission(player, "buildsystem.edit.project")) {
-                        XSound.ENTITY_CHICKEN_EGG.play(player);
-                        new SetProjectSubCommand(plugin).getProjectInput(player, buildWorld, false);
-                    }
-                }));
+                EditButton.builder()
+                        .permission("buildsystem.edit.project")
+                        .outcome(ClickOutcome.INPUT)
+                        .render(this::renderProject)
+                        .onClick((player, event) -> {
+                            if (requirePermission(player, "buildsystem.edit.project")) {
+                                XSound.ENTITY_CHICKEN_EGG.play(player);
+                                new SetProjectSubCommand(plugin).getProjectInput(player, buildWorld, false);
+                            }
+                        })
+                        .build());
 
-        map.put(
+        register(
                 SLOT_PERMISSION,
-                new EditButton(
-                        "buildsystem.edit.permission", ClickOutcome.INPUT, this::renderPermission, (player, event) -> {
+                EditButton.builder()
+                        .permission("buildsystem.edit.permission")
+                        .outcome(ClickOutcome.INPUT)
+                        .render(this::renderPermission)
+                        .onClick((player, event) -> {
                             if (requirePermission(player, "buildsystem.edit.permission")) {
                                 XSound.ENTITY_CHICKEN_EGG.play(player);
                                 new SetPermissionSubCommand(plugin).getPermissionInput(player, buildWorld, false);
                             }
-                        }));
-
-        return map;
+                        })
+                        .build());
     }
 
     @Override
     protected void populate(Player player) {
-        Inventory inv = getInventory();
-        plugin.getMenuItems().fillAll(player, inv);
-        buttons.forEach((slot, button) -> button.render(player, inv));
+        plugin.getMenuItems().fillAll(player, getInventory());
+        renderButtons(player);
     }
 
     private void renderToggle(Player player, Inventory inventory, int slot, Toggle toggle) {
@@ -491,13 +567,7 @@ public class EditMenu extends Menu {
             return;
         }
 
-        event.setCancelled(true);
-        Player player = (Player) event.getWhoClicked();
-
-        MenuButton button = buttons.get(event.getSlot());
-        if (button != null) {
-            button.onClick(player, event);
-        }
+        super.handleClick(event);
     }
 
     /**
@@ -549,7 +619,7 @@ public class EditMenu extends Menu {
      */
     Map<Integer, String> permissionBySlot() {
         Map<Integer, String> permissions = new LinkedHashMap<>();
-        buttons.forEach((slot, button) -> {
+        buttons().forEach((slot, button) -> {
             String permission = button.permission();
             if (permission != null) {
                 permissions.put(slot, permission);
@@ -564,7 +634,7 @@ public class EditMenu extends Menu {
      */
     Map<Integer, ClickOutcome> outcomeBySlot() {
         Map<Integer, ClickOutcome> outcomes = new LinkedHashMap<>();
-        buttons.forEach((slot, button) -> outcomes.put(slot, button.outcome()));
+        buttons().forEach((slot, button) -> outcomes.put(slot, button.outcome()));
         return outcomes;
     }
 

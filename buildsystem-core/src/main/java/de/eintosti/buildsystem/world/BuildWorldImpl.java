@@ -258,7 +258,7 @@ public final class BuildWorldImpl implements BuildWorld {
     }
 
     @Override
-    public Profileable asProfilable() {
+    public Profileable asProfileable() {
         return builders.hasCreator() ? Profileable.of(builders.getCreator().getUniqueId()) : Profileable.username(name);
     }
 

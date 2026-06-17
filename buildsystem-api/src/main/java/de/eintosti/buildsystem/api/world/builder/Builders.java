@@ -68,6 +68,7 @@ public interface Builders {
      *
      * @return List of builders
      */
+    @Unmodifiable
     Collection<Builder> getAllBuilders();
 
     /**

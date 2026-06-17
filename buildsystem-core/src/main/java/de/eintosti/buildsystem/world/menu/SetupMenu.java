@@ -31,6 +31,7 @@ import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -54,37 +55,30 @@ public class SetupMenu extends Menu {
     private static final int FIRST_PLAYER_SLOT = 36;
     private static final int LAST_PLAYER_SLOT = 80;
 
-    private static final Map<BuildWorldType, Integer> CREATE_ITEM_SLOTS = Map.ofEntries(
-            entry(BuildWorldType.NORMAL, 11),
-            entry(BuildWorldType.FLAT, 12),
-            entry(BuildWorldType.NETHER, 13),
-            entry(BuildWorldType.END, 14),
-            entry(BuildWorldType.VOID, 15),
-            entry(BuildWorldType.IMPORTED, 16));
+    /**
+     * Where a configurable icon sits and what message names it. Pairs the slot and message key that were previously held
+     * in two parallel maps per section.
+     *
+     * @param slot The inventory slot the icon occupies
+     * @param nameKey The message key for the icon's display name
+     */
+    private record IconDef(int slot, String nameKey) {}
 
-    private static final Map<BuildWorldType, String> CREATE_ITEM_KEYS = Map.ofEntries(
-            entry(BuildWorldType.NORMAL, "setup_normal_world"),
-            entry(BuildWorldType.FLAT, "setup_flat_world"),
-            entry(BuildWorldType.NETHER, "setup_nether_world"),
-            entry(BuildWorldType.END, "setup_end_world"),
-            entry(BuildWorldType.VOID, "setup_void_world"),
-            entry(BuildWorldType.IMPORTED, "setup_imported_world"));
+    private static final Map<BuildWorldType, IconDef> CREATE_ICONS = Map.ofEntries(
+            entry(BuildWorldType.NORMAL, new IconDef(11, "setup_normal_world")),
+            entry(BuildWorldType.FLAT, new IconDef(12, "setup_flat_world")),
+            entry(BuildWorldType.NETHER, new IconDef(13, "setup_nether_world")),
+            entry(BuildWorldType.END, new IconDef(14, "setup_end_world")),
+            entry(BuildWorldType.VOID, new IconDef(15, "setup_void_world")),
+            entry(BuildWorldType.IMPORTED, new IconDef(16, "setup_imported_world")));
 
-    private static final Map<BuildWorldStatus, Integer> STATUS_ITEM_SLOTS = Map.ofEntries(
-            entry(BuildWorldStatus.NOT_STARTED, 20),
-            entry(BuildWorldStatus.IN_PROGRESS, 21),
-            entry(BuildWorldStatus.ALMOST_FINISHED, 22),
-            entry(BuildWorldStatus.FINISHED, 23),
-            entry(BuildWorldStatus.ARCHIVE, 24),
-            entry(BuildWorldStatus.HIDDEN, 25));
-
-    private static final Map<BuildWorldStatus, String> STATUS_ITEM_KEYS = Map.ofEntries(
-            entry(BuildWorldStatus.NOT_STARTED, "status_not_started"),
-            entry(BuildWorldStatus.IN_PROGRESS, "status_in_progress"),
-            entry(BuildWorldStatus.ALMOST_FINISHED, "status_almost_finished"),
-            entry(BuildWorldStatus.FINISHED, "status_finished"),
-            entry(BuildWorldStatus.ARCHIVE, "status_archive"),
-            entry(BuildWorldStatus.HIDDEN, "status_hidden"));
+    private static final Map<BuildWorldStatus, IconDef> STATUS_ICONS = Map.ofEntries(
+            entry(BuildWorldStatus.NOT_STARTED, new IconDef(20, "status_not_started")),
+            entry(BuildWorldStatus.IN_PROGRESS, new IconDef(21, "status_in_progress")),
+            entry(BuildWorldStatus.ALMOST_FINISHED, new IconDef(22, "status_almost_finished")),
+            entry(BuildWorldStatus.FINISHED, new IconDef(23, "status_finished")),
+            entry(BuildWorldStatus.ARCHIVE, new IconDef(24, "status_archive")),
+            entry(BuildWorldStatus.HIDDEN, new IconDef(25, "status_hidden")));
 
     private final BuildSystemPlugin plugin;
     private final CustomizableIcons icons;
@@ -101,8 +95,8 @@ public class SetupMenu extends Menu {
         plugin.getMenuItems().fillAll(player, inv);
 
         addSectionHeaders(inv, player);
-        addIconItems(inv, player, CREATE_ITEM_SLOTS, CREATE_ITEM_KEYS);
-        addIconItems(inv, player, STATUS_ITEM_SLOTS, STATUS_ITEM_KEYS);
+        addIconItems(inv, player, CREATE_ICONS, icons::getIcon);
+        addIconItems(inv, player, STATUS_ICONS, icons::getIcon);
     }
 
     private void addSectionHeaders(Inventory inv, Player player) {
@@ -121,22 +115,15 @@ public class SetupMenu extends Menu {
      *
      * @param inv The inventory to populate
      * @param player The viewing player
-     * @param slots The slot each enum constant occupies
-     * @param keys The message key for each enum constant's display name
+     * @param iconDefs The slot and name key for each enum constant
+     * @param iconResolver Resolves an enum constant to its currently configured icon material
      * @param <T> The enum type (e.g. {@link BuildWorldType}, {@link BuildWorldStatus})
      */
     private <T extends Enum<T>> void addIconItems(
-            Inventory inv, Player player, Map<T, Integer> slots, Map<T, String> keys) {
-        slots.forEach((constant, slot) -> ItemBuilder.of(getIcon(constant))
-                .name(messages.getString(keys.get(constant), player))
-                .into(inv, slot));
-    }
-
-    private XMaterial getIcon(Enum<?> constant) {
-        if (constant instanceof BuildWorldType type) {
-            return icons.getIcon(type);
-        }
-        return icons.getIcon((BuildWorldStatus) constant);
+            Inventory inv, Player player, Map<T, IconDef> iconDefs, Function<T, XMaterial> iconResolver) {
+        iconDefs.forEach((constant, def) -> ItemBuilder.of(iconResolver.apply(constant))
+                .name(messages.getString(def.nameKey(), player))
+                .into(inv, def.slot()));
     }
 
     @Override
@@ -178,22 +165,23 @@ public class SetupMenu extends Menu {
     @Override
     public void handleClose(InventoryCloseEvent event) {
         Inventory inv = getInventory();
-        processIconMapping(inv, CREATE_ITEM_SLOTS, icons::setIcon);
-        processIconMapping(inv, STATUS_ITEM_SLOTS, icons::setIcon);
+        processIconMapping(inv, CREATE_ICONS, icons::setIcon);
+        processIconMapping(inv, STATUS_ICONS, icons::setIcon);
     }
 
     /**
-     * A generic helper method that iterates over a map of Enum-to-Slot, extracts the {@link ItemStack}, and sets the
-     * corresponding icon.
+     * A generic helper method that iterates over a map of Enum-to-{@link IconDef}, extracts the {@link ItemStack} at each
+     * icon's slot, and sets the corresponding icon.
      *
      * @param inventory The inventory to get items from
-     * @param slotMapping A map from an Enum constant to its inventory slot index
+     * @param iconDefs A map from an Enum constant to its {@link IconDef}
+     * @param setter Stores the chosen icon material for an enum constant
      * @param <T> The type of the Enum (e.g., {@link BuildWorldType}, {@link BuildWorldStatus})
      */
     private <T extends Enum<T>> void processIconMapping(
-            Inventory inventory, Map<T, Integer> slotMapping, BiConsumer<T, XMaterial> setter) {
-        slotMapping.forEach((enumConstant, slot) -> {
-            XMaterial material = Optional.ofNullable(inventory.getItem(slot))
+            Inventory inventory, Map<T, IconDef> iconDefs, BiConsumer<T, XMaterial> setter) {
+        iconDefs.forEach((enumConstant, def) -> {
+            XMaterial material = Optional.ofNullable(inventory.getItem(def.slot()))
                     .map(XMaterial::matchXMaterial)
                     .orElse(null);
             if (material == null) {

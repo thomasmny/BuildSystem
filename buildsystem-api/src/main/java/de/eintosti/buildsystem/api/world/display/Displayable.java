@@ -18,17 +18,12 @@
 package de.eintosti.buildsystem.api.world.display;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.util.List;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -104,31 +99,17 @@ public interface Displayable {
     default ItemStack asItemStack(Player player) {
         ItemStack itemStack = getIcon().parseItem();
         if (itemStack == null) {
-            throw new IllegalStateException("Icon material " + getIcon() + " could not be parsed into an ItemStack.");
+            throw new IllegalStateException("Icon material %s could not be parsed into an ItemStack.".formatted(getIcon()));
         }
 
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta == null) {
-            throw new IllegalStateException("ItemMeta for " + getIcon() + " is null. This should not happen.");
+            throw new IllegalStateException("ItemMeta for %s is null. This should not happen.".formatted(getIcon()));
         }
 
         itemMeta.setDisplayName(getDisplayName(player));
         itemMeta.setLore(getLore(player));
         itemMeta.addItemFlags(ItemFlag.values());
-
-        DisplayableType type =
-                switch (this) {
-                    case BuildWorld ignored -> DisplayableType.BUILD_WORLD;
-                    case Folder ignored -> DisplayableType.FOLDER;
-                    default ->
-                        throw new IllegalStateException(
-                                "Unknown displayable type: " + this.getClass().getSimpleName());
-                };
-
-        JavaPlugin plugin = JavaPlugin.getProvidingPlugin(getClass());
-        PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
-        pdc.set(new NamespacedKey(plugin, "displayable_type"), PersistentDataType.STRING, type.name());
-        pdc.set(new NamespacedKey(plugin, "displayable_name"), PersistentDataType.STRING, getName());
 
         itemStack.setItemMeta(itemMeta);
 
@@ -144,21 +125,5 @@ public interface Displayable {
      */
     default void addToInventory(Inventory inventory, int slot, Player player) {
         inventory.setItem(slot, asItemStack(player));
-    }
-
-    /**
-     * Represents the distinct types of items that can be displayed in an inventory within the BuildSystem.
-     */
-    enum DisplayableType {
-
-        /**
-         * Indicates that the displayable item is a {@link BuildWorld}.
-         */
-        BUILD_WORLD,
-
-        /**
-         * Indicates that the displayable item is a {@link Folder}.
-         */
-        FOLDER
     }
 }

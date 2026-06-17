@@ -20,17 +20,16 @@ package de.eintosti.buildsystem.player.menu;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
-import de.eintosti.buildsystem.menu.Menu;
+import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import java.util.Map;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class SpeedMenu extends Menu {
+public class SpeedMenu extends ButtonMenu<MenuButton> {
 
     private static final String SKULL_SPEED_1 = "71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530";
     private static final String SKULL_SPEED_2 = "4cd9eeee883468881d83848a46bf3012485c23f75753b8fbe8487341419847";
@@ -56,6 +55,27 @@ public class SpeedMenu extends Menu {
     public SpeedMenu(BuildSystemPlugin plugin, Player player) {
         super(plugin.getMessages(), 27, plugin.getMessages().getString("speed_title", player));
         this.settingsService = plugin.getSettingsService();
+
+        SPEED_BY_SLOT.forEach((slot, option) -> register(slot, speedButton(option)));
+    }
+
+    private MenuButton speedButton(SpeedOption option) {
+        return MenuButton.builder()
+                .render((player, inventory, slot) -> inventory.setItem(
+                        slot,
+                        ItemBuilder.skull(Profileable.detect(option.skullTexture()))
+                                .name(messages.getString(option.nameKey(), player))
+                                .build()))
+                .onClick((player, event) -> {
+                    if (!player.hasPermission("buildsystem.speed")) {
+                        player.closeInventory();
+                        return;
+                    }
+                    setSpeed(player, option.speed(), option.displayNumber());
+                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    player.closeInventory();
+                })
+                .build();
     }
 
     @Override
@@ -65,7 +85,7 @@ public class SpeedMenu extends Menu {
                     .setItem(i, ItemBuilder.glassPane(player, settingsService).build());
         }
 
-        SPEED_BY_SLOT.forEach((slot, option) -> addSpeedItem(player, slot, option.skullTexture(), option.nameKey()));
+        renderButtons(player);
     }
 
     /**
@@ -73,39 +93,6 @@ public class SpeedMenu extends Menu {
      */
     Map<Integer, SpeedOption> speedBySlot() {
         return SPEED_BY_SLOT;
-    }
-
-    private void addSpeedItem(Player player, int slot, String skullTexture, String nameKey) {
-        getInventory()
-                .setItem(
-                        slot,
-                        ItemBuilder.skull(Profileable.detect(skullTexture))
-                                .name(messages.getString(nameKey, player))
-                                .build());
-    }
-
-    @Override
-    public void handleClick(InventoryClickEvent event) {
-        ItemStack itemStack = event.getCurrentItem();
-        if (itemStack == null) {
-            return;
-        }
-
-        event.setCancelled(true);
-        Player player = (Player) event.getWhoClicked();
-        if (!player.hasPermission("buildsystem.speed")) {
-            player.closeInventory();
-            return;
-        }
-
-        SpeedOption option = SPEED_BY_SLOT.get(event.getSlot());
-        if (option == null) {
-            return;
-        }
-        setSpeed(player, option.speed(), option.displayNumber());
-
-        XSound.ENTITY_CHICKEN_EGG.play(player);
-        player.closeInventory();
     }
 
     private void setSpeed(Player player, float speed, int num) {

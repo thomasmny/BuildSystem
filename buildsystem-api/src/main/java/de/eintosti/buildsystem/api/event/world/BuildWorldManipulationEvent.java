@@ -25,20 +25,20 @@ import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * This event reduces duplicated code.
- *
- * <p>It will be called when:
+ * Fired when a player modifies a {@link BuildWorld}, providing a single hook for the many distinct Bukkit events that
+ * represent world modification, such as:
  *
  * <ul>
- *   <li>Breaking Blocks
- *   <li>Placing Blocks
- *   <li>Other modification-related stuff
+ *   <li>breaking a block
+ *   <li>placing a block
+ *   <li>other modification-related interactions
  * </ul>
  *
- * Cancelling this event will affect the parent-Event, which has caused the ManipulationEvent to fire.
+ * <p>This event wraps the {@link #getParentEvent() parent Bukkit event} that triggered it: its cancellation state is
+ * delegated to the parent, so cancelling this event also cancels the underlying interaction (and vice versa).
  *
- * <p>Expect the manipulation event to be canceled at {@link org.bukkit.event.EventPriority#LOW} if the player is not
- * allowed to interact with the world.
+ * <p>BuildSystem itself cancels this event at {@link org.bukkit.event.EventPriority#LOW} when the player is not allowed
+ * to modify the world; listeners running at a later priority can observe or override that decision.
  *
  * @since TODO
  */
@@ -68,7 +68,10 @@ public class BuildWorldManipulationEvent extends BuildWorldEvent implements Canc
     }
 
     /**
-     * @return the event which has caused the manipulation event to fire.
+     * Gets the underlying Bukkit event that triggered this manipulation event. This event's cancellation state is
+     * delegated to the returned parent.
+     *
+     * @return The parent event that caused this manipulation event to fire
      */
     public Cancellable getParentEvent() {
         return parentEvent;

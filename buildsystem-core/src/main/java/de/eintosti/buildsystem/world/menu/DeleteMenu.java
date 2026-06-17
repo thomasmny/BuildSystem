@@ -21,24 +21,51 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
-import de.eintosti.buildsystem.menu.Menu;
+import de.eintosti.buildsystem.menu.MenuButton;
 import java.util.Map;
 import java.util.stream.IntStream;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class DeleteMenu extends Menu {
+public class DeleteMenu extends ButtonMenu<MenuButton> {
 
-    private final BuildSystemPlugin plugin;
+    private static final int SLOT_CONFIRM = 11;
+    private static final int SLOT_CANCEL = 15;
+
     private final BuildWorld buildWorld;
 
     public DeleteMenu(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
         super(plugin.getMessages(), 27, plugin.getMessages().getString("delete_title", player));
-        this.plugin = plugin;
         this.buildWorld = buildWorld;
+
+        register(
+                SLOT_CONFIRM,
+                MenuButton.builder()
+                        .render((p, inventory, slot) -> ItemBuilder.of(XMaterial.LIME_DYE)
+                                .name(messages.getString("delete_world_confirm", p))
+                                .into(inventory, slot))
+                        .onClick((p, event) -> {
+                            XSound.ENTITY_PLAYER_LEVELUP.play(p);
+                            p.closeInventory();
+                            plugin.getWorldService().deleteWorld(p, buildWorld);
+                        })
+                        .build());
+        register(
+                SLOT_CANCEL,
+                MenuButton.builder()
+                        .render((p, inventory, slot) -> ItemBuilder.of(XMaterial.RED_DYE)
+                                .name(messages.getString("delete_world_cancel", p))
+                                .into(inventory, slot))
+                        .onClick((p, event) -> {
+                            XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(p);
+                            p.closeInventory();
+                            messages.sendMessage(
+                                    p, "worlds_delete_canceled", Map.entry("%world%", buildWorld.getName()));
+                        })
+                        .build());
     }
 
     @Override
@@ -60,34 +87,11 @@ public class DeleteMenu extends Menu {
                         .name("§f")
                         .into(getInventory(), slot));
 
-        ItemBuilder.of(XMaterial.LIME_DYE)
-                .name(messages.getString("delete_world_confirm", player))
-                .into(getInventory(), 11);
         ItemBuilder.of(XMaterial.FILLED_MAP)
                 .name(messages.getString("delete_world_name", player, Map.entry("%world%", buildWorld.getName())))
                 .lore(messages.getStringList("delete_world_name_lore", player))
                 .into(getInventory(), 13);
-        ItemBuilder.of(XMaterial.RED_DYE)
-                .name(messages.getString("delete_world_cancel", player))
-                .into(getInventory(), 15);
-    }
 
-    @Override
-    public void handleClick(InventoryClickEvent event) {
-        event.setCancelled(true);
-        Player player = (Player) event.getWhoClicked();
-
-        switch (event.getSlot()) {
-            case 11 -> {
-                XSound.ENTITY_PLAYER_LEVELUP.play(player);
-                player.closeInventory();
-                plugin.getWorldService().deleteWorld(player, buildWorld);
-            }
-            case 15 -> {
-                XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-                player.closeInventory();
-                messages.sendMessage(player, "worlds_delete_canceled", Map.entry("%world%", buildWorld.getName()));
-            }
-        }
+        renderButtons(player);
     }
 }

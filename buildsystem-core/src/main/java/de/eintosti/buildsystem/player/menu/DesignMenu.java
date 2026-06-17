@@ -21,8 +21,9 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
+import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
-import de.eintosti.buildsystem.menu.Menu;
+import de.eintosti.buildsystem.menu.MenuButton;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.bukkit.entity.Player;
@@ -31,7 +32,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class DesignMenu extends Menu {
+public class DesignMenu extends ButtonMenu<MenuButton> {
 
     /**
      * The colors selectable in the design menu, keyed by the slot they occupy. {@link LinkedHashMap} keeps insertion
@@ -67,6 +68,25 @@ public class DesignMenu extends Menu {
     public DesignMenu(BuildSystemPlugin plugin, Player player) {
         super(plugin.getMessages(), 36, plugin.getMessages().getString("design_title", player));
         this.plugin = plugin;
+
+        COLOR_SLOTS.forEach((slot, entry) -> register(slot, colorButton(entry)));
+    }
+
+    private MenuButton colorButton(ColorEntry entry) {
+        return MenuButton.builder()
+                .render((player, inventory, slot) -> {
+                    Settings settings = plugin.getSettingsService().getSettings(player);
+                    boolean selected = settings.getDesignColor() == entry.color();
+                    ItemBuilder.of(entry.material())
+                            .name((selected ? "§a" : "§7") + messages.getString(entry.messageKey(), player))
+                            .glow(selected)
+                            .into(inventory, slot);
+                })
+                .onClick((player, event) -> {
+                    plugin.getSettingsService().getSettings(player).setDesignColor(entry.color());
+                    new DesignMenu(plugin, player).open(player);
+                })
+                .build();
     }
 
     @Override
@@ -74,42 +94,15 @@ public class DesignMenu extends Menu {
         plugin.getMenuItems().fillRange(player, getInventory(), 0, 9);
         plugin.getMenuItems().fillRange(player, getInventory(), 27, 36);
 
-        COLOR_SLOTS.forEach(
-                (slot, entry) -> setItem(player, slot, entry.material(), entry.messageKey(), entry.color()));
-    }
-
-    private void setItem(Player player, int position, XMaterial material, String key, DesignColor color) {
-        Settings settings = plugin.getSettingsService().getSettings(player);
-
-        boolean selected = settings.getDesignColor() == color;
-        String displayName = messages.getString(key, player);
-        ItemBuilder.of(material)
-                .name((selected ? "§a" : "§7") + displayName)
-                .glow(selected)
-                .into(getInventory(), position);
+        renderButtons(player);
     }
 
     @Override
-    public void handleClick(InventoryClickEvent event) {
+    protected void onUnhandledClick(Player player, InventoryClickEvent event) {
+        // A click on the border glass returns to the settings menu.
         ItemStack itemStack = event.getCurrentItem();
-        if (itemStack == null) {
-            return;
-        }
-
-        event.setCancelled(true);
-        Player player = (Player) event.getWhoClicked();
-
-        if (itemStack.getType().toString().contains("STAINED_GLASS_PANE")) {
+        if (itemStack != null && itemStack.getType().toString().contains("STAINED_GLASS_PANE")) {
             new SettingsMenu(plugin, player).open(player);
-            return;
         }
-
-        ColorEntry entry = COLOR_SLOTS.get(event.getSlot());
-        if (entry != null) {
-            Settings settings = plugin.getSettingsService().getSettings(player);
-            settings.setDesignColor(entry.color());
-        }
-
-        new DesignMenu(plugin, player).open(player);
     }
 }

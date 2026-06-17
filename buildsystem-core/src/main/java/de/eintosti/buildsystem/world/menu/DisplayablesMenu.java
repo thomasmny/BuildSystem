@@ -28,10 +28,10 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.display.*;
-import de.eintosti.buildsystem.api.world.display.Displayable.DisplayableType;
 import de.eintosti.buildsystem.api.world.display.WorldFilter.Mode;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.menu.ItemBuilder;
+import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
@@ -47,9 +47,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -94,15 +91,8 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     private final @Nullable String noWorldsMessage;
     private @Nullable List<Displayable> cachedDisplayables;
 
-    protected DisplayablesMenu(
-            BuildSystemPlugin plugin,
-            Player player,
-            NavigatorCategory category,
-            String inventoryTitle,
-            @Nullable String noWorldsMessage,
-            Visibility requiredVisibility,
-            Set<BuildWorldStatus> validStatuses) {
-        super(plugin.getMessages(), 54, inventoryTitle);
+    protected DisplayablesMenu(BuildSystemPlugin plugin, Player player, Options options) {
+        super(plugin.getMessages(), 54, options.title());
         this.plugin = plugin;
         this.playerService = plugin.getPlayerService();
         this.settingsManager = plugin.getSettingsService();
@@ -110,10 +100,85 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         this.folderStorage = worldService.getFolderStorage();
         this.worldStorage = worldService.getWorldStorage();
         this.player = player;
-        this.category = category;
-        this.noWorldsMessage = noWorldsMessage;
-        this.requiredVisibility = requiredVisibility;
-        this.validStatuses = validStatuses;
+        this.category = options.category();
+        this.noWorldsMessage = options.emptyMessage();
+        this.requiredVisibility = options.requiredVisibility();
+        this.validStatuses = options.validStatuses();
+    }
+
+    /**
+     * The configuration of a {@link DisplayablesMenu}: which {@link NavigatorCategory category} it lists, its title and
+     * "no worlds" message, the {@link Visibility} it requires, and the {@link BuildWorldStatus statuses} it shows.
+     * Bundled into one named-field object so subclasses no longer pass a long positional argument list to {@code super}.
+     *
+     * @param category The navigator category whose folders/worlds are listed
+     * @param title The inventory title
+     * @param emptyMessage The message shown when nothing matches, or {@code null} to show nothing
+     * @param requiredVisibility The visibility a world must have to be listed
+     * @param validStatuses The statuses a world must have to be listed
+     */
+    public record Options(
+            NavigatorCategory category,
+            String title,
+            @Nullable String emptyMessage,
+            Visibility requiredVisibility,
+            Set<BuildWorldStatus> validStatuses) {
+
+        /**
+         * {@return a new {@link Builder}}
+         */
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        /**
+         * Fluent builder for {@link Options}. {@code requiredVisibility} defaults to {@link Visibility#IGNORE} and
+         * {@code validStatuses} to all statuses; {@code category} and {@code title} are required.
+         */
+        public static final class Builder {
+
+            private @Nullable NavigatorCategory category;
+            private @Nullable String title;
+            private @Nullable String emptyMessage;
+            private Visibility requiredVisibility = Visibility.IGNORE;
+            private Set<BuildWorldStatus> validStatuses = EnumSet.allOf(BuildWorldStatus.class);
+
+            private Builder() {}
+
+            public Builder category(NavigatorCategory category) {
+                this.category = category;
+                return this;
+            }
+
+            public Builder title(String title) {
+                this.title = title;
+                return this;
+            }
+
+            public Builder emptyMessage(@Nullable String emptyMessage) {
+                this.emptyMessage = emptyMessage;
+                return this;
+            }
+
+            public Builder requiredVisibility(Visibility requiredVisibility) {
+                this.requiredVisibility = requiredVisibility;
+                return this;
+            }
+
+            public Builder validStatuses(Set<BuildWorldStatus> validStatuses) {
+                this.validStatuses = validStatuses;
+                return this;
+            }
+
+            public Options build() {
+                return new Options(
+                        Objects.requireNonNull(category, "category"),
+                        Objects.requireNonNull(title, "title"),
+                        emptyMessage,
+                        requiredVisibility,
+                        validStatuses);
+            }
+        }
     }
 
     @Override
@@ -126,16 +191,13 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         this.cachedDisplayables = collectDisplayables();
         Inventory inv = getInventory();
 
+        clearButtons();
         plugin.getMenuItems().fillWithGlass(inv, player);
         addWorldSortItem(inv);
         addWorldFilterItem(inv);
         addExtraItems(inv, player);
-        ItemBuilder.skull(Profileable.detect(PREVIOUS_PAGE_SKULL_PROFILE))
-                .name(plugin.getMessages().getString("gui_previous_page", player))
-                .into(inv, SLOT_PREVIOUS_PAGE);
-        ItemBuilder.skull(Profileable.detect(NEXT_PAGE_SKULL_PROFILE))
-                .name(plugin.getMessages().getString("gui_next_page", player))
-                .into(inv, SLOT_NEXT_PAGE);
+        register(SLOT_PREVIOUS_PAGE, previousPageButton(PREVIOUS_PAGE_SKULL_PROFILE, MAX_WORLDS_PER_PAGE));
+        register(SLOT_NEXT_PAGE, nextPageButton(NEXT_PAGE_SKULL_PROFILE, MAX_WORLDS_PER_PAGE));
 
         for (int i = FIRST_WORD_SLOT; i <= LAST_WORLD_SLOT; i++) {
             inv.setItem(i, null);
@@ -145,18 +207,25 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
             ItemBuilder.skull(Profileable.detect(NO_WORLDS_SKULL_PROFILE))
                     .name(noWorldsMessage)
                     .into(inv, SLOT_NO_WORLDS);
-            return;
+        } else {
+            registerPageItems(FIRST_WORD_SLOT, MAX_WORLDS_PER_PAGE, cachedDisplayables, this::displayableButton);
         }
 
-        int startIndex = page() * MAX_WORLDS_PER_PAGE;
-        int endIndex = Math.min(startIndex + MAX_WORLDS_PER_PAGE, cachedDisplayables.size());
-        int currentSlot = FIRST_WORD_SLOT;
-        for (int i = startIndex; i < endIndex; i++) {
-            if (currentSlot > LAST_WORLD_SLOT) {
-                break;
-            }
-            cachedDisplayables.get(i).addToInventory(inv, currentSlot++, player);
-        }
+        renderButtons(player);
+    }
+
+    private MenuButton displayableButton(Displayable displayable) {
+        return MenuButton.builder()
+                .render((player, inventory, slot) -> displayable.addToInventory(inventory, slot, player))
+                .onClick((player, event) -> {
+                    if (displayable instanceof BuildWorld buildWorld) {
+                        manageWorldItemClick(event, buildWorld);
+                    } else if (displayable instanceof Folder folder) {
+                        new FolderContentMenu(plugin, player, category, folder, this, requiredVisibility, validStatuses)
+                                .open(player);
+                    }
+                })
+                .build();
     }
 
     protected void addExtraItems(Inventory inventory, Player player) {}
@@ -257,18 +326,21 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     }
 
     @Override
-    public void handleClick(InventoryClickEvent event) {
+    protected void onUnhandledClick(Player player, InventoryClickEvent event) {
+        // Page arrows are registered buttons; everything else is handled here. Ignore clicks outside this inventory.
+        int slot = event.getRawSlot();
+        if (slot < 0 || slot >= getInventory().getSize()) {
+            return;
+        }
         ItemStack itemStack = event.getCurrentItem();
         if (itemStack == null) {
             return;
         }
 
-        event.setCancelled(true);
-        Player player = (Player) event.getWhoClicked();
         Settings settings = settingsManager.getSettings(player);
         WorldDisplay worldDisplay = settings.getWorldDisplay();
 
-        switch (event.getSlot()) {
+        switch (slot) {
             case SLOT_WORLD_SORT -> {
                 WorldSort currentSort = worldDisplay.getWorldSort();
                 worldDisplay.setWorldSort(event.isLeftClick() ? currentSort.getNext() : currentSort.getPrevious());
@@ -293,20 +365,8 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                 goBack(player, itemStack);
             }
             case SLOT_BACK -> goBack(player, itemStack);
-            case SLOT_PREVIOUS_PAGE -> {
-                if (previousPage(player, MAX_WORLDS_PER_PAGE)) {
-                    populate(player);
-                }
-            }
-            case SLOT_NEXT_PAGE -> {
-                if (nextPage(player, MAX_WORLDS_PER_PAGE)) {
-                    populate(player);
-                }
-            }
             default -> {
-                if (event.getSlot() >= FIRST_WORD_SLOT && event.getSlot() <= LAST_WORLD_SLOT) {
-                    handleDisplayableItemClick(event, itemStack);
-                } else if (event.getSlot() >= FIRST_BOTTOM_BAR_SLOT && event.getSlot() <= LAST_BOTTOM_BAR_SLOT) {
+                if (slot >= FIRST_BOTTOM_BAR_SLOT && slot <= LAST_BOTTOM_BAR_SLOT) {
                     goBack(player, itemStack);
                 }
             }
@@ -374,41 +434,6 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
 
         resetPage();
         open(player);
-    }
-
-    private void handleDisplayableItemClick(InventoryClickEvent event, ItemStack clickedItem) {
-        ItemMeta itemMeta = clickedItem.getItemMeta();
-        if (itemMeta == null || !itemMeta.hasDisplayName()) {
-            return;
-        }
-
-        PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
-        String displayableType = pdc.get(plugin.getMenuItems().displayableTypeKey, PersistentDataType.STRING);
-        String displayableName = pdc.get(plugin.getMenuItems().displayableNameKey, PersistentDataType.STRING);
-        if (displayableType == null || displayableName == null) {
-            return;
-        }
-
-        Player player = (Player) event.getWhoClicked();
-        switch (DisplayableType.valueOf(displayableType)) {
-            case BUILD_WORLD -> {
-                BuildWorld buildWorld = worldStorage.getBuildWorld(displayableName);
-                if (buildWorld == null) {
-                    plugin.getLogger().warning("Unable to find world with name: " + displayableName);
-                    return;
-                }
-                manageWorldItemClick(event, buildWorld);
-            }
-            case FOLDER -> {
-                Folder folder = folderStorage.getFolder(displayableName);
-                if (folder == null) {
-                    plugin.getLogger().warning("Unable to find folder with name: " + displayableName);
-                    return;
-                }
-                new FolderContentMenu(plugin, player, category, folder, this, requiredVisibility, validStatuses)
-                        .open(player);
-            }
-        }
     }
 
     private void manageWorldItemClick(InventoryClickEvent event, BuildWorld buildWorld) {
