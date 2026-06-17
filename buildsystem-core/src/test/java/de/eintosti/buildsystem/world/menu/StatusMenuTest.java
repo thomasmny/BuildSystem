@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.world.menu;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -28,9 +28,13 @@ import static org.mockito.Mockito.when;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.i18n.Messages;
-import java.util.Map;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.test.TestData;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,11 +43,13 @@ import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 
 /**
- * Golden test pinning the {@link StatusMenu} slot &rarr; status selection grid. Built through the real production
- * constructor under a {@link MockBukkit} server.
+ * Pins the dynamic {@link StatusMenu} grid: it renders one selectable item per registered status, contiguously from the
+ * first status slot, built through the real production constructor under a {@link MockBukkit} server.
  */
 @NullMarked
 class StatusMenuTest {
+
+    private static final int FIRST_STATUS_SLOT = 10;
 
     private ServerMock server;
 
@@ -60,34 +66,45 @@ class StatusMenuTest {
     private StatusMenu menu() {
         Messages messages = mock(Messages.class);
         when(messages.getString(anyString(), any(), any())).thenReturn("Title");
+
         BuildSystemPlugin plugin = mock(BuildSystemPlugin.class);
         when(plugin.getMessages()).thenReturn(messages);
+        when(plugin.getMenuItems()).thenReturn(mock(MenuItems.class));
+        TestData.stubStatusRegistry(plugin);
+
+        WorldData data = mock(WorldData.class);
+        when(data.getStatus()).thenReturn(TestData.NOT_STARTED);
         BuildWorld buildWorld = mock(BuildWorld.class);
         when(buildWorld.getName()).thenReturn("world");
+        when(buildWorld.getData()).thenReturn(data);
+
         Player player = server.addPlayer();
         return new StatusMenu(plugin, buildWorld, player);
     }
 
     @Test
-    void statusBySlot_hasExactlySixEntriesMappedCorrectly() {
-        Map<Integer, BuildWorldStatus> statuses = menu().statusBySlot();
+    void grid_rendersOneItemPerStatusContiguously() {
+        StatusMenu menu = menu();
+        menu.populate(server.addPlayer());
+        Inventory inventory = menu.getInventory();
 
-        assertEquals(6, statuses.size());
-        assertEquals(BuildWorldStatus.NOT_STARTED, statuses.get(10));
-        assertEquals(BuildWorldStatus.IN_PROGRESS, statuses.get(11));
-        assertEquals(BuildWorldStatus.ALMOST_FINISHED, statuses.get(12));
-        assertEquals(BuildWorldStatus.FINISHED, statuses.get(13));
-        assertEquals(BuildWorldStatus.ARCHIVE, statuses.get(14));
-        assertEquals(BuildWorldStatus.HIDDEN, statuses.get(16));
+        for (int i = 0; i < TestData.STATUSES.size(); i++) {
+            ItemStack item = inventory.getItem(FIRST_STATUS_SLOT + i);
+            BuildWorldStatus status = TestData.STATUSES.get(i);
+            assertNotNull(item, "Expected a status item at slot " + (FIRST_STATUS_SLOT + i) + " for " + status.getId());
+        }
     }
 
     @Test
-    void statusBySlot_skipsSlotFifteen() {
-        assertFalse(menu().statusBySlot().containsKey(15));
+    void grid_leavesSlotBeforeFirstStatusEmpty() {
+        StatusMenu menu = menu();
+        menu.populate(server.addPlayer());
+        assertNull(menu.getInventory().getItem(FIRST_STATUS_SLOT - 1));
     }
 
     @Test
-    void statusBySlot_fillerSlotIsAbsent() {
-        assertNull(menu().statusBySlot().get(0));
+    void grid_sizeCoversEveryStatus() {
+        StatusMenu menu = menu();
+        assertEquals(0, menu.getInventory().getSize() % 9);
     }
 }

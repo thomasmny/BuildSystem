@@ -28,8 +28,8 @@ import de.eintosti.buildsystem.api.event.world.BuildWorldCreateEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldRenameEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldStatusChangeEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.test.TestData;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
@@ -70,10 +70,10 @@ class BuildWorldEventsTest {
     void statusChangeEvent_returnsPreviousAndNewStatus() {
         BuildWorld buildWorld = mock(BuildWorld.class);
         BuildWorldStatusChangeEvent event =
-                new BuildWorldStatusChangeEvent(buildWorld, BuildWorldStatus.NOT_STARTED, BuildWorldStatus.FINISHED);
+                new BuildWorldStatusChangeEvent(buildWorld, TestData.NOT_STARTED, TestData.FINISHED);
 
         assertSame(buildWorld, event.getBuildWorld());
-        assertEquals(BuildWorldStatus.NOT_STARTED, event.getPreviousStatus());
-        assertEquals(BuildWorldStatus.FINISHED, event.getNewStatus());
+        assertEquals(TestData.NOT_STARTED, event.getPreviousStatus());
+        assertEquals(TestData.FINISHED, event.getNewStatus());
     }
 }

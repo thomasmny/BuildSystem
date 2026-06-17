@@ -23,9 +23,9 @@ import static org.mockito.Mockito.*;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.builder.Builder;
-import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
-import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
@@ -51,17 +51,17 @@ class FolderImplTest {
     }
 
     private FolderImpl folder(String name) {
-        return new FolderImpl(plugin, name, NavigatorCategory.PUBLIC, null, Builder.of(UUID.randomUUID(), "Creator"));
+        return new FolderImpl(plugin, name, TestData.PUBLIC, null, Builder.of(UUID.randomUUID(), "Creator"));
     }
 
     private BuildWorldImpl world(String name) {
         WorldDataImpl data = new WorldDataBuilder(name)
-                .withStatus(BuildWorldStatus.NOT_STARTED)
+                .withStatus(TestData.NOT_STARTED)
                 .withDifficulty(Difficulty.NORMAL)
                 .withMaterial(XMaterial.GRASS_BLOCK)
                 .withPermission("-")
                 .withProject("-")
-                .withPrivateWorld(false)
+                .withVisibility(Visibility.EVERYONE)
                 .withPermissionOverrideEnabled(() -> false)
                 .withProjectOverrideEnabled(() -> false)
                 .build();

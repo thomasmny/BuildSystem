@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.test.TestData;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
@@ -29,18 +29,20 @@ import org.junit.jupiter.api.Test;
 class WorldDataAccessorTest {
 
     private static WorldDataImpl worldData() {
-        return new WorldDataImpl.WorldDataBuilder("test").build();
+        return new WorldDataImpl.WorldDataBuilder("test")
+                .withStatus(TestData.NOT_STARTED)
+                .build();
     }
 
     @Test
     void valueAccessor_roundTrips() {
         WorldDataImpl data = worldData();
 
-        data.setStatus(BuildWorldStatus.FINISHED);
-        assertEquals(BuildWorldStatus.FINISHED, data.getStatus());
+        data.setStatus(TestData.FINISHED);
+        assertEquals(TestData.FINISHED, data.getStatus());
 
-        data.setStatus(BuildWorldStatus.ARCHIVE);
-        assertEquals(BuildWorldStatus.ARCHIVE, data.getStatus());
+        data.setStatus(TestData.ARCHIVE_STATUS);
+        assertEquals(TestData.ARCHIVE_STATUS, data.getStatus());
     }
 
     @Test

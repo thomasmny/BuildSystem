@@ -25,9 +25,9 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.access.WorldSetting;
 import de.eintosti.buildsystem.api.world.builder.Builders;
-import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
+import de.eintosti.buildsystem.test.TestData;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,7 +60,7 @@ class WorldProtectionPolicyTest {
         when(permissions.canBypassBuildRestriction(player)).thenReturn(false);
         when(player.hasPermission("buildsystem.bypass.archive")).thenReturn(false);
         when(player.hasPermission("buildsystem.bypass.builders")).thenReturn(false);
-        when(data.getStatus()).thenReturn(BuildWorldStatus.NOT_STARTED);
+        when(data.getStatus()).thenReturn(TestData.NOT_STARTED);
         when(data.isBuildersEnabled()).thenReturn(false);
         when(builders.isCreator(player)).thenReturn(false);
         when(builders.isBuilder(player)).thenReturn(false);
@@ -69,7 +69,7 @@ class WorldProtectionPolicyTest {
     @Test
     void bypass_shortCircuitsEverything() {
         when(permissions.canBypassBuildRestriction(player)).thenReturn(true);
-        when(data.getStatus()).thenReturn(BuildWorldStatus.ARCHIVE);
+        when(data.getStatus()).thenReturn(TestData.ARCHIVE_STATUS);
         when(data.isBuildersEnabled()).thenReturn(true);
 
         assertEquals(Denial.NONE, policy.checkArchive(player, world));
@@ -80,14 +80,14 @@ class WorldProtectionPolicyTest {
     @Test
     void archiveBypassPermission_shortCircuitsArchiveCheck() {
         when(player.hasPermission("buildsystem.bypass.archive")).thenReturn(true);
-        when(data.getStatus()).thenReturn(BuildWorldStatus.ARCHIVE);
+        when(data.getStatus()).thenReturn(TestData.ARCHIVE_STATUS);
 
         assertEquals(Denial.NONE, policy.checkArchive(player, world));
     }
 
     @Test
     void archivedWorld_noBypass_returnsArchived() {
-        when(data.getStatus()).thenReturn(BuildWorldStatus.ARCHIVE);
+        when(data.getStatus()).thenReturn(TestData.ARCHIVE_STATUS);
 
         assertEquals(Denial.ARCHIVED, policy.checkArchive(player, world));
     }
@@ -147,7 +147,7 @@ class WorldProtectionPolicyTest {
 
     @Test
     void mayModify_archive_winsOverBuilders() {
-        when(data.getStatus()).thenReturn(BuildWorldStatus.ARCHIVE);
+        when(data.getStatus()).thenReturn(TestData.ARCHIVE_STATUS);
         when(data.isBuildersEnabled()).thenReturn(true);
 
         // Archive denial takes precedence over builder denial
@@ -164,7 +164,7 @@ class WorldProtectionPolicyTest {
 
     @Test
     void mayModify_withSetting_archiveWinsOverSetting() {
-        when(data.getStatus()).thenReturn(BuildWorldStatus.ARCHIVE);
+        when(data.getStatus()).thenReturn(TestData.ARCHIVE_STATUS);
         when(data.isBlockPlacement()).thenReturn(false);
 
         assertEquals(Denial.ARCHIVED, policy.mayModify(player, world, WorldSetting.BLOCK_PLACEMENT));

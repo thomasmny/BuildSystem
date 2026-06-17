@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.io.File;
 import java.util.ArrayList;
@@ -53,6 +54,7 @@ class YamlFolderStorageRoundTripTest {
     void setUp() {
         plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
+        TestData.stubCategoryRegistry(plugin);
         worldStorage = Mockito.mock(WorldStorage.class);
     }
 
@@ -86,11 +88,11 @@ class YamlFolderStorageRoundTripTest {
     @Test
     void roundTrip_preservesFields() {
         List<UUID> worlds = List.of(UUID.randomUUID(), UUID.randomUUID());
-        newStorage().save(folder("MyFolder", NavigatorCategory.PUBLIC, worlds)).join();
+        newStorage().save(folder("MyFolder", TestData.PUBLIC, worlds)).join();
 
         Folder loaded = findByName(newStorage().load().join(), "MyFolder");
         assertEquals("MyFolder", loaded.getName());
-        assertEquals(NavigatorCategory.PUBLIC, loaded.getCategory());
+        assertEquals(TestData.PUBLIC, loaded.getCategory());
         assertEquals("perm.test", loaded.getPermission());
         assertEquals("ProjectX", loaded.getProject());
         assertEquals("FolderCreator", loaded.getCreator().getName());
@@ -99,17 +101,17 @@ class YamlFolderStorageRoundTripTest {
 
     @Test
     void roundTrip_emptyWorldList() {
-        newStorage().save(folder("Empty", NavigatorCategory.ARCHIVE, List.of())).join();
+        newStorage().save(folder("Empty", TestData.ARCHIVE, List.of())).join();
 
         Folder loaded = findByName(newStorage().load().join(), "Empty");
-        assertEquals(NavigatorCategory.ARCHIVE, loaded.getCategory());
+        assertEquals(TestData.ARCHIVE, loaded.getCategory());
         assertTrue(loaded.getWorldUUIDs().isEmpty());
     }
 
     @Test
     void roundTrip_resolvesParentReference() {
-        FolderImpl parent = folder("Parent", NavigatorCategory.PUBLIC, List.of());
-        FolderImpl child = folder("Child", NavigatorCategory.PUBLIC, List.of());
+        FolderImpl parent = folder("Parent", TestData.PUBLIC, List.of());
+        FolderImpl child = folder("Child", TestData.PUBLIC, List.of());
         child.setParent(parent);
 
         newStorage().save(List.of(parent, child)).join();

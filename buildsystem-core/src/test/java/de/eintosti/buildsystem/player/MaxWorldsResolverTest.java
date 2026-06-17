@@ -60,37 +60,37 @@ class MaxWorldsResolverTest {
     @Test
     void adminPermissionIsUnlimited() {
         Player admin = playerWith(true);
-        assertEquals(-1, service.getMaxWorlds(admin, Visibility.PUBLIC));
+        assertEquals(-1, service.getMaxWorlds(admin, Visibility.EVERYONE));
     }
 
     @Test
     void wildcardPublicPermissionIsUnlimited() {
         Player player = playerWith(false, "buildsystem.create.public.*");
-        assertEquals(-1, service.getMaxWorlds(player, Visibility.PUBLIC));
+        assertEquals(-1, service.getMaxWorlds(player, Visibility.EVERYONE));
     }
 
     @Test
     void numericPublicPermissionReturnsLimit() {
         Player player = playerWith(false, "buildsystem.create.public.5");
-        assertEquals(5, service.getMaxWorlds(player, Visibility.PUBLIC));
+        assertEquals(5, service.getMaxWorlds(player, Visibility.EVERYONE));
     }
 
     @Test
     void noMatchingPermissionReturnsNegativeOne() {
         Player player = playerWith(false, "buildsystem.worlds.list");
-        assertEquals(-1, service.getMaxWorlds(player, Visibility.PUBLIC));
+        assertEquals(-1, service.getMaxWorlds(player, Visibility.EVERYONE));
     }
 
     @Test
     void publicPermissionDoesNotApplyToPrivate() {
         Player player = playerWith(false, "buildsystem.create.public.5");
-        assertEquals(-1, service.getMaxWorlds(player, Visibility.PRIVATE));
+        assertEquals(-1, service.getMaxWorlds(player, Visibility.ADDED_PLAYERS));
     }
 
     @Test
     void highestNumericPermissionWins() {
         Player player = playerWith(
                 false, "buildsystem.create.public.3", "buildsystem.create.public.7", "buildsystem.create.public.5");
-        assertEquals(7, service.getMaxWorlds(player, Visibility.PUBLIC));
+        assertEquals(7, service.getMaxWorlds(player, Visibility.EVERYONE));
     }
 }

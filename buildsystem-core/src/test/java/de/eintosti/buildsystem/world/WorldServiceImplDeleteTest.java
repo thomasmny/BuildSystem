@@ -26,8 +26,9 @@ import de.eintosti.buildsystem.api.exception.WorldDirectoryNotFoundException;
 import de.eintosti.buildsystem.api.exception.WorldNotFoundException;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
-import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
 import java.io.File;
@@ -75,12 +76,12 @@ class WorldServiceImplDeleteTest {
 
     private BuildWorldImpl registeredWorld(String name) {
         WorldDataImpl data = new WorldDataBuilder(name)
-                .withStatus(BuildWorldStatus.NOT_STARTED)
+                .withStatus(TestData.NOT_STARTED)
                 .withDifficulty(Difficulty.NORMAL)
                 .withMaterial(XMaterial.GRASS_BLOCK)
                 .withPermission("-")
                 .withProject("-")
-                .withPrivateWorld(false)
+                .withVisibility(Visibility.EVERYONE)
                 .withPermissionOverrideEnabled(() -> false)
                 .withProjectOverrideEnabled(() -> false)
                 .build();
