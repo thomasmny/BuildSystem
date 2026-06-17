@@ -249,11 +249,6 @@ public final class BuildWorldImpl implements BuildWorld {
     }
 
     @Override
-    public DisplayableType getDisplayableType() {
-        return DisplayableType.BUILD_WORLD;
-    }
-
-    @Override
     public void addToInventory(Inventory inventory, int slot, Player player) {
         if (getIcon() == XMaterial.PLAYER_HEAD) {
             plugin.getMenuItems().addWorldItem(inventory, slot, this, getDisplayName(player), getLore(player));

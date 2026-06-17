@@ -18,16 +18,12 @@
 package de.eintosti.buildsystem.api.world.display;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.util.List;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -37,18 +33,6 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public interface Displayable {
-
-    /**
-     * The {@link PersistentDataContainer} key under which {@link #asItemStack(Player)} stores the
-     * {@link DisplayableType#name() type name} of a displayable item.
-     */
-    NamespacedKey DISPLAYABLE_TYPE_KEY = new NamespacedKey("buildsystem", "displayable_type");
-
-    /**
-     * The {@link PersistentDataContainer} key under which {@link #asItemStack(Player)} stores the {@link #getName() name}
-     * of a displayable item.
-     */
-    NamespacedKey DISPLAYABLE_NAME_KEY = new NamespacedKey("buildsystem", "displayable_name");
 
     /**
      * Gets the unique name of this displayable item.
@@ -107,16 +91,6 @@ public interface Displayable {
     List<String> getLore(Player player);
 
     /**
-     * Gets the {@link DisplayableType} that classifies this displayable.
-     *
-     * <p>Implementations declare their own type, allowing {@link #asItemStack(Player)} to tag the item without relying on
-     * the concrete class.
-     *
-     * @return The type of this displayable
-     */
-    DisplayableType getDisplayableType();
-
-    /**
      * Converts this displayable to an {@link ItemStack} for display.
      *
      * @param player The player viewing the inventory
@@ -125,24 +99,17 @@ public interface Displayable {
     default ItemStack asItemStack(Player player) {
         ItemStack itemStack = getIcon().parseItem();
         if (itemStack == null) {
-            throw new IllegalStateException("Icon material " + getIcon() + " could not be parsed into an ItemStack.");
+            throw new IllegalStateException("Icon material %s could not be parsed into an ItemStack.".formatted(getIcon()));
         }
 
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta == null) {
-            throw new IllegalStateException("ItemMeta for " + getIcon() + " is null. This should not happen.");
+            throw new IllegalStateException("ItemMeta for %s is null. This should not happen.".formatted(getIcon()));
         }
 
         itemMeta.setDisplayName(getDisplayName(player));
         itemMeta.setLore(getLore(player));
         itemMeta.addItemFlags(ItemFlag.values());
-
-        PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
-        pdc.set(
-                DISPLAYABLE_TYPE_KEY,
-                PersistentDataType.STRING,
-                getDisplayableType().name());
-        pdc.set(DISPLAYABLE_NAME_KEY, PersistentDataType.STRING, getName());
 
         itemStack.setItemMeta(itemMeta);
 
@@ -158,21 +125,5 @@ public interface Displayable {
      */
     default void addToInventory(Inventory inventory, int slot, Player player) {
         inventory.setItem(slot, asItemStack(player));
-    }
-
-    /**
-     * Represents the distinct types of items that can be displayed in an inventory within the BuildSystem.
-     */
-    enum DisplayableType {
-
-        /**
-         * Indicates that the displayable item is a {@link BuildWorld}.
-         */
-        BUILD_WORLD,
-
-        /**
-         * Indicates that the displayable item is a {@link Folder}.
-         */
-        FOLDER
     }
 }

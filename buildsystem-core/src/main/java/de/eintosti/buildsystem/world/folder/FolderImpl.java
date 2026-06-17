@@ -148,11 +148,6 @@ public class FolderImpl implements Folder {
     }
 
     @Override
-    public DisplayableType getDisplayableType() {
-        return DisplayableType.FOLDER;
-    }
-
-    @Override
     public NavigatorCategory getCategory() {
         return this.category;
     }

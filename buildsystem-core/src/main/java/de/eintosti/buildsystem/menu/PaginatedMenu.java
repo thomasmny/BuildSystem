@@ -18,7 +18,10 @@
 package de.eintosti.buildsystem.menu;
 
 import com.cryptomorin.xseries.XSound;
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.i18n.Messages;
+import java.util.List;
+import java.util.function.Function;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -122,6 +125,81 @@ public abstract class PaginatedMenu extends ButtonMenu<MenuButton> {
         }
         playRefuseSound(player);
         return false;
+    }
+
+    /**
+     * {@return a button that flips to the previous page and re-{@link #populate populates}} If already on the first page
+     * it does nothing beyond the refusal feedback from {@link #previousPage}. Register it at the slot the menu uses for
+     * its "previous page" control.
+     *
+     * @param skullTexture The skull texture for the arrow icon
+     * @param itemsPerPage The number of items shown per page
+     */
+    protected final MenuButton previousPageButton(String skullTexture, int itemsPerPage) {
+        return pageButton(skullTexture, "gui_previous_page", true, itemsPerPage);
+    }
+
+    /**
+     * {@return a button that flips to the next page and re-{@link #populate populates}} If already on the last page it
+     * does nothing beyond the refusal feedback from {@link #nextPage}. Register it at the slot the menu uses for its
+     * "next page" control.
+     *
+     * @param skullTexture The skull texture for the arrow icon
+     * @param itemsPerPage The number of items shown per page
+     */
+    protected final MenuButton nextPageButton(String skullTexture, int itemsPerPage) {
+        return pageButton(skullTexture, "gui_next_page", false, itemsPerPage);
+    }
+
+    /**
+     * Registers a button for each item visible on the current page, placing the i-th visible item at
+     * {@code contentSlots[i]}. The page window is derived from {@link #page()} and {@code contentSlots.length}; the
+     * {@code itemsPerPage} the page arrows use should equal that length.
+     *
+     * @param contentSlots The slots that hold page content, in order
+     * @param items The full, unpaged item list
+     * @param buttonFactory Builds the button for a given item
+     * @param <T> The item type
+     */
+    protected final <T> void registerPageItems(
+            int[] contentSlots, List<T> items, Function<T, MenuButton> buttonFactory) {
+        int startIndex = page() * contentSlots.length;
+        for (int i = 0; i < contentSlots.length && startIndex + i < items.size(); i++) {
+            register(contentSlots[i], buttonFactory.apply(items.get(startIndex + i)));
+        }
+    }
+
+    /**
+     * Registers a button for each item visible on the current page across {@code count} contiguous slots starting at
+     * {@code firstSlot}. Convenience for the common case where page content occupies a contiguous slot range.
+     *
+     * @param firstSlot The first content slot
+     * @param count The number of content slots (also the items-per-page)
+     * @param items The full, unpaged item list
+     * @param buttonFactory Builds the button for a given item
+     * @param <T> The item type
+     */
+    protected final <T> void registerPageItems(
+            int firstSlot, int count, List<T> items, Function<T, MenuButton> buttonFactory) {
+        int[] slots = new int[count];
+        for (int i = 0; i < count; i++) {
+            slots[i] = firstSlot + i;
+        }
+        registerPageItems(slots, items, buttonFactory);
+    }
+
+    private MenuButton pageButton(String skullTexture, String nameKey, boolean previous, int itemsPerPage) {
+        return MenuButton.builder()
+                .render((player, inventory, slot) -> ItemBuilder.skull(Profileable.detect(skullTexture))
+                        .name(messages.getString(nameKey, player))
+                        .into(inventory, slot))
+                .onClick((player, event) -> {
+                    boolean moved = previous ? previousPage(player, itemsPerPage) : nextPage(player, itemsPerPage);
+                    if (moved) {
+                        populate(player);
+                    }
+                })
+                .build();
     }
 
     /**

@@ -23,8 +23,6 @@ import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.display.Displayable;
-import de.eintosti.buildsystem.api.world.display.Displayable.DisplayableType;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.settings.SettingsService;
@@ -39,7 +37,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Contract;
@@ -59,8 +56,6 @@ public final class MenuItems {
     private final Messages messages;
     private final SettingsService settingsService;
 
-    public final NamespacedKey displayableNameKey;
-    public final NamespacedKey displayableTypeKey;
     public final NamespacedKey navigatorKey;
 
     public MenuItems(
@@ -69,8 +64,6 @@ public final class MenuItems {
         this.configService = configService;
         this.messages = messages;
         this.settingsService = settingsService;
-        this.displayableNameKey = Displayable.DISPLAYABLE_NAME_KEY;
-        this.displayableTypeKey = Displayable.DISPLAYABLE_TYPE_KEY;
         this.navigatorKey = new NamespacedKey(plugin, "navigator");
     }
 
@@ -119,7 +112,6 @@ public final class MenuItems {
                 .name(displayName)
                 .lore(lore)
                 .build();
-        storeWorldInformation(defaultHead, buildWorld);
         inventory.setItem(slot, defaultHead);
 
         XSkull.createItem()
@@ -138,7 +130,6 @@ public final class MenuItems {
                     itemMeta.setDisplayName(displayName);
                     itemMeta.setLore(lore);
                     itemStack.setItemMeta(itemMeta);
-                    storeWorldInformation(itemStack, buildWorld);
                     Bukkit.getScheduler().runTask(plugin, () -> inventory.setItem(slot, itemStack));
                 })
                 .exceptionally(throwable -> {
@@ -149,17 +140,6 @@ public final class MenuItems {
                                     throwable);
                     return null;
                 });
-    }
-
-    private void storeWorldInformation(ItemStack itemStack, BuildWorld buildWorld) {
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null) {
-            return;
-        }
-        PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
-        pdc.set(displayableTypeKey, PersistentDataType.STRING, DisplayableType.BUILD_WORLD.name());
-        pdc.set(displayableNameKey, PersistentDataType.STRING, buildWorld.getName());
-        itemStack.setItemMeta(itemMeta);
     }
 
     /**

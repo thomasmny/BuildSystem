@@ -20,10 +20,10 @@ package de.eintosti.buildsystem.world.menu;
 import com.cryptomorin.xseries.XGameRule;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
-import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.menu.ItemBuilder;
+import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import java.util.Arrays;
@@ -31,12 +31,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -75,58 +72,57 @@ public class GameRulesMenu extends PaginatedMenu {
         }
         World world = optionalWorld.get();
 
+        clearButtons();
         for (int i = 0; i < MENU_SIZE; i++) {
             if (!isValidSlot(i)) {
                 plugin.getMenuItems().addGlassPane(player, getInventory(), i);
             }
         }
 
-        addPageNavItem(player, SLOT_PREVIOUS_PAGE, page() > 0, "gui_previous_page", SkullTextures.PREVIOUS_PAGE);
-        addPageNavItem(
-                player,
-                SLOT_NEXT_PAGE,
-                page() < totalPages(ITEMS_PER_PAGE) - 1,
-                "gui_next_page",
-                SkullTextures.NEXT_PAGE);
-
-        String[] allGameRules = world.getGameRules();
-        int startIndex = page() * ITEMS_PER_PAGE;
-        for (int i = 0; i < SLOTS.length && startIndex + i < allGameRules.length; i++) {
-            addGameRuleItem(SLOTS[i], world, allGameRules[startIndex + i], player);
+        // Page arrows render only when a page exists in that direction; otherwise the glass filler above stays.
+        if (totalPages(ITEMS_PER_PAGE) > 1 && page() > 0) {
+            register(SLOT_PREVIOUS_PAGE, previousPageButton(SkullTextures.PREVIOUS_PAGE, ITEMS_PER_PAGE));
         }
+        if (totalPages(ITEMS_PER_PAGE) > 1 && page() < totalPages(ITEMS_PER_PAGE) - 1) {
+            register(SLOT_NEXT_PAGE, nextPageButton(SkullTextures.NEXT_PAGE, ITEMS_PER_PAGE));
+        }
+
+        registerPageItems(SLOTS, Arrays.asList(world.getGameRules()), name -> gameRuleButton(world, name));
+
+        renderButtons(player);
     }
 
-    /**
-     * Renders a page-navigation skull when more pages exist in the given direction, otherwise a filler glass pane.
-     *
-     * @param player The viewing player
-     * @param slot The slot to render into
-     * @param hasMorePages Whether a page exists in this direction (and there is more than one page)
-     * @param nameKey The message key for the skull's display name
-     * @param skullTexture The skull texture to use
-     */
-    private void addPageNavItem(Player player, int slot, boolean hasMorePages, String nameKey, String skullTexture) {
-        if (totalPages(ITEMS_PER_PAGE) > 1 && hasMorePages) {
-            ItemBuilder.skull(Profileable.detect(skullTexture))
-                    .name(messages.getString(nameKey, player))
-                    .into(getInventory(), slot);
-        } else {
-            plugin.getMenuItems().addGlassPane(player, getInventory(), slot);
-        }
+    private MenuButton gameRuleButton(World world, String gameRuleName) {
+        return MenuButton.builder()
+                .render((player, inventory, slot) -> {
+                    XGameRule<?> gameRule = XGameRule.of(gameRuleName).orElse(null);
+                    if (gameRule == null || !gameRule.isSupported()) {
+                        plugin.getLogger()
+                                .severe("GameRule '%s' does not exist in world '%s'."
+                                        .formatted(gameRuleName, world.getName()));
+                        return;
+                    }
+                    ItemBuilder.of(isEnabled(world, gameRule) ? XMaterial.FILLED_MAP : XMaterial.MAP)
+                            .name(ChatColor.YELLOW + gameRule.name())
+                            .lore(getLore(world, gameRule, player))
+                            .into(inventory, slot);
+                })
+                .onClick((player, event) -> {
+                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    modifyGameRule(world, gameRuleName, event);
+                    populate(player);
+                })
+                .build();
     }
 
-    private void addGameRuleItem(int slot, World world, String gameRuleName, Player player) {
-        XGameRule<?> gameRule = XGameRule.of(gameRuleName).orElse(null);
-        if (gameRule == null || !gameRule.isSupported()) {
-            plugin.getLogger()
-                    .severe("GameRule '" + gameRuleName + "' does not exist in world '" + world.getName() + "'.");
+    @Override
+    protected void onUnhandledClick(Player player, InventoryClickEvent event) {
+        // Only the menu's own slots return to the editor; clicks in the player inventory are ignored.
+        if (event.getRawSlot() < 0 || event.getRawSlot() >= getInventory().getSize()) {
             return;
         }
-
-        ItemBuilder.of(isEnabled(world, gameRule) ? XMaterial.FILLED_MAP : XMaterial.MAP)
-                .name(ChatColor.YELLOW + gameRule.name())
-                .lore(getLore(world, gameRule, player))
-                .into(getInventory(), slot);
+        XSound.BLOCK_CHEST_OPEN.play(player);
+        new EditMenu(plugin, buildWorld, player).open(player);
     }
 
     private List<String> getLore(World world, XGameRule<?> gameRule, Player player) {
@@ -147,69 +143,11 @@ public class GameRulesMenu extends PaginatedMenu {
         return Arrays.stream(SLOTS).anyMatch(i -> i == slot);
     }
 
-    @Override
-    public void handleClick(InventoryClickEvent event) {
-        ItemStack itemStack = event.getCurrentItem();
-        if (itemStack == null || itemStack.getType() == Material.AIR || !itemStack.hasItemMeta()) {
-            return;
-        }
-
-        event.setCancelled(true);
-        Player player = (Player) event.getWhoClicked();
-
-        switch (XMaterial.matchXMaterial(event.getCurrentItem())) {
-            case PLAYER_HEAD:
-                boolean pageChanged = false;
-                int slot = event.getSlot();
-                if (slot == SLOT_PREVIOUS_PAGE) {
-                    pageChanged = previousPage(player, ITEMS_PER_PAGE);
-                } else if (slot == SLOT_NEXT_PAGE) {
-                    pageChanged = nextPage(player, ITEMS_PER_PAGE);
-                }
-                if (!pageChanged) {
-                    return;
-                }
-                populate(player);
-                return;
-
-            case FILLED_MAP:
-            case MAP:
-                XSound.ENTITY_CHICKEN_EGG.play(player);
-                modifyGameRule(event, buildWorld.getWorld().orElse(null));
-                populate(player);
-                return;
-
-            default:
-                XSound.BLOCK_CHEST_OPEN.play(player);
-                new EditMenu(plugin, buildWorld, player).open(player);
-        }
-    }
-
-    private void modifyGameRule(InventoryClickEvent event, @Nullable World world) {
-        if (world == null) {
-            return;
-        }
-
-        int slot = event.getSlot();
-        if (!isValidSlot(slot)) {
-            return;
-        }
-
-        ItemStack itemStack = event.getCurrentItem();
-        if (itemStack == null) {
-            return;
-        }
-
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null || !itemMeta.hasDisplayName()) {
-            return;
-        }
-
-        String rawName = ChatColor.stripColor(itemMeta.getDisplayName());
-        XGameRule<?> gameRule = XGameRule.of(rawName).orElse(null);
+    private void modifyGameRule(World world, String gameRuleName, InventoryClickEvent event) {
+        XGameRule<?> gameRule = XGameRule.of(gameRuleName).orElse(null);
         if (gameRule == null || !gameRule.isSupported()) {
             plugin.getLogger()
-                    .warning("GameRule '%s' does not exist in world '%s'.".formatted(rawName, world.getName()));
+                    .warning("GameRule '%s' does not exist in world '%s'.".formatted(gameRuleName, world.getName()));
             return;
         }
 

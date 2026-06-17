@@ -23,17 +23,16 @@ import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
-import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.menu.ItemBuilder;
+import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -71,127 +70,109 @@ public class BuilderMenu extends PaginatedMenu {
 
     @Override
     protected void populate(Player player) {
+        clearButtons();
         Inventory inv = getInventory();
 
         plugin.getMenuItems().fillRange(player, inv, 0, 9);
         plugin.getMenuItems().fillRange(player, inv, 18, 27);
-
-        addCreatorInfoItem(inv, buildWorld.getBuilders(), player);
-        addBuilderAddItem(inv, player);
-
-        ItemBuilder.skull(Profileable.detect(SkullTextures.PREVIOUS_PAGE))
-                .name(messages.getString("gui_previous_page", player))
-                .into(inv, SLOT_PREVIOUS_PAGE);
-        ItemBuilder.skull(Profileable.detect(SkullTextures.NEXT_PAGE))
-                .name(messages.getString("gui_next_page", player))
-                .into(inv, SLOT_NEXT_PAGE);
-
-        // Clear builder slots from previous state
         plugin.getMenuItems().fillRange(player, inv, FIRST_BUILDER_SLOT, FIRST_BUILDER_SLOT + MAX_BUILDERS_PER_PAGE);
 
+        register(SLOT_CREATOR_INFO, creatorInfoButton());
+        register(SLOT_ADD_BUILDER, addBuilderButton());
+        register(SLOT_PREVIOUS_PAGE, previousPageButton(SkullTextures.PREVIOUS_PAGE, MAX_BUILDERS_PER_PAGE));
+        register(SLOT_NEXT_PAGE, nextPageButton(SkullTextures.NEXT_PAGE, MAX_BUILDERS_PER_PAGE));
+
         List<Builder> builderList = new ArrayList<>(buildWorld.getBuilders().getAllBuilders());
-        int startIndex = page() * MAX_BUILDERS_PER_PAGE;
-        for (int i = 0; i < MAX_BUILDERS_PER_PAGE && startIndex + i < builderList.size(); i++) {
-            inv.setItem(FIRST_BUILDER_SLOT + i, createBuilderItem(builderList.get(startIndex + i), player));
-        }
+        registerPageItems(FIRST_BUILDER_SLOT, MAX_BUILDERS_PER_PAGE, builderList, this::builderButton);
+
+        renderButtons(player);
     }
 
-    private void addCreatorInfoItem(Inventory inventory, Builders builders, Player player) {
-        ItemStack creatorInfoItem;
-        Builder creator = builders.getCreator();
-
-        if (creator == null) {
-            creatorInfoItem = ItemBuilder.of(XMaterial.BARRIER)
-                    .name(messages.getString("worldeditor_builders_no_creator_item", player))
-                    .build();
-        } else {
-            creatorInfoItem = ItemBuilder.skull(Profileable.of(creator.getUniqueId()))
-                    .name(messages.getString("worldeditor_builders_creator_item", player))
-                    .lore(messages.getString(
-                            "worldeditor_builders_creator_lore", player, Map.entry("%creator%", creator.getName())))
-                    .build();
-        }
-        inventory.setItem(SLOT_CREATOR_INFO, creatorInfoItem);
+    private MenuButton creatorInfoButton() {
+        return MenuButton.builder()
+                .render((player, inventory, slot) -> {
+                    Builder creator = buildWorld.getBuilders().getCreator();
+                    ItemStack item = creator == null
+                            ? ItemBuilder.of(XMaterial.BARRIER)
+                                    .name(messages.getString("worldeditor_builders_no_creator_item", player))
+                                    .build()
+                            : ItemBuilder.skull(Profileable.of(creator.getUniqueId()))
+                                    .name(messages.getString("worldeditor_builders_creator_item", player))
+                                    .lore(messages.getString(
+                                            "worldeditor_builders_creator_lore",
+                                            player,
+                                            Map.entry("%creator%", creator.getName())))
+                                    .build();
+                    inventory.setItem(slot, item);
+                })
+                .build();
     }
 
-    private void addBuilderAddItem(Inventory inventory, Player player) {
-        ItemStack builderAddItem;
-        if (buildWorld.getBuilders().isCreator(player) || player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)) {
-            builderAddItem = ItemBuilder.skull(Profileable.detect(SkullTextures.ADD_ITEM))
-                    .name(messages.getString("worldeditor_builders_add_builder_item", player))
-                    .build();
-        } else {
-            builderAddItem = ItemBuilder.of(plugin.getMenuItems().getColoredGlassPane(player))
-                    .build();
-        }
-        inventory.setItem(SLOT_ADD_BUILDER, builderAddItem);
+    private MenuButton addBuilderButton() {
+        return MenuButton.builder()
+                .render((player, inventory, slot) -> {
+                    if (buildWorld.getBuilders().isCreator(player)
+                            || player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)) {
+                        inventory.setItem(
+                                slot,
+                                ItemBuilder.skull(Profileable.detect(SkullTextures.ADD_ITEM))
+                                        .name(messages.getString("worldeditor_builders_add_builder_item", player))
+                                        .build());
+                    } else {
+                        inventory.setItem(
+                                slot,
+                                ItemBuilder.of(plugin.getMenuItems().getColoredGlassPane(player))
+                                        .build());
+                    }
+                })
+                .onClick((player, event) -> {
+                    if (event.getCurrentItem() == null
+                            || event.getCurrentItem().getType() != XMaterial.PLAYER_HEAD.get()) {
+                        returnToEditor(player);
+                        return;
+                    }
+                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    new AddBuilderSubCommand(plugin).getAddBuilderInput(player, buildWorld, false);
+                })
+                .build();
     }
 
-    private ItemStack createBuilderItem(Builder builder, Player player) {
-        return ItemBuilder.skull(Profileable.username(builder.getName()))
-                .name(messages.getString(
-                        "worldeditor_builders_builder_item", player, Map.entry("%builder%", builder.getName())))
-                .lore(messages.getStringList("worldeditor_builders_builder_lore", player))
-                .pdc(this.builderNameKey, PersistentDataType.STRING, builder.getName())
+    private MenuButton builderButton(Builder builder) {
+        return MenuButton.builder()
+                .render((player, inventory, slot) -> inventory.setItem(
+                        slot,
+                        ItemBuilder.skull(Profileable.username(builder.getName()))
+                                .name(messages.getString(
+                                        "worldeditor_builders_builder_item",
+                                        player,
+                                        Map.entry("%builder%", builder.getName())))
+                                .lore(messages.getStringList("worldeditor_builders_builder_lore", player))
+                                .pdc(this.builderNameKey, PersistentDataType.STRING, builder.getName())
+                                .build()))
+                .onClick((player, event) -> {
+                    // Only a shift-click removes a builder; a plain click returns to the editor.
+                    if (!event.isShiftClick()) {
+                        returnToEditor(player);
+                        return;
+                    }
+                    removeBuilder(player, builder.getName());
+                })
                 .build();
     }
 
     @Override
-    public void handleClick(InventoryClickEvent event) {
-        ItemStack itemStack = event.getCurrentItem();
-        if (itemStack == null || itemStack.getType() == Material.AIR || !itemStack.hasItemMeta()) {
-            return;
-        }
+    protected void onUnhandledClick(Player player, InventoryClickEvent event) {
+        returnToEditor(player);
+    }
 
-        event.setCancelled(true);
-        Player player = (Player) event.getWhoClicked();
-
-        if (itemStack.getType() != XMaterial.PLAYER_HEAD.get()) {
-            if (buildWorld.getPermissions().canPerformCommand(player, WorldsArgument.EDIT.getPermission())) {
-                XSound.BLOCK_CHEST_OPEN.play(player);
-                new EditMenu(plugin, buildWorld, player).open(player);
-            }
-            return;
-        }
-
-        int slot = event.getSlot();
-        switch (slot) {
-            case SLOT_PREVIOUS_PAGE:
-                if (!previousPage(player, MAX_BUILDERS_PER_PAGE)) {
-                    return;
-                }
-                populate(player);
-                return;
-            case SLOT_ADD_BUILDER:
-                XSound.ENTITY_CHICKEN_EGG.play(player);
-                new AddBuilderSubCommand(plugin).getAddBuilderInput(player, buildWorld, false);
-                return;
-            case SLOT_NEXT_PAGE:
-                if (!nextPage(player, MAX_BUILDERS_PER_PAGE)) {
-                    return;
-                }
-                populate(player);
-                return;
-            default:
-                if (slot == SLOT_CREATOR_INFO || !event.isShiftClick()) {
-                    return;
-                }
-                removeBuilderByItem(player, itemStack);
+    private void returnToEditor(Player player) {
+        if (buildWorld.getPermissions().canPerformCommand(player, WorldsArgument.EDIT.getPermission())) {
+            XSound.BLOCK_CHEST_OPEN.play(player);
+            new EditMenu(plugin, buildWorld, player).open(player);
         }
     }
 
-    private void removeBuilderByItem(Player player, ItemStack itemStack) {
-        String builderName = itemStack
-                .getItemMeta()
-                .getPersistentDataContainer()
-                .get(this.builderNameKey, PersistentDataType.STRING);
-        if (builderName == null) {
-            player.closeInventory();
-            messages.sendMessage(player, "worlds_removebuilder_error");
-            plugin.getLogger().warning("Could not find UUID for null builder name");
-            return;
-        }
-
+    private void removeBuilder(Player player, String builderName) {
         plugin.getPlayerLookupService()
                 .lookupUniqueId(builderName)
                 .thenAccept(builderId -> Bukkit.getScheduler().runTask(plugin, () -> {
