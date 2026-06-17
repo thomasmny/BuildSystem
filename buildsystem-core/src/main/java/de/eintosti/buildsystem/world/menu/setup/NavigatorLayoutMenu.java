@@ -269,7 +269,6 @@ public class NavigatorLayoutMenu extends Menu {
             new CategoryEditorMenu(plugin, player, clicked).open(player);
         } else {
             pickUpCategory(player, clicked.getId(), -1);
-            refresh(player);
         }
     }
 
@@ -324,6 +323,8 @@ public class NavigatorLayoutMenu extends Menu {
                         .build();
         setCursorNextTick(player, cursor);
         XSound.ITEM_ARMOR_EQUIP_LEATHER.play(player);
+        // Re-render so the picked-up category's source slot (top preview or palette) shows a glass pane immediately.
+        refresh(player);
     }
 
     private void pickUpSettings(Player player) {
@@ -336,6 +337,7 @@ public class NavigatorLayoutMenu extends Menu {
                         .name(messages.getString("old_navigator_settings", player))
                         .build());
         XSound.ITEM_ARMOR_EQUIP_LEATHER.play(player);
+        refresh(player);
     }
 
     private void clearHeld(Player player) {

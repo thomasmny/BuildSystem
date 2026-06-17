@@ -39,15 +39,14 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class StatusEditorMenu extends RegistryEditorMenu {
 
-    private static final int SLOT_PREVIEW = 4;
-    private static final int SLOT_RENAME = 19;
-    private static final int SLOT_COLOR = 20;
-    private static final int SLOT_ICON = 21;
-    private static final int SLOT_ORDER = 22;
-    private static final int SLOT_BUILDING = 23;
-    private static final int SLOT_NAVIGATOR = 24;
-    private static final int SLOT_PROGRESSES = 25;
-    private static final int SLOT_BACK = 49;
+    private static final int SLOT_RENAME = 10;
+    private static final int SLOT_COLOR = 11;
+    private static final int SLOT_ICON = 12;
+    private static final int SLOT_ORDER = 13;
+    private static final int SLOT_BUILDING = 14;
+    private static final int SLOT_NAVIGATOR = 15;
+    private static final int SLOT_PROGRESSES = 16;
+    private static final int SLOT_BACK = 18;
 
     private final WorldStatusRegistryImpl registry;
     private final WorldStatusImpl status;
@@ -63,7 +62,6 @@ public class StatusEditorMenu extends RegistryEditorMenu {
         this.registry = plugin.getWorldStatusRegistry();
         this.status = (WorldStatusImpl) status;
 
-        register(SLOT_PREVIEW, previewButton());
         register(
                 SLOT_RENAME,
                 renameButton("setup_status_rename", "setup_status_rename_prompt", this.status::setDisplayName));
@@ -84,19 +82,6 @@ public class StatusEditorMenu extends RegistryEditorMenu {
                         () -> this.status.setVisibleInNavigator(!this.status.isVisibleInNavigator())));
         register(SLOT_PROGRESSES, progressesButton());
         register(SLOT_BACK, backButton());
-    }
-
-    private MenuButton previewButton() {
-        return MenuButton.builder()
-                .render((player, inventory, slot) -> ItemBuilder.of(status.getIcon())
-                        .name(ColorAPI.process(status.getStyledName()))
-                        .lore(messages.getStringList(
-                                "setup_status_preview_lore",
-                                player,
-                                Map.entry("%id%", status.getId()),
-                                Map.entry("%permission%", status.getPermission())))
-                        .into(inventory, slot))
-                .build();
     }
 
     private MenuButton orderButton() {

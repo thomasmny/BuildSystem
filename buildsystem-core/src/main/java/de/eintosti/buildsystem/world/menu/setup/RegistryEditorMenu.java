@@ -43,7 +43,7 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
     protected final BuildSystemPlugin plugin;
 
     protected RegistryEditorMenu(BuildSystemPlugin plugin, String title) {
-        super(plugin.getMessages(), 54, title);
+        super(plugin.getMessages(), 27, title);
         this.plugin = plugin;
     }
 

@@ -40,15 +40,14 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class CategoryEditorMenu extends RegistryEditorMenu {
 
-    private static final int SLOT_PREVIEW = 4;
-    private static final int SLOT_RENAME = 19;
-    private static final int SLOT_COLOR = 20;
-    private static final int SLOT_ICON = 21;
-    private static final int SLOT_EVERYONE = 22;
-    private static final int SLOT_ADDED_PLAYERS = 23;
-    private static final int SLOT_STATUSES = 24;
-    private static final int SLOT_SKULL = 25;
-    private static final int SLOT_BACK = 49;
+    private static final int SLOT_RENAME = 10;
+    private static final int SLOT_COLOR = 11;
+    private static final int SLOT_ICON = 12;
+    private static final int SLOT_EVERYONE = 13;
+    private static final int SLOT_ADDED_PLAYERS = 14;
+    private static final int SLOT_STATUSES = 15;
+    private static final int SLOT_SKULL = 16;
+    private static final int SLOT_BACK = 18;
 
     private final NavigatorCategoryRegistryImpl registry;
     private final NavigatorCategoryImpl category;
@@ -66,7 +65,6 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
         this.registry = plugin.getNavigatorCategoryRegistry();
         this.category = (NavigatorCategoryImpl) category;
 
-        register(SLOT_PREVIEW, previewButton());
         register(
                 SLOT_RENAME,
                 renameButton("setup_category_rename", "setup_category_rename_prompt", this.category::setDisplayName));
@@ -86,16 +84,6 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
             register(SLOT_SKULL, skullButton());
         }
         register(SLOT_BACK, backButton());
-    }
-
-    private MenuButton previewButton() {
-        return MenuButton.builder()
-                .render((player, inventory, slot) -> ItemBuilder.icon(category, player)
-                        .name(ColorAPI.process(category.getColor() + category.getDisplayName()))
-                        .lore(messages.getStringList(
-                                "setup_category_preview_lore", player, Map.entry("%id%", category.getId())))
-                        .into(inventory, slot))
-                .build();
     }
 
     private MenuButton skullButton() {

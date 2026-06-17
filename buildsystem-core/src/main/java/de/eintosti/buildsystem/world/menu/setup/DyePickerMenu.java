@@ -65,11 +65,11 @@ public class DyePickerMenu extends ButtonMenu<MenuButton> {
             new Swatch("&e", XMaterial.YELLOW_DYE, "Yellow"),
             new Swatch("&f", XMaterial.WHITE_DYE, "White"));
 
-    // Three rows of swatches, six per row (the last holds the remaining four), with the plugin's one-slot left margin.
+    // Three rows of swatches, seven per row (the last holds the remaining two), inside the plugin's one-slot border.
     private static final int[] SWATCH_SLOTS = {
-        10, 11, 12, 13, 14, 15,
-        19, 20, 21, 22, 23, 24,
-        28, 29, 30, 31
+        10, 11, 12, 13, 14, 15, 16,
+        19, 20, 21, 22, 23, 24, 25,
+        28, 29
     };
 
     private final BuildSystemPlugin plugin;

@@ -87,9 +87,8 @@ public class CategoryStatusesMenu extends PaginatedMenu {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> {
                     boolean member = category.getStatusIds().contains(status.getId());
-                    // Member: the status's own icon, enchant-glowing. Non-member: a muted grey dye. The coloured status
-                    // name identifies the slot in both cases, so membership reads at a glance.
-                    ItemBuilder.of(member ? status.getIcon() : XMaterial.GRAY_DYE)
+                    // Always show the status's own icon; membership is conveyed by the glow and the lore.
+                    ItemBuilder.of(status.getIcon())
                             .name(ColorAPI.process(status.getStyledName()))
                             .lore(messages.getStringList(
                                     member ? "setup_category_status_member" : "setup_category_status_not_member",
