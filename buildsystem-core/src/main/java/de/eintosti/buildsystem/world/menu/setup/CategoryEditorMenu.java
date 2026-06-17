@@ -48,8 +48,6 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
     private static final int SLOT_EVERYONE = 23;
     private static final int SLOT_ADDED_PLAYERS = 24;
     private static final int SLOT_STATUSES = 25;
-    private static final int SLOT_SHOWN = 30;
-    private static final int SLOT_NAV_SLOT = 32;
     private static final int SLOT_BACK = 49;
 
     private final NavigatorCategoryRegistryImpl registry;
@@ -83,13 +81,6 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
                         XMaterial.NAME_TAG,
                         "setup_category_statuses",
                         (p, event) -> new CategoryStatusesMenu(plugin, p, this.category).open(p)));
-        register(
-                SLOT_SHOWN,
-                toggleButton(
-                        "setup_category_shown",
-                        this.category::isShownInNavigator,
-                        () -> this.category.setShownInNavigator(!this.category.isShownInNavigator())));
-        register(SLOT_NAV_SLOT, navigatorSlotButton());
         register(SLOT_BACK, backButton());
     }
 
@@ -155,23 +146,6 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
                 .build();
     }
 
-    private MenuButton navigatorSlotButton() {
-        return MenuButton.builder()
-                .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.COMPARATOR)
-                        .name(messages.getString(
-                                "setup_category_slot",
-                                player,
-                                Map.entry("%slot%", String.valueOf(category.getNavigatorSlot()))))
-                        .lore(messages.getStringList("setup_order_lore", player))
-                        .into(inventory, slot))
-                .onClick((player, event) -> {
-                    category.setNavigatorSlot(
-                            Math.max(0, category.getNavigatorSlot() + (event.isRightClick() ? -1 : 1)));
-                    save(player);
-                })
-                .build();
-    }
-
     @Override
     protected void persist() {
         registry.persist(category);
@@ -184,6 +158,6 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
 
     @Override
     protected void openManagement(Player player) {
-        new CategoryManagementMenu(plugin, player).open(player);
+        new NavigatorLayoutMenu(plugin, player).open(player);
     }
 }

@@ -49,8 +49,12 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry {
 
+    /** Slot the settings button occupies in a freshly seeded navigator (matches the historical fixed slot). */
+    public static final int DEFAULT_SETTINGS_SLOT = 15;
+
     private final YamlCategoryStorage storage;
     private final Map<String, NavigatorCategoryImpl> categories = new LinkedHashMap<>();
+    private int settingsSlot;
 
     public NavigatorCategoryRegistryImpl(BuildSystemPlugin plugin) {
         this.storage = new YamlCategoryStorage(plugin);
@@ -60,6 +64,27 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
             seedDefaults();
             storage.saveAll(this.categories.values());
         }
+        this.settingsSlot = storage.loadSettingsSlot(DEFAULT_SETTINGS_SLOT);
+    }
+
+    /**
+     * Gets the navigator slot the settings button occupies. Both the live navigator and the layout editor read this so
+     * the editor mirrors the real navigator exactly.
+     *
+     * @return The settings slot
+     */
+    public int getSettingsSlot() {
+        return settingsSlot;
+    }
+
+    /**
+     * Sets and persists the navigator slot the settings button occupies.
+     *
+     * @param slot The new settings slot
+     */
+    public void setSettingsSlot(int slot) {
+        this.settingsSlot = slot;
+        storage.saveSettingsSlot(slot);
     }
 
     private void seedDefaults() {
@@ -148,6 +173,7 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
         this.categories.clear();
         seedDefaults();
         storage.saveAll(this.categories.values());
+        setSettingsSlot(DEFAULT_SETTINGS_SLOT);
     }
 
     public NavigatorCategoryImpl createCategory(String displayName) {

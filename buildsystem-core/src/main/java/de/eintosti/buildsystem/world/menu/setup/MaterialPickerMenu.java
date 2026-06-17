@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
+import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -129,7 +130,7 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
     private MenuButton materialButton(XMaterial material) {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(material)
-                        .name("&b" + prettyName(material))
+                        .name(ColorAPI.process("&b" + prettyName(material)))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
                     XSound.ENTITY_CHICKEN_EGG.play(player);

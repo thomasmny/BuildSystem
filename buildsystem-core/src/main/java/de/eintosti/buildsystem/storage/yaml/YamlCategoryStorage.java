@@ -39,6 +39,7 @@ import org.jspecify.annotations.NullMarked;
 public class YamlCategoryStorage extends AbstractYamlStorage {
 
     private static final String CATEGORIES_KEY = "categories";
+    private static final String SETTINGS_SLOT_KEY = "settings-slot";
 
     private final BuildSystemPlugin plugin;
 
@@ -125,6 +126,31 @@ public class YamlCategoryStorage extends AbstractYamlStorage {
             return;
         }
         config.set(CATEGORIES_KEY + "." + id, null);
+        saveFile();
+    }
+
+    /**
+     * Loads the navigator slot the settings button occupies, falling back to the given default when unset.
+     *
+     * @param defaultSlot The slot used when {@code settings-slot} is absent
+     * @return The configured settings slot
+     */
+    public int loadSettingsSlot(int defaultSlot) {
+        FileConfiguration config = getFile();
+        return config == null ? defaultSlot : config.getInt(SETTINGS_SLOT_KEY, defaultSlot);
+    }
+
+    /**
+     * Persists the navigator slot the settings button occupies.
+     *
+     * @param slot The settings slot to store
+     */
+    public void saveSettingsSlot(int slot) {
+        FileConfiguration config = getFile();
+        if (config == null) {
+            return;
+        }
+        config.set(SETTINGS_SLOT_KEY, slot);
         saveFile();
     }
 

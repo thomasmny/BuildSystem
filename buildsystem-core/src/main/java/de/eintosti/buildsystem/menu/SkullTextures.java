@@ -54,5 +54,21 @@ public final class SkullTextures {
      */
     public static final String WORLD_ARCHIVE = "7f6bf958abd78295eed6ffc293b1aa59526e80f54976829ea068337c2f5e8";
 
+    /**
+     * Redstone-cog head used for the navigator settings entry.
+     */
+    public static final String SETTINGS = "1cba7277fc895bf3b673694159864b83351a4d14717e476ebda1c3bf38fcf37";
+
+    /**
+     * Head used for "confirm"/"done" actions. Resolved by {@link com.cryptomorin.xseries.profiles.objects.Profileable}
+     * — a texture hash or a head username both work.
+     */
+    public static final String CONFIRM = ADD_ITEM;
+
+    /**
+     * Head used for "remove"/"cancel" actions.
+     */
+    public static final String CANCEL = "MHF_TNT";
+
     private SkullTextures() {}
 }

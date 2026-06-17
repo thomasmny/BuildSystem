@@ -19,10 +19,13 @@ package de.eintosti.buildsystem.world.menu.setup;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.Menu;
+import de.eintosti.buildsystem.menu.PlayerChatInput;
+import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
@@ -37,32 +40,36 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The drag-and-drop navigator layout editor. The top inventory is a live preview of the inventory navigator: each
- * category shown in the navigator sits at its slot. The player's own inventory is taken over (snapshotted and cleared
- * by {@link de.eintosti.buildsystem.navigator.NavigatorEditorService}) to present a palette of every category plus the
- * controls, and is restored when the editor closes.
+ * The combined navigator setup: it both manages categories and arranges their navigator layout in one screen. The top
+ * inventory is a live, exact preview of the inventory navigator — each shown category at its slot plus the settings
+ * button at its slot. The player's own inventory is taken over (snapshotted and cleared by
+ * {@link de.eintosti.buildsystem.navigator.NavigatorEditorService}, restored on close/quit/shutdown) to present a
+ * palette of every category and the settings token, plus add/remove/done controls.
  *
- * <p>Editing is a controlled pick-and-place: clicking a palette category (or an already-placed one) "picks it up" onto
- * the cursor, and clicking a navigator slot drops it there — moving it, swapping with whatever was there, or adding it
- * to the navigator. Dropping a placed category onto the remove control takes it out of the navigator. All clicks are
- * cancelled, so the real items can never be taken; the model is the single source of truth and is re-rendered after
- * every change.
+ * <p>Interaction is a controlled pick-and-place. Picking up a palette category, or one already placed, puts it on the
+ * cursor; clicking a navigator slot drops it there (moving, or swapping with the occupant). The settings token is moved
+ * the same way. Right-clicking a palette category opens its {@link CategoryEditorMenu}. Dropping a held category onto
+ * the remove control takes it off the navigator. All clicks are cancelled, so the real items can never be taken; the
+ * category registry is the single source of truth and persists every change.
  */
 @NullMarked
 public class NavigatorLayoutMenu extends Menu {
 
     private static final int NAVIGATOR_SIZE = 27;
 
-    // Player-inventory control slots (raw slots NAVIGATOR_SIZE + n).
-    private static final int PALETTE_FIRST_SLOT = 0;
-    private static final int PALETTE_LAST_SLOT = 26;
-    private static final int CONTROL_REMOVE_SLOT = 30;
-    private static final int CONTROL_DONE_SLOT = 34;
+    // Control slots within the player's (taken-over) inventory, addressed by InventoryClickEvent#getSlot.
+    private static final int CONTROL_ADD_SLOT = 2;
+    private static final int CONTROL_REMOVE_SLOT = 4;
+    private static final int CONTROL_DONE_SLOT = 6;
+    private static final int CONTROL_SETTINGS_SLOT = 8;
+    private static final int PALETTE_FIRST_SLOT = 9;
+    private static final int PALETTE_LAST_SLOT = 35;
 
     private final BuildSystemPlugin plugin;
     private final NavigatorCategoryRegistryImpl registry;
 
     private @Nullable String heldCategoryId;
+    private boolean heldSettings;
     private int heldFromSlot = -1;
 
     public NavigatorLayoutMenu(BuildSystemPlugin plugin, Player player) {
@@ -74,8 +81,7 @@ public class NavigatorLayoutMenu extends Menu {
     @Override
     public void open(Player player) {
         plugin.getNavigatorEditorService().beginSession(player);
-        populate(player);
-        renderControls(player);
+        refresh(player);
         player.openInventory(getInventory());
     }
 
@@ -87,9 +93,18 @@ public class NavigatorLayoutMenu extends Menu {
                     .name(messages.getString("setup_navigator_empty_slot", player))
                     .into(inventory, slot);
         }
+
+        int settingsSlot = registry.getSettingsSlot();
+        if (!heldSettings && settingsSlot >= 0 && settingsSlot < NAVIGATOR_SIZE) {
+            ItemBuilder.skull(Profileable.detect(SkullTextures.SETTINGS))
+                    .name(messages.getString("old_navigator_settings", player))
+                    .lore(messages.getStringList("setup_navigator_placed_lore", player))
+                    .into(inventory, settingsSlot);
+        }
+
         for (NavigatorCategory category : registry.getCategories()) {
             int slot = category.getNavigatorSlot();
-            if (!category.isShownInNavigator() || slot < 0 || slot >= NAVIGATOR_SIZE) {
+            if (!category.isShownInNavigator() || slot < 0 || slot >= NAVIGATOR_SIZE || slot == settingsSlot) {
                 continue;
             }
             if (category.getId().equals(heldCategoryId)) {
@@ -104,6 +119,24 @@ public class NavigatorLayoutMenu extends Menu {
 
     private void renderControls(Player player) {
         Inventory playerInventory = player.getInventory();
+        playerInventory.clear();
+
+        ItemBuilder.skull(Profileable.detect(SkullTextures.ADD_ITEM))
+                .name(messages.getString("setup_category_add", player))
+                .into(playerInventory, CONTROL_ADD_SLOT);
+        ItemBuilder.skull(Profileable.detect(SkullTextures.CANCEL))
+                .name(messages.getString("setup_navigator_remove", player))
+                .lore(messages.getStringList("setup_navigator_remove_lore", player))
+                .into(playerInventory, CONTROL_REMOVE_SLOT);
+        ItemBuilder.skull(Profileable.detect(SkullTextures.CONFIRM))
+                .name(messages.getString("setup_navigator_done", player))
+                .into(playerInventory, CONTROL_DONE_SLOT);
+        ItemBuilder.skull(Profileable.detect(SkullTextures.SETTINGS))
+                .name(messages.getString("old_navigator_settings", player))
+                .lore(messages.getStringList("setup_navigator_settings_lore", player))
+                .glow(heldSettings)
+                .into(playerInventory, CONTROL_SETTINGS_SLOT);
+
         List<NavigatorCategory> categories = List.copyOf(registry.getCategories());
         for (int i = 0; i < categories.size() && PALETTE_FIRST_SLOT + i <= PALETTE_LAST_SLOT; i++) {
             NavigatorCategory category = categories.get(i);
@@ -117,13 +150,6 @@ public class NavigatorLayoutMenu extends Menu {
                     .glow(category.getId().equals(heldCategoryId))
                     .into(playerInventory, PALETTE_FIRST_SLOT + i);
         }
-        ItemBuilder.of(XMaterial.LAVA_BUCKET)
-                .name(messages.getString("setup_navigator_remove", player))
-                .lore(messages.getStringList("setup_navigator_remove_lore", player))
-                .into(playerInventory, CONTROL_REMOVE_SLOT);
-        ItemBuilder.of(XMaterial.LIME_DYE)
-                .name(messages.getString("setup_navigator_done", player))
-                .into(playerInventory, CONTROL_DONE_SLOT);
     }
 
     @Override
@@ -131,11 +157,10 @@ public class NavigatorLayoutMenu extends Menu {
         event.setCancelled(true);
         Player player = (Player) event.getWhoClicked();
 
-        boolean topInventory = event.getClickedInventory() == getInventory();
-        if (topInventory) {
+        if (event.getClickedInventory() == getInventory()) {
             handleNavigatorClick(player, event.getRawSlot());
         } else if (event.getClickedInventory() == player.getInventory()) {
-            handlePlayerClick(player, event.getSlot());
+            handlePlayerClick(player, event.getSlot(), event.isRightClick());
         }
     }
 
@@ -143,59 +168,94 @@ public class NavigatorLayoutMenu extends Menu {
         if (slot < 0 || slot >= NAVIGATOR_SIZE) {
             return;
         }
-        NavigatorCategoryImpl occupant = categoryAtSlot(slot);
 
-        if (heldCategoryId == null) {
-            // Nothing held: pick up whatever sits here so it can be moved.
-            if (occupant != null) {
-                pickUp(player, occupant.getId(), slot);
-            }
+        if (heldSettings) {
+            placeSettings(player, slot);
+            return;
+        }
+        if (heldCategoryId != null) {
+            placeHeldCategory(player, slot);
             return;
         }
 
+        // Nothing held: pick up whatever sits here (a category, or the settings button) so it can be moved.
+        if (slot == registry.getSettingsSlot()) {
+            pickUpSettings(player);
+        } else {
+            NavigatorCategoryImpl occupant = categoryAtSlot(slot);
+            if (occupant != null) {
+                pickUpCategory(player, occupant.getId(), slot);
+            }
+        }
+    }
+
+    private void placeHeldCategory(Player player, int slot) {
         NavigatorCategoryImpl held =
                 (NavigatorCategoryImpl) registry.getCategory(heldCategoryId).orElse(null);
         if (held == null) {
             clearHeld(player);
             return;
         }
-
-        if (occupant != null && !occupant.equals(held)) {
-            // Swap: the displaced category takes the held one's previous slot, or leaves the navigator if the held one
-            // came from the palette.
-            if (heldFromSlot >= 0) {
-                occupant.setNavigatorSlot(heldFromSlot);
-            } else {
-                occupant.setShownInNavigator(false);
+        if (slot == registry.getSettingsSlot()) {
+            // The settings button owns this slot; move it aside to where the held category came from (if any).
+            registry.setSettingsSlot(heldFromSlot >= 0 ? heldFromSlot : firstFreeSlot());
+        } else {
+            NavigatorCategoryImpl occupant = categoryAtSlot(slot);
+            if (occupant != null && !occupant.equals(held)) {
+                if (heldFromSlot >= 0) {
+                    occupant.setNavigatorSlot(heldFromSlot);
+                } else {
+                    occupant.setShownInNavigator(false);
+                }
+                registry.persist(occupant);
             }
-            registry.persist(occupant);
         }
 
         held.setNavigatorSlot(slot);
         held.setShownInNavigator(true);
         registry.persist(held);
-
         clearHeld(player);
         refresh(player);
     }
 
-    private void handlePlayerClick(Player player, int slot) {
-        if (slot == CONTROL_DONE_SLOT) {
-            player.closeInventory();
-            return;
+    private void placeSettings(Player player, int slot) {
+        NavigatorCategoryImpl occupant = categoryAtSlot(slot);
+        if (occupant != null) {
+            // Displace the category that held this slot, sending it back to where settings was.
+            occupant.setNavigatorSlot(registry.getSettingsSlot());
+            registry.persist(occupant);
         }
-        if (slot == CONTROL_REMOVE_SLOT) {
-            if (heldCategoryId != null) {
-                NavigatorCategoryImpl held = (NavigatorCategoryImpl)
-                        registry.getCategory(heldCategoryId).orElse(null);
-                if (held != null) {
-                    held.setShownInNavigator(false);
-                    registry.persist(held);
-                }
-                clearHeld(player);
-                refresh(player);
+        registry.setSettingsSlot(slot);
+        clearHeld(player);
+        refresh(player);
+    }
+
+    private void handlePlayerClick(Player player, int slot, boolean rightClick) {
+        switch (slot) {
+            case CONTROL_DONE_SLOT -> {
+                player.closeInventory();
+                return;
             }
-            return;
+            case CONTROL_ADD_SLOT -> {
+                beginCategoryCreation(player);
+                return;
+            }
+            case CONTROL_REMOVE_SLOT -> {
+                removeHeldCategory(player);
+                return;
+            }
+            case CONTROL_SETTINGS_SLOT -> {
+                if (heldSettings) {
+                    clearHeld(player);
+                } else {
+                    pickUpSettings(player);
+                }
+                refresh(player);
+                return;
+            }
+            default -> {
+                // fall through to palette handling
+            }
         }
 
         int paletteIndex = slot - PALETTE_FIRST_SLOT;
@@ -203,17 +263,46 @@ public class NavigatorLayoutMenu extends Menu {
         if (paletteIndex < 0 || paletteIndex >= categories.size() || slot > PALETTE_LAST_SLOT) {
             return;
         }
-        String clickedId = categories.get(paletteIndex).getId();
-        if (clickedId.equals(heldCategoryId)) {
+        NavigatorCategory clicked = categories.get(paletteIndex);
+        if (rightClick) {
+            new CategoryEditorMenu(plugin, player, clicked).open(player);
+            return;
+        }
+        if (clicked.getId().equals(heldCategoryId)) {
             clearHeld(player);
         } else {
-            pickUp(player, clickedId, -1);
+            pickUpCategory(player, clicked.getId(), -1);
         }
         refresh(player);
     }
 
-    private void pickUp(Player player, String categoryId, int fromSlot) {
+    private void removeHeldCategory(Player player) {
+        if (heldCategoryId == null) {
+            return;
+        }
+        NavigatorCategoryImpl held =
+                (NavigatorCategoryImpl) registry.getCategory(heldCategoryId).orElse(null);
+        if (held != null) {
+            held.setShownInNavigator(false);
+            registry.persist(held);
+        }
+        clearHeld(player);
+        refresh(player);
+    }
+
+    private void beginCategoryCreation(Player player) {
+        PlayerChatInput.requestSanitizedName(
+                plugin,
+                player,
+                "setup_category_add_prompt",
+                "setup_name_invalid_characters",
+                "setup_name_empty",
+                name -> new CategoryEditorMenu(plugin, player, registry.createCategory(name)).open(player));
+    }
+
+    private void pickUpCategory(Player player, String categoryId, int fromSlot) {
         this.heldCategoryId = categoryId;
+        this.heldSettings = false;
         this.heldFromSlot = fromSlot;
         NavigatorCategory category = registry.getCategory(categoryId).orElse(null);
         ItemStack cursor = category == null
@@ -223,11 +312,23 @@ public class NavigatorLayoutMenu extends Menu {
                         .build();
         setCursorNextTick(player, cursor);
         XSound.ITEM_ARMOR_EQUIP_LEATHER.play(player);
-        refresh(player);
+    }
+
+    private void pickUpSettings(Player player) {
+        this.heldSettings = true;
+        this.heldCategoryId = null;
+        this.heldFromSlot = -1;
+        setCursorNextTick(
+                player,
+                ItemBuilder.skull(Profileable.detect(SkullTextures.SETTINGS))
+                        .name(messages.getString("old_navigator_settings", player))
+                        .build());
+        XSound.ITEM_ARMOR_EQUIP_LEATHER.play(player);
     }
 
     private void clearHeld(Player player) {
         this.heldCategoryId = null;
+        this.heldSettings = false;
         this.heldFromSlot = -1;
         setCursorNextTick(player, null);
     }
@@ -238,7 +339,6 @@ public class NavigatorLayoutMenu extends Menu {
      */
     private void setCursorNextTick(Player player, @Nullable ItemStack cursor) {
         Bukkit.getScheduler().runTask(plugin, () -> {
-            // Skip if the editor closed in the meantime, so a deferred cursor item is never dropped into the world.
             if (plugin.getNavigatorEditorService().hasSession(player)) {
                 player.setItemOnCursor(cursor);
             }
@@ -257,6 +357,18 @@ public class NavigatorLayoutMenu extends Menu {
             }
         }
         return null;
+    }
+
+    /**
+     * {@return the first navigator slot not occupied by a shown category, or {@code 0} when the navigator is full}
+     */
+    private int firstFreeSlot() {
+        for (int slot = 0; slot < NAVIGATOR_SIZE; slot++) {
+            if (categoryAtSlot(slot) == null) {
+                return slot;
+            }
+        }
+        return 0;
     }
 
     @Override

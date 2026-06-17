@@ -525,6 +525,11 @@ setup_navigator_remove_lore:
   - "&7While holding a category,"
   - "&7click to take it off the navigator."
 setup_navigator_done: "&aDone"
+setup_navigator_settings_lore:
+  - "&7The settings button players see"
+  - "&7in the navigator."
+  - ""
+  - "&8» &7&oClick to pick up & move"
 
 # Setup - Default Icons
 setup_default_icons_title: "&3» &8Default Icons"
@@ -551,7 +556,7 @@ setup_filter_lore:
   - ""
   - "&8» &7&oClick to search"
   - "&8» &7&oRight-click to clear"
-setup_filter_prompt: "&aType text to filter items by"
+setup_filter_prompt: "&aSearch term"
 setup_order_lore:
   - "&8» &7&oLeft-click to increase"
   - "&8» &7&oRight-click to decrease"
@@ -592,7 +597,7 @@ setup_status_entry_builtin_lore:
   - "&8» &7&oClick to edit"
   - "&8» &7&oShift-click to delete"
 setup_status_add: "&aCreate a new status"
-setup_status_add_prompt: "&aType a name for the status"
+setup_status_add_prompt: "&aStatus name"
 setup_status_delete_lore:
   - "&7Worlds using this status: &c%worlds%"
   - "&7They will be reset to the default status."
@@ -603,7 +608,7 @@ setup_status_preview_lore:
   - "&7Id&8: &f%id%"
   - "&7Permission&8: &f%permission%"
 setup_status_rename: "&bRename"
-setup_status_rename_prompt: "&aType a new name for the status"
+setup_status_rename_prompt: "&aNew name"
 setup_status_color: "&bColour"
 setup_status_icon: "&bIcon"
 setup_status_order: "&bOrder &8(&f%order%&8)"
@@ -628,7 +633,7 @@ setup_category_entry_builtin_lore:
   - "&8» &7&oClick to edit"
   - "&8» &7&oShift-click to delete"
 setup_category_add: "&aCreate a new category"
-setup_category_add_prompt: "&aType a name for the category"
+setup_category_add_prompt: "&aCategory name"
 setup_category_delete_lore:
   - "&7Worlds in this category will resolve"
   - "&7to another matching category."
@@ -638,7 +643,7 @@ setup_category_editor_title: "&8Category &7» %category%"
 setup_category_preview_lore:
   - "&7Id&8: &f%id%"
 setup_category_rename: "&bRename"
-setup_category_rename_prompt: "&aType a new name for the category"
+setup_category_rename_prompt: "&aNew name"
 setup_category_color: "&bColour"
 setup_category_icon: "&bIcon"
 setup_category_skull: "&bSkull texture &8(&f%texture%&8)"
@@ -648,7 +653,7 @@ setup_category_skull_lore:
   - ""
   - "&8» &7&oClick to set (type a texture,"
   - "&8  &7&o'viewer', or 'none')"
-setup_category_skull_prompt: "&aType a skull texture, 'viewer', or 'none'"
+setup_category_skull_prompt: "&aSkull texture"
 setup_category_visibility_everyone: "&bGroups public worlds"
 setup_category_visibility_added: "&bGroups private worlds"
 setup_category_visibility_last: "%prefix% &cA category must group at least one visibility."

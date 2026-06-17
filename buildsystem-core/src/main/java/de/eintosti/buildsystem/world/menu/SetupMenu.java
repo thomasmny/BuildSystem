@@ -23,7 +23,6 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.world.menu.setup.CategoryManagementMenu;
 import de.eintosti.buildsystem.world.menu.setup.DefaultIconsMenu;
 import de.eintosti.buildsystem.world.menu.setup.NavigatorLayoutMenu;
 import de.eintosti.buildsystem.world.menu.setup.StatusManagementMenu;
@@ -33,15 +32,14 @@ import org.jspecify.annotations.NullMarked;
 
 /**
  * The {@code /setup} hub. Branches to the editors that customise BuildSystem's dynamic data: the default world-type
- * icons, the world {@code statuses}, and the navigator {@code categories}.
+ * icons, the world {@code statuses}, and the navigator (categories and their layout, managed together).
  */
 @NullMarked
 public class SetupMenu extends ButtonMenu<MenuButton> {
 
-    private static final int SLOT_DEFAULT_ICONS = 10;
-    private static final int SLOT_STATUSES = 12;
-    private static final int SLOT_CATEGORIES = 14;
-    private static final int SLOT_NAVIGATOR = 16;
+    private static final int SLOT_DEFAULT_ICONS = 11;
+    private static final int SLOT_STATUSES = 13;
+    private static final int SLOT_NAVIGATOR = 15;
 
     private final BuildSystemPlugin plugin;
 
@@ -58,12 +56,6 @@ public class SetupMenu extends ButtonMenu<MenuButton> {
         register(
                 SLOT_STATUSES,
                 hubButton(XMaterial.NAME_TAG, "setup_statuses_item", p -> new StatusManagementMenu(plugin, p).open(p)));
-        register(
-                SLOT_CATEGORIES,
-                hubButton(
-                        XMaterial.FILLED_MAP,
-                        "setup_categories_item",
-                        p -> new CategoryManagementMenu(plugin, p).open(p)));
         register(
                 SLOT_NAVIGATOR,
                 hubButton(XMaterial.COMPASS, "setup_navigator_item", p -> new NavigatorLayoutMenu(plugin, p).open(p)));

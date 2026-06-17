@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.player.menu.SettingsMenu;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import org.bukkit.entity.Player;
@@ -38,10 +39,6 @@ import org.jspecify.annotations.NullMarked;
 public class NavigatorMenu extends ButtonMenu<MenuButton> {
 
     private static final int INVENTORY_SIZE = 27;
-    private static final int SLOT_SETTINGS = 15;
-
-    private static final String SETTINGS_SKULL_PROFILE =
-            "1cba7277fc895bf3b673694159864b83351a4d14717e476ebda1c3bf38fcf37";
 
     private final BuildSystemPlugin plugin;
 
@@ -49,15 +46,18 @@ public class NavigatorMenu extends ButtonMenu<MenuButton> {
         super(plugin.getMessages(), INVENTORY_SIZE, plugin.getMessages().getString("old_navigator_title", player));
         this.plugin = plugin;
 
+        int settingsSlot = plugin.getNavigatorCategoryRegistry().getSettingsSlot();
         for (NavigatorCategory category : plugin.getNavigatorCategoryRegistry().getCategories()) {
             int slot = category.getNavigatorSlot();
-            if (!category.isShownInNavigator() || slot < 0 || slot >= INVENTORY_SIZE || slot == SLOT_SETTINGS) {
+            if (!category.isShownInNavigator() || slot < 0 || slot >= INVENTORY_SIZE || slot == settingsSlot) {
                 continue;
             }
             register(slot, categoryButton(category));
         }
 
-        register(SLOT_SETTINGS, settingsButton());
+        if (settingsSlot >= 0 && settingsSlot < INVENTORY_SIZE) {
+            register(settingsSlot, settingsButton());
+        }
     }
 
     private MenuButton categoryButton(NavigatorCategory category) {
@@ -74,7 +74,7 @@ public class NavigatorMenu extends ButtonMenu<MenuButton> {
 
     private MenuButton settingsButton() {
         return MenuButton.builder()
-                .render((player, inventory, slot) -> ItemBuilder.skull(Profileable.detect(SETTINGS_SKULL_PROFILE))
+                .render((player, inventory, slot) -> ItemBuilder.skull(Profileable.detect(SkullTextures.SETTINGS))
                         .name(messages.getString("old_navigator_settings", player))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
