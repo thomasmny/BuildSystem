@@ -130,22 +130,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
     @Unmodifiable
     public List<BuildWorld> getBuildWorldsCreatedByPlayer(Player player, Visibility visibility) {
         return getBuildWorldsCreatedByPlayer(player).stream()
-                .filter(buildWorld -> isCorrectVisibility(buildWorld.getData().isPrivateWorld(), visibility))
+                .filter(buildWorld -> buildWorld.getData().getVisibility() == visibility)
                 .toList();
-    }
-
-    /**
-     * Gets if a {@link BuildWorld}'s visibility is equal to the given visibility.
-     *
-     * @param privateWorld Whether the world is private
-     * @param visibility The visibility the world should have
-     * @return {@code true} if the world's visibility is equal to the given visibility, otherwise {@code false}
-     */
-    public boolean isCorrectVisibility(boolean privateWorld, Visibility visibility) {
-        return switch (visibility) {
-            case PRIVATE -> privateWorld;
-            case PUBLIC -> !privateWorld;
-            case IGNORE -> true;
-        };
     }
 }

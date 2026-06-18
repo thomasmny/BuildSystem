@@ -90,7 +90,7 @@ public class CreateMenu extends PaginatedMenu {
         this.plugin = plugin;
         this.worldService = plugin.getWorldService();
         this.currentPage = initialPage;
-        this.createPrivateWorld = visibility == Visibility.PRIVATE;
+        this.createPrivateWorld = visibility == Visibility.ADDED_PLAYERS;
         this.folder = folder;
     }
 
@@ -127,7 +127,7 @@ public class CreateMenu extends PaginatedMenu {
                                 .glow(currentPage == page)
                                 .into(inventory, slot))
                         .onClick((player, event) -> {
-                            Visibility visibility = createPrivateWorld ? Visibility.PRIVATE : Visibility.PUBLIC;
+                            Visibility visibility = createPrivateWorld ? Visibility.ADDED_PLAYERS : Visibility.EVERYONE;
                             new CreateMenu(plugin, page, visibility, folder, player).open(player);
                             XSound.ENTITY_CHICKEN_EGG.play(player);
                         })

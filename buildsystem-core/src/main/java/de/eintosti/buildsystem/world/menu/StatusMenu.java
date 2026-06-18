@@ -22,10 +22,11 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.util.color.ColorAPI;
+import java.util.List;
 import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -34,20 +35,15 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
+/**
+ * Lets a player assign one of the registered {@link BuildWorldStatus statuses} to a world. The grid is built dynamically
+ * from the {@code WorldStatusRegistry}, so custom statuses appear automatically; each status renders with its own icon
+ * and coloured name and is gated by its own permission.
+ */
 @NullMarked
 public class StatusMenu extends ButtonMenu<MenuButton> {
 
-    /**
-     * The single source of truth for the status selection grid: each interactive slot maps to the status it selects.
-     * Slot 15 is intentionally absent (a gap in the layout). Drives both {@link #populate} and {@link #handleClick}.
-     */
-    private static final Map<Integer, BuildWorldStatus> STATUS_BY_SLOT = Map.ofEntries(
-            Map.entry(10, BuildWorldStatus.NOT_STARTED),
-            Map.entry(11, BuildWorldStatus.IN_PROGRESS),
-            Map.entry(12, BuildWorldStatus.ALMOST_FINISHED),
-            Map.entry(13, BuildWorldStatus.FINISHED),
-            Map.entry(14, BuildWorldStatus.ARCHIVE),
-            Map.entry(16, BuildWorldStatus.HIDDEN));
+    private static final int FIRST_STATUS_SLOT = 10;
 
     private final BuildSystemPlugin plugin;
     private final BuildWorld buildWorld;
@@ -55,13 +51,28 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
     public StatusMenu(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
         super(
                 plugin.getMessages(),
-                27,
+                computeSize(plugin),
                 plugin.getMessages()
                         .getString("status_title", player, Map.entry("%world%", formatWorldName(buildWorld))));
         this.plugin = plugin;
         this.buildWorld = buildWorld;
 
-        STATUS_BY_SLOT.forEach((slot, status) -> register(slot, statusButton(status)));
+        List<BuildWorldStatus> statuses =
+                List.copyOf(plugin.getWorldStatusRegistry().getStatuses());
+        int slot = FIRST_STATUS_SLOT;
+        for (BuildWorldStatus status : statuses) {
+            register(slot++, statusButton(status));
+        }
+    }
+
+    /**
+     * Sizes the inventory to a whole number of rows large enough to hold the status grid with a one-slot border on each
+     * side, clamped to the chest maximum of six rows.
+     */
+    private static int computeSize(BuildSystemPlugin plugin) {
+        int count = plugin.getWorldStatusRegistry().getStatuses().size();
+        int rows = Math.min(6, Math.max(3, 2 + (int) Math.ceil((count + 1) / 7.0)));
+        return rows * 9;
     }
 
     private static String formatWorldName(BuildWorld buildWorld) {
@@ -75,8 +86,8 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
     private MenuButton statusButton(BuildWorldStatus status) {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> {
-                    XMaterial material = plugin.getCustomizableIcons().getIcon(status);
-                    String displayName = messages.getString(Messages.getMessageKey(status), player);
+                    XMaterial material = status.getIcon();
+                    String displayName = ColorAPI.process(status.getStyledName());
 
                     if (!player.hasPermission(status.getPermission())) {
                         material = XMaterial.BARRIER;
@@ -85,7 +96,7 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
 
                     ItemBuilder.of(material)
                             .name(displayName)
-                            .glow(buildWorld.getData().getStatus() == status)
+                            .glow(buildWorld.getData().getStatus().equals(status))
                             .into(inventory, slot);
                 })
                 .onClick((player, event) -> {
@@ -103,24 +114,15 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
                             player,
                             "worlds_setstatus_set",
                             Map.entry("%world%", buildWorld.getName()),
-                            Map.entry("%status%", messages.getString(Messages.getMessageKey(status), player)));
+                            Map.entry("%status%", ColorAPI.process(status.getStyledName())));
                 })
                 .build();
     }
 
     @Override
     protected void populate(Player player) {
-        plugin.getMenuItems().fillRange(player, getInventory(), 0, 10);
-        plugin.getMenuItems().fillRange(player, getInventory(), 17, 27);
-
+        plugin.getMenuItems().fillAll(player, getInventory());
         renderButtons(player);
-    }
-
-    /**
-     * The slot &rarr; status mapping. Exposed for the golden test that pins the selection grid.
-     */
-    Map<Integer, BuildWorldStatus> statusBySlot() {
-        return STATUS_BY_SLOT;
     }
 
     @Override

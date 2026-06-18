@@ -21,8 +21,8 @@ import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
@@ -112,7 +112,7 @@ public class PlayerChangedWorldListener implements Listener {
     private void setGoldBlock(@Nullable BuildWorld buildWorld) {
         if (buildWorld == null
                 || buildWorld.getType() != BuildWorldType.VOID
-                || buildWorld.getData().getStatus() != BuildWorldStatus.NOT_STARTED) {
+                || !buildWorld.getData().getStatus().getId().equals(WorldStatusRegistry.NOT_STARTED_ID)) {
             return;
         }
 
@@ -136,7 +136,7 @@ public class PlayerChangedWorldListener implements Listener {
                 .getCachedValues();
         cachedValues.resetArchiveStateIfPresent(player);
 
-        if (buildWorld.getData().getStatus() == BuildWorldStatus.ARCHIVE) {
+        if (!buildWorld.getData().getStatus().isBuildingAllowed()) {
             cachedValues.saveArchiveState(player);
 
             removeArmorContent(player);

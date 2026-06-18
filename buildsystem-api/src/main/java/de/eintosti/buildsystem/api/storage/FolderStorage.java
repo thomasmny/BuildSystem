@@ -62,7 +62,7 @@ public interface FolderStorage extends Storage<Folder> {
      * Creates a new {@link Folder} with the given name.
      *
      * @param name The name folder to create
-     * @param category The category in which the folder should be displayed
+     * @param category The navigator category in which the folder should be displayed
      * @param creator The builder who created the folder
      * @return The newly created folder
      */
@@ -72,7 +72,7 @@ public interface FolderStorage extends Storage<Folder> {
      * Creates a new nested {@link Folder} with the given name.
      *
      * @param name The name folder to create
-     * @param category The category in which the folder should be displayed
+     * @param category The navigator category in which the folder should be displayed
      * @param parent The parent folder, or {@code null} if this is a top-level folder
      * @param creator The builder who created the folder
      * @return The newly created folder

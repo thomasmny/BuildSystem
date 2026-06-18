@@ -18,9 +18,10 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.world.menu.PrivateWorldsMenu;
+import de.eintosti.buildsystem.world.menu.CategoryWorldsMenu;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -38,7 +39,13 @@ public class PrivateSubCommand extends AbstractSubCommand {
             return;
         }
 
-        new PrivateWorldsMenu(plugin, player).open(player);
+        NavigatorCategoryRegistry registry = plugin.getNavigatorCategoryRegistry();
+        new CategoryWorldsMenu(
+                        plugin,
+                        player,
+                        registry.getCategory(NavigatorCategoryRegistry.PRIVATE_ID)
+                                .orElseGet(registry::getDefaultCategory))
+                .open(player);
     }
 
     @Override

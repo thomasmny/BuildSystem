@@ -24,8 +24,9 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
-import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
@@ -61,6 +62,7 @@ class YamlWorldStorageRoundTripTest {
         // is parsed unconditionally in the WorldUnloader constructor, so it must be a real value.
         when(plugin.getConfigService().current().world().unload().timeUntilUnload())
                 .thenReturn("06:00:00");
+        TestData.stubStatusRegistry(plugin);
     }
 
     private YamlWorldStorage newStorage() {
@@ -71,12 +73,12 @@ class YamlWorldStorageRoundTripTest {
         Builder creator = Builder.of(UUID.randomUUID(), "Creator");
         Builder extraBuilder = Builder.of(UUID.randomUUID(), "Helper");
         WorldDataImpl data = new WorldDataBuilder(name)
-                .withStatus(BuildWorldStatus.FINISHED)
+                .withStatus(TestData.FINISHED)
                 .withDifficulty(Difficulty.NORMAL)
                 .withMaterial(XMaterial.GRASS_BLOCK)
                 .withPermission("buildsystem.test")
                 .withProject("MyProject")
-                .withPrivateWorld(true)
+                .withVisibility(Visibility.ADDED_PLAYERS)
                 .withBlockBreaking(true)
                 .withExplosions(true)
                 .withTimeSinceBackup(42)
@@ -115,11 +117,11 @@ class YamlWorldStorageRoundTripTest {
         newStorage().save(sampleWorld(UUID.randomUUID(), "DataWorld")).join();
 
         BuildWorld world = newStorage().load().join().iterator().next();
-        assertEquals(BuildWorldStatus.FINISHED, world.getData().getStatus());
+        assertEquals(TestData.FINISHED, world.getData().getStatus());
         assertEquals("MyProject", world.getData().getProject());
         assertEquals("buildsystem.test", world.getData().getPermission());
         assertEquals(Difficulty.NORMAL, world.getData().getDifficulty());
-        assertTrue(world.getData().isPrivateWorld());
+        assertTrue(world.getData().getVisibility().isPrivate());
         assertTrue(world.getData().isBlockBreaking());
         assertEquals(42, world.getData().getTimeSinceBackup());
     }
@@ -163,8 +165,7 @@ class YamlWorldStorageRoundTripTest {
 
         Collection<BuildWorld> loaded = newStorage().load().join();
         assertEquals(1, loaded.size());
-        assertEquals(
-                BuildWorldStatus.NOT_STARTED, loaded.iterator().next().getData().getStatus());
+        assertEquals(TestData.NOT_STARTED, loaded.iterator().next().getData().getStatus());
     }
 
     @Test

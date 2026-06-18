@@ -22,10 +22,11 @@ import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.logging.Level;
@@ -92,34 +93,49 @@ public final class MenuItems {
     }
 
     /**
-     * Adds a world item to the given inventory at the specified slot.
+     * Renders a {@link Displayable} into a menu slot. This is the single rendering path for every displayable: a
+     * non-head icon or a configured {@link Displayable#getIconSkullTexture() skull texture} is applied synchronously,
+     * while a displayable's {@link Displayable#getHeadProfile() default head profile} (e.g. a world's creator) is
+     * resolved asynchronously so opening a menu never blocks on profile lookups.
      *
      * @param inventory The inventory to add the item to
      * @param slot The slot to add the item at
-     * @param buildWorld The world to create the item for
-     * @param displayName The display name of the item
-     * @param lore The lore of the item
+     * @param displayable The displayable to render
+     * @param viewer The player viewing the inventory
      */
-    public void addWorldItem(
-            Inventory inventory, int slot, BuildWorld buildWorld, String displayName, List<String> lore) {
-        XMaterial material = buildWorld.getData().getMaterial();
-        if (material != XMaterial.PLAYER_HEAD) {
-            ItemBuilder.of(material).name(displayName).lore(lore).into(inventory, slot);
+    public void renderDisplayable(Inventory inventory, int slot, Displayable displayable, Player viewer) {
+        XMaterial icon = displayable.getIcon();
+        String name = displayable.getDisplayName(viewer);
+        List<String> lore = displayable.getLore(viewer);
+
+        String texture = displayable.getIconSkullTexture();
+        if (icon != XMaterial.PLAYER_HEAD || (texture != null && !texture.isBlank())) {
+            ItemBuilder.icon(icon, texture, viewer).name(name).lore(lore).into(inventory, slot);
             return;
         }
 
-        ItemStack defaultHead = ItemBuilder.of(XMaterial.PLAYER_HEAD)
-                .name(displayName)
-                .lore(lore)
-                .build();
-        inventory.setItem(slot, defaultHead);
+        Profileable headProfile = displayable.getHeadProfile();
+        if (headProfile == null) {
+            ItemBuilder.of(XMaterial.PLAYER_HEAD).name(name).lore(lore).into(inventory, slot);
+            return;
+        }
+        applyHeadProfileAsync(inventory, slot, headProfile, displayable.getHeadFallbackProfile(), name, lore);
+    }
+
+    private void applyHeadProfileAsync(
+            Inventory inventory,
+            int slot,
+            Profileable profile,
+            @Nullable Profileable fallback,
+            String name,
+            List<String> lore) {
+        ItemStack placeholder =
+                ItemBuilder.of(XMaterial.PLAYER_HEAD).name(name).lore(lore).build();
+        inventory.setItem(slot, placeholder);
 
         XSkull.createItem()
-                .profile(
-                        buildWorld.getData().isPrivateWorld()
-                                ? buildWorld.asProfileable()
-                                : Profileable.username(buildWorld.getName()))
-                .fallback(buildWorld.asProfileable())
+                .profile(profile)
+                .fallback(fallback != null ? new Profileable[] {fallback} : new Profileable[0])
                 .lenient()
                 .applyAsync()
                 .thenAcceptAsync(itemStack -> {
@@ -127,17 +143,14 @@ public final class MenuItems {
                     if (itemMeta == null) {
                         return;
                     }
-                    itemMeta.setDisplayName(displayName);
+                    itemMeta.setDisplayName(name);
                     itemMeta.setLore(lore);
                     itemStack.setItemMeta(itemMeta);
                     Bukkit.getScheduler().runTask(plugin, () -> inventory.setItem(slot, itemStack));
                 })
                 .exceptionally(throwable -> {
                     plugin.getLogger()
-                            .log(
-                                    Level.WARNING,
-                                    "Failed to load skull texture for world: " + buildWorld.getName(),
-                                    throwable);
+                            .log(Level.WARNING, "Failed to resolve head profile for menu item: " + name, throwable);
                     return null;
                 });
     }
@@ -265,9 +278,12 @@ public final class MenuItems {
             boolean enabled,
             String displayNameKey,
             String loreKey) {
+        List<String> lore = new ArrayList<>(messages.getStringList(loreKey, player));
+        lore.add("");
+        lore.add(messages.getString(enabled ? "toggle_currently_enabled" : "toggle_currently_disabled", player));
         ItemBuilder.of(material)
                 .name(messages.getString(displayNameKey, player))
-                .lore(messages.getStringList(loreKey, player))
+                .lore(lore)
                 .glow(enabled)
                 .into(inventory, slot);
     }

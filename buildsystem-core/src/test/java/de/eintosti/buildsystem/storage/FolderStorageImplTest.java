@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.test.TestData;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -92,7 +93,7 @@ class FolderStorageImplTest {
 
     @Test
     void createFolder_getFolder_roundTrip() {
-        Folder folder = storage.createFolder("MyFolder", NavigatorCategory.PUBLIC, creator);
+        Folder folder = storage.createFolder("MyFolder", TestData.PUBLIC, creator);
         assertNotNull(folder);
         assertEquals("MyFolder", folder.getName());
         assertSame(folder, storage.getFolder("MyFolder"));
@@ -100,7 +101,7 @@ class FolderStorageImplTest {
 
     @Test
     void getFolder_caseInsensitive() {
-        storage.createFolder("MyFolder", NavigatorCategory.PUBLIC, creator);
+        storage.createFolder("MyFolder", TestData.PUBLIC, creator);
         assertNotNull(storage.getFolder("myfolder"));
         assertNotNull(storage.getFolder("MYFOLDER"));
         assertNotNull(storage.getFolder("MyFolder"));
@@ -108,7 +109,7 @@ class FolderStorageImplTest {
 
     @Test
     void folderExists_trueAfterCreate() {
-        storage.createFolder("Alpha", NavigatorCategory.ARCHIVE, creator);
+        storage.createFolder("Alpha", TestData.ARCHIVE, creator);
         assertTrue(storage.folderExists("Alpha"));
         assertTrue(storage.folderExists("alpha"));
     }
@@ -125,21 +126,21 @@ class FolderStorageImplTest {
 
     @Test
     void getFolders_returnsAllCreated() {
-        storage.createFolder("A", NavigatorCategory.PUBLIC, creator);
-        storage.createFolder("B", NavigatorCategory.ARCHIVE, creator);
+        storage.createFolder("A", TestData.PUBLIC, creator);
+        storage.createFolder("B", TestData.ARCHIVE, creator);
         assertEquals(2, storage.getFolders().size());
     }
 
     @Test
     void setName_updatesFolderName() {
-        Folder folder = storage.createFolder("Original", NavigatorCategory.PUBLIC, creator);
+        Folder folder = storage.createFolder("Original", TestData.PUBLIC, creator);
         folder.setName("Renamed");
         assertEquals("Renamed", folder.getName());
     }
 
     @Test
     void removeFolder_removesFromRegistry() {
-        storage.createFolder("ToDelete", NavigatorCategory.PUBLIC, creator);
+        storage.createFolder("ToDelete", TestData.PUBLIC, creator);
         assertTrue(storage.folderExists("ToDelete"));
 
         storage.removeFolder("ToDelete");
@@ -150,8 +151,8 @@ class FolderStorageImplTest {
 
     @Test
     void removeFolder_cascadesToSubfolders() {
-        Folder parent = storage.createFolder("Parent", NavigatorCategory.PUBLIC, creator);
-        Folder child = storage.createFolder("Child", NavigatorCategory.PUBLIC, creator);
+        Folder parent = storage.createFolder("Parent", TestData.PUBLIC, creator);
+        Folder child = storage.createFolder("Child", TestData.PUBLIC, creator);
         child.setParent(parent);
 
         storage.removeFolder(parent);
@@ -279,6 +280,14 @@ class FolderStorageImplTest {
         public void setIcon(com.cryptomorin.xseries.XMaterial m) {}
 
         @Override
+        public @Nullable String getIconSkullTexture() {
+            return null;
+        }
+
+        @Override
+        public void setIconSkullTexture(@Nullable String skullTexture) {}
+
+        @Override
         public String getDisplayName(org.bukkit.entity.Player player) {
             return name;
         }
@@ -291,7 +300,7 @@ class FolderStorageImplTest {
 
     @Test
     void createFolder_firesFolderCreatedEvent() {
-        Folder folder = storage.createFolder("Evented", NavigatorCategory.PUBLIC, creator);
+        Folder folder = storage.createFolder("Evented", TestData.PUBLIC, creator);
 
         assertEquals(1, firedEvents.size());
         assertInstanceOf(FolderCreatedEvent.class, firedEvents.getFirst());
@@ -300,7 +309,7 @@ class FolderStorageImplTest {
 
     @Test
     void removeFolder_firesFolderDeletedEvent() {
-        Folder folder = storage.createFolder("Evented", NavigatorCategory.PUBLIC, creator);
+        Folder folder = storage.createFolder("Evented", TestData.PUBLIC, creator);
         firedEvents.clear();
 
         storage.removeFolder("Evented");

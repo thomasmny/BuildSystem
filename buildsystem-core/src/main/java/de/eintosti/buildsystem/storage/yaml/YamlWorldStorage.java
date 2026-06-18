@@ -24,6 +24,8 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
@@ -206,6 +208,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
                 .withDifficulty(Difficulty.valueOf(
                         config.getString(path + ".difficulty", "PEACEFUL").toUpperCase(Locale.ROOT)))
                 .withMaterial(parseMaterial(path + ".material", worldName))
+                .withIconSkullTexture(config.getString(path + ".icon-skull-texture", ""))
                 .withStatus(parseStatus(path + ".status", worldName))
                 .withBlockBreaking(config.getBoolean(path + ".block-breaking"))
                 .withBlockInteractions(config.getBoolean(path + ".block-interactions"))
@@ -215,7 +218,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
                 .withMobAi(config.getBoolean(path + ".mob-ai"))
                 .withPhysics(config.getBoolean(path + ".physics"))
                 .withPinned(config.getBoolean(path + ".pinned", false))
-                .withPrivateWorld(config.getBoolean(path + ".private"))
+                .withVisibility(parseVisibility(path))
                 .withTimeSinceBackup(config.getInt(path + ".time-since-backup", 0))
                 .withLastLoaded(config.getLong(path + ".last-loaded"))
                 .withLastUnloaded(config.getLong(path + ".last-unloaded"))
@@ -241,18 +244,39 @@ public class YamlWorldStorage extends WorldStorageImpl {
         }
     }
 
+    /**
+     * Resolves a world's status from its persisted id, migrating pre-4.0 enum names (e.g. {@code NOT_STARTED}) to the
+     * equivalent lower-case status id. Falls back to the registry default when the id is unknown.
+     */
     private BuildWorldStatus parseStatus(String path, String worldName) {
+        WorldStatusRegistry registry = plugin.getWorldStatusRegistry();
         String raw = config.getString(path);
         if (raw == null) {
-            return BuildWorldStatus.NOT_STARTED;
+            return registry.getDefaultStatus();
         }
-        try {
-            return BuildWorldStatus.valueOf(raw);
-        } catch (IllegalArgumentException e) {
+        String id = raw.toLowerCase(Locale.ROOT);
+        return registry.getStatus(id).orElseGet(() -> {
             plugin.getLogger()
-                    .warning("Unknown status \"" + raw + "\" for \"" + worldName + "\". Defaulting to NOT_STARTED.");
-            return BuildWorldStatus.NOT_STARTED;
+                    .warning("Unknown status \"" + raw + "\" for \"" + worldName + "\". Defaulting to "
+                            + registry.getDefaultStatus().getId() + ".");
+            return registry.getDefaultStatus();
+        });
+    }
+
+    /**
+     * Resolves a world's {@link Visibility}, reading the {@code visibility} key and migrating the pre-4.0
+     * {@code private} boolean when the new key is absent.
+     */
+    private Visibility parseVisibility(String path) {
+        String raw = config.getString(path + ".visibility");
+        if (raw != null) {
+            try {
+                return Visibility.valueOf(raw.toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException ignored) {
+                // Fall through to the legacy private flag.
+            }
         }
+        return Visibility.matchVisibility(config.getBoolean(path + ".private"));
     }
 
     private XMaterial parseMaterial(String path, String worldName) {

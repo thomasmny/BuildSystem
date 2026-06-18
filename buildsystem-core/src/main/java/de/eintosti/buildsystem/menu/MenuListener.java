@@ -21,6 +21,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.jspecify.annotations.NullMarked;
 
@@ -31,6 +32,15 @@ public final class MenuListener implements Listener {
     public void onClick(InventoryClickEvent event) {
         if (event.getInventory().getHolder() instanceof Menu menu) {
             menu.handleClick(event);
+        }
+    }
+
+    @EventHandler
+    public void onDrag(InventoryDragEvent event) {
+        // Menus never support drag-rearranging items; cancel so the navigator layout editor's palette (which lives in
+        // the player's taken-over inventory) can never be moved or duplicated by a drag.
+        if (event.getInventory().getHolder() instanceof Menu) {
+            event.setCancelled(true);
         }
     }
 

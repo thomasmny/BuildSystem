@@ -21,8 +21,8 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Defines the visibility settings for a {@link BuildWorld} within the BuildSystem. These settings determine how worlds
- * are displayed and accessed in the world navigator.
+ * Determines who may see and enter a {@link BuildWorld}. Replaces the legacy public/private boolean: a world is either
+ * open to {@link #EVERYONE} or restricted to its {@link #ADDED_PLAYERS}.
  *
  * @since 3.0.0
  */
@@ -30,29 +30,50 @@ import org.jspecify.annotations.NullMarked;
 public enum Visibility {
 
     /**
-     * Indicates that a world is publicly accessible and displayed in the main world navigator.
+     * The world is open: any player may see and enter it, subject to its own access permission.
      */
-    PUBLIC,
+    EVERYONE("public"),
 
     /**
-     * Indicates that a world is private, typically only visible and accessible to its creator and designated builders.
-     * Private worlds are usually displayed in a separate, dedicated menu.
+     * The world is restricted: only its creator and the builders added to it (plus players able to bypass the view
+     * permission) may see and enter it.
      */
-    PRIVATE,
+    ADDED_PLAYERS("private");
+
+    private final String permissionNode;
+
+    Visibility(String permissionNode) {
+        this.permissionNode = permissionNode;
+    }
 
     /**
-     * A special state indicating that the visibility setting of a world should be disregarded. This is useful for
-     * internal operations or specific contexts where visibility rules do not apply.
-     */
-    IGNORE;
-
-    /**
-     * Returns the appropriate {@link Visibility} enum based on whether a world is private.
+     * Gets the stable permission segment for this visibility, used in the world-creation permissions
+     * ({@code buildsystem.create.<node>} and {@code buildsystem.create.<node>.<limit>}). Kept as the familiar
+     * {@code public}/{@code private} wording rather than the enum name so those permissions are unchanged from prior
+     * versions.
      *
-     * @param isPrivateWorld A boolean indicating if the world is private
-     * @return {@link #PRIVATE} if {@link WorldData#isPrivateWorld()} is true, otherwise {@link #PUBLIC}
+     * @return The permission node ({@code "public"} or {@code "private"})
+     */
+    public String getPermissionNode() {
+        return permissionNode;
+    }
+
+    /**
+     * Returns the visibility matching the legacy private flag.
+     *
+     * @param isPrivateWorld Whether the world is private
+     * @return {@link #ADDED_PLAYERS} if private, otherwise {@link #EVERYONE}
      */
     public static Visibility matchVisibility(boolean isPrivateWorld) {
-        return isPrivateWorld ? PRIVATE : PUBLIC;
+        return isPrivateWorld ? ADDED_PLAYERS : EVERYONE;
+    }
+
+    /**
+     * Returns whether this visibility corresponds to a private (added-players-only) world.
+     *
+     * @return {@code true} if {@link #ADDED_PLAYERS}, otherwise {@code false}
+     */
+    public boolean isPrivate() {
+        return this == ADDED_PLAYERS;
     }
 }

@@ -87,7 +87,7 @@ public interface PlayerService {
      *
      * @param player The player object
      * @param visibility The visibility of the worlds to check the maximum of. Possible values:
-     *     {@link Visibility#PUBLIC} or {@link Visibility#PRIVATE}
+     *     {@link Visibility#EVERYONE} or {@link Visibility#ADDED_PLAYERS}
      * @return If set, the maximum number of worlds a player can create, otherwise -1
      */
     int getMaxWorlds(Player player, Visibility visibility);

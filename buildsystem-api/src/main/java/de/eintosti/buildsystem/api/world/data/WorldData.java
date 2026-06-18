@@ -122,6 +122,24 @@ public interface WorldData {
     void setMaterial(XMaterial material);
 
     /**
+     * Gets the skull texture applied when the world's {@link #getMaterial() icon} is a player head. Returns {@code null}
+     * when none is set; the literal {@code "%viewer%"} means the viewing player's own head.
+     *
+     * @return The skull texture, {@code "%viewer%"}, or {@code null}
+     * @since TODO
+     */
+    @Nullable String getIconSkullTexture();
+
+    /**
+     * Sets the skull texture applied when the world's {@link #getMaterial() icon} is a player head. Pass {@code null} to
+     * clear it, or the literal {@code "%viewer%"} to render the viewing player's own head.
+     *
+     * @param skullTexture The skull texture, {@code "%viewer%"}, or {@code null}
+     * @since TODO
+     */
+    void setIconSkullTexture(@Nullable String skullTexture);
+
+    /**
      * Gets the current {@link BuildWorldStatus} of the {@link BuildWorld}.
      *
      * @return The current build status
@@ -268,21 +286,21 @@ public interface WorldData {
     void setPinned(boolean pinned);
 
     /**
-     * Gets whether the {@link BuildWorld} is set to private visibility. A private world is typically only accessible to
-     * its creator and designated builders.
+     * Gets the {@link Visibility} governing who may see and enter the {@link BuildWorld}. This is the source of truth
+     * for a world's visibility, replacing the legacy private boolean.
      *
-     * @return {@code true} if private, otherwise {@code false}
+     * @return The access rule
      * @since TODO
      */
-    boolean isPrivateWorld();
+    Visibility getVisibility();
 
     /**
-     * Sets whether the {@link BuildWorld} is set to private visibility.
+     * Sets the {@link Visibility} governing who may see and enter the {@link BuildWorld}.
      *
-     * @param privateWorld {@code true} if private, otherwise {@code false}
+     * @param visibility The access rule
      * @since TODO
      */
-    void setPrivateWorld(boolean privateWorld);
+    void setVisibility(Visibility visibility);
 
     /**
      * Gets the number of seconds that have passed since the last {@link Backup} of the {@link BuildWorld} was created.

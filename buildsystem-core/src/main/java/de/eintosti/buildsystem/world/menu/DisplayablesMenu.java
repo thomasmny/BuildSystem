@@ -24,16 +24,10 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
-import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
-import de.eintosti.buildsystem.api.world.data.Visibility;
-import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.display.*;
 import de.eintosti.buildsystem.api.world.display.WorldFilter.Mode;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
-import de.eintosti.buildsystem.menu.ItemBuilder;
-import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.PaginatedMenu;
-import de.eintosti.buildsystem.menu.PlayerChatInput;
+import de.eintosti.buildsystem.menu.*;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
@@ -70,10 +64,6 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     private static final int FIRST_BOTTOM_BAR_SLOT = 45;
     private static final int LAST_BOTTOM_BAR_SLOT = 53;
 
-    private static final String PREVIOUS_PAGE_SKULL_PROFILE =
-            "86971dd881dbaf4fd6bcaa93614493c612f869641ed59d1c9363a3666a5fa6";
-    private static final String NEXT_PAGE_SKULL_PROFILE =
-            "f32ca66056b72863e98f7f32bd7d94c7a0d796af691c9ac3a9136331352288f9";
     private static final String NO_WORLDS_SKULL_PROFILE =
             "2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6";
 
@@ -85,8 +75,6 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
 
     protected final Player player;
     protected final NavigatorCategory category;
-    protected final Visibility requiredVisibility;
-    protected final Set<BuildWorldStatus> validStatuses;
 
     private final @Nullable String noWorldsMessage;
     private @Nullable List<Displayable> cachedDisplayables;
@@ -102,27 +90,21 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         this.player = player;
         this.category = options.category();
         this.noWorldsMessage = options.emptyMessage();
-        this.requiredVisibility = options.requiredVisibility();
-        this.validStatuses = options.validStatuses();
     }
 
     /**
-     * The configuration of a {@link DisplayablesMenu}: which {@link NavigatorCategory category} it lists, its title and
-     * "no worlds" message, the {@link Visibility} it requires, and the {@link BuildWorldStatus statuses} it shows.
-     * Bundled into one named-field object so subclasses no longer pass a long positional argument list to {@code super}.
+     * The configuration of a {@link DisplayablesMenu}: the {@link NavigatorCategory category} whose folders and worlds it lists,
+     * its title and "no worlds" message. A world is listed when {@link NavigatorCategoryRegistry#getCategoryForWorld(BuildWorld)}
+     * resolves to this category, so visibility and status filtering are derived from the category rather than passed separately.
      *
      * @param category The navigator category whose folders/worlds are listed
      * @param title The inventory title
      * @param emptyMessage The message shown when nothing matches, or {@code null} to show nothing
-     * @param requiredVisibility The visibility a world must have to be listed
-     * @param validStatuses The statuses a world must have to be listed
      */
     public record Options(
             NavigatorCategory category,
             String title,
-            @Nullable String emptyMessage,
-            Visibility requiredVisibility,
-            Set<BuildWorldStatus> validStatuses) {
+            @Nullable String emptyMessage) {
 
         /**
          * {@return a new {@link Builder}}
@@ -132,16 +114,13 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         }
 
         /**
-         * Fluent builder for {@link Options}. {@code requiredVisibility} defaults to {@link Visibility#IGNORE} and
-         * {@code validStatuses} to all statuses; {@code category} and {@code title} are required.
+         * Fluent builder for {@link Options}. {@code category} and {@code title} are required.
          */
         public static final class Builder {
 
             private @Nullable NavigatorCategory category;
             private @Nullable String title;
             private @Nullable String emptyMessage;
-            private Visibility requiredVisibility = Visibility.IGNORE;
-            private Set<BuildWorldStatus> validStatuses = EnumSet.allOf(BuildWorldStatus.class);
 
             private Builder() {}
 
@@ -160,23 +139,11 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                 return this;
             }
 
-            public Builder requiredVisibility(Visibility requiredVisibility) {
-                this.requiredVisibility = requiredVisibility;
-                return this;
-            }
-
-            public Builder validStatuses(Set<BuildWorldStatus> validStatuses) {
-                this.validStatuses = validStatuses;
-                return this;
-            }
-
             public Options build() {
                 return new Options(
                         Objects.requireNonNull(category, "category"),
                         Objects.requireNonNull(title, "title"),
-                        emptyMessage,
-                        requiredVisibility,
-                        validStatuses);
+                        emptyMessage);
             }
         }
     }
@@ -196,8 +163,8 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         addWorldSortItem(inv);
         addWorldFilterItem(inv);
         addExtraItems(inv, player);
-        register(SLOT_PREVIOUS_PAGE, previousPageButton(PREVIOUS_PAGE_SKULL_PROFILE, MAX_WORLDS_PER_PAGE));
-        register(SLOT_NEXT_PAGE, nextPageButton(NEXT_PAGE_SKULL_PROFILE, MAX_WORLDS_PER_PAGE));
+        register(SLOT_PREVIOUS_PAGE, previousPageButton(SkullTextures.PREVIOUS_PAGE, MAX_WORLDS_PER_PAGE));
+        register(SLOT_NEXT_PAGE, nextPageButton(SkullTextures.NEXT_PAGE, MAX_WORLDS_PER_PAGE));
 
         for (int i = FIRST_WORD_SLOT; i <= LAST_WORLD_SLOT; i++) {
             inv.setItem(i, null);
@@ -221,8 +188,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                     if (displayable instanceof BuildWorld buildWorld) {
                         manageWorldItemClick(event, buildWorld);
                     } else if (displayable instanceof Folder folder) {
-                        new FolderContentMenu(plugin, player, category, folder, this, requiredVisibility, validStatuses)
-                                .open(player);
+                        new FolderContentMenu(plugin, player, category, folder, this).open(player);
                     }
                 })
                 .build();
@@ -249,7 +215,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     @Unmodifiable
     protected Collection<Folder> collectFolders() {
         return folderStorage.getFolders().stream()
-                .filter(folder -> folder.getCategory() == this.category)
+                .filter(folder -> folder.getCategory().equals(this.category))
                 .filter(folder -> !folder.hasParent())
                 .filter(folder -> folder.canView(this.player))
                 .toList();
@@ -268,11 +234,11 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     }
 
     private boolean isWorldValidForDisplay(BuildWorld buildWorld) {
-        WorldData worldData = buildWorld.getData();
-        if (!this.worldStorage.isCorrectVisibility(worldData.isPrivateWorld(), this.requiredVisibility)) {
-            return false;
-        }
-        if (!this.validStatuses.contains(worldData.getStatus())) {
+        // A world shows in every category that groups it (overlapping categories each list it), not just its primary
+        // resolved category.
+        if (!this.category.groups(
+                buildWorld.getData().getVisibility(),
+                buildWorld.getData().getStatus().getId())) {
             return false;
         }
         if (!buildWorld.getPermissions().canEnter(this.player)) {
@@ -381,7 +347,8 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     }
 
     protected void beginWorldCreation() {
-        new CreateMenu(plugin, Page.PREDEFINED, this.requiredVisibility, null, this.player).open(this.player);
+        new CreateMenu(plugin, Page.PREDEFINED, this.category.getPrimaryVisibility(), null, this.player)
+                .open(this.player);
     }
 
     private void beginFolderCreation(Player player) {
@@ -402,7 +369,8 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                     plugin.getMessages()
                             .sendMessage(player, "worlds_folder_created", Map.entry("%folder%", folder.getName()));
                     open(player);
-                });
+                },
+                () -> open(player));
     }
 
     protected Folder createFolder(String folderName) {
@@ -422,11 +390,16 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
             worldFilter.setText("");
         } else if (event.isLeftClick()) {
             player.closeInventory();
-            new PlayerChatInput(plugin, player, "world_filter_title", input -> {
-                worldFilter.setText(input.replace("\"", ""));
-                resetPage();
-                open(player);
-            });
+            new PlayerChatInput(
+                    plugin,
+                    player,
+                    "world_filter_title",
+                    input -> {
+                        worldFilter.setText(input.replace("\"", ""));
+                        resetPage();
+                        open(player);
+                    },
+                    () -> open(player));
             return;
         } else if (event.isRightClick()) {
             worldFilter.setMode(currentMode.getNext());

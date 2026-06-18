@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.integration.Integrations;
 import de.eintosti.buildsystem.listener.ListenerRegistrar;
 import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.navigator.NavigatorEditorService;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.LogoutLocation;
@@ -38,7 +39,9 @@ import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
+import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
+import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
@@ -57,13 +60,9 @@ public class BuildSystemPlugin extends JavaPlugin {
     public static final String ADMIN_PERMISSION = "buildsystem.admin";
 
     private Services services;
-
     private UpdateChecker updateChecker;
-
     private Integrations integrations;
-
     private BuildSystemApi api;
-
     private BukkitTask configSaveTask;
 
     @Override
@@ -122,6 +121,7 @@ public class BuildSystemPlugin extends JavaPlugin {
             getNoClipService().stopNoClip(pl.getUniqueId());
             getNavigatorService().closeNewNavigator(pl);
         });
+        getNavigatorEditorService().restoreAll();
 
         getBackupService().close();
         getWorldService().cancelAllUnloadTasks();
@@ -223,6 +223,10 @@ public class BuildSystemPlugin extends JavaPlugin {
         return services.navigator();
     }
 
+    public NavigatorEditorService getNavigatorEditorService() {
+        return services.navigatorEditor();
+    }
+
     public CustomBlockManager getCustomBlockManager() {
         return services.customBlockManager();
     }
@@ -265,6 +269,14 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     public CustomizableIcons getCustomizableIcons() {
         return services.customizableIcons();
+    }
+
+    public WorldStatusRegistryImpl getWorldStatusRegistry() {
+        return services.worldStatusRegistry();
+    }
+
+    public NavigatorCategoryRegistryImpl getNavigatorCategoryRegistry() {
+        return services.navigatorCategoryRegistry();
     }
 
     public MenuItems getMenuItems() {

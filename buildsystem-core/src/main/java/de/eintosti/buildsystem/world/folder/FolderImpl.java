@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.*;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
@@ -46,6 +47,7 @@ public class FolderImpl implements Folder {
     private @Nullable Folder parent;
 
     private XMaterial material;
+    private @Nullable String iconSkullTexture;
     private String permission;
     private String project;
 
@@ -136,6 +138,21 @@ public class FolderImpl implements Folder {
     }
 
     @Override
+    public @Nullable String getIconSkullTexture() {
+        return this.iconSkullTexture;
+    }
+
+    @Override
+    public void setIconSkullTexture(@Nullable String skullTexture) {
+        this.iconSkullTexture = skullTexture;
+    }
+
+    @Override
+    public void addToInventory(Inventory inventory, int slot, Player player) {
+        plugin.getMenuItems().renderDisplayable(inventory, slot, this, player);
+    }
+
+    @Override
     @Contract("_ -> new")
     public List<String> getLore(Player player) {
         return new ArrayList<>(plugin.getMessages()
@@ -159,9 +176,9 @@ public class FolderImpl implements Folder {
 
     @Override
     public void setParent(@Nullable Folder parent) {
-        if (parent != null && this.category != parent.getCategory()) {
+        if (parent != null && !this.category.equals(parent.getCategory())) {
             throw new IllegalArgumentException("Cannot set parent folder: category mismatch (expected: %s, found: %s)"
-                    .formatted(this.category, parent.getCategory()));
+                    .formatted(this.category.getId(), parent.getCategory().getId()));
         }
 
         if (parent != null && !parent.getSubFolders().contains(this)) {

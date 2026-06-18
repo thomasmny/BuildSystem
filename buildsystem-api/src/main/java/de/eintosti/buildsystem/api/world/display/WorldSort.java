@@ -53,12 +53,12 @@ public enum WorldSort {
     PROJECT_Z_TO_A(PROJECT_A_TO_Z.getComparator().reversed()),
 
     /**
-     * Sort worlds by status ({@link BuildWorldStatus#NOT_STARTED} -> {@link BuildWorldStatus#FINISHED}).
+     * Sort worlds by ascending {@link BuildWorldStatus#getOrder() status order} (earliest lifecycle stage first).
      */
     STATUS_NOT_STARTED(Comparator.comparingInt(WorldSort::getStatusSortKey)),
 
     /**
-     * Sort worlds by status ({@link BuildWorldStatus#FINISHED} -> {@link BuildWorldStatus#NOT_STARTED}).
+     * Sort worlds by descending {@link BuildWorldStatus#getOrder() status order} (latest lifecycle stage first).
      */
     STATUS_FINISHED(STATUS_NOT_STARTED.getComparator().reversed()),
 
@@ -104,17 +104,17 @@ public enum WorldSort {
     }
 
     /**
-     * Retrieves the status stage of a {@link Displayable} for sorting purposes. If the displayable is a
-     * {@link BuildWorld}, its status stage is returned. Otherwise, {@link BuildWorldStatus#FINISHED} stage is returned.
+     * Retrieves the status order of a {@link Displayable} for sorting purposes. If the displayable is a
+     * {@link BuildWorld}, its status order is returned. Otherwise (e.g. a {@link Folder}) it sorts after all worlds.
      *
      * @param displayable The {@link Displayable} item (e.g., {@link BuildWorld} or {@link Folder})
-     * @return The status stage integer
+     * @return The status order integer
      */
     private static int getStatusSortKey(Displayable displayable) {
         if (displayable instanceof BuildWorld buildWorld) {
-            return buildWorld.getData().getStatus().getStage();
+            return buildWorld.getData().getStatus().getOrder();
         }
-        return BuildWorldStatus.FINISHED.getStage();
+        return Integer.MAX_VALUE;
     }
 
     /**

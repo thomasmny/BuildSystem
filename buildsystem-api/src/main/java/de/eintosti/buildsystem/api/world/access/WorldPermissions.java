@@ -57,7 +57,7 @@ public interface WorldPermissions {
      * <p>Modifications might be disallowed due to:
      *
      * <ul>
-     *   <li>The world having its {@link BuildWorldStatus} set to {@link BuildWorldStatus#ARCHIVE}.
+     *   <li>The world's {@link BuildWorldStatus} not {@link BuildWorldStatus#isBuildingAllowed() allowing building}.
      *   <li>A world setting is enabled that specifically prohibits certain events (e.g., block placement/breaking).
      *   <li>The world is configured to only allow designated {@link Builder}s, and the player is neither a builder nor
      *       the world's creator.

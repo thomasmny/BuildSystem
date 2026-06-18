@@ -30,14 +30,14 @@ import org.jspecify.annotations.NullMarked;
 public final class SkullTextures {
 
     /**
-     * Right-pointing arrow used for the "next page" button (and reused for setup default items).
+     * Right-pointing arrow used for the "next page" button.
      */
-    public static final String NEXT_PAGE = "d34ef0638537222b20f480694dadc0f85fbe0759d581aa7fcdf2e43139377158";
+    public static final String NEXT_PAGE = "f32ca66056b72863e98f7f32bd7d94c7a0d796af691c9ac3a9136331352288f9";
 
     /**
      * Left-pointing arrow used for the "previous page" button.
      */
-    public static final String PREVIOUS_PAGE = "f7aacad193e2226971ed95302dba433438be4644fbab5ebf818054061667fbe2";
+    public static final String PREVIOUS_PAGE = "86971dd881dbaf4fd6bcaa93614493c612f869641ed59d1c9363a3666a5fa6";
 
     /**
      * Green plus used for "create"/"add" actions (create world, add builder).
@@ -53,6 +53,41 @@ public final class SkullTextures {
      * Chest/archive head used for the world archive entry.
      */
     public static final String WORLD_ARCHIVE = "7f6bf958abd78295eed6ffc293b1aa59526e80f54976829ea068337c2f5e8";
+
+    /**
+     * Redstone-cog head used for the navigator settings entry.
+     */
+    public static final String SETTINGS = "1cba7277fc895bf3b673694159864b83351a4d14717e476ebda1c3bf38fcf37";
+
+    /**
+     * Upward-pointing arrow head used for scrolling a list up.
+     */
+    public static final String SCROLL_UP = "3f46abad924b22372bc966a6d517d2f1b8b57fdd262b4e04f48352e683fff92";
+
+    /**
+     * Downward-pointing arrow head used for scrolling a list down.
+     */
+    public static final String SCROLL_DOWN = "be9ae7a4be65fcbaee65181389a2f7d47e2e326db59ea3eb789a92c85ea46";
+
+    /**
+     * Red bin/trash head used for "delete" drop targets.
+     */
+    public static final String DELETE = "6ffb912612a06e7ebf865be50ce9ff609195efd19bbe497c61e228c73ef7757";
+
+    /**
+     * Refresh/arrows head used for "reset to defaults" actions.
+     */
+    public static final String RESET = "c49d271c5df84f8a3c8aa5d15427f62839341dab52c619a5987d38fbe18e464";
+
+    /**
+     * Green-check head used for "confirm"/"yes" actions.
+     */
+    public static final String CONFIRM = "a79a5c95ee17abfef45c8dc224189964944d560f19a44f19f8a46aef3fee4756";
+
+    /**
+     * Red-cross head used for "cancel"/"no" actions.
+     */
+    public static final String CANCEL = "27548362a24c0fa8453e4d93e68c5969ddbde57bf6666c0319c1ed1e84d89065";
 
     private SkullTextures() {}
 }

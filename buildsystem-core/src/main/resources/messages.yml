@@ -397,7 +397,7 @@ new_navigator_private_worlds: "&b&lPRIVATE WORLDS"
 # World Navigator
 world_navigator_title: "&3» &8World Navigator"
 world_navigator_no_worlds: "&c&nNo worlds available"
-world_navigator_create_world: "&bCreate a Public World"
+world_navigator_create_world: "&bCreate a World"
 world_navigator_create_folder: "&bCreate a Folder"
 world_item_title: "&3&l%world%"
 world_item_pinned_prefix: "📌 "
@@ -420,8 +420,8 @@ world_item_lore_edit:
   - "&7Builders&8:"
   - "%builders%"
   - ""
-  - "&8- &7&oLeft click&8: &7Teleport"
-  - "&8- &7&oRight click&8: &7Edit"
+  - "&8» &7&oLeft-click to teleport"
+  - "&8» &7&oRight-click to edit"
 folder_title: "&3» &8%folder%"
 folder_item_title: "&3&l%folder%"
 folder_item_lore:
@@ -446,9 +446,9 @@ world_filter_mode_contains: "&8» &7&oContains: &b&o%text%"
 world_filter_mode_matches: "&8» &7&oMatches: &b&o%text%"
 world_filter_lore:
   - ""
-  - "&8- &7&oLeft click&8: &7Change text"
-  - "&8- &7&oRight click&8: &7Change mode"
-  - "&8- &7&oShift click&8: &7Reset to default"
+  - "&8» &7&oLeft-click to change the text"
+  - "&8» &7&oRight-click to change the mode"
+  - "&8» &7&oShift-click to reset"
 
 # World Archive
 archive_title: "&3» &8World Archive"
@@ -482,26 +482,256 @@ restore_backup_cancel_name: "&cCancel"
 
 # Setup
 setup_title: "&3» &8Setup"
-setup_default_item_name: "&bDefault Item"
-setup_default_item_lore:
-  - "&7The item which a world"
-  - "&7has by default when created."
+
+# Setup - Hub
+setup_default_icons_item: "&bDefault World Icons"
+setup_default_icons_item_lore:
+  - "&7The default icon for each world type."
   - ""
-  - "&7&nTo change&7:"
-  - "&8» &7&oDrag new item onto old one"
-setup_status_item_name: "&bStatus Item"
-setup_status_item_name_lore:
-  - "&7The item which is shown when"
-  - "&7you change a world's status."
+  - "&8» &7&oClick to edit"
+setup_statuses_item: "&bWorld Statuses"
+setup_statuses_item_lore:
+  - "&7Create and edit world statuses."
   - ""
-  - "&7&nTo change&7:"
-  - "&8» &7&oDrag new item onto old one"
+  - "&8» &7&oClick to manage"
+setup_navigator_item: "&bNavigator Layout"
+setup_navigator_item_lore:
+  - "&7Arrange the navigator and manage"
+  - "&7its categories."
+  - ""
+  - "&8» &7&oClick to edit"
+
+# Setup - Navigator Layout
+setup_navigator_title: "&3» &8Navigator Layout"
+setup_navigator_placed_lore:
+  - ""
+  - "&8» &7&oClick to move"
+  - "&8» &7&oShift-click to edit"
+setup_navigator_palette_lore:
+  - "&7This category is hidden from the"
+  - "&7navigator until you add it."
+  - ""
+  - "&8» &7&oClick to add to the navigator"
+  - "&8» &7&oShift-click to edit"
+  - "&8» &7&oDrag onto the bin to delete"
+setup_navigator_create_lore:
+  - "&8» &7&oClick to create a category"
+setup_navigator_delete: "&cDelete category"
+setup_navigator_delete_lore:
+  - "&7Drop a category here to delete it."
+  - "&7Its worlds move to the default category."
+setup_navigator_reset: "&eReset layout"
+setup_navigator_reset_lore:
+  - "&7Restore the default navigator layout."
+  - ""
+  - "&8» &7&oLeft-click to reset the layout"
+  - "&8» &7&oRight-click to reset everything"
+setup_navigator_reset_confirm_lore:
+  - "&7The layout is reset. Built-in categories"
+  - "&7return to their default slots; custom"
+  - "&7categories are kept but removed from"
+  - "&7the navigator."
+setup_navigator_reset_all_confirm_lore:
+  - "&7Every category is reset to the built-in"
+  - "&7defaults. Custom categories are deleted"
+  - "&7and the built-ins are restored."
+setup_navigator_settings_placed_lore:
+  - "&7The settings button players see"
+  - "&7in the navigator."
+  - ""
+  - "&8» &7&oLeft-click to move"
+  - "&8» &7&oDrop outside to remove"
+setup_navigator_settings_palette_lore:
+  - "&7The settings button is hidden from"
+  - "&7the navigator until you add it."
+  - ""
+  - "&8» &7&oLeft-click to add to the navigator"
+
+# Setup - Default Icons
+setup_default_icons_title: "&3» &8Default Icons"
 setup_normal_world: "&bNormal World"
 setup_flat_world: "&aFlat World"
 setup_nether_world: "&cNether World"
 setup_end_world: "&eEnd World"
 setup_void_world: "&fEmpty World"
 setup_imported_world: "&7Imported World"
+
+# Setup - Shared
+setup_back: "&cBack"
+setup_name_invalid_characters: "%prefix% &cInvalid characters were removed from the name."
+setup_name_empty: "%prefix% &cThe name cannot be empty."
+setup_item_picker_title: "&3» &8Pick an Item"
+setup_scroll_up: "&eScroll up"
+setup_scroll_down: "&eScroll down"
+setup_filter: "&bFilter"
+setup_filter_none: "&7none"
+setup_filter_lore:
+  - "&7Active filter&8: &f%filter%"
+  - ""
+  - "&8» &7&oClick to search"
+  - "&8» &7&oRight-click to clear"
+setup_filter_prompt: "&aSearch term"
+setup_order_lore:
+  - "&8» &7&oLeft-click to increase"
+  - "&8» &7&oRight-click to decrease"
+setup_icon_lore:
+  - "&7The item shown in menus."
+  - ""
+  - "&8» &7&oClick to choose an item"
+setup_toggle_state_on: "&7&nCurrently&7: &aEnabled"
+setup_toggle_state_off: "&7&nCurrently&7: &cDisabled"
+
+# Setup - Colour Picker
+setup_color_picker_title: "&3» &8Pick a Colour"
+
+# Setup - Confirmation
+setup_confirm_title: "&3» &8Are You Sure?"
+setup_confirm_yes: "&aConfirm"
+setup_confirm_no: "&cCancel"
+
+# Setup - Management (shared)
+setup_delete_last: "%prefix% &cYou cannot delete the last remaining entry."
+setup_reset: "&eReset to defaults"
+setup_reset_lore:
+  - "&7Restore the built-in entries,"
+  - "&7discarding all customizations."
+  - ""
+  - "&8» &7&oClick to reset"
+setup_reset_confirm_lore:
+  - "&7All custom entries will be removed and"
+  - "&7the built-in defaults restored."
+
+# Setup - Status Management
+setup_statuses_title: "&3» &8World Statuses"
+setup_status_entry_lore:
+  - "&7A status a world can be set to."
+  - ""
+  - "&8» &7&oClick to edit"
+  - "&8» &7&oShift-click to delete"
+setup_status_entry_builtin_lore:
+  - "&7A status a world can be set to."
+  - ""
+  - "&8» &7&oClick to edit"
+  - "&8» &7&oShift-click to delete"
+setup_status_add: "&aCreate a new status"
+setup_status_add_prompt: "&aStatus name"
+setup_status_delete_lore:
+  - "&7Worlds using this status: &c%worlds%"
+  - "&7They will be reset to the default status."
+
+# Setup - Status Editor
+setup_status_editor_title: "&8Status &7» %status%"
+setup_status_rename: "&bName"
+setup_status_rename_lore:
+  - "&7The name shown for this status"
+  - "&7in menus and on the scoreboard."
+  - ""
+  - "&8» &7&oClick to rename"
+setup_status_rename_prompt: "&aNew name"
+setup_status_color: "&bColour"
+setup_status_color_lore:
+  - "&7The colour of this status's name"
+  - "&7and the worlds that carry it."
+  - ""
+  - "&8» &7&oClick to choose a colour"
+setup_status_icon: "&bIcon"
+setup_status_order: "&bOrder &8(&f%order%&8)"
+setup_status_building: "&bBuilding"
+setup_status_building_lore:
+  - "&7Whether worlds with this status"
+  - "&7can be built in. When off, only"
+  - "&7admins may build."
+  - "%state%"
+  - ""
+  - "&8» &7&oClick to toggle"
+setup_status_progresses: "&bAuto-progresses to &8(&f%target%&8)"
+setup_status_progresses_lore:
+  - "&7The status a world advances to"
+  - "&7the first time it is edited."
+  - ""
+  - "&8» &7&oLeft-click to cycle"
+  - "&8» &7&oRight-click to clear"
+setup_status_progresses_none: "&7None"
+
+# Setup - Category Creation
+setup_category_add: "&aCreate a new category"
+setup_category_add_prompt: "&aCategory name"
+
+# Setup - Category Editor
+setup_category_editor_title: "&8Category &7» %category%"
+setup_category_rename: "&bName"
+setup_category_rename_lore:
+  - "&7The name shown for this category"
+  - "&7in the navigator."
+  - ""
+  - "&8» &7&oClick to rename"
+setup_category_rename_prompt: "&aNew name"
+setup_category_color: "&bColour"
+setup_category_color_lore:
+  - "&7The colour of this category's"
+  - "&7name in the navigator."
+  - ""
+  - "&8» &7&oClick to choose a colour"
+setup_category_icon: "&bIcon"
+setup_category_icon_lore:
+  - "&7The item shown for this category"
+  - "&7in the navigator."
+  - ""
+  - "&8» &7&oClick to choose an item"
+setup_category_icon_head_lore:
+  - "&7The item shown for this category"
+  - "&7in the navigator."
+  - ""
+  - "&7Head texture&8: &f%texture%"
+  - ""
+  - "&8» &7&oLeft-click to choose an item"
+  - "&8» &7&oRight-click to set head texture"
+setup_category_statuses_lore:
+  - "&7The statuses grouped into this"
+  - "&7category."
+  - ""
+setup_category_statuses_members: "&7Members&8:"
+setup_category_statuses_none: "&8  (none)"
+setup_category_statuses_member_entry: "&8  • %status%"
+setup_category_statuses_hint: "&8» &7&oClick to edit members"
+setup_category_skull_none: "&7None"
+setup_category_skull_viewer: "&7Viewer's head"
+setup_category_skull_custom: "&7Custom"
+setup_category_skull_prompt: "&aSkull texture"
+setup_category_visibility_everyone: "&bPublic worlds"
+setup_category_visibility_everyone_lore:
+  - "&7Whether public worlds (visible to"
+  - "&7everyone) are grouped in this category."
+  - ""
+  - "%state%"
+  - ""
+  - "&8» &7&oClick to toggle"
+setup_category_visibility_added: "&bPrivate worlds"
+setup_category_visibility_added_lore:
+  - "&7Whether private worlds (visible to"
+  - "&7their builders only) are grouped here."
+  - ""
+  - "%state%"
+  - ""
+  - "&8» &7&oClick to toggle"
+setup_category_visibility_state_on: "&7&nCurrently&7: &aGrouped"
+setup_category_visibility_state_off: "&7&nCurrently&7: &cNot grouped"
+setup_category_statuses: "&bMember statuses"
+setup_category_statuses_title: "&3» &8Category Statuses"
+setup_category_status_member:
+  - "&7Worlds with this status are grouped"
+  - "&7into this category."
+  - ""
+  - "&7&nCurrently&7: &a✔ In this category"
+  - ""
+  - "&8» &7&oClick to remove"
+setup_category_status_not_member:
+  - "&7Worlds with this status are grouped"
+  - "&7into this category."
+  - ""
+  - "&7&nCurrently&7: &c✖ Not in this category"
+  - ""
+  - "&8» &7&oClick to add"
 
 # Create World
 create_title: "&3» &8Create World"
@@ -527,15 +757,10 @@ type_custom: "Custom"
 type_template: "Template"
 type_private: "Private"
 type_imported: "Imported"
+type_unknown: "Unknown"
 
 # World Status
 status_title: "&8Status &7» &3%world%"
-status_not_started: "&cNot Started"
-status_in_progress: "&6In Progress"
-status_almost_finished: "&aAlmost Finished"
-status_finished: "&2Finished"
-status_archive: "&9Archive"
-status_hidden: "&fHidden"
 
 # World Difficulty
 difficulty_peaceful: "&fPeaceful"
@@ -549,8 +774,8 @@ delete_world_name: "&e%world%"
 delete_world_name_lore:
   - ""
   - "&c&nWarning&c: &7&oOnce a world is"
-  - "&7&odeleted it is lost forever"
-  - "&7&oand cannot be recovered!"
+  - "&7deleted it is lost forever"
+  - "&7and cannot be recovered!"
 delete_world_cancel: "&cCancel"
 delete_world_confirm: "&aConfirm"
 
@@ -558,31 +783,34 @@ delete_world_confirm: "&aConfirm"
 worldeditor_title: "&3» &8World Editor"
 worldeditor_world_item: "&3&l%world%"
 
+# Shared toggle state line (appended to every on/off item's lore)
+toggle_currently_enabled: "&7&nCurrently&7: &aEnabled"
+toggle_currently_disabled: "&7&nCurrently&7: &cDisabled"
+
 worldeditor_blockbreaking_item: "&bBlock Breaking"
 worldeditor_blockbreaking_lore:
-  - "&7&oToggle whether or not blocks"
-  - "&7&oare able to be broken."
+  - "&7Toggle whether or not blocks"
+  - "&7are able to be broken."
 
 worldeditor_blockplacement_item: "&bBlock Placement"
 worldeditor_blockplacement_lore:
-  - "&7&oToggle whether or not blocks"
-  - "&7&oare able to be placed."
+  - "&7Toggle whether or not blocks"
+  - "&7are able to be placed."
 
 worldeditor_physics_item: "&bBlock Physics"
 worldeditor_physics_lore:
-  - "&7&oToggle whether or not block"
-  - "&7&ophysics are activated."
+  - "&7Toggle whether or not block"
+  - "&7physics are activated."
 
 worldeditor_pin_item: "&bPinned"
 worldeditor_pin_lore:
-  - "&7&oToggle whether or not the world"
-  - "&7&ois pinned to the top of the navigator."
+  - "&7Toggle whether or not the world"
+  - "&7is pinned to the top of the navigator."
 
 worldeditor_time_item: "&bTime"
 worldeditor_time_lore:
-  - "&7&oAlter the time of day"
-  - "&7&oin the world."
-  - ""
+  - "&7Alter the time of day"
+  - "&7in the world."
   - "&7&nCurrently&7: %time%"
 worldeditor_time_lore_sunrise: "&6Sunrise"
 worldeditor_time_lore_noon: "&eNoon"
@@ -591,25 +819,25 @@ worldeditor_time_lore_unknown: "&fUnknown"
 
 worldeditor_explosions_item: "&bExplosions"
 worldeditor_explosions_lore:
-  - "&7&oToggle whether or not"
-  - "&7&oexplosions are activated."
+  - "&7Toggle whether or not"
+  - "&7explosions are activated."
 
 worldeditor_butcher_item: "&bButcher"
 worldeditor_butcher_lore:
-  - "&7&oKill all the mobs in the world."
+  - "&7Kill all the mobs in the world."
 worldeditor_butcher_removed: "%prefix% &b%amount% &7mobs were removed."
 
 worldeditor_builders_item: "&bBuilders"
 worldeditor_builders_lore:
-  - "&7&oManage which players can"
-  - "&7&obuild in the world."
+  - "&7Manage which players can"
+  - "&7build in the world."
   - ""
-  - "&8- &7&oLeft click&8: &7Toggle feature"
-  - "&8- &7&oRight click&8: &7Manage builders"
+  - "&8» &7&oLeft-click to toggle"
+  - "&8» &7&oRight-click to manage builders"
 worldeditor_builders_not_creator_item: "&c&mBuilders"
 worldeditor_builders_not_creator_lore:
-  - "&7&oYou are not the creator"
-  - "&7&oof this world."
+  - "&7You are not the creator"
+  - "&7of this world."
 
 worldeditor_builders_title: "&3» &8Builders"
 worldeditor_builders_creator_item: "&7&nCreator&7:"
@@ -617,12 +845,12 @@ worldeditor_builders_creator_lore: "&8» &b%creator%"
 worldeditor_builders_no_creator_item: "&cWorld has no creator!"
 worldeditor_builders_builder_item: "&b%builder%"
 worldeditor_builders_builder_lore:
-  - "&8- &7&oShift click&8: &7Remove"
+  - "&8» &7&oShift-click to remove"
 worldeditor_builders_add_builder_item: "&bAdd builder"
 
 worldeditor_gamerules_item: "&bGamerules"
 worldeditor_gamerules_lore:
-  - "&7&oManage the world's gamerules"
+  - "&7Manage the world's gamerules"
 
 worldeditor_gamerules_title: "&3» &8Gamerules"
 worldeditor_gamerules_boolean_enabled:
@@ -632,57 +860,51 @@ worldeditor_gamerules_boolean_disabled:
 worldeditor_gamerules_integer:
   - "&7&nCurrently&7: &e%value%"
   - ""
-  - "&8- &7&oLeft Click&8: &7decrease by 1"
-  - "&8- &7&oShift &7+ &7&oLeft Click&8: &7decrease by 10"
-  - "&8- &7&oRight Click&8: &7increase by 1"
-  - "&8- &7&oShift &7+ &7&oRight Click&8: &7increase by 10"
+  - "&8» &7&oLeft-click to decrease by 1"
+  - "&8» &7&oShift + left-click to decrease by 10"
+  - "&8» &7&oRight-click to increase by 1"
+  - "&8» &7&oShift + right-click to increase by 10"
 worldsettings_gamerule_:
   - ""
   - "&c&nWarning&c: &7&oOnce a world is"
-  - "&7&odeleted it is lost forever"
-  - "&7&oand cannot be recovered!"
+  - "&7deleted it is lost forever"
+  - "&7and cannot be recovered!"
 
 worldeditor_visibility_item: "&bVisibility"
 worldeditor_visibility_lore_public:
-  - "&7&oChange the world's visibility"
-  - ""
+  - "&7Change the world's visibility"
   - "&7&nCurrently&7: &bPublic"
 worldeditor_visibility_lore_private:
-  - "&7&oChange the world's visibility"
-  - ""
+  - "&7Change the world's visibility"
   - "&7&nCurrently&7: &bPrivate"
 
 worldeditor_mobai_item: "&bMob AI"
 worldeditor_mobai_lore:
-  - "&7&oToggle whether mobs have an AI."
+  - "&7Toggle whether mobs have an AI."
 
 worldeditor_blockinteractions_item: "&bBlock Interactions"
 worldeditor_blockinteractions_lore:
-  - "&7&oToggle whether interactions"
-  - "&7&owith blocks are cancelled."
+  - "&7Toggle whether interactions"
+  - "&7with blocks are cancelled."
 
 worldeditor_difficulty_item: "&bDifficulty"
 worldeditor_difficulty_lore:
-  - "&7&oChange the world's difficulty."
-  - ""
+  - "&7Change the world's difficulty."
   - "&7&nCurrently&7: %difficulty%"
 
 worldeditor_status_item: "&bStatus"
 worldeditor_status_lore:
-  - "&7&oChange the world's status."
-  - ""
+  - "&7Change the world's status."
   - "&7&nCurrently&7: %status%"
 
 worldeditor_project_item: "&bProject"
 worldeditor_project_lore:
-  - "&7&oChange the world's project."
-  - ""
+  - "&7Change the world's project."
   - "&7&nCurrently&7: &b%project%"
 
 worldeditor_permission_item: "&bPermission"
 worldeditor_permission_lore:
-  - "&7&oChange the world's permission."
-  - ""
+  - "&7Change the world's permission."
   - "&7&nCurrently&7: &b%permission%"
 
 # Settings
@@ -690,79 +912,79 @@ settings_title: "&3» &8Settings"
 
 settings_change_design_item: "&bChange Design"
 settings_change_design_lore:
-  - "&7&oSelect which colour the"
-  - "&7&oglass panes should have."
+  - "&7Select which colour the"
+  - "&7glass panes should have."
 
 settings_clear_inventory_item: "&bClear Inventory"
 settings_clear_inventory_lore:
-  - "&7&oWhen enabled, a player's"
-  - "&7&oinventory is cleared on join."
+  - "&7When enabled, a player's"
+  - "&7inventory is cleared on join."
 
 settings_disableinteract_item: "&bDisable Block Interactions"
 settings_disableinteract_lore:
-  - "&7&oWhen enabled, interactions with"
-  - "&7&ocertain blocks are disabled."
+  - "&7When enabled, interactions with"
+  - "&7certain blocks are disabled."
 
 settings_hideplayers_item: "&bHide Players"
 settings_hideplayers_lore:
-  - "&7&oWhen enabled, all online"
-  - "&7&oplayers will be hidden."
+  - "&7When enabled, all online"
+  - "&7players will be hidden."
 
 settings_instantplacesigns_item: "&bInstant Place Signs"
 settings_instantplacesigns_lore:
-  - "&7&oWhen enabled, signs are placed"
-  - "&7&owithout opening the text input."
+  - "&7When enabled, signs are placed"
+  - "&7without opening the text input."
 
 settings_keep_navigator_item: "&bKeep Navigator"
 settings_keep_navigator_lore:
-  - "&7&oWhen enabled, the navigator"
-  - "&7&owill remain in your inventory"
-  - "&7&oeven when you clear it."
+  - "&7When enabled, the navigator"
+  - "&7will remain in your inventory"
+  - "&7even when you clear it."
 
 settings_new_navigator_item: "&bNew Navigator"
 settings_new_navigator_lore:
-  - "&7&oA new and improved navigator"
-  - "&7&owhich is no longer a GUI."
+  - "&7A new and improved navigator"
+  - "&7which is no longer a GUI."
 
 settings_nightvision_item: "&bNightvision"
 settings_nightvision_lore:
-  - "&7&oWhen enabled, you will"
-  - "&7&oreceive permanent night vision."
+  - "&7When enabled, you will"
+  - "&7receive permanent night vision."
 
 settings_no_clip_item: "&bNoClip"
 settings_no_clip_lore:
-  - "&7&oWhen flying against a wall, you"
-  - "&7&owill be put into spectator mode."
+  - "&7When flying against a wall, you"
+  - "&7will be put into spectator mode."
 
 settings_open_trapdoors_item: "&bOpen Trapdoors"
 settings_open_trapdoors_lore:
-  - "&7&oWhen right clicking iron (trap-)doors,"
-  - "&7&othey will be opened/closed."
+  - "&7When right clicking iron (trap-)doors,"
+  - "&7they will be opened/closed."
 
 settings_placeplants_item: "&bPlace Plants"
 settings_placeplants_lore:
-  - "&7&oWhen enabled, you can place"
-  - "&7&oplants on every kind of block."
+  - "&7When enabled, you can place"
+  - "&7plants on every kind of block."
 
 settings_scoreboard_item: "&bScoreboard"
 settings_scoreboard_lore:
-  - "&7&oA scoreboard which provides"
-  - "&7&oyou with useful information."
+  - "&7A scoreboard which provides"
+  - "&7you with useful information."
 settings_scoreboard_disabled_item: "&c&mScoreboard"
 settings_scoreboard_disabled_lore:
-  - "&7&oThe scoreboard has been"
-  - "&7&odisabled in the config."
+  - "&7The scoreboard has been"
+  - "&7disabled in the config."
 
 settings_slab_breaking_item: "&bSlab breaking"
 settings_slab_breaking_lore:
-  - "&7&oWhen breaking double slabs,"
-  - "&7&oonly one half will be broken."
+  - "&7When breaking double slabs,"
+  - "&7only one half will be broken."
 
 settings_spawnteleport_item: "&bSpawn Teleport"
 settings_spawnteleport_lore:
-  - "&7&oWhen enabled, you will be"
-  - "&7&oteleported to the spawn"
-  - "&7&oif it has been set."
+  - "&7When enabled, you will be"
+  - "&7teleported to the spawn"
+  - "&7if it has been set."
 
 # Change Design
 design_title: "&3» &8Change Design"

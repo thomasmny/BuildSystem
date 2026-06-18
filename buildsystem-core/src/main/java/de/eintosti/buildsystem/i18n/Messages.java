@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.i18n;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.util.color.ColorAPI;
@@ -56,6 +55,18 @@ public final class Messages {
 
     public void load() {
         this.store.load();
+    }
+
+    /**
+     * Returns the raw, unrendered value for a key only if the loaded {@code messages.yml} contains it, without logging
+     * a missing-key warning. Intended for one-time migrations that read legacy keys (e.g. seeding status names from the
+     * pre-4.0 {@code status_*} keys).
+     *
+     * @param key The message key
+     * @return The raw value, or {@link Optional#empty()} when absent
+     */
+    public Optional<String> findRaw(String key) {
+        return store.find(key);
     }
 
     public void reload() {
@@ -123,18 +134,7 @@ public final class Messages {
                 : "-";
     }
 
-    public static String getMessageKey(BuildWorldStatus status) {
-        return switch (status) {
-            case NOT_STARTED -> "status_not_started";
-            case IN_PROGRESS -> "status_in_progress";
-            case ALMOST_FINISHED -> "status_almost_finished";
-            case FINISHED -> "status_finished";
-            case ARCHIVE -> "status_archive";
-            case HIDDEN -> "status_hidden";
-        };
-    }
-
-    public static @Nullable String getMessageKey(BuildWorldType type) {
+    public static String getMessageKey(BuildWorldType type) {
         return switch (type) {
             case NORMAL -> "type_normal";
             case FLAT -> "type_flat";
@@ -145,7 +145,7 @@ public final class Messages {
             case PRIVATE -> "type_private";
             case IMPORTED -> "type_imported";
             case CUSTOM -> "type_custom";
-            case UNKNOWN -> null;
+            case UNKNOWN -> "type_unknown";
         };
     }
 }
