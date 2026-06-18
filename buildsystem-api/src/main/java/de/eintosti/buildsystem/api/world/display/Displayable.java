@@ -116,6 +116,18 @@ public interface Displayable {
     }
 
     /**
+     * Gets the profile the renderer falls back to when this displayable's {@link #getHeadProfile() head profile} cannot
+     * be resolved (e.g. the primary profile is a player name that does not map to a real account). Returns {@code null}
+     * to leave a plain head when resolution fails. Like the head profile, this is resolved asynchronously.
+     *
+     * @return The fallback head profile, or {@code null} for none
+     * @since TODO
+     */
+    @Nullable default Profileable getHeadFallbackProfile() {
+        return null;
+    }
+
+    /**
      * Gets the lore of this displayable item.
      *
      * @param player The player viewing the item

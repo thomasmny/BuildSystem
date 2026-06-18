@@ -110,6 +110,23 @@ public final class ItemBuilder {
     }
 
     /**
+     * Variant of {@link #skull(Profileable)} that resolves {@code fallback} when {@code profileable} cannot be resolved
+     * (e.g. a player name with no matching account). A {@code null} fallback behaves like {@link #skull(Profileable)}.
+     *
+     * @param profileable The primary skull profile to apply
+     * @param fallback The profile to apply if the primary fails to resolve, or {@code null} for none
+     * @return A new builder wrapping the head
+     */
+    public static ItemBuilder skull(Profileable profileable, @Nullable Profileable fallback) {
+        ItemStack skull = XSkull.createItem()
+                .profile(profileable)
+                .fallback(fallback != null ? new Profileable[] {fallback} : new Profileable[0])
+                .lenient()
+                .apply();
+        return new ItemBuilder(skull);
+    }
+
+    /**
      * Starts a builder for a configurable icon. When {@code material} is a player head, the head's skin is resolved from
      * {@code skullTexture}: the {@link #VIEWER_HEAD} sentinel uses the viewing player's own skin, a non-blank value is
      * treated as a texture/name/UUID profile, and {@code null}/blank yields a plain head. For any other material this is
@@ -169,7 +186,9 @@ public final class ItemBuilder {
             return icon(material, texture, viewer);
         }
         Profileable headProfile = displayable.getHeadProfile();
-        return headProfile != null ? skull(headProfile) : of(XMaterial.PLAYER_HEAD);
+        return headProfile != null
+                ? skull(headProfile, displayable.getHeadFallbackProfile())
+                : of(XMaterial.PLAYER_HEAD);
     }
 
     /**

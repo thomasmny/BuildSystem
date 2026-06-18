@@ -119,17 +119,23 @@ public final class MenuItems {
             ItemBuilder.of(XMaterial.PLAYER_HEAD).name(name).lore(lore).into(inventory, slot);
             return;
         }
-        applyHeadProfileAsync(inventory, slot, headProfile, name, lore);
+        applyHeadProfileAsync(inventory, slot, headProfile, displayable.getHeadFallbackProfile(), name, lore);
     }
 
     private void applyHeadProfileAsync(
-            Inventory inventory, int slot, Profileable profile, String name, List<String> lore) {
+            Inventory inventory,
+            int slot,
+            Profileable profile,
+            @Nullable Profileable fallback,
+            String name,
+            List<String> lore) {
         ItemStack placeholder =
                 ItemBuilder.of(XMaterial.PLAYER_HEAD).name(name).lore(lore).build();
         inventory.setItem(slot, placeholder);
 
         XSkull.createItem()
                 .profile(profile)
+                .fallback(fallback != null ? new Profileable[] {fallback} : new Profileable[0])
                 .lenient()
                 .applyAsync()
                 .thenAcceptAsync(itemStack -> {

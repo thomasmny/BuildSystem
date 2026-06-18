@@ -274,6 +274,16 @@ public final class BuildWorldImpl implements BuildWorld {
         return Profileable.username(name);
     }
 
+    /**
+     * Falls back to the creator's skin when the {@link #getHeadProfile() head profile} cannot be resolved — notably a
+     * public world whose name does not map to a real account, where the primary is the world-name head. Returns
+     * {@code null} when there is no creator to fall back to.
+     */
+    @Override
+    public @Nullable Profileable getHeadFallbackProfile() {
+        return builders.hasCreator() ? Profileable.of(builders.getCreator().getUniqueId()) : null;
+    }
+
     @Override
     public BuildWorldType getType() {
         return worldType;
