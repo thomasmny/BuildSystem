@@ -509,6 +509,7 @@ setup_navigator_item_lore:
 # Setup - Navigator Layout
 setup_navigator_title: "&3» &8Navigator Layout"
 setup_navigator_placed_lore:
+  - ""
   - "&8» &7&oClick to move"
   - "&8» &7&oShift-click to edit"
 setup_navigator_palette_lore:
@@ -697,6 +698,7 @@ setup_category_icon_head_lore:
   - "&7in the navigator."
   - ""
   - "&7Head texture&8: &f%texture%"
+  - ""
   - "&8» &7&oLeft-click to choose an item"
   - "&8» &7&oRight-click to set head texture"
 setup_category_statuses_lore:
@@ -715,6 +717,7 @@ setup_category_visibility_everyone: "&bPublic worlds"
 setup_category_visibility_everyone_lore:
   - "&7Whether public worlds (visible to"
   - "&7everyone) are grouped in this category."
+  - ""
   - "%state%"
   - ""
   - "&8» &7&oClick to toggle"
@@ -722,6 +725,7 @@ setup_category_visibility_added: "&bPrivate worlds"
 setup_category_visibility_added_lore:
   - "&7Whether private worlds (visible to"
   - "&7their builders only) are grouped here."
+  - ""
   - "%state%"
   - ""
   - "&8» &7&oClick to toggle"
@@ -732,12 +736,14 @@ setup_category_statuses_title: "&3» &8Category Statuses"
 setup_category_status_member:
   - "&7Worlds with this status are grouped"
   - "&7into this category."
+  - ""
   - "&7&nCurrently&7: &a✔ In this category"
   - ""
   - "&8» &7&oClick to remove"
 setup_category_status_not_member:
   - "&7Worlds with this status are grouped"
   - "&7into this category."
+  - ""
   - "&7&nCurrently&7: &c✖ Not in this category"
   - ""
   - "&8» &7&oClick to add"
