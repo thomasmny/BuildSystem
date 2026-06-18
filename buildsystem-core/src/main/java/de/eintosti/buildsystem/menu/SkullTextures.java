@@ -60,11 +60,6 @@ public final class SkullTextures {
     public static final String SETTINGS = "1cba7277fc895bf3b673694159864b83351a4d14717e476ebda1c3bf38fcf37";
 
     /**
-     * Green-check head used for "confirm"/"done" actions.
-     */
-    public static final String CONFIRM = "a92e31ffb59c90ab08fc9dc1fe26802035a3a47c42fee63423bcdb4262ecb9b6";
-
-    /**
      * Upward-pointing arrow head used for scrolling a list up.
      */
     public static final String SCROLL_UP = "3f46abad924b22372bc966a6d517d2f1b8b57fdd262b4e04f48352e683fff92";
@@ -82,12 +77,17 @@ public final class SkullTextures {
     /**
      * Refresh/arrows head used for "reset to defaults" actions.
      */
-    public static final String RESET = "ed707db46a5acbfebf61239536d25648134bb43b65c16716ba329c6dbf412";
+    public static final String RESET = "c49d271c5df84f8a3c8aa5d15427f62839341dab52c619a5987d38fbe18e464";
 
     /**
-     * Head used for "remove"/"cancel" actions.
+     * Green-check head used for "confirm"/"yes" actions.
      */
-    public static final String CANCEL = "MHF_TNT";
+    public static final String CONFIRM = "a79a5c95ee17abfef45c8dc224189964944d560f19a44f19f8a46aef3fee4756";
+
+    /**
+     * Red-cross head used for "cancel"/"no" actions.
+     */
+    public static final String CANCEL = "27548362a24c0fa8453e4d93e68c5969ddbde57bf6666c0319c1ed1e84d89065";
 
     private SkullTextures() {}
 }

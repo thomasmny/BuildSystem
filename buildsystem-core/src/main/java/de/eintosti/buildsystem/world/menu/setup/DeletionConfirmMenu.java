@@ -19,10 +19,12 @@ package de.eintosti.buildsystem.world.menu.setup;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.SkullTextures;
 import java.util.List;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -35,12 +37,12 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class DeletionConfirmMenu extends ButtonMenu<MenuButton> {
 
+    private static final int INVENTORY_SIZE = 27;
     private static final int SLOT_CONFIRM = 11;
     private static final int SLOT_INFO = 13;
     private static final int SLOT_CANCEL = 15;
 
     private final BuildSystemPlugin plugin;
-    private final Runnable onCancel;
 
     public DeletionConfirmMenu(
             BuildSystemPlugin plugin,
@@ -49,31 +51,32 @@ public class DeletionConfirmMenu extends ButtonMenu<MenuButton> {
             List<String> infoLore,
             Runnable onConfirm,
             Runnable onCancel) {
-        super(plugin.getMessages(), 27, plugin.getMessages().getString("setup_confirm_title", player));
+        super(plugin.getMessages(), INVENTORY_SIZE, plugin.getMessages().getString("setup_confirm_title", player));
         this.plugin = plugin;
-        this.onCancel = onCancel;
 
-        register(SLOT_CONFIRM, choiceButton(XMaterial.LIME_DYE, "setup_confirm_yes", onConfirm));
-        register(SLOT_CANCEL, choiceButton(XMaterial.RED_DYE, "setup_confirm_no", onCancel));
-        register(
-                SLOT_INFO,
-                MenuButton.builder()
-                        .render((p, inventory, slot) -> ItemBuilder.of(XMaterial.PAPER)
-                                .name(infoName)
-                                .lore(infoLore)
-                                .into(inventory, slot))
-                        .build());
+        register(SLOT_CONFIRM, createChoiceButton(SkullTextures.CONFIRM, "setup_confirm_yes", onConfirm));
+        register(SLOT_CANCEL, createChoiceButton(SkullTextures.CANCEL, "setup_confirm_no", onCancel));
+        register(SLOT_INFO, createInfoButton(infoName, infoLore));
     }
 
-    private MenuButton choiceButton(XMaterial material, String nameKey, Runnable action) {
+    private MenuButton createChoiceButton(String texture, String nameKey, Runnable action) {
         return MenuButton.builder()
-                .render((player, inventory, slot) -> ItemBuilder.of(material)
+                .render((player, inventory, slot) -> ItemBuilder.skull(Profileable.detect(texture))
                         .name(messages.getString(nameKey, player))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     action.run();
                 })
+                .build();
+    }
+
+    private MenuButton createInfoButton(String infoName, List<String> infoLore) {
+        return MenuButton.builder()
+                .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.PAPER)
+                        .name(infoName)
+                        .lore(infoLore)
+                        .into(inventory, slot))
                 .build();
     }
 
@@ -85,10 +88,6 @@ public class DeletionConfirmMenu extends ButtonMenu<MenuButton> {
 
     @Override
     protected void onUnhandledClick(Player player, InventoryClickEvent event) {
-        if (event.getRawSlot() < 0 || event.getRawSlot() >= getInventory().getSize()) {
-            return;
-        }
-        XSound.BLOCK_CHEST_OPEN.play(player);
-        onCancel.run();
+        // A confirmation must be deliberate: only the confirm/cancel buttons act. Filler clicks do nothing.
     }
 }

@@ -38,6 +38,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Owns every {@link NavigatorCategory}, seeding the built-in defaults on first run and persisting all administrator
@@ -88,39 +89,55 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
     }
 
     private void seedDefaults() {
+        this.categories.putAll(buildDefaults());
+    }
+
+    /**
+     * {@return a fresh map of the built-in categories in their default state} Built on demand without touching the live
+     * registry, so it can back both first-run seeding and the navigator-layout reset.
+     */
+    private Map<String, NavigatorCategoryImpl> buildDefaults() {
+        Map<String, NavigatorCategoryImpl> defaults = new LinkedHashMap<>();
         List<String> activeStatuses = List.of("not_started", "in_progress", "almost_finished", "finished");
         // Built-in categories keep the pre-4.0 navigator icons: textured player-head skulls. The private category
         // defaults to the viewing player's own head ({@code %viewer%}).
-        put(NavigatorCategoryImpl.builder(PUBLIC_ID)
-                .displayName("Worlds")
-                .color("&b")
-                .icon(XMaterial.PLAYER_HEAD)
-                .iconSkullTexture(SkullTextures.WORLD_NAVIGATOR)
-                .visibilities(EnumSet.of(Visibility.EVERYONE))
-                .navigatorSlot(11)
-                .builtIn(true)
-                .statusIds(activeStatuses)
-                .build());
-        put(NavigatorCategoryImpl.builder(ARCHIVE_ID)
-                .displayName("Archive")
-                .color("&3")
-                .icon(XMaterial.PLAYER_HEAD)
-                .iconSkullTexture(SkullTextures.WORLD_ARCHIVE)
-                .visibilities(EnumSet.of(Visibility.EVERYONE, Visibility.ADDED_PLAYERS))
-                .navigatorSlot(12)
-                .builtIn(true)
-                .statusIds(List.of("archive"))
-                .build());
-        put(NavigatorCategoryImpl.builder(PRIVATE_ID)
-                .displayName("Private")
-                .color("&a")
-                .icon(XMaterial.PLAYER_HEAD)
-                .iconSkullTexture(ItemBuilder.VIEWER_HEAD)
-                .visibilities(EnumSet.of(Visibility.ADDED_PLAYERS))
-                .navigatorSlot(13)
-                .builtIn(true)
-                .statusIds(activeStatuses)
-                .build());
+        defaults.put(
+                PUBLIC_ID,
+                NavigatorCategoryImpl.builder(PUBLIC_ID)
+                        .displayName("Worlds")
+                        .color("&b")
+                        .icon(XMaterial.PLAYER_HEAD)
+                        .iconSkullTexture(SkullTextures.WORLD_NAVIGATOR)
+                        .visibilities(EnumSet.of(Visibility.EVERYONE))
+                        .navigatorSlot(11)
+                        .builtIn(true)
+                        .statusIds(activeStatuses)
+                        .build());
+        defaults.put(
+                ARCHIVE_ID,
+                NavigatorCategoryImpl.builder(ARCHIVE_ID)
+                        .displayName("Archive")
+                        .color("&3")
+                        .icon(XMaterial.PLAYER_HEAD)
+                        .iconSkullTexture(SkullTextures.WORLD_ARCHIVE)
+                        .visibilities(EnumSet.of(Visibility.EVERYONE, Visibility.ADDED_PLAYERS))
+                        .navigatorSlot(12)
+                        .builtIn(true)
+                        .statusIds(List.of("archive"))
+                        .build());
+        defaults.put(
+                PRIVATE_ID,
+                NavigatorCategoryImpl.builder(PRIVATE_ID)
+                        .displayName("Private")
+                        .color("&a")
+                        .icon(XMaterial.PLAYER_HEAD)
+                        .iconSkullTexture(ItemBuilder.VIEWER_HEAD)
+                        .visibilities(EnumSet.of(Visibility.ADDED_PLAYERS))
+                        .navigatorSlot(13)
+                        .builtIn(true)
+                        .statusIds(activeStatuses)
+                        .build());
+        return defaults;
     }
 
     private void put(NavigatorCategoryImpl category) {
@@ -135,7 +152,7 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
     }
 
     @Override
-    public Optional<NavigatorCategory> getCategory(String id) {
+    public Optional<NavigatorCategory> getCategory(@Nullable String id) {
         return Optional.ofNullable(this.categories.get(id));
     }
 
@@ -173,6 +190,26 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
         this.categories.clear();
         seedDefaults();
         storage.saveAll(this.categories.values());
+        setSettingsSlot(DEFAULT_SETTINGS_SLOT);
+    }
+
+    /**
+     * Resets only the navigator layout — where categories and the settings button sit — without touching the categories
+     * themselves. Built-in categories return to their default slots and become visible again; custom categories are kept
+     * but removed from the navigator (so they can be re-added). The settings button returns to its default slot.
+     */
+    public void resetNavigatorLayout() {
+        Map<String, NavigatorCategoryImpl> defaults = buildDefaults();
+        for (NavigatorCategoryImpl category : this.categories.values()) {
+            NavigatorCategoryImpl preset = defaults.get(category.getId());
+            if (preset != null) {
+                category.setNavigatorSlot(preset.getNavigatorSlot());
+                category.setShownInNavigator(preset.isShownInNavigator());
+            } else {
+                category.setShownInNavigator(false);
+            }
+            storage.save(category);
+        }
         setSettingsSlot(DEFAULT_SETTINGS_SLOT);
     }
 

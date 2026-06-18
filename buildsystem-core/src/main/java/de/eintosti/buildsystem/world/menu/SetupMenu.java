@@ -50,7 +50,7 @@ public class SetupMenu extends ButtonMenu<MenuButton> {
         register(
                 SLOT_DEFAULT_ICONS,
                 hubButton(
-                        XMaterial.GLOWSTONE_DUST,
+                        XMaterial.ITEM_FRAME,
                         "setup_default_icons_item",
                         p -> new DefaultIconsMenu(plugin, p).open(p)));
         register(

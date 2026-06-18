@@ -42,10 +42,14 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
 
+    private static final int INVENTORY_SIZE = 27;
+    private static final int MIDDLE_ROW_START_SLOT = 9;
+    private static final int ITEMS_PER_ROW = 9;
+
     protected final BuildSystemPlugin plugin;
 
     protected RegistryEditorMenu(BuildSystemPlugin plugin, String title) {
-        super(plugin.getMessages(), 27, title);
+        super(plugin.getMessages(), INVENTORY_SIZE, title);
         this.plugin = plugin;
     }
 
@@ -132,6 +136,7 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
                     boolean on = state.getAsBoolean();
                     String stateText =
                             messages.getString(on ? "setup_toggle_state_on" : "setup_toggle_state_off", player);
+
                     ItemBuilder.of(on ? XMaterial.LIME_DYE : XMaterial.GRAY_DYE)
                             .name(messages.getString(nameKey, player))
                             .lore(messages.getStringList(nameKey + "_lore", player, Map.entry("%state%", stateText)))
@@ -178,9 +183,32 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
      * @param buttons The property buttons, in display order
      */
     protected final void registerCentered(List<MenuButton> buttons) {
-        int start = 9 + (10 - buttons.size()) / 2;
+        int centerOffset = (ITEMS_PER_ROW - buttons.size()) / 2;
+        int startSlot = MIDDLE_ROW_START_SLOT + centerOffset;
+
         for (int i = 0; i < buttons.size(); i++) {
-            register(start + i, buttons.get(i));
+            register(startSlot + i, buttons.get(i));
+        }
+    }
+
+    /**
+     * Registers two property groups in the middle row (slots 9-17) with a one-slot gap between them, keeping the whole
+     * arrangement centred. Used to visually separate the styling properties from the grouping properties.
+     *
+     * @param first The first group, in display order
+     * @param second The second group, in display order
+     */
+    protected final void registerGrouped(List<MenuButton> first, List<MenuButton> second) {
+        int groupGap = 1;
+        int totalWidth = first.size() + groupGap + second.size();
+        int slot = MIDDLE_ROW_START_SLOT + (ITEMS_PER_ROW - totalWidth) / 2;
+
+        for (MenuButton button : first) {
+            register(slot++, button);
+        }
+        slot += groupGap;
+        for (MenuButton button : second) {
+            register(slot++, button);
         }
     }
 
