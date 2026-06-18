@@ -63,7 +63,7 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
 
         this.registry = plugin.getNavigatorCategoryRegistry();
         this.category = (NavigatorCategoryImpl) category;
-        this.skullProcessor = new SkullStateProcessor(this.category);
+        this.skullProcessor = new SkullStateProcessor();
 
         registerGrouped(stylingButtons(), groupingButtons());
         register(SLOT_BACK, backButton());
@@ -213,11 +213,6 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
      * Inner processing layer delegating texture matching and localization identification logic.
      */
     private final class SkullStateProcessor {
-        private final NavigatorCategoryImpl category;
-
-        private SkullStateProcessor(NavigatorCategoryImpl category) {
-            this.category = category;
-        }
 
         public String getLabel(Player player) {
             String texture = category.getIconSkullTexture();

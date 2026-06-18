@@ -189,23 +189,19 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
      * @param buttons The property buttons, in display order
      */
     protected final void registerCentered(List<MenuButton> buttons) {
-        int centerOffset = (ITEMS_PER_ROW - buttons.size()) / 2;
-        int startSlot = MIDDLE_ROW_START_SLOT + centerOffset;
-
-        for (int i = 0; i < buttons.size(); i++) {
-            register(startSlot + i, buttons.get(i));
-        }
+        registerGrouped(buttons, List.of());
     }
 
     /**
-     * Registers two property groups in the middle row (slots 9-17) with a one-slot gap between them, keeping the whole
-     * arrangement centred. Used to visually separate the styling properties from the grouping properties.
+     * Registers two property groups in the middle row (slots 9-17), centred as a whole, with a one-slot gap between them
+     * when both are non-empty (so {@link #registerCentered(List) a single group} stays exactly centred). Used to
+     * visually separate the styling properties from the grouping properties.
      *
      * @param first The first group, in display order
      * @param second The second group, in display order
      */
     protected final void registerGrouped(List<MenuButton> first, List<MenuButton> second) {
-        int groupGap = 1;
+        int groupGap = first.isEmpty() || second.isEmpty() ? 0 : 1;
         int totalWidth = first.size() + groupGap + second.size();
         int slot = MIDDLE_ROW_START_SLOT + (ITEMS_PER_ROW - totalWidth) / 2;
 

@@ -494,11 +494,6 @@ setup_statuses_item_lore:
   - "&7Create and edit world statuses."
   - ""
   - "&8» &7&oClick to manage"
-setup_categories_item: "&bNavigator Categories"
-setup_categories_item_lore:
-  - "&7Create and edit navigator categories."
-  - ""
-  - "&8» &7&oClick to manage"
 setup_navigator_item: "&bNavigator Layout"
 setup_navigator_item_lore:
   - "&7Arrange the navigator and manage"
@@ -658,19 +653,9 @@ setup_status_progresses_lore:
   - "&8» &7&oRight-click to clear"
 setup_status_progresses_none: "&7None"
 
-# Setup - Category Management
-setup_categories_title: "&3» &8Navigator Categories"
-setup_category_entry_lore:
-  - "&8» &7&oClick to edit"
-  - "&8» &7&oShift-click to delete"
-setup_category_entry_builtin_lore:
-  - "&8» &7&oClick to edit"
-  - "&8» &7&oShift-click to delete"
+# Setup - Category Creation
 setup_category_add: "&aCreate a new category"
 setup_category_add_prompt: "&aCategory name"
-setup_category_delete_lore:
-  - "&7Worlds here move to another"
-  - "&7matching category."
 
 # Setup - Category Editor
 setup_category_editor_title: "&8Category &7» %category%"

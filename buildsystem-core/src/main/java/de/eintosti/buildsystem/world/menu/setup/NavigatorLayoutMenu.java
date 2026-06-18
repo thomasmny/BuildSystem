@@ -31,6 +31,8 @@ import de.eintosti.buildsystem.world.display.NavigatorCategoryImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import de.eintosti.buildsystem.world.menu.SetupMenu;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -143,7 +145,7 @@ public class NavigatorLayoutMenu extends Menu {
                     .into(playerInventory, slot);
         }
 
-        int settingsTokenSlot = settingsPaletteSlot();
+        int settingsTokenSlot = settingsPaletteSlot(notAdded.size());
         if (!cursorState.isHoldingSettings() && registry.getSettingsSlot() < 0 && settingsTokenSlot >= 0) {
             ItemBuilder.skull(Profileable.detect(SkullTextures.SETTINGS))
                     .name(messages.getString("old_navigator_settings", player))
@@ -153,7 +155,12 @@ public class NavigatorLayoutMenu extends Menu {
     }
 
     private int settingsPaletteSlot() {
-        int slot = PALETTE_FIRST_SLOT + notAddedCategories().size();
+        return settingsPaletteSlot(notAddedCategories().size());
+    }
+
+    /** The palette slot the settings token occupies, given the number of not-yet-added categories before it. */
+    private int settingsPaletteSlot(int notAddedCount) {
+        int slot = PALETTE_FIRST_SLOT + notAddedCount;
         return slot <= PALETTE_LAST_SLOT ? slot : -1;
     }
 
@@ -405,8 +412,13 @@ public class NavigatorLayoutMenu extends Menu {
     }
 
     private int firstFreeSlot() {
+        // Snapshot the occupied slots once rather than re-fetching the (sorted) category list for every slot.
+        Set<Integer> occupied = registry.getCategories().stream()
+                .filter(NavigatorCategory::isShownInNavigator)
+                .map(NavigatorCategory::getNavigatorSlot)
+                .collect(Collectors.toSet());
         for (int slot = 0; slot < NAVIGATOR_SIZE; slot++) {
-            if (categoryAtSlot(slot) == null) {
+            if (!occupied.contains(slot)) {
                 return slot;
             }
         }
