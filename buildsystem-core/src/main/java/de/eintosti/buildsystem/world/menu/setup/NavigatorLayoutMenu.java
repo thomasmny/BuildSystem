@@ -169,15 +169,15 @@ public class NavigatorLayoutMenu extends Menu {
         Player player = (Player) event.getWhoClicked();
 
         if (event.getClickedInventory() == getInventory()) {
-            handleNavigatorClick(player, event.getRawSlot(), event.isRightClick());
+            handleNavigatorClick(player, event.getRawSlot(), event.isShiftClick());
         } else if (event.getClickedInventory() == player.getInventory()) {
-            handlePlayerClick(player, event.getSlot(), event.isRightClick());
+            handlePlayerClick(player, event.getSlot(), event.isRightClick(), event.isShiftClick());
         } else {
             handleOutsideClickWhileHolding(player);
         }
     }
 
-    private void handleNavigatorClick(Player player, int slot, boolean rightClick) {
+    private void handleNavigatorClick(Player player, int slot, boolean shiftClick) {
         if (!isSlotValid(slot)) {
             return;
         }
@@ -198,7 +198,7 @@ public class NavigatorLayoutMenu extends Menu {
 
         NavigatorCategoryImpl occupant = categoryAtSlot(slot);
         if (occupant != null) {
-            if (rightClick) {
+            if (shiftClick) {
                 new CategoryEditorMenu(plugin, player, occupant).open(player);
             } else {
                 pickUpCategory(player, occupant.getId(), slot);
@@ -247,7 +247,7 @@ public class NavigatorLayoutMenu extends Menu {
         refresh(player);
     }
 
-    private void handlePlayerClick(Player player, int slot, boolean rightClick) {
+    private void handlePlayerClick(Player player, int slot, boolean rightClick, boolean shiftClick) {
         if (cursorState.isHoldingCategory() && slot == DELETE_SLOT) {
             deleteHeldCategory(player);
             return;
@@ -268,7 +268,8 @@ public class NavigatorLayoutMenu extends Menu {
             return;
         }
         if (slot == RESET_SLOT) {
-            promptLayoutReset(player);
+            // Left-click resets only the layout; right-click resets every category to the built-in defaults.
+            promptReset(player, rightClick);
             return;
         }
         if (registry.getSettingsSlot() < 0 && slot == settingsPaletteSlot()) {
@@ -283,7 +284,7 @@ public class NavigatorLayoutMenu extends Menu {
         }
 
         NavigatorCategory clicked = notAdded.get(paletteIndex);
-        if (rightClick) {
+        if (shiftClick) {
             new CategoryEditorMenu(plugin, player, clicked).open(player);
         } else {
             pickUpCategory(player, clicked.getId(), -1);
@@ -313,14 +314,20 @@ public class NavigatorLayoutMenu extends Menu {
         refresh(player);
     }
 
-    private void promptLayoutReset(Player player) {
+    private void promptReset(Player player, boolean resetEverything) {
+        String confirmLoreKey =
+                resetEverything ? "setup_navigator_reset_all_confirm_lore" : "setup_navigator_reset_confirm_lore";
         new DeletionConfirmMenu(
                         plugin,
                         player,
                         messages.getString("setup_navigator_reset", player),
-                        messages.getStringList("setup_navigator_reset_confirm_lore", player),
+                        messages.getStringList(confirmLoreKey, player),
                         () -> {
-                            registry.resetNavigatorLayout();
+                            if (resetEverything) {
+                                registry.resetToDefaults();
+                            } else {
+                                registry.resetNavigatorLayout();
+                            }
                             XSound.ENTITY_CHICKEN_EGG.play(player);
                             new NavigatorLayoutMenu(plugin, player).open(player);
                         },
@@ -341,7 +348,8 @@ public class NavigatorLayoutMenu extends Menu {
                     created.setNavigatorSlot(firstFreeSlot());
                     registry.persist(created);
                     new CategoryEditorMenu(plugin, player, created).open(player);
-                });
+                },
+                () -> new NavigatorLayoutMenu(plugin, player).open(player));
     }
 
     private void pickUpCategory(Player player, String categoryId, int fromSlot) {

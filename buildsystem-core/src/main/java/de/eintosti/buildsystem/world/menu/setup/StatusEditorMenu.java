@@ -61,6 +61,8 @@ public class StatusEditorMenu extends RegistryEditorMenu {
     }
 
     private List<MenuButton> createPropertyButtons() {
+        // Navigator visibility is decided by category membership (a status only appears in the navigator through the
+        // categories that group it), so there is no separate per-status "shown in navigator" toggle.
         return List.of(
                 renameButton("setup_status_rename", "setup_status_rename_prompt", status::setDisplayName),
                 colorButton("setup_status_color", status::getColor, status::setColor),
@@ -70,10 +72,6 @@ public class StatusEditorMenu extends RegistryEditorMenu {
                         "setup_status_building",
                         status::isBuildingAllowed,
                         () -> status.setBuildingAllowed(!status.isBuildingAllowed())),
-                toggleButton(
-                        "setup_status_navigator",
-                        status::isVisibleInNavigator,
-                        () -> status.setVisibleInNavigator(!status.isVisibleInNavigator())),
                 createProgressesButton());
     }
 
@@ -139,7 +137,9 @@ public class StatusEditorMenu extends RegistryEditorMenu {
 
     @Override
     protected void reopen(Player player) {
-        this.open(player);
+        // A fresh instance rebuilds the title (which embeds the status's styled, coloured name) so a colour or name
+        // change is reflected there too, not just in the buttons.
+        new StatusEditorMenu(plugin, player, status).open(player);
     }
 
     @Override

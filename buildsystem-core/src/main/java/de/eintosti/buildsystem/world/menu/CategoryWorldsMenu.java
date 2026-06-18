@@ -48,6 +48,7 @@ public class CategoryWorldsMenu extends DisplayablesMenu {
 
     private static final int SLOT_CREATE_WORLD = 48;
     private static final int SLOT_CREATE_FOLDER = 50;
+    private static final int SLOT_CREATE_CENTER = 49;
 
     public CategoryWorldsMenu(BuildSystemPlugin plugin, Player player, NavigatorCategory category) {
         super(
@@ -62,15 +63,18 @@ public class CategoryWorldsMenu extends DisplayablesMenu {
 
     @Override
     protected void addExtraItems(Inventory inventory, Player player) {
-        if (canCreateWorldHere(player)) {
+        boolean createWorld = canCreateWorldHere(player);
+        if (createWorld) {
             ItemBuilder.skull(Profileable.detect(CREATE_WORLD_PROFILE))
                     .name(plugin.getMessages().getString("world_navigator_create_world", player))
                     .into(inventory, SLOT_CREATE_WORLD);
         }
         if (player.hasPermission("buildsystem.create.folder")) {
+            // With the create-world button hidden, centre the lone folder button instead of leaving it off to the side.
+            int folderSlot = createWorld ? SLOT_CREATE_FOLDER : SLOT_CREATE_CENTER;
             ItemBuilder.skull(Profileable.detect(CREATE_FOLDER_PROFILE))
                     .name(plugin.getMessages().getString("world_navigator_create_folder", player))
-                    .into(inventory, SLOT_CREATE_FOLDER);
+                    .into(inventory, folderSlot);
         }
     }
 

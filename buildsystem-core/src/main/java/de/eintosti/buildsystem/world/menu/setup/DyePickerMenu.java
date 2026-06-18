@@ -50,8 +50,8 @@ public class DyePickerMenu extends ButtonMenu<MenuButton> {
     // Ordered by colour family — reds, oranges/yellows, greens, aquas, blues, purples, then greyscale dark→light — so
     // the palette reads as a sorted gradient rather than the raw chat-code order.
     private static final List<Swatch> SWATCHES = List.of(
-            new Swatch("&4", XMaterial.RED_DYE, "Dark Red"),
-            new Swatch("&c", XMaterial.PINK_DYE, "Red"),
+            new Swatch("&4", XMaterial.REDSTONE, "Dark Red"),
+            new Swatch("&c", XMaterial.RED_DYE, "Red"),
             new Swatch("&6", XMaterial.ORANGE_DYE, "Gold"),
             new Swatch("&e", XMaterial.YELLOW_DYE, "Yellow"),
             new Swatch("&2", XMaterial.GREEN_DYE, "Dark Green"),
