@@ -286,11 +286,16 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
      */
     private void rehomeFolders(String deletedId) {
         NavigatorCategory fallback = getDefaultCategory();
-        for (Folder folder : plugin.getWorldService().getFolderStorage().getFolders()) {
+        var folderStorage = plugin.getWorldService().getFolderStorage();
+        List<Folder> rehomed = new ArrayList<>();
+        for (Folder folder : folderStorage.getFolders()) {
             if (folder.getCategory().getId().equals(deletedId)) {
                 ((FolderImpl) folder).setCategory(fallback);
-                plugin.getWorldService().getFolderStorage().save(folder);
+                rehomed.add(folder);
             }
+        }
+        if (!rehomed.isEmpty()) {
+            folderStorage.save(rehomed);
         }
     }
 }

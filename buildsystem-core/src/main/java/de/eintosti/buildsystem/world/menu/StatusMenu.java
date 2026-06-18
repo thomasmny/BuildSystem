@@ -44,8 +44,8 @@ import org.jspecify.annotations.NullMarked;
 public class StatusMenu extends ButtonMenu<MenuButton> {
 
     private static final int STATUSES_PER_ROW = 7;
-    private static final int MIN_ROWS = 3;
-    private static final int MAX_ROWS = 6;
+    private static final int BORDER_ROWS = 2; // one filler row above and below the grid
+    private static final int MAX_CONTENT_ROWS = 4; // the six-row chest minus the two border rows
 
     private final BuildSystemPlugin plugin;
     private final BuildWorld buildWorld;
@@ -64,7 +64,7 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
         // Lay the grid out row by row, keeping a one-slot border on every side. The six-row chest bounds capacity, so
         // guard against placing a button outside the inventory (which would throw) when an admin has created a very
         // large number of statuses.
-        int capacity = (rowCount(statuses.size()) - 2) * STATUSES_PER_ROW;
+        int capacity = contentRows(statuses.size()) * STATUSES_PER_ROW;
         for (int index = 0; index < statuses.size() && index < capacity; index++) {
             int slot = (index / STATUSES_PER_ROW + 1) * 9 + 1 + index % STATUSES_PER_ROW;
             register(slot, statusButton(statuses.get(index)));
@@ -82,16 +82,18 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
      * side, clamped to the chest maximum of six rows.
      */
     private static int computeSize(BuildSystemPlugin plugin) {
-        return rowCount(plugin.getWorldStatusRegistry().getStatuses().size()) * 9;
+        int rows = contentRows(plugin.getWorldStatusRegistry().getStatuses().size()) + BORDER_ROWS;
+        return rows * 9;
     }
 
     /**
-     * The inventory row count: one content row per {@value #STATUSES_PER_ROW} statuses plus a top and bottom border row,
-     * clamped between {@value #MIN_ROWS} and the six-row chest maximum.
+     * The number of grid rows the statuses occupy — one row per {@value #STATUSES_PER_ROW} statuses, at least one and
+     * clamped to {@value #MAX_CONTENT_ROWS} (the six-row chest minus the top and bottom border rows). Statuses beyond
+     * the resulting capacity are not shown.
      */
-    private static int rowCount(int statusCount) {
-        int contentRows = Math.max(1, (int) Math.ceil(statusCount / (double) STATUSES_PER_ROW));
-        return Math.clamp(contentRows + 2, MIN_ROWS, MAX_ROWS);
+    private static int contentRows(int statusCount) {
+        int rows = (int) Math.ceil(statusCount / (double) STATUSES_PER_ROW);
+        return Math.clamp(rows, 1, MAX_CONTENT_ROWS);
     }
 
     private static String formatWorldName(BuildWorld buildWorld) {

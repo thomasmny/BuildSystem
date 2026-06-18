@@ -22,7 +22,6 @@ import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.config.ConfigService;
@@ -173,17 +172,12 @@ public final class MenuItems {
     public void renderCategoryIcon(
             Inventory inventory, int slot, NavigatorCategory category, Player viewer, String name, List<String> lore) {
         XMaterial icon = category.getIcon();
-        if (icon != XMaterial.PLAYER_HEAD) {
-            ItemBuilder.of(icon).name(name).lore(lore).into(inventory, slot);
+        String texture = ItemBuilder.categoryTexture(category);
+        if (icon != XMaterial.PLAYER_HEAD || texture == null || texture.isBlank()) {
+            ItemBuilder.icon(icon, texture, viewer).name(name).lore(lore).into(inventory, slot);
             return;
         }
 
-        String texture = category.getIconSkullTexture();
-        if (texture == null || texture.isBlank()) {
-            texture = category.getPrimaryVisibility() == Visibility.ADDED_PLAYERS
-                    ? ItemBuilder.VIEWER_HEAD
-                    : SkullTextures.WORLD_NAVIGATOR;
-        }
         Profileable profile = ItemBuilder.VIEWER_HEAD.equals(texture)
                 ? Profileable.detect(viewer.getName())
                 : Profileable.detect(texture);
