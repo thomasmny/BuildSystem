@@ -55,12 +55,33 @@ public final class PlayerChatInput {
     private final BuildSystemPlugin plugin;
     private final BukkitTask titleTask;
     private final InputRunnable runWhenComplete;
+    private final Runnable onCancel;
     private final UUID playerUuid;
 
     public PlayerChatInput(BuildSystemPlugin plugin, Player player, String titleKey, InputRunnable runWhenComplete) {
+        this(plugin, player, titleKey, runWhenComplete, () -> {});
+    }
+
+    /**
+     * Creates a prompt that runs {@code onCancel} when the player types {@code cancel}, instead of the completion
+     * callback — typically used to reopen the menu the prompt was launched from.
+     *
+     * @param plugin The plugin instance
+     * @param player The player to request input from
+     * @param titleKey The message key for the input prompt title
+     * @param runWhenComplete Receives the first non-{@code cancel} line the player sends
+     * @param onCancel Runs on the main thread when the player cancels the prompt
+     */
+    public PlayerChatInput(
+            BuildSystemPlugin plugin,
+            Player player,
+            String titleKey,
+            InputRunnable runWhenComplete,
+            Runnable onCancel) {
         this.plugin = plugin;
         this.playerUuid = player.getUniqueId();
         this.runWhenComplete = runWhenComplete;
+        this.onCancel = onCancel;
 
         String title = plugin.getMessages().getString(titleKey, player);
         String subtitle = plugin.getMessages().getString("cancel_subtitle", player);
@@ -100,20 +121,43 @@ public final class PlayerChatInput {
             String invalidCharactersMessageKey,
             String emptyNameMessageKey,
             InputRunnable onValidName) {
+        requestSanitizedName(
+                plugin, player, titleKey, invalidCharactersMessageKey, emptyNameMessageKey, onValidName, () -> {});
+    }
+
+    /**
+     * Variant of {@link #requestSanitizedName} that runs {@code onCancel} when the player cancels the prompt — typically
+     * used to reopen the menu the prompt was launched from.
+     *
+     * @param onCancel Runs on the main thread when the player cancels the prompt
+     */
+    public static void requestSanitizedName(
+            BuildSystemPlugin plugin,
+            Player player,
+            String titleKey,
+            String invalidCharactersMessageKey,
+            String emptyNameMessageKey,
+            InputRunnable onValidName,
+            Runnable onCancel) {
         String invalidCharacters = plugin.getConfigService().current().world().invalidCharacters();
-        new PlayerChatInput(plugin, player, titleKey, input -> {
-            if (StringCleaner.hasInvalidNameCharacters(input, invalidCharacters)) {
-                plugin.getMessages().sendMessage(player, invalidCharactersMessageKey);
-            }
+        new PlayerChatInput(
+                plugin,
+                player,
+                titleKey,
+                input -> {
+                    if (StringCleaner.hasInvalidNameCharacters(input, invalidCharacters)) {
+                        plugin.getMessages().sendMessage(player, invalidCharactersMessageKey);
+                    }
 
-            String sanitizedName = StringCleaner.sanitize(input, invalidCharacters);
-            if (sanitizedName.isEmpty()) {
-                plugin.getMessages().sendMessage(player, emptyNameMessageKey);
-                return;
-            }
+                    String sanitizedName = StringCleaner.sanitize(input, invalidCharacters);
+                    if (sanitizedName.isEmpty()) {
+                        plugin.getMessages().sendMessage(player, emptyNameMessageKey);
+                        return;
+                    }
 
-            onValidName.run(sanitizedName);
-        });
+                    onValidName.run(sanitizedName);
+                },
+                onCancel);
     }
 
     /**
@@ -137,6 +181,7 @@ public final class PlayerChatInput {
             if (cancelled) {
                 XSound.ENTITY_ITEM_BREAK.play(player);
                 input.plugin.getMessages().sendMessage(player, "input_cancelled");
+                input.onCancel.run();
             } else {
                 input.runWhenComplete.run(message);
             }

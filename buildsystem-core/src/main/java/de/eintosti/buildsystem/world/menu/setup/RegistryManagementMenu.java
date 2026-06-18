@@ -160,7 +160,8 @@ abstract class RegistryManagementMenu<T> extends PaginatedMenu {
                         addPromptKey(),
                         "setup_name_invalid_characters",
                         "setup_name_empty",
-                        name -> openEditor(player, create(name))))
+                        name -> openEditor(player, create(name)),
+                        () -> reopen(player)))
                 .build();
     }
 

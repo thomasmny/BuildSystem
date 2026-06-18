@@ -184,11 +184,16 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
                         populate(player);
                         return;
                     }
-                    new PlayerChatInput(plugin, player, "setup_filter_prompt", input -> {
-                        filter = input.strip();
-                        topRow = 0;
-                        open(player);
-                    });
+                    new PlayerChatInput(
+                            plugin,
+                            player,
+                            "setup_filter_prompt",
+                            input -> {
+                                filter = input.strip();
+                                topRow = 0;
+                                open(player);
+                            },
+                            () -> open(player));
                 })
                 .build();
     }

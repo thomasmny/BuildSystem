@@ -87,10 +87,16 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
                 XMaterial.NAME_TAG,
                 nameKey,
                 (player, event) -> PlayerChatInput.requestSanitizedName(
-                        plugin, player, promptKey, "setup_name_invalid_characters", "setup_name_empty", name -> {
+                        plugin,
+                        player,
+                        promptKey,
+                        "setup_name_invalid_characters",
+                        "setup_name_empty",
+                        name -> {
                             apply.accept(name);
                             save(player);
-                        }));
+                        },
+                        () -> reopen(player)));
     }
 
     protected final MenuButton colorButton(String nameKey, Supplier<String> current, Consumer<String> apply) {

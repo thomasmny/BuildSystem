@@ -369,7 +369,8 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                     plugin.getMessages()
                             .sendMessage(player, "worlds_folder_created", Map.entry("%folder%", folder.getName()));
                     open(player);
-                });
+                },
+                () -> open(player));
     }
 
     protected Folder createFolder(String folderName) {
@@ -389,11 +390,16 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
             worldFilter.setText("");
         } else if (event.isLeftClick()) {
             player.closeInventory();
-            new PlayerChatInput(plugin, player, "world_filter_title", input -> {
-                worldFilter.setText(input.replace("\"", ""));
-                resetPage();
-                open(player);
-            });
+            new PlayerChatInput(
+                    plugin,
+                    player,
+                    "world_filter_title",
+                    input -> {
+                        worldFilter.setText(input.replace("\"", ""));
+                        resetPage();
+                        open(player);
+                    },
+                    () -> open(player));
             return;
         } else if (event.isRightClick()) {
             worldFilter.setMode(currentMode.getNext());

@@ -127,10 +127,15 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
     }
 
     private void promptSkullTexture(Player player) {
-        new PlayerChatInput(plugin, player, "setup_category_skull_prompt", input -> {
-            skullProcessor.applyTextureFromInput(input);
-            save(player);
-        });
+        new PlayerChatInput(
+                plugin,
+                player,
+                "setup_category_skull_prompt",
+                input -> {
+                    skullProcessor.applyTextureFromInput(input);
+                    save(player);
+                },
+                () -> reopen(player));
     }
 
     private MenuButton visibilityButton(Visibility visibility, XMaterial icon, String nameKey) {
