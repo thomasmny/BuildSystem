@@ -98,6 +98,19 @@ class WorldStatusRegistryImplTest {
     }
 
     @Test
+    void deleteStatus_clearsDanglingProgressionTarget() {
+        WorldStatusImpl source = registry.createStatus("Source");
+        WorldStatusImpl target = registry.createStatus("Target");
+        source.setProgressesTo(target.getId());
+        registry.persist(source);
+
+        assertTrue(registry.deleteStatus(target.getId()));
+
+        BuildWorldStatus survivor = registry.getStatus(source.getId()).orElseThrow();
+        assertTrue(survivor.getProgressesTo().isEmpty(), "progressesTo should be cleared, not left dangling");
+    }
+
+    @Test
     void deleteStatus_refusesLastRemaining() {
         // Delete down to a single status; the final one must never be removable.
         for (BuildWorldStatus status : List.copyOf(registry.getStatuses())) {

@@ -351,8 +351,14 @@ public class NavigatorLayoutMenu extends Menu {
                 "setup_name_empty",
                 name -> {
                     NavigatorCategoryImpl created = registry.createCategory(name);
-                    created.setShownInNavigator(true);
-                    created.setNavigatorSlot(firstFreeSlot());
+                    int freeSlot = firstFreeSlot();
+                    if (freeSlot >= 0) {
+                        created.setShownInNavigator(true);
+                        created.setNavigatorSlot(freeSlot);
+                    } else {
+                        // Grid is full: leave the new category in the palette rather than overwriting slot 0.
+                        created.setShownInNavigator(false);
+                    }
                     registry.persist(created);
                     new CategoryEditorMenu(plugin, player, created).open(player);
                 },
@@ -411,6 +417,10 @@ public class NavigatorLayoutMenu extends Menu {
                 .orElse(null);
     }
 
+    /**
+     * {@return the first unoccupied navigator slot, or {@code -1} when the grid is full} Callers must treat {@code -1}
+     * as "no room" rather than placing at slot 0, which would overwrite the category already there.
+     */
     private int firstFreeSlot() {
         // Snapshot the occupied slots once rather than re-fetching the (sorted) category list for every slot.
         Set<Integer> occupied = registry.getCategories().stream()
@@ -422,7 +432,7 @@ public class NavigatorLayoutMenu extends Menu {
                 return slot;
             }
         }
-        return 0;
+        return -1;
     }
 
     private static boolean isSlotValid(int slot) {

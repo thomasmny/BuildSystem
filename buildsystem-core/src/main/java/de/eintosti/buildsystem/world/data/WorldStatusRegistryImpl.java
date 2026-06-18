@@ -202,9 +202,23 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
             plugin.getWorldService().getWorldStorage().save(world);
         }
 
+        clearDanglingProgression(id);
         categoryRegistry.removeStatusFromCategories(id);
         storage.delete(id);
         return true;
+    }
+
+    /**
+     * Clears the {@code progressesTo} target on any sibling status that auto-advanced to the just-deleted status, so no
+     * status is left pointing at an id that no longer resolves.
+     */
+    private void clearDanglingProgression(String deletedId) {
+        for (WorldStatusImpl status : this.statuses.values()) {
+            if (status.getProgressesTo().filter(deletedId::equals).isPresent()) {
+                status.setProgressesTo(null);
+                persist(status);
+            }
+        }
     }
 
     private String uniqueId(String displayName) {
