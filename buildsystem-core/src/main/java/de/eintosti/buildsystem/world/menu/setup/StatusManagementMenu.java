@@ -83,7 +83,7 @@ public class StatusManagementMenu extends RegistryManagementMenu<BuildWorldStatu
 
     @Override
     protected void reopen(Player player) {
-        new StatusManagementMenu(plugin, player).open(player);
+        this.open(player);
     }
 
     @Override

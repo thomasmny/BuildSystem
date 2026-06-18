@@ -21,9 +21,17 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.menu.*;
+import de.eintosti.buildsystem.menu.ButtonMenu;
+import de.eintosti.buildsystem.menu.ItemBuilder;
+import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.PlayerChatInput;
+import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.util.color.ColorAPI;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.function.Consumer;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -39,7 +47,9 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
 
+    private static final int INVENTORY_SIZE = 54;
     private static final int COLUMNS = 8;
+    private static final int CONTROL_COLUMN_INDEX = 8;
     private static final int VISIBLE_ROWS = 6;
     private static final int VISIBLE_ITEMS = COLUMNS * VISIBLE_ROWS;
 
@@ -67,7 +77,7 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
     private int topRow = 0;
 
     public MaterialPickerMenu(BuildSystemPlugin plugin, Player player, Consumer<XMaterial> onPick, Runnable onBack) {
-        super(plugin.getMessages(), 54, plugin.getMessages().getString("setup_item_picker_title", player));
+        super(plugin.getMessages(), INVENTORY_SIZE, plugin.getMessages().getString("setup_item_picker_title", player));
         this.plugin = plugin;
         this.onPick = onPick;
         this.onBack = onBack;
@@ -76,63 +86,60 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
     @Override
     protected void populate(Player player) {
         clearButtons();
-        // Clear the grid first: without this, items from a larger previous view (before a filter/scroll) linger in
-        // slots that no longer hold a button, making the filter look broken.
+        // Clear grid first to prevent residue rendering artifacts on active state shift swaps
         getInventory().clear();
-        fillRightColumn(player);
+        fillRightControlColumn(player);
 
-        List<XMaterial> matches = filtered();
+        List<XMaterial> matches = getFilteredMaterials();
         int maxTopRow = Math.max(0, ceilDiv(matches.size(), COLUMNS) - VISIBLE_ROWS);
         topRow = Math.min(topRow, maxTopRow);
 
         int firstIndex = topRow * COLUMNS;
         for (int i = 0; i < VISIBLE_ITEMS && firstIndex + i < matches.size(); i++) {
-            int slot = (i / COLUMNS) * 9 + (i % COLUMNS); // left eight columns, never the right control column
-            register(slot, materialButton(matches.get(firstIndex + i)));
+            int row = i / COLUMNS;
+            int col = i % COLUMNS;
+            int targetSlot = (row * 9) + col;
+
+            register(targetSlot, createMaterialButton(matches.get(firstIndex + i)));
         }
 
-        register(SLOT_SCROLL_UP, scrollButton(true, topRow > 0));
-        register(SLOT_SCROLL_DOWN, scrollButton(false, topRow < maxTopRow));
-        register(SLOT_FILTER, filterButton());
-        register(SLOT_BACK, backButton());
+        register(SLOT_SCROLL_UP, createScrollButton(true, topRow > 0));
+        register(SLOT_SCROLL_DOWN, createScrollButton(false, topRow < maxTopRow));
+        register(SLOT_FILTER, createFilterButton());
+        register(SLOT_BACK, createBackButton());
 
         renderButtons(player);
     }
 
-    /**
-     * Fills the right-hand control column with filler panes so the scroll/filter/back controls read as a deliberate
-     * strip rather than floating in empty slots.
-     */
-    private void fillRightColumn(Player player) {
+    private void fillRightControlColumn(Player player) {
         for (int row = 0; row < VISIBLE_ROWS; row++) {
-            plugin.getMenuItems().addGlassPane(player, getInventory(), row * 9 + COLUMNS);
+            int slot = (row * 9) + CONTROL_COLUMN_INDEX;
+            plugin.getMenuItems().addGlassPane(player, getInventory(), slot);
         }
     }
 
-    private List<XMaterial> filtered() {
+    private List<XMaterial> getFilteredMaterials() {
         if (filter.isEmpty()) {
             return PICKABLE;
         }
         String needle = filter.toLowerCase(Locale.ROOT);
-        return PICKABLE.stream().filter(material -> matches(material, needle)).toList();
+        return PICKABLE.stream()
+                .filter(material -> matchesFilter(material, needle))
+                .toList();
     }
 
-    /**
-     * Matches the search term against both the readable display name ({@code Diamond Pickaxe}) and the registry name
-     * ({@code diamond_pickaxe} / {@code minecraft:diamond_pickaxe}), so either form finds the item.
-     */
-    private static boolean matches(XMaterial material, String needle) {
-        if (prettyName(material).toLowerCase(Locale.ROOT).contains(needle)) {
+    private static boolean matchesFilter(XMaterial material, String needle) {
+        if (getPrettyName(material).toLowerCase(Locale.ROOT).contains(needle)) {
             return true;
         }
         String registryName = material.name().toLowerCase(Locale.ROOT);
         return registryName.contains(needle) || ("minecraft:" + registryName).contains(needle);
     }
 
-    private MenuButton materialButton(XMaterial material) {
+    private MenuButton createMaterialButton(XMaterial material) {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(material)
-                        .name(ColorAPI.process("&b" + prettyName(material)))
+                        .name(ColorAPI.process("&b" + getPrettyName(material)))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
@@ -141,7 +148,7 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
                 .build();
     }
 
-    private MenuButton scrollButton(boolean up, boolean enabled) {
+    private MenuButton createScrollButton(boolean up, boolean enabled) {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.skull(
                                 Profileable.detect(up ? SkullTextures.SCROLL_UP : SkullTextures.SCROLL_DOWN))
@@ -159,17 +166,17 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
                 .build();
     }
 
-    private MenuButton filterButton() {
+    private MenuButton createFilterButton() {
         return MenuButton.builder()
-                .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.HOPPER)
-                        .name(messages.getString("setup_filter", player))
-                        .lore(messages.getStringList(
-                                "setup_filter_lore",
-                                player,
-                                Map.entry(
-                                        "%filter%",
-                                        filter.isEmpty() ? messages.getString("setup_filter_none", player) : filter)))
-                        .into(inventory, slot))
+                .render((player, inventory, slot) -> {
+                    String activeFilterDisplay =
+                            filter.isEmpty() ? messages.getString("setup_filter_none", player) : filter;
+                    ItemBuilder.of(XMaterial.HOPPER)
+                            .name(messages.getString("setup_filter", player))
+                            .lore(messages.getStringList(
+                                    "setup_filter_lore", player, Map.entry("%filter%", activeFilterDisplay)))
+                            .into(inventory, slot);
+                })
                 .onClick((player, event) -> {
                     if (event.isRightClick()) {
                         filter = "";
@@ -186,7 +193,7 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
                 .build();
     }
 
-    private MenuButton backButton() {
+    private MenuButton createBackButton() {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.BARRIER)
                         .name(messages.getString("setup_back", player))
@@ -205,17 +212,18 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
     /**
      * Turns an enum-style material name ({@code DIAMOND_PICKAXE}) into a readable label ({@code Diamond Pickaxe}).
      */
-    private static String prettyName(XMaterial material) {
+    private static String getPrettyName(XMaterial material) {
         String[] words = material.name().toLowerCase(Locale.ROOT).split("_");
-        StringBuilder name = new StringBuilder();
+        StringBuilder builder = new StringBuilder();
+
         for (String word : words) {
             if (!word.isEmpty()) {
-                name.append(Character.toUpperCase(word.charAt(0)))
+                builder.append(Character.toUpperCase(word.charAt(0)))
                         .append(word, 1, word.length())
                         .append(' ');
             }
         }
-        return name.toString().trim();
+        return builder.toString().trim();
     }
 
     @Override

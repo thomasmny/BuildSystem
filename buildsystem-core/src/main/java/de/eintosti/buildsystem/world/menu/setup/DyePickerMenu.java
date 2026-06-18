@@ -74,6 +74,25 @@ public class DyePickerMenu extends ButtonMenu<MenuButton> {
         28, 29
     };
 
+    private static final int INVENTORY_SIZE = 45;
+    private static final int SLOT_BACK = 40;
+
+    private final BuildSystemPlugin plugin;
+    private final String currentToken;
+    private final Consumer<String> onPick;
+    private final Runnable onBack;
+
+    public DyePickerMenu(
+            BuildSystemPlugin plugin, Player player, String currentToken, Consumer<String> onPick, Runnable onBack) {
+        super(plugin.getMessages(), INVENTORY_SIZE, plugin.getMessages().getString("setup_color_picker_title", player));
+        this.plugin = plugin;
+        this.currentToken = currentToken;
+        this.onPick = onPick;
+        this.onBack = onBack;
+
+        setupButtons();
+    }
+
     /**
      * {@return the dye that represents the given legacy colour token} Falls back to a black dye for an unknown or hex
      * token, so a colour is always shown as a dye swatch.
@@ -88,28 +107,14 @@ public class DyePickerMenu extends ButtonMenu<MenuButton> {
                 .orElse(XMaterial.BLACK_DYE);
     }
 
-    private static final int SLOT_BACK = 40;
-
-    private final BuildSystemPlugin plugin;
-    private final String currentToken;
-    private final Consumer<String> onPick;
-    private final Runnable onBack;
-
-    public DyePickerMenu(
-            BuildSystemPlugin plugin, Player player, String currentToken, Consumer<String> onPick, Runnable onBack) {
-        super(plugin.getMessages(), 45, plugin.getMessages().getString("setup_color_picker_title", player));
-        this.plugin = plugin;
-        this.currentToken = currentToken;
-        this.onPick = onPick;
-        this.onBack = onBack;
-
+    private void setupButtons() {
         for (int i = 0; i < SWATCHES.size(); i++) {
-            register(SWATCH_SLOTS[i], swatchButton(SWATCHES.get(i)));
+            register(SWATCH_SLOTS[i], createSwatchButton(SWATCHES.get(i)));
         }
-        register(SLOT_BACK, backButton());
+        register(SLOT_BACK, createBackButton());
     }
 
-    private MenuButton swatchButton(Swatch swatch) {
+    private MenuButton createSwatchButton(Swatch swatch) {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(swatch.swatch())
                         .name(ColorAPI.process(swatch.token() + swatch.label()))
@@ -122,7 +127,7 @@ public class DyePickerMenu extends ButtonMenu<MenuButton> {
                 .build();
     }
 
-    private MenuButton backButton() {
+    private MenuButton createBackButton() {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.BARRIER)
                         .name(messages.getString("setup_back", player))

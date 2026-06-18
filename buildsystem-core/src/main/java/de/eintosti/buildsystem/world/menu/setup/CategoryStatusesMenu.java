@@ -41,8 +41,10 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class CategoryStatusesMenu extends PaginatedMenu {
 
+    private static final int INVENTORY_SIZE = 54;
     private static final int ITEMS_PER_PAGE = 36;
     private static final int FIRST_CONTENT_SLOT = 9;
+
     private static final int SLOT_BACK = 45;
     private static final int SLOT_PREVIOUS_PAGE = 52;
     private static final int SLOT_NEXT_PAGE = 53;
@@ -52,7 +54,10 @@ public class CategoryStatusesMenu extends PaginatedMenu {
     private final NavigatorCategoryImpl category;
 
     public CategoryStatusesMenu(BuildSystemPlugin plugin, Player player, NavigatorCategoryImpl category) {
-        super(plugin.getMessages(), 54, plugin.getMessages().getString("setup_category_statuses_title", player));
+        super(
+                plugin.getMessages(),
+                INVENTORY_SIZE,
+                plugin.getMessages().getString("setup_category_statuses_title", player));
         this.plugin = plugin;
         this.registry = plugin.getNavigatorCategoryRegistry();
         this.category = category;
@@ -66,50 +71,52 @@ public class CategoryStatusesMenu extends PaginatedMenu {
     @Override
     protected void populate(Player player) {
         clearButtons();
+
         // Top + bottom glass border with a hollow middle, matching the status/category management menus.
         plugin.getMenuItems().fillWithGlass(getInventory(), player);
 
         List<BuildWorldStatus> statuses =
                 List.copyOf(plugin.getWorldStatusRegistry().getStatuses());
-        registerPageItems(FIRST_CONTENT_SLOT, ITEMS_PER_PAGE, statuses, this::statusToggle);
+        registerPageItems(FIRST_CONTENT_SLOT, ITEMS_PER_PAGE, statuses, this::createStatusToggle);
 
-        register(SLOT_BACK, backButton());
-        // Page arrows only when the statuses actually overflow a single page.
-        if (totalPages(ITEMS_PER_PAGE) > 1) {
-            register(SLOT_PREVIOUS_PAGE, previousPageButton(SkullTextures.PREVIOUS_PAGE, ITEMS_PER_PAGE));
-            register(SLOT_NEXT_PAGE, nextPageButton(SkullTextures.NEXT_PAGE, ITEMS_PER_PAGE));
-        }
+        register(SLOT_BACK, createBackButton());
+        setupPaginationArrows();
 
         renderButtons(player);
     }
 
-    private MenuButton statusToggle(BuildWorldStatus status) {
+    private void setupPaginationArrows() {
+        if (totalPages(ITEMS_PER_PAGE) <= 1) {
+            return;
+        }
+        register(SLOT_PREVIOUS_PAGE, previousPageButton(SkullTextures.PREVIOUS_PAGE, ITEMS_PER_PAGE));
+        register(SLOT_NEXT_PAGE, nextPageButton(SkullTextures.NEXT_PAGE, ITEMS_PER_PAGE));
+    }
+
+    private MenuButton createStatusToggle(BuildWorldStatus status) {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> {
-                    boolean member = category.getStatusIds().contains(status.getId());
+                    boolean isMember = isCategoryMember(status);
+                    String loreKey = isMember ? "setup_category_status_member" : "setup_category_status_not_member";
+
                     // Always show the status's own icon; membership is conveyed by the glow and the lore.
                     ItemBuilder.of(status.getIcon())
                             .name(ColorAPI.process(status.getStyledName()))
-                            .lore(messages.getStringList(
-                                    member ? "setup_category_status_member" : "setup_category_status_not_member",
-                                    player))
-                            .glow(member)
+                            .lore(messages.getStringList(loreKey, player))
+                            .glow(isMember)
                             .into(inventory, slot);
                 })
                 .onClick((player, event) -> {
-                    if (category.getStatusIds().contains(status.getId())) {
-                        category.removeStatusId(status.getId());
-                    } else {
-                        category.addStatusId(status.getId());
-                    }
+                    toggleMembership(status);
                     registry.persist(category);
+
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     populate(player);
                 })
                 .build();
     }
 
-    private MenuButton backButton() {
+    private MenuButton createBackButton() {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.BARRIER)
                         .name(messages.getString("setup_back", player))
@@ -119,6 +126,18 @@ public class CategoryStatusesMenu extends PaginatedMenu {
                     new CategoryEditorMenu(plugin, player, category).open(player);
                 })
                 .build();
+    }
+
+    private boolean isCategoryMember(BuildWorldStatus status) {
+        return category.getStatusIds().contains(status.getId());
+    }
+
+    private void toggleMembership(BuildWorldStatus status) {
+        if (isCategoryMember(status)) {
+            category.removeStatusId(status.getId());
+        } else {
+            category.addStatusId(status.getId());
+        }
     }
 
     @Override

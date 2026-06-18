@@ -52,27 +52,32 @@ public class StatusEditorMenu extends RegistryEditorMenu {
                                 "setup_status_editor_title",
                                 player,
                                 Map.entry("%status%", ColorAPI.process(status.getStyledName()))));
+
         this.registry = plugin.getWorldStatusRegistry();
         this.status = (WorldStatusImpl) status;
 
-        registerCentered(List.of(
-                renameButton("setup_status_rename", "setup_status_rename_prompt", this.status::setDisplayName),
-                colorButton("setup_status_color", this.status::getColor, this.status::setColor),
-                iconButton("setup_status_icon", this.status::getIcon, this.status::setIcon),
-                orderButton(),
-                toggleButton(
-                        "setup_status_building",
-                        this.status::isBuildingAllowed,
-                        () -> this.status.setBuildingAllowed(!this.status.isBuildingAllowed())),
-                toggleButton(
-                        "setup_status_navigator",
-                        this.status::isVisibleInNavigator,
-                        () -> this.status.setVisibleInNavigator(!this.status.isVisibleInNavigator())),
-                progressesButton()));
+        registerCentered(createPropertyButtons());
         register(SLOT_BACK, backButton());
     }
 
-    private MenuButton orderButton() {
+    private List<MenuButton> createPropertyButtons() {
+        return List.of(
+                renameButton("setup_status_rename", "setup_status_rename_prompt", status::setDisplayName),
+                colorButton("setup_status_color", status::getColor, status::setColor),
+                iconButton("setup_status_icon", status::getIcon, status::setIcon),
+                createOrderButton(),
+                toggleButton(
+                        "setup_status_building",
+                        status::isBuildingAllowed,
+                        () -> status.setBuildingAllowed(!status.isBuildingAllowed())),
+                toggleButton(
+                        "setup_status_navigator",
+                        status::isVisibleInNavigator,
+                        () -> status.setVisibleInNavigator(!status.isVisibleInNavigator())),
+                createProgressesButton());
+    }
+
+    private MenuButton createOrderButton() {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.COMPARATOR)
                         .name(messages.getString(
@@ -80,17 +85,18 @@ public class StatusEditorMenu extends RegistryEditorMenu {
                         .lore(messages.getStringList("setup_order_lore", player))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
-                    status.setOrder(Math.max(0, status.getOrder() + (event.isRightClick() ? -1 : 1)));
+                    int modifier = event.isRightClick() ? -1 : 1;
+                    status.setOrder(Math.max(0, status.getOrder() + modifier));
                     save(player);
                 })
                 .build();
     }
 
-    private MenuButton progressesButton() {
+    private MenuButton createProgressesButton() {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.ARROW)
                         .name(messages.getString(
-                                "setup_status_progresses", player, Map.entry("%target%", progressesLabel(player))))
+                                "setup_status_progresses", player, Map.entry("%target%", getProgressesLabel(player))))
                         .lore(messages.getStringList("setup_status_progresses_lore", player))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
@@ -100,11 +106,11 @@ public class StatusEditorMenu extends RegistryEditorMenu {
                 .build();
     }
 
-    private String progressesLabel(Player player) {
+    private String getProgressesLabel(Player player) {
         return status.getProgressesTo()
                 .flatMap(registry::getStatus)
                 .map(target -> ColorAPI.process(target.getStyledName()))
-                .orElse(messages.getString("setup_status_progresses_none", player));
+                .orElseGet(() -> messages.getString("setup_status_progresses_none", player));
     }
 
     /**
@@ -116,11 +122,14 @@ public class StatusEditorMenu extends RegistryEditorMenu {
                 .map(BuildWorldStatus::getId)
                 .filter(id -> !id.equals(status.getId()))
                 .toList();
+
         if (candidates.isEmpty()) {
             return null;
         }
-        int index = candidates.indexOf(status.getProgressesTo().orElse(null));
-        return candidates.get((index + 1) % candidates.size());
+
+        int currentIndex = candidates.indexOf(status.getProgressesTo().orElse(null));
+        int nextIndex = (currentIndex + 1) % candidates.size();
+        return candidates.get(nextIndex);
     }
 
     @Override
@@ -130,7 +139,7 @@ public class StatusEditorMenu extends RegistryEditorMenu {
 
     @Override
     protected void reopen(Player player) {
-        new StatusEditorMenu(plugin, player, status).open(player);
+        this.open(player);
     }
 
     @Override

@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Optional;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * The registry of all {@link NavigatorCategory navigator categories} known to the server, both the built-in defaults
@@ -61,7 +62,7 @@ public interface NavigatorCategoryRegistry {
      * @param id The category id
      * @return The matching category, or {@link Optional#empty()} if none is registered with that id
      */
-    Optional<NavigatorCategory> getCategory(String id);
+    Optional<NavigatorCategory> getCategory(@Nullable String id);
 
     /**
      * Resolves the category a world is displayed in by matching both the world's visibility and its status: the world

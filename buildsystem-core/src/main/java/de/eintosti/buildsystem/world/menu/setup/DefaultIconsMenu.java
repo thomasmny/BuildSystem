@@ -17,8 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu.setup;
 
-import static java.util.Map.entry;
-
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
@@ -30,7 +28,7 @@ import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import de.eintosti.buildsystem.world.menu.SetupMenu;
-import java.util.Map;
+import java.util.List;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
@@ -42,39 +40,41 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class DefaultIconsMenu extends ButtonMenu<MenuButton> {
 
-    private static final Map<BuildWorldType, Integer> TYPE_SLOTS = Map.ofEntries(
-            entry(BuildWorldType.NORMAL, 11),
-            entry(BuildWorldType.FLAT, 12),
-            entry(BuildWorldType.NETHER, 13),
-            entry(BuildWorldType.END, 14),
-            entry(BuildWorldType.VOID, 15),
-            entry(BuildWorldType.IMPORTED, 16));
-
-    private static final Map<BuildWorldType, String> TYPE_NAME_KEYS = Map.ofEntries(
-            entry(BuildWorldType.NORMAL, "setup_normal_world"),
-            entry(BuildWorldType.FLAT, "setup_flat_world"),
-            entry(BuildWorldType.NETHER, "setup_nether_world"),
-            entry(BuildWorldType.END, "setup_end_world"),
-            entry(BuildWorldType.VOID, "setup_void_world"),
-            entry(BuildWorldType.IMPORTED, "setup_imported_world"));
-
+    private static final int INVENTORY_SIZE = 27;
     private static final int SLOT_RESET = 4;
     private static final int SLOT_BACK = 18;
+
+    private static final List<WorldTypeLayout> WORLD_LAYOUTS = List.of(
+            new WorldTypeLayout(BuildWorldType.NORMAL, 10, "setup_normal_world"),
+            new WorldTypeLayout(BuildWorldType.FLAT, 11, "setup_flat_world"),
+            new WorldTypeLayout(BuildWorldType.NETHER, 12, "setup_nether_world"),
+            new WorldTypeLayout(BuildWorldType.END, 13, "setup_end_world"),
+            new WorldTypeLayout(BuildWorldType.VOID, 14, "setup_void_world"),
+            new WorldTypeLayout(BuildWorldType.IMPORTED, 16, "setup_imported_world"));
 
     private final BuildSystemPlugin plugin;
     private final CustomizableIcons icons;
 
     public DefaultIconsMenu(BuildSystemPlugin plugin, Player player) {
-        super(plugin.getMessages(), 27, plugin.getMessages().getString("setup_default_icons_title", player));
+        super(
+                plugin.getMessages(),
+                INVENTORY_SIZE,
+                plugin.getMessages().getString("setup_default_icons_title", player));
         this.plugin = plugin;
         this.icons = plugin.getCustomizableIcons();
 
-        TYPE_SLOTS.forEach((type, slot) -> register(slot, typeButton(type)));
-        register(SLOT_RESET, resetButton());
-        register(SLOT_BACK, backButton());
+        setupButtons();
     }
 
-    private MenuButton resetButton() {
+    private void setupButtons() {
+        for (WorldTypeLayout layout : WORLD_LAYOUTS) {
+            register(layout.slot(), createTypeButton(layout));
+        }
+        register(SLOT_RESET, createResetButton());
+        register(SLOT_BACK, createBackButton());
+    }
+
+    private MenuButton createResetButton() {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.skull(Profileable.detect(SkullTextures.RESET))
                         .name(messages.getString("setup_reset", player))
@@ -95,25 +95,25 @@ public class DefaultIconsMenu extends ButtonMenu<MenuButton> {
                 .build();
     }
 
-    private MenuButton typeButton(BuildWorldType type) {
+    private MenuButton createTypeButton(WorldTypeLayout layout) {
         return MenuButton.builder()
-                .render((player, inventory, slot) -> ItemBuilder.of(icons.getIcon(type))
-                        .name(messages.getString(TYPE_NAME_KEYS.get(type), player))
+                .render((player, inventory, slot) -> ItemBuilder.of(icons.getIcon(layout.type()))
+                        .name(messages.getString(layout.translationKey(), player))
                         .lore(messages.getStringList("setup_icon_lore", player))
                         .into(inventory, slot))
                 .onClick((player, event) -> new MaterialPickerMenu(
                                 plugin,
                                 player,
                                 material -> {
-                                    icons.setIcon(type, material);
-                                    new DefaultIconsMenu(plugin, player).open(player);
+                                    icons.setIcon(layout.type(), material);
+                                    this.open(player);
                                 },
-                                () -> new DefaultIconsMenu(plugin, player).open(player))
+                                () -> this.open(player))
                         .open(player))
                 .build();
     }
 
-    private MenuButton backButton() {
+    private MenuButton createBackButton() {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.BARRIER)
                         .name(messages.getString("setup_back", player))
@@ -135,4 +135,9 @@ public class DefaultIconsMenu extends ButtonMenu<MenuButton> {
     protected void onUnhandledClick(Player player, InventoryClickEvent event) {
         // Filler clicks do nothing; navigation is via the explicit back button.
     }
+
+    /**
+     * Immutable structure organizing layout mapping data for world type configuration slots.
+     */
+    private record WorldTypeLayout(BuildWorldType type, int slot, String translationKey) {}
 }
