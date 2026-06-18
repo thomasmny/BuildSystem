@@ -26,7 +26,7 @@ import org.jspecify.annotations.NullMarked;
 /**
  * Represents a {@link Backup} related event.
  *
- * @since TODO
+ * @since 4.0.0
  */
 @NullMarked
 public abstract class BackupEvent extends Event {

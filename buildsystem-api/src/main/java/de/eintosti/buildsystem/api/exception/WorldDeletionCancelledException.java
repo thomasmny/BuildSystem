@@ -22,7 +22,7 @@ import de.eintosti.buildsystem.api.event.world.BuildWorldDeleteEvent;
 /**
  * Thrown when a {@link BuildWorldDeleteEvent} listener cancelled the deletion of a world.
  *
- * @since TODO
+ * @since 4.0.0
  */
 public class WorldDeletionCancelledException extends WorldDeletionException {
 

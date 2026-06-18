@@ -132,9 +132,15 @@ public class FolderSubCommand extends AbstractSubCommand {
                     return;
                 }
 
-                NavigatorCategory worldCategory =
-                        plugin.getNavigatorCategoryRegistry().getCategoryForWorld(buildWorld);
-                if (!folder.getCategory().equals(worldCategory)) {
+                // A world can be filed in any folder whose category groups it, matching exactly where the world is
+                // listed in the navigator (overlapping categories each list it). Using groups() rather than the single
+                // "home" category from getCategoryForWorld keeps "can I see it here" and "can I file it here" in sync.
+                if (!folder.getCategory()
+                        .groups(
+                                buildWorld.getData().getVisibility(),
+                                buildWorld.getData().getStatus().getId())) {
+                    NavigatorCategory worldCategory =
+                            plugin.getNavigatorCategoryRegistry().getCategoryForWorld(buildWorld);
                     messages.sendMessage(
                             player,
                             "worlds_folder_world_category_mismatch",
@@ -262,9 +268,10 @@ public class FolderSubCommand extends AbstractSubCommand {
                 return result;
             }
             worldService.getWorldStorage().getBuildWorlds().stream()
-                    .filter(bw -> plugin.getNavigatorCategoryRegistry()
-                            .getCategoryForWorld(bw)
-                            .equals(folder.getCategory()))
+                    .filter(bw -> folder.getCategory()
+                            .groups(
+                                    bw.getData().getVisibility(),
+                                    bw.getData().getStatus().getId()))
                     .filter(bw -> op.equals("add") ? !bw.isAssignedToFolder() : folder.containsWorld(bw))
                     .forEach(bw -> WorldsCompletions.addIfStartsWith(args[3], bw.getName(), result));
             return result;

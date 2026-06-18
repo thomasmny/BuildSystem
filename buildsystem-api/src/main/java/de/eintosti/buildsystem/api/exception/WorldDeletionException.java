@@ -28,7 +28,7 @@ public class WorldDeletionException extends WorldException {
      * Constructs a new {@link WorldDeletionException} with the specified message.
      *
      * @param message The detail message
-     * @since TODO
+     * @since 4.0.0
      */
     public WorldDeletionException(String message) {
         super(message);

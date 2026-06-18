@@ -43,7 +43,9 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class StatusMenu extends ButtonMenu<MenuButton> {
 
-    private static final int FIRST_STATUS_SLOT = 10;
+    private static final int STATUSES_PER_ROW = 7;
+    private static final int BORDER_ROWS = 2; // one filler row above and below the grid
+    private static final int MAX_CONTENT_ROWS = 4; // the six-row chest minus the two border rows
 
     private final BuildSystemPlugin plugin;
     private final BuildWorld buildWorld;
@@ -59,9 +61,19 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
 
         List<BuildWorldStatus> statuses =
                 List.copyOf(plugin.getWorldStatusRegistry().getStatuses());
-        int slot = FIRST_STATUS_SLOT;
-        for (BuildWorldStatus status : statuses) {
-            register(slot++, statusButton(status));
+        // Lay the grid out row by row, keeping a one-slot border on every side. The six-row chest bounds capacity, so
+        // guard against placing a button outside the inventory (which would throw) when an admin has created a very
+        // large number of statuses.
+        int capacity = contentRows(statuses.size()) * STATUSES_PER_ROW;
+        for (int index = 0; index < statuses.size() && index < capacity; index++) {
+            int slot = (index / STATUSES_PER_ROW + 1) * 9 + 1 + index % STATUSES_PER_ROW;
+            register(slot, statusButton(statuses.get(index)));
+        }
+        if (statuses.size() > capacity) {
+            plugin.getLogger()
+                    .warning(
+                            "StatusMenu can display at most %d statuses; %d are hidden. Reduce the number of statuses to reach them all."
+                                    .formatted(capacity, statuses.size() - capacity));
         }
     }
 
@@ -70,9 +82,18 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
      * side, clamped to the chest maximum of six rows.
      */
     private static int computeSize(BuildSystemPlugin plugin) {
-        int count = plugin.getWorldStatusRegistry().getStatuses().size();
-        int rows = Math.min(6, Math.max(3, 2 + (int) Math.ceil((count + 1) / 7.0)));
+        int rows = contentRows(plugin.getWorldStatusRegistry().getStatuses().size()) + BORDER_ROWS;
         return rows * 9;
+    }
+
+    /**
+     * The number of grid rows the statuses occupy — one row per {@value #STATUSES_PER_ROW} statuses, at least one and
+     * clamped to {@value #MAX_CONTENT_ROWS} (the six-row chest minus the top and bottom border rows). Statuses beyond
+     * the resulting capacity are not shown.
+     */
+    private static int contentRows(int statusCount) {
+        int rows = (int) Math.ceil(statusCount / (double) STATUSES_PER_ROW);
+        return Math.clamp(rows, 1, MAX_CONTENT_ROWS);
     }
 
     private static String formatWorldName(BuildWorld buildWorld) {

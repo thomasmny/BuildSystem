@@ -25,15 +25,22 @@ import org.jspecify.annotations.NullMarked;
 /**
  * Represents a building status a {@link BuildWorld} can have, indicating the progression and accessibility of a world.
  *
- * <p>Statuses are dynamic; server administrators can create, restyle, and delete custom statuses at runtime through
- * the in-game setup menu. Instances are obtained and resolved through the {@link WorldStatusRegistry}. Six built-in
- * statuses are always present and {@link #isBuiltIn() protected from deletion}: {@code not_started}, {@code in_progress},
- * {@code almost_finished}, {@code finished}, {@code archive}, and {@code hidden}.
+ * <p>Statuses are dynamic; server administrators can create, restyle, and delete them at runtime through the in-game
+ * setup menu. Instances are obtained and resolved through the {@link WorldStatusRegistry}. Six statuses are
+ * {@link #isBuiltIn() built in} and seeded by default — {@code not_started}, {@code in_progress},
+ * {@code almost_finished}, {@code finished}, {@code archive}, and {@code hidden} — and can be restored after deletion
+ * by resetting to defaults. The registry always keeps at least one status so a {@link WorldStatusRegistry#getDefaultStatus()
+ * default} fallback always exists.
  *
  * <p>Behavioral traits are data-driven and defined by individual properties, such as whether building is permitted,
  * visibility flags, and automatic progression rules.
  *
- * @since TODO
+ * <p>Two statuses are equal if and only if they share the same {@link #getId() id}. Compare statuses with
+ * {@link Object#equals(Object) equals}, never with {@code ==}: this type is no longer an enum, so reference identity is
+ * not guaranteed even for the same logical status. Implementations must define {@code equals} and {@code hashCode}
+ * consistently with the id.
+ *
+ * @since 4.0.0
  */
 @NullMarked
 public interface BuildWorldStatus {
@@ -102,13 +109,6 @@ public interface BuildWorldStatus {
     boolean isBuildingAllowed();
 
     /**
-     * Gets whether worlds with this status are shown in the navigator.
-     *
-     * @return {@code true} if visible in the navigator, otherwise {@code false}
-     */
-    boolean isVisibleInNavigator();
-
-    /**
      * Gets the id of the status a world is automatically advanced to the first time it is modified.
      *
      * @return The target status id, or {@link Optional#empty()} if this status does not auto-advance
@@ -116,8 +116,9 @@ public interface BuildWorldStatus {
     Optional<String> getProgressesTo();
 
     /**
-     * Gets whether this is a built-in status. Built-in statuses can be restyled but never deleted, guaranteeing a valid
-     * fallback always exists.
+     * Gets whether this status is one of the plugin's built-in defaults, as opposed to an administrator-created custom
+     * status. Built-in statuses can be restyled and deleted like any other; deleting one only removes it until the
+     * statuses are reset to their defaults.
      *
      * @return {@code true} if built-in, otherwise {@code false}
      */

@@ -77,7 +77,7 @@ public interface WorldPermissions {
      *
      * @param player The player attempting to modify the world
      * @return {@code true} if the player is allowed to modify the world, {@code false} otherwise
-     * @since TODO
+     * @since 4.0.0
      */
     boolean canModify(Player player);
 
@@ -90,7 +90,7 @@ public interface WorldPermissions {
      * @param player The player attempting to modify the world
      * @param setting The world setting gating the modification
      * @return {@code true} if the player is allowed to modify the world, {@code false} otherwise
-     * @since TODO
+     * @since 4.0.0
      */
     boolean canModify(Player player, WorldSetting setting);
 

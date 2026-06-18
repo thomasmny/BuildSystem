@@ -40,7 +40,6 @@ public final class WorldStatusImpl implements BuildWorldStatus {
     private XMaterial icon;
     private int order;
     private boolean buildingAllowed;
-    private boolean visibleInNavigator;
     private @Nullable String progressesTo;
 
     private WorldStatusImpl(Builder builder) {
@@ -50,7 +49,6 @@ public final class WorldStatusImpl implements BuildWorldStatus {
         this.icon = builder.icon;
         this.order = builder.order;
         this.buildingAllowed = builder.buildingAllowed;
-        this.visibleInNavigator = builder.visibleInNavigator;
         this.progressesTo = builder.progressesTo;
         this.builtIn = builder.builtIn;
     }
@@ -108,7 +106,13 @@ public final class WorldStatusImpl implements BuildWorldStatus {
 
     @Override
     public String getPermission() {
-        return "buildsystem.setstatus." + id.toLowerCase(Locale.ROOT).replace("_", "");
+        // Built-in statuses keep the legacy underscore-stripped node (e.g. not_started -> "...notstarted") so
+        // permission
+        // setups from before custom statuses keep working. Custom statuses use their full id, so two distinct ids
+        // cannot
+        // collapse onto the same permission node.
+        String node = builtIn ? id.replace("_", "") : id;
+        return "buildsystem.setstatus." + node.toLowerCase(Locale.ROOT);
     }
 
     @Override
@@ -118,15 +122,6 @@ public final class WorldStatusImpl implements BuildWorldStatus {
 
     public void setBuildingAllowed(boolean buildingAllowed) {
         this.buildingAllowed = buildingAllowed;
-    }
-
-    @Override
-    public boolean isVisibleInNavigator() {
-        return visibleInNavigator;
-    }
-
-    public void setVisibleInNavigator(boolean visibleInNavigator) {
-        this.visibleInNavigator = visibleInNavigator;
     }
 
     @Override
@@ -171,7 +166,6 @@ public final class WorldStatusImpl implements BuildWorldStatus {
         private XMaterial icon = XMaterial.WHITE_DYE;
         private int order = 0;
         private boolean buildingAllowed = true;
-        private boolean visibleInNavigator = true;
         private @Nullable String progressesTo = null;
         private boolean builtIn = false;
 
@@ -202,11 +196,6 @@ public final class WorldStatusImpl implements BuildWorldStatus {
 
         public Builder buildingAllowed(boolean buildingAllowed) {
             this.buildingAllowed = buildingAllowed;
-            return this;
-        }
-
-        public Builder visibleInNavigator(boolean visibleInNavigator) {
-            this.visibleInNavigator = visibleInNavigator;
             return this;
         }
 

@@ -46,13 +46,13 @@ import org.jspecify.annotations.NullMarked;
 public final class TestData {
 
     public static final WorldStatusImpl NOT_STARTED =
-            status("not_started", "Not Started", "&c", 1, true, true, "in_progress");
-    public static final WorldStatusImpl IN_PROGRESS = status("in_progress", "In Progress", "&6", 2, true, true, null);
+            status("not_started", "Not Started", "&c", 1, true, "in_progress");
+    public static final WorldStatusImpl IN_PROGRESS = status("in_progress", "In Progress", "&6", 2, true, null);
     public static final WorldStatusImpl ALMOST_FINISHED =
-            status("almost_finished", "Almost Finished", "&a", 3, true, true, null);
-    public static final WorldStatusImpl FINISHED = status("finished", "Finished", "&2", 4, true, true, null);
-    public static final WorldStatusImpl ARCHIVE_STATUS = status("archive", "Archive", "&3", 5, false, true, null);
-    public static final WorldStatusImpl HIDDEN = status("hidden", "Hidden", "&7", 6, true, false, null);
+            status("almost_finished", "Almost Finished", "&a", 3, true, null);
+    public static final WorldStatusImpl FINISHED = status("finished", "Finished", "&2", 4, true, null);
+    public static final WorldStatusImpl ARCHIVE_STATUS = status("archive", "Archive", "&3", 5, false, null);
+    public static final WorldStatusImpl HIDDEN = status("hidden", "Hidden", "&7", 6, true, null);
 
     public static final List<WorldStatusImpl> STATUSES =
             List.of(NOT_STARTED, IN_PROGRESS, ALMOST_FINISHED, FINISHED, ARCHIVE_STATUS, HIDDEN);
@@ -84,13 +84,12 @@ public final class TestData {
     private TestData() {}
 
     private static WorldStatusImpl status(
-            String id, String name, String color, int order, boolean building, boolean nav, String progressesTo) {
+            String id, String name, String color, int order, boolean building, String progressesTo) {
         return WorldStatusImpl.builder(id)
                 .displayName(name)
                 .color(color)
                 .order(order)
                 .buildingAllowed(building)
-                .visibleInNavigator(nav)
                 .progressesTo(progressesTo)
                 .builtIn(true)
                 .build();

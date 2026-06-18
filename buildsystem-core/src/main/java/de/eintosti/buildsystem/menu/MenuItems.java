@@ -23,6 +23,7 @@ import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.display.Displayable;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.settings.SettingsService;
@@ -153,6 +154,34 @@ public final class MenuItems {
                             .log(Level.WARNING, "Failed to resolve head profile for menu item: " + name, throwable);
                     return null;
                 });
+    }
+
+    /**
+     * Renders a {@link NavigatorCategory}'s icon into a menu slot, resolving any player-head skin asynchronously so the
+     * live navigator never blocks the main thread on a profile lookup (an admin-configured username texture, or the
+     * viewer's own head used by the {@code private}-style categories). Non-head icons render synchronously. Mirrors
+     * {@link ItemBuilder#icon(NavigatorCategory, Player)}'s default-texture choice.
+     *
+     * @param inventory The inventory to add the item to
+     * @param slot The slot to add the item at
+     * @param category The category whose icon is rendered
+     * @param viewer The player viewing the inventory
+     * @param name The already-styled display name to apply
+     * @param lore The lore to apply
+     */
+    public void renderCategoryIcon(
+            Inventory inventory, int slot, NavigatorCategory category, Player viewer, String name, List<String> lore) {
+        XMaterial icon = category.getIcon();
+        String texture = ItemBuilder.categoryTexture(category);
+        if (icon != XMaterial.PLAYER_HEAD || texture == null || texture.isBlank()) {
+            ItemBuilder.icon(icon, texture, viewer).name(name).lore(lore).into(inventory, slot);
+            return;
+        }
+
+        Profileable profile = ItemBuilder.VIEWER_HEAD.equals(texture)
+                ? Profileable.detect(viewer.getName())
+                : Profileable.detect(texture);
+        applyHeadProfileAsync(inventory, slot, profile, null, name, lore);
     }
 
     /**

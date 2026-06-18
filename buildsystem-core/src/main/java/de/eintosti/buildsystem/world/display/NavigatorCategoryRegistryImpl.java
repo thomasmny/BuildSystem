@@ -22,11 +22,14 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.storage.yaml.YamlCategoryStorage;
+import de.eintosti.buildsystem.util.StringUtils;
+import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,7 +37,6 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import org.jspecify.annotations.NullMarked;
@@ -53,11 +55,13 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
     /** Slot the settings button occupies in a freshly seeded navigator (matches the historical fixed slot). */
     public static final int DEFAULT_SETTINGS_SLOT = 15;
 
+    private final BuildSystemPlugin plugin;
     private final YamlCategoryStorage storage;
     private final Map<String, NavigatorCategoryImpl> categories = new LinkedHashMap<>();
     private int settingsSlot;
 
     public NavigatorCategoryRegistryImpl(BuildSystemPlugin plugin) {
+        this.plugin = plugin;
         this.storage = new YamlCategoryStorage(plugin);
 
         this.categories.putAll(storage.load());
@@ -214,7 +218,7 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
     }
 
     public NavigatorCategoryImpl createCategory(String displayName) {
-        String id = uniqueId(displayName);
+        String id = StringUtils.uniqueId(displayName, "category", this.categories::containsKey);
         int slot = this.categories.values().stream()
                         .mapToInt(NavigatorCategory::getNavigatorSlot)
                         .max()
@@ -259,7 +263,8 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
      * Removes a category (built-in or custom). The last remaining category is never deleted, so a valid default always
      * exists; an admin can restore the built-ins with {@link #resetToDefaults()}. Worlds previously displayed in the
      * category simply resolve to another matching category (or the {@link #getDefaultCategory() default}) on the next
-     * render; no status is orphaned because statuses are shared rather than owned by a category.
+     * render; no status is orphaned because statuses are shared rather than owned by a category. Folders, which hold a
+     * fixed category, are re-homed to the default so they (and the worlds they contain) stay reachable.
      *
      * @return {@code true} if the category was deleted, {@code false} if it was unknown or the last remaining category
      */
@@ -269,22 +274,28 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
         }
         this.categories.remove(id);
         storage.delete(id);
+        rehomeFolders(id);
         return true;
     }
 
-    private String uniqueId(String displayName) {
-        String base = displayName
-                .toLowerCase(Locale.ROOT)
-                .replaceAll("[^a-z0-9]+", "_")
-                .replaceAll("^_+|_+$", "");
-        if (base.isEmpty()) {
-            base = "category";
+    /**
+     * Re-homes every folder that belonged to the just-deleted category to the {@link #getDefaultCategory() default}, so
+     * the folders (and the worlds they contain) stay reachable in the navigator instead of vanishing until the next
+     * reload. Mirrors how deleting a status resets the worlds that used it. Whole subtrees move together because a
+     * subfolder shares its parent's category.
+     */
+    private void rehomeFolders(String deletedId) {
+        NavigatorCategory fallback = getDefaultCategory();
+        var folderStorage = plugin.getWorldService().getFolderStorage();
+        List<Folder> rehomed = new ArrayList<>();
+        for (Folder folder : folderStorage.getFolders()) {
+            if (folder.getCategory().getId().equals(deletedId)) {
+                ((FolderImpl) folder).setCategory(fallback);
+                rehomed.add(folder);
+            }
         }
-        String id = base;
-        int suffix = 2;
-        while (this.categories.containsKey(id)) {
-            id = base + "_" + suffix++;
+        if (!rehomed.isEmpty()) {
+            folderStorage.save(rehomed);
         }
-        return id;
     }
 }

@@ -27,7 +27,7 @@ import org.jspecify.annotations.NullMarked;
  * through which backups can be listed, created and restored. The concrete storage backend (local disk, SFTP or S3) is
  * configured by the server owner and is transparent to API consumers.
  *
- * @since TODO
+ * @since 4.0.0
  */
 @NullMarked
 public interface BackupService {
@@ -37,7 +37,7 @@ public interface BackupService {
      *
      * @param buildWorld The world whose backup profile is requested
      * @return The backup profile for {@code buildWorld}, never {@code null}
-     * @since TODO
+     * @since 4.0.0
      */
     BackupProfile getProfile(BuildWorld buildWorld);
 }

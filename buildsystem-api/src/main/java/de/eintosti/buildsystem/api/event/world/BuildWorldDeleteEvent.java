@@ -28,7 +28,7 @@ import org.jspecify.annotations.NullMarked;
  * <p>Cancelling this event prevents the deletion. The cancelling listener is responsible for informing the initiating
  * player.
  *
- * @since TODO
+ * @since 4.0.0
  */
 @NullMarked
 public class BuildWorldDeleteEvent extends BuildWorldEvent implements Cancellable {

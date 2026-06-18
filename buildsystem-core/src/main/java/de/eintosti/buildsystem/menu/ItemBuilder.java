@@ -151,22 +151,35 @@ public final class ItemBuilder {
     }
 
     /**
-     * Starts a builder for a {@link NavigatorCategory navigator category} icon. An explicitly configured skull texture
-     * wins; otherwise a player-head icon defaults to the viewing player's own skin for added-players categories (the
-     * "private" style) and the navigator texture for everyone-visible categories.
+     * Resolves the skull texture a {@link NavigatorCategory} icon should use: its explicitly configured texture wins;
+     * otherwise a blank-textured player head falls back to the viewing player's own skin for added-players categories
+     * (the "private" style) and the navigator texture for everyone-visible categories. Returns {@code null} for a
+     * non-head icon or an explicitly textureless head. Shared by the synchronous {@link #icon(NavigatorCategory, Player)}
+     * and the asynchronous {@code MenuItems.renderCategoryIcon} so the two paths cannot diverge.
+     *
+     * @param category The category whose icon texture is resolved
+     * @return The skull texture, the {@link #VIEWER_HEAD} sentinel, or {@code null}
+     */
+    public static @Nullable String categoryTexture(NavigatorCategory category) {
+        String texture = category.getIconSkullTexture();
+        if (category.getIcon() == XMaterial.PLAYER_HEAD && (texture == null || texture.isBlank())) {
+            return category.getPrimaryVisibility() == Visibility.ADDED_PLAYERS
+                    ? VIEWER_HEAD
+                    : SkullTextures.WORLD_NAVIGATOR;
+        }
+        return texture;
+    }
+
+    /**
+     * Starts a builder for a {@link NavigatorCategory navigator category} icon, applying the texture chosen by
+     * {@link #categoryTexture(NavigatorCategory)}.
      *
      * @param category The category whose icon is rendered
      * @param viewer The viewing player, used to resolve the viewer-head default
      * @return A new builder wrapping the resolved icon
      */
     public static ItemBuilder icon(NavigatorCategory category, Player viewer) {
-        String texture = category.getIconSkullTexture();
-        if (category.getIcon() == XMaterial.PLAYER_HEAD && (texture == null || texture.isBlank())) {
-            texture = category.getPrimaryVisibility() == Visibility.ADDED_PLAYERS
-                    ? VIEWER_HEAD
-                    : SkullTextures.WORLD_NAVIGATOR;
-        }
-        return icon(category.getIcon(), texture, viewer);
+        return icon(category.getIcon(), categoryTexture(category), viewer);
     }
 
     /**

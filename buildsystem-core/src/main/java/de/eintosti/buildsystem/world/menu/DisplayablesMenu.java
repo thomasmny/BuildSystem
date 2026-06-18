@@ -94,8 +94,9 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
 
     /**
      * The configuration of a {@link DisplayablesMenu}: the {@link NavigatorCategory category} whose folders and worlds it lists,
-     * its title and "no worlds" message. A world is listed when {@link NavigatorCategoryRegistry#getCategoryForWorld(BuildWorld)}
-     * resolves to this category, so visibility and status filtering are derived from the category rather than passed separately.
+     * its title and "no worlds" message. A world is listed in this category when the category
+     * {@link NavigatorCategory#groups groups} the world's visibility and status, so a world shown by several overlapping
+     * categories appears in each; the filtering is derived from the category rather than passed separately.
      *
      * @param category The navigator category whose folders/worlds are listed
      * @param title The inventory title

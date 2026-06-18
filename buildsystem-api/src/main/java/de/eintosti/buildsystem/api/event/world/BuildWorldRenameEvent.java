@@ -27,7 +27,7 @@ import org.jspecify.annotations.NullMarked;
  * <p>By the time this event fires the rename has completed, so {@link BuildWorld#getName()} already returns the new
  * name.
  *
- * @since TODO
+ * @since 4.0.0
  */
 @NullMarked
 public class BuildWorldRenameEvent extends BuildWorldEvent {

@@ -46,7 +46,7 @@ public interface Folder extends Displayable {
      * Gets the {@link NavigatorCategory} in which this folder is displayed.
      *
      * @return The {@link NavigatorCategory} of the folder
-     * @since TODO
+     * @since 4.0.0
      */
     NavigatorCategory getCategory();
 

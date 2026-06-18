@@ -28,7 +28,7 @@ import org.jspecify.annotations.NullMarked;
  * <p>This event is fired synchronously from whichever thread mutates the status, and only when the value actually
  * changes.
  *
- * @since TODO
+ * @since 4.0.0
  */
 @NullMarked
 public class BuildWorldStatusChangeEvent extends BuildWorldEvent {

@@ -105,7 +105,7 @@ public class NavigatorLayoutMenu extends Menu {
                 continue;
             }
             ItemBuilder.icon(category, player)
-                    .name(ColorAPI.process(category.getColor() + category.getDisplayName()))
+                    .name(ColorAPI.process(category.getStyledName()))
                     .lore(messages.getStringList("setup_navigator_placed_lore", player))
                     .into(inventory, slot);
         }
@@ -140,7 +140,7 @@ public class NavigatorLayoutMenu extends Menu {
                 continue;
             }
             ItemBuilder.icon(category, player)
-                    .name(ColorAPI.process(category.getColor() + category.getDisplayName()))
+                    .name(ColorAPI.process(category.getStyledName()))
                     .lore(messages.getStringList("setup_navigator_palette_lore", player))
                     .into(playerInventory, slot);
         }
@@ -246,7 +246,15 @@ public class NavigatorLayoutMenu extends Menu {
     private void placeSettings(Player player, int slot) {
         NavigatorCategoryImpl occupant = categoryAtSlot(slot);
         if (occupant != null) {
-            occupant.setNavigatorSlot(registry.getSettingsSlot());
+            int previousSettingsSlot = registry.getSettingsSlot();
+            if (isSlotValid(previousSettingsSlot)) {
+                // Swap: the displaced category takes the slot the settings button just vacated.
+                occupant.setNavigatorSlot(previousSettingsSlot);
+            } else {
+                // Settings came from the palette (no slot to swap into); send the occupant to the palette rather than
+                // an invalid slot, which would hide it from the navigator entirely.
+                occupant.setShownInNavigator(false);
+            }
             registry.persist(occupant);
         }
         registry.setSettingsSlot(slot);
@@ -371,7 +379,7 @@ public class NavigatorLayoutMenu extends Menu {
         ItemStack cursor = category == null
                 ? null
                 : ItemBuilder.icon(category, player)
-                        .name(ColorAPI.process(category.getColor() + category.getDisplayName()))
+                        .name(ColorAPI.process(category.getStyledName()))
                         .build();
 
         setCursorNextTick(player, cursor);
@@ -427,8 +435,11 @@ public class NavigatorLayoutMenu extends Menu {
                 .filter(NavigatorCategory::isShownInNavigator)
                 .map(NavigatorCategory::getNavigatorSlot)
                 .collect(Collectors.toSet());
+        // The settings button holds a navigator slot too; never hand its slot out, or the category placed there is
+        // skipped by populate() and silently vanishes from the navigator.
+        int settingsSlot = registry.getSettingsSlot();
         for (int slot = 0; slot < NAVIGATOR_SIZE; slot++) {
-            if (!occupied.contains(slot)) {
+            if (slot != settingsSlot && !occupied.contains(slot)) {
                 return slot;
             }
         }

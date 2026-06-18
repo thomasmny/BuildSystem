@@ -26,7 +26,7 @@ import org.jspecify.annotations.NullMarked;
 /**
  * Represents a storage mechanism for managing world backups.
  *
- * @since TODO
+ * @since 4.0.0
  */
 @NullMarked
 public interface BackupStorage {

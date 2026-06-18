@@ -57,9 +57,7 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
                         .getString(
                                 "setup_category_editor_title",
                                 player,
-                                Map.entry(
-                                        "%category%",
-                                        ColorAPI.process(category.getColor() + category.getDisplayName()))));
+                                Map.entry("%category%", ColorAPI.process(category.getStyledName()))));
 
         this.registry = plugin.getNavigatorCategoryRegistry();
         this.category = (NavigatorCategoryImpl) category;

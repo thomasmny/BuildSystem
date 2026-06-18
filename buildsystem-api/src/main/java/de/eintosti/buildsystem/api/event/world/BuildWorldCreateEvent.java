@@ -36,7 +36,7 @@ import org.jspecify.annotations.Nullable;
  * <p>Because the {@link BuildWorld} does not exist yet, this event exposes the prospective world's properties directly
  * rather than a {@link BuildWorld} instance.
  *
- * @since TODO
+ * @since 4.0.0
  */
 @NullMarked
 public class BuildWorldCreateEvent extends Event implements Cancellable {

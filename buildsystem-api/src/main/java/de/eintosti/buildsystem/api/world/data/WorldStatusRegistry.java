@@ -21,12 +21,13 @@ import java.util.Collection;
 import java.util.Optional;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * The registry of all {@link BuildWorldStatus statuses} known to the server, both the built-in defaults and any custom
  * statuses created by administrators. Statuses are resolved from their persisted id through this registry.
  *
- * @since TODO
+ * @since 4.0.0
  */
 @NullMarked
 public interface WorldStatusRegistry {
@@ -72,10 +73,11 @@ public interface WorldStatusRegistry {
     /**
      * Resolves a status by its {@link BuildWorldStatus#getId() id}.
      *
-     * @param id The status id
-     * @return The matching status, or {@link Optional#empty()} if none is registered with that id
+     * @param id The status id, or {@code null}
+     * @return The matching status, or {@link Optional#empty()} if {@code id} is {@code null} or no status is registered
+     *     with that id
      */
-    Optional<BuildWorldStatus> getStatus(String id);
+    Optional<BuildWorldStatus> getStatus(@Nullable String id);
 
     /**
      * Gets the global default status worlds fall back to (the built-in {@code not_started}). Always present.
