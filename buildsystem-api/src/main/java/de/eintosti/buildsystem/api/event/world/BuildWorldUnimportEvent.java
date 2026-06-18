@@ -26,7 +26,7 @@ import org.jspecify.annotations.NullMarked;
  *
  * <p>This event is also fired as the first stage of a deletion, followed by {@link BuildWorldPostDeleteEvent}.
  *
- * @since TODO
+ * @since 4.0.0
  */
 @NullMarked
 public class BuildWorldUnimportEvent extends BuildWorldEvent {

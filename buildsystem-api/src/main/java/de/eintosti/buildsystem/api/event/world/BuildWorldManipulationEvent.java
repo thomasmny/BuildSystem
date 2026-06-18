@@ -40,7 +40,7 @@ import org.jspecify.annotations.NullMarked;
  * <p>BuildSystem itself cancels this event at {@link org.bukkit.event.EventPriority#LOW} when the player is not allowed
  * to modify the world; listeners running at a later priority can observe or override that decision.
  *
- * @since TODO
+ * @since 4.0.0
  */
 @NullMarked
 public class BuildWorldManipulationEvent extends BuildWorldEvent implements Cancellable {

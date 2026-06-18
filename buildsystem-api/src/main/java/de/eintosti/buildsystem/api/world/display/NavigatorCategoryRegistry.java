@@ -28,7 +28,7 @@ import org.jspecify.annotations.Nullable;
  * The registry of all {@link NavigatorCategory navigator categories} known to the server, both the built-in defaults
  * and any custom categories created by administrators.
  *
- * @since TODO
+ * @since 4.0.0
  */
 @NullMarked
 public interface NavigatorCategoryRegistry {
@@ -65,12 +65,15 @@ public interface NavigatorCategoryRegistry {
     Optional<NavigatorCategory> getCategory(@Nullable String id);
 
     /**
-     * Resolves the category a world is displayed in by matching both the world's visibility and its status: the world
-     * belongs to the first category whose {@link NavigatorCategory#getVisibilities() visibilities} contain the world's
-     * and whose {@link NavigatorCategory#getStatusIds() statuses} contain the world's status.
+     * Resolves a world's primary ("home") category — the first category whose
+     * {@link NavigatorCategory#getVisibilities() visibilities} contain the world's visibility and whose
+     * {@link NavigatorCategory#getStatusIds() statuses} contain the world's status. A world may additionally appear in
+     * other overlapping categories; whether any single category lists a world is tested with
+     * {@link NavigatorCategory#groups}. This method only picks the single representative category (e.g. for a world's
+     * default folder), falling back to the {@link #getDefaultCategory() default} when nothing matches.
      *
-     * @param world The world whose category to resolve
-     * @return The resolved category, or the {@link #getDefaultCategory() default} when nothing matches
+     * @param world The world whose primary category to resolve
+     * @return The resolved primary category, or the {@link #getDefaultCategory() default} when nothing matches
      */
     NavigatorCategory getCategoryForWorld(BuildWorld world);
 

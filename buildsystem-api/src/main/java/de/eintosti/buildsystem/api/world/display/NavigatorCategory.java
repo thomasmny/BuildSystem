@@ -35,11 +35,17 @@ import org.jspecify.annotations.Nullable;
  * shared and may appear in several categories (e.g. {@code in_progress} lives in both the public and private
  * categories, distinguished by visibility).
  *
- * <p>Server administrators can create, restyle, and delete categories at runtime through the in-game setup menu.
- * Built-in categories ({@code public}, {@code private}, {@code archive}) are {@link #isBuiltIn() protected from
- * deletion}.
+ * <p>Server administrators can create, restyle, and delete categories at runtime through the in-game setup menu. Three
+ * categories are {@link #isBuiltIn() built in} and seeded by default ({@code public}, {@code private},
+ * {@code archive}) and can be restored after deletion by resetting to defaults. The registry always keeps at least one
+ * category so a {@link NavigatorCategoryRegistry#getDefaultCategory() default} fallback always exists.
  *
- * @since TODO
+ * <p>Two categories are equal if and only if they share the same {@link #getId() id}. Compare categories with
+ * {@link Object#equals(Object) equals}, never with {@code ==}: this type is no longer an enum, so reference identity is
+ * not guaranteed even for the same logical category. Implementations must define {@code equals} and {@code hashCode}
+ * consistently with the id.
+ *
+ * @since 4.0.0
  */
 @NullMarked
 public interface NavigatorCategory {
@@ -65,6 +71,17 @@ public interface NavigatorCategory {
      * @return The colour token
      */
     String getColor();
+
+    /**
+     * Gets the display name prefixed with this category's {@link #getColor() colour}, with legacy colour codes still
+     * unresolved. Callers translate the codes when rendering.
+     *
+     * @return The colour-prefixed display name
+     * @since 4.0.0
+     */
+    default String getStyledName() {
+        return getColor() + getDisplayName();
+    }
 
     /**
      * Gets the material used to represent this category in the navigator and setup menus.
@@ -122,7 +139,7 @@ public interface NavigatorCategory {
      * @param visibility The world's visibility
      * @param statusId The world's status id
      * @return {@code true} if this category groups such a world
-     * @since TODO
+     * @since 4.0.0
      */
     default boolean groups(Visibility visibility, String statusId) {
         return getVisibilities().contains(visibility) && getStatusIds().contains(statusId);
@@ -144,7 +161,9 @@ public interface NavigatorCategory {
     int getNavigatorSlot();
 
     /**
-     * Gets whether this is a built-in category. Built-in categories can be restyled but never deleted.
+     * Gets whether this category is one of the plugin's built-in defaults, as opposed to an administrator-created
+     * custom category. Built-in categories can be restyled and deleted like any other; deleting one only removes it
+     * until the categories are reset to their defaults.
      *
      * @return {@code true} if built-in, otherwise {@code false}
      */

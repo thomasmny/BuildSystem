@@ -81,7 +81,7 @@ public interface BuildSystem {
      * Returns the service for listing, creating, and restoring world backups via per-world {@link BackupProfile}s.
      *
      * @return The backup service, never {@code null}
-     * @since TODO
+     * @since 4.0.0
      */
     BackupService getBackupService();
 
@@ -90,7 +90,7 @@ public interface BuildSystem {
      * built-in defaults plus any custom statuses created by administrators.
      *
      * @return The status registry, never {@code null}
-     * @since TODO
+     * @since 4.0.0
      */
     WorldStatusRegistry getStatusRegistry();
 
@@ -99,7 +99,7 @@ public interface BuildSystem {
      * visibility and navigator grouping.
      *
      * @return The navigator category registry, never {@code null}
-     * @since TODO
+     * @since 4.0.0
      */
     NavigatorCategoryRegistry getNavigatorCategoryRegistry();
 }

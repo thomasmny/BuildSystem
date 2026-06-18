@@ -263,7 +263,7 @@ public class NavigatorService {
             XSound.ENTITY_CHICKEN_EGG.play(player);
         }
 
-        displayActionBarMessage(player, ColorAPI.process(category.getColor() + category.getDisplayName()));
+        displayActionBarMessage(player, ColorAPI.process(category.getStyledName()));
     }
 
     private void displayActionBarMessage(Player player, String message) {

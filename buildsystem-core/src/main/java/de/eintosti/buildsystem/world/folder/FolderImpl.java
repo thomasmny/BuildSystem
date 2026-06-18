@@ -40,7 +40,7 @@ public class FolderImpl implements Folder {
     private String name;
     private final Builder creator;
     private final long creation;
-    private final NavigatorCategory category;
+    private NavigatorCategory category;
     private final List<UUID> worlds;
     private final List<Folder> subfolders;
 
@@ -167,6 +167,15 @@ public class FolderImpl implements Folder {
     @Override
     public NavigatorCategory getCategory() {
         return this.category;
+    }
+
+    /**
+     * Reassigns this folder to another {@link NavigatorCategory}. Not part of the public {@link Folder} API; used by the
+     * category registry to re-home folders when their category is deleted. Subfolders share their parent's category, so
+     * the whole subtree must be moved together to keep the parent-category invariant enforced by {@link #setParent}.
+     */
+    public void setCategory(NavigatorCategory category) {
+        this.category = category;
     }
 
     @Override

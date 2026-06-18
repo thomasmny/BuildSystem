@@ -48,7 +48,7 @@ import org.jspecify.annotations.Nullable;
  * <p>Not to be confused with {@link Builder}, which represents a player trusted to modify a world rather than a tool for
  * <em>creating</em> one.
  *
- * @since TODO
+ * @since 4.0.0
  */
 @NullMarked
 public interface WorldBuilder {

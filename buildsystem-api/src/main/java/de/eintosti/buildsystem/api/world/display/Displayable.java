@@ -89,7 +89,7 @@ public interface Displayable {
      * when no custom texture is set; the literal {@code "%viewer%"} means the viewing player's own head.
      *
      * @return The skull texture, {@code "%viewer%"} for the viewer's head, or {@code null}
-     * @since TODO
+     * @since 4.0.0
      */
     @Nullable String getIconSkullTexture();
 
@@ -98,7 +98,7 @@ public interface Displayable {
      * clear it, or the literal {@code "%viewer%"} to render the viewing player's own head.
      *
      * @param skullTexture The skull texture, {@code "%viewer%"}, or {@code null}
-     * @since TODO
+     * @since 4.0.0
      */
     void setIconSkullTexture(@Nullable String skullTexture);
 
@@ -109,7 +109,7 @@ public interface Displayable {
      * profiles (e.g. a world's creator) without blocking the inventory from opening.
      *
      * @return The default head profile, or {@code null} for a plain head
-     * @since TODO
+     * @since 4.0.0
      */
     @Nullable default Profileable getHeadProfile() {
         return null;
@@ -121,7 +121,7 @@ public interface Displayable {
      * to leave a plain head when resolution fails. Like the head profile, this is resolved asynchronously.
      *
      * @return The fallback head profile, or {@code null} for none
-     * @since TODO
+     * @since 4.0.0
      */
     @Nullable default Profileable getHeadFallbackProfile() {
         return null;

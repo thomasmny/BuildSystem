@@ -38,7 +38,7 @@ public interface WorldData {
      * Gets the custom spawn of the {@link BuildWorld} as a string in the format {@code x;y;z;yaw;pitch}.
      *
      * @return The custom spawn string
-     * @since TODO
+     * @since 4.0.0
      */
     String getCustomSpawn();
 
@@ -46,7 +46,7 @@ public interface WorldData {
      * Sets the custom spawn of the {@link BuildWorld} as a string in the format {@code x;y;z;yaw;pitch}.
      *
      * @param customSpawn The custom spawn string
-     * @since TODO
+     * @since 4.0.0
      */
     void setCustomSpawn(String customSpawn);
 
@@ -61,7 +61,7 @@ public interface WorldData {
      * Gets the permission required to enter the {@link BuildWorld}. Returns "-" if no specific permission is required.
      *
      * @return The permission string
-     * @since TODO
+     * @since 4.0.0
      */
     String getPermission();
 
@@ -69,7 +69,7 @@ public interface WorldData {
      * Sets the permission required to enter the {@link BuildWorld}.
      *
      * @param permission The permission string
-     * @since TODO
+     * @since 4.0.0
      */
     void setPermission(String permission);
 
@@ -77,7 +77,7 @@ public interface WorldData {
      * Gets the project description of the {@link BuildWorld}.
      *
      * @return The project description string
-     * @since TODO
+     * @since 4.0.0
      */
     String getProject();
 
@@ -85,7 +85,7 @@ public interface WorldData {
      * Sets the project description of the {@link BuildWorld}.
      *
      * @param project The project description string
-     * @since TODO
+     * @since 4.0.0
      */
     void setProject(String project);
 
@@ -93,7 +93,7 @@ public interface WorldData {
      * Gets the {@link Difficulty} of the {@link BuildWorld}.
      *
      * @return The world's difficulty setting
-     * @since TODO
+     * @since 4.0.0
      */
     Difficulty getDifficulty();
 
@@ -101,7 +101,7 @@ public interface WorldData {
      * Sets the {@link Difficulty} of the {@link BuildWorld}.
      *
      * @param difficulty The world's difficulty setting
-     * @since TODO
+     * @since 4.0.0
      */
     void setDifficulty(Difficulty difficulty);
 
@@ -109,7 +109,7 @@ public interface WorldData {
      * Gets the {@link XMaterial} used to display the {@link BuildWorld} in the navigator menus.
      *
      * @return The material used for display
-     * @since TODO
+     * @since 4.0.0
      */
     XMaterial getMaterial();
 
@@ -117,7 +117,7 @@ public interface WorldData {
      * Sets the {@link XMaterial} used to display the {@link BuildWorld} in the navigator menus.
      *
      * @param material The material used for display
-     * @since TODO
+     * @since 4.0.0
      */
     void setMaterial(XMaterial material);
 
@@ -126,7 +126,7 @@ public interface WorldData {
      * when none is set; the literal {@code "%viewer%"} means the viewing player's own head.
      *
      * @return The skull texture, {@code "%viewer%"}, or {@code null}
-     * @since TODO
+     * @since 4.0.0
      */
     @Nullable String getIconSkullTexture();
 
@@ -135,7 +135,7 @@ public interface WorldData {
      * clear it, or the literal {@code "%viewer%"} to render the viewing player's own head.
      *
      * @param skullTexture The skull texture, {@code "%viewer%"}, or {@code null}
-     * @since TODO
+     * @since 4.0.0
      */
     void setIconSkullTexture(@Nullable String skullTexture);
 
@@ -143,7 +143,7 @@ public interface WorldData {
      * Gets the current {@link BuildWorldStatus} of the {@link BuildWorld}.
      *
      * @return The current build status
-     * @since TODO
+     * @since 4.0.0
      */
     BuildWorldStatus getStatus();
 
@@ -151,7 +151,7 @@ public interface WorldData {
      * Sets the current {@link BuildWorldStatus} of the {@link BuildWorld}.
      *
      * @param status The current build status
-     * @since TODO
+     * @since 4.0.0
      */
     void setStatus(BuildWorldStatus status);
 
@@ -159,7 +159,7 @@ public interface WorldData {
      * Gets whether block breaking is allowed in the {@link BuildWorld}.
      *
      * @return {@code true} if allowed, otherwise {@code false}
-     * @since TODO
+     * @since 4.0.0
      */
     boolean isBlockBreaking();
 
@@ -167,7 +167,7 @@ public interface WorldData {
      * Sets whether block breaking is allowed in the {@link BuildWorld}.
      *
      * @param blockBreaking {@code true} if allowed, otherwise {@code false}
-     * @since TODO
+     * @since 4.0.0
      */
     void setBlockBreaking(boolean blockBreaking);
 
@@ -175,7 +175,7 @@ public interface WorldData {
      * Gets whether block interactions (e.g., opening doors, chests) are enabled in the {@link BuildWorld}.
      *
      * @return {@code true} if enabled, otherwise {@code false}
-     * @since TODO
+     * @since 4.0.0
      */
     boolean isBlockInteractions();
 
@@ -183,7 +183,7 @@ public interface WorldData {
      * Sets whether block interactions are enabled in the {@link BuildWorld}.
      *
      * @param blockInteractions {@code true} if enabled, otherwise {@code false}
-     * @since TODO
+     * @since 4.0.0
      */
     void setBlockInteractions(boolean blockInteractions);
 
@@ -191,7 +191,7 @@ public interface WorldData {
      * Gets whether block placement is allowed in the {@link BuildWorld}.
      *
      * @return {@code true} if allowed, otherwise {@code false}
-     * @since TODO
+     * @since 4.0.0
      */
     boolean isBlockPlacement();
 
@@ -199,7 +199,7 @@ public interface WorldData {
      * Sets whether block placement is allowed in the {@link BuildWorld}.
      *
      * @param blockPlacement {@code true} if allowed, otherwise {@code false}
-     * @since TODO
+     * @since 4.0.0
      */
     void setBlockPlacement(boolean blockPlacement);
 
@@ -208,7 +208,7 @@ public interface WorldData {
      * can modify the world.
      *
      * @return {@code true} if enabled, otherwise {@code false}
-     * @since TODO
+     * @since 4.0.0
      */
     boolean isBuildersEnabled();
 
@@ -216,7 +216,7 @@ public interface WorldData {
      * Sets whether the "builders feature" is enabled in the {@link BuildWorld}.
      *
      * @param buildersEnabled {@code true} if enabled, otherwise {@code false}
-     * @since TODO
+     * @since 4.0.0
      */
     void setBuildersEnabled(boolean buildersEnabled);
 
@@ -224,7 +224,7 @@ public interface WorldData {
      * Gets whether explosions are enabled in the {@link BuildWorld}.
      *
      * @return {@code true} if enabled, otherwise {@code false}
-     * @since TODO
+     * @since 4.0.0
      */
     boolean isExplosions();
 
@@ -232,7 +232,7 @@ public interface WorldData {
      * Sets whether explosions are enabled in the {@link BuildWorld}.
      *
      * @param explosions {@code true} if enabled, otherwise {@code false}
-     * @since TODO
+     * @since 4.0.0
      */
     void setExplosions(boolean explosions);
 
@@ -240,7 +240,7 @@ public interface WorldData {
      * Gets whether entities in the {@link BuildWorld} have artificial intelligence.
      *
      * @return {@code true} if enabled, otherwise {@code false}
-     * @since TODO
+     * @since 4.0.0
      */
     boolean isMobAi();
 
@@ -248,7 +248,7 @@ public interface WorldData {
      * Sets whether entities in the {@link BuildWorld} have artificial intelligence.
      *
      * @param mobAi {@code true} if enabled, otherwise {@code false}
-     * @since TODO
+     * @since 4.0.0
      */
     void setMobAi(boolean mobAi);
 
@@ -256,7 +256,7 @@ public interface WorldData {
      * Gets whether physics (e.g., gravity, fluid flow) is applied to blocks in the {@link BuildWorld}.
      *
      * @return {@code true} if enabled, otherwise {@code false}
-     * @since TODO
+     * @since 4.0.0
      */
     boolean isPhysics();
 
@@ -264,7 +264,7 @@ public interface WorldData {
      * Sets whether physics is applied to blocks in the {@link BuildWorld}.
      *
      * @param physics {@code true} if enabled, otherwise {@code false}
-     * @since TODO
+     * @since 4.0.0
      */
     void setPhysics(boolean physics);
 
@@ -273,7 +273,7 @@ public interface WorldData {
      * sort order.
      *
      * @return {@code true} if pinned, otherwise {@code false}
-     * @since TODO
+     * @since 4.0.0
      */
     boolean isPinned();
 
@@ -281,7 +281,7 @@ public interface WorldData {
      * Sets whether this world is pinned to the top of the navigator.
      *
      * @param pinned {@code true} if pinned, otherwise {@code false}
-     * @since TODO
+     * @since 4.0.0
      */
     void setPinned(boolean pinned);
 
@@ -290,7 +290,7 @@ public interface WorldData {
      * for a world's visibility, replacing the legacy private boolean.
      *
      * @return The access rule
-     * @since TODO
+     * @since 4.0.0
      */
     Visibility getVisibility();
 
@@ -298,7 +298,7 @@ public interface WorldData {
      * Sets the {@link Visibility} governing who may see and enter the {@link BuildWorld}.
      *
      * @param visibility The access rule
-     * @since TODO
+     * @since 4.0.0
      */
     void setVisibility(Visibility visibility);
 
@@ -306,7 +306,7 @@ public interface WorldData {
      * Gets the number of seconds that have passed since the last {@link Backup} of the {@link BuildWorld} was created.
      *
      * @return The number of seconds since the last backup
-     * @since TODO
+     * @since 4.0.0
      */
     int getTimeSinceBackup();
 
@@ -314,7 +314,7 @@ public interface WorldData {
      * Sets the number of seconds that have passed since the last {@link Backup} of the {@link BuildWorld} was created.
      *
      * @param timeSinceBackup The number of seconds since the last backup
-     * @since TODO
+     * @since 4.0.0
      */
     void setTimeSinceBackup(int timeSinceBackup);
 
@@ -322,7 +322,7 @@ public interface WorldData {
      * Gets the timestamp (in milliseconds since epoch) of the last time the {@link BuildWorld} was edited.
      *
      * @return The last edited timestamp
-     * @since TODO
+     * @since 4.0.0
      */
     long getLastEdited();
 
@@ -330,7 +330,7 @@ public interface WorldData {
      * Sets the timestamp (in milliseconds since epoch) of the last time the {@link BuildWorld} was edited.
      *
      * @param lastEdited The last edited timestamp
-     * @since TODO
+     * @since 4.0.0
      */
     void setLastEdited(long lastEdited);
 
@@ -338,7 +338,7 @@ public interface WorldData {
      * Gets the timestamp (in milliseconds since epoch) of the last time the {@link BuildWorld} was loaded.
      *
      * @return The last loaded timestamp
-     * @since TODO
+     * @since 4.0.0
      */
     long getLastLoaded();
 
@@ -346,7 +346,7 @@ public interface WorldData {
      * Sets the timestamp (in milliseconds since epoch) of the last time the {@link BuildWorld} was loaded.
      *
      * @param lastLoaded The last loaded timestamp
-     * @since TODO
+     * @since 4.0.0
      */
     void setLastLoaded(long lastLoaded);
 
@@ -354,7 +354,7 @@ public interface WorldData {
      * Gets the timestamp (in milliseconds since epoch) of the last time the {@link BuildWorld} was unloaded.
      *
      * @return The last unloaded timestamp
-     * @since TODO
+     * @since 4.0.0
      */
     long getLastUnloaded();
 
@@ -362,7 +362,7 @@ public interface WorldData {
      * Sets the timestamp (in milliseconds since epoch) of the last time the {@link BuildWorld} was unloaded.
      *
      * @param lastUnloaded The last unloaded timestamp
-     * @since TODO
+     * @since 4.0.0
      */
     void setLastUnloaded(long lastUnloaded);
 }

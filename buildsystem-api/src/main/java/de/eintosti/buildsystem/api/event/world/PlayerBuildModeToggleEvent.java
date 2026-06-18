@@ -27,7 +27,7 @@ import org.jspecify.annotations.NullMarked;
  * Called when a player's build mode is toggled. This event can be triggered by the player themselves or by another
  * plugin/player.
  *
- * @since TODO
+ * @since 4.0.0
  */
 @NullMarked
 public class PlayerBuildModeToggleEvent extends PlayerEvent implements Cancellable {

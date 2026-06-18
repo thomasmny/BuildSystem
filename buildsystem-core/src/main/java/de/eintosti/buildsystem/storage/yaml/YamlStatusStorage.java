@@ -75,7 +75,6 @@ public class YamlStatusStorage extends AbstractYamlStorage {
                 .icon(icon)
                 .order(section.getInt("order", 0))
                 .buildingAllowed(section.getBoolean("building-allowed", true))
-                .visibleInNavigator(section.getBoolean("visible-in-navigator", true))
                 .progressesTo(progressesTo != null && !progressesTo.isBlank() ? progressesTo : null)
                 .builtIn(section.getBoolean("built-in", false))
                 .build();
@@ -118,7 +117,6 @@ public class YamlStatusStorage extends AbstractYamlStorage {
         config.set(path + ".icon", status.getIcon().name());
         config.set(path + ".order", status.getOrder());
         config.set(path + ".building-allowed", status.isBuildingAllowed());
-        config.set(path + ".visible-in-navigator", status.isVisibleInNavigator());
         config.set(path + ".progresses-to", status.getProgressesTo().orElse(null));
         config.set(path + ".built-in", status.isBuiltIn());
     }

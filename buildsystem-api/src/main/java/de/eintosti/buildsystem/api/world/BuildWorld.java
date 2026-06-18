@@ -47,7 +47,7 @@ public interface BuildWorld extends Displayable {
      * Gets the Bukkit {@link World} associated with this {@link BuildWorld}.
      *
      * @return An {@link Optional} containing the Bukkit world, or {@link Optional#empty()} if not loaded
-     * @since TODO
+     * @since 4.0.0
      */
     Optional<World> getWorld();
 

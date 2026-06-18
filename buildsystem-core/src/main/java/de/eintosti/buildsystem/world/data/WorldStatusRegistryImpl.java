@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.storage.yaml.YamlStatusStorage;
+import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +31,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import org.jspecify.annotations.NullMarked;
@@ -38,8 +38,9 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Owns every {@link BuildWorldStatus}, seeding the built-in defaults on first run and persisting all administrator
- * changes. Deleting a custom status cascades: every world that used it is reset to the {@link #getDefaultStatus()
- * default} status and the id is removed from every category that grouped it. Built-in statuses are protected.
+ * changes. Deleting a status cascades: every world that used it is reset to the {@link #getDefaultStatus() default}
+ * status and the id is removed from every category that grouped it. The last remaining status can never be deleted, so
+ * a valid default always exists.
  */
 @NullMarked
 public class WorldStatusRegistryImpl implements WorldStatusRegistry {
@@ -62,12 +63,12 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
     }
 
     private void seedDefaults() {
-        put("not_started", "Not Started", "&c", XMaterial.RED_DYE, 1, true, true, "in_progress");
-        put("in_progress", "In Progress", "&6", XMaterial.ORANGE_DYE, 2, true, true, null);
-        put("almost_finished", "Almost Finished", "&a", XMaterial.LIME_DYE, 3, true, true, null);
-        put("finished", "Finished", "&2", XMaterial.GREEN_DYE, 4, true, true, null);
-        put("archive", "Archive", "&3", XMaterial.CYAN_DYE, 5, false, true, null);
-        put("hidden", "Hidden", "&7", XMaterial.BONE_MEAL, 6, true, false, null);
+        put("not_started", "Not Started", "&c", XMaterial.RED_DYE, 1, true, "in_progress");
+        put("in_progress", "In Progress", "&6", XMaterial.ORANGE_DYE, 2, true, null);
+        put("almost_finished", "Almost Finished", "&a", XMaterial.LIME_DYE, 3, true, null);
+        put("finished", "Finished", "&2", XMaterial.GREEN_DYE, 4, true, null);
+        put("archive", "Archive", "&3", XMaterial.CYAN_DYE, 5, false, null);
+        put("hidden", "Hidden", "&7", XMaterial.BONE_MEAL, 6, true, null);
     }
 
     private void put(
@@ -77,7 +78,6 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
             XMaterial icon,
             int order,
             boolean buildingAllowed,
-            boolean visibleInNavigator,
             @Nullable String progressesTo) {
         // One-time migration: a server upgrading from pre-4.0 carries the customised status name in the legacy
         // "status_<id>" message key (the message store never prunes user keys). When present, adopt it so the
@@ -91,7 +91,6 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
                         .icon(icon)
                         .order(order)
                         .buildingAllowed(buildingAllowed)
-                        .visibleInNavigator(visibleInNavigator)
                         .progressesTo(progressesTo)
                         .builtIn(true)
                         .build());
@@ -110,13 +109,35 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
         }
 
         String raw = legacy.get().strip();
-        if (raw.startsWith("&#") && raw.length() >= 8) {
-            return new String[] {raw.substring(0, 8), raw.substring(8).strip()};
-        }
-        if (raw.startsWith("&") && raw.length() >= 2) {
-            return new String[] {raw.substring(0, 2), raw.substring(2).strip()};
+        int colorLength = leadingColorLength(raw);
+        if (colorLength > 0) {
+            return new String[] {
+                raw.substring(0, colorLength), raw.substring(colorLength).strip()
+            };
         }
         return new String[] {defaultColor, raw};
+    }
+
+    /**
+     * Returns the length of the colour token at the start of a legacy styled string, covering the formats a pre-4.0
+     * server could have stored in a {@code status_<id>} message: the Spigot hex form {@code &x&R&R&G&G&B&B}, the
+     * {@code &#RRGGBB} and bare {@code #RRGGBB} hex forms, and a single legacy code such as {@code &c}. Returns 0 when
+     * the string does not start with a recognised colour token.
+     */
+    private static int leadingColorLength(String raw) {
+        if (raw.length() >= 2 && (raw.charAt(0) == '&' || raw.charAt(0) == '§')) {
+            if (Character.toLowerCase(raw.charAt(1)) == 'x' && raw.length() >= 14) {
+                return 14; // &x&R&R&G&G&B&B
+            }
+            if (raw.charAt(1) == '#' && raw.length() >= 8) {
+                return 8; // &#RRGGBB
+            }
+            return 2; // &c, &a, ...
+        }
+        if (raw.startsWith("#") && raw.length() >= 7) {
+            return 7; // #RRGGBB
+        }
+        return 0;
     }
 
     @Override
@@ -127,7 +148,7 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
     }
 
     @Override
-    public Optional<BuildWorldStatus> getStatus(String id) {
+    public Optional<BuildWorldStatus> getStatus(@Nullable String id) {
         return Optional.ofNullable(this.statuses.get(id));
     }
 
@@ -153,7 +174,7 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
     }
 
     public WorldStatusImpl createStatus(String displayName) {
-        String id = uniqueId(displayName);
+        String id = StringUtils.uniqueId(displayName, "status", this.statuses::containsKey);
         int order = this.statuses.values().stream()
                         .mapToInt(WorldStatusImpl::getOrder)
                         .max()
@@ -219,21 +240,5 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
                 persist(status);
             }
         }
-    }
-
-    private String uniqueId(String displayName) {
-        String base = displayName
-                .toLowerCase(Locale.ROOT)
-                .replaceAll("[^a-z0-9]+", "_")
-                .replaceAll("^_+|_+$", "");
-        if (base.isEmpty()) {
-            base = "status";
-        }
-        String id = base;
-        int suffix = 2;
-        while (this.statuses.containsKey(id)) {
-            id = base + "_" + suffix++;
-        }
-        return id;
     }
 }

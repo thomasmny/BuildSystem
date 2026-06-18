@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.player.menu.SettingsMenu;
 import de.eintosti.buildsystem.util.color.ColorAPI;
+import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -62,9 +63,14 @@ public class NavigatorMenu extends ButtonMenu<MenuButton> {
 
     private MenuButton categoryButton(NavigatorCategory category) {
         return MenuButton.builder()
-                .render((player, inventory, slot) -> ItemBuilder.icon(category, player)
-                        .name(ColorAPI.process(category.getColor() + category.getDisplayName()))
-                        .into(inventory, slot))
+                .render((player, inventory, slot) -> plugin.getMenuItems()
+                        .renderCategoryIcon(
+                                inventory,
+                                slot,
+                                category,
+                                player,
+                                ColorAPI.process(category.getStyledName()),
+                                List.of()))
                 .onClick((player, event) -> {
                     new CategoryWorldsMenu(plugin, player, category).open(player);
                     XSound.ENTITY_CHICKEN_EGG.play(player);

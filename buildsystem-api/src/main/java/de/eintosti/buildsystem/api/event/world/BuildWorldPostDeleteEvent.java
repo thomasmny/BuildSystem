@@ -26,7 +26,7 @@ import org.jspecify.annotations.NullMarked;
  *
  * <p>At this point the {@link BuildWorld} object is no longer registered and must only be used for reading.
  *
- * @since TODO
+ * @since 4.0.0
  */
 @NullMarked
 public class BuildWorldPostDeleteEvent extends BuildWorldEvent {

@@ -22,7 +22,7 @@ import org.jspecify.annotations.NullMarked;
 /**
  * Whether a world's state should be written to disk before it is unloaded.
  *
- * @since TODO
+ * @since 4.0.0
  */
 @NullMarked
 public enum SaveBehavior {

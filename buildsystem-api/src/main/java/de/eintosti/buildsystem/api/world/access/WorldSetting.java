@@ -24,7 +24,7 @@ import org.jspecify.annotations.NullMarked;
 /**
  * A protectable boolean world setting that gates whether a player may modify the world in a particular way.
  *
- * @since TODO
+ * @since 4.0.0
  */
 @NullMarked
 public enum WorldSetting {
