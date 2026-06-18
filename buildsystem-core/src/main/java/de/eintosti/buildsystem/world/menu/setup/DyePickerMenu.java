@@ -75,7 +75,7 @@ public class DyePickerMenu extends ButtonMenu<MenuButton> {
     };
 
     private static final int INVENTORY_SIZE = 45;
-    private static final int SLOT_BACK = 40;
+    private static final int SLOT_BACK = 36;
 
     private final BuildSystemPlugin plugin;
     private final String currentToken;
