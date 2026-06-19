@@ -1,6 +1,6 @@
 ![Screenshot](.github/images/header.png)
 
-# BuildSystem ![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/thomasmny/BuildSystem/build.yml?branch=master) ![version](https://img.shields.io/github/v/release/thomasmny/BuildSystem) [![Discord](https://img.shields.io/discord/419460301403193344.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.com/rduPF3yk62)
+# BuildSystem ![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/thomasmny/BuildSystem/build.yml?branch=master) ![version](https://img.shields.io/github/v/release/thomasmny/BuildSystem) [![Discord](https://img.shields.io/discord/419460301403193344.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/rduPF3yk62)
 
 ## Table of contents
 
@@ -18,10 +18,10 @@
 
 ## Introduction
 
-**BuildSystem** is a simple but powerful - as the name already says - system for builders, with lots
-of great features for everyday usage. Manage worlds in the worlds navigator, change their permission, projects and
-status with ease. And not to forget: let each player decide which settings whey think are best for them and now the
-building can start!
+**BuildSystem** is a simple but powerful world management plugin made for builders, packed with
+features for everyday use. Manage all your worlds from a single navigator, set each one's permission,
+project and status with ease, and let every player choose the settings that suit them best.
+Everything builders need is here, so you can get straight to building.
 
 ## Links and Contacts
 
@@ -34,7 +34,7 @@ building can start!
     * [BuiltByBit](https://builtbybit.com/resources/12399/)
     * Snapshots are available on [Jenkins](https://ci.eintosti.de/job/BuildSystem/).
 * **Support:**
-    * [GitHub issue tracker](https://github.com/einTosti/BuildSystem/issues)
+    * [GitHub issue tracker](https://github.com/thomasmny/BuildSystem/issues)
     * [Discord](https://discord.gg/rduPF3yk62)
 * **Donations:**
   Donations are **100%** voluntary. However, I am truly grateful for every single one of you who
@@ -45,39 +45,49 @@ building can start!
 
 ## Features
 
-* **100% customisable messages** and scoreboard
-* Powerful navigator which allows for an overview of all worlds. Extra GUIs for:
-    - **_Not Started_**, **_In Progress_**, **_Almost Finished_** and **_Finished_** maps
-    - Maps that have been put to the **_Archive_**
-    - **_Private_** player maps: Each player can create their own map, if a map with their name
-      doesn't exist
-* **Create worlds with ease**: When creating a world, choose from:
-    - **_Predefined worlds_** _or_
-    - **_Custom generators_** provided by 3rd party plugins _or_
-    - **_Custom templates_** which you can add yourself
-* Easily **manage your worlds**: Choose from over 6 different statuses for each world
-* When in worlds that are set as finished, the player is invisible and can fly in adventure mode, so
-  they can only have
-  a look without breaking anything [bypass: `/build`]
-* Set the **permission** you need to join a worlds
-* Change what project each world is for (e.g. `"A small BedWars map"`)
-* Set the **world item**, so you can spot them faster amongst other worlds
-    - You can choose from all items that are available in Minecraft
-* **Import**, **delete** and **create worlds** with ease
-* New and improved navigator!
-    - Not a GUI anymore, but furthermore an interactive navigator
-    - But if you rather have a "normal" GUI, the option is there for you to toggle between the
-* **Per player settings**
-* **Building tools**:
-    - Toggle block physics
-    - Custom speed
-    - Receive player skulls
-    - Change the time in a world with only a single command
-    - Toggle double slab breaking
-    - No-Clip
-    - Open iron doors and iron trapdoors
-    - Night vision
-    - Disable interactions with certain blocks
+### World management
+
+* Create worlds from predefined types, from custom generators provided by other plugins, or from
+  your own templates
+* Import worlds individually or all at once, and delete, rename or clone them with ease
+* Protect your builds with automatic and manual backups, stored locally or on S3 or SFTP and
+  restored from an in-game menu
+* Assign multiple builders to a world, and optionally keep WorldEdit limited to them
+* Automatically unload inactive worlds to save server resources
+* Configure every world individually: join permission, project, difficulty, gamerules, world border,
+  spawn, weather, block physics, explosions and mob AI
+* Give each world its own item to tell them apart at a glance
+
+### Navigator
+
+* Browse your worlds through an interactive navigator, or switch to a classic GUI
+* Worlds are organised into categories, Public, Archive and Private out of the box, grouped by who
+  can see them and their current state
+* Track progress with per-world statuses: Not Started, In Progress, Almost Finished, Finished, plus
+  Archive and Hidden
+* Rename, recolour, reorder or remove any status or category in-game, each with its own icon
+* Organise worlds into folders, with full sorting and filtering
+
+### Build mode
+
+* In finished worlds players become invisible and fly in adventure mode, so they can explore without
+  changing anything (use `/build` to bypass)
+* Players keep their items on death, and archived worlds behave exactly how you configure them
+
+### Player settings & building tools
+
+* Per-player settings including the scoreboard, night vision, no-clip, hiding other players, slab
+  breaking, opening iron doors and trapdoors, instant sign placement and more
+* A full set of building tools: adjustable fly and walk speed, block physics toggle, world time
+  control, player skulls, mob AI and explosion toggles, a secret blocks menu, gamemode switching,
+  and quick teleports with `/back`, `/top` and `/spawn`
+
+### Customization & integrations
+
+* **100% customisable** messages and scoreboard
+* Built to work alongside LuckPerms, PlaceholderAPI, WorldEdit and AxiomPaper
+* A developer API with events, so you can build your own integrations on top (see
+  [below](#developer-api))
 
 ## Statistics
 
