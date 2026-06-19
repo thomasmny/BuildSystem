@@ -7,7 +7,7 @@ paperlib = "1.0.8"
 junit = "6.1.0"
 mockito = "5.23.0"
 mockbukkit = "4.113.2"
-paperapi = "26.1.2.build.70-stable"
+paperapi = "26.1.2.build.71-stable"
 
 
 # Plugins
