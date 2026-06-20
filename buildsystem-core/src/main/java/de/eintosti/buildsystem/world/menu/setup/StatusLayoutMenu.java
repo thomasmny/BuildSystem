@@ -87,7 +87,9 @@ public class StatusLayoutMenu extends Menu {
 
         for (BuildWorldStatus status : registry.getStatuses()) {
             int slot = status.getStatusSlot();
-            if (!status.isShownInStatusMenu() || !isSlotValid(slot) || status.getId().equals(held.getStatusId())) {
+            if (!status.isShownInStatusMenu()
+                    || !isSlotValid(slot)
+                    || status.getId().equals(held.getStatusId())) {
                 continue;
             }
             ItemBuilder.of(status.getIcon())
@@ -178,7 +180,6 @@ public class StatusLayoutMenu extends Menu {
 
         WorldStatusImpl occupant = statusAtSlot(slot);
         if (occupant != null && !occupant.equals(heldStatus)) {
-            // Swap the occupant back to where the held status came from, or to the palette if it came from there.
             if (held.getFromSlot() >= 0) {
                 occupant.setStatusSlot(held.getFromSlot());
             } else {

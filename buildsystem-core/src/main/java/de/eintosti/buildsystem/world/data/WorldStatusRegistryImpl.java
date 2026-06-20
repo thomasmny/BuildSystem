@@ -29,10 +29,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -44,6 +46,23 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public class WorldStatusRegistryImpl implements WorldStatusRegistry {
+
+    /**
+     * The number of slots in the {@code /worlds setStatus} picker. Status layout slots live in {@code [0, SIZE)},
+     * mirroring the navigator's fixed grid.
+     */
+    public static final int STATUS_MENU_SIZE = 27;
+
+    /**
+     * Default picker slots for the built-in statuses, applied when they are seeded and when the layout is reset.
+     */
+    private static final Map<String, Integer> DEFAULT_SLOTS = Map.of(
+            "not_started", 10,
+            "in_progress", 11,
+            "almost_finished", 12,
+            "finished", 13,
+            "archive", 14,
+            "hidden", 15);
 
     private final BuildSystemPlugin plugin;
     private final NavigatorCategoryRegistryImpl categoryRegistry;
@@ -60,6 +79,9 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
             seedDefaults();
             storage.saveAll(this.statuses.values());
         }
+        // A statuses.yml written before the picker became a configurable layout has no slots; give those statuses a
+        // home in the grid (by order) so the upgraded picker is populated instead of empty.
+        placeUnplacedStatuses();
     }
 
     private void seedDefaults() {
@@ -93,6 +115,8 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
                         .buildingAllowed(buildingAllowed)
                         .progressesTo(progressesTo)
                         .builtIn(true)
+                        .statusSlot(DEFAULT_SLOTS.getOrDefault(id, -1))
+                        .shownInStatusMenu(true)
                         .build());
     }
 
@@ -180,14 +204,75 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
                         .max()
                         .orElse(0)
                 + 1;
+        // Place the new status at the first free picker slot so it shows up straight away; if the grid is full it stays
+        // in the editor's palette until an admin makes room.
+        int slot = firstFreeSlot();
         WorldStatusImpl status = WorldStatusImpl.builder(id)
                 .displayName(displayName)
                 .order(order)
+                .statusSlot(slot)
+                .shownInStatusMenu(slot >= 0)
                 .build();
         this.statuses.put(id, status);
         storage.save(status);
         categoryRegistry.addStatusToDefaultCategory(id);
         return status;
+    }
+
+    /**
+     * Restores the built-in statuses to their default picker slots and hides every custom status from the picker,
+     * without otherwise changing the statuses. Backs the status editor's "reset layout" control, mirroring the
+     * navigator's layout reset; a full {@link #resetToDefaults()} is the separate "reset everything".
+     */
+    public void resetStatusLayout() {
+        for (WorldStatusImpl status : this.statuses.values()) {
+            Integer preset = DEFAULT_SLOTS.get(status.getId());
+            if (preset != null) {
+                status.setStatusSlot(preset);
+                status.setShownInStatusMenu(true);
+            } else {
+                status.setShownInStatusMenu(false);
+            }
+            storage.save(status);
+        }
+    }
+
+    /**
+     * Gives every status that has no picker slot one, laying them out by {@link BuildWorldStatus#getOrder() order} into
+     * the first free slots. Persists only the statuses it moves, so a fully-placed registry is untouched.
+     */
+    private void placeUnplacedStatuses() {
+        List<WorldStatusImpl> unplaced = this.statuses.values().stream()
+                .filter(status -> status.getStatusSlot() < 0)
+                .sorted(Comparator.comparingInt(WorldStatusImpl::getOrder))
+                .toList();
+        for (WorldStatusImpl status : unplaced) {
+            int slot = firstFreeSlot();
+            if (slot < 0) {
+                break;
+            }
+            status.setStatusSlot(slot);
+            status.setShownInStatusMenu(true);
+            storage.save(status);
+        }
+    }
+
+    /**
+     * {@return the first picker slot not occupied by a shown status, or {@code -1} when the grid is full}
+     */
+    private int firstFreeSlot() {
+        Set<Integer> occupied = new HashSet<>();
+        for (WorldStatusImpl status : this.statuses.values()) {
+            if (status.isShownInStatusMenu() && status.getStatusSlot() >= 0) {
+                occupied.add(status.getStatusSlot());
+            }
+        }
+        for (int slot = 0; slot < STATUS_MENU_SIZE; slot++) {
+            if (!occupied.contains(slot)) {
+                return slot;
+            }
+        }
+        return -1;
     }
 
     public void persist(WorldStatusImpl status) {

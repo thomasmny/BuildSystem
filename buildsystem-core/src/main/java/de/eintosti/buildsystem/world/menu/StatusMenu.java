@@ -26,7 +26,7 @@ import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.util.color.ColorAPI;
-import java.util.List;
+import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -36,16 +36,12 @@ import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Lets a player assign one of the registered {@link BuildWorldStatus statuses} to a world. The grid is built dynamically
- * from the {@code WorldStatusRegistry}, so custom statuses appear automatically; each status renders with its own icon
- * and coloured name and is gated by its own permission.
+ * Lets a player assign one of the registered {@link BuildWorldStatus statuses} to a world. Each status is shown at the
+ * slot the administrator gave it in the setup status editor, so the picker's appearance is fully configurable; a status
+ * that is hidden or has no slot is omitted. Each entry is gated by its own permission.
  */
 @NullMarked
 public class StatusMenu extends ButtonMenu<MenuButton> {
-
-    private static final int STATUSES_PER_ROW = 7;
-    private static final int BORDER_ROWS = 2; // one filler row above and below the grid
-    private static final int MAX_CONTENT_ROWS = 4; // the six-row chest minus the two border rows
 
     private final BuildSystemPlugin plugin;
     private final BuildWorld buildWorld;
@@ -53,47 +49,19 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
     public StatusMenu(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
         super(
                 plugin.getMessages(),
-                computeSize(plugin),
+                WorldStatusRegistryImpl.STATUS_MENU_SIZE,
                 plugin.getMessages()
                         .getString("status_title", player, Map.entry("%world%", formatWorldName(buildWorld))));
         this.plugin = plugin;
         this.buildWorld = buildWorld;
 
-        List<BuildWorldStatus> statuses =
-                List.copyOf(plugin.getWorldStatusRegistry().getStatuses());
-        // Lay the grid out row by row, keeping a one-slot border on every side. The six-row chest bounds capacity, so
-        // guard against placing a button outside the inventory (which would throw) when an admin has created a very
-        // large number of statuses.
-        int capacity = contentRows(statuses.size()) * STATUSES_PER_ROW;
-        for (int index = 0; index < statuses.size() && index < capacity; index++) {
-            int slot = (index / STATUSES_PER_ROW + 1) * 9 + 1 + index % STATUSES_PER_ROW;
-            register(slot, statusButton(statuses.get(index)));
+        for (BuildWorldStatus status : plugin.getWorldStatusRegistry().getStatuses()) {
+            int slot = status.getStatusSlot();
+            if (!status.isShownInStatusMenu() || slot < 0 || slot >= WorldStatusRegistryImpl.STATUS_MENU_SIZE) {
+                continue;
+            }
+            register(slot, statusButton(status));
         }
-        if (statuses.size() > capacity) {
-            plugin.getLogger()
-                    .warning(
-                            "StatusMenu can display at most %d statuses; %d are hidden. Reduce the number of statuses to reach them all."
-                                    .formatted(capacity, statuses.size() - capacity));
-        }
-    }
-
-    /**
-     * Sizes the inventory to a whole number of rows large enough to hold the status grid with a one-slot border on each
-     * side, clamped to the chest maximum of six rows.
-     */
-    private static int computeSize(BuildSystemPlugin plugin) {
-        int rows = contentRows(plugin.getWorldStatusRegistry().getStatuses().size()) + BORDER_ROWS;
-        return rows * 9;
-    }
-
-    /**
-     * The number of grid rows the statuses occupy — one row per {@value #STATUSES_PER_ROW} statuses, at least one and
-     * clamped to {@value #MAX_CONTENT_ROWS} (the six-row chest minus the top and bottom border rows). Statuses beyond
-     * the resulting capacity are not shown.
-     */
-    private static int contentRows(int statusCount) {
-        int rows = (int) Math.ceil(statusCount / (double) STATUSES_PER_ROW);
-        return Math.clamp(rows, 1, MAX_CONTENT_ROWS);
     }
 
     private static String formatWorldName(BuildWorld buildWorld) {
@@ -148,7 +116,6 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
 
     @Override
     protected void onUnhandledClick(Player player, InventoryClickEvent event) {
-        // Only react to clicks inside this menu (not the player's own inventory).
         if (event.getRawSlot() < 0 || event.getRawSlot() >= getInventory().getSize()) {
             return;
         }
@@ -157,7 +124,6 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
             return;
         }
 
-        // A click on any non-status slot (e.g. the filler) returns to the editor.
         XSound.BLOCK_CHEST_OPEN.play(player);
         new EditMenu(plugin, buildWorld, player).open(player);
     }

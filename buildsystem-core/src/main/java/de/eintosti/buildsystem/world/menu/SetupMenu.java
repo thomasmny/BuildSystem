@@ -25,7 +25,7 @@ import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.world.menu.setup.DefaultIconsMenu;
 import de.eintosti.buildsystem.world.menu.setup.NavigatorLayoutMenu;
-import de.eintosti.buildsystem.world.menu.setup.StatusManagementMenu;
+import de.eintosti.buildsystem.world.menu.setup.StatusLayoutMenu;
 import java.util.function.Consumer;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -55,7 +55,7 @@ public class SetupMenu extends ButtonMenu<MenuButton> {
                         p -> new DefaultIconsMenu(plugin, p).open(p)));
         register(
                 SLOT_STATUSES,
-                hubButton(XMaterial.NAME_TAG, "setup_statuses_item", p -> new StatusManagementMenu(plugin, p).open(p)));
+                hubButton(XMaterial.NAME_TAG, "setup_statuses_item", p -> new StatusLayoutMenu(plugin, p).open(p)));
         register(
                 SLOT_NAVIGATOR,
                 hubButton(XMaterial.COMPASS, "setup_navigator_item", p -> new NavigatorLayoutMenu(plugin, p).open(p)));

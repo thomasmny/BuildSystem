@@ -34,7 +34,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Edits a single {@link BuildWorldStatus}: name, colour, icon, order, the building/navigator behaviour flags, and the
  * auto-progress target. Built-in statuses can be restyled here but never deleted (deletion lives in
- * {@link StatusManagementMenu}).
+ * {@link StatusLayoutMenu}).
  */
 @NullMarked
 public class StatusEditorMenu extends RegistryEditorMenu {
@@ -144,6 +144,6 @@ public class StatusEditorMenu extends RegistryEditorMenu {
 
     @Override
     protected void openManagement(Player player) {
-        new StatusManagementMenu(plugin, player).open(player);
+        new StatusLayoutMenu(plugin, player).open(player);
     }
 }

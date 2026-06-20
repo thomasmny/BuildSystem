@@ -116,6 +116,23 @@ public interface BuildWorldStatus {
     Optional<String> getProgressesTo();
 
     /**
+     * Gets the slot this status occupies in the {@code /worlds setStatus} picker. The layout is configured through the
+     * setup menu's status editor, exactly as navigator categories are arranged. A status that is not
+     * {@link #isShownInStatusMenu() shown}, or whose slot falls outside the picker, is omitted from it.
+     *
+     * @return The picker slot, or a negative value when the status has no assigned slot
+     */
+    int getStatusSlot();
+
+    /**
+     * Gets whether this status appears in the {@code /worlds setStatus} picker. A hidden status still exists and can be
+     * assigned through other means; it is simply not offered in the picker until it is placed back into the layout.
+     *
+     * @return {@code true} if shown in the picker, otherwise {@code false}
+     */
+    boolean isShownInStatusMenu();
+
+    /**
      * Gets whether this status is one of the plugin's built-in defaults, as opposed to an administrator-created custom
      * status. Built-in statuses can be restyled and deleted like any other; deleting one only removes it until the
      * statuses are reset to their defaults.

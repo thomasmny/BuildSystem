@@ -26,10 +26,11 @@ import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Manages the inventory takeover for the drag-and-drop navigator layout editor. The editor repurposes the player's own
- * inventory to show its controls, so this service snapshots the real contents before the editor opens and restores them
- * when the editor closes, the player quits, or the server stops. The snapshot lives in memory; a graceful shutdown
- * restores it via {@link #restoreAll()}.
+ * Manages the inventory takeover shared by the drag-and-drop layout editors (the navigator and the status picker). An
+ * editor repurposes the player's own inventory to show its controls, so this service snapshots the real contents before
+ * the editor opens and restores them when the editor closes, the player quits, or the server stops. A player only ever
+ * has one such editor open at a time, so a single snapshot per player is enough. The snapshot lives in memory; a
+ * graceful shutdown restores it via {@link #restoreAll()}.
  */
 @NullMarked
 public class NavigatorEditorService {

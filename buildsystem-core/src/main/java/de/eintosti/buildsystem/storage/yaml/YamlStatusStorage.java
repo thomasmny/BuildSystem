@@ -77,6 +77,10 @@ public class YamlStatusStorage extends AbstractYamlStorage {
                 .buildingAllowed(section.getBoolean("building-allowed", true))
                 .progressesTo(progressesTo != null && !progressesTo.isBlank() ? progressesTo : null)
                 .builtIn(section.getBoolean("built-in", false))
+                // A pre-layout statuses.yml has neither key: the status is left unplaced (slot -1) so the registry can
+                // migrate it into the grid by order on load.
+                .statusSlot(section.getInt("status-slot", -1))
+                .shownInStatusMenu(section.getBoolean("shown-in-status-menu", true))
                 .build();
     }
 
@@ -119,5 +123,7 @@ public class YamlStatusStorage extends AbstractYamlStorage {
         config.set(path + ".building-allowed", status.isBuildingAllowed());
         config.set(path + ".progresses-to", status.getProgressesTo().orElse(null));
         config.set(path + ".built-in", status.isBuiltIn());
+        config.set(path + ".status-slot", status.getStatusSlot());
+        config.set(path + ".shown-in-status-menu", status.isShownInStatusMenu());
     }
 }

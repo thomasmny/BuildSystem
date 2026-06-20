@@ -137,6 +137,54 @@ class WorldStatusRegistryImplTest {
         assertTrue(reloaded.getStatus("persisted").isPresent());
     }
 
+    @Test
+    void seededStatuses_getDefaultPickerSlots() {
+        BuildWorldStatus notStarted =
+                registry.getStatus(WorldStatusRegistry.NOT_STARTED_ID).orElseThrow();
+        assertEquals(10, notStarted.getStatusSlot());
+        assertTrue(notStarted.isShownInStatusMenu());
+        assertEquals(15, registry.getStatus("hidden").orElseThrow().getStatusSlot());
+    }
+
+    @Test
+    void createStatus_isPlacedInThePicker() {
+        BuildWorldStatus created = registry.createStatus("Needs Review");
+        assertTrue(created.getStatusSlot() >= 0);
+        assertTrue(created.isShownInStatusMenu());
+    }
+
+    @Test
+    void resetStatusLayout_restoresBuiltInSlotsAndHidesCustom() {
+        WorldStatusImpl notStarted = (WorldStatusImpl)
+                registry.getStatus(WorldStatusRegistry.NOT_STARTED_ID).orElseThrow();
+        notStarted.setStatusSlot(25);
+        registry.persist(notStarted);
+        WorldStatusImpl custom = registry.createStatus("Custom");
+
+        registry.resetStatusLayout();
+
+        assertEquals(
+                10,
+                registry.getStatus(WorldStatusRegistry.NOT_STARTED_ID)
+                        .orElseThrow()
+                        .getStatusSlot());
+        assertFalse(registry.getStatus(custom.getId()).orElseThrow().isShownInStatusMenu());
+    }
+
+    @Test
+    void unplacedStatus_isGivenASlotOnReload() {
+        WorldStatusImpl notStarted = (WorldStatusImpl)
+                registry.getStatus(WorldStatusRegistry.NOT_STARTED_ID).orElseThrow();
+        notStarted.setStatusSlot(-1);
+        registry.persist(notStarted);
+
+        WorldStatusRegistryImpl reloaded = reloadRegistry();
+        assertTrue(reloaded.getStatus(WorldStatusRegistry.NOT_STARTED_ID)
+                        .orElseThrow()
+                        .getStatusSlot()
+                >= 0);
+    }
+
     private WorldStatusRegistryImpl reloadRegistry() {
         BuildSystemPlugin plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);

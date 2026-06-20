@@ -41,6 +41,8 @@ public final class WorldStatusImpl implements BuildWorldStatus {
     private int order;
     private boolean buildingAllowed;
     private @Nullable String progressesTo;
+    private int statusSlot;
+    private boolean shownInStatusMenu;
 
     private WorldStatusImpl(Builder builder) {
         this.id = builder.id;
@@ -51,6 +53,8 @@ public final class WorldStatusImpl implements BuildWorldStatus {
         this.buildingAllowed = builder.buildingAllowed;
         this.progressesTo = builder.progressesTo;
         this.builtIn = builder.builtIn;
+        this.statusSlot = builder.statusSlot;
+        this.shownInStatusMenu = builder.shownInStatusMenu;
     }
 
     /**
@@ -134,6 +138,24 @@ public final class WorldStatusImpl implements BuildWorldStatus {
     }
 
     @Override
+    public int getStatusSlot() {
+        return statusSlot;
+    }
+
+    public void setStatusSlot(int statusSlot) {
+        this.statusSlot = statusSlot;
+    }
+
+    @Override
+    public boolean isShownInStatusMenu() {
+        return shownInStatusMenu;
+    }
+
+    public void setShownInStatusMenu(boolean shownInStatusMenu) {
+        this.shownInStatusMenu = shownInStatusMenu;
+    }
+
+    @Override
     public boolean isBuiltIn() {
         return builtIn;
     }
@@ -168,6 +190,8 @@ public final class WorldStatusImpl implements BuildWorldStatus {
         private boolean buildingAllowed = true;
         private @Nullable String progressesTo = null;
         private boolean builtIn = false;
+        private int statusSlot = -1;
+        private boolean shownInStatusMenu = true;
 
         private Builder(String id) {
             this.id = id;
@@ -206,6 +230,16 @@ public final class WorldStatusImpl implements BuildWorldStatus {
 
         public Builder builtIn(boolean builtIn) {
             this.builtIn = builtIn;
+            return this;
+        }
+
+        public Builder statusSlot(int statusSlot) {
+            this.statusSlot = statusSlot;
+            return this;
+        }
+
+        public Builder shownInStatusMenu(boolean shownInStatusMenu) {
+            this.shownInStatusMenu = shownInStatusMenu;
             return this;
         }
 

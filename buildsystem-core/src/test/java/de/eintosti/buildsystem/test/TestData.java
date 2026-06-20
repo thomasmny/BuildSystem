@@ -92,6 +92,10 @@ public final class TestData {
                 .buildingAllowed(building)
                 .progressesTo(progressesTo)
                 .builtIn(true)
+                // Mirror the production default slots (not_started=10 .. hidden=15) so the picker lays out
+                // contiguously.
+                .statusSlot(9 + order)
+                .shownInStatusMenu(true)
                 .build();
     }
 
