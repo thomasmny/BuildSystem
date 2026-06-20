@@ -25,7 +25,6 @@ import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.SkullTextures;
-import de.eintosti.buildsystem.player.menu.SettingsMenu;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.display.CategoryPermissions;
 import java.util.List;
@@ -92,7 +91,7 @@ public class NavigatorMenu extends ButtonMenu<MenuButton> {
                         XSound.ENTITY_ITEM_BREAK.play(player);
                         return;
                     }
-                    new SettingsMenu(plugin, player).open(player);
+                    plugin.getMenus().openSettings(player);
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                 })
                 .build();

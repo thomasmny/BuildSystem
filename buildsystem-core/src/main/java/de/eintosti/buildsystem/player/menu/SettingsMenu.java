@@ -20,13 +20,17 @@ package de.eintosti.buildsystem.player.menu;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.settings.Settings;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import java.util.LinkedHashMap;
@@ -125,13 +129,29 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
         }
     }
 
-    private final BuildSystemPlugin plugin;
     private final SettingsService settingsManager;
+    private final ConfigService configService;
+    private final MenuItems menuItems;
+    private final NavigatorService navigatorService;
+    private final NoClipService noClipService;
+    private final Menus menus;
 
-    public SettingsMenu(BuildSystemPlugin plugin, Player player) {
-        super(plugin.getMessages(), 45, plugin.getMessages().getString("settings_title", player));
-        this.plugin = plugin;
-        this.settingsManager = plugin.getSettingsService();
+    public SettingsMenu(
+            Messages messages,
+            SettingsService settingsManager,
+            ConfigService configService,
+            MenuItems menuItems,
+            NavigatorService navigatorService,
+            NoClipService noClipService,
+            Menus menus,
+            Player player) {
+        super(messages, 45, messages.getString("settings_title", player));
+        this.settingsManager = settingsManager;
+        this.configService = configService;
+        this.menuItems = menuItems;
+        this.navigatorService = navigatorService;
+        this.noClipService = noClipService;
+        this.menus = menus;
         buildButtons();
     }
 
@@ -142,7 +162,7 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
                         .outcome(ClickOutcome.SUBMENU)
                         .render(this::renderDesign)
                         .onClick((player, event) -> {
-                            plugin.getMenus().openDesign(player);
+                            menus.openDesign(player);
                             XSound.ENTITY_ITEM_PICKUP.play(player);
                         })
                         .build());
@@ -201,11 +221,7 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
                         "navigator-type",
                         "settings_new_navigator_item",
                         "settings_new_navigator_lore",
-                        s -> plugin.getConfigService()
-                                .current()
-                                .settings()
-                                .navigator()
-                                .item(),
+                        s -> configService.current().settings().navigator().item(),
                         s -> s.getNavigatorType() == NavigatorType.NEW,
                         this::toggleNavigatorType));
         register(
@@ -292,15 +308,14 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
                 .outcome(ClickOutcome.TOGGLE)
                 .render((player, inventory, slot) -> {
                     Settings settings = settingsManager.getSettings(player);
-                    plugin.getMenuItems()
-                            .addToggleItem(
-                                    player,
-                                    inventory,
-                                    slot,
-                                    material.apply(settings),
-                                    enabled.test(settings),
-                                    itemKey,
-                                    loreKey);
+                    menuItems.addToggleItem(
+                            player,
+                            inventory,
+                            slot,
+                            material.apply(settings),
+                            enabled.test(settings),
+                            itemKey,
+                            loreKey);
                 })
                 .onClick((player, event) -> handleToggle(player, node, () -> {
                     flip.accept(player, settingsManager.getSettings(player));
@@ -315,25 +330,20 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
                 .outcome(ClickOutcome.REJECTABLE)
                 .render((player, inventory, slot) -> {
                     boolean scoreboardEnabled =
-                            plugin.getConfigService().current().settings().scoreboard();
+                            configService.current().settings().scoreboard();
                     Settings settings = settingsManager.getSettings(player);
-                    plugin.getMenuItems()
-                            .addToggleItem(
-                                    player,
-                                    inventory,
-                                    slot,
-                                    XMaterial.PAPER,
-                                    settings.isScoreboard(),
-                                    scoreboardEnabled
-                                            ? "settings_scoreboard_item"
-                                            : "settings_scoreboard_disabled_item",
-                                    scoreboardEnabled
-                                            ? "settings_scoreboard_lore"
-                                            : "settings_scoreboard_disabled_lore");
+                    menuItems.addToggleItem(
+                            player,
+                            inventory,
+                            slot,
+                            XMaterial.PAPER,
+                            settings.isScoreboard(),
+                            scoreboardEnabled ? "settings_scoreboard_item" : "settings_scoreboard_disabled_item",
+                            scoreboardEnabled ? "settings_scoreboard_lore" : "settings_scoreboard_disabled_lore");
                 })
                 .onClick((player, event) -> {
                     boolean scoreboardEnabled =
-                            plugin.getConfigService().current().settings().scoreboard();
+                            configService.current().settings().scoreboard();
                     handleToggle(
                             player,
                             "scoreboard",
@@ -360,12 +370,12 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
         }
 
         XSound.ENTITY_ITEM_PICKUP.play(player);
-        new SettingsMenu(plugin, player).open(player);
+        menus.openSettings(player);
     }
 
     @Override
     protected void populate(Player player) {
-        plugin.getMenuItems().fillRange(player, getInventory(), 0, 45);
+        menuItems.fillRange(player, getInventory(), 0, 45);
         renderButtons(player);
     }
 
@@ -411,7 +421,7 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
             settings.setNavigatorType(NavigatorType.NEW);
         } else {
             settings.setNavigatorType(NavigatorType.OLD);
-            plugin.getNavigatorService().removeArmorStands(player);
+            navigatorService.removeArmorStands(player);
             player.removePotionEffect(XPotion.BLINDNESS.get());
         }
     }
@@ -428,7 +438,6 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
     }
 
     private void toggleNoClip(Player player, Settings settings) {
-        NoClipService noClipService = plugin.getNoClipService();
         if (settings.isNoClip()) {
             settings.setNoClip(false);
             noClipService.stopNoClip(player.getUniqueId());

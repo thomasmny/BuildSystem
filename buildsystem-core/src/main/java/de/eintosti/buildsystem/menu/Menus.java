@@ -55,6 +55,15 @@ public final class Menus {
     }
 
     public void openSettings(Player player) {
-        new SettingsMenu(plugin, player).open(player);
+        new SettingsMenu(
+                        plugin.getMessages(),
+                        plugin.getSettingsService(),
+                        plugin.getConfigService(),
+                        plugin.getMenuItems(),
+                        plugin.getNavigatorService(),
+                        plugin.getNoClipService(),
+                        this,
+                        player)
+                .open(player);
     }
 }
