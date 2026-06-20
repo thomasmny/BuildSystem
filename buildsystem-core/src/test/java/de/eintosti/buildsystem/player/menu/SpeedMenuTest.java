@@ -24,7 +24,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.menu.SpeedMenu.SpeedOption;
 import de.eintosti.buildsystem.player.settings.SettingsService;
@@ -59,11 +58,9 @@ class SpeedMenuTest {
     private SpeedMenu menu() {
         Messages messages = mock(Messages.class);
         when(messages.getString(anyString(), any())).thenReturn("Title");
-        BuildSystemPlugin plugin = mock(BuildSystemPlugin.class);
-        when(plugin.getMessages()).thenReturn(messages);
-        when(plugin.getSettingsService()).thenReturn(mock(SettingsService.class));
+        SettingsService settingsService = mock(SettingsService.class);
         Player player = server.addPlayer();
-        return new SpeedMenu(plugin, player);
+        return new SpeedMenu(messages, settingsService, player);
     }
 
     @Test

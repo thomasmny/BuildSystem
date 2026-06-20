@@ -20,6 +20,7 @@ package de.eintosti.buildsystem;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.navigator.NavigatorEditorService;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.PlayerLookupService;
@@ -62,6 +63,7 @@ final class Services {
     private @Nullable NavigatorCategoryRegistryImpl navigatorCategoryRegistry;
     private @Nullable WorldStatusRegistryImpl worldStatusRegistry;
     private @Nullable MenuItems menuItems;
+    private @Nullable Menus menus;
 
     Services(BuildSystemPlugin plugin) {
         this.plugin = plugin;
@@ -104,6 +106,7 @@ final class Services {
         this.settingsService = new SettingsService(plugin);
         this.spawnService = new SpawnService(plugin);
         this.menuItems = new MenuItems(plugin, config(), messages(), settings());
+        this.menus = new Menus(plugin);
     }
 
     private <T> T checkNotNull(@Nullable T service, String serviceName) {
@@ -175,5 +178,9 @@ final class Services {
 
     MenuItems menuItems() {
         return checkNotNull(menuItems, "MenuItems");
+    }
+
+    Menus menus() {
+        return checkNotNull(menus, "Menus");
     }
 }

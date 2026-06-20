@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.player.menu;
 
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
@@ -52,9 +52,9 @@ public class SpeedMenu extends ButtonMenu<MenuButton> {
 
     private final SettingsService settingsService;
 
-    public SpeedMenu(BuildSystemPlugin plugin, Player player) {
-        super(plugin.getMessages(), 27, plugin.getMessages().getString("speed_title", player));
-        this.settingsService = plugin.getSettingsService();
+    public SpeedMenu(Messages messages, SettingsService settingsService, Player player) {
+        super(messages, 27, messages.getString("speed_title", player));
+        this.settingsService = settingsService;
 
         SPEED_BY_SLOT.forEach((slot, option) -> register(slot, speedButton(option)));
     }
