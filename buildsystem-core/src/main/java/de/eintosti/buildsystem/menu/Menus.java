@@ -31,6 +31,7 @@ import de.eintosti.buildsystem.world.menu.BackupsMenu;
 import de.eintosti.buildsystem.world.menu.EditMenu;
 import de.eintosti.buildsystem.world.menu.GameRulesMenu;
 import de.eintosti.buildsystem.world.menu.StatusMenu;
+import de.eintosti.buildsystem.world.menu.setup.DyePickerMenu;
 import de.eintosti.buildsystem.world.menu.setup.MaterialPickerMenu;
 import java.util.function.Consumer;
 import org.bukkit.entity.Player;
@@ -109,6 +110,11 @@ public final class Menus {
 
     public void openMaterialPicker(Player player, Consumer<XMaterial> onPick, Runnable onBack) {
         new MaterialPickerMenu(plugin.getMessages(), plugin.getMenuItems(), plugin.getPrompts(), player, onPick, onBack)
+                .open(player);
+    }
+
+    public void openDyePicker(Player player, String currentToken, Consumer<String> onPick, Runnable onBack) {
+        new DyePickerMenu(plugin.getMessages(), plugin.getMenuItems(), player, currentToken, onPick, onBack)
                 .open(player);
     }
 

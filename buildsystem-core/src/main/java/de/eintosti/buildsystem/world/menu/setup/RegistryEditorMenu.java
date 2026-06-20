@@ -102,16 +102,15 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
                         .name(messages.getString(nameKey, player))
                         .lore(messages.getStringList(nameKey + "_lore", player))
                         .into(inventory, slot))
-                .onClick((player, event) -> new DyePickerMenu(
-                                plugin,
+                .onClick((player, event) -> plugin.getMenus()
+                        .openDyePicker(
                                 player,
                                 current.get(),
                                 token -> {
                                     apply.accept(token);
                                     save(player);
                                 },
-                                () -> reopen(player))
-                        .open(player))
+                                () -> reopen(player)))
                 .build();
     }
 
