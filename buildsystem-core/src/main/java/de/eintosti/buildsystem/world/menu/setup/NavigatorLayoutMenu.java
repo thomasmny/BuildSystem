@@ -205,7 +205,7 @@ public class NavigatorLayoutMenu extends Menu {
         NavigatorCategoryImpl occupant = categoryAtSlot(slot);
         if (occupant != null) {
             if (shiftClick) {
-                new CategoryEditorMenu(plugin, player, occupant).open(player);
+                plugin.getMenus().openCategoryEditor(occupant, player);
             } else {
                 pickUpCategory(player, occupant.getId(), slot);
             }
@@ -299,7 +299,7 @@ public class NavigatorLayoutMenu extends Menu {
 
         NavigatorCategory clicked = notAdded.get(paletteIndex);
         if (shiftClick) {
-            new CategoryEditorMenu(plugin, player, clicked).open(player);
+            plugin.getMenus().openCategoryEditor(clicked, player);
         } else {
             pickUpCategory(player, clicked.getId(), -1);
         }
@@ -366,7 +366,7 @@ public class NavigatorLayoutMenu extends Menu {
                         created.setShownInNavigator(false);
                     }
                     registry.persist(created);
-                    new CategoryEditorMenu(plugin, player, created).open(player);
+                    plugin.getMenus().openCategoryEditor(created, player);
                 });
     }
 

@@ -163,7 +163,7 @@ public class StatusLayoutMenu extends Menu {
         WorldStatusImpl occupant = statusAtSlot(slot);
         if (occupant != null) {
             if (shiftClick) {
-                new StatusEditorMenu(plugin, player, occupant).open(player);
+                plugin.getMenus().openStatusEditor(occupant, player);
             } else {
                 pickUp(player, occupant.getId(), slot);
             }
@@ -228,7 +228,7 @@ public class StatusLayoutMenu extends Menu {
 
         BuildWorldStatus clicked = notAdded.get(paletteIndex);
         if (shiftClick) {
-            new StatusEditorMenu(plugin, player, clicked).open(player);
+            plugin.getMenus().openStatusEditor(clicked, player);
         } else {
             pickUp(player, clicked.getId(), -1);
         }
@@ -282,7 +282,7 @@ public class StatusLayoutMenu extends Menu {
                 .onCancel(() -> new StatusLayoutMenu(plugin, player).open(player))
                 .request(name -> {
                     WorldStatusImpl created = registry.createStatus(name);
-                    new StatusEditorMenu(plugin, player, created).open(player);
+                    plugin.getMenus().openStatusEditor(created, player);
                 });
     }
 

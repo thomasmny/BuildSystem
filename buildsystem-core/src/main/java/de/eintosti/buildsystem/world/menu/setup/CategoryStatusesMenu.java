@@ -21,6 +21,7 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
@@ -53,14 +54,14 @@ public class CategoryStatusesMenu extends PaginatedMenu {
     private final NavigatorCategoryRegistryImpl registry;
     private final NavigatorCategoryImpl category;
 
-    public CategoryStatusesMenu(BuildSystemPlugin plugin, Player player, NavigatorCategoryImpl category) {
+    public CategoryStatusesMenu(BuildSystemPlugin plugin, Player player, NavigatorCategory category) {
         super(
                 plugin.getMessages(),
                 INVENTORY_SIZE,
                 plugin.getMessages().getString("setup_category_statuses_title", player));
         this.plugin = plugin;
         this.registry = plugin.getNavigatorCategoryRegistry();
-        this.category = category;
+        this.category = (NavigatorCategoryImpl) category;
     }
 
     @Override
@@ -123,7 +124,7 @@ public class CategoryStatusesMenu extends PaginatedMenu {
                         .into(inventory, slot))
                 .onClick((player, event) -> {
                     XSound.BLOCK_CHEST_OPEN.play(player);
-                    new CategoryEditorMenu(plugin, player, category).open(player);
+                    plugin.getMenus().openCategoryEditor(category, player);
                 })
                 .build();
     }

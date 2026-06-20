@@ -21,6 +21,8 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.player.customblock.CustomBlockMenu;
 import de.eintosti.buildsystem.player.menu.DesignMenu;
 import de.eintosti.buildsystem.player.menu.SettingsMenu;
@@ -31,8 +33,13 @@ import de.eintosti.buildsystem.world.menu.BackupsMenu;
 import de.eintosti.buildsystem.world.menu.EditMenu;
 import de.eintosti.buildsystem.world.menu.GameRulesMenu;
 import de.eintosti.buildsystem.world.menu.StatusMenu;
+import de.eintosti.buildsystem.world.menu.setup.CategoryEditorMenu;
+import de.eintosti.buildsystem.world.menu.setup.CategoryStatusesMenu;
 import de.eintosti.buildsystem.world.menu.setup.DyePickerMenu;
 import de.eintosti.buildsystem.world.menu.setup.MaterialPickerMenu;
+import de.eintosti.buildsystem.world.menu.setup.NavigatorLayoutMenu;
+import de.eintosti.buildsystem.world.menu.setup.StatusEditorMenu;
+import de.eintosti.buildsystem.world.menu.setup.StatusLayoutMenu;
 import java.util.function.Consumer;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -116,6 +123,43 @@ public final class Menus {
     public void openDyePicker(Player player, String currentToken, Consumer<String> onPick, Runnable onBack) {
         new DyePickerMenu(plugin.getMessages(), plugin.getMenuItems(), player, currentToken, onPick, onBack)
                 .open(player);
+    }
+
+    public void openCategoryEditor(NavigatorCategory category, Player player) {
+        new CategoryEditorMenu(
+                        plugin.getMessages(),
+                        plugin.getPrompts(),
+                        this,
+                        plugin.getMenuItems(),
+                        plugin.getNavigatorCategoryRegistry(),
+                        plugin.getWorldStatusRegistry(),
+                        player,
+                        category)
+                .open(player);
+    }
+
+    public void openStatusEditor(BuildWorldStatus status, Player player) {
+        new StatusEditorMenu(
+                        plugin.getMessages(),
+                        plugin.getPrompts(),
+                        this,
+                        plugin.getMenuItems(),
+                        plugin.getWorldStatusRegistry(),
+                        player,
+                        status)
+                .open(player);
+    }
+
+    public void openCategoryStatuses(NavigatorCategory category, Player player) {
+        new CategoryStatusesMenu(plugin, player, category).open(player);
+    }
+
+    public void openNavigatorLayout(Player player) {
+        new NavigatorLayoutMenu(plugin, player).open(player);
+    }
+
+    public void openStatusLayout(Player player) {
+        new StatusLayoutMenu(plugin, player).open(player);
     }
 
     public void openStatus(BuildWorld buildWorld, Player player) {
