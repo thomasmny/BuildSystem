@@ -46,7 +46,7 @@ public class PlayerMoveListener implements Listener {
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
-        if (!navigatorService.getOpenNavigator().contains(player)) {
+        if (!navigatorService.isNavigatorOpen(player)) {
             return;
         }
 

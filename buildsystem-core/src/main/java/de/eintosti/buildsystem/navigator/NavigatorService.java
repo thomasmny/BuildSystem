@@ -147,7 +147,15 @@ public class NavigatorService {
     }
 
     public Set<Player> getOpenNavigator() {
-        return openNavigator;
+        return Collections.unmodifiableSet(openNavigator);
+    }
+
+    public boolean isNavigatorOpen(Player player) {
+        return openNavigator.contains(player);
+    }
+
+    public void markNavigatorOpen(Player player) {
+        openNavigator.add(player);
     }
 
     public void giveNavigator(Player player) {

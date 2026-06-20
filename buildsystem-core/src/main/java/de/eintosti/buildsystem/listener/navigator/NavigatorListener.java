@@ -112,7 +112,7 @@ public class NavigatorListener implements Listener {
                 XSound.BLOCK_CHEST_OPEN.play(player);
             }
             case NEW -> {
-                if (navigatorService.getOpenNavigator().contains(player)) {
+                if (navigatorService.isNavigatorOpen(player)) {
                     plugin.getMessages().sendMessage(player, "worlds_navigator_open");
                     return;
                 }
@@ -154,7 +154,7 @@ public class NavigatorListener implements Listener {
                 new PotionEffect(XPotion.JUMP_BOOST.get(), PotionEffect.INFINITE_DURATION, 250, false, false));
 
         navigatorService.spawnArmorStands(player);
-        navigatorService.getOpenNavigator().add(player);
+        navigatorService.markNavigatorOpen(player);
     }
 
     /**
@@ -169,7 +169,7 @@ public class NavigatorListener implements Listener {
 
         disableArchivedWorlds(player, event);
 
-        if (!navigatorService.getOpenNavigator().contains(player) || !(entity instanceof ArmorStand armorStand)) {
+        if (!navigatorService.isNavigatorOpen(player) || !(entity instanceof ArmorStand armorStand)) {
             return;
         }
 
@@ -237,7 +237,7 @@ public class NavigatorListener implements Listener {
     @EventHandler
     public void preventBarrierDrop(PlayerDropItemEvent event) {
         Player player = event.getPlayer();
-        if (!navigatorService.getOpenNavigator().contains(player)) {
+        if (!navigatorService.isNavigatorOpen(player)) {
             return;
         }
 
