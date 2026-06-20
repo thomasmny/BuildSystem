@@ -19,11 +19,12 @@ package de.eintosti.buildsystem.world.menu;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.Map;
 import java.util.stream.IntStream;
 import org.bukkit.entity.Player;
@@ -37,8 +38,8 @@ public class DeleteMenu extends ButtonMenu<MenuButton> {
 
     private final BuildWorld buildWorld;
 
-    public DeleteMenu(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
-        super(plugin.getMessages(), 27, plugin.getMessages().getString("delete_title", player));
+    public DeleteMenu(Messages messages, WorldServiceImpl worldService, BuildWorld buildWorld, Player player) {
+        super(messages, 27, messages.getString("delete_title", player));
         this.buildWorld = buildWorld;
 
         register(
@@ -50,7 +51,7 @@ public class DeleteMenu extends ButtonMenu<MenuButton> {
                         .onClick((p, event) -> {
                             XSound.ENTITY_PLAYER_LEVELUP.play(p);
                             p.closeInventory();
-                            plugin.getWorldService().deleteWorld(p, buildWorld);
+                            worldService.deleteWorld(p, buildWorld);
                         })
                         .build());
         register(

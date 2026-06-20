@@ -22,6 +22,8 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.player.customblock.CustomBlockMenu;
 import de.eintosti.buildsystem.player.menu.DesignMenu;
@@ -30,8 +32,12 @@ import de.eintosti.buildsystem.player.menu.SpeedMenu;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.menu.BackupsConfirmationMenu;
 import de.eintosti.buildsystem.world.menu.BackupsMenu;
+import de.eintosti.buildsystem.world.menu.CategoryWorldsMenu;
+import de.eintosti.buildsystem.world.menu.CreateMenu;
+import de.eintosti.buildsystem.world.menu.DeleteMenu;
 import de.eintosti.buildsystem.world.menu.EditMenu;
 import de.eintosti.buildsystem.world.menu.GameRulesMenu;
+import de.eintosti.buildsystem.world.menu.NavigatorMenu;
 import de.eintosti.buildsystem.world.menu.SetupMenu;
 import de.eintosti.buildsystem.world.menu.StatusMenu;
 import de.eintosti.buildsystem.world.menu.setup.CategoryEditorMenu;
@@ -47,6 +53,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Factory and navigation hub for the plugin's GUIs. As the composition root for the menu layer it resolves each menu's
@@ -112,6 +119,39 @@ public final class Menus {
 
     public void openEdit(BuildWorld buildWorld, Player player) {
         new EditMenu(plugin, buildWorld, player).open(player);
+    }
+
+    public void openNavigator(Player player) {
+        new NavigatorMenu(
+                        plugin.getMessages(),
+                        plugin.getMenuItems(),
+                        this,
+                        plugin.getNavigatorCategoryRegistry(),
+                        player)
+                .open(player);
+    }
+
+    public void openCategoryWorlds(NavigatorCategory category, Player player) {
+        new CategoryWorldsMenu(plugin, player, category).open(player);
+    }
+
+    public void openCreate(CreateMenu.Page page, Visibility visibility, @Nullable Folder folder, Player player) {
+        new CreateMenu(
+                        plugin.getMessages(),
+                        plugin.getMenuItems(),
+                        this,
+                        plugin.getWorldService(),
+                        plugin.getCustomizableIcons(),
+                        plugin.getDataFolder(),
+                        page,
+                        visibility,
+                        folder,
+                        player)
+                .open(player);
+    }
+
+    public void openDelete(BuildWorld buildWorld, Player player) {
+        new DeleteMenu(plugin.getMessages(), plugin.getWorldService(), buildWorld, player).open(player);
     }
 
     public void openGameRules(BuildWorld buildWorld, Player player) {

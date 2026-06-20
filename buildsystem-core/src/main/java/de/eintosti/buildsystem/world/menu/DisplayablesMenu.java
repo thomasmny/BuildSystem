@@ -348,8 +348,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     }
 
     protected void beginWorldCreation() {
-        new CreateMenu(plugin, Page.PREDEFINED, this.category.getPrimaryVisibility(), null, this.player)
-                .open(this.player);
+        plugin.getMenus().openCreate(Page.PREDEFINED, this.category.getPrimaryVisibility(), null, this.player);
     }
 
     private void beginFolderCreation(Player player) {
@@ -377,7 +376,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     }
 
     protected void returnToPreviousInventory() {
-        new NavigatorMenu(plugin, this.player).open(this.player);
+        plugin.getMenus().openNavigator(this.player);
     }
 
     private void handleFilterClick(InventoryClickEvent event, WorldDisplay worldDisplay) {

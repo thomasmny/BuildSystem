@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.command;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.command.subcommand.worlds.*;
-import de.eintosti.buildsystem.world.menu.NavigatorMenu;
 import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -69,7 +68,7 @@ public class WorldsCommand extends CommandBase {
             if (!requirePermission(player, "buildsystem.navigator")) {
                 return;
             }
-            new NavigatorMenu(plugin, player).open(player);
+            plugin.getMenus().openNavigator(player);
             XSound.BLOCK_CHEST_OPEN.play(player);
             return;
         }

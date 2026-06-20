@@ -108,7 +108,7 @@ public class NavigatorListener implements Listener {
         Settings settings = settingsManager.getSettings(player);
         switch (settings.getNavigatorType()) {
             case OLD -> {
-                new NavigatorMenu(plugin, player).open(player);
+                plugin.getMenus().openNavigator(player);
                 XSound.BLOCK_CHEST_OPEN.play(player);
             }
             case NEW -> {
@@ -192,7 +192,7 @@ public class NavigatorListener implements Listener {
             }
 
             XSound.BLOCK_CHEST_OPEN.play(player);
-            new CategoryWorldsMenu(plugin, player, category).open(player);
+            plugin.getMenus().openCategoryWorlds(category, player);
         }
     }
 

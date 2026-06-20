@@ -21,7 +21,6 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.world.menu.DeleteMenu;
 import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -49,7 +48,7 @@ public class DeleteSubCommand extends AbstractSubCommand {
             return;
         }
 
-        new DeleteMenu(plugin, buildWorld, player).open(player);
+        plugin.getMenus().openDelete(buildWorld, player);
     }
 
     @Override

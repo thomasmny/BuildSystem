@@ -96,13 +96,8 @@ public class FolderContentMenu extends DisplayablesMenu {
 
     @Override
     protected void beginWorldCreation() {
-        new CreateMenu(
-                        plugin,
-                        CreateMenu.Page.PREDEFINED,
-                        this.category.getPrimaryVisibility(),
-                        this.folder,
-                        this.player)
-                .open(this.player);
+        plugin.getMenus()
+                .openCreate(CreateMenu.Page.PREDEFINED, this.category.getPrimaryVisibility(), this.folder, this.player);
     }
 
     @Override
