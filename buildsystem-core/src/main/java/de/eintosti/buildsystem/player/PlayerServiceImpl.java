@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlPlayerStorage;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -59,12 +60,22 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public Set<UUID> getBuildModePlayers() {
-        return buildModePlayers;
+        return Collections.unmodifiableSet(buildModePlayers);
     }
 
     @Override
     public boolean isInBuildMode(Player player) {
         return buildModePlayers.contains(player.getUniqueId());
+    }
+
+    @Override
+    public boolean enterBuildMode(UUID playerId) {
+        return buildModePlayers.add(playerId);
+    }
+
+    @Override
+    public boolean leaveBuildMode(UUID playerId) {
+        return buildModePlayers.remove(playerId);
     }
 
     @Override

@@ -41,9 +41,10 @@ public interface PlayerService {
     PlayerStorage getPlayerStorage();
 
     /**
-     * Gets a set of all players currently in "build mode".
+     * Gets an unmodifiable set of the unique ids of all players currently in "build mode". Use
+     * {@link #enterBuildMode(UUID)} / {@link #leaveBuildMode(UUID)} to change the set.
      *
-     * @return A set of all players in "build mode".
+     * @return An unmodifiable set of the ids of all players in "build mode".
      * @see #isInBuildMode(Player)
      */
     Set<UUID> getBuildModePlayers();
@@ -55,6 +56,24 @@ public interface PlayerService {
      * @return {@code true} if the player is in "build mode", otherwise {@code false}
      */
     boolean isInBuildMode(Player player);
+
+    /**
+     * Puts the player with the given unique id into "build mode".
+     *
+     * @param playerId The unique id of the player
+     * @return {@code true} if the player was not already in build mode, {@code false} otherwise
+     * @since 4.0.0
+     */
+    boolean enterBuildMode(UUID playerId);
+
+    /**
+     * Removes the player with the given unique id from "build mode".
+     *
+     * @param playerId The unique id of the player
+     * @return {@code true} if the player was in build mode, {@code false} otherwise
+     * @since 4.0.0
+     */
+    boolean leaveBuildMode(UUID playerId);
 
     /**
      * Gets whether the given player is allowed to create a new {@link BuildWorld}.<br>

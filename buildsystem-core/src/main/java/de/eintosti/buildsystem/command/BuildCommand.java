@@ -85,7 +85,7 @@ public class BuildCommand extends CommandBase {
 
     private void toggleBuildMode(Player target, Player sender) {
         UUID targetUuid = target.getUniqueId();
-        boolean isEnteringBuildMode = !playerService.getBuildModePlayers().contains(targetUuid);
+        boolean isEnteringBuildMode = !playerService.isInBuildMode(target);
 
         PlayerBuildModeToggleEvent toggleEvent = new PlayerBuildModeToggleEvent(target, isEnteringBuildMode, sender);
         Bukkit.getServer().getPluginManager().callEvent(toggleEvent);
@@ -98,7 +98,7 @@ public class BuildCommand extends CommandBase {
         CachedValues cachedValues = buildPlayer.getCachedValues();
 
         if (isEnteringBuildMode) {
-            playerService.getBuildModePlayers().add(targetUuid);
+            playerService.enterBuildMode(targetUuid);
             cachedValues.saveGameMode(target.getGameMode());
             cachedValues.saveInventory(target.getInventory().getContents());
             target.setGameMode(GameMode.CREATIVE);
@@ -112,7 +112,7 @@ public class BuildCommand extends CommandBase {
                 messages.sendMessage(target, "build_activated_other_target", Map.entry("%sender%", sender.getName()));
             }
         } else {
-            if (!playerService.getBuildModePlayers().remove(targetUuid)) {
+            if (!playerService.leaveBuildMode(targetUuid)) {
                 return;
             }
 
