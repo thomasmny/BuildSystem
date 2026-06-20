@@ -19,10 +19,11 @@ package de.eintosti.buildsystem.player.customblock;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.MenuItems;
 import java.util.Map;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -73,11 +74,11 @@ public class CustomBlockMenu extends ButtonMenu<MenuButton> {
             Map.entry(40, new BlockEntry(CustomBlock.DRAGON_EGG)),
             Map.entry(41, new BlockEntry(CustomBlock.DEBUG_STICK, XMaterial.DEBUG_STICK)));
 
-    private final BuildSystemPlugin plugin;
+    private final MenuItems menuItems;
 
-    public CustomBlockMenu(BuildSystemPlugin plugin, Player player) {
-        super(plugin.getMessages(), 45, plugin.getMessages().getString("blocks_title", player));
-        this.plugin = plugin;
+    public CustomBlockMenu(Messages messages, MenuItems menuItems, Player player) {
+        super(messages, 45, messages.getString("blocks_title", player));
+        this.menuItems = menuItems;
 
         BLOCK_BY_SLOT.forEach((slot, entry) -> register(slot, blockButton(entry)));
     }
@@ -96,7 +97,7 @@ public class CustomBlockMenu extends ButtonMenu<MenuButton> {
     protected void populate(Player player) {
         int[] glassSlots = {0, 8, 9, 17, 18, 26, 27, 35, 36, 44};
         for (int i : glassSlots) {
-            plugin.getMenuItems().addGlassPane(player, getInventory(), i);
+            menuItems.addGlassPane(player, getInventory(), i);
         }
 
         renderButtons(player);

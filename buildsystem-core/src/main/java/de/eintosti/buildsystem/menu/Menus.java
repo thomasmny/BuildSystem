@@ -18,6 +18,9 @@
 package de.eintosti.buildsystem.menu;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.player.customblock.CustomBlockMenu;
+import de.eintosti.buildsystem.player.menu.DesignMenu;
+import de.eintosti.buildsystem.player.menu.SettingsMenu;
 import de.eintosti.buildsystem.player.menu.SpeedMenu;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -40,5 +43,18 @@ public final class Menus {
 
     public void openSpeed(Player player) {
         new SpeedMenu(plugin.getMessages(), plugin.getSettingsService(), player).open(player);
+    }
+
+    public void openBlocks(Player player) {
+        new CustomBlockMenu(plugin.getMessages(), plugin.getMenuItems(), player).open(player);
+    }
+
+    public void openDesign(Player player) {
+        new DesignMenu(plugin.getMessages(), plugin.getSettingsService(), plugin.getMenuItems(), this, player)
+                .open(player);
+    }
+
+    public void openSettings(Player player) {
+        new SettingsMenu(plugin, player).open(player);
     }
 }

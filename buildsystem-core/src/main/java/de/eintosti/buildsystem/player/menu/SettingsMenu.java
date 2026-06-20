@@ -142,7 +142,7 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
                         .outcome(ClickOutcome.SUBMENU)
                         .render(this::renderDesign)
                         .onClick((player, event) -> {
-                            new DesignMenu(plugin, player).open(player);
+                            plugin.getMenus().openDesign(player);
                             XSound.ENTITY_ITEM_PICKUP.play(player);
                         })
                         .build());

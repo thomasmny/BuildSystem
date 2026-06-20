@@ -18,12 +18,15 @@
 package de.eintosti.buildsystem.player.menu;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.player.settings.SettingsService;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.bukkit.entity.Player;
@@ -63,11 +66,16 @@ public class DesignMenu extends ButtonMenu<MenuButton> {
 
     private record ColorEntry(XMaterial material, String messageKey, DesignColor color) {}
 
-    private final BuildSystemPlugin plugin;
+    private final SettingsService settingsService;
+    private final MenuItems menuItems;
+    private final Menus menus;
 
-    public DesignMenu(BuildSystemPlugin plugin, Player player) {
-        super(plugin.getMessages(), 36, plugin.getMessages().getString("design_title", player));
-        this.plugin = plugin;
+    public DesignMenu(
+            Messages messages, SettingsService settingsService, MenuItems menuItems, Menus menus, Player player) {
+        super(messages, 36, messages.getString("design_title", player));
+        this.settingsService = settingsService;
+        this.menuItems = menuItems;
+        this.menus = menus;
 
         COLOR_SLOTS.forEach((slot, entry) -> register(slot, colorButton(entry)));
     }
@@ -75,7 +83,7 @@ public class DesignMenu extends ButtonMenu<MenuButton> {
     private MenuButton colorButton(ColorEntry entry) {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> {
-                    Settings settings = plugin.getSettingsService().getSettings(player);
+                    Settings settings = settingsService.getSettings(player);
                     boolean selected = settings.getDesignColor() == entry.color();
                     ItemBuilder.of(entry.material())
                             .name((selected ? "§a" : "§7") + messages.getString(entry.messageKey(), player))
@@ -83,16 +91,16 @@ public class DesignMenu extends ButtonMenu<MenuButton> {
                             .into(inventory, slot);
                 })
                 .onClick((player, event) -> {
-                    plugin.getSettingsService().getSettings(player).setDesignColor(entry.color());
-                    new DesignMenu(plugin, player).open(player);
+                    settingsService.getSettings(player).setDesignColor(entry.color());
+                    menus.openDesign(player);
                 })
                 .build();
     }
 
     @Override
     protected void populate(Player player) {
-        plugin.getMenuItems().fillRange(player, getInventory(), 0, 9);
-        plugin.getMenuItems().fillRange(player, getInventory(), 27, 36);
+        menuItems.fillRange(player, getInventory(), 0, 9);
+        menuItems.fillRange(player, getInventory(), 27, 36);
 
         renderButtons(player);
     }
@@ -102,7 +110,7 @@ public class DesignMenu extends ButtonMenu<MenuButton> {
         // A click on the border glass returns to the settings menu.
         ItemStack itemStack = event.getCurrentItem();
         if (itemStack != null && itemStack.getType().toString().contains("STAINED_GLASS_PANE")) {
-            new SettingsMenu(plugin, player).open(player);
+            menus.openSettings(player);
         }
     }
 }
