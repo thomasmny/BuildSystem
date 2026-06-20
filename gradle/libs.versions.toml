@@ -1,20 +1,20 @@
 [versions]
 # Platform expectations
 spigot = "26.1.2-R0.1-SNAPSHOT"
+paperapi = "26.1.2.build.+"
 paperlib = "1.0.8"
 
 # Test
 junit = "6.1.0"
 mockito = "5.23.0"
 mockbukkit = "4.113.2"
-paperapi = "26.1.2.build.72-stable"
-
 
 # Plugins
 luckperms = "5.5"
 worldedit = "7.4.3"
 placeholderapi = "2.12.2"
 axiompaper = "5.0.4+26.1"
+
 # Third Party
 annotations = "26.1.0"
 authlib = "3.13.56"
