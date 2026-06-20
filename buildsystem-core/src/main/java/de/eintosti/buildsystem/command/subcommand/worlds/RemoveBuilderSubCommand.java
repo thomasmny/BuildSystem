@@ -23,7 +23,6 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.ArrayList;
 import java.util.List;
@@ -104,7 +103,7 @@ public class RemoveBuilderSubCommand extends AbstractSubCommand {
     }
 
     private void getRemoveBuilderInput(Player player, BuildWorld buildWorld) {
-        new PlayerChatInput(plugin, player, "enter_player_name", input -> {
+        plugin.getPrompts().prompt(player).title("enter_player_name").request(input -> {
             String builderName = input.trim();
             removeBuilder(player, buildWorld, builderName);
         });

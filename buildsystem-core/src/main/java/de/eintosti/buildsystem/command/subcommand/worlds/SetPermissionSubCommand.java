@@ -23,7 +23,6 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.world.menu.EditMenu;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +47,7 @@ public class SetPermissionSubCommand extends AbstractSubCommand {
     }
 
     public void getPermissionInput(Player player, BuildWorld buildWorld, boolean closeInventory) {
-        new PlayerChatInput(plugin, player, "enter_world_permission", input -> {
+        plugin.getPrompts().prompt(player).title("enter_world_permission").request(input -> {
             String permission = input.trim();
 
             List<String> whitelist =

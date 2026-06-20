@@ -23,7 +23,6 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.PlayerChatInput;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
@@ -86,17 +85,15 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
         return labelled(
                 XMaterial.NAME_TAG,
                 nameKey,
-                (player, event) -> PlayerChatInput.requestSanitizedName(
-                        plugin,
-                        player,
-                        promptKey,
-                        "setup_name_invalid_characters",
-                        "setup_name_empty",
-                        name -> {
+                (player, event) -> plugin.getPrompts()
+                        .prompt(player)
+                        .title(promptKey)
+                        .sanitizeName("setup_name_invalid_characters", "setup_name_empty")
+                        .onCancel(() -> reopen(player))
+                        .request(name -> {
                             apply.accept(name);
                             save(player);
-                        },
-                        () -> reopen(player)));
+                        }));
     }
 
     protected final MenuButton colorButton(String nameKey, Supplier<String> current, Consumer<String> apply) {

@@ -21,6 +21,7 @@ import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.navigator.NavigatorEditorService;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.PlayerLookupService;
@@ -28,6 +29,7 @@ import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
@@ -64,6 +66,7 @@ final class Services {
     private @Nullable WorldStatusRegistryImpl worldStatusRegistry;
     private @Nullable MenuItems menuItems;
     private @Nullable Menus menus;
+    private @Nullable Prompts prompts;
 
     Services(BuildSystemPlugin plugin) {
         this.plugin = plugin;
@@ -107,6 +110,7 @@ final class Services {
         this.spawnService = new SpawnService(plugin);
         this.menuItems = new MenuItems(plugin, config(), messages(), settings());
         this.menus = new Menus(plugin);
+        this.prompts = new Prompts(messages(), config(), new TaskScheduler(plugin));
     }
 
     private <T> T checkNotNull(@Nullable T service, String serviceName) {
@@ -182,5 +186,9 @@ final class Services {
 
     Menus menus() {
         return checkNotNull(menus, "Menus");
+    }
+
+    Prompts prompts() {
+        return checkNotNull(prompts, "Prompts");
     }
 }

@@ -24,7 +24,6 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.util.Arrays;
@@ -184,16 +183,15 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
                         populate(player);
                         return;
                     }
-                    new PlayerChatInput(
-                            plugin,
-                            player,
-                            "setup_filter_prompt",
-                            input -> {
+                    plugin.getPrompts()
+                            .prompt(player)
+                            .title("setup_filter_prompt")
+                            .onCancel(() -> open(player))
+                            .request(input -> {
                                 filter = input.strip();
                                 topRow = 0;
                                 open(player);
-                            },
-                            () -> open(player));
+                            });
                 })
                 .build();
     }

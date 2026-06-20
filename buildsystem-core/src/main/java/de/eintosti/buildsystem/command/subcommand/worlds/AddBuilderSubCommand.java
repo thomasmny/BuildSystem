@@ -24,7 +24,6 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import de.eintosti.buildsystem.world.menu.BuilderMenu;
 import java.util.ArrayList;
@@ -128,7 +127,7 @@ public class AddBuilderSubCommand extends AbstractSubCommand {
     }
 
     public void getAddBuilderInput(Player player, BuildWorld buildWorld, boolean closeInventory) {
-        new PlayerChatInput(plugin, player, "enter_player_name", input -> {
+        plugin.getPrompts().prompt(player).title("enter_player_name").request(input -> {
             String builderName = input.trim();
             addBuilder(player, buildWorld, builderName, closeInventory);
         });

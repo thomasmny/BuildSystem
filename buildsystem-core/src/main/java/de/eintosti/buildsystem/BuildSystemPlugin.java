@@ -28,6 +28,7 @@ import de.eintosti.buildsystem.integration.Integrations;
 import de.eintosti.buildsystem.listener.ListenerRegistrar;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.navigator.NavigatorEditorService;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
@@ -288,5 +289,9 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     public Menus getMenus() {
         return services.menus();
+    }
+
+    public Prompts getPrompts() {
+        return services.prompts();
     }
 }

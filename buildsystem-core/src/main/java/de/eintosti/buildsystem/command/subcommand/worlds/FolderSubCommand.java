@@ -29,7 +29,6 @@ import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.*;
 import java.util.Map.Entry;
@@ -179,7 +178,7 @@ public class FolderSubCommand extends AbstractSubCommand {
             return;
         }
 
-        new PlayerChatInput(this.plugin, player, "enter_world_permission", input -> {
+        this.plugin.getPrompts().prompt(player).title("enter_world_permission").request(input -> {
             folder.setPermission(input.trim());
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
@@ -193,7 +192,7 @@ public class FolderSubCommand extends AbstractSubCommand {
             return;
         }
 
-        new PlayerChatInput(this.plugin, player, "enter_world_project", input -> {
+        this.plugin.getPrompts().prompt(player).title("enter_world_project").request(input -> {
             folder.setProject(input.trim());
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);

@@ -24,7 +24,6 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.Menu;
-import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryImpl;
@@ -351,13 +350,12 @@ public class NavigatorLayoutMenu extends Menu {
     }
 
     private void beginCategoryCreation(Player player) {
-        PlayerChatInput.requestSanitizedName(
-                plugin,
-                player,
-                "setup_category_add_prompt",
-                "setup_name_invalid_characters",
-                "setup_name_empty",
-                name -> {
+        plugin.getPrompts()
+                .prompt(player)
+                .title("setup_category_add_prompt")
+                .sanitizeName("setup_name_invalid_characters", "setup_name_empty")
+                .onCancel(() -> new NavigatorLayoutMenu(plugin, player).open(player))
+                .request(name -> {
                     NavigatorCategoryImpl created = registry.createCategory(name);
                     int freeSlot = firstFreeSlot();
                     if (freeSlot >= 0) {
@@ -369,8 +367,7 @@ public class NavigatorLayoutMenu extends Menu {
                     }
                     registry.persist(created);
                     new CategoryEditorMenu(plugin, player, created).open(player);
-                },
-                () -> new NavigatorLayoutMenu(plugin, player).open(player));
+                });
     }
 
     private void pickUpCategory(Player player, String categoryId, int fromSlot) {

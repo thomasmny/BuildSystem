@@ -25,7 +25,6 @@ import de.eintosti.buildsystem.api.world.creation.WorldBuilder;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import org.bukkit.entity.Player;
@@ -54,13 +53,11 @@ public class WorldCreationPrompts {
             boolean privateWorld,
             @Nullable Folder folder) {
         player.closeInventory();
-        PlayerChatInput.requestSanitizedName(
-                plugin,
-                player,
-                "enter_world_name",
-                "worlds_world_creation_invalid_characters",
-                "worlds_world_creation_name_bank",
-                worldName -> {
+        plugin.getPrompts()
+                .prompt(player)
+                .title("enter_world_name")
+                .sanitizeName("worlds_world_creation_invalid_characters", "worlds_world_creation_name_bank")
+                .request(worldName -> {
                     if (worldType == BuildWorldType.CUSTOM) {
                         startCustomGeneratorInput(player, worldName, template, privateWorld, folder);
                     } else {
@@ -78,7 +75,7 @@ public class WorldCreationPrompts {
 
     private void startCustomGeneratorInput(
             Player player, String worldName, @Nullable String template, boolean privateWorld, @Nullable Folder folder) {
-        new PlayerChatInput(plugin, player, "enter_generator_name", input -> {
+        plugin.getPrompts().prompt(player).title("enter_generator_name").request(input -> {
             // Generator names are dynamic and cannot be pre-registered in plugin.yml, so default-allow is emulated: a
             // generator is permitted unless an admin has explicitly denied its specific node.
             String generatorNode = "buildsystem.create.generator." + input.trim();

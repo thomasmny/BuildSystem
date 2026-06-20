@@ -24,7 +24,6 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
@@ -125,15 +124,14 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
     }
 
     private void promptSkullTexture(Player player) {
-        new PlayerChatInput(
-                plugin,
-                player,
-                "setup_category_skull_prompt",
-                input -> {
+        plugin.getPrompts()
+                .prompt(player)
+                .title("setup_category_skull_prompt")
+                .onCancel(() -> reopen(player))
+                .request(input -> {
                     skullProcessor.applyTextureFromInput(input);
                     save(player);
-                },
-                () -> reopen(player));
+                });
     }
 
     private MenuButton visibilityButton(Visibility visibility, XMaterial icon, String nameKey) {

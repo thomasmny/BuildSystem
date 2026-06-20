@@ -24,7 +24,6 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.menu.PlayerChatInput;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.Bukkit;
@@ -46,7 +45,7 @@ public class SetCreatorSubCommand extends AbstractSubCommand {
             return;
         }
 
-        new PlayerChatInput(plugin, player, "enter_world_creator", input -> {
+        plugin.getPrompts().prompt(player).title("enter_world_creator").request(input -> {
             String creatorName = input.trim();
             if (creatorName.equalsIgnoreCase("-")) {
                 applyCreator(player, buildWorld, null);

@@ -354,13 +354,12 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
 
     private void beginFolderCreation(Player player) {
         player.closeInventory();
-        PlayerChatInput.requestSanitizedName(
-                plugin,
-                player,
-                "enter_folder_name",
-                "worlds_folder_creation_invalid_characters",
-                "worlds_folder_creation_name_bank",
-                folderName -> {
+        plugin.getPrompts()
+                .prompt(player)
+                .title("enter_folder_name")
+                .sanitizeName("worlds_folder_creation_invalid_characters", "worlds_folder_creation_name_bank")
+                .onCancel(() -> open(player))
+                .request(folderName -> {
                     if (folderStorage.folderExists(folderName)) {
                         plugin.getMessages().sendMessage(player, "worlds_folder_exists");
                         return;
@@ -370,8 +369,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                     plugin.getMessages()
                             .sendMessage(player, "worlds_folder_created", Map.entry("%folder%", folder.getName()));
                     open(player);
-                },
-                () -> open(player));
+                });
     }
 
     protected Folder createFolder(String folderName) {
@@ -391,16 +389,15 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
             worldFilter.setText("");
         } else if (event.isLeftClick()) {
             player.closeInventory();
-            new PlayerChatInput(
-                    plugin,
-                    player,
-                    "world_filter_title",
-                    input -> {
+            plugin.getPrompts()
+                    .prompt(player)
+                    .title("world_filter_title")
+                    .onCancel(() -> open(player))
+                    .request(input -> {
                         worldFilter.setText(input.replace("\"", ""));
                         resetPage();
                         open(player);
-                    },
-                    () -> open(player));
+                    });
             return;
         } else if (event.isRightClick()) {
             worldFilter.setMode(currentMode.getNext());

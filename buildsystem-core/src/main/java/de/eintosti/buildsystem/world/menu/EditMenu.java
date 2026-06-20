@@ -33,7 +33,6 @@ import de.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.menu.setup.MaterialPickerMenu;
@@ -461,15 +460,14 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
     }
 
     private void promptIconTexture(Player player) {
-        new PlayerChatInput(
-                plugin,
-                player,
-                "worldeditor_world_skull_prompt",
-                input -> {
+        plugin.getPrompts()
+                .prompt(player)
+                .title("worldeditor_world_skull_prompt")
+                .onCancel(() -> reopen(player))
+                .request(input -> {
                     applyIconTexture(input);
                     reopen(player);
-                },
-                () -> reopen(player));
+                });
     }
 
     private void applyIconTexture(String rawInput) {
