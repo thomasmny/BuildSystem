@@ -376,7 +376,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                         .onClick((player, event) -> {
                             if (requirePermission(player, "buildsystem.edit.status")) {
                                 XSound.ENTITY_CHICKEN_EGG.play(player);
-                                new StatusMenu(plugin, buildWorld, player).open(player);
+                                plugin.getMenus().openStatus(buildWorld, player);
                             }
                         })
                         .build());

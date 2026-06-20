@@ -19,12 +19,16 @@ package de.eintosti.buildsystem.world.menu;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import java.util.Map;
@@ -43,19 +47,29 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class StatusMenu extends ButtonMenu<MenuButton> {
 
-    private final BuildSystemPlugin plugin;
+    private final SettingsService settingsService;
+    private final MenuItems menuItems;
+    private final Menus menus;
     private final BuildWorld buildWorld;
 
-    public StatusMenu(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
+    public StatusMenu(
+            Messages messages,
+            WorldStatusRegistry worldStatusRegistry,
+            SettingsService settingsService,
+            MenuItems menuItems,
+            Menus menus,
+            BuildWorld buildWorld,
+            Player player) {
         super(
-                plugin.getMessages(),
+                messages,
                 WorldStatusRegistryImpl.STATUS_MENU_SIZE,
-                plugin.getMessages()
-                        .getString("status_title", player, Map.entry("%world%", formatWorldName(buildWorld))));
-        this.plugin = plugin;
+                messages.getString("status_title", player, Map.entry("%world%", formatWorldName(buildWorld))));
+        this.settingsService = settingsService;
+        this.menuItems = menuItems;
+        this.menus = menus;
         this.buildWorld = buildWorld;
 
-        for (BuildWorldStatus status : plugin.getWorldStatusRegistry().getStatuses()) {
+        for (BuildWorldStatus status : worldStatusRegistry.getStatuses()) {
             int slot = status.getStatusSlot();
             if (!status.isShownInStatusMenu() || slot < 0 || slot >= WorldStatusRegistryImpl.STATUS_MENU_SIZE) {
                 continue;
@@ -96,7 +110,7 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
 
                     player.closeInventory();
                     buildWorld.getData().setStatus(status);
-                    plugin.getSettingsService().forceUpdateSidebar(buildWorld);
+                    settingsService.forceUpdateSidebar(buildWorld);
 
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     messages.sendMessage(
@@ -110,7 +124,7 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
 
     @Override
     protected void populate(Player player) {
-        plugin.getMenuItems().fillAll(player, getInventory());
+        menuItems.fillAll(player, getInventory());
         renderButtons(player);
     }
 
@@ -125,6 +139,6 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
         }
 
         XSound.BLOCK_CHEST_OPEN.play(player);
-        new EditMenu(plugin, buildWorld, player).open(player);
+        menus.openEdit(buildWorld, player);
     }
 }

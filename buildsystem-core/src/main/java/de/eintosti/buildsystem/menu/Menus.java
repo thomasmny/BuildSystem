@@ -27,6 +27,8 @@ import de.eintosti.buildsystem.player.menu.SpeedMenu;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.menu.BackupsConfirmationMenu;
 import de.eintosti.buildsystem.world.menu.BackupsMenu;
+import de.eintosti.buildsystem.world.menu.EditMenu;
+import de.eintosti.buildsystem.world.menu.StatusMenu;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -90,5 +92,21 @@ public final class Menus {
 
     public void openBackupsConfirmation(Backup backup, Player player) {
         new BackupsConfirmationMenu(plugin.getMessages(), plugin.getConfigService(), backup, player).open(player);
+    }
+
+    public void openEdit(BuildWorld buildWorld, Player player) {
+        new EditMenu(plugin, buildWorld, player).open(player);
+    }
+
+    public void openStatus(BuildWorld buildWorld, Player player) {
+        new StatusMenu(
+                        plugin.getMessages(),
+                        plugin.getWorldStatusRegistry(),
+                        plugin.getSettingsService(),
+                        plugin.getMenuItems(),
+                        this,
+                        buildWorld,
+                        player)
+                .open(player);
     }
 }
