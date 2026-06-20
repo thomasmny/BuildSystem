@@ -41,6 +41,7 @@ import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.PluginManager;
@@ -70,6 +71,7 @@ public final class ListenerRegistrar {
         NavigatorEditorService navigatorEditorService = plugin.getNavigatorEditorService();
         NoClipService noClipService = plugin.getNoClipService();
         SpawnService spawnService = plugin.getSpawnService();
+        TaskScheduler scheduler = new TaskScheduler(plugin);
 
         register(new AsyncPlayerChatListener());
         register(new AsyncPlayerPreLoginListener(plugin));
@@ -88,7 +90,8 @@ public final class ListenerRegistrar {
         register(new NavigatorListener(plugin));
         register(new PlayerChangedWorldListener(
                 navigatorService, playerService, settingsService, worldStorage, configService, messages));
-        register(new PlayerCommandPreprocessListener(plugin));
+        register(new PlayerCommandPreprocessListener(
+                settingsService, worldStorage, menuItems, configService, messages, scheduler));
         register(new PlayerInventoryClearListener(settingsService, menuItems));
         register(new PlayerJoinListener(plugin));
         register(new PlayerMoveListener(plugin));

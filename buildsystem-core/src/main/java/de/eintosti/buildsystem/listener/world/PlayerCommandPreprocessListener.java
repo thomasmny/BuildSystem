@@ -17,14 +17,17 @@
  */
 package de.eintosti.buildsystem.listener.world;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.integration.worldedit.WorldEditCommands;
+import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
-import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -38,15 +41,27 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class PlayerCommandPreprocessListener implements Listener {
 
-    private final BuildSystemPlugin plugin;
     private final SettingsService settingsManager;
-    private final WorldStorageImpl worldStorage;
+    private final WorldStorage worldStorage;
+    private final MenuItems menuItems;
+    private final ConfigService configService;
+    private final Messages messages;
+    private final TaskScheduler scheduler;
     private final WorldProtectionPolicy policy;
 
-    public PlayerCommandPreprocessListener(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        this.settingsManager = plugin.getSettingsService();
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+    public PlayerCommandPreprocessListener(
+            SettingsService settingsManager,
+            WorldStorage worldStorage,
+            MenuItems menuItems,
+            ConfigService configService,
+            Messages messages,
+            TaskScheduler scheduler) {
+        this.settingsManager = settingsManager;
+        this.worldStorage = worldStorage;
+        this.menuItems = menuItems;
+        this.configService = configService;
+        this.messages = messages;
+        this.scheduler = scheduler;
         this.policy = new WorldProtectionPolicy();
     }
 
@@ -60,25 +75,23 @@ public class PlayerCommandPreprocessListener implements Listener {
         Player player = event.getPlayer();
 
         if (command.equalsIgnoreCase("/clear")) {
-            ItemStack navigatorItem = plugin.getMenuItems().createNavigatorItem(player);
+            ItemStack navigatorItem = menuItems.createNavigatorItem(player);
             if (!player.getInventory().contains(navigatorItem)) {
                 return;
             }
 
             if (settingsManager.getSettings(player).isKeepNavigator()) {
-                List<Integer> navigatorSlots = plugin.getMenuItems().getNavigatorSlots(player);
-                Bukkit.getScheduler()
-                        .runTaskLater(
-                                plugin,
-                                () -> Bukkit.getServer()
-                                        .getPluginManager()
-                                        .callEvent(new PlayerInventoryClearEvent(player, navigatorSlots)),
-                                2L);
+                List<Integer> navigatorSlots = menuItems.getNavigatorSlots(player);
+                scheduler.runLater(
+                        () -> Bukkit.getServer()
+                                .getPluginManager()
+                                .callEvent(new PlayerInventoryClearEvent(player, navigatorSlots)),
+                        2L);
             }
             return;
         }
 
-        if (plugin.getConfigService().current().settings().builder().blockWorldEditNonBuilder()) {
+        if (configService.current().settings().builder().blockWorldEditNonBuilder()) {
             if (!WorldEditCommands.RESTRICTED.contains(command)) {
                 return;
             }
@@ -90,13 +103,13 @@ public class PlayerCommandPreprocessListener implements Listener {
 
             if (policy.checkArchive(player, buildWorld) == Denial.ARCHIVED) {
                 event.setCancelled(true);
-                plugin.getMessages().sendMessage(player, "command_archive_world");
+                messages.sendMessage(player, "command_archive_world");
                 return;
             }
 
             if (policy.checkBuilders(player, buildWorld) == Denial.NOT_A_BUILDER) {
                 event.setCancelled(true);
-                plugin.getMessages().sendMessage(player, "command_not_builder");
+                messages.sendMessage(player, "command_not_builder");
             }
         }
     }
