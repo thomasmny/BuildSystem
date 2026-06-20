@@ -45,54 +45,36 @@ public class SettingsImpl implements Settings {
     private boolean openTrapDoors;
 
     public SettingsImpl() {
-        this.navigatorType = NavigatorType.OLD;
-        this.designColor = DesignColor.BLACK;
-        this.worldDisplay = new WorldDisplayImpl();
-        this.clearInventory = false;
-        this.disableInteract = false;
-        this.hidePlayers = false;
-        this.instantPlaceSigns = false;
-        this.keepNavigator = false;
-        this.nightVision = false;
-        this.noClip = false;
-        this.placePlants = false;
-        this.scoreboard = true;
-        this.slabBreaking = false;
-        this.spawnTeleport = true;
-        this.openTrapDoors = false;
+        this(builder());
     }
 
-    public SettingsImpl(
-            @Nullable NavigatorType navigatorType,
-            @Nullable DesignColor designColor,
-            WorldDisplay worldDisplay,
-            boolean clearInventory,
-            boolean disableInteract,
-            boolean hidePlayers,
-            boolean instantPlaceSigns,
-            boolean keepNavigator,
-            boolean nightVision,
-            boolean noClip,
-            boolean placePlants,
-            boolean scoreboard,
-            boolean slabBreaking,
-            boolean spawnTeleport,
-            boolean openTrapDoors) {
-        this.navigatorType = navigatorType == null ? NavigatorType.OLD : navigatorType;
-        this.designColor = designColor == null ? DesignColor.BLACK : designColor;
-        this.worldDisplay = worldDisplay;
-        this.clearInventory = clearInventory;
-        this.disableInteract = disableInteract;
-        this.hidePlayers = hidePlayers;
-        this.instantPlaceSigns = instantPlaceSigns;
-        this.keepNavigator = keepNavigator;
-        this.nightVision = nightVision;
-        this.noClip = noClip;
-        this.placePlants = placePlants;
-        this.scoreboard = scoreboard;
-        this.slabBreaking = slabBreaking;
-        this.spawnTeleport = spawnTeleport;
-        this.openTrapDoors = openTrapDoors;
+    private SettingsImpl(Builder builder) {
+        this.navigatorType = builder.navigatorType;
+        this.designColor = builder.designColor;
+        this.worldDisplay = builder.worldDisplay;
+        this.clearInventory = builder.clearInventory;
+        this.disableInteract = builder.disableInteract;
+        this.hidePlayers = builder.hidePlayers;
+        this.instantPlaceSigns = builder.instantPlaceSigns;
+        this.keepNavigator = builder.keepNavigator;
+        this.nightVision = builder.nightVision;
+        this.noClip = builder.noClip;
+        this.placePlants = builder.placePlants;
+        this.scoreboard = builder.scoreboard;
+        this.slabBreaking = builder.slabBreaking;
+        this.spawnTeleport = builder.spawnTeleport;
+        this.openTrapDoors = builder.openTrapDoors;
+    }
+
+    /**
+     * Creates a builder pre-seeded with the defaults applied to a player who has never changed their settings. Both the
+     * {@link #SettingsImpl() default settings} and storage deserialization go through it, so those defaults live in
+     * exactly one place.
+     *
+     * @return A fresh builder seeded with the default settings
+     */
+    public static Builder builder() {
+        return new Builder();
     }
 
     @Override
@@ -238,5 +220,116 @@ public class SettingsImpl implements Settings {
     @Override
     public void setOpenTrapDoors(boolean trapDoor) {
         this.openTrapDoors = trapDoor;
+    }
+
+    /**
+     * Fluent builder for {@link SettingsImpl}. Each option is a named setter, so deserialization binds every value by
+     * name instead of passing a long row of positional booleans where two could be transposed unnoticed. Options left
+     * unset keep their default.
+     */
+    public static final class Builder {
+
+        private NavigatorType navigatorType = NavigatorType.OLD;
+        private DesignColor designColor = DesignColor.BLACK;
+        private WorldDisplay worldDisplay = new WorldDisplayImpl();
+        private boolean clearInventory = false;
+        private boolean disableInteract = false;
+        private boolean hidePlayers = false;
+        private boolean instantPlaceSigns = false;
+        private boolean keepNavigator = false;
+        private boolean nightVision = false;
+        private boolean noClip = false;
+        private boolean placePlants = false;
+        private boolean scoreboard = true;
+        private boolean slabBreaking = false;
+        private boolean spawnTeleport = true;
+        private boolean openTrapDoors = false;
+
+        private Builder() {}
+
+        /** Sets the navigator type; {@code null} keeps the default {@link NavigatorType#OLD}. */
+        public Builder navigatorType(@Nullable NavigatorType navigatorType) {
+            if (navigatorType != null) {
+                this.navigatorType = navigatorType;
+            }
+            return this;
+        }
+
+        /** Sets the design colour; {@code null} keeps the default {@link DesignColor#BLACK}. */
+        public Builder designColor(@Nullable DesignColor designColor) {
+            if (designColor != null) {
+                this.designColor = designColor;
+            }
+            return this;
+        }
+
+        public Builder worldDisplay(WorldDisplay worldDisplay) {
+            this.worldDisplay = worldDisplay;
+            return this;
+        }
+
+        public Builder clearInventory(boolean clearInventory) {
+            this.clearInventory = clearInventory;
+            return this;
+        }
+
+        public Builder disableInteract(boolean disableInteract) {
+            this.disableInteract = disableInteract;
+            return this;
+        }
+
+        public Builder hidePlayers(boolean hidePlayers) {
+            this.hidePlayers = hidePlayers;
+            return this;
+        }
+
+        public Builder instantPlaceSigns(boolean instantPlaceSigns) {
+            this.instantPlaceSigns = instantPlaceSigns;
+            return this;
+        }
+
+        public Builder keepNavigator(boolean keepNavigator) {
+            this.keepNavigator = keepNavigator;
+            return this;
+        }
+
+        public Builder nightVision(boolean nightVision) {
+            this.nightVision = nightVision;
+            return this;
+        }
+
+        public Builder noClip(boolean noClip) {
+            this.noClip = noClip;
+            return this;
+        }
+
+        public Builder placePlants(boolean placePlants) {
+            this.placePlants = placePlants;
+            return this;
+        }
+
+        public Builder scoreboard(boolean scoreboard) {
+            this.scoreboard = scoreboard;
+            return this;
+        }
+
+        public Builder slabBreaking(boolean slabBreaking) {
+            this.slabBreaking = slabBreaking;
+            return this;
+        }
+
+        public Builder spawnTeleport(boolean spawnTeleport) {
+            this.spawnTeleport = spawnTeleport;
+            return this;
+        }
+
+        public Builder openTrapDoors(boolean openTrapDoors) {
+            this.openTrapDoors = openTrapDoors;
+            return this;
+        }
+
+        public SettingsImpl build() {
+            return new SettingsImpl(this);
+        }
     }
 }

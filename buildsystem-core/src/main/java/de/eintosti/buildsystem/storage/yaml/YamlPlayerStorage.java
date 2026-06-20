@@ -226,38 +226,23 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
 
     @Contract("_, _ -> new")
     private SettingsImpl loadSettings(FileConfiguration configuration, String pathPrefix) {
-        NavigatorType navigatorType = parseNavigatorType(configuration.getString(pathPrefix + ".type"));
-        DesignColor glassColor = DesignColor.matchColor(configuration.getString(pathPrefix + ".glass"));
-        WorldDisplay worldDisplay = loadWorldDisplay(configuration, pathPrefix + ".world-display");
-        boolean clearInventory = configuration.getBoolean(pathPrefix + ".clear-inventory", false);
-        boolean disableInteract = configuration.getBoolean(pathPrefix + ".disable-interact", false);
-        boolean hidePlayers = configuration.getBoolean(pathPrefix + ".hide-players", false);
-        boolean instantPlaceSigns = configuration.getBoolean(pathPrefix + ".instant-place-signs", false);
-        boolean keepNavigator = configuration.getBoolean(pathPrefix + ".keep-navigator", false);
-        boolean nightVision = configuration.getBoolean(pathPrefix + ".nightvision", false);
-        boolean noClip = configuration.getBoolean(pathPrefix + ".no-clip", false);
-        boolean placePlants = configuration.getBoolean(pathPrefix + ".place-plants", false);
-        boolean scoreboard = configuration.getBoolean(pathPrefix + ".scoreboard", true);
-        boolean slabBreaking = configuration.getBoolean(pathPrefix + ".slab-breaking", false);
-        boolean spawnTeleport = configuration.getBoolean(pathPrefix + ".spawn-teleport", true);
-        boolean trapDoor = configuration.getBoolean(pathPrefix + ".trapdoor", false);
-
-        return new SettingsImpl(
-                navigatorType,
-                glassColor,
-                worldDisplay,
-                clearInventory,
-                disableInteract,
-                hidePlayers,
-                instantPlaceSigns,
-                keepNavigator,
-                nightVision,
-                noClip,
-                placePlants,
-                scoreboard,
-                slabBreaking,
-                spawnTeleport,
-                trapDoor);
+        return SettingsImpl.builder()
+                .navigatorType(parseNavigatorType(configuration.getString(pathPrefix + ".type")))
+                .designColor(DesignColor.matchColor(configuration.getString(pathPrefix + ".glass")))
+                .worldDisplay(loadWorldDisplay(configuration, pathPrefix + ".world-display"))
+                .clearInventory(configuration.getBoolean(pathPrefix + ".clear-inventory", false))
+                .disableInteract(configuration.getBoolean(pathPrefix + ".disable-interact", false))
+                .hidePlayers(configuration.getBoolean(pathPrefix + ".hide-players", false))
+                .instantPlaceSigns(configuration.getBoolean(pathPrefix + ".instant-place-signs", false))
+                .keepNavigator(configuration.getBoolean(pathPrefix + ".keep-navigator", false))
+                .nightVision(configuration.getBoolean(pathPrefix + ".nightvision", false))
+                .noClip(configuration.getBoolean(pathPrefix + ".no-clip", false))
+                .placePlants(configuration.getBoolean(pathPrefix + ".place-plants", false))
+                .scoreboard(configuration.getBoolean(pathPrefix + ".scoreboard", true))
+                .slabBreaking(configuration.getBoolean(pathPrefix + ".slab-breaking", false))
+                .spawnTeleport(configuration.getBoolean(pathPrefix + ".spawn-teleport", true))
+                .openTrapDoors(configuration.getBoolean(pathPrefix + ".trapdoor", false))
+                .build();
     }
 
     @Contract("_, _ -> new")
