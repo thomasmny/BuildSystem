@@ -121,15 +121,14 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
                         .name(messages.getString(nameKey, player))
                         .lore(messages.getStringList("setup_icon_lore", player))
                         .into(inventory, slot))
-                .onClick((player, event) -> new MaterialPickerMenu(
-                                plugin,
+                .onClick((player, event) -> plugin.getMenus()
+                        .openMaterialPicker(
                                 player,
                                 material -> {
                                     setter.accept(material);
                                     save(player);
                                 },
-                                () -> reopen(player))
-                        .open(player))
+                                () -> reopen(player)))
                 .build();
     }
 

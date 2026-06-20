@@ -110,15 +110,14 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
                         promptSkullTexture(player);
                         return;
                     }
-                    new MaterialPickerMenu(
-                                    plugin,
+                    plugin.getMenus()
+                            .openMaterialPicker(
                                     player,
                                     material -> {
                                         category.setIcon(material);
                                         save(player);
                                     },
-                                    () -> reopen(player))
-                            .open(player);
+                                    () -> reopen(player));
                 })
                 .build();
     }

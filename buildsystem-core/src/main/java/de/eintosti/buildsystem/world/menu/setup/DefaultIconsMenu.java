@@ -101,15 +101,14 @@ public class DefaultIconsMenu extends ButtonMenu<MenuButton> {
                         .name(messages.getString(layout.translationKey(), player))
                         .lore(messages.getStringList("setup_icon_lore", player))
                         .into(inventory, slot))
-                .onClick((player, event) -> new MaterialPickerMenu(
-                                plugin,
+                .onClick((player, event) -> plugin.getMenus()
+                        .openMaterialPicker(
                                 player,
                                 material -> {
                                     icons.setIcon(layout.type(), material);
                                     this.open(player);
                                 },
-                                () -> this.open(player))
-                        .open(player))
+                                () -> this.open(player)))
                 .build();
     }
 

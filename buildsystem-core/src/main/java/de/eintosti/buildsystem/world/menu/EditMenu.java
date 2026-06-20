@@ -35,7 +35,6 @@ import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.color.ColorAPI;
-import de.eintosti.buildsystem.world.menu.setup.MaterialPickerMenu;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -448,15 +447,14 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
             return;
         }
         XSound.BLOCK_CHEST_OPEN.play(player);
-        new MaterialPickerMenu(
-                        plugin,
+        plugin.getMenus()
+                .openMaterialPicker(
                         player,
                         material -> {
                             buildWorld.setIcon(material);
                             reopen(player);
                         },
-                        () -> reopen(player))
-                .open(player);
+                        () -> reopen(player));
     }
 
     private void promptIconTexture(Player player) {

@@ -20,10 +20,12 @@ package de.eintosti.buildsystem.world.menu.setup;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.util.Arrays;
@@ -68,16 +70,24 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
             .sorted(Comparator.comparing(Enum::name))
             .toList();
 
-    private final BuildSystemPlugin plugin;
+    private final MenuItems menuItems;
+    private final Prompts prompts;
     private final Consumer<XMaterial> onPick;
     private final Runnable onBack;
 
     private String filter = "";
     private int topRow = 0;
 
-    public MaterialPickerMenu(BuildSystemPlugin plugin, Player player, Consumer<XMaterial> onPick, Runnable onBack) {
-        super(plugin.getMessages(), INVENTORY_SIZE, plugin.getMessages().getString("setup_item_picker_title", player));
-        this.plugin = plugin;
+    public MaterialPickerMenu(
+            Messages messages,
+            MenuItems menuItems,
+            Prompts prompts,
+            Player player,
+            Consumer<XMaterial> onPick,
+            Runnable onBack) {
+        super(messages, INVENTORY_SIZE, messages.getString("setup_item_picker_title", player));
+        this.menuItems = menuItems;
+        this.prompts = prompts;
         this.onPick = onPick;
         this.onBack = onBack;
     }
@@ -113,7 +123,7 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
     private void fillRightControlColumn(Player player) {
         for (int row = 0; row < VISIBLE_ROWS; row++) {
             int slot = (row * 9) + CONTROL_COLUMN_INDEX;
-            plugin.getMenuItems().addGlassPane(player, getInventory(), slot);
+            menuItems.addGlassPane(player, getInventory(), slot);
         }
     }
 
@@ -183,8 +193,7 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
                         populate(player);
                         return;
                     }
-                    plugin.getPrompts()
-                            .prompt(player)
+                    prompts.prompt(player)
                             .title("setup_filter_prompt")
                             .onCancel(() -> open(player))
                             .request(input -> {

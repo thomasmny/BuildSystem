@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.menu;
 
+import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
@@ -30,6 +31,8 @@ import de.eintosti.buildsystem.world.menu.BackupsMenu;
 import de.eintosti.buildsystem.world.menu.EditMenu;
 import de.eintosti.buildsystem.world.menu.GameRulesMenu;
 import de.eintosti.buildsystem.world.menu.StatusMenu;
+import de.eintosti.buildsystem.world.menu.setup.MaterialPickerMenu;
+import java.util.function.Consumer;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -101,6 +104,11 @@ public final class Menus {
 
     public void openGameRules(BuildWorld buildWorld, Player player) {
         new GameRulesMenu(plugin.getMessages(), plugin.getMenuItems(), plugin.getLogger(), this, buildWorld, player)
+                .open(player);
+    }
+
+    public void openMaterialPicker(Player player, Consumer<XMaterial> onPick, Runnable onBack) {
+        new MaterialPickerMenu(plugin.getMessages(), plugin.getMenuItems(), plugin.getPrompts(), player, onPick, onBack)
                 .open(player);
     }
 
