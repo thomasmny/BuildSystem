@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.world.menu;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -73,6 +72,9 @@ class EditMenuTest {
     void permissionBySlot_mapsEveryInteractiveSlotToItsPermission() {
         Map<Integer, String> permissions = menu().permissionBySlot();
 
+        // World-info icon editor
+        assertEquals("buildsystem.edit.icon", permissions.get(3));
+
         // Toggles
         assertEquals("buildsystem.edit.pin", permissions.get(5));
         assertEquals("buildsystem.edit.breaking", permissions.get(20));
@@ -93,20 +95,20 @@ class EditMenuTest {
         assertEquals("buildsystem.edit.project", permissions.get(41));
         assertEquals("buildsystem.edit.permission", permissions.get(42));
 
-        assertEquals(16, permissions.size());
+        assertEquals(17, permissions.size());
     }
 
     @Test
-    void permissionBySlot_omitsRenderOnlyWorldInfoSlot() {
-        assertFalse(menu().permissionBySlot().containsKey(3));
+    void permissionBySlot_includesWorldInfoIconSlot() {
+        assertEquals("buildsystem.edit.icon", menu().permissionBySlot().get(3));
     }
 
     @Test
     void outcomeBySlot_classifiesEachSlot() {
         Map<Integer, ClickOutcome> outcomes = menu().outcomeBySlot();
 
-        // Render-only world-info slot
-        assertEquals(ClickOutcome.NONE, outcomes.get(3));
+        // World-info icon editor opens the material picker
+        assertEquals(ClickOutcome.SUBMENU, outcomes.get(3));
 
         // Toggles all re-open
         assertEquals(ClickOutcome.REOPEN, outcomes.get(5));

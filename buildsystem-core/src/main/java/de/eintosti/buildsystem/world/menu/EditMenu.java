@@ -33,8 +33,10 @@ import de.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.color.ColorAPI;
+import de.eintosti.buildsystem.world.menu.setup.MaterialPickerMenu;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -269,7 +271,12 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
     private void buildButtons() {
         register(
                 SLOT_WORLD_INFO,
-                EditButton.builder().render(this::renderWorldInfo).build());
+                EditButton.builder()
+                        .permission("buildsystem.edit.icon")
+                        .outcome(ClickOutcome.SUBMENU)
+                        .render(this::renderWorldInfo)
+                        .onClick(this::onWorldInfoClick)
+                        .build());
 
         TOGGLES.forEach((slot, toggle) -> register(
                 slot,
@@ -420,7 +427,71 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
     private void renderWorldInfo(Player player, Inventory inventory) {
         String displayName =
                 messages.getString("worldeditor_world_item", player, Map.entry("%world%", buildWorld.getName()));
-        ItemBuilder.icon(buildWorld, player).name(displayName).into(inventory, SLOT_WORLD_INFO);
+        boolean isHead = buildWorld.getIcon() == XMaterial.PLAYER_HEAD;
+        String loreKey = isHead ? "worldeditor_world_head_lore" : "worldeditor_world_lore";
+        ItemBuilder.icon(buildWorld, player)
+                .name(displayName)
+                .lore(messages.getStringList(loreKey, player, Map.entry("%texture%", iconTextureLabel(player))))
+                .into(inventory, SLOT_WORLD_INFO);
+    }
+
+    /**
+     * The world-icon button mirrors the category icon control: left-click opens the item picker to choose the material,
+     * and when that material is a player head a right-click prompts for the head texture (a texture, {@code viewer} for
+     * the viewing player's head, or {@code none} to clear).
+     */
+    private void onWorldInfoClick(Player player, InventoryClickEvent event) {
+        if (!requirePermission(player, "buildsystem.edit.icon")) {
+            return;
+        }
+        if (buildWorld.getIcon() == XMaterial.PLAYER_HEAD && event.isRightClick()) {
+            promptIconTexture(player);
+            return;
+        }
+        XSound.BLOCK_CHEST_OPEN.play(player);
+        new MaterialPickerMenu(
+                        plugin,
+                        player,
+                        material -> {
+                            buildWorld.setIcon(material);
+                            reopen(player);
+                        },
+                        () -> reopen(player))
+                .open(player);
+    }
+
+    private void promptIconTexture(Player player) {
+        new PlayerChatInput(
+                plugin,
+                player,
+                "worldeditor_world_skull_prompt",
+                input -> {
+                    applyIconTexture(input);
+                    reopen(player);
+                },
+                () -> reopen(player));
+    }
+
+    private void applyIconTexture(String rawInput) {
+        String clean = rawInput.strip();
+        if (clean.equalsIgnoreCase("none") || clean.equalsIgnoreCase("clear")) {
+            buildWorld.setIconSkullTexture(null);
+        } else if (clean.equalsIgnoreCase("viewer")) {
+            buildWorld.setIconSkullTexture(ItemBuilder.VIEWER_HEAD);
+        } else {
+            buildWorld.setIconSkullTexture(clean);
+        }
+    }
+
+    private String iconTextureLabel(Player player) {
+        String texture = buildWorld.getIconSkullTexture();
+        if (texture == null || texture.isBlank()) {
+            return messages.getString("worldeditor_world_skull_none", player);
+        }
+        if (ItemBuilder.VIEWER_HEAD.equals(texture)) {
+            return messages.getString("worldeditor_world_skull_viewer", player);
+        }
+        return messages.getString("worldeditor_world_skull_custom", player);
     }
 
     private void renderTime(Player player, Inventory inventory) {
