@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.world.menu;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
@@ -28,6 +27,7 @@ import de.eintosti.buildsystem.api.world.display.*;
 import de.eintosti.buildsystem.api.world.display.WorldFilter.Mode;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.menu.*;
+import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
@@ -67,11 +67,15 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     private static final String NO_WORLDS_SKULL_PROFILE =
             "2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6";
 
-    protected final BuildSystemPlugin plugin;
     protected final PlayerServiceImpl playerService;
     protected final SettingsService settingsManager;
     protected final FolderStorageImpl folderStorage;
     protected final WorldStorageImpl worldStorage;
+    protected final Menus menus;
+
+    private final MenuItems menuItems;
+    private final Prompts prompts;
+    private final NavigatorService navigatorService;
 
     protected final Player player;
     protected final NavigatorCategory category;
@@ -79,14 +83,17 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     private final @Nullable String noWorldsMessage;
     private @Nullable List<Displayable> cachedDisplayables;
 
-    protected DisplayablesMenu(BuildSystemPlugin plugin, Player player, Options options) {
-        super(plugin.getMessages(), 54, options.title());
-        this.plugin = plugin;
-        this.playerService = plugin.getPlayerService();
-        this.settingsManager = plugin.getSettingsService();
-        WorldServiceImpl worldService = plugin.getWorldService();
+    protected DisplayablesMenu(DisplayablesContext context, Player player, Options options) {
+        super(context.messages(), 54, options.title());
+        this.playerService = context.playerService();
+        this.settingsManager = context.settingsService();
+        WorldServiceImpl worldService = context.worldService();
         this.folderStorage = worldService.getFolderStorage();
         this.worldStorage = worldService.getWorldStorage();
+        this.menuItems = context.menuItems();
+        this.prompts = context.prompts();
+        this.navigatorService = context.navigatorService();
+        this.menus = context.menus();
         this.player = player;
         this.category = options.category();
         this.noWorldsMessage = options.emptyMessage();
@@ -160,7 +167,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         Inventory inv = getInventory();
 
         clearButtons();
-        plugin.getMenuItems().fillWithGlass(inv, player);
+        menuItems.fillWithGlass(inv, player);
         addWorldSortItem(inv);
         addWorldFilterItem(inv);
         addExtraItems(inv, player);
@@ -189,7 +196,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                     if (displayable instanceof BuildWorld buildWorld) {
                         manageWorldItemClick(event, buildWorld);
                     } else if (displayable instanceof Folder folder) {
-                        new FolderContentMenu(plugin, player, category, folder, this).open(player);
+                        menus.openFolderContent(category, folder, this, player);
                     }
                 })
                 .build();
@@ -265,8 +272,8 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                 };
 
         ItemBuilder.of(XMaterial.BOOK)
-                .name(plugin.getMessages().getString("world_sort_title", player))
-                .lore(plugin.getMessages().getString(messageKey, player))
+                .name(messages.getString("world_sort_title", player))
+                .lore(messages.getString(messageKey, player))
                 .into(inventory, SLOT_WORLD_SORT);
     }
 
@@ -283,11 +290,11 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                 };
 
         List<String> lore = new ArrayList<>();
-        lore.add(plugin.getMessages().getString(loreKey, player, Map.entry("%text%", worldFilter.getText())));
-        lore.addAll(plugin.getMessages().getStringList("world_filter_lore", player));
+        lore.add(messages.getString(loreKey, player, Map.entry("%text%", worldFilter.getText())));
+        lore.addAll(messages.getStringList("world_filter_lore", player));
 
         ItemBuilder.of(XMaterial.HOPPER)
-                .name(plugin.getMessages().getString("world_filter_title", player))
+                .name(messages.getString("world_filter_title", player))
                 .lore(lore)
                 .into(inventory, SLOT_WORLD_FILTER);
     }
@@ -348,25 +355,23 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     }
 
     protected void beginWorldCreation() {
-        plugin.getMenus().openCreate(Page.PREDEFINED, this.category.getPrimaryVisibility(), null, this.player);
+        menus.openCreate(Page.PREDEFINED, this.category.getPrimaryVisibility(), null, this.player);
     }
 
     private void beginFolderCreation(Player player) {
         player.closeInventory();
-        plugin.getPrompts()
-                .prompt(player)
+        prompts.prompt(player)
                 .title("enter_folder_name")
                 .sanitizeName("worlds_folder_creation_invalid_characters", "worlds_folder_creation_name_bank")
                 .onCancel(() -> open(player))
                 .request(folderName -> {
                     if (folderStorage.folderExists(folderName)) {
-                        plugin.getMessages().sendMessage(player, "worlds_folder_exists");
+                        messages.sendMessage(player, "worlds_folder_exists");
                         return;
                     }
 
                     Folder folder = createFolder(folderName);
-                    plugin.getMessages()
-                            .sendMessage(player, "worlds_folder_created", Map.entry("%folder%", folder.getName()));
+                    messages.sendMessage(player, "worlds_folder_created", Map.entry("%folder%", folder.getName()));
                     open(player);
                 });
     }
@@ -376,7 +381,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     }
 
     protected void returnToPreviousInventory() {
-        plugin.getMenus().openNavigator(this.player);
+        menus.openNavigator(this.player);
     }
 
     private void handleFilterClick(InventoryClickEvent event, WorldDisplay worldDisplay) {
@@ -388,8 +393,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
             worldFilter.setText("");
         } else if (event.isLeftClick()) {
             player.closeInventory();
-            plugin.getPrompts()
-                    .prompt(player)
+            prompts.prompt(player)
                     .title("world_filter_title")
                     .onCancel(() -> open(player))
                     .request(input -> {
@@ -410,18 +414,18 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         Player player = (Player) event.getWhoClicked();
         if (event.isLeftClick()
                 || !buildWorld.getPermissions().canPerformCommand(player, WorldsArgument.EDIT.getPermission())) {
-            plugin.getNavigatorService().closeNewNavigator(player);
+            navigatorService.closeNewNavigator(player);
             buildWorld.getTeleporter().teleport(player);
             return;
         }
 
         if (buildWorld.isLoaded()) {
             XSound.BLOCK_CHEST_OPEN.play(player);
-            new EditMenu(plugin, buildWorld, player).open(player);
+            menus.openEdit(buildWorld, player);
         } else {
             player.closeInventory();
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-            player.sendTitle(" ", plugin.getMessages().getString("world_not_loaded", player), 5, 70, 20);
+            player.sendTitle(" ", messages.getString("world_not_loaded", player), 5, 70, 20);
         }
     }
 }

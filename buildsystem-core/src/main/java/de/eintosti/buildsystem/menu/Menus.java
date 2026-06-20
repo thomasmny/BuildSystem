@@ -35,7 +35,10 @@ import de.eintosti.buildsystem.world.menu.BackupsMenu;
 import de.eintosti.buildsystem.world.menu.CategoryWorldsMenu;
 import de.eintosti.buildsystem.world.menu.CreateMenu;
 import de.eintosti.buildsystem.world.menu.DeleteMenu;
+import de.eintosti.buildsystem.world.menu.DisplayablesContext;
+import de.eintosti.buildsystem.world.menu.DisplayablesMenu;
 import de.eintosti.buildsystem.world.menu.EditMenu;
+import de.eintosti.buildsystem.world.menu.FolderContentMenu;
 import de.eintosti.buildsystem.world.menu.GameRulesMenu;
 import de.eintosti.buildsystem.world.menu.NavigatorMenu;
 import de.eintosti.buildsystem.world.menu.SetupMenu;
@@ -132,7 +135,24 @@ public final class Menus {
     }
 
     public void openCategoryWorlds(NavigatorCategory category, Player player) {
-        new CategoryWorldsMenu(plugin, player, category).open(player);
+        new CategoryWorldsMenu(displayablesContext(), plugin.getWorldStatusRegistry(), player, category).open(player);
+    }
+
+    public void openFolderContent(NavigatorCategory category, Folder folder, DisplayablesMenu parent, Player player) {
+        new FolderContentMenu(displayablesContext(), player, category, folder, parent).open(player);
+    }
+
+    /** Bundles the collaborators shared by every {@link DisplayablesMenu} so its constructors stay small. */
+    private DisplayablesContext displayablesContext() {
+        return new DisplayablesContext(
+                plugin.getMessages(),
+                plugin.getPlayerService(),
+                plugin.getSettingsService(),
+                plugin.getWorldService(),
+                plugin.getMenuItems(),
+                plugin.getPrompts(),
+                plugin.getNavigatorService(),
+                this);
     }
 
     public void openCreate(CreateMenu.Page page, Visibility visibility, @Nullable Folder folder, Player player) {

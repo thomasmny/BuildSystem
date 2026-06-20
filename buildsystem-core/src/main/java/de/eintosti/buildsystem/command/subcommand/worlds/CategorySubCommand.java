@@ -23,7 +23,6 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.world.display.CategoryPermissions;
-import de.eintosti.buildsystem.world.menu.CategoryWorldsMenu;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -59,7 +58,7 @@ public class CategorySubCommand extends AbstractSubCommand {
             messages.sendMessage(player, "worlds_unknown_command");
             return;
         }
-        new CategoryWorldsMenu(plugin, player, category).open(player);
+        plugin.getMenus().openCategoryWorlds(category, player);
     }
 
     @Override

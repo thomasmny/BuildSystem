@@ -24,7 +24,7 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.util.color.ColorAPI;
-import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
+import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
@@ -50,15 +50,22 @@ public class CategoryWorldsMenu extends DisplayablesMenu {
     private static final int SLOT_CREATE_FOLDER = 50;
     private static final int SLOT_CREATE_CENTER = 49;
 
-    public CategoryWorldsMenu(BuildSystemPlugin plugin, Player player, NavigatorCategory category) {
+    private final WorldStatusRegistryImpl worldStatusRegistry;
+
+    public CategoryWorldsMenu(
+            DisplayablesContext context,
+            WorldStatusRegistryImpl worldStatusRegistry,
+            Player player,
+            NavigatorCategory category) {
         super(
-                plugin,
+                context,
                 player,
                 Options.builder()
                         .category(category)
                         .title(ColorAPI.process(category.getDisplayName()))
-                        .emptyMessage(plugin.getMessages().getString("world_navigator_no_worlds", player))
+                        .emptyMessage(context.messages().getString("world_navigator_no_worlds", player))
                         .build());
+        this.worldStatusRegistry = worldStatusRegistry;
     }
 
     @Override
@@ -66,14 +73,14 @@ public class CategoryWorldsMenu extends DisplayablesMenu {
         boolean createWorld = canCreateWorldHere(player);
         if (createWorld) {
             ItemBuilder.skull(Profileable.detect(CREATE_WORLD_PROFILE))
-                    .name(plugin.getMessages().getString("world_navigator_create_world", player))
+                    .name(messages.getString("world_navigator_create_world", player))
                     .into(inventory, SLOT_CREATE_WORLD);
         }
         if (player.hasPermission("buildsystem.create.folder")) {
             // With the create-world button hidden, centre the lone folder button instead of leaving it off to the side.
             int folderSlot = createWorld ? SLOT_CREATE_FOLDER : SLOT_CREATE_CENTER;
             ItemBuilder.skull(Profileable.detect(CREATE_FOLDER_PROFILE))
-                    .name(plugin.getMessages().getString("world_navigator_create_folder", player))
+                    .name(messages.getString("world_navigator_create_folder", player))
                     .into(inventory, folderSlot);
         }
     }
@@ -84,8 +91,7 @@ public class CategoryWorldsMenu extends DisplayablesMenu {
      * per-category create permission.
      */
     private boolean canCreateWorldHere(Player player) {
-        String defaultStatusId =
-                plugin.getWorldStatusRegistry().getDefaultStatus().getId();
+        String defaultStatusId = worldStatusRegistry.getDefaultStatus().getId();
         return category.getStatusIds().contains(defaultStatusId)
                 && playerService.canCreateWorld(player, category.getPrimaryVisibility())
                 && hasCreatePermission(player);
@@ -96,7 +102,7 @@ public class CategoryWorldsMenu extends DisplayablesMenu {
      * {@code buildsystem.create.<categoryId>}. This mirrors how the admin permission grants an unlimited world count.
      */
     private boolean hasCreatePermission(Player player) {
-        return WorldPermissionsImpl.of(plugin, null).hasAdminPermission(player)
+        return player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)
                 || player.hasPermission("buildsystem.create." + category.getId());
     }
 }
