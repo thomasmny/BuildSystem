@@ -18,8 +18,8 @@
 package de.eintosti.buildsystem.listener.player;
 
 import com.cryptomorin.xseries.inventory.XInventoryView;
-import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.api.player.PlayerService;
+import de.eintosti.buildsystem.config.ConfigService;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -31,12 +31,12 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class BuildModePreventationListener implements Listener {
 
-    private final BuildSystemPlugin plugin;
-    private final PlayerServiceImpl playerManager;
+    private final PlayerService playerManager;
+    private final ConfigService configService;
 
-    public BuildModePreventationListener(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        this.playerManager = plugin.getPlayerService();
+    public BuildModePreventationListener(PlayerService playerManager, ConfigService configService) {
+        this.playerManager = playerManager;
+        this.configService = configService;
     }
 
     /**
@@ -46,7 +46,7 @@ public class BuildModePreventationListener implements Listener {
      */
     @EventHandler
     public void onPlayerDropItem(PlayerDropItemEvent event) {
-        if (plugin.getConfigService().current().settings().buildMode().dropItems()) {
+        if (configService.current().settings().buildMode().dropItems()) {
             return;
         }
 
@@ -62,7 +62,7 @@ public class BuildModePreventationListener implements Listener {
      */
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (plugin.getConfigService().current().settings().buildMode().moveItems()) {
+        if (configService.current().settings().buildMode().moveItems()) {
             return;
         }
 

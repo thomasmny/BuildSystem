@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.listener.player;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
@@ -34,9 +33,9 @@ public class PlayerRespawnListener implements Listener {
     private final SettingsService settingsManager;
     private final SpawnService spawnService;
 
-    public PlayerRespawnListener(BuildSystemPlugin plugin) {
-        this.settingsManager = plugin.getSettingsService();
-        this.spawnService = plugin.getSpawnService();
+    public PlayerRespawnListener(SettingsService settingsManager, SpawnService spawnService) {
+        this.settingsManager = settingsManager;
+        this.spawnService = spawnService;
     }
 
     @EventHandler

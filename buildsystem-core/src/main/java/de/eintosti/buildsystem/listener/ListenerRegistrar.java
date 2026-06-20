@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.listener;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.integration.axiom.WorldManipulateByAxiomListener;
 import de.eintosti.buildsystem.integration.worldedit.EditSessionListener;
 import de.eintosti.buildsystem.listener.color.AsyncPlayerChatListener;
@@ -33,9 +34,14 @@ import de.eintosti.buildsystem.listener.world.*;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.MenuListener;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
+import de.eintosti.buildsystem.navigator.NavigatorEditorService;
+import de.eintosti.buildsystem.navigator.NavigatorService;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
+import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.world.spawn.SpawnService;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.PluginManager;
 import org.jspecify.annotations.NullMarked;
@@ -58,14 +64,20 @@ public final class ListenerRegistrar {
         WorldStatusRegistry worldStatusRegistry = plugin.getWorldStatusRegistry();
         CustomBlockManager customBlockManager = plugin.getCustomBlockManager();
         MenuItems menuItems = plugin.getMenuItems();
+        Messages messages = plugin.getMessages();
+        PlayerServiceImpl playerService = plugin.getPlayerService();
+        NavigatorService navigatorService = plugin.getNavigatorService();
+        NavigatorEditorService navigatorEditorService = plugin.getNavigatorEditorService();
+        NoClipService noClipService = plugin.getNoClipService();
+        SpawnService spawnService = plugin.getSpawnService();
 
         register(new AsyncPlayerChatListener());
         register(new AsyncPlayerPreLoginListener(plugin));
         register(new BlockPhysicsListener(worldStorage, configService));
-        register(new BuildModePreventationListener(plugin));
+        register(new BuildModePreventationListener(playerService, configService));
         register(new BuildWorldResetUnloadListener(worldStorage));
         register(new DisabledInteractionsListener(customBlockManager, settingsService, worldStorage, configService));
-        register(new EntityDamageListener(plugin));
+        register(new EntityDamageListener(configService, worldStorage));
         register(new EntitySpawnListener(worldStorage));
         register(new FoodLevelChangeListener(worldStorage));
         register(new InstantSignPlacementListener(customBlockManager, settingsService, worldStorage));
@@ -74,14 +86,22 @@ public final class ListenerRegistrar {
         register(new MenuListener());
         register(new PlayerChatInput.ChatInputListener());
         register(new NavigatorListener(plugin));
-        register(new PlayerChangedWorldListener(plugin));
+        register(new PlayerChangedWorldListener(
+                navigatorService, playerService, settingsService, worldStorage, configService, messages));
         register(new PlayerCommandPreprocessListener(plugin));
         register(new PlayerInventoryClearListener(settingsService, menuItems));
         register(new PlayerJoinListener(plugin));
         register(new PlayerMoveListener(plugin));
-        register(new PlayerQuitListener(plugin));
-        register(new PlayerRespawnListener(plugin));
-        register(new PlayerTeleportListener(plugin));
+        register(new PlayerQuitListener(
+                playerService,
+                navigatorService,
+                navigatorEditorService,
+                noClipService,
+                settingsService,
+                configService,
+                messages));
+        register(new PlayerRespawnListener(settingsService, spawnService));
+        register(new PlayerTeleportListener(messages, playerService.getPlayerStorage(), worldStorage));
         register(new PlantPlacementListener(settingsService, worldStorage));
         register(new SignChangeListener());
         register(new SlabListener(settingsService, worldStorage));

@@ -17,13 +17,16 @@
  */
 package de.eintosti.buildsystem.listener.player;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.player.settings.Settings;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.navigator.NavigatorEditorService;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.LogoutLocation;
-import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import java.util.Map;
 import org.bukkit.Bukkit;
@@ -37,23 +40,36 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class PlayerQuitListener implements Listener {
 
-    private final BuildSystemPlugin plugin;
-    private final PlayerServiceImpl playerManager;
+    private final PlayerService playerManager;
     private final NavigatorService navigatorService;
+    private final NavigatorEditorService navigatorEditorService;
+    private final NoClipService noClipService;
     private final SettingsService settingsManager;
+    private final ConfigService configService;
+    private final Messages messages;
 
-    public PlayerQuitListener(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        this.playerManager = plugin.getPlayerService();
-        this.navigatorService = plugin.getNavigatorService();
-        this.settingsManager = plugin.getSettingsService();
+    public PlayerQuitListener(
+            PlayerService playerManager,
+            NavigatorService navigatorService,
+            NavigatorEditorService navigatorEditorService,
+            NoClipService noClipService,
+            SettingsService settingsManager,
+            ConfigService configService,
+            Messages messages) {
+        this.playerManager = playerManager;
+        this.navigatorService = navigatorService;
+        this.navigatorEditorService = navigatorEditorService;
+        this.noClipService = noClipService;
+        this.settingsManager = settingsManager;
+        this.configService = configService;
+        this.messages = messages;
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void sendPlayerQuitMessage(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        String message = plugin.getConfigService().current().settings().joinQuitMessages()
-                ? plugin.getMessages().getString("player_quit", player, Map.entry("%player%", player.getName()))
+        String message = configService.current().settings().joinQuitMessages()
+                ? messages.getString("player_quit", player, Map.entry("%player%", player.getName()))
                 : null;
         event.setQuitMessage(message);
     }
@@ -63,12 +79,12 @@ public class PlayerQuitListener implements Listener {
         Player player = event.getPlayer();
         // Restore the real inventory first if the navigator layout editor took it over, so later quit handling
         // (e.g. clear-inventory) and the server's player-data save see the genuine contents.
-        plugin.getNavigatorEditorService().restore(player);
+        navigatorEditorService.restore(player);
         navigatorService.closeNewNavigator(player);
 
         Settings settings = settingsManager.getSettings(player);
         if (settings.isNoClip()) {
-            plugin.getNoClipService().stopNoClip(player.getUniqueId());
+            noClipService.stopNoClip(player.getUniqueId());
         }
 
         if (settings.isScoreboard()) {

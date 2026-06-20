@@ -18,8 +18,9 @@
 package de.eintosti.buildsystem.listener.player;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.config.ConfigService;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
@@ -32,10 +33,12 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class EntityDamageListener implements Listener {
 
-    private final BuildSystemPlugin plugin;
+    private final ConfigService configService;
+    private final WorldStorage worldStorage;
 
-    public EntityDamageListener(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+    public EntityDamageListener(ConfigService configService, WorldStorage worldStorage) {
+        this.configService = configService;
+        this.worldStorage = worldStorage;
     }
 
     @EventHandler
@@ -45,19 +48,15 @@ public class EntityDamageListener implements Listener {
         }
 
         if (event.getCause() != EntityDamageEvent.DamageCause.VOID
-                || !plugin.getConfigService()
-                        .current()
-                        .settings()
-                        .saveFromDeath()
-                        .enabled()) {
+                || !configService.current().settings().saveFromDeath().enabled()) {
             return;
         }
 
         Player player = (Player) event.getEntity();
         Location teleportLoc = player.getLocation().clone().add(0, 200, 0);
 
-        if (plugin.getConfigService().current().settings().saveFromDeath().teleportToMapSpawn()) {
-            BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld());
+        if (configService.current().settings().saveFromDeath().teleportToMapSpawn()) {
+            BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
             if (buildWorld != null) {
                 Location spawn = buildWorld.getData().getCustomSpawnLocation();
                 if (spawn != null) {

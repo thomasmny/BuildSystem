@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.listener.player;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -39,10 +38,10 @@ public class PlayerTeleportListener implements Listener {
     private final PlayerStorage playerStorage;
     private final WorldStorage worldStorage;
 
-    public PlayerTeleportListener(BuildSystemPlugin plugin) {
-        this.messages = plugin.getMessages();
-        this.playerStorage = plugin.getPlayerService().getPlayerStorage();
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+    public PlayerTeleportListener(Messages messages, PlayerStorage playerStorage, WorldStorage worldStorage) {
+        this.messages = messages;
+        this.playerStorage = playerStorage;
+        this.worldStorage = worldStorage;
     }
 
     @EventHandler
