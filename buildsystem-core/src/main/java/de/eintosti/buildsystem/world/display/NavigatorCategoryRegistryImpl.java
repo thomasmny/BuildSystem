@@ -46,8 +46,10 @@ import org.jspecify.annotations.Nullable;
  * Owns every {@link NavigatorCategory}, seeding the built-in defaults on first run and persisting all administrator
  * changes. The category a world is displayed in is resolved by matching both the category's
  * {@link NavigatorCategory#getVisibilities() visibilities} and its statuses against the world. Any category may be
- * deleted except the last remaining one (so a default always exists); {@link #resetToDefaults()} restores the
- * built-ins. Deleting a category never orphans a status because statuses are shared, not owned.
+ * deleted, including the last one — the navigator then simply shows no categories until {@link #resetToDefaults()}
+ * restores the built-ins. As a safety net for folders (which always need a home category), {@link #getDefaultCategory()}
+ * reseeds the built-ins on demand when the registry is empty. Deleting a category never orphans a status because statuses
+ * are shared, not owned.
  */
 @NullMarked
 public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry {
@@ -175,6 +177,9 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
 
     @Override
     public NavigatorCategory getDefaultCategory() {
+        // Folders always need a home category, so an empty registry reseeds the built-ins on demand rather than handing
+        // back nothing. The navigator's own browse paths never call this, so deleting every category still leaves the
+        // navigator empty until an admin resets — only folder operations trigger the reseed.
         if (this.categories.isEmpty()) {
             seedDefaults();
             storage.saveAll(this.categories.values());
@@ -241,6 +246,12 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
      * Adds a status to the default category so a newly created status is reachable in the navigator out of the box.
      */
     public void addStatusToDefaultCategory(String statusId) {
+        // Don't resurrect the built-ins just because a status was created: if an admin has deleted every category, a
+        // new
+        // status simply stays ungrouped until a category is created (or the built-ins are reset) to list it.
+        if (this.categories.isEmpty()) {
+            return;
+        }
         NavigatorCategoryImpl defaultSet = (NavigatorCategoryImpl) getDefaultCategory();
         defaultSet.addStatusId(statusId);
         storage.save(defaultSet);
@@ -260,21 +271,25 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
     }
 
     /**
-     * Removes a category (built-in or custom). The last remaining category is never deleted, so a valid default always
-     * exists; an admin can restore the built-ins with {@link #resetToDefaults()}. Worlds previously displayed in the
-     * category simply resolve to another matching category (or the {@link #getDefaultCategory() default}) on the next
-     * render; no status is orphaned because statuses are shared rather than owned by a category. Folders, which hold a
-     * fixed category, are re-homed to the default so they (and the worlds they contain) stay reachable.
+     * Removes a category (built-in or custom). Any category may be deleted, including the last one; the navigator then
+     * shows no categories until an admin restores the built-ins with {@link #resetToDefaults()}. Worlds previously
+     * displayed in the category simply resolve to another matching category (or the {@link #getDefaultCategory() default})
+     * on the next render; no status is orphaned because statuses are shared rather than owned by a category. Folders,
+     * which hold a fixed category, are re-homed to the default so they (and the worlds they contain) stay reachable — but
+     * only while at least one category remains, since deleting the very last category leaves nothing to re-home them to
+     * (they resolve to a reseeded default the next time they are loaded).
      *
-     * @return {@code true} if the category was deleted, {@code false} if it was unknown or the last remaining category
+     * @return {@code true} if the category was deleted, {@code false} if it was unknown
      */
     public boolean deleteCategory(String id) {
-        if (!this.categories.containsKey(id) || this.categories.size() <= 1) {
+        if (!this.categories.containsKey(id)) {
             return false;
         }
         this.categories.remove(id);
         storage.delete(id);
-        rehomeFolders(id);
+        if (!this.categories.isEmpty()) {
+            rehomeFolders(id);
+        }
         return true;
     }
 

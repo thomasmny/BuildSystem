@@ -99,13 +99,30 @@ class NavigatorCategoryRegistryImplTest {
     }
 
     @Test
-    void deleteCategory_refusesLastRemaining() {
+    void deleteCategory_allowsDeletingEveryCategory() {
+        for (NavigatorCategory category : List.copyOf(registry.getCategories())) {
+            assertTrue(registry.deleteCategory(category.getId()));
+        }
+        assertEquals(0, registry.getCategories().size());
+    }
+
+    @Test
+    void deleteCategory_returnsFalseForUnknownId() {
+        assertFalse(registry.deleteCategory("does-not-exist"));
+    }
+
+    @Test
+    void getDefaultCategory_reseedsBuiltInsWhenEmpty() {
         for (NavigatorCategory category : List.copyOf(registry.getCategories())) {
             registry.deleteCategory(category.getId());
         }
-        assertEquals(1, registry.getCategories().size());
-        String lastId = registry.getCategories().iterator().next().getId();
-        assertFalse(registry.deleteCategory(lastId));
+        assertEquals(0, registry.getCategories().size());
+
+        // Folders always need a home category, so the default reseeds the built-ins on demand.
+        assertEquals(
+                NavigatorCategoryRegistry.PUBLIC_ID,
+                registry.getDefaultCategory().getId());
+        assertEquals(3, registry.getCategories().size());
     }
 
     @Test
