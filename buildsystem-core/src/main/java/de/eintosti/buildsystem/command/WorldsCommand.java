@@ -35,7 +35,6 @@ public class WorldsCommand extends CommandBase {
         this.dispatcher = new SubCommandDispatcher(
                 plugin.getMessages(),
                 List.of(
-                        new ArchiveSubCommand(plugin),
                         new AddBuilderSubCommand(plugin),
                         new BackupsSubCommand(plugin),
                         new BuildersSubCommand(plugin),
@@ -47,8 +46,6 @@ public class WorldsCommand extends CommandBase {
                         new ImportSubCommand(plugin),
                         new InfoSubCommand(plugin),
                         new ItemSubCommand(plugin),
-                        new PrivateSubCommand(plugin),
-                        new PublicSubCommand(plugin),
                         new RemoveBuilderSubCommand(plugin),
                         new RemoveSpawnSubCommand(plugin),
                         new RenameSubCommand(plugin),
@@ -60,7 +57,10 @@ public class WorldsCommand extends CommandBase {
                         new SetSpawnSubCommand(plugin),
                         new SetStatusSubCommand(plugin),
                         new TeleportSubCommand(plugin),
-                        new UnimportSubCommand(plugin)));
+                        new UnimportSubCommand(plugin)),
+                // Category shortcuts (/worlds <category>) are derived from the navigator categories; the static
+                // subcommands above are registered first so a category named like a real subcommand never shadows it.
+                new CategoryShortcuts(plugin));
     }
 
     @Override

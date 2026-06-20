@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.player.menu.SettingsMenu;
 import de.eintosti.buildsystem.util.color.ColorAPI;
+import de.eintosti.buildsystem.world.display.CategoryPermissions;
 import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -51,6 +52,9 @@ public class NavigatorMenu extends ButtonMenu<MenuButton> {
         for (NavigatorCategory category : plugin.getNavigatorCategoryRegistry().getCategories()) {
             int slot = category.getNavigatorSlot();
             if (!category.isShownInNavigator() || slot < 0 || slot >= INVENTORY_SIZE || slot == settingsSlot) {
+                continue;
+            }
+            if (!CategoryPermissions.canAccess(player, category.getId())) {
                 continue;
             }
             register(slot, categoryButton(category));
