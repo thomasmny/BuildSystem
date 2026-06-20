@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.world.data;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import de.eintosti.buildsystem.test.TestData;
@@ -54,5 +55,12 @@ class WorldDataAccessorTest {
 
         data.setPhysics(true);
         assertTrue(data.isPhysics());
+    }
+
+    @Test
+    void getAllData_isUnmodifiable() {
+        WorldDataImpl data = worldData();
+        assertThrows(
+                UnsupportedOperationException.class, () -> data.getAllData().clear());
     }
 }

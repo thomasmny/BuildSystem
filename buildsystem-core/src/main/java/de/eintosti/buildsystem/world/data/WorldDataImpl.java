@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.world.data.type.ConfigurableProperty;
 import de.eintosti.buildsystem.world.data.type.Overridable;
 import de.eintosti.buildsystem.world.data.type.PersistentProperty;
 import de.eintosti.buildsystem.world.data.type.Property;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -167,19 +168,7 @@ public class WorldDataImpl implements WorldData {
 
     @Override
     public @Nullable Location getCustomSpawnLocation() {
-        String customSpawn = this.customSpawn.get();
-        if (customSpawn.isBlank()) {
-            return null;
-        }
-
-        String[] spawnString = customSpawn.split(";");
-        return new Location(
-                Bukkit.getWorld(worldName),
-                Double.parseDouble(spawnString[0]),
-                Double.parseDouble(spawnString[1]),
-                Double.parseDouble(spawnString[2]),
-                Float.parseFloat(spawnString[3]),
-                Float.parseFloat(spawnString[4]));
+        return CustomSpawn.parse(Bukkit.getWorld(worldName), customSpawn.get());
     }
 
     @Override
@@ -378,7 +367,7 @@ public class WorldDataImpl implements WorldData {
     }
 
     public Map<String, PersistentProperty<?>> getAllData() {
-        return data;
+        return Collections.unmodifiableMap(data);
     }
 
     public static class WorldDataBuilder {
@@ -418,9 +407,10 @@ public class WorldDataImpl implements WorldData {
         }
 
         /**
-         * Builds the final {@link WorldDataImpl} instance.
+         * Builds the {@link WorldDataImpl} instance from this builder's configured values.
          *
-         * @return A new, immutable {@link WorldDataImpl} object
+         * @return A new, fully-initialized {@link WorldDataImpl}. The returned instance is mutable — its properties can
+         *     still be changed afterwards through the {@code set*} methods.
          */
         public WorldDataImpl build() {
             return new WorldDataImpl(this);

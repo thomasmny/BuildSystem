@@ -21,6 +21,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.world.data.CustomSpawn;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.Map;
 import org.bukkit.Location;
@@ -49,15 +50,7 @@ public class SetSpawnSubCommand extends AbstractSubCommand {
         }
 
         Location playerLocation = player.getLocation();
-        buildWorld
-                .getData()
-                .setCustomSpawn("%s;%s;%s;%s;%s"
-                        .formatted(
-                                playerLocation.getX(),
-                                playerLocation.getY(),
-                                playerLocation.getZ(),
-                                playerLocation.getYaw(),
-                                playerLocation.getPitch()));
+        buildWorld.getData().setCustomSpawn(CustomSpawn.format(playerLocation));
         messages.sendMessage(player, "worlds_setspawn_world_spawn_set", Map.entry("%world%", buildWorld.getName()));
     }
 

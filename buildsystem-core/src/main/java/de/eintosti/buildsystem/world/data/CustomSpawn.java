@@ -46,10 +46,14 @@ public final class CustomSpawn {
      * @return The encoded string, round-trippable by {@link #parse(World, String)}
      */
     public static String format(Location location) {
-        return location.getX() + DELIMITER
-                + location.getY() + DELIMITER
-                + location.getZ() + DELIMITER
-                + location.getYaw() + DELIMITER
+        return location.getX()
+                + DELIMITER
+                + location.getY()
+                + DELIMITER
+                + location.getZ()
+                + DELIMITER
+                + location.getYaw()
+                + DELIMITER
                 + location.getPitch();
     }
 
