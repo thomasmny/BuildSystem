@@ -348,7 +348,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                         .onClick((player, event) -> {
                             if (requirePermission(player, "buildsystem.edit.gamerules")) {
                                 XSound.BLOCK_CHEST_OPEN.play(player);
-                                new GameRulesMenu(plugin, buildWorld, player).open(player);
+                                plugin.getMenus().openGameRules(buildWorld, player);
                             }
                         })
                         .build());

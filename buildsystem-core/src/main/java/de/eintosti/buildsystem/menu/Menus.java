@@ -28,6 +28,7 @@ import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.menu.BackupsConfirmationMenu;
 import de.eintosti.buildsystem.world.menu.BackupsMenu;
 import de.eintosti.buildsystem.world.menu.EditMenu;
+import de.eintosti.buildsystem.world.menu.GameRulesMenu;
 import de.eintosti.buildsystem.world.menu.StatusMenu;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -96,6 +97,11 @@ public final class Menus {
 
     public void openEdit(BuildWorld buildWorld, Player player) {
         new EditMenu(plugin, buildWorld, player).open(player);
+    }
+
+    public void openGameRules(BuildWorld buildWorld, Player player) {
+        new GameRulesMenu(plugin.getMessages(), plugin.getMenuItems(), plugin.getLogger(), this, buildWorld, player)
+                .open(player);
     }
 
     public void openStatus(BuildWorld buildWorld, Player player) {

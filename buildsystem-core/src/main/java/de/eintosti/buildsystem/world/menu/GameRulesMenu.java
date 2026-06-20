@@ -20,16 +20,19 @@ package de.eintosti.buildsystem.world.menu;
 import com.cryptomorin.xseries.XGameRule;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Logger;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -48,12 +51,17 @@ public class GameRulesMenu extends PaginatedMenu {
     private static final int SLOT_PREVIOUS_PAGE = 36;
     private static final int SLOT_NEXT_PAGE = 44;
 
-    private final BuildSystemPlugin plugin;
+    private final MenuItems menuItems;
+    private final Logger logger;
+    private final Menus menus;
     private final BuildWorld buildWorld;
 
-    public GameRulesMenu(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
-        super(plugin.getMessages(), 45, plugin.getMessages().getString("worldeditor_gamerules_title", player));
-        this.plugin = plugin;
+    public GameRulesMenu(
+            Messages messages, MenuItems menuItems, Logger logger, Menus menus, BuildWorld buildWorld, Player player) {
+        super(messages, 45, messages.getString("worldeditor_gamerules_title", player));
+        this.menuItems = menuItems;
+        this.logger = logger;
+        this.menus = menus;
         this.buildWorld = buildWorld;
     }
 
@@ -67,7 +75,7 @@ public class GameRulesMenu extends PaginatedMenu {
         Optional<World> optionalWorld = buildWorld.getWorld();
         if (optionalWorld.isEmpty()) {
             player.closeInventory();
-            plugin.getLogger().severe("World '" + buildWorld.getName() + "' does not exist.");
+            logger.severe("World '" + buildWorld.getName() + "' does not exist.");
             return;
         }
         World world = optionalWorld.get();
@@ -75,7 +83,7 @@ public class GameRulesMenu extends PaginatedMenu {
         clearButtons();
         for (int i = 0; i < MENU_SIZE; i++) {
             if (!isValidSlot(i)) {
-                plugin.getMenuItems().addGlassPane(player, getInventory(), i);
+                menuItems.addGlassPane(player, getInventory(), i);
             }
         }
 
@@ -97,9 +105,8 @@ public class GameRulesMenu extends PaginatedMenu {
                 .render((player, inventory, slot) -> {
                     XGameRule<?> gameRule = XGameRule.of(gameRuleName).orElse(null);
                     if (gameRule == null || !gameRule.isSupported()) {
-                        plugin.getLogger()
-                                .severe("GameRule '%s' does not exist in world '%s'."
-                                        .formatted(gameRuleName, world.getName()));
+                        logger.severe(
+                                "GameRule '%s' does not exist in world '%s'.".formatted(gameRuleName, world.getName()));
                         return;
                     }
                     ItemBuilder.of(isEnabled(world, gameRule) ? XMaterial.FILLED_MAP : XMaterial.MAP)
@@ -122,7 +129,7 @@ public class GameRulesMenu extends PaginatedMenu {
             return;
         }
         XSound.BLOCK_CHEST_OPEN.play(player);
-        new EditMenu(plugin, buildWorld, player).open(player);
+        menus.openEdit(buildWorld, player);
     }
 
     private List<String> getLore(World world, XGameRule<?> gameRule, Player player) {
@@ -146,8 +153,7 @@ public class GameRulesMenu extends PaginatedMenu {
     private void modifyGameRule(World world, String gameRuleName, InventoryClickEvent event) {
         XGameRule<?> gameRule = XGameRule.of(gameRuleName).orElse(null);
         if (gameRule == null || !gameRule.isSupported()) {
-            plugin.getLogger()
-                    .warning("GameRule '%s' does not exist in world '%s'.".formatted(gameRuleName, world.getName()));
+            logger.warning("GameRule '%s' does not exist in world '%s'.".formatted(gameRuleName, world.getName()));
             return;
         }
 
@@ -163,9 +169,8 @@ public class GameRulesMenu extends PaginatedMenu {
                     : (event.isRightClick() ? 1 : event.isLeftClick() ? -1 : 0);
             integerRule.setValue(world, value + delta);
         } else {
-            plugin.getLogger()
-                    .warning("GameRule '%s' is not a boolean or integer type and cannot be modified."
-                            .formatted(gameRule.name()));
+            logger.warning("GameRule '%s' is not a boolean or integer type and cannot be modified."
+                    .formatted(gameRule.name()));
         }
     }
 
