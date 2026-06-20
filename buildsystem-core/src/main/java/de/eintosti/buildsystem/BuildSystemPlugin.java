@@ -59,6 +59,8 @@ public class BuildSystemPlugin extends JavaPlugin {
     public static final int METRICS_ID = 7427;
     public static final String ADMIN_PERMISSION = "buildsystem.admin";
 
+    private static final long CONFIG_SAVE_INTERVAL_TICKS = 5L * 60L * 20L;
+
     private Services services;
     private UpdateChecker updateChecker;
     private Integrations integrations;
@@ -102,7 +104,8 @@ public class BuildSystemPlugin extends JavaPlugin {
         new BuildSystemMetrics(this).register();
 
         this.configSaveTask = Bukkit.getScheduler()
-                .runTaskTimerAsynchronously(this, this::saveBuildConfig, 6000L, 6000L); // Every 5 minutes
+                .runTaskTimerAsynchronously(
+                        this, this::saveBuildConfig, CONFIG_SAVE_INTERVAL_TICKS, CONFIG_SAVE_INTERVAL_TICKS);
 
         Bukkit.getConsoleSender()
                 .sendMessage("%sBuildSystem » Plugin %senabled%s!"
