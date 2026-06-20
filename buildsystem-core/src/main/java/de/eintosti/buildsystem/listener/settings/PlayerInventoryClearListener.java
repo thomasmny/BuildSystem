@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.listener.settings;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
 import de.eintosti.buildsystem.menu.MenuItems;
@@ -35,9 +34,9 @@ public class PlayerInventoryClearListener implements Listener {
     private final SettingsService settingsManager;
     private final MenuItems menuItems;
 
-    public PlayerInventoryClearListener(BuildSystemPlugin plugin) {
-        this.settingsManager = plugin.getSettingsService();
-        this.menuItems = plugin.getMenuItems();
+    public PlayerInventoryClearListener(SettingsService settingsManager, MenuItems menuItems) {
+        this.settingsManager = settingsManager;
+        this.menuItems = menuItems;
     }
 
     @EventHandler

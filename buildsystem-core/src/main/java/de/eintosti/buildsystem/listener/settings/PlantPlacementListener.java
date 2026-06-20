@@ -20,13 +20,12 @@ package de.eintosti.buildsystem.listener.settings;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XTag;
 import com.google.common.collect.Sets;
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldSetting;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
-import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.DirectionUtil;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -71,12 +70,12 @@ public class PlantPlacementListener implements Listener {
             XMaterial.class);
 
     private final SettingsService settingsManager;
-    private final WorldStorageImpl worldStorage;
+    private final WorldStorage worldStorage;
     private final WorldProtectionPolicy policy;
 
-    public PlantPlacementListener(BuildSystemPlugin plugin) {
-        this.settingsManager = plugin.getSettingsService();
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+    public PlantPlacementListener(SettingsService settingsManager, WorldStorage worldStorage) {
+        this.settingsManager = settingsManager;
+        this.worldStorage = worldStorage;
         this.policy = new WorldProtectionPolicy();
     }
 
