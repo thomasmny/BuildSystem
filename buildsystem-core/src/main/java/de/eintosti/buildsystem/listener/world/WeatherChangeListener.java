@@ -17,7 +17,7 @@
  */
 package de.eintosti.buildsystem.listener.world;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.config.ConfigService;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -28,15 +28,15 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class WeatherChangeListener implements Listener {
 
-    private final BuildSystemPlugin plugin;
+    private final ConfigService configService;
 
-    public WeatherChangeListener(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+    public WeatherChangeListener(ConfigService configService) {
+        this.configService = configService;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onWeatherChange(WeatherChangeEvent event) {
-        if (!plugin.getConfigService().current().world().lockWeather()) {
+        if (!configService.current().world().lockWeather()) {
             return;
         }
 
@@ -47,7 +47,7 @@ public class WeatherChangeListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onThunderChange(ThunderChangeEvent event) {
-        if (!plugin.getConfigService().current().world().lockWeather()) {
+        if (!configService.current().world().lockWeather()) {
             return;
         }
 

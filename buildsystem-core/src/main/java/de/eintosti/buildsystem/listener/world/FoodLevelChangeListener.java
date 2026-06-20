@@ -17,9 +17,8 @@
  */
 package de.eintosti.buildsystem.listener.world;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -29,10 +28,10 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class FoodLevelChangeListener implements Listener {
 
-    private final WorldStorageImpl worldStorage;
+    private final WorldStorage worldStorage;
 
-    public FoodLevelChangeListener(BuildSystemPlugin plugin) {
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+    public FoodLevelChangeListener(WorldStorage worldStorage) {
+        this.worldStorage = worldStorage;
     }
 
     @EventHandler

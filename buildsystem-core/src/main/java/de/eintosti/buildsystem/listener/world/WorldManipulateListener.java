@@ -18,12 +18,14 @@
 package de.eintosti.buildsystem.listener.world;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.event.world.BuildWorldManipulationEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldSetting;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
+import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.event.EventDispatcher;
+import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
@@ -40,13 +42,21 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class WorldManipulateListener implements Listener {
 
-    private final BuildSystemPlugin plugin;
     private final WorldStorageImpl worldStorage;
+    private final ConfigService configService;
+    private final WorldStatusRegistry worldStatusRegistry;
+    private final SettingsService settingsService;
     private final EventDispatcher dispatcher;
 
-    public WorldManipulateListener(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+    public WorldManipulateListener(
+            WorldStorageImpl worldStorage,
+            ConfigService configService,
+            WorldStatusRegistry worldStatusRegistry,
+            SettingsService settingsService) {
+        this.worldStorage = worldStorage;
+        this.configService = configService;
+        this.worldStatusRegistry = worldStatusRegistry;
+        this.settingsService = settingsService;
         this.dispatcher = new EventDispatcher(worldStorage);
     }
 
@@ -79,7 +89,7 @@ public class WorldManipulateListener implements Listener {
         ItemStack itemStack = event.getItem();
         if (itemStack != null
                 && itemStack.getType()
-                        == plugin.getConfigService()
+                        == configService
                                 .current()
                                 .settings()
                                 .builder()
@@ -144,11 +154,10 @@ public class WorldManipulateListener implements Listener {
         worldData
                 .getStatus()
                 .getProgressesTo()
-                .ifPresent(nextId -> plugin.getWorldStatusRegistry()
-                        .getStatus(nextId)
-                        .ifPresent(next -> {
-                            worldData.setStatus(next);
-                            plugin.getSettingsService().forceUpdateSidebar(player);
-                        }));
+                .flatMap(worldStatusRegistry::getStatus)
+                .ifPresent(next -> {
+                    worldData.setStatus(next);
+                    settingsService.forceUpdateSidebar(player);
+                });
     }
 }
