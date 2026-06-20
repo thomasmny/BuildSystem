@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -66,6 +67,7 @@ class YamlFolderStorageRoundTripTest {
         Builder creator = Builder.of(UUID.randomUUID(), "FolderCreator");
         return new FolderImpl(
                 plugin,
+                UUID.randomUUID(),
                 name,
                 1_700_000_000_000L,
                 category,
@@ -88,15 +90,34 @@ class YamlFolderStorageRoundTripTest {
     @Test
     void roundTrip_preservesFields() {
         List<UUID> worlds = List.of(UUID.randomUUID(), UUID.randomUUID());
-        newStorage().save(folder("MyFolder", TestData.PUBLIC, worlds)).join();
+        Folder original = folder("MyFolder", TestData.PUBLIC, worlds);
+        newStorage().save(original).join();
 
         Folder loaded = findByName(newStorage().load().join(), "MyFolder");
+        assertEquals(original.getUniqueId(), loaded.getUniqueId());
         assertEquals("MyFolder", loaded.getName());
         assertEquals(TestData.PUBLIC, loaded.getCategory());
         assertEquals("perm.test", loaded.getPermission());
         assertEquals("ProjectX", loaded.getProject());
         assertEquals("FolderCreator", loaded.getCreator().getName());
         assertEquals(worlds, loaded.getWorldUUIDs());
+    }
+
+    @Test
+    void load_legacyFolderWithoutUuid_getsGeneratedId() throws Exception {
+        YamlConfiguration legacy = new YamlConfiguration();
+        String path = "folders.Legacy";
+        legacy.set(path + ".creator", Builder.of(UUID.randomUUID(), "Creator").toString());
+        legacy.set(path + ".creation", 1_700_000_000_000L);
+        legacy.set(path + ".category", TestData.PUBLIC.getId());
+        legacy.set(path + ".material", XMaterial.CHEST.name());
+        legacy.set(path + ".permission", "-");
+        legacy.set(path + ".project", "-");
+        legacy.set(path + ".worlds", List.of());
+        legacy.save(new File(dataFolder, "folders.yml"));
+
+        Folder loaded = findByName(newStorage().load().join(), "Legacy");
+        assertNotNull(loaded.getUniqueId());
     }
 
     @Test

@@ -52,12 +52,14 @@ public interface BuildWorld extends Displayable {
     Optional<World> getWorld();
 
     /**
-     * Gets the unique identifier of this world.
+     * {@inheritDoc}
      *
-     * <p>Not equivalent to {@link World#getUID()}.
+     * <p>Not equivalent to {@link World#getUID()}, which identifies the loaded Bukkit world rather than the persistent
+     * BuildSystem world.
      *
      * @return The uuid of this world
      */
+    @Override
     UUID getUniqueId();
 
     /**

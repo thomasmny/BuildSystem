@@ -37,6 +37,7 @@ import org.jspecify.annotations.Nullable;
 public class FolderImpl implements Folder {
 
     private final BuildSystemPlugin plugin;
+    private final UUID uuid;
     private String name;
     private final Builder creator;
     private final long creation;
@@ -59,6 +60,7 @@ public class FolderImpl implements Folder {
             Builder creator) {
         this(
                 plugin,
+                UUID.randomUUID(),
                 name,
                 System.currentTimeMillis(),
                 category,
@@ -73,6 +75,7 @@ public class FolderImpl implements Folder {
 
     public FolderImpl(
             BuildSystemPlugin plugin,
+            UUID uuid,
             String name,
             long creation,
             NavigatorCategory category,
@@ -84,6 +87,7 @@ public class FolderImpl implements Folder {
             List<UUID> worlds,
             List<Folder> subfolders) {
         this.plugin = plugin;
+        this.uuid = uuid;
         this.name = name;
         this.creation = creation;
         this.category = category;
@@ -97,6 +101,11 @@ public class FolderImpl implements Folder {
         this.permission = permission;
         this.project = project;
         this.subfolders = subfolders;
+    }
+
+    @Override
+    public UUID getUniqueId() {
+        return this.uuid;
     }
 
     @Override
@@ -307,11 +316,11 @@ public class FolderImpl implements Folder {
         }
 
         FolderImpl folder = (FolderImpl) other;
-        return name.equals(folder.name);
+        return uuid.equals(folder.uuid);
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode();
+        return uuid.hashCode();
     }
 }

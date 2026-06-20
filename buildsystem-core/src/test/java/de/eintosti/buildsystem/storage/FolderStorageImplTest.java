@@ -164,6 +164,7 @@ class FolderStorageImplTest {
     // Minimal Folder implementation for tests
     @NullMarked
     private static final class SimpleTestFolder implements Folder {
+        private final UUID uuid = UUID.randomUUID();
         private String name;
         private final NavigatorCategory category;
         private final Builder creator;
@@ -174,6 +175,11 @@ class FolderStorageImplTest {
             this.name = name;
             this.category = category;
             this.creator = creator;
+        }
+
+        @Override
+        public UUID getUniqueId() {
+            return uuid;
         }
 
         @Override

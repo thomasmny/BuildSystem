@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.api.world.display;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import java.util.List;
+import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
@@ -35,6 +36,18 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public interface Displayable {
+
+    /**
+     * Gets the stable unique identifier of this displayable.
+     *
+     * <p>Unlike the {@link #getName() name} — which is mutable and doubles as the human-readable storage key — this
+     * identifier never changes for the lifetime of the displayable. It is therefore the safe basis for equality,
+     * hashing, and durable cross-references.
+     *
+     * @return The unique identifier
+     * @since 4.0.0
+     */
+    UUID getUniqueId();
 
     /**
      * Gets the unique name of this displayable item.

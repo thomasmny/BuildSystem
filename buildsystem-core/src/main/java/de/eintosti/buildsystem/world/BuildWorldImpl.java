@@ -68,6 +68,8 @@ public final class BuildWorldImpl implements BuildWorld {
     private final BuildSystemPlugin plugin;
     private final WorldLoaderImpl worldLoader;
     private final WorldUnloaderImpl worldUnloader;
+    private final WorldPermissionsImpl worldPermissions;
+    private final WorldTeleporterImpl worldTeleporter;
 
     public BuildWorldImpl(
             BuildSystemPlugin plugin,
@@ -152,15 +154,14 @@ public final class BuildWorldImpl implements BuildWorld {
 
         this.worldData.setFolderResolver(this::getFolder);
         this.worldData.setStatusChangeListener((previousStatus, newStatus) -> {
-            // Guard: unit tests construct BuildWorldImpl without a running server
-            if (Bukkit.getServer() != null) {
-                Bukkit.getServer()
-                        .getPluginManager()
-                        .callEvent(new BuildWorldStatusChangeEvent(this, previousStatus, newStatus));
-            }
+            Bukkit.getServer()
+                    .getPluginManager()
+                    .callEvent(new BuildWorldStatusChangeEvent(this, previousStatus, newStatus));
         });
         this.worldLoader = WorldLoaderImpl.of(plugin, this);
         this.worldUnloader = WorldUnloaderImpl.of(plugin, this);
+        this.worldPermissions = WorldPermissionsImpl.of(plugin, this);
+        this.worldTeleporter = WorldTeleporterImpl.of(plugin, this);
         this.worldUnloader.manageUnload();
     }
 
@@ -267,9 +268,10 @@ public final class BuildWorldImpl implements BuildWorld {
      * worlds) when no explicit skull texture is configured. Only consulted by the renderer for un-textured heads.
      */
     @Override
-    public @Nullable Profileable getHeadProfile() {
-        if (worldData.getVisibility().isPrivate() && builders.hasCreator()) {
-            return Profileable.of(builders.getCreator().getUniqueId());
+    public Profileable getHeadProfile() {
+        Builder creator = builders.getCreator();
+        if (worldData.getVisibility().isPrivate() && creator != null) {
+            return Profileable.of(creator.getUniqueId());
         }
         return Profileable.username(name);
     }
@@ -281,7 +283,8 @@ public final class BuildWorldImpl implements BuildWorld {
      */
     @Override
     public @Nullable Profileable getHeadFallbackProfile() {
-        return builders.hasCreator() ? Profileable.of(builders.getCreator().getUniqueId()) : null;
+        Builder creator = builders.getCreator();
+        return creator != null ? Profileable.of(creator.getUniqueId()) : null;
     }
 
     @Override
@@ -348,12 +351,12 @@ public final class BuildWorldImpl implements BuildWorld {
 
     @Override
     public WorldTeleporter getTeleporter() {
-        return WorldTeleporterImpl.of(plugin, this);
+        return worldTeleporter;
     }
 
     @Override
     public WorldPermissions getPermissions() {
-        return WorldPermissionsImpl.of(plugin, this);
+        return worldPermissions;
     }
 
     @Override
@@ -391,11 +394,11 @@ public final class BuildWorldImpl implements BuildWorld {
             return false;
         }
         BuildWorldImpl that = (BuildWorldImpl) o;
-        return name.equals(that.name);
+        return uuid.equals(that.uuid);
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode();
+        return uuid.hashCode();
     }
 }

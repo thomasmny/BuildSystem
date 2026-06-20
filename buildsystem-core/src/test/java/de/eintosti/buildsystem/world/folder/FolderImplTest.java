@@ -29,7 +29,9 @@ import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.bukkit.Difficulty;
 import org.junit.jupiter.api.BeforeEach;
@@ -136,5 +138,21 @@ class FolderImplTest {
 
         assertNull(world.getFolder());
         assertFalse(folder.containsWorld(world));
+    }
+
+    @Test
+    void identity_survivesRename() {
+        FolderImpl folder = folder("Original");
+        Set<FolderImpl> set = new HashSet<>();
+        set.add(folder);
+
+        folder.setName("Renamed");
+
+        assertTrue(set.contains(folder));
+    }
+
+    @Test
+    void distinctFolders_sameName_areNotEqual() {
+        assertNotEquals(folder("Same"), folder("Same"));
     }
 }

@@ -89,6 +89,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
     public Map<String, @Nullable Object> serializeFolder(Folder folder) {
         Map<String, @Nullable Object> serializedFolder = new HashMap<>();
 
+        serializedFolder.put("uuid", folder.getUniqueId().toString());
         serializedFolder.put("creator", folder.getCreator().toString());
         serializedFolder.put("creation", folder.getCreation());
         serializedFolder.put("category", folder.getCategory().getId());
@@ -155,6 +156,8 @@ public class YamlFolderStorage extends FolderStorageImpl {
     private Folder loadFolder(String folderName) {
         final String path = FOLDERS_KEY + "." + folderName;
 
+        UUID uuid =
+                config.isString(path + ".uuid") ? UUID.fromString(config.getString(path + ".uuid")) : UUID.randomUUID();
         Builder creator = Objects.requireNonNull(
                 Builder.deserialize(config.getString(path + ".creator")),
                 "Creator cannot be null for folder: " + folderName);
@@ -171,6 +174,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
 
         FolderImpl folder = new FolderImpl(
                 plugin,
+                uuid,
                 folderName,
                 creation,
                 category,
