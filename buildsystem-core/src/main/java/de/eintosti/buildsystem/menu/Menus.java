@@ -18,10 +18,15 @@
 package de.eintosti.buildsystem.menu;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.player.customblock.CustomBlockMenu;
 import de.eintosti.buildsystem.player.menu.DesignMenu;
 import de.eintosti.buildsystem.player.menu.SettingsMenu;
 import de.eintosti.buildsystem.player.menu.SpeedMenu;
+import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.world.menu.BackupsConfirmationMenu;
+import de.eintosti.buildsystem.world.menu.BackupsMenu;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -36,9 +41,11 @@ import org.jspecify.annotations.NullMarked;
 public final class Menus {
 
     private final BuildSystemPlugin plugin;
+    private final TaskScheduler scheduler;
 
     public Menus(BuildSystemPlugin plugin) {
         this.plugin = plugin;
+        this.scheduler = new TaskScheduler(plugin);
     }
 
     public void openSpeed(Player player) {
@@ -65,5 +72,23 @@ public final class Menus {
                         this,
                         player)
                 .open(player);
+    }
+
+    public void openBackups(BuildWorld buildWorld, Player player) {
+        new BackupsMenu(
+                        plugin.getMessages(),
+                        plugin.getBackupService(),
+                        plugin.getMenuItems(),
+                        plugin.getConfigService(),
+                        plugin.getLogger(),
+                        scheduler,
+                        this,
+                        buildWorld,
+                        player)
+                .open(player);
+    }
+
+    public void openBackupsConfirmation(Backup backup, Player player) {
+        new BackupsConfirmationMenu(plugin.getMessages(), plugin.getConfigService(), backup, player).open(player);
     }
 }

@@ -23,7 +23,6 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
-import de.eintosti.buildsystem.world.menu.BackupsMenu;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +56,7 @@ public class BackupsSubCommand extends AbstractSubCommand {
         switch (args.length) {
             case 1 -> {
                 XSound.BLOCK_CHEST_OPEN.play(player);
-                new BackupsMenu(plugin, buildWorld, player).open(player);
+                plugin.getMenus().openBackups(buildWorld, player);
             }
             case 2 -> {
                 if (args[1].equalsIgnoreCase("create")) {
