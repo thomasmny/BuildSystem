@@ -86,6 +86,14 @@ public final class UpdateChecker {
         this.versionScheme = versionScheme;
     }
 
+    /**
+     * {@return the plugin's current version} Exposed so callers can render it (e.g. in an update-available message)
+     * without depending on the plugin instance.
+     */
+    public String getCurrentVersion() {
+        return plugin.getDescription().getVersion();
+    }
+
     private static String @Nullable [] splitVersionInfo(String version) {
         Matcher matcher = DECIMAL_SCHEME_PATTERN.matcher(version);
         return matcher.find() ? matcher.group().split("\\.") : null;

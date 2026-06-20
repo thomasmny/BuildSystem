@@ -84,12 +84,12 @@ public class BuildSystemPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         this.services.initClasses();
+        this.updateChecker = new UpdateChecker(this, SPIGOT_ID);
+        performUpdateCheck();
 
         new CommandRegistrar(this).registerAll();
         new ListenerRegistrar(this).registerAll();
         (this.integrations = new Integrations(this)).activate();
-
-        performUpdateCheck();
 
         this.api = new BuildSystemApi(this);
         getServer().getServicesManager().register(BuildSystem.class, api, this, ServicePriority.Normal);
@@ -154,7 +154,6 @@ public class BuildSystemPlugin extends JavaPlugin {
     }
 
     private void performUpdateCheck() {
-        this.updateChecker = new UpdateChecker(this, SPIGOT_ID);
         if (!getConfigService().current().settings().updateChecker()) {
             return;
         }

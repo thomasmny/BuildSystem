@@ -36,12 +36,14 @@ import de.eintosti.buildsystem.menu.MenuListener;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.navigator.NavigatorEditorService;
 import de.eintosti.buildsystem.navigator.NavigatorService;
+import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.PluginManager;
@@ -72,9 +74,12 @@ public final class ListenerRegistrar {
         NoClipService noClipService = plugin.getNoClipService();
         SpawnService spawnService = plugin.getSpawnService();
         TaskScheduler scheduler = new TaskScheduler(plugin);
+        PlayerLookupService playerLookupService = plugin.getPlayerLookupService();
+        UpdateChecker updateChecker = plugin.getUpdateChecker();
 
         register(new AsyncPlayerChatListener());
-        register(new AsyncPlayerPreLoginListener(plugin));
+        register(new AsyncPlayerPreLoginListener(
+                playerService.getPlayerStorage(), spawnService, worldStorage, scheduler));
         register(new BlockPhysicsListener(worldStorage, configService));
         register(new BuildModePreventationListener(playerService, configService));
         register(new BuildWorldResetUnloadListener(worldStorage));
@@ -83,7 +88,7 @@ public final class ListenerRegistrar {
         register(new EntitySpawnListener(worldStorage));
         register(new FoodLevelChangeListener(worldStorage));
         register(new InstantSignPlacementListener(customBlockManager, settingsService, worldStorage));
-        register(new InventoryCreativeListener(plugin));
+        register(new InventoryCreativeListener(menuItems, scheduler));
         register(new IronDoorListener(settingsService, worldStorage));
         register(new MenuListener());
         register(new PlayerChatInput.ChatInputListener());
@@ -93,8 +98,19 @@ public final class ListenerRegistrar {
         register(new PlayerCommandPreprocessListener(
                 settingsService, worldStorage, menuItems, configService, messages, scheduler));
         register(new PlayerInventoryClearListener(settingsService, menuItems));
-        register(new PlayerJoinListener(plugin));
-        register(new PlayerMoveListener(plugin));
+        register(new PlayerJoinListener(
+                playerService,
+                settingsService,
+                navigatorService,
+                spawnService,
+                worldStorage,
+                playerLookupService,
+                noClipService,
+                configService,
+                messages,
+                updateChecker,
+                scheduler));
+        register(new PlayerMoveListener(navigatorService, settingsService, scheduler));
         register(new PlayerQuitListener(
                 playerService,
                 navigatorService,

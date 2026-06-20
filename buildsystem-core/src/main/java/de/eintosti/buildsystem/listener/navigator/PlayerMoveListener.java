@@ -17,12 +17,11 @@
  */
 package de.eintosti.buildsystem.listener.navigator;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
-import org.bukkit.Bukkit;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -33,14 +32,15 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class PlayerMoveListener implements Listener {
 
-    private final BuildSystemPlugin plugin;
     private final NavigatorService navigatorService;
     private final SettingsService settingsManager;
+    private final TaskScheduler scheduler;
 
-    public PlayerMoveListener(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        this.navigatorService = plugin.getNavigatorService();
-        this.settingsManager = plugin.getSettingsService();
+    public PlayerMoveListener(
+            NavigatorService navigatorService, SettingsService settingsManager, TaskScheduler scheduler) {
+        this.navigatorService = navigatorService;
+        this.settingsManager = settingsManager;
+        this.scheduler = scheduler;
     }
 
     @EventHandler
@@ -62,9 +62,7 @@ public class PlayerMoveListener implements Listener {
 
         Location from = event.getFrom();
         if (from.getBlockX() != to.getBlockX() || from.getBlockZ() != to.getBlockZ()) {
-            Bukkit.getServer()
-                    .getScheduler()
-                    .runTaskLater(plugin, () -> navigatorService.closeNewNavigator(player), 5L);
+            scheduler.runLater(() -> navigatorService.closeNewNavigator(player), 5L);
         }
     }
 }
