@@ -520,12 +520,13 @@ setup_navigator_delete: "&cDelete category"
 setup_navigator_delete_lore:
   - "&7Drop a category here to delete it."
   - "&7Its worlds move to the default category."
-setup_navigator_reset: "&eReset layout"
+setup_navigator_reset: "&eReset"
 setup_navigator_reset_lore:
-  - "&7Restore the default navigator layout."
+  - "&7Restore the default navigator setup."
   - ""
   - "&8» &7&oLeft-click to reset the layout"
   - "&8» &7&oRight-click to reset everything"
+  - "&8   &7&o(restores deleted built-in categories)"
 setup_navigator_reset_confirm_lore:
   - "&7The layout is reset. Built-in categories"
   - "&7return to their default slots; custom"
@@ -603,21 +604,41 @@ setup_reset_confirm_lore:
 
 # Setup - Status Management
 setup_statuses_title: "&3» &8World Statuses"
-setup_status_entry_lore:
-  - "&7A status a world can be set to."
-  - ""
-  - "&8» &7&oClick to edit"
-  - "&8» &7&oShift-click to delete"
-setup_status_entry_builtin_lore:
-  - "&7A status a world can be set to."
-  - ""
-  - "&8» &7&oClick to edit"
-  - "&8» &7&oShift-click to delete"
 setup_status_add: "&aCreate a new status"
 setup_status_add_prompt: "&aStatus name"
-setup_status_delete_lore:
-  - "&7Worlds using this status: &c%worlds%"
-  - "&7They will be reset to the default status."
+
+# Setup - Status layout editor (drag-and-drop, the counterpart of the navigator editor)
+setup_status_layout_placed_lore:
+  - ""
+  - "&8» &7&oClick to move"
+  - "&8» &7&oShift-click to edit"
+setup_status_layout_palette_lore:
+  - "&7This status is hidden from the picker"
+  - "&7until you add it."
+  - ""
+  - "&8» &7&oClick to add to the picker"
+  - "&8» &7&oShift-click to edit"
+setup_status_layout_create_lore:
+  - "&8» &7&oClick to create a status"
+setup_status_layout_delete: "&cDelete status"
+setup_status_layout_delete_lore:
+  - "&7Drop a status here to delete it."
+  - "&7Worlds using it reset to the default status."
+setup_status_layout_reset: "&eReset"
+setup_status_layout_reset_lore:
+  - "&7Restore the default status picker."
+  - ""
+  - "&8» &7&oLeft-click to reset the layout"
+  - "&8» &7&oRight-click to reset everything"
+  - "&8   &7&o(restores deleted built-in statuses)"
+setup_status_layout_reset_confirm_lore:
+  - "&7The layout is reset. Built-in statuses"
+  - "&7return to their default slots; custom"
+  - "&7statuses are kept but removed from the picker."
+setup_status_layout_reset_all_confirm_lore:
+  - "&7Every status is reset to the built-in"
+  - "&7defaults. Custom statuses are deleted"
+  - "&7and the built-ins are restored."
 
 # Setup - Status Editor
 setup_status_editor_title: "&8Status &7» %status%"
@@ -782,6 +803,23 @@ delete_world_confirm: "&aConfirm"
 # World Editor
 worldeditor_title: "&3» &8World Editor"
 worldeditor_world_item: "&3&l%world%"
+worldeditor_world_lore:
+  - "&7The item shown for this world"
+  - "&7in the navigator."
+  - ""
+  - "&8» &7&oClick to choose an item"
+worldeditor_world_head_lore:
+  - "&7The item shown for this world"
+  - "&7in the navigator."
+  - ""
+  - "&7Head texture&8: &f%texture%"
+  - ""
+  - "&8» &7&oLeft-click to choose an item"
+  - "&8» &7&oRight-click to set head texture"
+worldeditor_world_skull_none: "&7None"
+worldeditor_world_skull_viewer: "&7Viewer's head"
+worldeditor_world_skull_custom: "&7Custom"
+worldeditor_world_skull_prompt: "&aSkull texture"
 
 # Shared toggle state line (appended to every on/off item's lore)
 toggle_currently_enabled: "&7&nCurrently&7: &aEnabled"
