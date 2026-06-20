@@ -20,10 +20,11 @@ package de.eintosti.buildsystem.world.menu.setup;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import java.util.List;
 import org.bukkit.entity.Player;
@@ -42,17 +43,18 @@ public class DeletionConfirmMenu extends ButtonMenu<MenuButton> {
     private static final int SLOT_INFO = 13;
     private static final int SLOT_CANCEL = 15;
 
-    private final BuildSystemPlugin plugin;
+    private final MenuItems menuItems;
 
     public DeletionConfirmMenu(
-            BuildSystemPlugin plugin,
+            Messages messages,
+            MenuItems menuItems,
             Player player,
             String infoName,
             List<String> infoLore,
             Runnable onConfirm,
             Runnable onCancel) {
-        super(plugin.getMessages(), INVENTORY_SIZE, plugin.getMessages().getString("setup_confirm_title", player));
-        this.plugin = plugin;
+        super(messages, INVENTORY_SIZE, messages.getString("setup_confirm_title", player));
+        this.menuItems = menuItems;
 
         register(SLOT_CONFIRM, createChoiceButton(SkullTextures.CONFIRM, "setup_confirm_yes", onConfirm));
         register(SLOT_CANCEL, createChoiceButton(SkullTextures.CANCEL, "setup_confirm_no", onCancel));
@@ -82,7 +84,7 @@ public class DeletionConfirmMenu extends ButtonMenu<MenuButton> {
 
     @Override
     protected void populate(Player player) {
-        plugin.getMenuItems().fillAll(player, getInventory());
+        menuItems.fillAll(player, getInventory());
         renderButtons(player);
     }
 

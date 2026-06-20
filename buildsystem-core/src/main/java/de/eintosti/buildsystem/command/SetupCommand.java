@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.world.menu.SetupMenu;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -35,6 +34,6 @@ public class SetupCommand extends CommandBase {
             return;
         }
 
-        new SetupMenu(plugin, player).open(player);
+        plugin.getMenus().openSetup(player);
     }
 }

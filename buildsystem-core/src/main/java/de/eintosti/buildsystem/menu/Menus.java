@@ -32,14 +32,18 @@ import de.eintosti.buildsystem.world.menu.BackupsConfirmationMenu;
 import de.eintosti.buildsystem.world.menu.BackupsMenu;
 import de.eintosti.buildsystem.world.menu.EditMenu;
 import de.eintosti.buildsystem.world.menu.GameRulesMenu;
+import de.eintosti.buildsystem.world.menu.SetupMenu;
 import de.eintosti.buildsystem.world.menu.StatusMenu;
 import de.eintosti.buildsystem.world.menu.setup.CategoryEditorMenu;
 import de.eintosti.buildsystem.world.menu.setup.CategoryStatusesMenu;
+import de.eintosti.buildsystem.world.menu.setup.DefaultIconsMenu;
+import de.eintosti.buildsystem.world.menu.setup.DeletionConfirmMenu;
 import de.eintosti.buildsystem.world.menu.setup.DyePickerMenu;
 import de.eintosti.buildsystem.world.menu.setup.MaterialPickerMenu;
 import de.eintosti.buildsystem.world.menu.setup.NavigatorLayoutMenu;
 import de.eintosti.buildsystem.world.menu.setup.StatusEditorMenu;
 import de.eintosti.buildsystem.world.menu.setup.StatusLayoutMenu;
+import java.util.List;
 import java.util.function.Consumer;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -154,12 +158,46 @@ public final class Menus {
         new CategoryStatusesMenu(plugin, player, category).open(player);
     }
 
+    public void openSetup(Player player) {
+        new SetupMenu(plugin.getMessages(), plugin.getMenuItems(), this, player).open(player);
+    }
+
+    public void openDefaultIcons(Player player) {
+        new DefaultIconsMenu(plugin.getMessages(), plugin.getMenuItems(), this, plugin.getCustomizableIcons(), player)
+                .open(player);
+    }
+
     public void openNavigatorLayout(Player player) {
-        new NavigatorLayoutMenu(plugin, player).open(player);
+        new NavigatorLayoutMenu(
+                        plugin.getMessages(),
+                        plugin.getMenuItems(),
+                        this,
+                        scheduler,
+                        plugin.getPrompts(),
+                        plugin.getNavigatorCategoryRegistry(),
+                        plugin.getNavigatorEditorService(),
+                        player)
+                .open(player);
     }
 
     public void openStatusLayout(Player player) {
-        new StatusLayoutMenu(plugin, player).open(player);
+        new StatusLayoutMenu(
+                        plugin.getMessages(),
+                        plugin.getMenuItems(),
+                        this,
+                        scheduler,
+                        plugin.getPrompts(),
+                        plugin.getWorldStatusRegistry(),
+                        plugin.getNavigatorEditorService(),
+                        player)
+                .open(player);
+    }
+
+    public void openDeletionConfirm(
+            Player player, String infoName, List<String> infoLore, Runnable onConfirm, Runnable onCancel) {
+        new DeletionConfirmMenu(
+                        plugin.getMessages(), plugin.getMenuItems(), player, infoName, infoLore, onConfirm, onCancel)
+                .open(player);
     }
 
     public void openStatus(BuildWorld buildWorld, Player player) {

@@ -20,17 +20,20 @@ package de.eintosti.buildsystem.world.menu.setup;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.Menu;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.menu.SkullTextures;
+import de.eintosti.buildsystem.navigator.NavigatorEditorService;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.data.WorldStatusImpl;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
-import de.eintosti.buildsystem.world.menu.SetupMenu;
 import java.util.List;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -59,19 +62,35 @@ public class StatusLayoutMenu extends Menu {
     private static final int PALETTE_FIRST_SLOT = 9;
     private static final int PALETTE_LAST_SLOT = 35;
 
-    private final BuildSystemPlugin plugin;
+    private final MenuItems menuItems;
+    private final Menus menus;
+    private final TaskScheduler scheduler;
+    private final Prompts prompts;
     private final WorldStatusRegistryImpl registry;
+    private final NavigatorEditorService navigatorEditorService;
     private final Held held = new Held();
 
-    public StatusLayoutMenu(BuildSystemPlugin plugin, Player player) {
-        super(plugin.getMessages(), PREVIEW_SIZE, plugin.getMessages().getString("setup_statuses_title", player));
-        this.plugin = plugin;
-        this.registry = plugin.getWorldStatusRegistry();
+    public StatusLayoutMenu(
+            Messages messages,
+            MenuItems menuItems,
+            Menus menus,
+            TaskScheduler scheduler,
+            Prompts prompts,
+            WorldStatusRegistryImpl worldStatusRegistry,
+            NavigatorEditorService navigatorEditorService,
+            Player player) {
+        super(messages, PREVIEW_SIZE, messages.getString("setup_statuses_title", player));
+        this.menuItems = menuItems;
+        this.menus = menus;
+        this.scheduler = scheduler;
+        this.prompts = prompts;
+        this.registry = worldStatusRegistry;
+        this.navigatorEditorService = navigatorEditorService;
     }
 
     @Override
     public void open(Player player) {
-        plugin.getNavigatorEditorService().beginSession(player);
+        navigatorEditorService.beginSession(player);
         populate(player);
         player.openInventory(getInventory());
         renderControls(player);
@@ -81,7 +100,7 @@ public class StatusLayoutMenu extends Menu {
     protected void populate(Player player) {
         Inventory inventory = getInventory();
         for (int slot = 0; slot < PREVIEW_SIZE; slot++) {
-            plugin.getMenuItems().addGlassPane(player, inventory, slot);
+            menuItems.addGlassPane(player, inventory, slot);
         }
 
         for (BuildWorldStatus status : registry.getStatuses()) {
@@ -163,7 +182,7 @@ public class StatusLayoutMenu extends Menu {
         WorldStatusImpl occupant = statusAtSlot(slot);
         if (occupant != null) {
             if (shiftClick) {
-                plugin.getMenus().openStatusEditor(occupant, player);
+                menus.openStatusEditor(occupant, player);
             } else {
                 pickUp(player, occupant.getId(), slot);
             }
@@ -207,7 +226,7 @@ public class StatusLayoutMenu extends Menu {
         if (slot == BACK_SLOT) {
             XSound.BLOCK_CHEST_OPEN.play(player);
             player.closeInventory();
-            new SetupMenu(plugin, player).open(player);
+            menus.openSetup(player);
             return;
         }
         if (slot == CREATE_SLOT) {
@@ -228,7 +247,7 @@ public class StatusLayoutMenu extends Menu {
 
         BuildWorldStatus clicked = notAdded.get(paletteIndex);
         if (shiftClick) {
-            plugin.getMenus().openStatusEditor(clicked, player);
+            menus.openStatusEditor(clicked, player);
         } else {
             pickUp(player, clicked.getId(), -1);
         }
@@ -256,33 +275,30 @@ public class StatusLayoutMenu extends Menu {
         String confirmLoreKey = resetEverything
                 ? "setup_status_layout_reset_all_confirm_lore"
                 : "setup_status_layout_reset_confirm_lore";
-        new DeletionConfirmMenu(
-                        plugin,
-                        player,
-                        messages.getString("setup_status_layout_reset", player),
-                        messages.getStringList(confirmLoreKey, player),
-                        () -> {
-                            if (resetEverything) {
-                                registry.resetToDefaults();
-                            } else {
-                                registry.resetStatusLayout();
-                            }
-                            XSound.ENTITY_CHICKEN_EGG.play(player);
-                            new StatusLayoutMenu(plugin, player).open(player);
-                        },
-                        () -> new StatusLayoutMenu(plugin, player).open(player))
-                .open(player);
+        menus.openDeletionConfirm(
+                player,
+                messages.getString("setup_status_layout_reset", player),
+                messages.getStringList(confirmLoreKey, player),
+                () -> {
+                    if (resetEverything) {
+                        registry.resetToDefaults();
+                    } else {
+                        registry.resetStatusLayout();
+                    }
+                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    menus.openStatusLayout(player);
+                },
+                () -> menus.openStatusLayout(player));
     }
 
     private void beginStatusCreation(Player player) {
-        plugin.getPrompts()
-                .prompt(player)
+        prompts.prompt(player)
                 .title("setup_status_add_prompt")
                 .sanitizeName("setup_name_invalid_characters", "setup_name_empty")
-                .onCancel(() -> new StatusLayoutMenu(plugin, player).open(player))
+                .onCancel(() -> menus.openStatusLayout(player))
                 .request(name -> {
                     WorldStatusImpl created = registry.createStatus(name);
-                    plugin.getMenus().openStatusEditor(created, player);
+                    menus.openStatusEditor(created, player);
                 });
     }
 
@@ -306,8 +322,8 @@ public class StatusLayoutMenu extends Menu {
     }
 
     private void setCursorNextTick(Player player, @Nullable ItemStack cursor) {
-        Bukkit.getScheduler().runTask(plugin, () -> {
-            if (plugin.getNavigatorEditorService().hasSession(player)) {
+        scheduler.run(() -> {
+            if (navigatorEditorService.hasSession(player)) {
                 player.setItemOnCursor(cursor);
             }
         });
@@ -336,7 +352,7 @@ public class StatusLayoutMenu extends Menu {
 
     @Override
     public void handleClose(InventoryCloseEvent event) {
-        plugin.getNavigatorEditorService().restore((Player) event.getPlayer());
+        navigatorEditorService.restore((Player) event.getPlayer());
     }
 
     /**

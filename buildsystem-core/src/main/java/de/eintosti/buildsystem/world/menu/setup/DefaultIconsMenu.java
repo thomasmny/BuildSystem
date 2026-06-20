@@ -20,14 +20,15 @@ package de.eintosti.buildsystem.world.menu.setup;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
-import de.eintosti.buildsystem.world.menu.SetupMenu;
 import java.util.List;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -52,16 +53,16 @@ public class DefaultIconsMenu extends ButtonMenu<MenuButton> {
             new WorldTypeLayout(BuildWorldType.VOID, 14, "setup_void_world"),
             new WorldTypeLayout(BuildWorldType.IMPORTED, 16, "setup_imported_world"));
 
-    private final BuildSystemPlugin plugin;
+    private final MenuItems menuItems;
+    private final Menus menus;
     private final CustomizableIcons icons;
 
-    public DefaultIconsMenu(BuildSystemPlugin plugin, Player player) {
-        super(
-                plugin.getMessages(),
-                INVENTORY_SIZE,
-                plugin.getMessages().getString("setup_default_icons_title", player));
-        this.plugin = plugin;
-        this.icons = plugin.getCustomizableIcons();
+    public DefaultIconsMenu(
+            Messages messages, MenuItems menuItems, Menus menus, CustomizableIcons icons, Player player) {
+        super(messages, INVENTORY_SIZE, messages.getString("setup_default_icons_title", player));
+        this.menuItems = menuItems;
+        this.menus = menus;
+        this.icons = icons;
 
         setupButtons();
     }
@@ -80,18 +81,16 @@ public class DefaultIconsMenu extends ButtonMenu<MenuButton> {
                         .name(messages.getString("setup_reset", player))
                         .lore(messages.getStringList("setup_reset_lore", player))
                         .into(inventory, slot))
-                .onClick((player, event) -> new DeletionConfirmMenu(
-                                plugin,
-                                player,
-                                messages.getString("setup_reset", player),
-                                messages.getStringList("setup_reset_confirm_lore", player),
-                                () -> {
-                                    icons.resetToDefaults();
-                                    XSound.ENTITY_CHICKEN_EGG.play(player);
-                                    new DefaultIconsMenu(plugin, player).open(player);
-                                },
-                                () -> new DefaultIconsMenu(plugin, player).open(player))
-                        .open(player))
+                .onClick((player, event) -> menus.openDeletionConfirm(
+                        player,
+                        messages.getString("setup_reset", player),
+                        messages.getStringList("setup_reset_confirm_lore", player),
+                        () -> {
+                            icons.resetToDefaults();
+                            XSound.ENTITY_CHICKEN_EGG.play(player);
+                            menus.openDefaultIcons(player);
+                        },
+                        () -> menus.openDefaultIcons(player)))
                 .build();
     }
 
@@ -101,14 +100,13 @@ public class DefaultIconsMenu extends ButtonMenu<MenuButton> {
                         .name(messages.getString(layout.translationKey(), player))
                         .lore(messages.getStringList("setup_icon_lore", player))
                         .into(inventory, slot))
-                .onClick((player, event) -> plugin.getMenus()
-                        .openMaterialPicker(
-                                player,
-                                material -> {
-                                    icons.setIcon(layout.type(), material);
-                                    this.open(player);
-                                },
-                                () -> this.open(player)))
+                .onClick((player, event) -> menus.openMaterialPicker(
+                        player,
+                        material -> {
+                            icons.setIcon(layout.type(), material);
+                            this.open(player);
+                        },
+                        () -> this.open(player)))
                 .build();
     }
 
@@ -119,14 +117,14 @@ public class DefaultIconsMenu extends ButtonMenu<MenuButton> {
                         .into(inventory, slot))
                 .onClick((player, event) -> {
                     XSound.BLOCK_CHEST_OPEN.play(player);
-                    new SetupMenu(plugin, player).open(player);
+                    menus.openSetup(player);
                 })
                 .build();
     }
 
     @Override
     protected void populate(Player player) {
-        plugin.getMenuItems().fillAll(player, getInventory());
+        menuItems.fillAll(player, getInventory());
         renderButtons(player);
     }
 

@@ -20,19 +20,22 @@ package de.eintosti.buildsystem.world.menu.setup;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.Menu;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.menu.SkullTextures;
+import de.eintosti.buildsystem.navigator.NavigatorEditorService;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
-import de.eintosti.buildsystem.world.menu.SetupMenu;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -60,19 +63,35 @@ public class NavigatorLayoutMenu extends Menu {
     private static final int PALETTE_FIRST_SLOT = 9;
     private static final int PALETTE_LAST_SLOT = 35;
 
-    private final BuildSystemPlugin plugin;
+    private final MenuItems menuItems;
+    private final Menus menus;
+    private final TaskScheduler scheduler;
+    private final Prompts prompts;
     private final NavigatorCategoryRegistryImpl registry;
+    private final NavigatorEditorService navigatorEditorService;
     private final ActiveCursorState cursorState = new ActiveCursorState();
 
-    public NavigatorLayoutMenu(BuildSystemPlugin plugin, Player player) {
-        super(plugin.getMessages(), NAVIGATOR_SIZE, plugin.getMessages().getString("setup_navigator_title", player));
-        this.plugin = plugin;
-        this.registry = plugin.getNavigatorCategoryRegistry();
+    public NavigatorLayoutMenu(
+            Messages messages,
+            MenuItems menuItems,
+            Menus menus,
+            TaskScheduler scheduler,
+            Prompts prompts,
+            NavigatorCategoryRegistryImpl navigatorCategoryRegistry,
+            NavigatorEditorService navigatorEditorService,
+            Player player) {
+        super(messages, NAVIGATOR_SIZE, messages.getString("setup_navigator_title", player));
+        this.menuItems = menuItems;
+        this.menus = menus;
+        this.scheduler = scheduler;
+        this.prompts = prompts;
+        this.registry = navigatorCategoryRegistry;
+        this.navigatorEditorService = navigatorEditorService;
     }
 
     @Override
     public void open(Player player) {
-        plugin.getNavigatorEditorService().beginSession(player);
+        navigatorEditorService.beginSession(player);
         populate(player);
         player.openInventory(getInventory());
         renderControls(player);
@@ -84,7 +103,7 @@ public class NavigatorLayoutMenu extends Menu {
 
         // Empty navigator slots default to structural filler design panes
         for (int slot = 0; slot < NAVIGATOR_SIZE; slot++) {
-            plugin.getMenuItems().addGlassPane(player, inventory, slot);
+            menuItems.addGlassPane(player, inventory, slot);
         }
 
         int settingsSlot = registry.getSettingsSlot();
@@ -205,7 +224,7 @@ public class NavigatorLayoutMenu extends Menu {
         NavigatorCategoryImpl occupant = categoryAtSlot(slot);
         if (occupant != null) {
             if (shiftClick) {
-                plugin.getMenus().openCategoryEditor(occupant, player);
+                menus.openCategoryEditor(occupant, player);
             } else {
                 pickUpCategory(player, occupant.getId(), slot);
             }
@@ -274,7 +293,7 @@ public class NavigatorLayoutMenu extends Menu {
         if (slot == BACK_SLOT) {
             XSound.BLOCK_CHEST_OPEN.play(player);
             player.closeInventory();
-            new SetupMenu(plugin, player).open(player);
+            menus.openSetup(player);
             return;
         }
         if (slot == CREATE_SLOT) {
@@ -299,7 +318,7 @@ public class NavigatorLayoutMenu extends Menu {
 
         NavigatorCategory clicked = notAdded.get(paletteIndex);
         if (shiftClick) {
-            plugin.getMenus().openCategoryEditor(clicked, player);
+            menus.openCategoryEditor(clicked, player);
         } else {
             pickUpCategory(player, clicked.getId(), -1);
         }
@@ -331,30 +350,27 @@ public class NavigatorLayoutMenu extends Menu {
     private void promptReset(Player player, boolean resetEverything) {
         String confirmLoreKey =
                 resetEverything ? "setup_navigator_reset_all_confirm_lore" : "setup_navigator_reset_confirm_lore";
-        new DeletionConfirmMenu(
-                        plugin,
-                        player,
-                        messages.getString("setup_navigator_reset", player),
-                        messages.getStringList(confirmLoreKey, player),
-                        () -> {
-                            if (resetEverything) {
-                                registry.resetToDefaults();
-                            } else {
-                                registry.resetNavigatorLayout();
-                            }
-                            XSound.ENTITY_CHICKEN_EGG.play(player);
-                            new NavigatorLayoutMenu(plugin, player).open(player);
-                        },
-                        () -> new NavigatorLayoutMenu(plugin, player).open(player))
-                .open(player);
+        menus.openDeletionConfirm(
+                player,
+                messages.getString("setup_navigator_reset", player),
+                messages.getStringList(confirmLoreKey, player),
+                () -> {
+                    if (resetEverything) {
+                        registry.resetToDefaults();
+                    } else {
+                        registry.resetNavigatorLayout();
+                    }
+                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    menus.openNavigatorLayout(player);
+                },
+                () -> menus.openNavigatorLayout(player));
     }
 
     private void beginCategoryCreation(Player player) {
-        plugin.getPrompts()
-                .prompt(player)
+        prompts.prompt(player)
                 .title("setup_category_add_prompt")
                 .sanitizeName("setup_name_invalid_characters", "setup_name_empty")
-                .onCancel(() -> new NavigatorLayoutMenu(plugin, player).open(player))
+                .onCancel(() -> menus.openNavigatorLayout(player))
                 .request(name -> {
                     NavigatorCategoryImpl created = registry.createCategory(name);
                     int freeSlot = firstFreeSlot();
@@ -366,7 +382,7 @@ public class NavigatorLayoutMenu extends Menu {
                         created.setShownInNavigator(false);
                     }
                     registry.persist(created);
-                    plugin.getMenus().openCategoryEditor(created, player);
+                    menus.openCategoryEditor(created, player);
                 });
     }
 
@@ -402,8 +418,8 @@ public class NavigatorLayoutMenu extends Menu {
     }
 
     private void setCursorNextTick(Player player, @Nullable ItemStack cursor) {
-        Bukkit.getScheduler().runTask(plugin, () -> {
-            if (plugin.getNavigatorEditorService().hasSession(player)) {
+        scheduler.run(() -> {
+            if (navigatorEditorService.hasSession(player)) {
                 player.setItemOnCursor(cursor);
             }
         });
@@ -449,7 +465,7 @@ public class NavigatorLayoutMenu extends Menu {
 
     @Override
     public void handleClose(InventoryCloseEvent event) {
-        plugin.getNavigatorEditorService().restore((Player) event.getPlayer());
+        navigatorEditorService.restore((Player) event.getPlayer());
     }
 
     /**

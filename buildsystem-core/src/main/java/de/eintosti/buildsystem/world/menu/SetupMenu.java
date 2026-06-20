@@ -19,13 +19,12 @@ package de.eintosti.buildsystem.world.menu;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.world.menu.setup.DefaultIconsMenu;
-import de.eintosti.buildsystem.world.menu.setup.NavigatorLayoutMenu;
-import de.eintosti.buildsystem.world.menu.setup.StatusLayoutMenu;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Menus;
 import java.util.function.Consumer;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -41,24 +40,19 @@ public class SetupMenu extends ButtonMenu<MenuButton> {
     private static final int SLOT_STATUSES = 13;
     private static final int SLOT_NAVIGATOR = 15;
 
-    private final BuildSystemPlugin plugin;
+    private final MenuItems menuItems;
+    private final Menus menus;
 
-    public SetupMenu(BuildSystemPlugin plugin, Player player) {
-        super(plugin.getMessages(), 27, plugin.getMessages().getString("setup_title", player));
-        this.plugin = plugin;
+    public SetupMenu(Messages messages, MenuItems menuItems, Menus menus, Player player) {
+        super(messages, 27, messages.getString("setup_title", player));
+        this.menuItems = menuItems;
+        this.menus = menus;
 
         register(
                 SLOT_DEFAULT_ICONS,
-                hubButton(
-                        XMaterial.ITEM_FRAME,
-                        "setup_default_icons_item",
-                        p -> new DefaultIconsMenu(plugin, p).open(p)));
-        register(
-                SLOT_STATUSES,
-                hubButton(XMaterial.NAME_TAG, "setup_statuses_item", p -> new StatusLayoutMenu(plugin, p).open(p)));
-        register(
-                SLOT_NAVIGATOR,
-                hubButton(XMaterial.COMPASS, "setup_navigator_item", p -> new NavigatorLayoutMenu(plugin, p).open(p)));
+                hubButton(XMaterial.ITEM_FRAME, "setup_default_icons_item", menus::openDefaultIcons));
+        register(SLOT_STATUSES, hubButton(XMaterial.NAME_TAG, "setup_statuses_item", menus::openStatusLayout));
+        register(SLOT_NAVIGATOR, hubButton(XMaterial.COMPASS, "setup_navigator_item", menus::openNavigatorLayout));
     }
 
     private MenuButton hubButton(XMaterial icon, String nameKey, Consumer<Player> open) {
@@ -76,7 +70,7 @@ public class SetupMenu extends ButtonMenu<MenuButton> {
 
     @Override
     protected void populate(Player player) {
-        plugin.getMenuItems().fillAll(player, getInventory());
+        menuItems.fillAll(player, getInventory());
         renderButtons(player);
     }
 }
