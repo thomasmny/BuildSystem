@@ -36,8 +36,8 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Owns the navigator hotbar item — the item players use to open the navigator. Tags it with a persistent key so it can
- * be recognised again, and finds, creates and replaces it in a player's inventory.
+ * Owns the navigator hotbar item players use to open the navigator: tags it with a persistent key so it can be
+ * recognized again, and finds, creates, and replaces it in a player's inventory.
  */
 @NullMarked
 public final class NavigatorItems {

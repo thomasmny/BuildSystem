@@ -68,7 +68,6 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
             "archive", 14,
             "hidden", 15);
 
-    private final BuildSystemPlugin plugin;
     private final NavigatorCategoryRegistryImpl categoryRegistry;
     private final Messages messages;
     private final Supplier<WorldServiceImpl> worldService;
@@ -80,7 +79,6 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
             NavigatorCategoryRegistryImpl categoryRegistry,
             Messages messages,
             Supplier<WorldServiceImpl> worldService) {
-        this.plugin = plugin;
         this.categoryRegistry = categoryRegistry;
         this.messages = messages;
         this.worldService = worldService;

@@ -22,8 +22,8 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Turns a freshly placed block into a particular {@link CustomBlock} — sets its type and any block data. The placer
- * for an orientation-dependent block reads the placer's facing from {@code player}.
+ * Turns a freshly placed block into a {@link CustomBlock}: sets its type and any block data. Orientation-dependent
+ * blocks take their facing from {@code player}.
  */
 @NullMarked
 @FunctionalInterface

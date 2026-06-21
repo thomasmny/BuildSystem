@@ -26,10 +26,9 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Centralises the "may this player modify this world right now?" decision so every listener and integration asks the
- * same question the same way. The checks compose three independent restrictions — the world's
- * {@link BuildWorldStatus status} disallowing building, the builders feature, and the per-action
- * {@link WorldSetting settings} — each short-circuited by the build-restriction bypass.
+ * Answers "may this player modify this world right now?" in one place so every listener and integration checks it the
+ * same way. Composes three independent restrictions: the world's {@link BuildWorldStatus status} disallowing building,
+ * the builders feature, and the per-action {@link WorldSetting settings} — each short-circuited by the build bypass.
  */
 @NullMarked
 public final class WorldProtectionPolicy {

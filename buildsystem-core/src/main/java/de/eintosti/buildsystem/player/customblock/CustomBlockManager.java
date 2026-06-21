@@ -68,7 +68,7 @@ public class CustomBlockManager implements Listener {
         }
 
         // Placing a custom block fires physics updates; toggle physics on for the placement if the world disables it,
-        // otherwise the block (e.g. a portal or piston head) would pop off.
+        // otherwise the block (e.g., a portal or piston head) would pop off.
         boolean hadToDisablePhysics = false;
         if (isBuildWorld && !buildWorld.getData().get(WorldDataKey.PHYSICS)) {
             hadToDisablePhysics = true;

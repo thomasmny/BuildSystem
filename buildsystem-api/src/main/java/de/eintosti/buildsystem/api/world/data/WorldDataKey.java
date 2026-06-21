@@ -23,13 +23,9 @@ import org.bukkit.Difficulty;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * A typed key identifying a single setting of a {@link WorldData}. The catalog of built-in keys below replaces the old
- * flat list of named getters/setters with a typesafe heterogeneous container (Bloch, <i>Effective Java</i> Item 33):
- * every value is read with {@link WorldData#get(WorldDataKey)} and written with {@link WorldData#set(WorldDataKey, Object)},
- * the key's type parameter carrying the value type through the call so no cast is needed at the call site.
- *
- * <p>A key's {@link #id() id} is the stable on-disk config name for its setting; it must never change once a release
- * has persisted it. The keys are value objects compared by id, so two keys with the same id are equal.
+ * A typed key for one {@link WorldData} setting. Values are read with {@link WorldData#get(WorldDataKey)} and written
+ * with {@link WorldData#set(WorldDataKey, Object)}; the type parameter carries the value type, so the call site needs no
+ * cast. The {@link #id() id} is the on-disk config name and must stay stable across releases. Keys are equal by id.
  *
  * @param <T> The type of the value stored under this key
  * @since 4.0.0
