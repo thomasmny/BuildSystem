@@ -18,14 +18,15 @@
 package de.eintosti.buildsystem.world.creation;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.world.creation.GenerationDataStore.WorldGenerationData;
 import de.eintosti.buildsystem.world.creation.generator.VoidGenerator;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
 import java.util.Locale;
+import java.util.logging.Logger;
 import org.bukkit.*;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -38,7 +39,8 @@ public class BukkitWorldFactory {
         SKIP
     }
 
-    private final BuildSystemPlugin plugin;
+    private final ConfigService configService;
+    private final Logger logger;
     private final String worldName;
     private BuildWorldType worldType;
 
@@ -53,46 +55,47 @@ public class BukkitWorldFactory {
     /**
      * Used when loading or regenerating an existing world (no default settings to apply).
      */
-    public BukkitWorldFactory(BuildSystemPlugin plugin, BuildWorld buildWorld) {
-        this.plugin = plugin;
+    public BukkitWorldFactory(ConfigService configService, Logger logger, BuildWorld buildWorld) {
+        this.configService = configService;
+        this.logger = logger;
         this.worldName = buildWorld.getName();
         this.worldType = buildWorld.getType();
         this.customGenerator = buildWorld.getCustomGenerator();
         this.difficulty = null;
         this.time = null;
         this.worldBorderSize = null;
-        this.versionGuard = new WorldDataVersionGuard(plugin.getLogger(), worldName);
-        this.generationDataStore = new GenerationDataStore(plugin.getLogger(), Bukkit.getWorldContainer());
+        this.versionGuard = new WorldDataVersionGuard(logger, worldName);
+        this.generationDataStore = new GenerationDataStore(logger, Bukkit.getWorldContainer());
     }
 
     /**
      * Used when creating a new world with defaults from plugin config.
      */
     BukkitWorldFactory(
-            BuildSystemPlugin plugin,
+            ConfigService configService,
+            Logger logger,
             String worldName,
             BuildWorldType worldType,
             @Nullable CustomGenerator customGenerator,
             @Nullable Difficulty difficulty,
             @Nullable Integer time,
             @Nullable Integer worldBorderSize) {
-        this.plugin = plugin;
+        this.configService = configService;
+        this.logger = logger;
         this.worldName = worldName;
         this.worldType = worldType;
         this.customGenerator = customGenerator;
         this.difficulty = difficulty;
         this.time = time;
         this.worldBorderSize = worldBorderSize;
-        this.versionGuard = new WorldDataVersionGuard(plugin.getLogger(), worldName);
-        this.generationDataStore = new GenerationDataStore(plugin.getLogger(), Bukkit.getWorldContainer());
+        this.versionGuard = new WorldDataVersionGuard(logger, worldName);
+        this.generationDataStore = new GenerationDataStore(logger, Bukkit.getWorldContainer());
     }
 
     public @Nullable World generate(VersionCheck versionCheck) {
         if (versionCheck == VersionCheck.REQUIRED && versionGuard.isDataVersionTooHigh()) {
-            plugin.getLogger()
-                    .warning("\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping..."
-                            .formatted(
-                                    worldName, versionGuard.parseDataVersion(), versionGuard.getServerDataVersion()));
+            logger.warning("\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping..."
+                    .formatted(worldName, versionGuard.parseDataVersion(), versionGuard.getServerDataVersion()));
             return null;
         }
 
@@ -126,11 +129,8 @@ public class BukkitWorldFactory {
                 case WorldGenerationData.CustomGeneratorData customGeneratorData -> {
                     this.customGenerator = customGeneratorData.getCustomGenerator(worldName);
                     if (this.customGenerator == null) {
-                        plugin.getLogger()
-                                .warning("Custom generator '%s:%s' not found. Defaulting to NORMAL type."
-                                        .formatted(
-                                                customGeneratorData.pluginName(),
-                                                customGeneratorData.chunkGeneratorName()));
+                        logger.warning("Custom generator '%s:%s' not found. Defaulting to NORMAL type."
+                                .formatted(customGeneratorData.pluginName(), customGeneratorData.chunkGeneratorName()));
                         type = BuildWorldType.NORMAL;
                     }
                 }
@@ -139,9 +139,8 @@ public class BukkitWorldFactory {
 
         if (this.customGenerator != null && this.customGenerator.chunkGenerator() != null) {
             worldCreator.generator(this.customGenerator.chunkGenerator());
-            plugin.getLogger()
-                    .info("Using custom chunk generator '%s' for world '%s'"
-                            .formatted(this.customGenerator.toString(), worldName));
+            logger.info("Using custom chunk generator '%s' for world '%s'"
+                    .formatted(this.customGenerator.toString(), worldName));
         }
 
         switch (type) {
@@ -183,14 +182,10 @@ public class BukkitWorldFactory {
         if (worldBorderSize != null) {
             bukkitWorld
                     .getWorldBorder()
-                    .setSize(plugin.getConfigService()
-                            .current()
-                            .world()
-                            .defaults()
-                            .worldBorderSize());
+                    .setSize(configService.current().world().defaults().worldBorderSize());
         }
         bukkitWorld.setKeepSpawnInMemory(true);
-        plugin.getConfigService()
+        configService
                 .current()
                 .world()
                 .defaults()

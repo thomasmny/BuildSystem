@@ -153,7 +153,8 @@ public class WorldRenamer {
                                 throwable);
             }
         });
-        World newWorld = new BukkitWorldFactory(plugin, buildWorld).generate(BukkitWorldFactory.VersionCheck.SKIP);
+        World newWorld = new BukkitWorldFactory(plugin.getConfigService(), plugin.getLogger(), buildWorld)
+                .generate(BukkitWorldFactory.VersionCheck.SKIP);
         Location spawnLocation = oldSpawnLocation;
         spawnLocation.setWorld(newWorld);
 

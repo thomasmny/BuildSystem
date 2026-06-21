@@ -17,11 +17,11 @@
  */
 package de.eintosti.buildsystem.world.lifecycle;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.event.world.BuildWorldLoadEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostLoadEvent;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldLoader;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
 import java.util.Map;
 import org.bukkit.Bukkit;
@@ -33,17 +33,17 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class WorldLoaderImpl implements WorldLoader {
 
-    private final BuildSystemPlugin plugin;
+    private final WorldContext context;
     private final BuildWorldImpl buildWorld;
 
-    private WorldLoaderImpl(BuildSystemPlugin plugin, BuildWorldImpl buildWorld) {
-        this.plugin = plugin;
+    private WorldLoaderImpl(WorldContext context, BuildWorldImpl buildWorld) {
+        this.context = context;
         this.buildWorld = buildWorld;
     }
 
     @Contract("_, _ -> new")
-    public static WorldLoaderImpl of(BuildSystemPlugin plugin, BuildWorldImpl buildWorld) {
-        return new WorldLoaderImpl(plugin, buildWorld);
+    public static WorldLoaderImpl of(WorldContext context, BuildWorldImpl buildWorld) {
+        return new WorldLoaderImpl(context, buildWorld);
     }
 
     @Override
@@ -55,8 +55,7 @@ public class WorldLoaderImpl implements WorldLoader {
         player.closeInventory();
         player.sendTitle(
                 " ",
-                plugin.getMessages()
-                        .getString("loading_world", player, Map.entry("%world%", this.buildWorld.getName())),
+                context.messages().getString("loading_world", player, Map.entry("%world%", this.buildWorld.getName())),
                 5,
                 70,
                 20);
@@ -77,9 +76,9 @@ public class WorldLoaderImpl implements WorldLoader {
         }
 
         String worldName = this.buildWorld.getName();
-        this.plugin.getLogger().info("*** Loading world \"" + worldName + "\" ***");
-        World world =
-                new BukkitWorldFactory(this.plugin, this.buildWorld).generate(BukkitWorldFactory.VersionCheck.REQUIRED);
+        this.context.logger().info("*** Loading world \"" + worldName + "\" ***");
+        World world = new BukkitWorldFactory(this.context.configService(), this.context.logger(), this.buildWorld)
+                .generate(BukkitWorldFactory.VersionCheck.REQUIRED);
         if (world == null) {
             return;
         }

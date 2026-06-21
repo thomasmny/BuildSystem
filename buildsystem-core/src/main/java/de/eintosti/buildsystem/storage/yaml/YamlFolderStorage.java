@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.codec.FolderCodec;
 import de.eintosti.buildsystem.storage.migration.StorageMigration;
+import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,7 +61,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
 
     @Override
     protected Folder newFolder(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
-        return new FolderImpl(plugin, name, category, parent, creator);
+        return new FolderImpl(WorldContext.fromPlugin(plugin), name, category, parent, creator);
     }
 
     @Override

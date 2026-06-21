@@ -28,6 +28,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
 import java.io.File;
@@ -86,7 +87,7 @@ class YamlWorldStorageRoundTripTest {
                 .withProjectOverrideEnabled(() -> false)
                 .build();
         return new BuildWorldImpl(
-                plugin,
+                WorldContext.fromPlugin(plugin),
                 uuid,
                 name,
                 BuildWorldType.NORMAL,

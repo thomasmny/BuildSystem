@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.access.WorldSetting;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.world.WorldContext;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
@@ -31,18 +32,18 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class WorldPermissionsImpl implements WorldPermissions {
 
-    private final BuildSystemPlugin plugin;
+    private final WorldContext context;
 
     private final @Nullable BuildWorld buildWorld;
 
-    private WorldPermissionsImpl(BuildSystemPlugin plugin, @Nullable BuildWorld buildWorld) {
-        this.plugin = plugin;
+    private WorldPermissionsImpl(WorldContext context, @Nullable BuildWorld buildWorld) {
+        this.context = context;
         this.buildWorld = buildWorld;
     }
 
     @Contract("_, _ -> new")
-    public static WorldPermissionsImpl of(BuildSystemPlugin plugin, @Nullable BuildWorld buildWorld) {
-        return new WorldPermissionsImpl(plugin, buildWorld);
+    public static WorldPermissionsImpl of(WorldContext context, @Nullable BuildWorld buildWorld) {
+        return new WorldPermissionsImpl(context, buildWorld);
     }
 
     @Override
@@ -155,6 +156,6 @@ public class WorldPermissionsImpl implements WorldPermissions {
 
     @Override
     public boolean canBypassBuildRestriction(Player player) {
-        return plugin.getPlayerService().isInBuildMode(player);
+        return context.playerService().isInBuildMode(player);
     }
 }

@@ -18,12 +18,12 @@
 package de.eintosti.buildsystem.world.folder;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.*;
 import org.bukkit.entity.Player;
@@ -36,7 +36,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class FolderImpl implements Folder {
 
-    private final BuildSystemPlugin plugin;
+    private final WorldContext context;
     private final UUID uuid;
     private String name;
     private final Builder creator;
@@ -53,13 +53,9 @@ public class FolderImpl implements Folder {
     private String project;
 
     public FolderImpl(
-            BuildSystemPlugin plugin,
-            String name,
-            NavigatorCategory category,
-            @Nullable Folder parent,
-            Builder creator) {
+            WorldContext context, String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
         this(
-                plugin,
+                context,
                 UUID.randomUUID(),
                 name,
                 System.currentTimeMillis(),
@@ -74,7 +70,7 @@ public class FolderImpl implements Folder {
     }
 
     public FolderImpl(
-            BuildSystemPlugin plugin,
+            WorldContext context,
             UUID uuid,
             String name,
             long creation,
@@ -86,7 +82,7 @@ public class FolderImpl implements Folder {
             String project,
             List<UUID> worlds,
             List<Folder> subfolders) {
-        this.plugin = plugin;
+        this.context = context;
         this.uuid = uuid;
         this.name = name;
         this.creation = creation;
@@ -123,7 +119,7 @@ public class FolderImpl implements Folder {
 
     @Override
     public String getDisplayName(Player player) {
-        return plugin.getMessages().getString("folder_item_title", player, Map.entry("%folder%", name));
+        return context.messages().getString("folder_item_title", player, Map.entry("%folder%", name));
     }
 
     @Override
@@ -158,13 +154,13 @@ public class FolderImpl implements Folder {
 
     @Override
     public void addToInventory(Inventory inventory, int slot, Player player) {
-        plugin.getMenuItems().renderDisplayable(inventory, slot, this, player);
+        context.menuItems().renderDisplayable(inventory, slot, this, player);
     }
 
     @Override
     @Contract("_ -> new")
     public List<String> getLore(Player player) {
-        return new ArrayList<>(plugin.getMessages()
+        return new ArrayList<>(context.messages()
                 .getStringList(
                         "folder_item_lore",
                         player,
@@ -293,7 +289,7 @@ public class FolderImpl implements Folder {
     @Override
     public boolean canView(Player player) {
         // We can pass null as a world since we are only checking for bypass permissions
-        WorldPermissions permissions = WorldPermissionsImpl.of(plugin, null);
+        WorldPermissions permissions = WorldPermissionsImpl.of(context, null);
         if (permissions.hasAdminPermission(player) || permissions.canBypassViewPermission(player)) {
             return true;
         }

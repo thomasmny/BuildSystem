@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
+import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -106,7 +107,7 @@ public final class FolderCodec implements Codec<Folder> {
                 section.getStringList(WORLDS).stream().map(UUID::fromString).toList();
 
         FolderImpl folder = new FolderImpl(
-                plugin,
+                WorldContext.fromPlugin(plugin),
                 uuid,
                 name,
                 creation,

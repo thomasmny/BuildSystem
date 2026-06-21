@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.test.TestData;
+import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.io.File;
 import java.util.ArrayList;
@@ -66,7 +67,7 @@ class YamlFolderStorageRoundTripTest {
     private FolderImpl folder(String name, NavigatorCategory category, List<UUID> worlds) {
         Builder creator = Builder.of(UUID.randomUUID(), "FolderCreator");
         return new FolderImpl(
-                plugin,
+                WorldContext.fromPlugin(plugin),
                 UUID.randomUUID(),
                 name,
                 1_700_000_000_000L,

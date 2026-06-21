@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.WorldContext;
 import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
@@ -90,17 +91,24 @@ abstract class AbstractWorldCreator {
     }
 
     protected BuildWorld createAndRegisterBuildWorld() {
-        BuildWorldImpl bw = new BuildWorldImpl(
-                plugin, worldName, creator, worldType, creationDate, privateWorld, customGenerator, folder);
+        BuildWorldImpl newBuildWorld = new BuildWorldImpl(
+                WorldContext.fromPlugin(plugin),
+                worldName,
+                creator,
+                worldType,
+                creationDate,
+                privateWorld,
+                customGenerator,
+                folder);
 
         if (folder != null) {
-            folder.addWorld(bw);
+            folder.addWorld(newBuildWorld);
         }
 
-        bw.getData().setLastLoaded(System.currentTimeMillis());
-        worldStorage.addBuildWorld(bw);
-        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostCreateEvent(bw, isImport()));
-        return bw;
+        newBuildWorld.getData().setLastLoaded(System.currentTimeMillis());
+        worldStorage.addBuildWorld(newBuildWorld);
+        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostCreateEvent(newBuildWorld, isImport()));
+        return newBuildWorld;
     }
 
     protected @Nullable World generateBukkitWorld(boolean checkVersion) {
@@ -108,7 +116,15 @@ abstract class AbstractWorldCreator {
             throw new IllegalStateException("BuildWorld must be set before generating the Bukkit world.");
         }
 
-        return new BukkitWorldFactory(plugin, worldName, worldType, customGenerator, difficulty, time, worldBorderSize)
+        return new BukkitWorldFactory(
+                        plugin.getConfigService(),
+                        plugin.getLogger(),
+                        worldName,
+                        worldType,
+                        customGenerator,
+                        difficulty,
+                        time,
+                        worldBorderSize)
                 .generate(
                         checkVersion ? BukkitWorldFactory.VersionCheck.REQUIRED : BukkitWorldFactory.VersionCheck.SKIP);
     }

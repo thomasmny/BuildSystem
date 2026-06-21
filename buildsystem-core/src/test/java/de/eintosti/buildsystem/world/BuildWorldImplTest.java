@@ -65,7 +65,7 @@ class BuildWorldImplTest {
                 .withProjectOverrideEnabled(() -> false)
                 .build();
         return new BuildWorldImpl(
-                plugin,
+                WorldContext.fromPlugin(plugin),
                 uuid,
                 name,
                 BuildWorldType.NORMAL,

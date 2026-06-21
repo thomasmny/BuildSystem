@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
 import java.util.HashSet;
@@ -53,7 +54,8 @@ class FolderImplTest {
     }
 
     private FolderImpl folder(String name) {
-        return new FolderImpl(plugin, name, TestData.PUBLIC, null, Builder.of(UUID.randomUUID(), "Creator"));
+        return new FolderImpl(
+                WorldContext.fromPlugin(plugin), name, TestData.PUBLIC, null, Builder.of(UUID.randomUUID(), "Creator"));
     }
 
     private BuildWorldImpl world(String name) {
@@ -68,7 +70,7 @@ class FolderImplTest {
                 .withProjectOverrideEnabled(() -> false)
                 .build();
         return new BuildWorldImpl(
-                plugin,
+                WorldContext.fromPlugin(plugin),
                 UUID.randomUUID(),
                 name,
                 BuildWorldType.NORMAL,

@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
@@ -139,7 +140,7 @@ public final class WorldCodec implements Codec<BuildWorld> {
                 generatorName != null ? CustomGeneratorImpl.of(generatorName, name) : null;
 
         return new BuildWorldImpl(
-                plugin,
+                WorldContext.fromPlugin(plugin),
                 uuid,
                 name,
                 worldType,

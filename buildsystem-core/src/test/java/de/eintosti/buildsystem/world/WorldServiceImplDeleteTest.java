@@ -86,7 +86,7 @@ class WorldServiceImplDeleteTest {
                 .withProjectOverrideEnabled(() -> false)
                 .build();
         BuildWorldImpl buildWorld = new BuildWorldImpl(
-                plugin,
+                WorldContext.fromPlugin(plugin),
                 UUID.randomUUID(),
                 name,
                 BuildWorldType.NORMAL,
