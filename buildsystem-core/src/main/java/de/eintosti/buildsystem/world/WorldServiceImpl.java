@@ -283,7 +283,14 @@ public class WorldServiceImpl implements WorldService {
      * @param newName The name the world should be renamed to
      */
     public void renameWorld(Player player, BuildWorld buildWorld, String newName) {
-        new WorldRenamer(plugin, this, worldStorage, services.config(), services.messages(), services.spawn())
+        new WorldRenamer(
+                        plugin,
+                        this,
+                        worldStorage,
+                        services.config(),
+                        services.messages(),
+                        services.spawn(),
+                        services.scheduler())
                 .rename(player, buildWorld, newName);
     }
 

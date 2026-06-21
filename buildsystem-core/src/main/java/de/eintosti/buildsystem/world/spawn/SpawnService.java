@@ -22,9 +22,11 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.storage.yaml.YamlSpawnStorage;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import io.papermc.lib.PaperLib;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -39,14 +41,16 @@ public class SpawnService {
     private final BuildSystemPlugin plugin;
     private final WorldStorage worldStorage;
     private final YamlSpawnStorage spawnStorage;
+    private final Executor background;
 
     private @Nullable String spawnName;
     private @Nullable Location spawn;
 
-    public SpawnService(BuildSystemPlugin plugin, WorldServiceImpl worldService) {
+    public SpawnService(BuildSystemPlugin plugin, WorldServiceImpl worldService, TaskScheduler scheduler) {
         this.plugin = plugin;
         this.worldStorage = worldService.getWorldStorage();
         this.spawnStorage = new YamlSpawnStorage(plugin);
+        this.background = scheduler.background();
         load();
     }
 
@@ -98,7 +102,7 @@ public class SpawnService {
     }
 
     public CompletableFuture<Void> save() {
-        return CompletableFuture.runAsync(() -> spawnStorage.saveSpawn(spawn));
+        return CompletableFuture.runAsync(() -> spawnStorage.saveSpawn(spawn), background);
     }
 
     private void load() {

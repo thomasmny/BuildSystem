@@ -123,7 +123,7 @@ public final class Services {
         this.worldService = new WorldServiceImpl(plugin, this);
         this.backupService = new BackupServiceImpl(plugin, config(), messages(), world(), this::spawn);
         this.settingsService = new SettingsService(plugin, config(), messages(), player(), world());
-        this.spawnService = new SpawnService(plugin, world());
+        this.spawnService = new SpawnService(plugin, world(), taskScheduler);
         this.menuItems = new MenuItems(plugin, messages(), settings());
         this.navigatorItems = new NavigatorItems(plugin, config(), messages());
         this.navigatorService = new NavigatorService(
