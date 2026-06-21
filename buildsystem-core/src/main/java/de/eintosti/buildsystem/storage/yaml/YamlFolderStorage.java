@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.codec.FolderCodec;
+import de.eintosti.buildsystem.storage.migration.StorageMigration;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,6 +43,7 @@ import org.jspecify.annotations.Nullable;
 public class YamlFolderStorage extends FolderStorageImpl {
 
     private static final String FOLDERS_KEY = "folders";
+    private static final int LEGACY_VERSION = 1;
 
     private final BuildSystemPlugin plugin;
     private final YamlStore store;
@@ -63,52 +65,56 @@ public class YamlFolderStorage extends FolderStorageImpl {
 
     @Override
     public CompletableFuture<Void> save(Folder folder) {
-        return CompletableFuture.runAsync(() ->
-                store.atomicSave(() -> config.set(FOLDERS_KEY + "." + codec.key(folder), codec.serialize(folder))));
+        return CompletableFuture.runAsync(() -> store.atomicSave(() -> {
+            config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
+            config.set(FOLDERS_KEY + "." + codec.key(folder), codec.serialize(folder));
+        }));
     }
 
     @Override
     public CompletableFuture<Void> save(Collection<Folder> folders) {
-        return CompletableFuture.runAsync(() -> store.atomicSave(() ->
-                folders.forEach(folder -> config.set(FOLDERS_KEY + "." + codec.key(folder), codec.serialize(folder)))));
+        return CompletableFuture.runAsync(() -> store.atomicSave(() -> {
+            config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
+            folders.forEach(folder -> config.set(FOLDERS_KEY + "." + codec.key(folder), codec.serialize(folder)));
+        }));
     }
 
     @Override
     @Contract("-> new")
     public CompletableFuture<Collection<Folder>> load() {
         return CompletableFuture.supplyAsync(() -> store.locked(() -> {
-            Set<String> folderNames = loadFolderKeys();
+            Set<String> folderKeys = loadFolderKeys();
 
-            // First pass: load each folder without its parent reference.
-            Map<String, Folder> loadedFolders = new HashMap<>();
-            for (String folderName : folderNames) {
-                ConfigurationSection section = config.getConfigurationSection(FOLDERS_KEY + "." + folderName);
+            // First pass: load each folder by its key (UUID) without its parent reference.
+            Map<String, Folder> loadedByKey = new HashMap<>();
+            for (String folderKey : folderKeys) {
+                ConfigurationSection section = config.getConfigurationSection(FOLDERS_KEY + "." + folderKey);
                 if (section == null) {
                     continue;
                 }
                 try {
-                    loadedFolders.put(folderName, codec.deserialize(folderName, section));
+                    loadedByKey.put(folderKey, codec.deserialize(folderKey, section));
                 } catch (Exception e) {
-                    logger.log(Level.WARNING, "Skipping folder \"" + folderName + "\": could not be loaded", e);
+                    logger.log(Level.WARNING, "Skipping folder \"" + folderKey + "\": could not be loaded", e);
                 }
             }
 
-            // Second pass: link parents now that every folder exists.
-            for (Map.Entry<String, Folder> entry : loadedFolders.entrySet()) {
+            // Second pass: link parents (referenced by UUID) now that every folder exists.
+            for (Map.Entry<String, Folder> entry : loadedByKey.entrySet()) {
                 ConfigurationSection section = config.getConfigurationSection(FOLDERS_KEY + "." + entry.getKey());
                 if (section == null) {
                     continue;
                 }
-                String parentName = codec.parentReference(section);
-                if (parentName != null) {
-                    Folder parent = loadedFolders.get(parentName);
+                String parentKey = codec.parentReference(section);
+                if (parentKey != null) {
+                    Folder parent = loadedByKey.get(parentKey);
                     if (parent != null) {
                         entry.getValue().setParent(parent);
                     }
                 }
             }
 
-            return new ArrayList<>(loadedFolders.values());
+            return new ArrayList<>(loadedByKey.values());
         }));
     }
 
@@ -116,6 +122,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
         if (!store.reload()) {
             return Set.of();
         }
+        migrateIfNeeded();
 
         ConfigurationSection section = config.getConfigurationSection(FOLDERS_KEY);
         if (section == null) {
@@ -125,9 +132,23 @@ public class YamlFolderStorage extends FolderStorageImpl {
         return section.getKeys(false);
     }
 
+    /** Brings a legacy (name-keyed) {@code folders.yml} up to the current UUID-keyed format, once, before parsing. */
+    private void migrateIfNeeded() {
+        if (config.getInt(StorageMigration.VERSION_KEY, LEGACY_VERSION) >= StorageMigration.CURRENT_VERSION) {
+            return;
+        }
+        ConfigurationSection section = config.getConfigurationSection(FOLDERS_KEY);
+        if (section != null && !section.getKeys(false).isEmpty()) {
+            store.backupOnce(StorageMigration.BACKUP_SUFFIX);
+            StorageMigration.migrateFolders(config, logger);
+        }
+        config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
+        store.save();
+    }
+
     @Override
     public CompletableFuture<Void> delete(Folder folder) {
-        return delete(folder.getName());
+        return delete(folder.getUniqueId().toString());
     }
 
     @Override

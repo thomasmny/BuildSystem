@@ -21,6 +21,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.codec.WorldCodec;
+import de.eintosti.buildsystem.storage.migration.StorageMigration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
@@ -34,6 +35,7 @@ import org.jspecify.annotations.NullMarked;
 public class YamlWorldStorage extends WorldStorageImpl {
 
     private static final String WORLDS_KEY = "worlds";
+    private static final int LEGACY_VERSION = 1;
 
     private final YamlStore store;
     private final FileConfiguration config;
@@ -48,29 +50,34 @@ public class YamlWorldStorage extends WorldStorageImpl {
 
     @Override
     public CompletableFuture<Void> save(BuildWorld buildWorld) {
-        return CompletableFuture.runAsync(() -> store.atomicSave(
-                () -> config.set(WORLDS_KEY + "." + codec.key(buildWorld), codec.serialize(buildWorld))));
+        return CompletableFuture.runAsync(() -> store.atomicSave(() -> {
+            config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
+            config.set(WORLDS_KEY + "." + codec.key(buildWorld), codec.serialize(buildWorld));
+        }));
     }
 
     @Override
     public CompletableFuture<Void> save(Collection<BuildWorld> buildWorlds) {
-        return CompletableFuture.runAsync(() -> store.atomicSave(() -> buildWorlds.forEach(
-                buildWorld -> config.set(WORLDS_KEY + "." + codec.key(buildWorld), codec.serialize(buildWorld)))));
+        return CompletableFuture.runAsync(() -> store.atomicSave(() -> {
+            config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
+            buildWorlds.forEach(
+                    buildWorld -> config.set(WORLDS_KEY + "." + codec.key(buildWorld), codec.serialize(buildWorld)));
+        }));
     }
 
     @Override
     public CompletableFuture<Collection<BuildWorld>> load() {
         return CompletableFuture.supplyAsync(() -> store.locked(() -> {
             Collection<BuildWorld> worlds = new ArrayList<>();
-            for (String worldName : loadWorldKeys()) {
+            for (String worldKey : loadWorldKeys()) {
                 try {
-                    ConfigurationSection section = config.getConfigurationSection(WORLDS_KEY + "." + worldName);
+                    ConfigurationSection section = config.getConfigurationSection(WORLDS_KEY + "." + worldKey);
                     if (section == null) {
                         continue;
                     }
-                    worlds.add(codec.deserialize(worldName, section));
+                    worlds.add(codec.deserialize(worldKey, section));
                 } catch (Exception e) {
-                    logger.log(Level.WARNING, "Skipping world \"" + worldName + "\": could not be loaded", e);
+                    logger.log(Level.WARNING, "Skipping world \"" + worldKey + "\": could not be loaded", e);
                 }
             }
             return worlds;
@@ -81,6 +88,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
         if (!store.reload()) {
             return Set.of();
         }
+        migrateIfNeeded();
 
         ConfigurationSection section = config.getConfigurationSection(WORLDS_KEY);
         if (section == null) {
@@ -90,9 +98,23 @@ public class YamlWorldStorage extends WorldStorageImpl {
         return section.getKeys(false);
     }
 
+    /** Brings a legacy (name-keyed) {@code worlds.yml} up to the current UUID-keyed format, once, before parsing. */
+    private void migrateIfNeeded() {
+        if (config.getInt(StorageMigration.VERSION_KEY, LEGACY_VERSION) >= StorageMigration.CURRENT_VERSION) {
+            return;
+        }
+        ConfigurationSection section = config.getConfigurationSection(WORLDS_KEY);
+        if (section != null && !section.getKeys(false).isEmpty()) {
+            store.backupOnce(StorageMigration.BACKUP_SUFFIX);
+            StorageMigration.migrateWorlds(config, logger);
+        }
+        config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
+        store.save();
+    }
+
     @Override
     public CompletableFuture<Void> delete(BuildWorld buildWorld) {
-        return delete(buildWorld.getName());
+        return delete(buildWorld.getUniqueId().toString());
     }
 
     @Override

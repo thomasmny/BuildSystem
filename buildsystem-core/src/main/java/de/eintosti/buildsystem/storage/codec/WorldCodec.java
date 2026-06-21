@@ -43,7 +43,8 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * {@link Codec} for {@link BuildWorld}s, mapping a world to and from its {@code worlds.<name>} section.
+ * {@link Codec} for {@link BuildWorld}s, mapping a world to and from its section. Since v4 the section is keyed by the
+ * world's UUID and the name is carried as a {@code name} field (a rename is then a field update, not a key move).
  *
  * <p>The bulk of a world's state lives under the nested {@code data} section, whose keys mirror the property keys
  * registered in {@link WorldDataImpl} — the {@code DATA_*} constants here must stay in lock-step with those. Reads are
@@ -53,6 +54,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class WorldCodec implements Codec<BuildWorld> {
 
+    private static final String NAME = "name";
     private static final String UUID_KEY = "uuid";
     private static final String CREATOR = "creator";
     private static final String CREATOR_ID = "creator-id";
@@ -92,13 +94,14 @@ public final class WorldCodec implements Codec<BuildWorld> {
 
     @Override
     public String key(BuildWorld value) {
-        return value.getName();
+        return value.getUniqueId().toString();
     }
 
     @Override
     public Map<String, @Nullable Object> serialize(BuildWorld buildWorld) {
         Map<String, @Nullable Object> world = new HashMap<>();
 
+        world.put(NAME, buildWorld.getName());
         world.put(UUID_KEY, buildWorld.getUniqueId().toString());
         Builders builders = buildWorld.getBuilders();
         if (builders.getCreator() != null) {
@@ -123,19 +126,22 @@ public final class WorldCodec implements Codec<BuildWorld> {
 
     @Override
     public BuildWorldImpl deserialize(String key, ConfigurationSection section) {
-        UUID uuid = section.isString(UUID_KEY) ? UUID.fromString(section.getString(UUID_KEY)) : UUID.randomUUID();
-        Builder creator = parseCreator(key, section);
-        BuildWorldType worldType = parseType(key, section);
-        WorldDataImpl worldData = parseWorldData(key, section);
+        // v4 keys sections by UUID and carries the name as a field; fall back to the key for pre-migration safety.
+        UUID uuid = UUID.fromString(key);
+        String name = section.getString(NAME, key);
+        Builder creator = parseCreator(name, section);
+        BuildWorldType worldType = parseType(name, section);
+        WorldDataImpl worldData = parseWorldData(name, section);
         long creationDate = section.isLong(DATE) ? section.getLong(DATE) : -1;
         List<Builder> builders = BuilderListCodec.parse(section.getString(BUILDERS));
         String generatorName = section.getString(CHUNK_GENERATOR);
-        CustomGeneratorImpl customGenerator = generatorName != null ? CustomGeneratorImpl.of(generatorName, key) : null;
+        CustomGeneratorImpl customGenerator =
+                generatorName != null ? CustomGeneratorImpl.of(generatorName, name) : null;
 
         return new BuildWorldImpl(
                 plugin,
                 uuid,
-                key,
+                name,
                 worldType,
                 worldData,
                 creator,

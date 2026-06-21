@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.storage.yaml;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -96,6 +97,25 @@ public final class YamlStore {
     public <T> T locked(Supplier<T> work) {
         synchronized (ioLock) {
             return work.get();
+        }
+    }
+
+    /**
+     * Copies the backing file to a sibling {@code <name><suffix>} once, before a destructive rewrite such as a format
+     * migration. Does nothing if the backup already exists, so the original (pre-migration) snapshot is never
+     * overwritten by a later run.
+     *
+     * @param suffix The suffix appended to the file name for the backup (e.g. {@code .v3.bak})
+     */
+    public void backupOnce(String suffix) {
+        File backup = new File(file.getParentFile(), file.getName() + suffix);
+        if (backup.exists()) {
+            return;
+        }
+        try {
+            Files.copy(file.toPath(), backup.toPath());
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Failed to back up " + file.getName() + " to " + backup.getName(), e);
         }
     }
 }

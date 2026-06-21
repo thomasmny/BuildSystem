@@ -36,15 +36,17 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * {@link Codec} for {@link Folder}s, mapping a folder to and from its {@code folders.<name>} section.
+ * {@link Codec} for {@link Folder}s, mapping a folder to and from its section. Since v4 the section is keyed by the
+ * folder's UUID, the name is carried as a {@code name} field, and the parent is referenced by UUID.
  *
- * <p>A folder's parent is persisted as the <em>parent's name</em> and so cannot be resolved from a single section in
- * isolation; {@link #deserialize(String, ConfigurationSection)} therefore leaves the parent unset and exposes the raw
- * reference through {@link #parentReference(ConfigurationSection)} for the storage's second load pass to link.
+ * <p>A folder's parent cannot be resolved from a single section in isolation; {@link #deserialize(String,
+ * ConfigurationSection)} therefore leaves the parent unset and exposes the raw reference through
+ * {@link #parentReference(ConfigurationSection)} for the storage's second load pass to link.
  */
 @NullMarked
 public final class FolderCodec implements Codec<Folder> {
 
+    private static final String NAME = "name";
     private static final String UUID_KEY = "uuid";
     private static final String CREATOR = "creator";
     private static final String CREATION = "creation";
@@ -64,17 +66,19 @@ public final class FolderCodec implements Codec<Folder> {
 
     @Override
     public String key(Folder value) {
-        return value.getName();
+        return value.getUniqueId().toString();
     }
 
     @Override
     public Map<String, @Nullable Object> serialize(Folder folder) {
         Map<String, @Nullable Object> serialized = new HashMap<>();
+        serialized.put(NAME, folder.getName());
         serialized.put(UUID_KEY, folder.getUniqueId().toString());
         serialized.put(CREATOR, folder.getCreator().toString());
         serialized.put(CREATION, folder.getCreation());
         serialized.put(CATEGORY, folder.getCategory().getId());
-        serialized.put(PARENT, folder.hasParent() ? folder.getParent().getName() : null);
+        serialized.put(
+                PARENT, folder.hasParent() ? folder.getParent().getUniqueId().toString() : null);
         serialized.put(MATERIAL, folder.getIcon().name());
         serialized.put(ICON_SKULL_TEXTURE, folder.getIconSkullTexture());
         serialized.put(PERMISSION, folder.getPermission());
@@ -86,9 +90,11 @@ public final class FolderCodec implements Codec<Folder> {
 
     @Override
     public FolderImpl deserialize(String key, ConfigurationSection section) {
-        UUID uuid = section.isString(UUID_KEY) ? UUID.fromString(section.getString(UUID_KEY)) : UUID.randomUUID();
+        // v4 keys sections by UUID and carries the name as a field; fall back to the key for pre-migration safety.
+        UUID uuid = UUID.fromString(key);
+        String name = section.getString(NAME, key);
         Builder creator = Objects.requireNonNull(
-                Builder.deserialize(section.getString(CREATOR)), "Creator cannot be null for folder: " + key);
+                Builder.deserialize(section.getString(CREATOR)), "Creator cannot be null for folder: " + name);
         long creation = section.getLong(CREATION, System.currentTimeMillis());
         NavigatorCategory category = resolveCategory(section);
         XMaterial defaultMaterial = XMaterial.CHEST;
@@ -102,7 +108,7 @@ public final class FolderCodec implements Codec<Folder> {
         FolderImpl folder = new FolderImpl(
                 plugin,
                 uuid,
-                key,
+                name,
                 creation,
                 category,
                 null, // Parent is linked by the storage's second load pass.
