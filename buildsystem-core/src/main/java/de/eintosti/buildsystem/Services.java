@@ -36,6 +36,7 @@ import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
+import org.bukkit.NamespacedKey;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -101,7 +102,6 @@ final class Services {
         this.customBlockManager = new CustomBlockManager(plugin);
         this.playerLookupService = new PlayerLookupService(plugin);
         (this.playerService = new PlayerServiceImpl(plugin)).init();
-        this.navigatorService = new NavigatorService(plugin);
         this.navigatorEditorService = new NavigatorEditorService();
         this.noClipService = new NoClipService(plugin);
         (this.worldService = new WorldServiceImpl(plugin)).init();
@@ -109,6 +109,16 @@ final class Services {
         this.settingsService = new SettingsService(plugin);
         this.spawnService = new SpawnService(plugin);
         this.menuItems = new MenuItems(plugin, config(), messages(), settings());
+        // Created after MenuItems (which it needs); nothing constructed earlier depends on it.
+        this.navigatorService = new NavigatorService(
+                navigatorCategoryRegistry(),
+                config(),
+                menuItems(),
+                player(),
+                messages(),
+                new TaskScheduler(plugin),
+                new NamespacedKey(plugin, "owner"),
+                new NamespacedKey(plugin, "category"));
         this.menus = new Menus(plugin);
         this.prompts = new Prompts(messages(), config(), new TaskScheduler(plugin));
     }

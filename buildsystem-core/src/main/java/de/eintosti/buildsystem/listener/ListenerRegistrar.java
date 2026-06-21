@@ -33,6 +33,7 @@ import de.eintosti.buildsystem.listener.settings.*;
 import de.eintosti.buildsystem.listener.world.*;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.MenuListener;
+import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.navigator.NavigatorEditorService;
 import de.eintosti.buildsystem.navigator.NavigatorService;
@@ -67,6 +68,7 @@ public final class ListenerRegistrar {
         WorldStatusRegistry worldStatusRegistry = plugin.getWorldStatusRegistry();
         CustomBlockManager customBlockManager = plugin.getCustomBlockManager();
         MenuItems menuItems = plugin.getMenuItems();
+        Menus menus = plugin.getMenus();
         Messages messages = plugin.getMessages();
         PlayerServiceImpl playerService = plugin.getPlayerService();
         NavigatorService navigatorService = plugin.getNavigatorService();
@@ -92,7 +94,15 @@ public final class ListenerRegistrar {
         register(new IronDoorListener(settingsService, worldStorage));
         register(new MenuListener());
         register(new PlayerChatInput.ChatInputListener());
-        register(new NavigatorListener(plugin));
+        register(new NavigatorListener(
+                navigatorService,
+                settingsService,
+                worldStorage,
+                menuItems,
+                messages,
+                menus,
+                configService,
+                playerService));
         register(new PlayerChangedWorldListener(
                 navigatorService, playerService, settingsService, worldStorage, configService, messages));
         register(new PlayerCommandPreprocessListener(
