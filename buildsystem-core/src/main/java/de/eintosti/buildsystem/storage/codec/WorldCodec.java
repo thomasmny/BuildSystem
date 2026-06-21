@@ -160,24 +160,28 @@ public final class WorldCodec implements Codec<BuildWorld> {
                 .withCustomSpawn(parseCustomSpawn(section))
                 .withPermission(section.getString(DATA + "." + DATA_PERMISSION, "-"))
                 .withProject(section.getString(DATA + "." + DATA_PROJECT, "-"))
-                .withDifficulty(Difficulty.valueOf(section.getString(DATA + "." + DATA_DIFFICULTY, "PEACEFUL")
-                        .toUpperCase(Locale.ROOT)))
+                .withDifficulty(parseDifficulty(section, worldName))
                 .withMaterial(parseMaterial(section, worldName))
                 .withIconSkullTexture(section.getString(DATA + "." + DATA_ICON_SKULL_TEXTURE, ""))
                 .withStatus(parseStatus(section, worldName))
-                .withBlockBreaking(section.getBoolean(DATA + "." + DATA_BLOCK_BREAKING))
-                .withBlockInteractions(section.getBoolean(DATA + "." + DATA_BLOCK_INTERACTIONS))
-                .withBlockPlacement(section.getBoolean(DATA + "." + DATA_BLOCK_PLACEMENT))
-                .withBuildersEnabled(section.getBoolean(DATA + "." + DATA_BUILDERS_ENABLED))
-                .withExplosions(section.getBoolean(DATA + "." + DATA_EXPLOSIONS))
-                .withMobAi(section.getBoolean(DATA + "." + DATA_MOB_AI))
-                .withPhysics(section.getBoolean(DATA + "." + DATA_PHYSICS))
-                .withPinned(section.getBoolean(DATA + "." + DATA_PINNED, false))
+                .withBlockBreaking(
+                        section.getBoolean(DATA + "." + DATA_BLOCK_BREAKING, WorldDataImpl.DEFAULT_BLOCK_BREAKING))
+                .withBlockInteractions(section.getBoolean(
+                        DATA + "." + DATA_BLOCK_INTERACTIONS, WorldDataImpl.DEFAULT_BLOCK_INTERACTIONS))
+                .withBlockPlacement(
+                        section.getBoolean(DATA + "." + DATA_BLOCK_PLACEMENT, WorldDataImpl.DEFAULT_BLOCK_PLACEMENT))
+                .withBuildersEnabled(
+                        section.getBoolean(DATA + "." + DATA_BUILDERS_ENABLED, WorldDataImpl.DEFAULT_BUILDERS_ENABLED))
+                .withExplosions(section.getBoolean(DATA + "." + DATA_EXPLOSIONS, WorldDataImpl.DEFAULT_EXPLOSIONS))
+                .withMobAi(section.getBoolean(DATA + "." + DATA_MOB_AI, WorldDataImpl.DEFAULT_MOB_AI))
+                .withPhysics(section.getBoolean(DATA + "." + DATA_PHYSICS, WorldDataImpl.DEFAULT_PHYSICS))
+                .withPinned(section.getBoolean(DATA + "." + DATA_PINNED, WorldDataImpl.DEFAULT_PINNED))
                 .withVisibility(parseVisibility(section))
-                .withTimeSinceBackup(section.getInt(DATA + "." + DATA_TIME_SINCE_BACKUP, 0))
-                .withLastLoaded(section.getLong(DATA + "." + DATA_LAST_LOADED))
-                .withLastUnloaded(section.getLong(DATA + "." + DATA_LAST_UNLOADED))
-                .withLastEdited(section.getLong(DATA + "." + DATA_LAST_EDITED))
+                .withTimeSinceBackup(
+                        section.getInt(DATA + "." + DATA_TIME_SINCE_BACKUP, WorldDataImpl.DEFAULT_TIME_SINCE_BACKUP))
+                .withLastLoaded(section.getLong(DATA + "." + DATA_LAST_LOADED, WorldDataImpl.DEFAULT_TIMESTAMP))
+                .withLastUnloaded(section.getLong(DATA + "." + DATA_LAST_UNLOADED, WorldDataImpl.DEFAULT_TIMESTAMP))
+                .withLastEdited(section.getLong(DATA + "." + DATA_LAST_EDITED, WorldDataImpl.DEFAULT_TIMESTAMP))
                 .withPermissionOverrideEnabled(
                         () -> context.configService().current().folder().overridePermissions())
                 .withProjectOverrideEnabled(
@@ -205,6 +209,21 @@ public final class WorldCodec implements Codec<BuildWorld> {
             context.logger()
                     .warning("Unknown world type \"" + raw + "\" for \"" + worldName + "\". Defaulting to UNKNOWN.");
             return BuildWorldType.UNKNOWN;
+        }
+    }
+
+    /**
+     * Resolves a world's {@link Difficulty}, falling back to {@link Difficulty#PEACEFUL} when the persisted value is
+     * unknown. Like the other enums, an unparseable difficulty must not abort the world's load.
+     */
+    private Difficulty parseDifficulty(ConfigurationSection section, String worldName) {
+        String raw = section.getString(DATA + "." + DATA_DIFFICULTY, Difficulty.PEACEFUL.name());
+        try {
+            return Difficulty.valueOf(raw.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            context.logger()
+                    .warning("Unknown difficulty \"" + raw + "\" for \"" + worldName + "\". Defaulting to PEACEFUL.");
+            return Difficulty.PEACEFUL;
         }
     }
 

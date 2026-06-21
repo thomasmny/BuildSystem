@@ -206,6 +206,45 @@ class YamlWorldStorageRoundTripTest {
     }
 
     @Test
+    void load_invalidDifficultyEnum_defaultsToPeaceful() throws Exception {
+        YamlConfiguration yaml = new YamlConfiguration();
+        yaml.set("worlds.Bad.uuid", UUID.randomUUID().toString());
+        yaml.set("worlds.Bad.type", "NORMAL");
+        yaml.set("worlds.Bad.date", 1L);
+        yaml.set("worlds.Bad.data.status", "FINISHED");
+        yaml.set("worlds.Bad.data.difficulty", "NOT_A_DIFFICULTY");
+        yaml.save(new File(dataFolder, "worlds.yml"));
+
+        Collection<BuildWorld> loaded = newStorage().load().join();
+        assertEquals(1, loaded.size());
+        assertEquals(Difficulty.PEACEFUL, loaded.iterator().next().getData().get(WorldDataKey.DIFFICULTY));
+    }
+
+    @Test
+    void load_missingDataKeys_restoreCreationDefaults() throws Exception {
+        // A world entry that predates these keys (or was hand-edited) must come back with the same defaults a freshly
+        // created world has — not getBoolean/getLong's implicit false/0.
+        YamlConfiguration yaml = new YamlConfiguration();
+        yaml.set("worlds.Sparse.uuid", UUID.randomUUID().toString());
+        yaml.set("worlds.Sparse.type", "NORMAL");
+        yaml.set("worlds.Sparse.date", 1L);
+        yaml.set("worlds.Sparse.data.status", "FINISHED");
+        yaml.save(new File(dataFolder, "worlds.yml"));
+
+        BuildWorld world = newStorage().load().join().iterator().next();
+        assertTrue(world.getData().get(WorldDataKey.BLOCK_BREAKING));
+        assertTrue(world.getData().get(WorldDataKey.BLOCK_INTERACTIONS));
+        assertTrue(world.getData().get(WorldDataKey.BLOCK_PLACEMENT));
+        assertTrue(world.getData().get(WorldDataKey.EXPLOSIONS));
+        assertTrue(world.getData().get(WorldDataKey.MOB_AI));
+        assertTrue(world.getData().get(WorldDataKey.PHYSICS));
+        assertFalse(world.getData().get(WorldDataKey.BUILDERS_ENABLED));
+        assertEquals(WorldDataImpl.DEFAULT_TIMESTAMP, world.getData().get(WorldDataKey.LAST_EDITED));
+        assertEquals(WorldDataImpl.DEFAULT_TIMESTAMP, world.getData().get(WorldDataKey.LAST_LOADED));
+        assertEquals(WorldDataImpl.DEFAULT_TIMESTAMP, world.getData().get(WorldDataKey.LAST_UNLOADED));
+    }
+
+    @Test
     void load_unparseableEntry_isSkipped_othersStillLoad() throws Exception {
         // Persist a good world, then inject a sibling entry whose UUID cannot be parsed.
         newStorage().save(sampleWorld(UUID.randomUUID(), "Good")).join();
