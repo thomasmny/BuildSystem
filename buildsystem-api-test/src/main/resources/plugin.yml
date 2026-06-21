@@ -1,0 +1,7 @@
+name: BuildSystemApiTest
+version: "1.0.0"
+main: de.eintosti.buildsystem.apitest.ApiConsumerPlugin
+api-version: "1.21"
+depend: [ BuildSystem ]
+description: Compile-time consumer of the BuildSystem API, used as a CI guard against breaking API changes.
+authors: [ einTosti ]

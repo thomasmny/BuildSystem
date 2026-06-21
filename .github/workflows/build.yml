@@ -25,3 +25,8 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew clean build
+
+      - name: Verify public API stays consumable
+        # buildsystem-api-test is a downstream consumer compiled against buildsystem-api; a breaking API change
+        # fails its compilation here.
+        run: ./gradlew :buildsystem-api-test:compileJava
