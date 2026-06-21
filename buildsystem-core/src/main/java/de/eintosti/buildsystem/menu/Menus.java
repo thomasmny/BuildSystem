@@ -82,7 +82,7 @@ public final class Menus {
     public Menus(BuildSystemPlugin plugin, Services services) {
         this.plugin = plugin;
         this.services = services;
-        this.scheduler = new TaskScheduler(plugin);
+        this.scheduler = services.scheduler();
         this.builderNameKey = new NamespacedKey(plugin, "builder_name");
     }
 

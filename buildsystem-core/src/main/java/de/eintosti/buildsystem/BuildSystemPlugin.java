@@ -128,6 +128,9 @@ public class BuildSystemPlugin extends JavaPlugin {
             this.configSaveTask.cancel();
         }
 
+        // Shut the shared background pool down only after the final saves above have completed.
+        services.scheduler().shutdown();
+
         this.integrations.deactivate();
         getServer().getServicesManager().unregister(BuildSystem.class, api);
 
