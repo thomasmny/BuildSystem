@@ -22,6 +22,7 @@ import static org.mockito.Mockito.*;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.exception.WorldDirectoryNotFoundException;
 import de.eintosti.buildsystem.api.exception.WorldNotFoundException;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -61,18 +62,15 @@ class WorldServiceImplDeleteTest {
     Path worldContainer;
 
     private BuildSystemPlugin plugin;
+    private Services services;
     private WorldServiceImpl worldService;
 
     @BeforeEach
     void setUp() {
         plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
-        // The unload time string is parsed unconditionally in the WorldUnloader constructor.
-        when(plugin.getConfigService().current().world().unload().timeUntilUnload())
-                .thenReturn("06:00:00");
-        worldService = new WorldServiceImpl(
-                plugin, plugin.getConfigService(), plugin.getMessages(), plugin::getSpawnService, plugin::getPrompts);
-        when(plugin.getWorldService()).thenReturn(worldService);
+        services = TestData.mockServices();
+        worldService = new WorldServiceImpl(plugin, services);
     }
 
     private BuildWorldImpl registeredWorld(String name) {
@@ -87,7 +85,7 @@ class WorldServiceImplDeleteTest {
                 .withProjectOverrideEnabled(() -> false)
                 .build();
         BuildWorldImpl buildWorld = new BuildWorldImpl(
-                WorldContext.fromPlugin(plugin),
+                services.worldContext(),
                 UUID.randomUUID(),
                 name,
                 BuildWorldType.NORMAL,

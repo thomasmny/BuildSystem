@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
@@ -50,16 +51,14 @@ class StorageMigrationTest {
     File dataFolder;
 
     private BuildSystemPlugin plugin;
+    private Services services;
     private WorldStorage worldStorage;
 
     @BeforeEach
     void setUp() {
         plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
-        when(plugin.getConfigService().current().world().unload().timeUntilUnload())
-                .thenReturn("06:00:00");
-        TestData.stubStatusRegistry(plugin);
-        TestData.stubCategoryRegistry(plugin);
+        services = TestData.mockServices();
         worldStorage = mock(WorldStorage.class);
     }
 
@@ -84,7 +83,8 @@ class StorageMigrationTest {
         yaml.set("worlds.MyWorld.data.permission", "build.test");
         writeV3Worlds(yaml);
 
-        Collection<BuildWorld> loaded = new YamlWorldStorage(plugin).load().join();
+        Collection<BuildWorld> loaded =
+                new YamlWorldStorage(plugin, services).load().join();
 
         assertEquals(1, loaded.size());
         BuildWorld world = loaded.iterator().next();
@@ -111,7 +111,8 @@ class StorageMigrationTest {
         yaml.set("worlds.Broken.data.status", "finished");
         writeV3Worlds(yaml);
 
-        Collection<BuildWorld> loaded = new YamlWorldStorage(plugin).load().join();
+        Collection<BuildWorld> loaded =
+                new YamlWorldStorage(plugin, services).load().join();
 
         assertEquals(1, loaded.size());
         BuildWorld world = loaded.iterator().next();
@@ -134,10 +135,11 @@ class StorageMigrationTest {
         yaml.set("worlds.Stable.data.status", "finished");
         writeV3Worlds(yaml);
 
-        new YamlWorldStorage(plugin).load().join();
+        new YamlWorldStorage(plugin, services).load().join();
         // The backup captures the original v3 file; a second migration must not clobber it.
         String backupAfterFirst = readBackup();
-        Collection<BuildWorld> second = new YamlWorldStorage(plugin).load().join();
+        Collection<BuildWorld> second =
+                new YamlWorldStorage(plugin, services).load().join();
 
         assertEquals(1, second.size());
         assertEquals("Stable", second.iterator().next().getName());
@@ -169,7 +171,8 @@ class StorageMigrationTest {
         yaml.set("worlds.NewName.data.status", "finished");
         writeV3Worlds(yaml);
 
-        Collection<BuildWorld> loaded = new YamlWorldStorage(plugin).load().join();
+        Collection<BuildWorld> loaded =
+                new YamlWorldStorage(plugin, services).load().join();
 
         assertEquals(1, loaded.size());
         assertEquals("NewName", loaded.iterator().next().getName());
@@ -184,7 +187,7 @@ class StorageMigrationTest {
     void worlds_emptyV3File_isStampedWithoutBackup() throws Exception {
         new File(dataFolder, "worlds.yml").createNewFile();
 
-        assertTrue(new YamlWorldStorage(plugin).load().join().isEmpty());
+        assertTrue(new YamlWorldStorage(plugin, services).load().join().isEmpty());
 
         assertEquals(StorageMigration.CURRENT_VERSION, readFile("worlds.yml").getInt("version"));
         assertFalse(new File(dataFolder, "worlds.yml.v3.bak").exists());
@@ -203,7 +206,7 @@ class StorageMigrationTest {
         yaml.save(new File(dataFolder, "folders.yml"));
 
         Collection<Folder> loaded =
-                new YamlFolderStorage(plugin, worldStorage).load().join();
+                new YamlFolderStorage(plugin, worldStorage, services).load().join();
 
         Folder child = loaded.stream()
                 .filter(f -> f.getName().equals("Child"))

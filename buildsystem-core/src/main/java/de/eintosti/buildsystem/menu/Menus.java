@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.menu;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
@@ -74,36 +75,37 @@ import org.jspecify.annotations.Nullable;
 public final class Menus {
 
     private final BuildSystemPlugin plugin;
+    private final Services services;
     private final TaskScheduler scheduler;
     private final NamespacedKey builderNameKey;
 
-    public Menus(BuildSystemPlugin plugin) {
+    public Menus(BuildSystemPlugin plugin, Services services) {
         this.plugin = plugin;
+        this.services = services;
         this.scheduler = new TaskScheduler(plugin);
         this.builderNameKey = new NamespacedKey(plugin, "builder_name");
     }
 
     public void openSpeed(Player player) {
-        new SpeedMenu(plugin.getMessages(), plugin.getSettingsService(), player).open(player);
+        new SpeedMenu(services.messages(), services.settings(), player).open(player);
     }
 
     public void openBlocks(Player player) {
-        new CustomBlockMenu(plugin.getMessages(), plugin.getMenuItems(), player).open(player);
+        new CustomBlockMenu(services.messages(), services.menuItems(), player).open(player);
     }
 
     public void openDesign(Player player) {
-        new DesignMenu(plugin.getMessages(), plugin.getSettingsService(), plugin.getMenuItems(), this, player)
-                .open(player);
+        new DesignMenu(services.messages(), services.settings(), services.menuItems(), this, player).open(player);
     }
 
     public void openSettings(Player player) {
         new SettingsMenu(
-                        plugin.getMessages(),
-                        plugin.getSettingsService(),
-                        plugin.getConfigService(),
-                        plugin.getMenuItems(),
-                        plugin.getNavigatorService(),
-                        plugin.getNoClipService(),
+                        services.messages(),
+                        services.settings(),
+                        services.config(),
+                        services.menuItems(),
+                        services.navigator(),
+                        services.noClip(),
                         this,
                         player)
                 .open(player);
@@ -111,10 +113,10 @@ public final class Menus {
 
     public void openBackups(BuildWorld buildWorld, Player player) {
         new BackupsMenu(
-                        plugin.getMessages(),
-                        plugin.getBackupService(),
-                        plugin.getMenuItems(),
-                        plugin.getConfigService(),
+                        services.messages(),
+                        services.backup(),
+                        services.menuItems(),
+                        services.config(),
                         plugin.getLogger(),
                         scheduler,
                         this,
@@ -124,16 +126,16 @@ public final class Menus {
     }
 
     public void openBackupsConfirmation(Backup backup, Player player) {
-        new BackupsConfirmationMenu(plugin.getMessages(), plugin.getConfigService(), backup, player).open(player);
+        new BackupsConfirmationMenu(services.messages(), services.config(), backup, player).open(player);
     }
 
     public void openEdit(BuildWorld buildWorld, Player player) {
         new EditMenu(
-                        plugin.getMessages(),
-                        plugin.getPlayerService(),
-                        plugin.getMenuItems(),
-                        plugin.getConfigService(),
-                        plugin.getPrompts(),
+                        services.messages(),
+                        services.player(),
+                        services.menuItems(),
+                        services.config(),
+                        services.prompts(),
                         this,
                         buildWorld,
                         player)
@@ -142,10 +144,10 @@ public final class Menus {
 
     public void openBuilder(BuildWorld buildWorld, Player player) {
         new BuilderMenu(
-                        plugin.getMessages(),
-                        plugin.getMenuItems(),
+                        services.messages(),
+                        services.menuItems(),
                         this,
-                        plugin.getPlayerLookupService(),
+                        services.playerLookup(),
                         scheduler,
                         plugin.getLogger(),
                         builderNameKey,
@@ -159,51 +161,41 @@ public final class Menus {
      * menu need not depend on the plugin; folds into the command layer once that is constructor-injected.
      */
     public void promptWorldProject(BuildWorld buildWorld, Player player) {
-        new SetProjectSubCommand(
-                        plugin.getMessages(),
-                        plugin.getWorldService(),
-                        this,
-                        plugin.getPrompts(),
-                        plugin.getSettingsService())
+        new SetProjectSubCommand(services.messages(), services.world(), this, services.prompts(), services.settings())
                 .getProjectInput(player, buildWorld, false);
     }
 
     /** Opens the world-permission chat prompt; transitional bridge, see {@link #promptWorldProject}. */
     public void promptWorldPermission(BuildWorld buildWorld, Player player) {
         new SetPermissionSubCommand(
-                        plugin.getMessages(),
-                        plugin.getWorldService(),
-                        plugin.getConfigService(),
+                        services.messages(),
+                        services.world(),
+                        services.config(),
                         this,
-                        plugin.getPrompts(),
-                        plugin.getSettingsService())
+                        services.prompts(),
+                        services.settings())
                 .getPermissionInput(player, buildWorld, false);
     }
 
     /** Opens the add-builder chat prompt; transitional bridge, see {@link #promptWorldProject}. */
     public void promptAddBuilder(BuildWorld buildWorld, Player player) {
         new AddBuilderSubCommand(
-                        plugin.getMessages(),
-                        plugin.getWorldService(),
+                        services.messages(),
+                        services.world(),
                         this,
-                        plugin.getPlayerLookupService(),
-                        plugin.getPrompts(),
+                        services.playerLookup(),
+                        services.prompts(),
                         scheduler)
                 .getAddBuilderInput(player, buildWorld, false);
     }
 
     public void openNavigator(Player player) {
-        new NavigatorMenu(
-                        plugin.getMessages(),
-                        plugin.getMenuItems(),
-                        this,
-                        plugin.getNavigatorCategoryRegistry(),
-                        player)
+        new NavigatorMenu(services.messages(), services.menuItems(), this, services.navigatorCategoryRegistry(), player)
                 .open(player);
     }
 
     public void openCategoryWorlds(NavigatorCategory category, Player player) {
-        new CategoryWorldsMenu(displayablesContext(), plugin.getWorldStatusRegistry(), player, category).open(player);
+        new CategoryWorldsMenu(displayablesContext(), services.worldStatusRegistry(), player, category).open(player);
     }
 
     public void openFolderContent(NavigatorCategory category, Folder folder, DisplayablesMenu parent, Player player) {
@@ -213,23 +205,23 @@ public final class Menus {
     /** Bundles the collaborators shared by every {@link DisplayablesMenu} so its constructors stay small. */
     private DisplayablesContext displayablesContext() {
         return new DisplayablesContext(
-                plugin.getMessages(),
-                plugin.getPlayerService(),
-                plugin.getSettingsService(),
-                plugin.getWorldService(),
-                plugin.getMenuItems(),
-                plugin.getPrompts(),
-                plugin.getNavigatorService(),
+                services.messages(),
+                services.player(),
+                services.settings(),
+                services.world(),
+                services.menuItems(),
+                services.prompts(),
+                services.navigator(),
                 this);
     }
 
     public void openCreate(CreateMenu.Page page, Visibility visibility, @Nullable Folder folder, Player player) {
         new CreateMenu(
-                        plugin.getMessages(),
-                        plugin.getMenuItems(),
+                        services.messages(),
+                        services.menuItems(),
                         this,
-                        plugin.getWorldService(),
-                        plugin.getCustomizableIcons(),
+                        services.world(),
+                        services.customizableIcons(),
                         plugin.getDataFolder(),
                         page,
                         visibility,
@@ -239,32 +231,31 @@ public final class Menus {
     }
 
     public void openDelete(BuildWorld buildWorld, Player player) {
-        new DeleteMenu(plugin.getMessages(), plugin.getWorldService(), buildWorld, player).open(player);
+        new DeleteMenu(services.messages(), services.world(), buildWorld, player).open(player);
     }
 
     public void openGameRules(BuildWorld buildWorld, Player player) {
-        new GameRulesMenu(plugin.getMessages(), plugin.getMenuItems(), plugin.getLogger(), this, buildWorld, player)
+        new GameRulesMenu(services.messages(), services.menuItems(), plugin.getLogger(), this, buildWorld, player)
                 .open(player);
     }
 
     public void openMaterialPicker(Player player, Consumer<XMaterial> onPick, Runnable onBack) {
-        new MaterialPickerMenu(plugin.getMessages(), plugin.getMenuItems(), plugin.getPrompts(), player, onPick, onBack)
+        new MaterialPickerMenu(services.messages(), services.menuItems(), services.prompts(), player, onPick, onBack)
                 .open(player);
     }
 
     public void openDyePicker(Player player, String currentToken, Consumer<String> onPick, Runnable onBack) {
-        new DyePickerMenu(plugin.getMessages(), plugin.getMenuItems(), player, currentToken, onPick, onBack)
-                .open(player);
+        new DyePickerMenu(services.messages(), services.menuItems(), player, currentToken, onPick, onBack).open(player);
     }
 
     public void openCategoryEditor(NavigatorCategory category, Player player) {
         new CategoryEditorMenu(
-                        plugin.getMessages(),
-                        plugin.getPrompts(),
+                        services.messages(),
+                        services.prompts(),
                         this,
-                        plugin.getMenuItems(),
-                        plugin.getNavigatorCategoryRegistry(),
-                        plugin.getWorldStatusRegistry(),
+                        services.menuItems(),
+                        services.navigatorCategoryRegistry(),
+                        services.worldStatusRegistry(),
                         player,
                         category)
                 .open(player);
@@ -272,11 +263,11 @@ public final class Menus {
 
     public void openStatusEditor(BuildWorldStatus status, Player player) {
         new StatusEditorMenu(
-                        plugin.getMessages(),
-                        plugin.getPrompts(),
+                        services.messages(),
+                        services.prompts(),
                         this,
-                        plugin.getMenuItems(),
-                        plugin.getWorldStatusRegistry(),
+                        services.menuItems(),
+                        services.worldStatusRegistry(),
                         player,
                         status)
                 .open(player);
@@ -284,47 +275,47 @@ public final class Menus {
 
     public void openCategoryStatuses(NavigatorCategory category, Player player) {
         new CategoryStatusesMenu(
-                        plugin.getMessages(),
-                        plugin.getMenuItems(),
+                        services.messages(),
+                        services.menuItems(),
                         this,
-                        plugin.getNavigatorCategoryRegistry(),
-                        plugin.getWorldStatusRegistry(),
+                        services.navigatorCategoryRegistry(),
+                        services.worldStatusRegistry(),
                         player,
                         category)
                 .open(player);
     }
 
     public void openSetup(Player player) {
-        new SetupMenu(plugin.getMessages(), plugin.getMenuItems(), this, player).open(player);
+        new SetupMenu(services.messages(), services.menuItems(), this, player).open(player);
     }
 
     public void openDefaultIcons(Player player) {
-        new DefaultIconsMenu(plugin.getMessages(), plugin.getMenuItems(), this, plugin.getCustomizableIcons(), player)
+        new DefaultIconsMenu(services.messages(), services.menuItems(), this, services.customizableIcons(), player)
                 .open(player);
     }
 
     public void openNavigatorLayout(Player player) {
         new NavigatorLayoutMenu(
-                        plugin.getMessages(),
-                        plugin.getMenuItems(),
+                        services.messages(),
+                        services.menuItems(),
                         this,
                         scheduler,
-                        plugin.getPrompts(),
-                        plugin.getNavigatorCategoryRegistry(),
-                        plugin.getNavigatorEditorService(),
+                        services.prompts(),
+                        services.navigatorCategoryRegistry(),
+                        services.navigatorEditor(),
                         player)
                 .open(player);
     }
 
     public void openStatusLayout(Player player) {
         new StatusLayoutMenu(
-                        plugin.getMessages(),
-                        plugin.getMenuItems(),
+                        services.messages(),
+                        services.menuItems(),
                         this,
                         scheduler,
-                        plugin.getPrompts(),
-                        plugin.getWorldStatusRegistry(),
-                        plugin.getNavigatorEditorService(),
+                        services.prompts(),
+                        services.worldStatusRegistry(),
+                        services.navigatorEditor(),
                         player)
                 .open(player);
     }
@@ -332,16 +323,16 @@ public final class Menus {
     public void openDeletionConfirm(
             Player player, String infoName, List<String> infoLore, Runnable onConfirm, Runnable onCancel) {
         new DeletionConfirmMenu(
-                        plugin.getMessages(), plugin.getMenuItems(), player, infoName, infoLore, onConfirm, onCancel)
+                        services.messages(), services.menuItems(), player, infoName, infoLore, onConfirm, onCancel)
                 .open(player);
     }
 
     public void openStatus(BuildWorld buildWorld, Player player) {
         new StatusMenu(
-                        plugin.getMessages(),
-                        plugin.getWorldStatusRegistry(),
-                        plugin.getSettingsService(),
-                        plugin.getMenuItems(),
+                        services.messages(),
+                        services.worldStatusRegistry(),
+                        services.settings(),
+                        services.menuItems(),
                         this,
                         buildWorld,
                         player)

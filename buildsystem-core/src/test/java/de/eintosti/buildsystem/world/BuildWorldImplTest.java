@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
@@ -44,13 +43,11 @@ import org.junit.jupiter.api.Test;
 @NullMarked
 class BuildWorldImplTest {
 
-    private BuildSystemPlugin plugin;
+    private WorldContext context;
 
     @BeforeEach
     void setUp() {
-        plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
-        when(plugin.getConfigService().current().world().unload().timeUntilUnload())
-                .thenReturn("06:00:00");
+        context = TestData.worldContext();
     }
 
     private BuildWorldImpl world(String name, UUID uuid) {
@@ -65,7 +62,7 @@ class BuildWorldImplTest {
                 .withProjectOverrideEnabled(() -> false)
                 .build();
         return new BuildWorldImpl(
-                WorldContext.fromPlugin(plugin),
+                context,
                 uuid,
                 name,
                 BuildWorldType.NORMAL,

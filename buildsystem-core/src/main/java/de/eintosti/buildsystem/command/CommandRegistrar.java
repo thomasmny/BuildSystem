@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -30,22 +31,22 @@ import org.jspecify.annotations.NullMarked;
 public final class CommandRegistrar {
 
     private final BuildSystemPlugin plugin;
+    private final Services services;
 
-    public CommandRegistrar(BuildSystemPlugin plugin) {
+    public CommandRegistrar(BuildSystemPlugin plugin, Services services) {
         this.plugin = plugin;
+        this.services = services;
     }
 
     public void registerAll() {
-        Messages messages = plugin.getMessages();
+        Messages messages = services.messages();
         Logger logger = plugin.getLogger();
-        Menus menus = plugin.getMenus();
-        WorldStorageImpl worldStorage = plugin.getWorldService().getWorldStorage();
+        Menus menus = services.menus();
+        WorldStorageImpl worldStorage = services.world().getWorldStorage();
 
-        register(
-                "back",
-                new BackCommand(messages, logger, plugin.getPlayerService().getPlayerStorage()));
+        register("back", new BackCommand(messages, logger, services.player().getPlayerStorage()));
         register("blocks", new BlocksCommand(messages, logger, menus));
-        register("build", new BuildCommand(messages, logger, plugin.getPlayerService()));
+        register("build", new BuildCommand(messages, logger, services.player()));
         register("buildsystem", new BuildSystemCommand(messages, logger));
         register("config", new ConfigCommand(messages, logger, plugin));
         register("explosions", new ExplosionsCommand(messages, logger, worldStorage));
@@ -55,15 +56,13 @@ public final class CommandRegistrar {
         register("settings", new SettingsCommand(messages, logger, menus));
         register("setup", new SetupCommand(messages, logger, menus));
         register("skull", new SkullCommand(messages, logger));
-        register(
-                "spawn",
-                new SpawnCommand(messages, logger, plugin.getConfigService(), plugin.getSpawnService(), worldStorage));
+        register("spawn", new SpawnCommand(messages, logger, services.config(), services.spawn(), worldStorage));
         register("speed", new SpeedCommand(messages, logger, menus));
-        TimeCommand timeCommand = new TimeCommand(messages, logger, plugin.getConfigService(), worldStorage);
+        TimeCommand timeCommand = new TimeCommand(messages, logger, services.config(), worldStorage);
         register("day", timeCommand);
         register("night", timeCommand);
         register("top", new TopCommand(messages, logger));
-        register("worlds", new WorldsCommand(plugin));
+        register("worlds", new WorldsCommand(plugin, services));
     }
 
     private void register(String name, CommandBase command) {

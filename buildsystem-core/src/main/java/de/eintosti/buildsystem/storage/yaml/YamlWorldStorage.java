@@ -18,11 +18,11 @@
 package de.eintosti.buildsystem.storage.yaml;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.codec.WorldCodec;
 import de.eintosti.buildsystem.storage.migration.StorageMigration;
-import de.eintosti.buildsystem.world.WorldContext;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
@@ -39,26 +39,26 @@ public class YamlWorldStorage extends WorldStorageImpl {
     private static final String WORLDS_KEY = "worlds";
     private static final int LEGACY_VERSION = 1;
 
-    private final BuildSystemPlugin plugin;
+    private final Services services;
     private final YamlStore store;
     private final FileConfiguration config;
     private @Nullable WorldCodec codec;
 
-    public YamlWorldStorage(BuildSystemPlugin plugin) {
+    public YamlWorldStorage(BuildSystemPlugin plugin, Services services) {
         super(plugin.getLogger());
-        this.plugin = plugin;
+        this.services = services;
         this.store = new YamlStore(plugin.getDataFolder(), "worlds.yml", plugin.getLogger());
         this.config = store.config();
     }
 
     /**
-     * The codec, built lazily on first use. Worlds are loaded during plugin enable, before some of the services a
-     * {@link WorldContext} bundles exist; deferring construction to first load (after enable completes the service
+     * The codec, built lazily on first use. Worlds are loaded during plugin enable, before some of the services the
+     * {@code WorldContext} bundles exist; deferring construction to first load (after enable completes the service
      * graph) keeps startup from resolving a not-yet-created service.
      */
     private WorldCodec codec() {
         if (codec == null) {
-            codec = new WorldCodec(WorldContext.fromPlugin(plugin), plugin.getPlayerLookupService());
+            codec = new WorldCodec(services.worldContext(), services.playerLookup());
         }
         return codec;
     }

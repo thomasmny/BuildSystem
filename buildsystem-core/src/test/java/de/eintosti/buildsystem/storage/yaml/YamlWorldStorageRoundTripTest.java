@@ -22,6 +22,7 @@ import static org.mockito.Mockito.*;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
@@ -53,21 +54,19 @@ class YamlWorldStorageRoundTripTest {
     File dataFolder;
 
     private BuildSystemPlugin plugin;
+    private Services services;
+    private WorldContext context;
 
     @BeforeEach
     void setUp() {
         plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
-        // Deep stubs return false for world().unload().enabled(), so BuildWorldImpl construction
-        // never touches the Bukkit scheduler (manageUnload short-circuits). The unload time string
-        // is parsed unconditionally in the WorldUnloader constructor, so it must be a real value.
-        when(plugin.getConfigService().current().world().unload().timeUntilUnload())
-                .thenReturn("06:00:00");
-        TestData.stubStatusRegistry(plugin);
+        services = TestData.mockServices();
+        context = services.worldContext();
     }
 
     private YamlWorldStorage newStorage() {
-        return new YamlWorldStorage(plugin);
+        return new YamlWorldStorage(plugin, services);
     }
 
     private BuildWorldImpl sampleWorld(UUID uuid, String name) {
@@ -87,7 +86,7 @@ class YamlWorldStorageRoundTripTest {
                 .withProjectOverrideEnabled(() -> false)
                 .build();
         return new BuildWorldImpl(
-                WorldContext.fromPlugin(plugin),
+                context,
                 uuid,
                 name,
                 BuildWorldType.NORMAL,
@@ -170,12 +169,11 @@ class YamlWorldStorageRoundTripTest {
     void construction_doesNotResolveServices() {
         // Worlds are loaded during plugin enable, before services such as MenuItems/SpawnService exist. Constructing
         // the storage must not resolve any service (the codec is built lazily on first load); otherwise startup throws.
-        BuildSystemPlugin shallow = mock(BuildSystemPlugin.class);
-        when(shallow.getDataFolder()).thenReturn(dataFolder);
-        when(shallow.getMenuItems()).thenThrow(new IllegalStateException("service not initialized yet"));
-        when(shallow.getSpawnService()).thenThrow(new IllegalStateException("service not initialized yet"));
+        Services strict = mock(Services.class);
+        when(strict.worldContext()).thenThrow(new IllegalStateException("service not initialized yet"));
+        when(strict.playerLookup()).thenThrow(new IllegalStateException("service not initialized yet"));
 
-        assertDoesNotThrow(() -> new YamlWorldStorage(shallow));
+        assertDoesNotThrow(() -> new YamlWorldStorage(plugin, strict));
     }
 
     @Test

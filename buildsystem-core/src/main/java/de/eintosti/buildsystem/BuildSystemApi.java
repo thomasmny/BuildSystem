@@ -28,34 +28,34 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class BuildSystemApi implements BuildSystem {
 
-    private final BuildSystemPlugin plugin;
+    private final Services services;
 
-    public BuildSystemApi(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+    public BuildSystemApi(Services services) {
+        this.services = services;
     }
 
     @Override
     public WorldService getWorldService() {
-        return plugin.getWorldService();
+        return services.world();
     }
 
     @Override
     public PlayerService getPlayerService() {
-        return plugin.getPlayerService();
+        return services.player();
     }
 
     @Override
     public BackupService getBackupService() {
-        return plugin.getBackupService();
+        return services.backup();
     }
 
     @Override
     public WorldStatusRegistry getStatusRegistry() {
-        return plugin.getWorldStatusRegistry();
+        return services.worldStatusRegistry();
     }
 
     @Override
     public NavigatorCategoryRegistry getNavigatorCategoryRegistry() {
-        return plugin.getNavigatorCategoryRegistry();
+        return services.navigatorCategoryRegistry();
     }
 }

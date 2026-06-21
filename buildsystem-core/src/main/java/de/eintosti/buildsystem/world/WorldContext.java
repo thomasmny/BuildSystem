@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -45,26 +44,4 @@ public record WorldContext(
         WorldStatusRegistry statusRegistry,
         CustomizableIcons customizableIcons,
         TaskScheduler scheduler,
-        Logger logger) {
-
-    /**
-     * Builds a context from the plugin's services. A transitional bridge for construction sites that still hold the
-     * plugin (codecs, world creators); once those are themselves injected, a single context is built in the composition
-     * root and this factory is removed.
-     *
-     * @param plugin The plugin to pull collaborators from
-     * @return A context wired to the plugin's current services
-     */
-    public static WorldContext fromPlugin(BuildSystemPlugin plugin) {
-        return new WorldContext(
-                plugin.getMessages(),
-                plugin.getMenuItems(),
-                plugin.getConfigService(),
-                plugin.getPlayerService(),
-                plugin.getSpawnService(),
-                plugin.getWorldStatusRegistry(),
-                plugin.getCustomizableIcons(),
-                new TaskScheduler(plugin),
-                plugin.getLogger());
-    }
-}
+        Logger logger) {}

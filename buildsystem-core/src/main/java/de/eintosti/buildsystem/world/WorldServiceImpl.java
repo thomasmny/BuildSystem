@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.world;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.event.world.BuildWorldDeleteEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostDeleteEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldUnimportEvent;
@@ -35,9 +36,7 @@ import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
-import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
-import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlFolderStorage;
@@ -59,7 +58,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -74,10 +72,8 @@ import org.jspecify.annotations.Nullable;
 public class WorldServiceImpl implements WorldService {
 
     private final BuildSystemPlugin plugin;
-    private final ConfigService configService;
+    private final Services services;
     private final Messages messages;
-    private final Supplier<SpawnService> spawnService;
-    private final Supplier<Prompts> prompts;
     private final FolderStorageImpl folderStorage;
     private final WorldStorageImpl worldStorage;
 
@@ -85,22 +81,16 @@ public class WorldServiceImpl implements WorldService {
     private final WorldCreationPrompts creationPrompts;
     private final WorldImportCoordinator importCoordinator;
 
-    public WorldServiceImpl(
-            BuildSystemPlugin plugin,
-            ConfigService configService,
-            Messages messages,
-            Supplier<SpawnService> spawnService,
-            Supplier<Prompts> prompts) {
+    public WorldServiceImpl(BuildSystemPlugin plugin, Services services) {
         this.plugin = plugin;
-        this.configService = configService;
-        this.messages = messages;
-        this.spawnService = spawnService;
-        this.prompts = prompts;
-        this.worldStorage = new YamlWorldStorage(plugin);
-        this.folderStorage = new YamlFolderStorage(plugin, this.worldStorage);
-        this.loadBootstrap = new WorldLoadBootstrap(plugin, this.folderStorage, this.worldStorage, configService);
-        this.creationPrompts = new WorldCreationPrompts(this, prompts, messages);
-        this.importCoordinator = new WorldImportCoordinator(plugin, this, this.worldStorage, configService, messages);
+        this.services = services;
+        this.messages = services.messages();
+        this.worldStorage = new YamlWorldStorage(plugin, services);
+        this.folderStorage = new YamlFolderStorage(plugin, this.worldStorage, services);
+        this.loadBootstrap = new WorldLoadBootstrap(plugin, this.folderStorage, this.worldStorage, services.config());
+        this.creationPrompts = new WorldCreationPrompts(this, services::prompts, services.messages());
+        this.importCoordinator =
+                new WorldImportCoordinator(plugin, this, this.worldStorage, services.config(), services.messages());
     }
 
     public void init() {
@@ -121,13 +111,13 @@ public class WorldServiceImpl implements WorldService {
     @Override
     @Contract("_ -> new")
     public WorldBuilder newWorld(String name) {
-        return new WorldBuilderImpl(WorldContext.fromPlugin(plugin), worldStorage, plugin.getDataFolder(), name);
+        return new WorldBuilderImpl(services.worldContext(), worldStorage, plugin.getDataFolder(), name);
     }
 
     @Override
     @Contract("_ -> new")
     public WorldImporter importWorld(String name) {
-        return new WorldImporterImpl(WorldContext.fromPlugin(plugin), worldStorage, name);
+        return new WorldImporterImpl(services.worldContext(), worldStorage, name);
     }
 
     public void startWorldNameInput(
@@ -156,8 +146,7 @@ public class WorldServiceImpl implements WorldService {
             }
         }
 
-        WorldImporterImpl worldImporter = new WorldImporterImpl(
-                        WorldContext.fromPlugin(plugin), worldStorage, worldName)
+        WorldImporterImpl worldImporter = new WorldImporterImpl(services.worldContext(), worldStorage, worldName)
                 .type(worldType)
                 .creator(creator)
                 .customGenerator(
@@ -283,7 +272,7 @@ public class WorldServiceImpl implements WorldService {
      * @param newName The name the world should be renamed to
      */
     public void renameWorld(Player player, BuildWorld buildWorld, String newName) {
-        new WorldRenamer(plugin, this, worldStorage, configService, messages, spawnService.get())
+        new WorldRenamer(plugin, this, worldStorage, services.config(), services.messages(), services.spawn())
                 .rename(player, buildWorld, newName);
     }
 
@@ -303,7 +292,7 @@ public class WorldServiceImpl implements WorldService {
                 .getLocation()
                 .add(0.5, 1, 0.5);
 
-        SpawnService spawnService = this.spawnService.get();
+        SpawnService spawnService = services.spawn();
         List<Player> affectedPlayers = new ArrayList<>();
 
         Bukkit.getOnlinePlayers().forEach(player -> {

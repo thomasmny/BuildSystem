@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.command.subcommand.worlds.*;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -40,25 +41,25 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class WorldsCommand extends CommandBase {
 
-    // As the composition root for the worlds subcommands, WorldsCommand keeps the plugin to resolve each subcommand's
-    // collaborators; the subcommands themselves no longer depend on it.
-    private final BuildSystemPlugin plugin;
+    // As the composition root for the worlds subcommands, WorldsCommand resolves each subcommand's collaborators from
+    // the service registry; the subcommands themselves no longer depend on the plugin.
+    private final Services services;
     private final SubCommandDispatcher dispatcher;
 
-    public WorldsCommand(BuildSystemPlugin plugin) {
-        super(plugin.getMessages(), plugin.getLogger(), true);
-        this.plugin = plugin;
+    public WorldsCommand(BuildSystemPlugin plugin, Services services) {
+        super(services.messages(), plugin.getLogger(), true);
+        this.services = services;
 
-        Messages messages = plugin.getMessages();
-        WorldServiceImpl worldService = plugin.getWorldService();
-        Menus menus = plugin.getMenus();
-        Prompts prompts = plugin.getPrompts();
-        MenuItems menuItems = plugin.getMenuItems();
-        ConfigService configService = plugin.getConfigService();
-        SettingsService settingsService = plugin.getSettingsService();
-        PlayerLookupService playerLookupService = plugin.getPlayerLookupService();
-        NavigatorCategoryRegistryImpl navigatorCategoryRegistry = plugin.getNavigatorCategoryRegistry();
-        BackupServiceImpl backupService = plugin.getBackupService();
+        Messages messages = services.messages();
+        WorldServiceImpl worldService = services.world();
+        Menus menus = services.menus();
+        Prompts prompts = services.prompts();
+        MenuItems menuItems = services.menuItems();
+        ConfigService configService = services.config();
+        SettingsService settingsService = services.settings();
+        PlayerLookupService playerLookupService = services.playerLookup();
+        NavigatorCategoryRegistryImpl navigatorCategoryRegistry = services.navigatorCategoryRegistry();
+        BackupServiceImpl backupService = services.backup();
         Logger logger = plugin.getLogger();
         File dataFolder = plugin.getDataFolder();
         TaskScheduler scheduler = new TaskScheduler(plugin);
@@ -95,7 +96,7 @@ public class WorldsCommand extends CommandBase {
                         new UnimportSubCommand(messages, worldService)),
                 // Category shortcuts (/worlds <category>) are derived from the navigator categories; the static
                 // subcommands above are registered first so a category named like a real subcommand never shadows it.
-                new CategoryShortcuts(plugin));
+                new CategoryShortcuts(services));
     }
 
     @Override
@@ -104,7 +105,7 @@ public class WorldsCommand extends CommandBase {
             if (!requirePermission(player, "buildsystem.navigator")) {
                 return;
             }
-            plugin.getMenus().openNavigator(player);
+            services.menus().openNavigator(player);
             XSound.BLOCK_CHEST_OPEN.play(player);
             return;
         }

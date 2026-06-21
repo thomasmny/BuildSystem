@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.storage.yaml;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
@@ -25,7 +26,6 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.codec.FolderCodec;
 import de.eintosti.buildsystem.storage.migration.StorageMigration;
-import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,33 +46,33 @@ public class YamlFolderStorage extends FolderStorageImpl {
     private static final String FOLDERS_KEY = "folders";
     private static final int LEGACY_VERSION = 1;
 
-    private final BuildSystemPlugin plugin;
+    private final Services services;
     private final YamlStore store;
     private final FileConfiguration config;
     private @Nullable FolderCodec codec;
 
-    public YamlFolderStorage(BuildSystemPlugin plugin, WorldStorage worldStorage) {
+    public YamlFolderStorage(BuildSystemPlugin plugin, WorldStorage worldStorage, Services services) {
         super(plugin.getLogger(), worldStorage);
-        this.plugin = plugin;
+        this.services = services;
         this.store = new YamlStore(plugin.getDataFolder(), "folders.yml", plugin.getLogger());
         this.config = store.config();
     }
 
     /**
-     * The codec, built lazily on first use. Folders are loaded during plugin enable, before some of the services a
-     * {@link WorldContext} bundles exist; deferring construction to first load (after enable completes the service
+     * The codec, built lazily on first use. Folders are loaded during plugin enable, before some of the services the
+     * {@code WorldContext} bundles exist; deferring construction to first load (after enable completes the service
      * graph) keeps startup from resolving a not-yet-created service.
      */
     private FolderCodec codec() {
         if (codec == null) {
-            codec = new FolderCodec(WorldContext.fromPlugin(plugin), plugin.getNavigatorCategoryRegistry());
+            codec = new FolderCodec(services.worldContext(), services.navigatorCategoryRegistry());
         }
         return codec;
     }
 
     @Override
     protected Folder newFolder(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
-        return new FolderImpl(WorldContext.fromPlugin(plugin), name, category, parent, creator);
+        return new FolderImpl(services.worldContext(), name, category, parent, creator);
     }
 
     @Override

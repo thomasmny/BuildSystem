@@ -25,7 +25,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
@@ -68,7 +67,7 @@ class StatusMenuTest {
     private StatusMenu menu() {
         Messages messages = mock(Messages.class);
         when(messages.getString(anyString(), any(), any())).thenReturn("Title");
-        WorldStatusRegistry registry = TestData.stubStatusRegistry(mock(BuildSystemPlugin.class));
+        WorldStatusRegistry registry = TestData.statusRegistry();
 
         WorldData data = mock(WorldData.class);
         when(data.getStatus()).thenReturn(TestData.NOT_STARTED);

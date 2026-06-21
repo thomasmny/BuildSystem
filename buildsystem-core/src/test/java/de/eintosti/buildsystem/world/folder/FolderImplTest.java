@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
@@ -44,18 +43,15 @@ import org.junit.jupiter.api.Test;
  */
 class FolderImplTest {
 
-    private BuildSystemPlugin plugin;
+    private WorldContext context;
 
     @BeforeEach
     void setUp() {
-        plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
-        when(plugin.getConfigService().current().world().unload().timeUntilUnload())
-                .thenReturn("06:00:00");
+        context = TestData.worldContext();
     }
 
     private FolderImpl folder(String name) {
-        return new FolderImpl(
-                WorldContext.fromPlugin(plugin), name, TestData.PUBLIC, null, Builder.of(UUID.randomUUID(), "Creator"));
+        return new FolderImpl(context, name, TestData.PUBLIC, null, Builder.of(UUID.randomUUID(), "Creator"));
     }
 
     private BuildWorldImpl world(String name) {
@@ -70,7 +66,7 @@ class FolderImplTest {
                 .withProjectOverrideEnabled(() -> false)
                 .build();
         return new BuildWorldImpl(
-                WorldContext.fromPlugin(plugin),
+                context,
                 UUID.randomUUID(),
                 name,
                 BuildWorldType.NORMAL,

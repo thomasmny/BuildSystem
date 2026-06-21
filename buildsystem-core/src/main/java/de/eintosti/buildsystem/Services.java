@@ -30,6 +30,7 @@ import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
@@ -41,11 +42,12 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Internal holder for the plugin's services. Owns the service fields and constructs them in the exact order the plugin
- * lifecycle requires; {@link BuildSystemPlugin}'s getters delegate to this holder.
+ * The plugin's service registry and composition context. Owns the service fields and constructs them in the exact
+ * order the plugin lifecycle requires, and is injected into the composition roots (the menu/listener/command
+ * registrars and the API facade) so they resolve collaborators from here rather than through the plugin God-object.
  */
 @NullMarked
-final class Services {
+public final class Services {
 
     private final BuildSystemPlugin plugin;
 
@@ -68,6 +70,7 @@ final class Services {
     private @Nullable MenuItems menuItems;
     private @Nullable Menus menus;
     private @Nullable Prompts prompts;
+    private @Nullable WorldContext worldContext;
 
     Services(BuildSystemPlugin plugin) {
         this.plugin = plugin;
@@ -76,7 +79,7 @@ final class Services {
     /**
      * Creates the configuration service. Must be called first, during {@code onLoad}.
      */
-    ConfigService createConfigService() {
+    public ConfigService createConfigService() {
         this.configService = new ConfigService(plugin);
         return this.configService;
     }
@@ -85,7 +88,7 @@ final class Services {
      * Creates the message service, which depends on the already-created {@link ConfigService}. Called during
      * {@code onLoad}.
      */
-    Messages createMessages() {
+    public Messages createMessages() {
         this.messages = new Messages(plugin, config());
         return this.messages;
     }
@@ -105,7 +108,7 @@ final class Services {
         (this.playerService = new PlayerServiceImpl(plugin, config(), this::world)).init();
         this.navigatorEditorService = new NavigatorEditorService();
         this.noClipService = new NoClipService(plugin);
-        this.worldService = new WorldServiceImpl(plugin, config(), messages(), this::spawn, this::prompts);
+        this.worldService = new WorldServiceImpl(plugin, this);
         this.backupService = new BackupServiceImpl(plugin, config(), messages(), world(), this::spawn);
         this.settingsService = new SettingsService(plugin, config(), messages(), player(), world());
         this.spawnService = new SpawnService(plugin, world());
@@ -120,7 +123,7 @@ final class Services {
                 new TaskScheduler(plugin),
                 new NamespacedKey(plugin, "owner"),
                 new NamespacedKey(plugin, "category"));
-        this.menus = new Menus(plugin);
+        this.menus = new Menus(plugin, this);
         this.prompts = new Prompts(messages(), config(), new TaskScheduler(plugin));
 
         // Load persisted worlds/folders last: world entities pull collaborators from a WorldContext that bundles
@@ -135,75 +138,96 @@ final class Services {
         return service;
     }
 
-    ConfigService config() {
+    public ConfigService config() {
         return checkNotNull(configService, "ConfigService");
     }
 
-    Messages messages() {
+    public Messages messages() {
         return checkNotNull(messages, "Messages");
     }
 
-    NavigatorService navigator() {
+    public NavigatorService navigator() {
         return checkNotNull(navigatorService, "NavigatorService");
     }
 
-    NavigatorEditorService navigatorEditor() {
+    public NavigatorEditorService navigatorEditor() {
         return checkNotNull(navigatorEditorService, "NavigatorEditorService");
     }
 
-    CustomBlockManager customBlockManager() {
+    public CustomBlockManager customBlockManager() {
         return checkNotNull(customBlockManager, "CustomBlockManager");
     }
 
-    PlayerServiceImpl player() {
+    public PlayerServiceImpl player() {
         return checkNotNull(playerService, "PlayerServiceImpl");
     }
 
-    PlayerLookupService playerLookup() {
+    public PlayerLookupService playerLookup() {
         return checkNotNull(playerLookupService, "PlayerLookupService");
     }
 
-    NoClipService noClip() {
+    public NoClipService noClip() {
         return checkNotNull(noClipService, "NoClipService");
     }
 
-    SettingsService settings() {
+    public SettingsService settings() {
         return checkNotNull(settingsService, "SettingsService");
     }
 
-    SpawnService spawn() {
+    public SpawnService spawn() {
         return checkNotNull(spawnService, "SpawnService");
     }
 
-    WorldServiceImpl world() {
+    public WorldServiceImpl world() {
         return checkNotNull(worldService, "WorldServiceImpl");
     }
 
-    BackupServiceImpl backup() {
+    public BackupServiceImpl backup() {
         return checkNotNull(backupService, "BackupServiceImpl");
     }
 
-    CustomizableIcons customizableIcons() {
+    public CustomizableIcons customizableIcons() {
         return checkNotNull(customizableIcons, "CustomizableIcons");
     }
 
-    NavigatorCategoryRegistryImpl navigatorCategoryRegistry() {
+    public NavigatorCategoryRegistryImpl navigatorCategoryRegistry() {
         return checkNotNull(navigatorCategoryRegistry, "NavigatorCategoryRegistryImpl");
     }
 
-    WorldStatusRegistryImpl worldStatusRegistry() {
+    public WorldStatusRegistryImpl worldStatusRegistry() {
         return checkNotNull(worldStatusRegistry, "WorldStatusRegistryImpl");
     }
 
-    MenuItems menuItems() {
+    public MenuItems menuItems() {
         return checkNotNull(menuItems, "MenuItems");
     }
 
-    Menus menus() {
+    public Menus menus() {
         return checkNotNull(menus, "Menus");
     }
 
-    Prompts prompts() {
+    public Prompts prompts() {
         return checkNotNull(prompts, "Prompts");
+    }
+
+    /**
+     * The {@link WorldContext} bundling the collaborators world entities render and manage themselves with. Built lazily
+     * and cached: it is first needed when worlds load (the last step of {@link #initClasses()}), by which point every
+     * bundled service exists.
+     */
+    public WorldContext worldContext() {
+        if (worldContext == null) {
+            worldContext = new WorldContext(
+                    messages(),
+                    menuItems(),
+                    config(),
+                    player(),
+                    spawn(),
+                    worldStatusRegistry(),
+                    customizableIcons(),
+                    new TaskScheduler(plugin),
+                    plugin.getLogger());
+        }
+        return worldContext;
     }
 }

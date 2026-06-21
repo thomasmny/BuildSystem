@@ -22,6 +22,7 @@ import static org.mockito.Mockito.*;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
@@ -50,24 +51,27 @@ class YamlFolderStorageRoundTripTest {
     File dataFolder;
 
     private BuildSystemPlugin plugin;
+    private Services services;
+    private WorldContext context;
     private WorldStorage worldStorage;
 
     @BeforeEach
     void setUp() {
         plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
-        TestData.stubCategoryRegistry(plugin);
+        services = TestData.mockServices();
+        context = services.worldContext();
         worldStorage = Mockito.mock(WorldStorage.class);
     }
 
     private YamlFolderStorage newStorage() {
-        return new YamlFolderStorage(plugin, worldStorage);
+        return new YamlFolderStorage(plugin, worldStorage, services);
     }
 
     private FolderImpl folder(String name, NavigatorCategory category, List<UUID> worlds) {
         Builder creator = Builder.of(UUID.randomUUID(), "FolderCreator");
         return new FolderImpl(
-                WorldContext.fromPlugin(plugin),
+                context,
                 UUID.randomUUID(),
                 name,
                 1_700_000_000_000L,

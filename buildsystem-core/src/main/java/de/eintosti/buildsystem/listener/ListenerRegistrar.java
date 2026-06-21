@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -54,29 +55,31 @@ import org.jspecify.annotations.NullMarked;
 public final class ListenerRegistrar {
 
     private final BuildSystemPlugin plugin;
+    private final Services services;
     private final PluginManager pluginManager;
 
-    public ListenerRegistrar(BuildSystemPlugin plugin) {
+    public ListenerRegistrar(BuildSystemPlugin plugin, Services services) {
         this.plugin = plugin;
+        this.services = services;
         this.pluginManager = plugin.getServer().getPluginManager();
     }
 
     public void registerAll() {
-        WorldStorageImpl worldStorage = plugin.getWorldService().getWorldStorage();
-        ConfigService configService = plugin.getConfigService();
-        SettingsService settingsService = plugin.getSettingsService();
-        WorldStatusRegistry worldStatusRegistry = plugin.getWorldStatusRegistry();
-        CustomBlockManager customBlockManager = plugin.getCustomBlockManager();
-        MenuItems menuItems = plugin.getMenuItems();
-        Menus menus = plugin.getMenus();
-        Messages messages = plugin.getMessages();
-        PlayerServiceImpl playerService = plugin.getPlayerService();
-        NavigatorService navigatorService = plugin.getNavigatorService();
-        NavigatorEditorService navigatorEditorService = plugin.getNavigatorEditorService();
-        NoClipService noClipService = plugin.getNoClipService();
-        SpawnService spawnService = plugin.getSpawnService();
+        WorldStorageImpl worldStorage = services.world().getWorldStorage();
+        ConfigService configService = services.config();
+        SettingsService settingsService = services.settings();
+        WorldStatusRegistry worldStatusRegistry = services.worldStatusRegistry();
+        CustomBlockManager customBlockManager = services.customBlockManager();
+        MenuItems menuItems = services.menuItems();
+        Menus menus = services.menus();
+        Messages messages = services.messages();
+        PlayerServiceImpl playerService = services.player();
+        NavigatorService navigatorService = services.navigator();
+        NavigatorEditorService navigatorEditorService = services.navigatorEditor();
+        NoClipService noClipService = services.noClip();
+        SpawnService spawnService = services.spawn();
         TaskScheduler scheduler = new TaskScheduler(plugin);
-        PlayerLookupService playerLookupService = plugin.getPlayerLookupService();
+        PlayerLookupService playerLookupService = services.playerLookup();
         UpdateChecker updateChecker = plugin.getUpdateChecker();
 
         register(new AsyncPlayerChatListener());
@@ -151,14 +154,13 @@ public final class ListenerRegistrar {
      */
     private void registerIntegrations(ConfigService configService) {
         if (pluginManager.getPlugin("AxiomPaper") != null) {
-            register(
-                    new WorldManipulateByAxiomListener(plugin.getWorldService().getWorldStorage(), plugin.getLogger()));
+            register(new WorldManipulateByAxiomListener(services.world().getWorldStorage(), plugin.getLogger()));
         }
 
         boolean isWorldEdit =
                 pluginManager.getPlugin("WorldEdit") != null || pluginManager.getPlugin("FastAsyncWorldEdit") != null;
         if (isWorldEdit && configService.current().settings().builder().blockWorldEditNonBuilder()) {
-            new EditSessionListener(plugin.getWorldService().getWorldStorage());
+            new EditSessionListener(services.world().getWorldStorage());
         }
     }
 }

@@ -28,6 +28,8 @@ import static org.mockito.Mockito.when;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.io.File;
 import java.util.List;
@@ -49,8 +51,15 @@ class WorldStatusRegistryImplTest {
     void setUp() {
         BuildSystemPlugin plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
-        NavigatorCategoryRegistryImpl categories = new NavigatorCategoryRegistryImpl(plugin, plugin::getWorldService);
-        registry = new WorldStatusRegistryImpl(plugin, categories, plugin.getMessages(), plugin::getWorldService);
+        // The delete/reset cascades walk worldService.getWorldStorage()/getFolderStorage(); deep-stub mocks yield
+        // empty collections so those cascades are no-ops rather than NPEs.
+        NavigatorCategoryRegistryImpl categories =
+                new NavigatorCategoryRegistryImpl(plugin, () -> mock(WorldServiceImpl.class, RETURNS_DEEP_STUBS));
+        registry = new WorldStatusRegistryImpl(
+                plugin,
+                categories,
+                mock(Messages.class, RETURNS_DEEP_STUBS),
+                () -> mock(WorldServiceImpl.class, RETURNS_DEEP_STUBS));
     }
 
     @Test
@@ -190,8 +199,8 @@ class WorldStatusRegistryImplTest {
         when(plugin.getDataFolder()).thenReturn(dataFolder);
         return new WorldStatusRegistryImpl(
                 plugin,
-                new NavigatorCategoryRegistryImpl(plugin, plugin::getWorldService),
-                plugin.getMessages(),
-                plugin::getWorldService);
+                new NavigatorCategoryRegistryImpl(plugin, () -> mock(WorldServiceImpl.class)),
+                mock(Messages.class, RETURNS_DEEP_STUBS),
+                () -> mock(WorldServiceImpl.class));
     }
 }
