@@ -126,13 +126,22 @@ config toggles. `config.yml` and `messages.yml` migrate automatically.
 - Placeholder substitution is literal, not regex-based.
 - Inventory clicks are matched against the menu inventory only; a click in the
   player's own inventory no longer triggers the menu button in the same slot.
+- A world whose stored difficulty is unreadable no longer vanishes on load; it
+  falls back to Peaceful, like the other world enums.
+- World settings absent from disk (block protections, and the last-edited/loaded/
+  unloaded timestamps) now load with the same defaults a freshly created world
+  gets, instead of loading disabled / at epoch zero.
+- Failed world-directory deletions are reported instead of silently leaving files
+  behind.
 
 ### Security
 
 - Path-traversal guards on template and world directory resolution. World names
   are also checked at the public `WorldService.newWorld(String)` and on deletion,
   so a name resolving outside the world container (e.g. `../../plugins/x`) is
-  rejected rather than creating or deleting a directory outside it (#481).
+  rejected rather than creating or deleting a directory outside it (#481). World
+  creation also rejects reserved/degenerate names — the `.`/`..` aliases and
+  Windows device names such as `CON`/`PRN`.
 
 ### Performance
 
@@ -140,6 +149,8 @@ config toggles. `config.yml` and `messages.yml` migrate automatically.
 - NoClip check no longer allocates a `Location` per tick.
 - Reduced allocation/work in scoreboard rendering, color processing, and the
   template menu.
+- World, folder and player file I/O share a single bounded background thread pool
+  instead of the unbounded common pool.
 
 ### Migration (server admins)
 
