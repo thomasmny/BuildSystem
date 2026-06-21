@@ -28,6 +28,7 @@ import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -135,6 +136,63 @@ class FolderImplTest {
 
         assertNull(world.getFolder());
         assertFalse(folder.containsWorld(world));
+    }
+
+    @Test
+    void addWorld_isIdempotent() {
+        FolderImpl folder = folder("Target");
+        BuildWorldImpl world = world("world");
+
+        folder.addWorld(world);
+        folder.addWorld(world);
+
+        assertEquals(1, folder.getWorldUUIDs().size());
+        assertEquals(1, folder.getWorldCount());
+    }
+
+    @Test
+    void setParent_registersThenDeregistersSubFolder() {
+        FolderImpl parent = folder("Parent");
+        FolderImpl child = folder("Child");
+
+        child.setParent(parent);
+        assertTrue(parent.getSubFolders().contains(child));
+
+        child.setParent(null);
+        assertTrue(parent.getSubFolders().isEmpty());
+    }
+
+    @Test
+    void setParent_repeatedDoesNotDuplicate() {
+        FolderImpl parent = folder("Parent");
+        FolderImpl child = folder("Child");
+
+        child.setParent(parent);
+        child.setParent(parent);
+
+        assertEquals(1, parent.getSubFolders().size());
+    }
+
+    @Test
+    void constructor_defensivelyCopiesWorlds() {
+        List<UUID> worlds = new ArrayList<>(List.of(UUID.randomUUID()));
+        FolderImpl folder = new FolderImpl(
+                context,
+                UUID.randomUUID(),
+                "Detached",
+                0L,
+                TestData.PUBLIC,
+                null,
+                Builder.of(UUID.randomUUID(), "Creator"),
+                XMaterial.CHEST,
+                "-",
+                "-",
+                worlds,
+                new ArrayList<>());
+
+        worlds.clear();
+
+        assertEquals(1, folder.getWorldUUIDs().size());
     }
 
     @Test

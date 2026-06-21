@@ -42,7 +42,7 @@ public class FolderImpl implements Folder {
     private final Builder creator;
     private final long creation;
     private NavigatorCategory category;
-    private final List<UUID> worlds;
+    private final Set<UUID> worlds;
     private final List<Folder> subfolders;
 
     private @Nullable Folder parent;
@@ -88,15 +88,15 @@ public class FolderImpl implements Folder {
         this.creation = creation;
         this.category = category;
         this.parent = parent;
-        if (parent != null && !parent.getSubFolders().contains(this)) {
-            ((FolderImpl) parent).subfolders.add(this);
-        }
         this.creator = creator;
-        this.worlds = new ArrayList<>(worlds);
+        this.worlds = new LinkedHashSet<>(worlds);
         this.material = material;
         this.permission = permission;
         this.project = project;
-        this.subfolders = subfolders;
+        this.subfolders = new ArrayList<>(subfolders);
+        if (parent != null) {
+            ((FolderImpl) parent).addSubFolder(this);
+        }
     }
 
     @Override
@@ -195,10 +195,10 @@ public class FolderImpl implements Folder {
                     .formatted(this.category.getId(), parent.getCategory().getId()));
         }
 
-        if (parent != null && !parent.getSubFolders().contains(this)) {
-            ((FolderImpl) parent).subfolders.add(this);
-        } else if (parent == null && this.parent != null) {
-            ((FolderImpl) this.parent).subfolders.remove(this);
+        if (parent != null) {
+            ((FolderImpl) parent).addSubFolder(this);
+        } else if (this.parent != null) {
+            ((FolderImpl) this.parent).removeSubFolder(this);
         }
 
         this.parent = parent;
@@ -212,7 +212,7 @@ public class FolderImpl implements Folder {
     @Override
     @Unmodifiable
     public List<UUID> getWorldUUIDs() {
-        return Collections.unmodifiableList(this.worlds);
+        return List.copyOf(this.worlds);
     }
 
     @Override
@@ -227,9 +227,7 @@ public class FolderImpl implements Folder {
 
     @Override
     public void addWorld(BuildWorld buildWorld) {
-        if (!this.worlds.contains(buildWorld.getUniqueId())) {
-            this.worlds.add(buildWorld.getUniqueId());
-        }
+        this.worlds.add(buildWorld.getUniqueId());
         // BuildWorld owns the back-reference; only update it when it is not already pointing here, which also
         // terminates the addWorld <-> setFolder handshake.
         if (buildWorld.getFolder() != this) {
@@ -255,6 +253,24 @@ public class FolderImpl implements Folder {
     @Unmodifiable
     public List<Folder> getSubFolders() {
         return Collections.unmodifiableList(this.subfolders);
+    }
+
+    /**
+     * Adds {@code child} to this folder's sub-folder list, ignoring duplicates. Package-private: membership is driven by
+     * {@link #setParent}, so a folder owns its own sub-folder list rather than having it mutated through a cast from
+     * outside.
+     */
+    void addSubFolder(FolderImpl child) {
+        if (!this.subfolders.contains(child)) {
+            this.subfolders.add(child);
+        }
+    }
+
+    /**
+     * Removes {@code child} from this folder's sub-folder list. Counterpart to {@link #addSubFolder(FolderImpl)}.
+     */
+    void removeSubFolder(FolderImpl child) {
+        this.subfolders.remove(child);
     }
 
     @Override
