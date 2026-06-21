@@ -23,6 +23,8 @@ import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.storage.codec.PlayerCodec;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
@@ -48,14 +50,21 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
 
     @Override
     public CompletableFuture<Void> save(BuildPlayer buildPlayer) {
-        return CompletableFuture.runAsync(() -> store.atomicSave(
-                () -> config.set(PLAYERS_KEY + "." + codec.key(buildPlayer), codec.serialize(buildPlayer))));
+        // Serialize on the calling (main) thread; the async block only writes the captured map to disk.
+        String playerKey = codec.key(buildPlayer);
+        Map<String, Object> serialized = codec.serialize(buildPlayer);
+        return CompletableFuture.runAsync(
+                () -> store.atomicSave(() -> config.set(PLAYERS_KEY + "." + playerKey, serialized)));
     }
 
     @Override
     public CompletableFuture<Void> save(Collection<BuildPlayer> players) {
-        return CompletableFuture.runAsync(() -> store.atomicSave(() ->
-                players.forEach(player -> config.set(PLAYERS_KEY + "." + codec.key(player), codec.serialize(player)))));
+        Map<String, Object> serialized = new LinkedHashMap<>();
+        for (BuildPlayer player : players) {
+            serialized.put(codec.key(player), codec.serialize(player));
+        }
+        return CompletableFuture.runAsync(() -> store.atomicSave(
+                () -> serialized.forEach((playerKey, value) -> config.set(PLAYERS_KEY + "." + playerKey, value))));
     }
 
     @Override

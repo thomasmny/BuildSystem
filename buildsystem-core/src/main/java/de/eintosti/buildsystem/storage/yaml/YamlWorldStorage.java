@@ -25,6 +25,8 @@ import de.eintosti.buildsystem.storage.codec.WorldCodec;
 import de.eintosti.buildsystem.storage.migration.StorageMigration;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
@@ -65,18 +67,25 @@ public class YamlWorldStorage extends WorldStorageImpl {
 
     @Override
     public CompletableFuture<Void> save(BuildWorld buildWorld) {
+        // Serialize on the calling (main) thread, where the world's data is owned: the async block must only write the
+        // already-captured map to disk, never read live domain state off the main thread.
+        String worldKey = codec().key(buildWorld);
+        Map<String, @Nullable Object> serialized = codec().serialize(buildWorld);
         return CompletableFuture.runAsync(() -> store.atomicSave(() -> {
             config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
-            config.set(WORLDS_KEY + "." + codec().key(buildWorld), codec().serialize(buildWorld));
+            config.set(WORLDS_KEY + "." + worldKey, serialized);
         }));
     }
 
     @Override
     public CompletableFuture<Void> save(Collection<BuildWorld> buildWorlds) {
+        Map<String, Object> serialized = new LinkedHashMap<>();
+        for (BuildWorld buildWorld : buildWorlds) {
+            serialized.put(codec().key(buildWorld), codec().serialize(buildWorld));
+        }
         return CompletableFuture.runAsync(() -> store.atomicSave(() -> {
             config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
-            buildWorlds.forEach(buildWorld ->
-                    config.set(WORLDS_KEY + "." + codec().key(buildWorld), codec().serialize(buildWorld)));
+            serialized.forEach((worldKey, value) -> config.set(WORLDS_KEY + "." + worldKey, value));
         }));
     }
 

@@ -30,6 +30,7 @@ import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -77,17 +78,24 @@ public class YamlFolderStorage extends FolderStorageImpl {
 
     @Override
     public CompletableFuture<Void> save(Folder folder) {
+        // Serialize on the calling (main) thread; the async block only writes the captured map to disk.
+        String folderKey = codec().key(folder);
+        Map<String, Object> serialized = codec().serialize(folder);
         return CompletableFuture.runAsync(() -> store.atomicSave(() -> {
             config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
-            config.set(FOLDERS_KEY + "." + codec().key(folder), codec().serialize(folder));
+            config.set(FOLDERS_KEY + "." + folderKey, serialized);
         }));
     }
 
     @Override
     public CompletableFuture<Void> save(Collection<Folder> folders) {
+        Map<String, Object> serialized = new LinkedHashMap<>();
+        for (Folder folder : folders) {
+            serialized.put(codec().key(folder), codec().serialize(folder));
+        }
         return CompletableFuture.runAsync(() -> store.atomicSave(() -> {
             config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
-            folders.forEach(folder -> config.set(FOLDERS_KEY + "." + codec().key(folder), codec().serialize(folder)));
+            serialized.forEach((folderKey, value) -> config.set(FOLDERS_KEY + "." + folderKey, value));
         }));
     }
 
