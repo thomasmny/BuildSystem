@@ -91,8 +91,12 @@ config toggles. `config.yml` and `messages.yml` migrate automatically.
   `BuildWorldStatusChangeEvent`.
 - Backup and folder events in `event.backup` and `event.folder`.
 - `WorldService.importWorlds()` for bulk import, spread across ticks.
-- Direct `WorldData` accessors (`getStatus()`/`setStatus()`,
-  `isPhysics()`/`setPhysics()`, …) in addition to the property objects.
+- Typed `WorldData` access: every setting is read and written through a
+  `WorldDataKey<T>` catalog — `data.get(WorldDataKey.PERMISSION)` /
+  `data.set(WorldDataKey.BLOCK_BREAKING, true)` — instead of a getter/setter per
+  setting (`getCustomSpawnLocation()` remains as a helper). The built-in keys
+  (`PERMISSION`, `PROJECT`, `STATUS`, `DIFFICULTY`, `BLOCK_BREAKING`, …) live on
+  `WorldDataKey`.
 - `WorldStatusRegistry` and `NavigatorCategoryRegistry`, exposed via
   `BuildSystem.getStatusRegistry()` / `getNavigatorCategoryRegistry()`.
 - `Displayable.getIconSkullTexture()` and `getHeadProfile()` for custom head
@@ -125,7 +129,10 @@ config toggles. `config.yml` and `messages.yml` migrate automatically.
 
 ### Security
 
-- Path-traversal guards on template and world directory resolution.
+- Path-traversal guards on template and world directory resolution. World names
+  are also checked at the public `WorldService.newWorld(String)` and on deletion,
+  so a name resolving outside the world container (e.g. `../../plugins/x`) is
+  rejected rather than creating or deleting a directory outside it (#481).
 
 ### Performance
 
