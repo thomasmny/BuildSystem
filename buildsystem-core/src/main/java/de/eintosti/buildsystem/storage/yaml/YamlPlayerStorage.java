@@ -31,15 +31,11 @@ import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.world.display.WorldDisplayImpl;
 import de.eintosti.buildsystem.world.display.WorldFilterImpl;
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -49,50 +45,25 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
 
     private static final String PLAYERS_KEY = "players";
 
-    private final File file;
+    private final YamlStore store;
     private final FileConfiguration config;
-
-    /**
-     * Serializes all access to {@link #config} and {@link #file}; see {@code YamlWorldStorage} for the rationale (the
-     * non-thread-safe configuration is touched from common-pool tasks).
-     */
-    private final Object ioLock = new Object();
 
     public YamlPlayerStorage(BuildSystemPlugin plugin) {
         super(plugin.getLogger());
-        this.file = new File(plugin.getDataFolder(), "players.yml");
-        this.config = YamlConfiguration.loadConfiguration(file);
+        this.store = new YamlStore(plugin.getDataFolder(), "players.yml", plugin.getLogger());
+        this.config = store.config();
     }
 
     @Override
     public CompletableFuture<Void> save(BuildPlayer buildPlayer) {
-        return CompletableFuture.runAsync(() -> {
-            synchronized (ioLock) {
-                config.set(
-                        PLAYERS_KEY + "." + buildPlayer.getUniqueId(),
-                        serializePlayer(BuildPlayerImpl.of(buildPlayer)));
-                saveFile();
-            }
-        });
+        return CompletableFuture.runAsync(() -> store.atomicSave(() -> config.set(
+                PLAYERS_KEY + "." + buildPlayer.getUniqueId(), serializePlayer(BuildPlayerImpl.of(buildPlayer)))));
     }
 
     @Override
     public CompletableFuture<Void> save(Collection<BuildPlayer> players) {
-        return CompletableFuture.runAsync(() -> {
-            synchronized (ioLock) {
-                players.forEach(player -> config.set(
-                        PLAYERS_KEY + "." + player.getUniqueId(), serializePlayer(BuildPlayerImpl.of(player))));
-                saveFile();
-            }
-        });
-    }
-
-    private void saveFile() {
-        try {
-            config.save(file);
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not save players.yml file", e);
-        }
+        return CompletableFuture.runAsync(() -> store.atomicSave(() -> players.forEach(player ->
+                config.set(PLAYERS_KEY + "." + player.getUniqueId(), serializePlayer(BuildPlayerImpl.of(player))))));
     }
 
     public Map<String, Object> serializePlayer(BuildPlayerImpl player) {
@@ -144,32 +115,22 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
 
     @Override
     public CompletableFuture<Collection<BuildPlayer>> load() {
-        return CompletableFuture.supplyAsync(() -> {
-            synchronized (ioLock) {
-                Collection<BuildPlayer> players = new ArrayList<>();
-                for (String playerUuid : loadPlayerKeys()) {
-                    try {
-                        players.add(loadPlayer(playerUuid));
-                    } catch (Exception e) {
-                        logger.log(Level.WARNING, "Skipping player \"" + playerUuid + "\": could not be loaded", e);
-                    }
+        return CompletableFuture.supplyAsync(() -> store.locked(() -> {
+            Collection<BuildPlayer> players = new ArrayList<>();
+            for (String playerUuid : loadPlayerKeys()) {
+                try {
+                    players.add(loadPlayer(playerUuid));
+                } catch (Exception e) {
+                    logger.log(Level.WARNING, "Skipping player \"" + playerUuid + "\": could not be loaded", e);
                 }
-                return players;
             }
-        });
+            return players;
+        }));
     }
 
     private Set<String> loadPlayerKeys() {
-        if (!file.exists()) {
-            config.options().copyDefaults(true);
-            saveFile();
+        if (!store.reload()) {
             return Set.of();
-        }
-
-        try {
-            config.load(file);
-        } catch (IOException | InvalidConfigurationException e) {
-            logger.log(Level.SEVERE, "Could not load players.yml file", e);
         }
 
         ConfigurationSection section = config.getConfigurationSection(PLAYERS_KEY);
@@ -262,11 +223,7 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
 
     @Override
     public CompletableFuture<Void> delete(String playerKey) {
-        return CompletableFuture.runAsync(() -> {
-            synchronized (ioLock) {
-                config.set(PLAYERS_KEY + "." + playerKey, null);
-                saveFile();
-            }
-        });
+        return CompletableFuture.runAsync(
+                () -> store.atomicSave(() -> config.set(PLAYERS_KEY + "." + playerKey, null)));
     }
 }

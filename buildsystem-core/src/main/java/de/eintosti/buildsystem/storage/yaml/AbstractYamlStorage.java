@@ -18,53 +18,34 @@
 package de.eintosti.buildsystem.storage.yaml;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Base for the simple (non-cache-backed) storages. Holds a {@link YamlStore} for the file plumbing and exposes it
+ * through the {@code loadFile}/{@code saveFile}/{@code getFile} API its subclasses use, so all storages — simple and
+ * cache-backed alike — share one plumbing implementation.
+ */
 @NullMarked
 public abstract class AbstractYamlStorage {
 
-    private final File file;
-    private final FileConfiguration configuration;
-    private final Logger logger;
+    private final YamlStore store;
 
     public AbstractYamlStorage(BuildSystemPlugin plugin, String fileName) {
-        this.file = new File(plugin.getDataFolder(), fileName);
-        this.configuration = YamlConfiguration.loadConfiguration(file);
-        this.logger = plugin.getLogger();
+        this.store = new YamlStore(plugin.getDataFolder(), fileName, plugin.getLogger());
         loadFile();
     }
 
     public void loadFile() {
-        if (!file.exists()) {
-            configuration.options().copyDefaults(true);
-            saveFile();
-            return;
-        }
-
-        try {
-            configuration.load(file);
-        } catch (IOException | InvalidConfigurationException e) {
-            logger.log(Level.SEVERE, "Failed to load configuration file: " + file.getName(), e);
-        }
+        store.reload();
     }
 
     public void saveFile() {
-        try {
-            configuration.save(file);
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Failed to save configuration file: " + file.getName(), e);
-        }
+        store.save();
     }
 
     public @Nullable FileConfiguration getFile() {
-        return configuration;
+        return store.config();
     }
 }

@@ -26,17 +26,12 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -47,14 +42,14 @@ public class YamlFolderStorage extends FolderStorageImpl {
     private static final String FOLDERS_KEY = "folders";
 
     private final BuildSystemPlugin plugin;
-    private final File file;
+    private final YamlStore store;
     private final FileConfiguration config;
 
     public YamlFolderStorage(BuildSystemPlugin plugin, WorldStorage worldStorage) {
         super(plugin.getLogger(), worldStorage);
         this.plugin = plugin;
-        this.file = new File(plugin.getDataFolder(), "folders.yml");
-        this.config = YamlConfiguration.loadConfiguration(file);
+        this.store = new YamlStore(plugin.getDataFolder(), "folders.yml", plugin.getLogger());
+        this.config = store.config();
     }
 
     @Override
@@ -64,26 +59,14 @@ public class YamlFolderStorage extends FolderStorageImpl {
 
     @Override
     public CompletableFuture<Void> save(Folder folder) {
-        return CompletableFuture.runAsync(() -> {
-            config.set(FOLDERS_KEY + "." + folder.getName(), serializeFolder(folder));
-            saveFile();
-        });
+        return CompletableFuture.runAsync(() ->
+                store.atomicSave(() -> config.set(FOLDERS_KEY + "." + folder.getName(), serializeFolder(folder))));
     }
 
     @Override
     public CompletableFuture<Void> save(Collection<Folder> folders) {
-        return CompletableFuture.runAsync(() -> {
-            folders.forEach(folder -> config.set(FOLDERS_KEY + "." + folder.getName(), serializeFolder(folder)));
-            saveFile();
-        });
-    }
-
-    private void saveFile() {
-        try {
-            config.save(file);
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not save folders.yml file", e);
-        }
+        return CompletableFuture.runAsync(() -> store.atomicSave(() ->
+                folders.forEach(folder -> config.set(FOLDERS_KEY + "." + folder.getName(), serializeFolder(folder)))));
     }
 
     public Map<String, @Nullable Object> serializeFolder(Folder folder) {
@@ -107,7 +90,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
     @Override
     @Contract("-> new")
     public CompletableFuture<Collection<Folder>> load() {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync(() -> store.locked(() -> {
             Set<String> folders = loadFolderKeys();
 
             // First pass: Create all folders without parent references
@@ -128,20 +111,12 @@ public class YamlFolderStorage extends FolderStorageImpl {
             }
 
             return new ArrayList<>(loadedFolders.values());
-        });
+        }));
     }
 
     private Set<String> loadFolderKeys() {
-        if (!file.exists()) {
-            config.options().copyDefaults(true);
-            saveFile();
+        if (!store.reload()) {
             return Set.of();
-        }
-
-        try {
-            config.load(file);
-        } catch (IOException | InvalidConfigurationException e) {
-            logger.log(Level.SEVERE, "Could not load folders.yml file", e);
         }
 
         ConfigurationSection section = config.getConfigurationSection(FOLDERS_KEY);
@@ -210,9 +185,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
 
     @Override
     public CompletableFuture<Void> delete(String folderKey) {
-        return CompletableFuture.runAsync(() -> {
-            config.set(FOLDERS_KEY + "." + folderKey, null);
-            saveFile();
-        });
+        return CompletableFuture.runAsync(
+                () -> store.atomicSave(() -> config.set(FOLDERS_KEY + "." + folderKey, null)));
     }
 }
