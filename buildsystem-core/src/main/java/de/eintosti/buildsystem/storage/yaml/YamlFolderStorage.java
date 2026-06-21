@@ -17,19 +17,21 @@
  */
 package de.eintosti.buildsystem.storage.yaml;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
+import de.eintosti.buildsystem.storage.codec.FolderCodec;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.logging.Level;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.Contract;
@@ -44,12 +46,14 @@ public class YamlFolderStorage extends FolderStorageImpl {
     private final BuildSystemPlugin plugin;
     private final YamlStore store;
     private final FileConfiguration config;
+    private final FolderCodec codec;
 
     public YamlFolderStorage(BuildSystemPlugin plugin, WorldStorage worldStorage) {
         super(plugin.getLogger(), worldStorage);
         this.plugin = plugin;
         this.store = new YamlStore(plugin.getDataFolder(), "folders.yml", plugin.getLogger());
         this.config = store.config();
+        this.codec = new FolderCodec(plugin);
     }
 
     @Override
@@ -60,52 +64,46 @@ public class YamlFolderStorage extends FolderStorageImpl {
     @Override
     public CompletableFuture<Void> save(Folder folder) {
         return CompletableFuture.runAsync(() ->
-                store.atomicSave(() -> config.set(FOLDERS_KEY + "." + folder.getName(), serializeFolder(folder))));
+                store.atomicSave(() -> config.set(FOLDERS_KEY + "." + codec.key(folder), codec.serialize(folder))));
     }
 
     @Override
     public CompletableFuture<Void> save(Collection<Folder> folders) {
         return CompletableFuture.runAsync(() -> store.atomicSave(() ->
-                folders.forEach(folder -> config.set(FOLDERS_KEY + "." + folder.getName(), serializeFolder(folder)))));
-    }
-
-    public Map<String, @Nullable Object> serializeFolder(Folder folder) {
-        Map<String, @Nullable Object> serializedFolder = new HashMap<>();
-
-        serializedFolder.put("uuid", folder.getUniqueId().toString());
-        serializedFolder.put("creator", folder.getCreator().toString());
-        serializedFolder.put("creation", folder.getCreation());
-        serializedFolder.put("category", folder.getCategory().getId());
-        serializedFolder.put("parent", folder.hasParent() ? folder.getParent().getName() : null);
-        serializedFolder.put("material", folder.getIcon().name());
-        serializedFolder.put("icon-skull-texture", folder.getIconSkullTexture());
-        serializedFolder.put("permission", folder.getPermission());
-        serializedFolder.put("project", folder.getProject());
-        serializedFolder.put(
-                "worlds", folder.getWorldUUIDs().stream().map(UUID::toString).toList());
-
-        return serializedFolder;
+                folders.forEach(folder -> config.set(FOLDERS_KEY + "." + codec.key(folder), codec.serialize(folder)))));
     }
 
     @Override
     @Contract("-> new")
     public CompletableFuture<Collection<Folder>> load() {
         return CompletableFuture.supplyAsync(() -> store.locked(() -> {
-            Set<String> folders = loadFolderKeys();
+            Set<String> folderNames = loadFolderKeys();
 
-            // First pass: Create all folders without parent references
-            Map<String, Folder> loadedFolders = folders.stream()
-                    .map(this::loadFolder)
-                    .collect(Collectors.toMap(Folder::getName, Function.identity()));
+            // First pass: load each folder without its parent reference.
+            Map<String, Folder> loadedFolders = new HashMap<>();
+            for (String folderName : folderNames) {
+                ConfigurationSection section = config.getConfigurationSection(FOLDERS_KEY + "." + folderName);
+                if (section == null) {
+                    continue;
+                }
+                try {
+                    loadedFolders.put(folderName, codec.deserialize(folderName, section));
+                } catch (Exception e) {
+                    logger.log(Level.WARNING, "Skipping folder \"" + folderName + "\": could not be loaded", e);
+                }
+            }
 
-            // Second pass: Set up parent references
-            for (String folderName : folders) {
-                String parentName = config.getString(FOLDERS_KEY + "." + folderName + ".parent");
+            // Second pass: link parents now that every folder exists.
+            for (Map.Entry<String, Folder> entry : loadedFolders.entrySet()) {
+                ConfigurationSection section = config.getConfigurationSection(FOLDERS_KEY + "." + entry.getKey());
+                if (section == null) {
+                    continue;
+                }
+                String parentName = codec.parentReference(section);
                 if (parentName != null) {
-                    Folder folder = loadedFolders.get(folderName);
                     Folder parent = loadedFolders.get(parentName);
-                    if (folder != null && parent != null) {
-                        folder.setParent(parent);
+                    if (parent != null) {
+                        entry.getValue().setParent(parent);
                     }
                 }
             }
@@ -125,57 +123,6 @@ public class YamlFolderStorage extends FolderStorageImpl {
         }
 
         return section.getKeys(false);
-    }
-
-    @Contract("_ -> new")
-    private Folder loadFolder(String folderName) {
-        final String path = FOLDERS_KEY + "." + folderName;
-
-        UUID uuid =
-                config.isString(path + ".uuid") ? UUID.fromString(config.getString(path + ".uuid")) : UUID.randomUUID();
-        Builder creator = Objects.requireNonNull(
-                Builder.deserialize(config.getString(path + ".creator")),
-                "Creator cannot be null for folder: " + folderName);
-        long creation = config.getLong(path + ".creation", System.currentTimeMillis());
-        NavigatorCategory category = resolveCategory(path);
-        XMaterial defaultMaterial = XMaterial.CHEST;
-        XMaterial material = XMaterial.matchXMaterial(config.getString(path + ".material", defaultMaterial.name()))
-                .orElse(defaultMaterial);
-        String permission = config.getString(path + ".permission", "-");
-        String project = config.getString(path + ".project", "-");
-        List<UUID> worlds = config.getStringList(path + ".worlds").stream()
-                .map(UUID::fromString)
-                .toList();
-
-        FolderImpl folder = new FolderImpl(
-                plugin,
-                uuid,
-                folderName,
-                creation,
-                category,
-                null, // Parent will be set in second pass
-                creator,
-                material,
-                permission,
-                project,
-                worlds,
-                new ArrayList<>());
-        folder.setIconSkullTexture(config.getString(path + ".icon-skull-texture"));
-        return folder;
-    }
-
-    /**
-     * Resolves a folder's {@link NavigatorCategory} from its stored {@code category} id. Pre-4.0 stored this as an
-     * upper-case enum name ({@code PUBLIC}/{@code ARCHIVE}/{@code PRIVATE}), which lower-casing normalises to the
-     * built-in category id. Falls back to the default category when the key is missing or unknown.
-     */
-    private NavigatorCategory resolveCategory(String path) {
-        NavigatorCategoryRegistry registry = plugin.getNavigatorCategoryRegistry();
-        String categoryId = config.getString(path + ".category");
-        categoryId = categoryId != null ? categoryId.toLowerCase(Locale.ROOT) : null;
-        return categoryId != null
-                ? registry.getCategory(categoryId).orElseGet(registry::getDefaultCategory)
-                : registry.getDefaultCategory();
     }
 
     @Override

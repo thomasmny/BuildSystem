@@ -136,6 +136,31 @@ class YamlWorldStorageRoundTripTest {
     }
 
     @Test
+    void roundTrip_preservesCustomSpawn() {
+        BuildWorldImpl world = sampleWorld(UUID.randomUUID(), "SpawnWorld");
+        world.getData().setCustomSpawn("1.0;64.0;2.0;90.0;0.0");
+        newStorage().save(world).join();
+
+        BuildWorld loaded = newStorage().load().join().iterator().next();
+        assertEquals("1.0;64.0;2.0;90.0;0.0", loaded.getData().getCustomSpawn());
+    }
+
+    @Test
+    void load_legacyTopLevelSpawn_isReadAsFallback() throws Exception {
+        // Pre-property-map files stored the custom spawn at the top-level "spawn" key, not under "data".
+        YamlConfiguration yaml = new YamlConfiguration();
+        yaml.set("worlds.Legacy.uuid", UUID.randomUUID().toString());
+        yaml.set("worlds.Legacy.type", "NORMAL");
+        yaml.set("worlds.Legacy.date", 1L);
+        yaml.set("worlds.Legacy.data.status", "FINISHED");
+        yaml.set("worlds.Legacy.spawn", "5.0;70.0;5.0;0.0;0.0");
+        yaml.save(new File(dataFolder, "worlds.yml"));
+
+        BuildWorld loaded = newStorage().load().join().iterator().next();
+        assertEquals("5.0;70.0;5.0;0.0;0.0", loaded.getData().getCustomSpawn());
+    }
+
+    @Test
     void load_emptyFile_returnsEmptyCollection() {
         assertTrue(newStorage().load().join().isEmpty());
     }
