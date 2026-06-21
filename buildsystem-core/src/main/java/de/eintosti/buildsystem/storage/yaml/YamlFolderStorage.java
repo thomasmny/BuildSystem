@@ -34,6 +34,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -50,6 +51,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
     private final Services services;
     private final YamlStore store;
     private final FileConfiguration config;
+    private final Executor background;
     private @Nullable FolderCodec codec;
 
     public YamlFolderStorage(BuildSystemPlugin plugin, WorldStorage worldStorage, Services services) {
@@ -57,6 +59,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
         this.services = services;
         this.store = new YamlStore(plugin.getDataFolder(), "folders.yml", plugin.getLogger());
         this.config = store.config();
+        this.background = services.scheduler().background();
     }
 
     /**
@@ -81,10 +84,12 @@ public class YamlFolderStorage extends FolderStorageImpl {
         // Serialize on the calling (main) thread; the async block only writes the captured map to disk.
         String folderKey = codec().key(folder);
         Map<String, Object> serialized = codec().serialize(folder);
-        return CompletableFuture.runAsync(() -> store.atomicSave(() -> {
-            config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
-            config.set(FOLDERS_KEY + "." + folderKey, serialized);
-        }));
+        return CompletableFuture.runAsync(
+                () -> store.atomicSave(() -> {
+                    config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
+                    config.set(FOLDERS_KEY + "." + folderKey, serialized);
+                }),
+                background);
     }
 
     @Override
@@ -93,49 +98,54 @@ public class YamlFolderStorage extends FolderStorageImpl {
         for (Folder folder : folders) {
             serialized.put(codec().key(folder), codec().serialize(folder));
         }
-        return CompletableFuture.runAsync(() -> store.atomicSave(() -> {
-            config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
-            serialized.forEach((folderKey, value) -> config.set(FOLDERS_KEY + "." + folderKey, value));
-        }));
+        return CompletableFuture.runAsync(
+                () -> store.atomicSave(() -> {
+                    config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
+                    serialized.forEach((folderKey, value) -> config.set(FOLDERS_KEY + "." + folderKey, value));
+                }),
+                background);
     }
 
     @Override
     @Contract("-> new")
     public CompletableFuture<Collection<Folder>> load() {
-        return CompletableFuture.supplyAsync(() -> store.locked(() -> {
-            Set<String> folderKeys = loadFolderKeys();
+        return CompletableFuture.supplyAsync(
+                () -> store.locked(() -> {
+                    Set<String> folderKeys = loadFolderKeys();
 
-            // First pass: load each folder by its key (UUID) without its parent reference.
-            Map<String, Folder> loadedByKey = new HashMap<>();
-            for (String folderKey : folderKeys) {
-                ConfigurationSection section = config.getConfigurationSection(FOLDERS_KEY + "." + folderKey);
-                if (section == null) {
-                    continue;
-                }
-                try {
-                    loadedByKey.put(folderKey, codec().deserialize(folderKey, section));
-                } catch (Exception e) {
-                    logger.log(Level.WARNING, "Skipping folder \"" + folderKey + "\": could not be loaded", e);
-                }
-            }
-
-            // Second pass: link parents (referenced by UUID) now that every folder exists.
-            for (Map.Entry<String, Folder> entry : loadedByKey.entrySet()) {
-                ConfigurationSection section = config.getConfigurationSection(FOLDERS_KEY + "." + entry.getKey());
-                if (section == null) {
-                    continue;
-                }
-                String parentKey = codec().parentReference(section);
-                if (parentKey != null) {
-                    Folder parent = loadedByKey.get(parentKey);
-                    if (parent != null) {
-                        entry.getValue().setParent(parent);
+                    // First pass: load each folder by its key (UUID) without its parent reference.
+                    Map<String, Folder> loadedByKey = new HashMap<>();
+                    for (String folderKey : folderKeys) {
+                        ConfigurationSection section = config.getConfigurationSection(FOLDERS_KEY + "." + folderKey);
+                        if (section == null) {
+                            continue;
+                        }
+                        try {
+                            loadedByKey.put(folderKey, codec().deserialize(folderKey, section));
+                        } catch (Exception e) {
+                            logger.log(Level.WARNING, "Skipping folder \"" + folderKey + "\": could not be loaded", e);
+                        }
                     }
-                }
-            }
 
-            return new ArrayList<>(loadedByKey.values());
-        }));
+                    // Second pass: link parents (referenced by UUID) now that every folder exists.
+                    for (Map.Entry<String, Folder> entry : loadedByKey.entrySet()) {
+                        ConfigurationSection section =
+                                config.getConfigurationSection(FOLDERS_KEY + "." + entry.getKey());
+                        if (section == null) {
+                            continue;
+                        }
+                        String parentKey = codec().parentReference(section);
+                        if (parentKey != null) {
+                            Folder parent = loadedByKey.get(parentKey);
+                            if (parent != null) {
+                                entry.getValue().setParent(parent);
+                            }
+                        }
+                    }
+
+                    return new ArrayList<>(loadedByKey.values());
+                }),
+                background);
     }
 
     private Set<String> loadFolderKeys() {
@@ -174,6 +184,6 @@ public class YamlFolderStorage extends FolderStorageImpl {
     @Override
     public CompletableFuture<Void> delete(String folderKey) {
         return CompletableFuture.runAsync(
-                () -> store.atomicSave(() -> config.set(FOLDERS_KEY + "." + folderKey, null)));
+                () -> store.atomicSave(() -> config.set(FOLDERS_KEY + "." + folderKey, null)), background);
     }
 }

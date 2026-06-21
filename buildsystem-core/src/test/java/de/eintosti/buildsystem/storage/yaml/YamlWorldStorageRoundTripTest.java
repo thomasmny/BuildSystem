@@ -29,6 +29,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.test.TestData;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
@@ -167,10 +168,12 @@ class YamlWorldStorageRoundTripTest {
     }
 
     @Test
-    void construction_doesNotResolveServices() {
-        // Worlds are loaded during plugin enable, before services such as MenuItems/SpawnService exist. Constructing
-        // the storage must not resolve any service (the codec is built lazily on first load); otherwise startup throws.
+    void construction_doesNotResolveLateServices() {
+        // Worlds are loaded during plugin enable, before the late services the codec needs (MenuItems/SpawnService via
+        // the WorldContext, and PlayerLookupService) exist. Construction must not resolve those (the codec is built
+        // lazily on first load); only the always-available scheduler may be pulled.
         Services strict = mock(Services.class);
+        when(strict.scheduler()).thenReturn(new TaskScheduler(plugin));
         when(strict.worldContext()).thenThrow(new IllegalStateException("service not initialized yet"));
         when(strict.playerLookup()).thenThrow(new IllegalStateException("service not initialized yet"));
 

@@ -117,7 +117,7 @@ public final class Services {
 
         this.customBlockManager = new CustomBlockManager(plugin, this::world);
         this.playerLookupService = new PlayerLookupService(plugin);
-        (this.playerService = new PlayerServiceImpl(plugin, config(), this::world)).init();
+        (this.playerService = new PlayerServiceImpl(plugin, config(), this::world, taskScheduler)).init();
         this.navigatorEditorService = new NavigatorEditorService();
         this.noClipService = new NoClipService(plugin);
         this.worldService = new WorldServiceImpl(plugin, this);

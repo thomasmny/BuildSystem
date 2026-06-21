@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.api.player.settings.NavigatorType;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import java.io.File;
 import java.util.Collection;
 import java.util.UUID;
@@ -39,11 +40,17 @@ class YamlPlayerStorageRoundTripTest {
     File dataFolder;
 
     private BuildSystemPlugin plugin;
+    private TaskScheduler scheduler;
 
     @BeforeEach
     void setUp() {
         plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
+        scheduler = new TaskScheduler(plugin);
+    }
+
+    private YamlPlayerStorage newStorage() {
+        return new YamlPlayerStorage(plugin, scheduler);
     }
 
     private BuildPlayerImpl samplePlayer(UUID uuid) {
@@ -65,9 +72,9 @@ class YamlPlayerStorageRoundTripTest {
         UUID uuid = UUID.randomUUID();
         BuildPlayerImpl original = samplePlayer(uuid);
 
-        new YamlPlayerStorage(plugin).save(original).join();
+        newStorage().save(original).join();
 
-        Collection<BuildPlayer> loaded = new YamlPlayerStorage(plugin).load().get();
+        Collection<BuildPlayer> loaded = newStorage().load().get();
         assertEquals(1, loaded.size());
 
         BuildPlayerImpl reloaded = BuildPlayerImpl.of(loaded.iterator().next());
@@ -87,7 +94,7 @@ class YamlPlayerStorageRoundTripTest {
 
     @Test
     void load_missingFile_returnsEmptyCollection() throws Exception {
-        Collection<BuildPlayer> loaded = new YamlPlayerStorage(plugin).load().get();
+        Collection<BuildPlayer> loaded = newStorage().load().get();
 
         assertTrue(loaded.isEmpty());
     }

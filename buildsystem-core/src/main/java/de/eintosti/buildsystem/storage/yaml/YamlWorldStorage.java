@@ -29,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -44,6 +45,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
     private final Services services;
     private final YamlStore store;
     private final FileConfiguration config;
+    private final Executor background;
     private @Nullable WorldCodec codec;
 
     public YamlWorldStorage(BuildSystemPlugin plugin, Services services) {
@@ -51,6 +53,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
         this.services = services;
         this.store = new YamlStore(plugin.getDataFolder(), "worlds.yml", plugin.getLogger());
         this.config = store.config();
+        this.background = services.scheduler().background();
     }
 
     /**
@@ -71,10 +74,12 @@ public class YamlWorldStorage extends WorldStorageImpl {
         // already-captured map to disk, never read live domain state off the main thread.
         String worldKey = codec().key(buildWorld);
         Map<String, @Nullable Object> serialized = codec().serialize(buildWorld);
-        return CompletableFuture.runAsync(() -> store.atomicSave(() -> {
-            config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
-            config.set(WORLDS_KEY + "." + worldKey, serialized);
-        }));
+        return CompletableFuture.runAsync(
+                () -> store.atomicSave(() -> {
+                    config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
+                    config.set(WORLDS_KEY + "." + worldKey, serialized);
+                }),
+                background);
     }
 
     @Override
@@ -83,29 +88,33 @@ public class YamlWorldStorage extends WorldStorageImpl {
         for (BuildWorld buildWorld : buildWorlds) {
             serialized.put(codec().key(buildWorld), codec().serialize(buildWorld));
         }
-        return CompletableFuture.runAsync(() -> store.atomicSave(() -> {
-            config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
-            serialized.forEach((worldKey, value) -> config.set(WORLDS_KEY + "." + worldKey, value));
-        }));
+        return CompletableFuture.runAsync(
+                () -> store.atomicSave(() -> {
+                    config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
+                    serialized.forEach((worldKey, value) -> config.set(WORLDS_KEY + "." + worldKey, value));
+                }),
+                background);
     }
 
     @Override
     public CompletableFuture<Collection<BuildWorld>> load() {
-        return CompletableFuture.supplyAsync(() -> store.locked(() -> {
-            Collection<BuildWorld> worlds = new ArrayList<>();
-            for (String worldKey : loadWorldKeys()) {
-                try {
-                    ConfigurationSection section = config.getConfigurationSection(WORLDS_KEY + "." + worldKey);
-                    if (section == null) {
-                        continue;
+        return CompletableFuture.supplyAsync(
+                () -> store.locked(() -> {
+                    Collection<BuildWorld> worlds = new ArrayList<>();
+                    for (String worldKey : loadWorldKeys()) {
+                        try {
+                            ConfigurationSection section = config.getConfigurationSection(WORLDS_KEY + "." + worldKey);
+                            if (section == null) {
+                                continue;
+                            }
+                            worlds.add(codec().deserialize(worldKey, section));
+                        } catch (Exception e) {
+                            logger.log(Level.WARNING, "Skipping world \"" + worldKey + "\": could not be loaded", e);
+                        }
                     }
-                    worlds.add(codec().deserialize(worldKey, section));
-                } catch (Exception e) {
-                    logger.log(Level.WARNING, "Skipping world \"" + worldKey + "\": could not be loaded", e);
-                }
-            }
-            return worlds;
-        }));
+                    return worlds;
+                }),
+                background);
     }
 
     private Set<String> loadWorldKeys() {
@@ -143,6 +152,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
 
     @Override
     public CompletableFuture<Void> delete(String worldKey) {
-        return CompletableFuture.runAsync(() -> store.atomicSave(() -> config.set(WORLDS_KEY + "." + worldKey, null)));
+        return CompletableFuture.runAsync(
+                () -> store.atomicSave(() -> config.set(WORLDS_KEY + "." + worldKey, null)), background);
     }
 }
