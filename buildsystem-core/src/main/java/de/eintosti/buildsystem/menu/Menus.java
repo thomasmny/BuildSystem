@@ -215,7 +215,15 @@ public final class Menus {
     }
 
     public void openCategoryStatuses(NavigatorCategory category, Player player) {
-        new CategoryStatusesMenu(plugin, player, category).open(player);
+        new CategoryStatusesMenu(
+                        plugin.getMessages(),
+                        plugin.getMenuItems(),
+                        this,
+                        plugin.getNavigatorCategoryRegistry(),
+                        plugin.getWorldStatusRegistry(),
+                        player,
+                        category)
+                .open(player);
     }
 
     public void openSetup(Player player) {
