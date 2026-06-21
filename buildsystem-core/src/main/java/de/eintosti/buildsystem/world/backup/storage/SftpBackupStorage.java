@@ -17,9 +17,10 @@
  */
 package de.eintosti.buildsystem.world.backup.storage;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
+import de.eintosti.buildsystem.api.world.backup.BackupProfile;
+import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.backup.BackupImpl;
 import java.io.*;
@@ -30,7 +31,9 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.function.Function;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 import org.apache.sshd.client.keyverifier.KnownHostsServerKeyVerifier;
@@ -51,6 +54,9 @@ public class SftpBackupStorage extends AbstractBackupStorage {
     private static final Duration AUTH_TIMEOUT = Duration.ofSeconds(5);
     private static final int BUFFER_SIZE = 8192;
 
+    private final File dataFolder;
+    private final ConfigService configService;
+    private final Function<BuildWorld, BackupProfile> profileProvider;
     private final String host;
     private final int port;
     private final String username;
@@ -63,21 +69,27 @@ public class SftpBackupStorage extends AbstractBackupStorage {
     private volatile @Nullable SftpClient sftpClient;
 
     public SftpBackupStorage(
-            BuildSystemPlugin plugin,
+            Logger logger,
             Executor executor,
+            File dataFolder,
+            ConfigService configService,
+            Function<BuildWorld, BackupProfile> profileProvider,
             String host,
             int port,
             String username,
             String password,
             String remoteBasePath) {
-        super(plugin, executor);
+        super(logger, executor);
 
+        this.dataFolder = dataFolder;
+        this.configService = configService;
+        this.profileProvider = profileProvider;
         this.host = host;
         this.port = validatePort(port);
         this.username = username;
         this.password = password;
         this.remoteBasePath = normalizeBasePath(remoteBasePath);
-        this.tmpDownloadPath = FileUtils.resolve(plugin.getDataFolder().toPath(), ".tmp_backup_downloads");
+        this.tmpDownloadPath = FileUtils.resolve(dataFolder.toPath(), ".tmp_backup_downloads");
 
         Security.addProvider(new BouncyCastleProvider());
         establishConnection();
@@ -105,7 +117,7 @@ public class SftpBackupStorage extends AbstractBackupStorage {
 
     private synchronized void establishConnection() {
         if (sshClient == null) {
-            initializeSshClient();
+            sshClient = initializeSshClient();
         }
 
         try {
@@ -122,22 +134,22 @@ public class SftpBackupStorage extends AbstractBackupStorage {
             clientSession.auth().verify(AUTH_TIMEOUT.toMillis());
 
             sftpClient = SftpClientFactory.instance().createSftpClient(clientSession);
-            plugin.getLogger().info("SFTP connection established successfully.");
+            logger.info("SFTP connection established successfully.");
         } catch (Exception e) {
             disconnectAll();
-            plugin.getLogger().log(Level.SEVERE, "Failed to establish SFTP connection to " + host + ":" + port, e);
+            logger.log(Level.SEVERE, "Failed to establish SFTP connection to " + host + ":" + port, e);
         }
     }
 
-    private void initializeSshClient() {
-        sshClient = SshClient.setUpDefaultClient();
+    private SshClient initializeSshClient() {
+        SshClient sshClient = SshClient.setUpDefaultClient();
         sshClient.setSignatureFactories(Arrays.asList(BuiltinSignatures.rsa, BuiltinSignatures.ed25519));
         // Trust-on-first-use: unknown hosts are accepted and recorded; a later key change is rejected,
         // so a man-in-the-middle cannot silently impersonate a previously seen backup server.
         sshClient.setServerKeyVerifier(new KnownHostsServerKeyVerifier(
-                AcceptAllServerKeyVerifier.INSTANCE,
-                plugin.getDataFolder().toPath().resolve(".sftp_known_hosts")));
+                AcceptAllServerKeyVerifier.INSTANCE, dataFolder.toPath().resolve(".sftp_known_hosts")));
         sshClient.start();
+        return sshClient;
     }
 
     private SftpClient getSftpClient() throws IOException {
@@ -160,8 +172,8 @@ public class SftpBackupStorage extends AbstractBackupStorage {
 
     @Override
     protected synchronized List<Backup> doListBackups(BuildWorld buildWorld) throws IOException {
-        List<Backup> backups = new ArrayList<>(
-                plugin.getConfigService().current().world().backup().maxBackupsPerWorld());
+        List<Backup> backups =
+                new ArrayList<>(configService.current().world().backup().maxBackupsPerWorld());
         String backupDirectory = getBackupDirectory(buildWorld);
 
         SftpClient sftp = getSftpClient();
@@ -175,8 +187,8 @@ public class SftpBackupStorage extends AbstractBackupStorage {
             long timestamp = Optional.ofNullable(attributes.getCreateTime())
                     .orElse(attributes.getModifyTime())
                     .toMillis();
-            backups.add(new BackupImpl(
-                    plugin.getBackupService().getProfile(buildWorld), timestamp, backupDirectory + file.getFilename()));
+            backups.add(
+                    new BackupImpl(profileProvider.apply(buildWorld), timestamp, backupDirectory + file.getFilename()));
         }
 
         return backups;
@@ -201,7 +213,7 @@ public class SftpBackupStorage extends AbstractBackupStorage {
             }
 
             logDuration(buildWorld, timestamp);
-            return new BackupImpl(plugin.getBackupService().getProfile(buildWorld), timestamp, remotePath);
+            return new BackupImpl(profileProvider.apply(buildWorld), timestamp, remotePath);
         });
     }
 
@@ -233,7 +245,7 @@ public class SftpBackupStorage extends AbstractBackupStorage {
         try {
             FileUtils.deleteDirectory(tmpDownloadPath);
         } catch (IOException e) {
-            plugin.getLogger().log(Level.WARNING, "Failed to delete temporary download directory", e);
+            logger.log(Level.WARNING, "Failed to delete temporary download directory", e);
         }
     }
 
@@ -253,7 +265,7 @@ public class SftpBackupStorage extends AbstractBackupStorage {
         try {
             closeable.close();
         } catch (IOException e) {
-            plugin.getLogger().log(Level.WARNING, "Failed to close resource", e);
+            logger.log(Level.WARNING, "Failed to close resource", e);
         }
     }
 

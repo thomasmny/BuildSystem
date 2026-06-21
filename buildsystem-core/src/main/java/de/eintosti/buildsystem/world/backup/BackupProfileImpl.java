@@ -27,9 +27,12 @@ import de.eintosti.buildsystem.api.world.backup.BackupProfile;
 import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.StringUtils;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.io.File;
 import java.io.IOException;
@@ -52,12 +55,27 @@ import org.jspecify.annotations.Nullable;
 public class BackupProfileImpl implements BackupProfile {
 
     private final BuildSystemPlugin plugin;
+    private final ConfigService configService;
+    private final Messages messages;
+    private final WorldServiceImpl worldService;
+    private final SpawnService spawnService;
     private final BackupStorage storage;
     private final BuildWorld buildWorld;
     protected final Object backupLock;
 
-    public BackupProfileImpl(BuildSystemPlugin plugin, BackupStorage storage, BuildWorld buildWorld) {
+    public BackupProfileImpl(
+            BuildSystemPlugin plugin,
+            ConfigService configService,
+            Messages messages,
+            WorldServiceImpl worldService,
+            SpawnService spawnService,
+            BackupStorage storage,
+            BuildWorld buildWorld) {
         this.plugin = plugin;
+        this.configService = configService;
+        this.messages = messages;
+        this.worldService = worldService;
+        this.spawnService = spawnService;
         this.storage = storage;
         this.buildWorld = buildWorld;
         this.backupLock = new Object();
@@ -78,11 +96,8 @@ public class BackupProfileImpl implements BackupProfile {
         this.listBackups()
                 .thenComposeAsync(backups -> {
                     synchronized (this.backupLock) {
-                        int maxBackups = plugin.getConfigService()
-                                .current()
-                                .world()
-                                .backup()
-                                .maxBackupsPerWorld();
+                        int maxBackups =
+                                configService.current().world().backup().maxBackupsPerWorld();
                         int excess = backups.size() - maxBackups + 1;
 
                         List<CompletableFuture<Void>> deleteFutures = Collections.emptyList();
@@ -124,13 +139,13 @@ public class BackupProfileImpl implements BackupProfile {
         String worldName = this.buildWorld.getName();
         Optional<World> optionalWorld = this.buildWorld.getWorld();
         if (optionalWorld.isEmpty()) {
-            plugin.getMessages().sendMessage(player, "worlds_backup_unknown_world");
+            messages.sendMessage(player, "worlds_backup_unknown_world");
             return CompletableFuture.completedFuture(null);
         }
         World world = optionalWorld.get();
 
         List<@Nullable Player> removedPlayers =
-                plugin.getWorldService().removePlayersFromWorld(worldName, "worlds_backup_restoration_in_progress");
+                worldService.removePlayersFromWorld(worldName, "worlds_backup_restoration_in_progress");
 
         // Download off the main thread, then apply the restore back on the main thread. Blocking the
         // download here would freeze the entire server for the duration of a remote (S3/SFTP) fetch.
@@ -165,7 +180,6 @@ public class BackupProfileImpl implements BackupProfile {
             List<@Nullable Player> removedPlayers,
             File backupFile)
             throws IOException {
-        SpawnService spawnService = plugin.getSpawnService();
         Location spawn = spawnService.getSpawn();
         boolean isSpawn = spawn != null && Objects.equals(spawn.getWorld(), world);
 
@@ -191,18 +205,14 @@ public class BackupProfileImpl implements BackupProfile {
 
         Bukkit.getPluginManager().callEvent(new BackupRestoredEvent(this.buildWorld, backup));
 
-        plugin.getMessages()
-                .sendMessage(
-                        player,
-                        "worlds_backup_restoration_successful",
-                        Map.entry(
-                                "%timestamp%",
-                                StringUtils.formatTime(
-                                        backup.creationTime(),
-                                        plugin.getConfigService()
-                                                .current()
-                                                .settings()
-                                                .dateFormat())));
+        messages.sendMessage(
+                player,
+                "worlds_backup_restoration_successful",
+                Map.entry(
+                        "%timestamp%",
+                        StringUtils.formatTime(
+                                backup.creationTime(),
+                                configService.current().settings().dateFormat())));
     }
 
     /**

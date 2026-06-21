@@ -106,7 +106,7 @@ final class Services {
         this.navigatorEditorService = new NavigatorEditorService();
         this.noClipService = new NoClipService(plugin);
         this.worldService = new WorldServiceImpl(plugin, config(), messages(), this::spawn, this::prompts);
-        this.backupService = new BackupServiceImpl(plugin);
+        this.backupService = new BackupServiceImpl(plugin, config(), messages(), world(), this::spawn);
         this.settingsService = new SettingsService(plugin, config(), messages(), player(), world());
         this.spawnService = new SpawnService(plugin, world());
         this.menuItems = new MenuItems(plugin, config(), messages(), settings());

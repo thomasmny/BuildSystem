@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.integration;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.integration.luckperms.LuckPermsExpansion;
 import de.eintosti.buildsystem.integration.placeholderapi.PapiTextResolver;
 import de.eintosti.buildsystem.integration.placeholderapi.PlaceholderApiExpansion;
@@ -33,12 +34,14 @@ import org.jspecify.annotations.Nullable;
 public final class Integrations {
 
     private final BuildSystemPlugin plugin;
+    private final Messages messages;
 
     private @Nullable PlaceholderApiExpansion placeholderApi;
     private @Nullable LuckPermsExpansion luckPerms;
 
-    public Integrations(BuildSystemPlugin plugin) {
+    public Integrations(BuildSystemPlugin plugin, Messages messages) {
         this.plugin = plugin;
+        this.messages = messages;
     }
 
     public void activate() {
@@ -47,7 +50,7 @@ public final class Integrations {
         if (pluginManager.getPlugin("PlaceholderAPI") != null) {
             this.placeholderApi = new PlaceholderApiExpansion(plugin);
             this.placeholderApi.register();
-            plugin.getMessages().setPlaceholderResolver(new PapiTextResolver());
+            messages.setPlaceholderResolver(new PapiTextResolver());
         }
 
         if (pluginManager.getPlugin("LuckPerms") != null) {
@@ -59,7 +62,7 @@ public final class Integrations {
     public void deactivate() {
         if (this.placeholderApi != null) {
             this.placeholderApi.unregister();
-            plugin.getMessages().setPlaceholderResolver(null);
+            messages.setPlaceholderResolver(null);
         }
 
         if (this.luckPerms != null) {

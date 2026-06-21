@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.backup.storage;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
@@ -44,15 +43,16 @@ public class LocalBackupStorage extends AbstractBackupStorage {
     private final Path backupPath;
     private final Function<BuildWorld, BackupProfile> profileProvider;
 
-    public LocalBackupStorage(BuildSystemPlugin plugin, Executor executor) {
-        super(plugin, executor);
-        this.profileProvider = bw -> plugin.getBackupService().getProfile(bw);
-        this.backupPath = plugin.getDataFolder().toPath().resolve("backups");
+    public LocalBackupStorage(
+            Logger logger, Executor executor, File dataFolder, Function<BuildWorld, BackupProfile> profileProvider) {
+        super(logger, executor);
+        this.profileProvider = profileProvider;
+        this.backupPath = dataFolder.toPath().resolve("backups");
         if (!Files.exists(backupPath)) {
             try {
                 Files.createDirectory(backupPath);
             } catch (IOException e) {
-                plugin.getLogger().log(Level.SEVERE, "Unable to create backup folder", e);
+                logger.log(Level.SEVERE, "Unable to create backup folder", e);
             }
         }
     }
@@ -73,6 +73,7 @@ public class LocalBackupStorage extends AbstractBackupStorage {
         if (!Files.exists(dir)) {
             return new ArrayList<>();
         }
+
         List<Backup> backups = new ArrayList<>();
         try (Stream<Path> walk = Files.walk(dir)) {
             walk.filter(LocalBackupStorage::isZip).forEach(path -> {

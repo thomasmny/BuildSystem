@@ -91,7 +91,7 @@ public class BuildSystemPlugin extends JavaPlugin {
 
         new CommandRegistrar(this).registerAll();
         new ListenerRegistrar(this).registerAll();
-        (this.integrations = new Integrations(this)).activate();
+        (this.integrations = new Integrations(this, getMessages())).activate();
 
         this.api = new BuildSystemApi(this);
         getServer().getServicesManager().register(BuildSystem.class, api, this, ServicePriority.Normal);
